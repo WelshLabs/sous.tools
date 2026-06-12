@@ -1,0 +1,35 @@
+# TV Signage MVP Tasks
+
+- `[x]` Database Schema & Supabase Setup
+  - `[x]` Create `packages/supabase/schema.sql` with signage tables and RLS
+  - `[x]` Seed organization and default admin user
+  - `[x]` Configure public storage bucket `signage-assets`
+- `[x]` Shared Type Definition
+  - `[x]` Update `@soustools/api-types` with layout config structures
+- `[x]` NestJS Backend API & WebSockets (`apps/api`)
+  - `[x]` Build pairing endpoints (`/signage/displays/pair/register`, `/signage/displays/pair/confirm`)
+  - `[x]` Build layout and display CRUD controllers
+  - `[x]` Implement Socket.io gateway for real-time broadcast
+  - `[x]` Implement POS simulator endpoints
+- `[x]` Admin Dashboard UI (`apps/app`)
+  - `[x]` Build responsive sidebar layout with morphing hamburger icon (X vs hamburger)
+  - `[x]` Implement responsive app bar with profile dropdown settings and logout links
+  - `[x]` Create Layout Builder dashboard view
+  - `[x]` Implement playlist drag-and-drop builder
+  - `[x]` Implement Google Fonts and Custom CSS styling panel
+  - `[x]` Create CSS Class Helper dictionary and templates panel
+  - `[x]` Implement displays pairing interface
+  - `[x]` Implement POS Simulator panel
+- `[x]` TV Signage Player Client (`apps/tv-signage`)
+  - `[x]` Update page routing to handle pairing code state
+  - `[x]` Connect socket receiver for live layout updates
+  - `[x]` Build dynamic renderer for slide playlists (Menu, Image, Video, Iframe)
+  - `[x]` Add Google Font dynamic loading and custom CSS injection
+  - `[x]` Add sold-out overlay options (Strike-through, Hide, Badge)
+- `[x]` Raspberry Pi Deployment scripts (`deploy/pi`)
+  - `[x]` Create `kiosk.sh` targeting chromium screens
+  - `[x]` Create `labwc-rc.xml` window mapping rules
+  - `[x]` Create `setup.sh` installer script
+- `[x]` Testing & Verification
+  - `[x]` Create unit tests for layout parsers and transition controllers
+  - `[x]` Perform manual integration testing with POS simulator

@@ -25,7 +25,11 @@ export const DisplayManager: React.FC = () => {
       const res = await fetch("/api/signage/displays");
       if (res.ok) {
         const payload = await res.json();
-        setDisplays(payload.data || []);
+        if (payload.success) {
+          setDisplays(payload.data || []);
+        } else {
+          setMockData();
+        }
       } else {
         setMockData();
       }

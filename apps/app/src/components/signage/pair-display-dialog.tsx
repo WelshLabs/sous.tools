@@ -42,16 +42,21 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: pairingCode.toUpperCase(),
+          pairingCode: pairingCode.toUpperCase(),
           name: displayName,
         }),
       });
       if (res.ok) {
-        alert("Device paired successfully!");
-        setPairingCode("");
-        setDisplayName("");
-        onSuccess();
-        onClose();
+        const payload = await res.json().catch(() => ({}));
+        if (payload.success) {
+          alert("Device paired successfully!");
+          setPairingCode("");
+          setDisplayName("");
+          onSuccess();
+          onClose();
+        } else {
+          setError(payload.error || "Failed to pair device. Check code.");
+        }
       } else {
         const errPayload = await res.json().catch(() => ({}));
         setError(errPayload.error || "Failed to pair device. Check code.");

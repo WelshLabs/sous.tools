@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<labwc_config>
+  <!-- Window placement rules for dual-TV signage under Wayland -->
+  <windowRules>
+    <!-- TV Display 1: mapped to left HDMI port -->
+    <windowRule title="SignageDisplay1">
+      <maximized>true</maximized>
+      <decorations>none</decorations>
+      <outputName>HDMI-A-1</outputName>
+      <skipTaskbar>true</skipTaskbar>
+      <skipPager>true</skipPager>
+    </windowRule>
+
+    <!-- TV Display 2: mapped to right HDMI port -->
+    <windowRule title="SignageDisplay2">
+      <maximized>true</maximized>
+      <decorations>none</decorations>
+      <outputName>HDMI-A-2</outputName>
+      <skipTaskbar>true</skipTaskbar>
+      <skipPager>true</skipPager>
+    </windowRule>
+  </windowRules>
+</labwc_config>

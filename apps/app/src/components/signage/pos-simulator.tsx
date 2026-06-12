@@ -26,7 +26,11 @@ export const PosSimulator: React.FC = () => {
       const res = await fetch("/api/pos/items");
       if (res.ok) {
         const payload = await res.json();
-        setItems(payload.data || []);
+        if (payload.success) {
+          setItems(payload.data || []);
+        } else {
+          setMockItems();
+        }
       } else {
         setMockItems();
       }
@@ -59,11 +63,20 @@ export const PosSimulator: React.FC = () => {
       });
 
       if (res.ok) {
-        setItems((prev) =>
-          prev.map((item) =>
-            item.id === itemId ? { ...item, isSoldOut: newStatus } : item,
-          ),
-        );
+        const payload = await res.json().catch(() => ({}));
+        if (payload.success) {
+          setItems((prev) =>
+            prev.map((item) =>
+              item.id === itemId ? { ...item, isSoldOut: newStatus } : item,
+            ),
+          );
+        } else {
+          setItems((prev) =>
+            prev.map((item) =>
+              item.id === itemId ? { ...item, isSoldOut: newStatus } : item,
+            ),
+          );
+        }
       } else {
         setItems((prev) =>
           prev.map((item) =>

@@ -1,0 +1,22 @@
+{
+  "name": "@soustools/config",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "secrets:sync": "tsx src/sync.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@infisical/sdk": "^3.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@soustools/tsconfig": "workspace:*",
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}
