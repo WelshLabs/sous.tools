@@ -10,37 +10,30 @@ import {
   Calculator,
   Settings,
   LogOut,
+  ChefHat,
+  Scale,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Hamburger } from "./hamburger";
 
-/**
- * Props for the Sidebar component.
- */
 export interface SidebarProps {
-  /** Whether the mobile drawer sidebar is open. */
   isMobileOpen: boolean;
-  /** Whether the desktop sidebar is collapsed. */
   isDesktopCollapsed: boolean;
-  /** Callback to close the mobile drawer. */
   onCloseMobile: () => void;
 }
 
 const NAV_ITEMS = [
-  { label: "Kitchen Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "TV Signage", href: "/dashboard/tv", icon: Tv },
-  { label: "Devices", href: "/dashboard/devices", icon: Smartphone },
-  { label: "POS Simulator", href: "/dashboard/pos", icon: Calculator },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Kitchen Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Recipes", href: "/recipes", icon: ChefHat },
+  { label: "Vessels Manager", href: "/recipes/vessels", icon: Scale },
+  { label: "TV Signage", href: "/tv", icon: Tv },
+  { label: "Devices", href: "/devices", icon: Smartphone },
+  { label: "POS Simulator", href: "/pos", icon: Calculator },
+  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 /**
  * Sidebar component provides the main navigation shell for the dashboard.
- * It is fully responsive: drawer on mobile, narrow on tablet, collapsible on desktop.
- *
- * @tenant-docs-export
- * Use the sidebar to switch between the Kitchen Dashboard, TV Signage playlists,
- * paired Devices, the POS Simulator, and General Settings.
  */
 export default function Sidebar({
   isMobileOpen,

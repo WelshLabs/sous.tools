@@ -1,39 +1,17 @@
-# TV Signage MVP Implementation Plan
+# Hybrid Recipe & Production Engine (Module 2) Implementation Plan
 
-Implement a fully functional, premium digital menu TV signage system for the **Sous Tools** platform, featuring dual-channel screen mapping on Raspberry Pi 5 under Wayland, real-time WebSocket sync, a drag-and-drop hybrid slide editor, and a built-in POS Simulator (Square/Toast).
-
-## Goal Description
-
-Deploy a dual-channel TV signage player that can run on a Raspberry Pi 5 or any smart TV/browser. Provide a premium admin visual editor where cafe owners can design mixed-media playlists (menus, videos, images, Google Slides/PPTX), load Google Fonts, and write custom CSS with a built-in interactive class selector. Sync menu items in real-time, handling sold-out item visibility (strike-through, graying out, or hiding) via a POS simulator.
-
----
+Implement the core culinary/beverage recipe engine, supporting hybrid linear/Baker's percentage scaling, global vessel profile adjustments, liquid density-based unit conversions, a persistent Active Kitchen Mode viewer with wake-lock, and Open Food Facts compliance data auto-population.
 
 ## User Review Required
 
 > [!IMPORTANT]
->
-> - **Dual-TV Wayland Routing**: We solve Wayland's window placement limitations on Raspberry Pi 5 by launching Chromium windows with distinct titles (`SignageDisplay1`, `SignageDisplay2`) and applying Labwc `rc.xml` rules to map them onto specific HDMI outputs (`HDMI-A-1`, `HDMI-A-2`).
-> - **Client Versatility**: The player application is a standard responsive web page at `/display/[id]`. If unpaired, it displays a 4-char pairing code. This allows it to work out-of-the-box on Chromecasts, Roku browsers, Smart TVs, and PCs, while supporting local Pi 5 mesh networks.
-> - **POS Mock Simulator**: To test the two-way sync and sold-out states, we provide a dashboard tab to toggle "sold out" on menu items. This triggers simulated Square webhook events to NestJS, immediately broadcasting layout updates down to active TVs.
-
----
-
-## Decisions Reached from Grill-Me Session
-
-> [!TIP]
->
-> - **Layout Editor Engine**: Structured pre-defined layout sections (like Split Screen or Grid) with drag-and-drop components, but allowing absolute positioning/popovers for floating overlays, badges, and banners.
-> - **Raspberry Pi 5 Setup & Auto-Updates**: Delivered as both a unified one-line curl installation script and a pre-built OS image configured to automatically run that script on first boot.
-> - **POS Webhook Integration**: A mock POS simulator inside the admin dashboard to trigger webhook events (e.g. toggling sold-out states) will be built first, followed by real Square/Toast API integrations.
-> - **Custom CSS Editor**: A rich, autocompleting CSS code editor accompanied by an interactive CSS class selector dictionary sidebar and pre-built design recipes (e.g. Neon borders, chalkboard styles).
-> - **Slides & PowerPoint**: Mixed slide component playlist supporting Menus, Images, Videos, and Google Slides published URLs (rendered inside iframes). Server-side PPTX file conversion to images is deferred.
-> - **TV Pairing Lifecycle**: Displays generate a simple 4-character pairing code that remains active and valid persistently until paired or closed.
-> - **Font Selection**: Curated dropdown list of highly readable signage-optimized design fonts (e.g. Outfit, Montserrat, Bebas Neue) along with a custom text field to load any arbitrary Google Font.
-> - **Offline Resilience**: Basic offline caching of layout configuration and menu items using LocalStorage/IndexedDB to prevent blank screens during ambient network drops.
-> - **Hamburger Animation**: Pure Tailwind CSS transitions on three line elements inside a button (handling rotation, translation, and opacity) to morph from three bars to an 'X' icon.
-> - **Sidebar Navigation & Routes**: Pre-configure all 6 main dashboard routes. Build active views for Kitchen Dashboard, TV Signage layouts, paired devices, and the POS simulator. Settings/profile will contain mock panels.
-> - **Dashboard Authentication**: Fully functional Supabase authentication protecting the dashboard path, seeded with organization "Dtown Cafe" and default administrator `conar@dtown.cafe` (`password`).
-> - **Playlist Drag-and-Drop**: Use a robust external drag-and-drop library (e.g. @dnd-kit or @hello-pangea/dnd) for smooth reordering animations and transitions in the slide editor.
+> - **Dual-Mode Scaling Algorithm**: Stored recipes support two calculation models:
+>   - `fixed_weight`: Scales mass or volume linearly using the multiplier: `Target Yield / Base Yield`.
+>   - `bakers_percentage`: Calculates weight outputs relative to the aggregate weight of ingredients designated as `base_calculation_group = true` (representing the 100% baseline, typically flour).
+> - **Vessel-Aware Adjustments**: Scaling can be driven by swapping vessel profiles. The system computes a scaling multiplier based on the volumetric ratio of the new vessel versus the recipe's default vessel.
+> - **Density-Based Unit Conversions**: Fluid-to-weight conversions read a `density_g_ml` coefficient (grams per milliliter) on `master_ingredients` to safely scale mass (g, oz, lb) and volume (ml, tsp, tbsp, cups).
+> - **Active Kitchen Mode & Timers**: Kitchen timers run locally and are persisted directly to `localStorage`. If the browser is refreshed or goes offline, the timers continue tracking elapsed time relative to the system clock.
+> - **Compliance Ingestion**: We query the free Open Food Facts API directly from the client browser to auto-populate nutritional macro values and flag common allergen markers (e.g. wheat, dairy, nuts).
 
 ---
 
@@ -41,140 +19,116 @@ Deploy a dual-channel TV signage player that can run on a Raspberry Pi 5 or any 
 
 ### 1. Database Schema
 
-Create the database tables and RLS policies for signage components.
+Add the table structures for vessel profiles, master ingredients, and recipes.
 
-#### [NEW] [packages/supabase/schema.sql](file:///home/conar/code/sous.tools/packages/supabase/schema.sql)
+#### [NEW] [packages/supabase/schema.sql (updates)](file:///home/conar/code/sous.tools/packages/supabase/schema.sql)
 
-SQL script defining the signage tables:
-
-- `signage_layouts`: holds layout config, CSS, fonts, and slides playlist.
-- `signage_displays`: links physical screens to layouts, stores pairing codes, and tracking parameters.
-- `square_items`: stores mock POS inventory items synced from the simulator.
-- Enables RLS policies and seeds the Dtown Cafe organization and `conar@dtown.cafe` account.
+Extend the schema to support:
+- `vessel_profiles`: Represents baking pans, sheet trays, or containers. Holds `name`, `shape` (`ROUND` | `RECTANGULAR`), dimensions (`length`, `width`, `height`, `diameter` as nullable numeric columns), and calculated `volume_ml`.
+- `master_ingredients`: Holds the ingredient registry, `density_g_ml` (numeric, default 1.0), and JSONB fields for `nutrition_macros` and `allergens`.
+- `recipes`: Stored recipe records with `title`, `yield_count` (numeric), `yield_unit` (e.g. grams, portions), and default `vessel_id`.
+- `recipe_ingredients`: Join table mapping recipes to master ingredients. Holds `amount`, `unit`, `calculation_type` (`fixed_weight` | `bakers_percentage`), `base_calculation_group` (boolean), and `prep_notes`.
+- Enables Row Level Security (RLS) for all new tables.
 
 ---
 
 ### 2. Shared Types (`@soustools/api-types`)
 
-Declare type-safe contracts for layouts, slides, custom options, and display pairings.
+Define type-safe interfaces for recipes, units, conversions, and client timer states.
 
 #### [MODIFY] [packages/api-types/src/index.ts](file:///home/conar/code/sous.tools/packages/api-types/src/index.ts)
 
-Extend interfaces to support the playlist of mixed slide components:
-
-- `SignageLayoutConfig`: supports googleFont, customCss, soldOutBehavior, and array of slides.
-- `SignageSlide`: discriminated union of `MenuSlide`, `ImageSlide`, `VideoSlide`, `IframeSlide`, and `PowerpointSlide`.
-- `SignageOverlay`: positions absolute badges/labels over the slides.
+Add interfaces for:
+- `VesselProfile`: `id`, `name`, `shape`, `dimensions`, `volumeMl`.
+- `MasterIngredient`: `id`, `name`, `densityGMl`, `nutritionMacros`, `allergens`.
+- `Recipe`: `id`, `title`, `yieldCount`, `yieldUnit`, `defaultVesselId`, `instructions`.
+- `RecipeIngredient`: `id`, `recipeId`, `masterIngredientId`, `amount`, `unit`, `calculationType`, `baseCalculationGroup`, `prepNotes`, `masterIngredient?`.
+- `KitchenTimerState`: `id`, `stepIndex`, `durationSeconds`, `startedAt`, `pausedAt`, `elapsedSeconds`, `isActive`.
 
 ---
 
 ### 3. NestJS Backend API (`apps/api`)
 
-Add backend endpoints, controller logic, and a Socket.io gateway for real-time invalidation.
+Build CRUD endpoints and calculation engines in the backend api.
 
-#### [NEW] [apps/api/src/modules/signage/signage.gateway.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/signage/signage.gateway.ts)
+#### [NEW] [apps/recipe/recipe.module.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/recipe/recipe.module.ts)
+#### [NEW] [apps/recipe/recipes.controller.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/recipe/recipes.controller.ts)
+#### [NEW] [apps/recipe/recipes.service.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/recipe/recipes.service.ts)
 
-Socket.io Gateway allowing TV displays to join room `display:[id]` and receive `layout_updated` notifications.
+Endpoints to manage recipes:
+- `GET /recipes`: Retrieve recipes.
+- `GET /recipes/:id`: Retrieve detailed recipe with join query on ingredients.
+- `POST /recipes`, `PUT /recipes/:id`, `DELETE /recipes/:id`: Manage recipes and nested ingredients.
 
-#### [NEW] [apps/api/src/modules/signage/signage.controller.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/signage/signage.controller.ts)
+#### [NEW] [apps/recipe/ingredients.controller.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/recipe/ingredients.controller.ts)
+#### [NEW] [apps/recipe/ingredients.service.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/recipe/ingredients.service.ts)
 
-CRUD endpoints for layouts, displays, and client pairing:
+Endpoints to manage the master ingredient database:
+- `GET /ingredients`: Search and paginate master ingredients.
+- `POST /ingredients`: Create new master ingredient with density and nutritional details.
+- `PUT /ingredients/:id`: Update ingredient attributes.
 
-- `/signage/layouts`: CRUD operations.
-- `/signage/displays/pair/register`: Client requests a 4-char code.
-- `/signage/displays/pair/confirm`: Admin submits 4-char code to link a display to their organization.
+#### [NEW] [apps/recipe/vessels.controller.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/recipe/vessels.controller.ts)
+#### [NEW] [apps/recipe/vessels.service.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/recipe/vessels.service.ts)
 
-#### [NEW] [apps/api/src/modules/pos-simulator/pos-simulator.controller.ts](file:///home/conar/code/sous.tools/apps/api/src/modules/pos-simulator/pos-simulator.controller.ts)
-
-Mock endpoints to seed/toggle Square catalog items and dispatch webhook event simulations.
-
-#### [MODIFY] [apps/api/src/app.module.ts](file:///home/conar/code/sous.tools/apps/api/src/app.module.ts)
-
-Register the new modules in the root application context.
-
----
-
-### 4. Admin Dashboard (`apps/app`)
-
-Build a beautiful, interactive layout editor, display manager, and POS simulator tab wrapped in a premium responsive dashboard layout.
-
-#### [NEW] [apps/app/src/components/layout/sidebar.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/layout/sidebar.tsx)
-
-Responsive, minimalistic sidebar navigation:
-
-- **Phone**: Hidden by default, slides in from left on drawer toggle, morphs hamburger icon to 'X'.
-- **Tablet**: Permanent icons-only view.
-- **Desktop**: Expanded sidebar (icons + labels) by default, toggleable to collapse/expand.
-
-#### [NEW] [apps/app/src/components/layout/app-bar.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/layout/app-bar.tsx)
-
-Sticky header displaying the current section title, hamburger toggles, and user profile button with dropdown (links to Logout, Profile Settings).
-
-#### [NEW] [apps/app/src/app/dashboard/layout.tsx](file:///home/conar/code/sous.tools/apps/app/src/app/dashboard/layout.tsx)
-
-Next.js sub-layout integrating the Sidebar and AppBar, managing sidebar open/close state, and wrapping children dashboard pages.
-
-#### [NEW] [apps/app/src/components/signage/layout-builder.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/signage/layout-builder.tsx)
-
-Tabbed visual layout builder (file length kept under 150 lines by abstracting sub-panels):
-
-- **Playlist Tab**: Drag-and-drop slide manager (Menu, Image, Video, Web URL).
-- **Design Tab**: Configures column layout, selects highlight items, and sets sold-out options.
-- **Styling Tab**: Custom CSS editor (using a lightweight Monaco-like code block) and Google Fonts dropdown.
-- **Overlays Tab**: Add absolutely-positioned badges/notices.
-
-#### [NEW] [apps/app/src/components/signage/css-helper.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/signage/css-helper.tsx)
-
-Interactive CSS class reference panel. Shows class dictionary, click-to-copy, and click-to-insert preset templates (e.g. Neon Borders, Chalkboard Type, Pulsing Animations).
-
-#### [NEW] [apps/app/src/components/signage/display-manager.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/signage/display-manager.tsx)
-
-Manages active TV devices, lists online status, and features a "Pair Screen" dialog.
-
-#### [NEW] [apps/app/src/components/signage/pos-simulator.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/signage/pos-simulator.tsx)
-
-A simple grid of synced mock menu items with checkboxes to toggle `is_sold_out` state, triggering webhook broadcasts.
+CRUD endpoints to manage global vessel profiles (`/recipes/vessels`).
 
 ---
 
-### 5. TV Signage Player Client (`apps/tv-signage`)
+### 4. Shared Utilities (`packages/ui` & `packages/config`)
 
-Implement the actual display player that receives commands and renders the slides.
+Create shared mathematical logic for scaling and conversions.
 
-#### [MODIFY] [apps/tv-signage/src/app/display/[id]/page.tsx](file:///home/conar/code/sous.tools/apps/tv-signage/src/app/display/[id]/page.tsx)
+#### [NEW] [packages/ui/src/utils/scaling.ts](file:///home/conar/code/sous.tools/packages/ui/src/utils/scaling.ts)
 
-The player logic:
-
-- If display is unpaired, shows pairing code screen.
-- If paired, loads Socket.io and listens for `layout_updated` events.
-- Cycles through configured slides with CSS transitions.
-- Loads Google Fonts and injects custom CSS inside an isolated `<style>` block.
-- Applies chosen sold-out styling overrides (hidden, struck-through, or colored badges) dynamically.
+Unit conversion and recipe scaling utility functions:
+- `convertUnit(amount, fromUnit, toUnit, density)`: Performs mass-volume conversions. Supporting units: `g`, `kg`, `oz`, `lb`, `ml`, `l`, `tsp`, `tbsp`, `cup`.
+- `calculateRecipeScale(ingredients, targetYield, baseYield, targetTotalWeight, targetVesselVolume, defaultVesselVolume, customIngredientWeights)`:
+  - Computes linear multipliers and Baker's percentage baselines.
+  - Applies vessel-aware volumetric ratios.
+  - Computes scaled ingredient amounts.
 
 ---
 
-### 6. Raspberry Pi Kiosk Setup & Deploy
+### 5. Next.js Admin App (`apps/app`)
 
-Add target positioning scripts for Wayland Labwc window mapping.
+Develop the visual builder, recipe listings, vessel configuration tabs, and the responsive Active Kitchen Mode viewer.
 
-#### [NEW] [deploy/pi/kiosk.sh](file:///home/conar/code/sous.tools/deploy/pi/kiosk.sh)
+#### [NEW] [apps/app/src/app/dashboard/recipes/page.tsx](file:///home/conar/code/sous.tools/apps/app/src/app/dashboard/recipes/page.tsx)
 
-Script that starts two Chromium windows with customized titles:
+Recipe grid view displaying details, target default yields, default vessels, and quick action buttons.
 
-- Title `SignageDisplay1` opens `http://localhost:3000/display/[id-1]`
-- Title `SignageDisplay2` opens `http://localhost:3000/display/[id-2]`
+#### [NEW] [apps/app/src/app/dashboard/recipes/new/page.tsx](file:///home/conar/code/sous.tools/apps/app/src/app/dashboard/recipes/new/page.tsx)
+#### [NEW] [apps/app/src/app/dashboard/recipes/[id]/edit/page.tsx](file:///home/conar/code/sous.tools/apps/app/src/app/dashboard/recipes/[id]/edit/page.tsx)
 
-#### [NEW] [deploy/pi/labwc-rc.xml](file:///home/conar/code/sous.tools/deploy/pi/labwc-rc.xml)
+Recipe creation/editor forms supporting:
+- Recipe metadata: Title, yield, yield unit, default vessel.
+- Recipe Ingredients builder: Add ingredients, select master ingredients, set amounts/units, select calculation type (`fixed_weight` or `bakers_percentage`), and toggle `base_calculation_group` checkbox.
+- Instructions builder: Step-by-step editor to add instructions and associate timer durations.
 
-Labwc mapping configuration that locks `SignageDisplay1` onto `HDMI-A-1` and `SignageDisplay2` onto `HDMI-A-2` with no decoration and full scale.
+#### [NEW] [apps/app/src/components/recipes/recipe-scaling-panel.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/recipes/recipe-scaling-panel.tsx)
 
-#### [NEW] [deploy/pi/setup.sh](file:///home/conar/code/sous.tools/deploy/pi/setup.sh)
+Panel for interactive scaling:
+- Yield multiplier inputs.
+- Target batch weight inputs.
+- Single ingredient weight overrides (anchoring).
+- Vessel swap dropdown.
 
-One-line curl installer script that automates Raspberry Pi initialization:
+#### [NEW] [apps/app/src/components/recipes/compliance-search.tsx](file:///home/conar/code/sous.tools/apps/app/src/components/recipes/compliance-search.tsx)
 
-- Installs Labwc, Docker, Chromium-browser, and Watchtower.
-- Sets up systemd service to run `kiosk.sh` on boot.
-- Installs Watchtower cron for automatic updates.
+Ingredient modal integrated with Open Food Facts search. Queries the API and auto-fills macro values (protein, carbs, fat, calories) and flags matching allergens.
+
+#### [NEW] [apps/app/src/app/dashboard/recipes/[id]/kitchen/page.tsx](file:///home/conar/code/sous.tools/apps/app/src/app/dashboard/recipes/[id]/kitchen/page.tsx)
+
+Active Kitchen Mode interface:
+- High-visibility single-column step-by-step layout.
+- Screen Wake Lock API integration to keep tablet screens awake in the kitchen.
+- Large touch targets for crossing off steps.
+- Local floating timer overlay. Persists timer state (elapsed time relative to system clock) in `localStorage` so timers survive refreshes/reloads.
+
+#### [NEW] [apps/app/src/app/dashboard/recipes/vessels/page.tsx](file:///home/conar/code/sous.tools/apps/app/src/app/dashboard/recipes/vessels/page.tsx)
+
+Vessel profile manager interface allowing bakers to configure shapes, dimensions (width, length, height, diameter), and calculate pans' volume capacities.
 
 ---
 
@@ -182,12 +136,14 @@ One-line curl installer script that automates Raspberry Pi initialization:
 
 ### Automated Tests
 
-1. **Vitest Unit Tests**: Implement unit tests for the layout config parser and slide transition scheduler in `apps/tv-signage`.
-2. **NestJS Gateway Tests**: Test Socket.io event broadcasting and pairing registration flows.
+1. **Vitest Unit Tests**:
+   - `packages/ui/src/utils/scaling.test.ts`: Verify unit conversion correctness (including density coefficients) and linear vs. Baker's percentage scaling edge-cases.
+2. **NestJS API Tests**:
+   - `apps/api/src/modules/recipe/recipe.spec.ts`: Verify REST CRUD endpoints for recipes, ingredients, and vessel profiles.
 
 ### Manual Verification
 
-1. Open the Admin App dashboard and pair two TV displays.
-2. Toggle an item's sold-out state in the POS Simulator tab and verify the TV displays update instantly.
-3. Inject custom CSS (e.g. `.menu-item { color: orange; font-weight: bold; }`) and verify it renders instantly on the TV screen.
-4. Verify slide transitions work correctly when playlists combine Menus, Images, and custom Web Pages.
+1. **Vessel Scaling**: Create a recipe with a default round pan vessel profile, swap it to a rectangular pan profile in the scaling panel, and verify ingredient weights scale according to volume differences.
+2. **Baker's Percentages**: Verify that changing a base ingredient's weight recalculates all non-base ingredient weights dynamically relative to the new base total.
+3. **Active Kitchen Mode Timers**: Start a kitchen mode step timer, refresh the browser page, and verify the timer continues running smoothly from the correct elapsed time.
+4. **Open Food Facts Ingestion**: Search for a common food product (e.g. "unsalted butter"), select it, and verify that nutrition macros and allergens are filled in instantly.
