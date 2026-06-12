@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     // Set up auth state change listener to auto-redirect on logout/expiry
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       if (!session) {
         router.push("/login");
       } else if (mounted) {

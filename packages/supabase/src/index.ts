@@ -5,13 +5,26 @@ import {
 } from "@supabase/ssr";
 import { config } from "@soustools/config";
 
+function validateConfig(): void {
+  if (config.IS_MOCK_ENV) {
+    return;
+  }
+  if (!config.SUPABASE_URL || config.SUPABASE_URL.includes("placeholder-project.supabase.co")) {
+    throw new Error(
+      "Supabase configuration is missing or placeholder values are being used. " +
+        "Ensure SUPABASE_URL and SUPABASE_ANON_KEY are correctly configured in Infisical and synced."
+    );
+  }
+}
+
 /**
  * Creates a Supabase client instance for use in browser/client-side components.
  * Automatically loads configurations from `@soustools/config`.
  *
- * @returns {SupabaseClient} Initialized Supabase client.
+ * @returns {any} Initialized Supabase client.
  */
-export function createBrowserClient() {
+export function createBrowserClient(): any {
+  validateConfig();
   return createSupabaseBrowserClient(
     config.SUPABASE_URL,
     config.SUPABASE_ANON_KEY,
@@ -31,9 +44,10 @@ export interface CookieStore {
  * Synchronizes session states using cookies to prevent auth token leaks between requests.
  *
  * @param {CookieStore} cookieStore Active Next.js request cookie store.
- * @returns {SupabaseClient} Request-specific Supabase client.
+ * @returns {any} Request-specific Supabase client.
  */
-export function createServerClient(cookieStore: CookieStore) {
+export function createServerClient(cookieStore: CookieStore): any {
+  validateConfig();
   return createSupabaseServerClient(
     config.SUPABASE_URL,
     config.SUPABASE_ANON_KEY,
@@ -63,6 +77,7 @@ export function createServerClient(cookieStore: CookieStore) {
  * @returns {SupabaseClient} Administrative Supabase client.
  */
 export function createAdminClient(serviceRoleKey?: string): SupabaseClient {
+  validateConfig();
   return createClient(
     config.SUPABASE_URL,
     serviceRoleKey || config.SUPABASE_ANON_KEY,
