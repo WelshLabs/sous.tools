@@ -34,10 +34,10 @@ export class IntegrationsController {
       } else {
         throw new Error(`Unsupported provider: ${provider}`);
       }
-      res.redirect("http://localhost:3000/dashboard/settings?tab=integrations&status=success");
+      res.redirect("http://localhost:3000/settings?tab=integrations&status=success");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
-      res.redirect(`http://localhost:3000/dashboard/settings?tab=integrations&status=error&message=${encodeURIComponent(msg)}`);
+      res.redirect(`http://localhost:3000/settings?tab=integrations&status=error&message=${encodeURIComponent(msg)}`);
     }
   }
 
