@@ -135,6 +135,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.7(react@19.2.7)
+      socket.io-client:
+        specifier: ^4.8.3
+        version: 4.8.3
     devDependencies:
       '@playwright/test':
         specifier: ^1.60.0
@@ -268,61 +271,6 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
-  apps/tv-signage:
-    dependencies:
-      '@soustools/api-types':
-        specifier: workspace:*
-        version: link:../../packages/api-types
-      '@soustools/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@soustools/supabase':
-        specifier: workspace:*
-        version: link:../../packages/supabase
-      '@soustools/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@supabase/supabase-js':
-        specifier: ^2.43.0
-        version: 2.108.0
-      next:
-        specifier: ^16.0.0-canary.0
-        version: 16.2.7(@playwright/test@1.60.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      react:
-        specifier: ^19.0.0
-        version: 19.2.7
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.2.7(react@19.2.7)
-      socket.io-client:
-        specifier: ^4.8.3
-        version: 4.8.3
-    devDependencies:
-      '@soustools/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      '@tailwindcss/postcss':
-        specifier: ^4.0.0
-        version: 4.3.0
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.42
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: ^19.0.0
-        version: 19.2.3(@types/react@19.2.17)
-      postcss:
-        specifier: ^8.4.0
-        version: 8.5.15
-      tailwindcss:
-        specifier: ^4.0.0
-        version: 4.3.0
-      typescript:
-        specifier: ^5.4.0
-        version: 5.9.3
-
   packages/api-types: {}
 
   packages/config:
@@ -373,6 +321,9 @@ importers:
 
   packages/ui:
     devDependencies:
+      '@soustools/api-types':
+        specifier: workspace:*
+        version: link:../api-types
       '@soustools/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

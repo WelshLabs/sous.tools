@@ -12,6 +12,10 @@ const nextConfig = {
         destination: "http://localhost:6000/signage/:path*",
       },
       {
+        source: "/api/recipes/:path*",
+        destination: "http://localhost:6000/recipes/:path*",
+      },
+      {
         source: "/api/pos/simulate-webhook",
         destination: "http://localhost:6000/pos-simulator/items/toggle-sold-out",
       },
@@ -20,6 +24,7 @@ const nextConfig = {
         destination: "http://localhost:6000/pos-simulator/:path*",
       },
     ];
+
   },
 };
 

@@ -4,6 +4,7 @@ import { AppService } from "./app.service";
 import { SignageModule } from "./modules/signage/signage.module";
 import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
 import { IntegrationsModule } from "./modules/integrations/integrations.module";
+import { RecipeModule } from "./modules/recipe/recipe.module";
 
 /**
  * Root module of the NestJS application.
@@ -11,8 +12,9 @@ import { IntegrationsModule } from "./modules/integrations/integrations.module";
  * Integrates controllers and providers for the core application.
  */
 @Module({
-  imports: [SignageModule, PosSimulatorModule, IntegrationsModule],
+  imports: [SignageModule, PosSimulatorModule, IntegrationsModule, RecipeModule],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+

@@ -1,85 +1,72 @@
-# TV Signage MVP Walkthrough
+# Hybrid Recipe & Production Engine (Module 2) Walkthrough
 
-We have successfully implemented the fully functional Digital Menu TV Signage system for the **Sous Tools** platform, allowing cafe owners to design mixed-media layout playlists, pair device terminals, and sync POS stock states in real-time.
+We have successfully implemented the core features of the Hybrid Recipe & Production Engine (Module 2) for the **Sous Tools** platform. This system enables bakers and chefs to define ingredient calculations (linear fixed weights and Baker's percentages), configure global vessel profiles (pan volume ratios), perform conversions between mass and volume dynamically based on ingredient densities, and run step-by-step active kitchen timers persisted locally.
 
 ---
 
 ## 1. Architectural Changes Made
 
 ### A. Database Schema & Type Contracts
-- **Schema Script**: Created [`packages/supabase/schema.sql`](file:///home/conar/code/sous.tools/packages/supabase/schema.sql) defining tables for `signage_layouts`, `signage_displays`, and `square_items` with Row Level Security (RLS) policies and seeded the Dtown Cafe organization.
-- **Type Definitions**: Updated [`packages/api-types/src/index.ts`](file:///home/conar/code/sous.tools/packages/api-types/src/index.ts) to define robust contracts for layout configs, slide carousel playlist types (Menu, Image, Video, Iframe), positioning overlays, and displays/POS types.
+- **Schema Script**: Extended [`packages/supabase/schema.sql`](file:///home/conar/code/sous.tools/packages/supabase/schema.sql) to add tables `vessel_profiles`, `master_ingredients`, `recipes`, and `recipe_ingredients`. Seeded the database with sample pans (Pullman pans, round cake pans) and master ingredients (Bread Flour, Yeast, Water, Butter, Milk) with HSL values, densities, and allergens.
+- **Type Definitions**: Split the shared type package [`@soustools/api-types`](file:///home/conar/code/sous.tools/packages/api-types/src/index.ts) into sub-modules (`common.ts`, `signage.ts`, `recipes.ts`) to maintain compliance with the strict 150-line file cap. Declared type-safe interfaces for recipes, units, vessel profiles, and kitchen timer states.
 
-### B. NestJS Backend API & Gateway (`apps/api`)
-- **Gateway**: Created `signage.gateway.ts` using Socket.io to manage room-based TV player connections. Toggling POS items or saving layout changes triggers instant `layout_updated` events.
+### B. Shared Scaling & Conversion Utilities (`packages/ui`)
+- **Unit Conversion**: Implemented `convertUnit` in [`scaling.ts`](file:///home/conar/code/sous.tools/packages/ui/src/utils/scaling.ts) supporting transitions between weight (`g`, `kg`, `oz`, `lb`) and volume (`ml`, `l`, `tsp`, `tbsp`, `cup`) utilizing the ingredient's density coefficient (`density_g_ml`).
+- **Hybrid Recipe Scaling**: Implemented `calculateRecipeScale` which scales recipe ingredients proportionally. Supports linear portion yield, volume capacity ratio swapping (vessel-aware), total batch weight, and anchoring custom weights to individual ingredients. Integrates Baker's percentage calculations relative to base flour groups.
+
+### C. NestJS Backend REST API (`apps/api`)
 - **Controllers & Services**:
-  - `layouts.controller.ts` & `layouts.service.ts`: CRUD for layouts.
-  - `displays.controller.ts` & `displays.service.ts`: Handles physical screens. Implements 4-character pairing code generation (`/pair/register`) and confirmation/linking (`/pair/confirm`).
-  - `pos-simulator.controller.ts`: Endpoint for listing mock items and triggering webhook events.
-- **Security**: Added `SupabaseAuthGuard` for auth verification.
+  - `recipes.controller.ts` & `recipes.service.ts`: Handles recipe CRUD operations and cascades nested ingredient mapping logic.
+  - `ingredients.controller.ts` & `ingredients.service.ts`: Manages master ingredient assets and their nutrition/allergen configurations.
+  - `vessels.controller.ts` & `vessels.service.ts`: Manages global kitchen vessel profiles.
+  - Registered all under `RecipeModule` within the main `AppModule`.
 
-### C. Responsive Admin Layout Shell (`apps/app`)
-- **Sidebar**: Created `sidebar.tsx` with a morphing hamburger button (lines to X using Tailwind transitions). Responsive modes:
-  - **Phone**: Hidden drawer sliding open from the left.
-  - **Tablet**: Permanent icons-only view.
-  - **Desktop**: Collapsible sidebar showing icons and labels.
-- **AppBar**: Created `app-bar.tsx` displaying the current section title, toggle triggers, and a user profile button with settings and logout dropdowns.
-- **Sub-layout**: Created `layout.tsx` under `apps/app/src/app/dashboard/` incorporating the sidebar, app bar, and client-side session authentication redirect gates.
-
-### D. Visual Signage Designer & POS Simulator (`apps/app`)
-- **Layout Builder**: Created `layout-builder.tsx` tabbed views:
-  - **Playlist Tab**: Reorder slides (Menu, Image, Video, URL) using `@hello-pangea/dnd`.
-  - **Design Tab**: Select highlight items, fonts, and sold-out behaviors (Strike, Gray Out, Hide, Label).
-  - **Styling Tab**: Custom CSS editor with code references.
-  - **Overlays Tab**: Build absolute floating layers.
-- **CSS Helper**: Created `css-helper.tsx` sidebar containing classes dictionary, copy triggers, and one-click style templates (neon borders, chalk theme).
-- **POS Simulator**: Created `pos-simulator.tsx` layout allowing owners to toggle items `is_sold_out` status, immediately invalidating TV DOM states.
-- **Display Manager**: Created `display-manager.tsx` showing active terminals, pairing state, and Enter-Code modal.
-
-### E. TV Signage Player Client (`apps/tv-signage`)
-- **Player Screen**: Refactored `apps/tv-signage/src/app/display/[id]/page.tsx` into modular chunks:
-  - Displays a glassmorphic 4-character pairing code screen if unpaired.
-  - Subscribes to Socket.io events and joins the target display room.
-  - Cycles slide types (Menus, Images, Videos, Iframes) using transition timers.
-  - Dynamically injects Google Font links and custom CSS style overrides.
-  - Applies custom sold-out styling configurations (opacity decrease, badges, strikethroughs).
-  - Caches last known layouts/menus in LocalStorage to maintain playback during drops.
-
-### F. Raspberry Pi 5 Kiosk Setup Scripts (`deploy/pi`)
-- **`kiosk.sh`**: Launches two Chromium windows with titles `SignageDisplay1` and `SignageDisplay2` pointing to display URLs.
-- **`labwc-rc.xml`**: Labwc window configuration locking windows onto `HDMI-A-1` and `HDMI-A-2` with no border.
-- **`setup.sh`**: One-line setup installer installing packages, setting up the systemd service on boot, and setting up Watchtower.
+### D. Frontend Interfaces (`apps/app`)
+- **Vessel Profile Manager**: Created a dashboard interface under `/recipes/vessels` allowing users to configure circular/rectangular pans and auto-calculate volume capacities.
+- **Recipe Builder & List**: Created recipe inventory catalog and creation/edit forms supporting nested ingredient adding, unit picking, baseline flour toggles, and step durations.
+- **Recipe Viewer & Scaling Panel**: Added detailed page allowing chefs to toggle between scaling models (yield, total batch weight, vessel swap, or individual ingredient overrides) in real-time.
+- **Compliance Ingestion**: Integrated browser-based search modal query to the free Open Food Facts API to auto-fill nutritional macros and allergen tags.
+- **Active Kitchen Mode**: Created fullscreen step checklist utilizing browser Wake Lock API, large touch targets, and `localStorage` persistent step timers.
 
 ---
 
 ## 2. Verification & Validation Results
 
-### A. Environment Audit
-We ran the secret isolation audit via `pnpm audit:secrets` and confirmed full compliance with configuration guidelines:
+### A. Unit Tests
+We executed the Vitest unit tests in `@soustools/ui` verifying all unit conversions (cross-dimension mass/volume) and scaling calculations (linear and Baker's percentage formulas) with 100% success:
+```bash
+ ✓ src/utils/scaling.test.ts  (10 tests) 7ms
+ ✓ src/components/Button.test.tsx  (2 tests) 87ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+```
+
+We executed the NestJS Jest tests for the new recipe API controllers:
+```bash
+PASS src/modules/recipe/recipe.spec.ts
+PASS src/modules/signage/signage.spec.ts
+PASS src/app.controller.spec.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
+```
+
+### B. Playwright E2E Tests
+We ran the complete Playwright E2E suite, validating login, navigation, vessel manager, and active kitchen step check-offs:
+```bash
+Running 3 tests using 1 worker
+  ✓  1 [chromium] › e2e/recipe.spec.ts:105:7 › Recipe Engine E2E › should navigate to recipes, view, scale, and start active kitchen mode (1.7s)
+  ✓  2 [chromium] › e2e/recipe.spec.ts:135:7 › Recipe Engine E2E › should navigate to vessels manager and see list of vessels (1.4s)
+  ✓  3 [chromium] › e2e/signage.spec.ts:4:7 › TV Signage System E2E › should login, navigate dashboard, and verify signage layout panels (1.7s)
+
+  3 passed (5.7s)
+```
+
+### C. Production Build & Secret Audits
+Compiled the entire monorepo production build (`pnpm build`) and ran the environment secret isolation audit check:
 ```bash
 [@soustools/config] Starting secret isolation audit...
 [@soustools/config] Audit PASSED. No direct environment variable access detected.
 ```
-
-### B. Unit & Integration Tests
-We executed the Vitest and Jest tests in all packages using `pnpm test`, with all tests compiling and passing:
-```bash
-PASS src/modules/signage/signage.spec.ts
-PASS src/app.controller.spec.ts
-
-Test Suites: 2 passed, 2 total
-Tests:       5 passed, 5 total
-Time:        1.137 s
-```
-
-### C. Production Builds
-We ran the monorepo build command `pnpm build`. All Next.js apps (marketing, app, tv-signage, customer-site) and the NestJS api compiled successfully with no type-checking errors.
-
-### D. Clean Code & Guardrail Refactoring Compliance
-To satisfy the strict monorepo constraints, we executed a comprehensive clean-up:
-- **150-Line Limits**: Every single source TypeScript (`.ts`) and TSX (`.tsx`) file in the codebase is now verified to be under the 150-line limit. We successfully abstracted large components, controllers, and services into modular sub-components and helper utilities.
-- **Next.js Rewrite Proxy**: Integrated local Next.js `rewrites` in `apps/app/next.config.js` to automatically forward client-side `/api/*` fetches to the NestJS API server on port 6000.
-- **Resilient Fallbacks**: Updated frontend managers (`DisplayManager`, `PosSimulator`) to detect database fetch exceptions gracefully (e.g. from missing environment variables or placeholder URLs) and seamlessly fall back to local mock payloads.
-- **Pairing Body Bug Fix**: Fixed a mismatch between the frontend body format (`code`) and backend body extractor (`@Body("pairingCode")`) in the display pairing dialogue.
-- **Strict Typing & JSDocs**: Verified all types have explicitly declared interfaces (no `any` variants permitted) and attached complete JSDocs (with `@tenant-docs-export` tags where appropriate) to all exported items.
-- **Verifications**: Ran `pnpm test` and `pnpm build` following the refactoring, with all 8 workspaces passing checks successfully.
+All checks passed cleanly!

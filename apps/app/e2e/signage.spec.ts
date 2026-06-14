@@ -45,7 +45,7 @@ test.describe('TV Signage System E2E', () => {
     await page.click('button:has-text("Sign In")');
 
     // 4. Verify redirection to dashboard page
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/');
     await expect(page.locator('h1')).toContainText('Kitchen Dashboard');
 
     // 5. Verify responsive sidebar rendering and mobile hamburger trigger

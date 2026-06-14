@@ -1,35 +1,27 @@
-# TV Signage MVP Tasks
+# Hybrid Recipe & Production Engine (Module 2) Tasks
 
 - `[x]` Database Schema & Supabase Setup
-  - `[x]` Create `packages/supabase/schema.sql` with signage tables and RLS
-  - `[x]` Seed organization and default admin user
-  - `[x]` Configure public storage bucket `signage-assets`
-- `[x]` Shared Type Definition
-  - `[x]` Update `@soustools/api-types` with layout config structures
-- `[x]` NestJS Backend API & WebSockets (`apps/api`)
-  - `[x]` Build pairing endpoints (`/signage/displays/pair/register`, `/signage/displays/pair/confirm`)
-  - `[x]` Build layout and display CRUD controllers
-  - `[x]` Implement Socket.io gateway for real-time broadcast
-  - `[x]` Implement POS simulator endpoints
-- `[x]` Admin Dashboard UI (`apps/app`)
-  - `[x]` Build responsive sidebar layout with morphing hamburger icon (X vs hamburger)
-  - `[x]` Implement responsive app bar with profile dropdown settings and logout links
-  - `[x]` Create Layout Builder dashboard view
-  - `[x]` Implement playlist drag-and-drop builder
-  - `[x]` Implement Google Fonts and Custom CSS styling panel
-  - `[x]` Create CSS Class Helper dictionary and templates panel
-  - `[x]` Implement displays pairing interface
-  - `[x]` Implement POS Simulator panel
-- `[x]` TV Signage Player Client (`apps/tv-signage`)
-  - `[x]` Update page routing to handle pairing code state
-  - `[x]` Connect socket receiver for live layout updates
-  - `[x]` Build dynamic renderer for slide playlists (Menu, Image, Video, Iframe)
-  - `[x]` Add Google Font dynamic loading and custom CSS injection
-  - `[x]` Add sold-out overlay options (Strike-through, Hide, Badge)
-- `[x]` Raspberry Pi Deployment scripts (`deploy/pi`)
-  - `[x]` Create `kiosk.sh` targeting chromium screens
-  - `[x]` Create `labwc-rc.xml` window mapping rules
-  - `[x]` Create `setup.sh` installer script
-- `[x]` Testing & Verification
-  - `[x]` Create unit tests for layout parsers and transition controllers
-  - `[x]` Perform manual integration testing with POS simulator
+  - `[x]` Add tables `vessel_profiles`, `master_ingredients`, `recipes`, `recipe_ingredients` to schema.sql
+  - `[x]` Enable RLS and define select/write access policies for the new tables
+  - `[x]` Seed sample vessel profiles and master ingredients
+- `[x]` Shared Type Definitions (`@soustools/api-types`)
+  - `[x]` Define `VesselProfile`, `MasterIngredient`, `Recipe`, `RecipeIngredient`, and `KitchenTimerState` interfaces
+- `[x]` Shared Utilities (`packages/ui`)
+  - `[x]` Implement unit conversion utility supporting weight/volume dimensions and density coefficients
+  - `[x]` Implement hybrid scaling calculator (fixed_weight linear vs bakers_percentage bases)
+  - `[x]` Write unit tests for unit conversion and hybrid scaling functions
+- `[x]` NestJS Backend REST API (`apps/api`)
+  - `[x]` Build CRUD controllers and services for `vessel_profiles`
+  - `[x]` Build CRUD controllers and services for `master_ingredients`
+  - `[x]` Build CRUD controllers and services for `recipes` & nested `recipe_ingredients`
+  - `[x]` Implement controller tests verifying DB operations and error paths
+- `[x]` Frontend Interfaces (`apps/app`)
+  - `[x]` Create Vessel Profile Manager UI under `/dashboard/recipes/vessels`
+  - `[x]` Create Recipe Builder (create/edit forms with dynamic ingredient line-items)
+  - `[x]` Create Recipe Viewer & Scaling Panel (supporting target yield, total weight, anchor adjustments, and vessel swaps)
+  - `[x]` Create Open Food Facts autocomplete modal to auto-populate macros/allergens
+  - `[x]` Create Active Kitchen Mode step viewer with wake lock, large touch targets, and localStorage-persisted floating timers
+- `[x]` Verification & E2E Testing
+  - `[x]` Write Playwright E2E test covering recipe creation, scaling panel, and Active Kitchen Mode
+  - `[x]` Verify that all packages compile cleanly under `pnpm build`
+  - `[x]` Ensure Vitest and Jest test suites pass with 100% coverage
