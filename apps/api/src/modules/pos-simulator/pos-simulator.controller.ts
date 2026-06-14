@@ -3,13 +3,10 @@ import { supabase } from "../../lib/supabase";
 import { SignageGateway } from "../signage/signage.gateway";
 import { ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
-import { getMockItems } from "./pos-simulator.helpers";
+import { getMockItems, handleSquareStockToggle, resolveItemDetails } from "./pos-simulator.helpers";
 
 /**
  * Controller simulating Point of Sale (POS) updates from Square.
- *
- * @tenant-docs-export
- * Simulated square events such as item stock toggling can be dispatched here to update displays.
  */
 @Controller("pos-simulator")
 export class PosSimulatorController {
@@ -17,11 +14,6 @@ export class PosSimulatorController {
 
   constructor(private readonly gateway: SignageGateway) {}
 
-  /**
-   * Retrieves all items registered in the simulated POS system.
-   *
-   * @returns Array of POS items.
-   */
   @Get("items")
   async getItems(): Promise<ApiResponse<unknown[]>> {
     return runControllerAction(async () => {
@@ -37,11 +29,6 @@ export class PosSimulatorController {
     });
   }
 
-  /**
-   * Seeds the simulated database with standard menu items.
-   *
-   * @returns Array of seeded POS items.
-   */
   @Post("seed")
   async seedItems(): Promise<ApiResponse<unknown[]>> {
     return runControllerAction(async () => {
@@ -59,23 +46,30 @@ export class PosSimulatorController {
     });
   }
 
-  /**
-   * Toggles the sold out state of a specific menu item.
-   *
-   * @param itemId - The database UUID of the item.
-   * @param squareId - The external Square ID of the item.
-   * @param isSoldOut - The new sold out status.
-   * @returns The updated POS item.
-   */
   @Post("items/toggle-sold-out")
   async toggleSoldOut(
     @Body("itemId") itemId?: string,
     @Body("squareId") squareId?: string,
     @Body("isSoldOut") isSoldOut?: boolean,
+    @Body("quantity") quantity?: number,
+    @Body("unlimited") unlimited?: boolean,
   ): Promise<ApiResponse<unknown>> {
     return runControllerAction(async () => {
       if (isSoldOut === undefined) {
         throw new Error("isSoldOut parameter is required");
+      }
+
+      const { orgId, targetSquareId } = await resolveItemDetails(supabase, itemId, squareId, this.defaultOrgId);
+
+      const { data: integration } = await supabase
+        .from("integrations")
+        .select("access_token")
+        .eq("organization_id", orgId)
+        .eq("provider", "SQUARE")
+        .maybeSingle();
+
+      if (integration && targetSquareId) {
+        await handleSquareStockToggle(targetSquareId, isSoldOut, integration.access_token, quantity, unlimited);
       }
 
       let query = supabase
@@ -87,8 +81,8 @@ export class PosSimulatorController {
 
       if (itemId) {
         query = query.eq("id", itemId);
-      } else if (squareId) {
-        query = query.eq("square_id", squareId);
+      } else if (targetSquareId) {
+        query = query.eq("square_id", targetSquareId);
       } else {
         throw new Error("Either itemId or squareId is required");
       }
@@ -99,7 +93,6 @@ export class PosSimulatorController {
         throw new NotFoundException(error?.message || "Item not found");
       }
 
-      // Find all displays that are paired to broadcast update
       const { data: displays } = await supabase
         .from("signage_displays")
         .select("id")

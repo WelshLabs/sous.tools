@@ -21,6 +21,7 @@ export interface PosItemCardProps {
  *
  * @tenant-docs-export
  * Click on a menu item card in the POS simulator to toggle its availability (In Stock or Sold Out).
+ * Toggling to In Stock will prompt for stock quantities/unlimited tracking options.
  * Updates are broadcast immediately to active signage screens.
  */
 export const PosItemCard: React.FC<PosItemCardProps> = ({

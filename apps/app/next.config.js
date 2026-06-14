@@ -4,6 +4,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/integrations/:path*",
+        destination: "http://localhost:6000/integrations/:path*",
+      },
+      {
         source: "/api/signage/:path*",
         destination: "http://localhost:6000/signage/:path*",
       },

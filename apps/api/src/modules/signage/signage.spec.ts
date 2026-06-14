@@ -18,6 +18,7 @@ jest.mock("../../lib/supabase", () => ({
     eq: jest.fn().mockReturnThis(),
     or: jest.fn().mockReturnThis(),
     single: jest.fn(),
+    maybeSingle: jest.fn(),
     upsert: jest.fn().mockReturnThis(),
   },
 }));
@@ -126,7 +127,6 @@ describe("Signage Module & POS Simulator", () => {
     const mockDisplays = [{ id: "display-1" }, { id: "display-2" }];
 
     // Mock updates and display query
-    const selectMock = jest.fn().mockReturnThis();
     const eqMock = jest.fn().mockReturnThis();
     const singleMock = jest
       .fn()
@@ -135,9 +135,9 @@ describe("Signage Module & POS Simulator", () => {
     const fromMock = jest.fn().mockImplementation((table: string) => {
       if (table === "square_items") {
         return {
+          select: jest.fn().mockReturnThis(),
           update: jest.fn().mockReturnThis(),
           eq: eqMock,
-          select: selectMock,
           single: singleMock,
         };
       }
@@ -145,6 +145,13 @@ describe("Signage Module & POS Simulator", () => {
         return {
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockResolvedValue({ data: mockDisplays, error: null }),
+        };
+      }
+      if (table === "integrations") {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
         };
       }
       return null as any;

@@ -32,6 +32,10 @@ async function sync(): Promise<void> {
 export const secrets = {
   SUPABASE_URL: "https://placeholder-project.supabase.co",
   SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
+  SQUARE_CLIENT_ID: "sandbox-sq0idb-placeholder",
+  SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
+  GOOGLE_CLIENT_ID: "google-client-id-placeholder",
+  GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
 };
 `;
     fs.writeFileSync(SECRETS_FILE_PATH, tsContent, "utf8");
@@ -78,6 +82,18 @@ export const secrets = {
     const supabaseAnonKey = secretsArray.find(
       (s: any) => s.secretKey === "SUPABASE_ANON_KEY",
     )?.secretValue;
+    const squareClientId = secretsArray.find(
+      (s: any) => s.secretKey === "SQUARE_CLIENT_ID",
+    )?.secretValue || "sandbox-sq0idb-placeholder";
+    const squareClientSecret = secretsArray.find(
+      (s: any) => s.secretKey === "SQUARE_CLIENT_SECRET",
+    )?.secretValue || "sandbox-sq0csp-placeholder";
+    const googleClientId = secretsArray.find(
+      (s: any) => s.secretKey === "GOOGLE_CLIENT_ID",
+    )?.secretValue || "google-client-id-placeholder";
+    const googleClientSecret = secretsArray.find(
+      (s: any) => s.secretKey === "GOOGLE_CLIENT_SECRET",
+    )?.secretValue || "google-client-secret-placeholder";
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error(
@@ -89,6 +105,10 @@ export const secrets = {
 export const secrets = {
   SUPABASE_URL: ${JSON.stringify(supabaseUrl)},
   SUPABASE_ANON_KEY: ${JSON.stringify(supabaseAnonKey)},
+  SQUARE_CLIENT_ID: ${JSON.stringify(squareClientId)},
+  SQUARE_CLIENT_SECRET: ${JSON.stringify(squareClientSecret)},
+  GOOGLE_CLIENT_ID: ${JSON.stringify(googleClientId)},
+  GOOGLE_CLIENT_SECRET: ${JSON.stringify(googleClientSecret)},
 };
 `;
 

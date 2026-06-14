@@ -121,3 +121,14 @@ export interface PosItem {
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * Represents the connection status of an external third-party integration.
+ */
+export interface IntegrationStatus {
+  provider: "SQUARE" | "GOOGLE";
+  connected: boolean;
+  connectedAs?: string;
+  details?: Record<string, any>;
+}
+

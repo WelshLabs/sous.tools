@@ -5,11 +5,11 @@ import { PosItem } from "@soustools/api-types";
 import { RotateCw, AlertTriangle } from "lucide-react";
 import { PosItemCard } from "./pos-item-card";
 import { MOCK_POS_ITEMS } from "./mock-data";
-
+import { StockPromptModal } from "./stock-prompt-modal";
 
 /**
  * PosSimulator component provides an interactive panel to simulate POS menu item status changes.
- * It fetches the items and triggers socket updates when they are toggled sold out.
+ * It fetches the items and triggers socket updates when they are toggled.
  *
  * @tenant-docs-export
  * Use the POS Simulator panel to simulate live menu updates from Toast or Square.
@@ -19,6 +19,7 @@ export const PosSimulator: React.FC = () => {
   const [items, setItems] = useState<PosItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [promptItem, setPromptItem] = useState<PosItem | null>(null);
 
   const fetchItems = async (): Promise<void> => {
     setLoading(true);
@@ -28,71 +29,71 @@ export const PosSimulator: React.FC = () => {
         const payload = await res.json();
         if (payload.success) {
           setItems(payload.data || []);
-        } else {
-          setMockItems();
+          return;
         }
-      } else {
-        setMockItems();
       }
+      setItems(MOCK_POS_ITEMS);
     } catch {
-      setMockItems();
+      setItems(MOCK_POS_ITEMS);
     } finally {
       setLoading(false);
     }
-  };
-
-  const setMockItems = (): void => {
-    setItems(MOCK_POS_ITEMS);
   };
 
   useEffect(() => {
     fetchItems();
   }, []);
 
-  const handleToggleSoldOut = async (
+  const updateItemStatus = async (
     itemId: string,
-    currentStatus: boolean,
+    isSoldOut: boolean,
+    quantity?: number,
+    unlimited?: boolean
   ): Promise<void> => {
     setUpdatingId(itemId);
-    const newStatus = !currentStatus;
     try {
       const res = await fetch("/api/pos/simulate-webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId, isSoldOut: newStatus }),
+        body: JSON.stringify({ itemId, isSoldOut, quantity, unlimited }),
       });
-
       if (res.ok) {
         const payload = await res.json().catch(() => ({}));
         if (payload.success) {
           setItems((prev) =>
             prev.map((item) =>
-              item.id === itemId ? { ...item, isSoldOut: newStatus } : item,
-            ),
-          );
-        } else {
-          setItems((prev) =>
-            prev.map((item) =>
-              item.id === itemId ? { ...item, isSoldOut: newStatus } : item,
-            ),
+              item.id === itemId ? { ...item, isSoldOut } : item
+            )
           );
         }
-      } else {
-        setItems((prev) =>
-          prev.map((item) =>
-            item.id === itemId ? { ...item, isSoldOut: newStatus } : item,
-          ),
-        );
       }
-    } catch {
-      setItems((prev) =>
-        prev.map((item) =>
-          item.id === itemId ? { ...item, isSoldOut: newStatus } : item,
-        ),
-      );
+    } catch (e) {
+      console.error(e);
     } finally {
       setUpdatingId(null);
     }
+  };
+
+  const handleToggleSoldOut = async (
+    itemId: string,
+    isSoldOut: boolean
+  ): Promise<void> => {
+    if (isSoldOut) {
+      const item = items.find((i) => i.id === itemId);
+      if (item) setPromptItem(item);
+    } else {
+      await updateItemStatus(itemId, true);
+    }
+  };
+
+  const handleConfirmStock = async (
+    quantity: number | undefined,
+    unlimited: boolean
+  ): Promise<void> => {
+    if (!promptItem) return;
+    const itemId = promptItem.id;
+    setPromptItem(null);
+    await updateItemStatus(itemId, false, quantity, unlimited);
   };
 
   return (
@@ -103,8 +104,7 @@ export const PosSimulator: React.FC = () => {
             <AlertTriangle className="w-5 h-5 text-amber-500" /> POS Simulator Panel
           </h2>
           <p className="text-xs text-slate-400">
-            Simulate Point of Sale menu webhook updates. Changes trigger instant
-            socket push updates.
+            Simulate Point of Sale menu webhook updates. Changes trigger instant socket push updates.
           </p>
         </div>
         <button
@@ -125,15 +125,15 @@ export const PosSimulator: React.FC = () => {
           />
         ))}
       </div>
+
+      <StockPromptModal
+        isOpen={!!promptItem}
+        itemName={promptItem?.name || ""}
+        onClose={() => setPromptItem(null)}
+        onConfirm={handleConfirmStock}
+      />
     </div>
   );
 };
 
-/**
- * Default export of the PosSimulator component.
- *
- * @tenant-docs-export
- * Use the POS Simulator panel to simulate live menu updates from Toast or Square.
- * Toggle items to 'SOLD OUT' to test immediate updates on your digital menu signage boards.
- */
 export default PosSimulator;
