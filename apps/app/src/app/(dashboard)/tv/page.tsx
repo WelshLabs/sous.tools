@@ -79,7 +79,7 @@ export default function TVSignagePage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="-m-6 h-[calc(100vh-4rem)] overflow-hidden">
       <LayoutBuilder
         layoutName="TV Signage"
         initialConfig={layout ? layout.config : undefined}

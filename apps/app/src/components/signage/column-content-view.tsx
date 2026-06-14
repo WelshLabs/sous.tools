@@ -7,12 +7,22 @@ import { Image as ImageIcon, Sparkles } from "lucide-react";
 interface ColumnContentViewProps {
   column: ColumnConfig;
   items: PosItem[];
+  soldOutBehavior?: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
 }
 
-export const ColumnContentView: React.FC<ColumnContentViewProps> = ({ column, items }) => {
-  const selectedItems = (column.itemIds || [])
-    .map(id => items.find(item => item.id === id || item.squareId === id))
+export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
+  column,
+  items,
+  soldOutBehavior = "LABEL",
+}) => {
+  let selectedItems = (column.itemIds || [])
+    .map((id) => items.find((item) => item.id === id || item.squareId === id))
     .filter((item): item is PosItem => !!item);
+
+  // Apply HIDE behavior
+  if (soldOutBehavior === "HIDE") {
+    selectedItems = selectedItems.filter((item) => !item.isSoldOut);
+  }
 
   return (
     <>
@@ -21,19 +31,28 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({ column, it
           {selectedItems.length === 0 ? (
             <span className="text-[10px] text-slate-500 italic block text-center">No items selected</span>
           ) : (
-            selectedItems.map(item => {
-              const isStarred = column.highlightItems?.some(h => 
+            selectedItems.map((item) => {
+              const isStarred = column.highlightItems?.some((h) =>
                 typeof h === "string" ? h === item.id : h.itemId === item.id
               );
+              const isSoldOut = item.isSoldOut;
+              const strikeClass = isSoldOut && soldOutBehavior === "STRIKE" ? "line-through opacity-40" : "";
+              const grayClass = isSoldOut && soldOutBehavior === "GRAY_OUT" ? "grayscale opacity-50" : "";
+
               return (
                 <div
                   key={item.id}
                   className={`p-1.5 rounded flex items-center justify-between text-[10px] ${
                     isStarred ? "bg-primary/20 border border-primary/40" : "bg-white/5"
-                  }`}
+                  } ${strikeClass} ${grayClass}`}
                 >
                   <span className="font-semibold text-white truncate max-w-[70%]">{item.name}</span>
                   <div className="flex items-center gap-1">
+                    {isSoldOut && soldOutBehavior === "LABEL" && (
+                      <span className="bg-red-600 text-white text-[7px] px-1 py-0.5 rounded font-black uppercase">
+                        Sold Out
+                      </span>
+                    )}
                     {isStarred && <Sparkles className="w-3 h-3 text-yellow-400 fill-yellow-400" />}
                     <span className="text-slate-400 font-mono">${Number(item.price).toFixed(2)}</span>
                   </div>

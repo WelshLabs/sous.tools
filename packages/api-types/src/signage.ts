@@ -73,6 +73,10 @@ export interface ColumnLayoutSlide extends BaseSlide {
   columns: ColumnConfig[];
   /** Optional ratio for 2-column split layouts, e.g. "60/40" or "50/50" */
   splitRatio?: string;
+  /** Slide background color (CSS color string, e.g. "#1a1a2e") */
+  backgroundColor?: string;
+  /** Slide background image URL (applied as CSS background-image) */
+  backgroundImageUrl?: string;
 }
 
 export type SignageSlide = ImageSlide | VideoSlide | IframeSlide | ColumnLayoutSlide;

@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { SignageLayoutConfig, PosItem, SignageSlide, SignageOverlay } from "@soustools/api-types";
-import { Plus } from "lucide-react";
+import { SignageLayoutConfig, PosItem, SignageSlide, ColumnLayoutSlide } from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
 
 export interface LayoutPreviewProps {
@@ -12,7 +11,6 @@ export interface LayoutPreviewProps {
   onUpdateSlide: (index: number, updates: Partial<SignageSlide>) => void;
   isPreviewing?: boolean;
   onOpenContentPanel?: (columnIndex: number) => void;
-  onAddOverlay?: (overlay: SignageOverlay) => void;
 }
 
 export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
@@ -22,9 +20,9 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   onUpdateSlide,
   isPreviewing = false,
   onOpenContentPanel,
-  onAddOverlay,
 }) => {
   const activeSlide = config.slides[activeSlideIndex] ?? config.slides[0];
+  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? (activeSlide as ColumnLayoutSlide) : null;
 
   const fontsToLoad = new Set<string>();
   if (config.googleFont) fontsToLoad.add(config.googleFont);
@@ -40,16 +38,16 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
     ${config.typography?.marketingText ? `.marketing-text { font-family: '${config.typography.marketingText}', sans-serif !important; }` : ""}
   `;
 
-  const handleAddOverlay = () => {
-    const overlay: SignageOverlay = {
-      id: `overlay-${Date.now()}`,
-      type: "TEXT",
-      content: "New Overlay",
-      position: { bottom: "1rem", right: "1rem" },
-      zIndex: 10,
-    };
-    onAddOverlay?.(overlay);
+  // Build background style from active slide settings
+  const bgStyle: React.CSSProperties = {
+    fontFamily: config.googleFont || "inherit",
+    backgroundColor: columnSlide?.backgroundColor ?? "#000000",
   };
+  if (columnSlide?.backgroundImageUrl) {
+    bgStyle.backgroundImage = `url(${columnSlide.backgroundImageUrl})`;
+    bgStyle.backgroundSize = "cover";
+    bgStyle.backgroundPosition = "center";
+  }
 
   return (
     <div className="w-full h-full relative">
@@ -62,10 +60,7 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
       ))}
       <style>{customStyles}</style>
 
-      <div
-        className="w-full h-full relative overflow-hidden bg-black"
-        style={{ fontFamily: config.googleFont || "inherit" }}
-      >
+      <div className="w-full h-full relative overflow-hidden" style={bgStyle}>
         {!activeSlide ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-500 text-sm font-mono">Click + Add Slide to begin</p>
@@ -100,16 +95,6 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
             {o.content}
           </div>
         ))}
-
-        {!isPreviewing && (
-          <button
-            onClick={handleAddOverlay}
-            title="Add overlay"
-            className="absolute bottom-3 right-3 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-zinc-800/90 border border-white/10 text-white/60 hover:text-white hover:bg-zinc-700 transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-        )}
       </div>
     </div>
   );

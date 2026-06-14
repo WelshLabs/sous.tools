@@ -9,6 +9,7 @@ interface PreviewColumnLayoutProps {
   items: PosItem[];
   activeSlideIndex: number;
   onUpdateSlide: (index: number, updates: Partial<SignageSlide>) => void;
+  soldOutBehavior?: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
 }
 
 export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
@@ -16,6 +17,7 @@ export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
   items,
   activeSlideIndex,
   onUpdateSlide,
+  soldOutBehavior = "LABEL",
 }) => {
   const columns = activeSlide.columns || [];
 
@@ -59,6 +61,7 @@ export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
             key={idx}
             column={col}
             items={items}
+            soldOutBehavior={soldOutBehavior}
             onUpdate={(updates) => {
               const newCols = [...columns];
               newCols[idx] = { ...newCols[idx], ...updates };

@@ -12,6 +12,7 @@ interface PreviewColumnEditorProps {
   items: PosItem[];
   onUpdate: (updates: Partial<ColumnConfig>) => void;
   onClear: () => void;
+  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
 }
 
 export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
@@ -19,6 +20,7 @@ export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
   items,
   onUpdate,
   onClear,
+  soldOutBehavior,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -28,7 +30,7 @@ export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
         {column.type === "EMPTY" ? (
           <ColumnEmptyView onUpdate={onUpdate} />
         ) : (
-          <ColumnContentView column={column} items={items} />
+          <ColumnContentView column={column} items={items} soldOutBehavior={soldOutBehavior} />
         )}
       </div>
 

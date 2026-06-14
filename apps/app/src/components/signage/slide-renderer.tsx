@@ -18,6 +18,7 @@ interface SlideRendererProps {
 export const SlideRenderer: React.FC<SlideRendererProps> = ({
   slide,
   items,
+  config,
   activeSlideIndex,
   onUpdateSlide,
   isPreviewing,
@@ -88,6 +89,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
               key={idx}
               column={col}
               items={items}
+              soldOutBehavior={config.soldOutBehavior}
               onUpdate={(updates) => {
                 const newCols = [...slide.columns];
                 newCols[idx] = { ...newCols[idx], ...updates };
