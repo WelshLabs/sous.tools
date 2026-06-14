@@ -35,6 +35,22 @@ test.describe('TV Signage System E2E', () => {
       });
     });
 
+    await page.route('**/api/signage/layouts', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] })
+      });
+    });
+
+    await page.route('**/api/pos/items', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data: [] })
+      });
+    });
+
     // 2. Navigate to login page
     await page.goto('/login');
     await expect(page.locator('h1')).toContainText('Kitchen Login');
@@ -61,16 +77,17 @@ test.describe('TV Signage System E2E', () => {
 
     // 6. Navigate to TV Signage layouts builder page
     await page.click('nav a:has-text("TV Signage")');
-    await expect(page.locator('h2')).toContainText('TV Signage Layouts');
+    await expect(page.locator('text=TV Signage').first()).toBeVisible({ timeout: 15000 });
 
-    // Verify visual designer tab controls exist
-    await expect(page.locator('button:has-text("Playlist")')).toBeVisible();
-    await expect(page.locator('button:has-text("Design")')).toBeVisible();
-    await expect(page.locator('button:has-text("Styling")')).toBeVisible();
+    // Verify new WYSIWYG toolbar controls exist
+    await expect(page.locator('#editor-top-bar-add-slide')).toBeVisible();
+    await expect(page.locator('button:has-text("Styles")')).toBeVisible();
+    await expect(page.locator('button:has-text("Preview")')).toBeVisible();
+    await expect(page.locator('button:has-text("Save")')).toBeVisible();
 
-    // 7. Verify custom CSS Helper dictionary panel
-    await page.click('button:has-text("Styling")');
-    await expect(page.locator('h3:has-text("Class Dictionary")')).toBeVisible();
+    // 7. Verify the Styles panel opens on click
+    await page.click('button:has-text("Styles")');
+    await expect(page.locator('text=Slide Settings').first()).toBeVisible({ timeout: 5000 });
 
     // 8. Verify displays pairing list
     await page.click('nav a:has-text("Devices")');

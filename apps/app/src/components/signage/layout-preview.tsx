@@ -1,114 +1,118 @@
 "use client";
 
 import React from "react";
-import { SignageLayoutConfig } from "@soustools/api-types";
-import { Eye } from "lucide-react";
+import { SignageLayoutConfig, PosItem, SignageSlide, SignageOverlay } from "@soustools/api-types";
+import { Plus } from "lucide-react";
+import { SlideRenderer } from "./slide-renderer";
 
-/**
- * Props for the LayoutPreview component.
- */
 export interface LayoutPreviewProps {
-  /** The current layout configuration to render in the preview canvas. */
   config: SignageLayoutConfig;
+  items: PosItem[];
+  activeSlideIndex: number;
+  onUpdateSlide: (index: number, updates: Partial<SignageSlide>) => void;
+  isPreviewing?: boolean;
+  onOpenContentPanel?: (columnIndex: number) => void;
+  onAddOverlay?: (overlay: SignageOverlay) => void;
 }
 
-/**
- * LayoutPreview renders a 16:9 preview canvas representing the signage screen output.
- *
- * @tenant-docs-export
- * View a live representation of the configured font, custom styles, active slides, and overlays in the 16:9 preview canvas.
- */
-export const LayoutPreview: React.FC<LayoutPreviewProps> = ({ config }) => {
-  return (
-    <div className="xl:col-span-5 space-y-4">
-      <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-300">
-        <Eye className="w-4 h-4 text-primary" /> Live Preview (16:9 Canvas)
-      </div>
+export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
+  config,
+  items,
+  activeSlideIndex,
+  onUpdateSlide,
+  isPreviewing = false,
+  onOpenContentPanel,
+  onAddOverlay,
+}) => {
+  const activeSlide = config.slides[activeSlideIndex] ?? config.slides[0];
 
-      <div className="relative aspect-video w-full rounded-xl bg-black border border-slate-800 shadow-2xl overflow-hidden flex flex-col justify-center items-center text-center p-4">
-        {config.googleFont && (
-          <link
-            rel="stylesheet"
-            href={`https://fonts.googleapis.com/css2?family=${config.googleFont.replace(
-              /\s+/g,
-              "+",
-            )}&display=swap`}
+  const fontsToLoad = new Set<string>();
+  if (config.googleFont) fontsToLoad.add(config.googleFont);
+  if (config.typography) {
+    Object.values(config.typography).forEach((f) => f && f !== "Inherit" && fontsToLoad.add(f));
+  }
+
+  const customStyles = `
+    ${config.customCss ?? ""}
+    ${config.typography?.menuItemTitle ? `h5, .menu-item-title { font-family: '${config.typography.menuItemTitle}', sans-serif !important; }` : ""}
+    ${config.typography?.menuItemPrice ? `.text-emerald-400, .menu-item-price { font-family: '${config.typography.menuItemPrice}', sans-serif !important; }` : ""}
+    ${config.typography?.menuItemDescription ? `p, .menu-item-desc { font-family: '${config.typography.menuItemDescription}', sans-serif !important; }` : ""}
+    ${config.typography?.marketingText ? `.marketing-text { font-family: '${config.typography.marketingText}', sans-serif !important; }` : ""}
+  `;
+
+  const handleAddOverlay = () => {
+    const overlay: SignageOverlay = {
+      id: `overlay-${Date.now()}`,
+      type: "TEXT",
+      content: "New Overlay",
+      position: { bottom: "1rem", right: "1rem" },
+      zIndex: 10,
+    };
+    onAddOverlay?.(overlay);
+  };
+
+  return (
+    <div className="w-full h-full relative">
+      {Array.from(fontsToLoad).map((font) => (
+        <link
+          key={font}
+          rel="stylesheet"
+          href={`https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`}
+        />
+      ))}
+      <style>{customStyles}</style>
+
+      <div
+        className="w-full h-full relative overflow-hidden bg-black"
+        style={{ fontFamily: config.googleFont || "inherit" }}
+      >
+        {!activeSlide ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-slate-500 text-sm font-mono">Click + Add Slide to begin</p>
+          </div>
+        ) : (
+          <SlideRenderer
+            slide={activeSlide}
+            items={items}
+            config={config}
+            activeSlideIndex={activeSlideIndex}
+            onUpdateSlide={onUpdateSlide}
+            isPreviewing={isPreviewing}
+            onOpenContentPanel={onOpenContentPanel}
           />
         )}
-        <style>{config.customCss || ""}</style>
 
-        <div
-          className="w-full h-full flex flex-col justify-center items-center slide-container relative"
-          style={{ fontFamily: config.googleFont || "inherit" }}
-        >
-          {config.slides.length === 0 ? (
-            <p className="text-slate-600 text-xs font-mono">
-              No Slides added to Playlist
-            </p>
-          ) : (
-            <div className="text-center p-4">
-              <span className="text-[10px] text-slate-500 uppercase font-mono block mb-1">
-                Active Slide Preview
-              </span>
-              {config.slides[0].type === "MENU" && (
-                <div>
-                  <h3 className="text-lg font-bold text-white category-title">
-                    Dinner Specials
-                  </h3>
-                  <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-lg menu-item">
-                    <div className="flex justify-between items-center text-sm">
-                      <span>Truffle Burger</span>
-                      <span className="price-tag font-mono text-emerald-400">
-                        $24.00
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 item-description mt-0.5">
-                      Wagyu, black truffle aioli, gruyère
-                    </p>
-                  </div>
-                </div>
-              )}
-              {config.slides[0].type === "IMAGE" && (
-                <p className="text-xs text-blue-400 italic">
-                  Image Slide: {config.slides[0].imageUrl || "empty url"}
-                </p>
-              )}
-              {config.slides[0].type === "VIDEO" && (
-                <p className="text-xs text-purple-400 italic">
-                  Video Slide: {config.slides[0].videoUrl || "empty url"}
-                </p>
-              )}
-              {config.slides[0].type === "IFRAME" && (
-                <p className="text-xs text-yellow-400 italic">
-                  Iframe URL: {config.slides[0].url || "empty url"}
-                </p>
-              )}
-            </div>
-          )}
+        {(config.overlays ?? []).map((o) => (
+          <div
+            key={o.id}
+            className={`absolute text-[9px] bg-slate-900/80 border border-slate-700 px-1.5 py-0.5 rounded shadow signage-overlay ${o.customCssClass ?? ""}`}
+            style={{
+              top: o.position.top ?? "auto",
+              bottom: o.position.bottom ?? "auto",
+              left: o.position.left ?? "auto",
+              right: o.position.right ?? "auto",
+              zIndex: o.zIndex ?? 10,
+            }}
+          >
+            {o.type === "BADGE" && (
+              <span className="bg-red-500 text-white font-bold px-0.5 rounded mr-0.5 text-[8px]">SOLD OUT</span>
+            )}
+            {o.content}
+          </div>
+        ))}
 
-          {(config.overlays || []).map((o) => (
-            <div
-              key={o.id}
-              className={`absolute text-xs bg-slate-900/80 border border-slate-700 px-2 py-0.5 rounded shadow signage-overlay ${
-                o.customCssClass || ""
-              }`}
-              style={{
-                top: o.position.top || "auto",
-                bottom: o.position.bottom || "auto",
-                left: o.position.left || "auto",
-                right: o.position.right || "auto",
-              }}
-            >
-              {o.type === "BADGE" && (
-                <span className="bg-red-500 text-white font-bold px-1 rounded mr-1">
-                  SOLD OUT
-                </span>
-              )}
-              {o.content}
-            </div>
-          ))}
-        </div>
+        {!isPreviewing && (
+          <button
+            onClick={handleAddOverlay}
+            title="Add overlay"
+            className="absolute bottom-3 right-3 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-zinc-800/90 border border-white/10 text-white/60 hover:text-white hover:bg-zinc-700 transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );
 };
+
+export default LayoutPreview;

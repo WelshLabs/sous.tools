@@ -2,7 +2,7 @@
 
 import React from "react";
 import { SignageSlide, PosItem } from "@soustools/api-types";
-import { MenuSlideRenderer } from "./menu-slide-renderer";
+import { ColumnLayoutRenderer } from "./column-layout-renderer";
 
 interface SlideRendererProps {
   slide: SignageSlide;
@@ -16,10 +16,11 @@ export function SlideRenderer({
   soldOutBehavior,
 }: SlideRendererProps) {
   switch (slide.type) {
-    case "MENU":
+    case "COLUMN_LAYOUT":
       return (
-        <MenuSlideRenderer
-          slide={slide}
+        <ColumnLayoutRenderer
+          columns={slide.columns}
+          splitRatio={slide.splitRatio}
           items={items}
           soldOutBehavior={soldOutBehavior}
         />

@@ -18,7 +18,8 @@ export interface Config {
 const isMockEnv =
   process.env.INFISICAL_MOCK === "true" ||
   process.env.NODE_ENV === "test" ||
-  process.env.VITEST === "true";
+  process.env.VITEST === "true" ||
+  !!(secrets.SUPABASE_URL && secrets.SUPABASE_URL.includes("placeholder-project.supabase.co"));
 
 export const config: Config = Object.freeze({
   SUPABASE_URL: secrets.SUPABASE_URL,

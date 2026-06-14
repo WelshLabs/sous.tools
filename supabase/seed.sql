@@ -7,27 +7,43 @@ ON CONFLICT (id) DO NOTHING;
 -- We insert into auth.users and auth.identities
 INSERT INTO auth.users (
   id,
+  instance_id,
   email,
   encrypted_password,
   email_confirmed_at,
+  confirmed_at,
   role,
   aud,
   raw_app_meta_data,
   raw_user_meta_data,
   created_at,
-  updated_at
+  updated_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change,
+  email_change_token_current,
+  reauthentication_token
 )
 VALUES (
   'd0000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000000',
   'conar@dtown.cafe',
   crypt('password', gen_salt('bf')),
+  now(),
   now(),
   'authenticated',
   'authenticated',
   '{"provider": "email", "providers": ["email"]}'::jsonb,
   '{"role": "authenticated"}'::jsonb,
   now(),
-  now()
+  now(),
+  '',
+  '',
+  '',
+  '',
+  '',
+  ''
 )
 ON CONFLICT (id) DO NOTHING;
 

@@ -1,4 +1,4 @@
-export type SlideType = "MENU" | "IMAGE" | "VIDEO" | "IFRAME";
+export type SlideType = "IMAGE" | "VIDEO" | "IFRAME" | "COLUMN_LAYOUT";
 
 export interface BaseSlide {
   id: string;
@@ -6,11 +6,9 @@ export interface BaseSlide {
   durationSeconds: number;
 }
 
-export interface MenuSlide extends BaseSlide {
-  type: "MENU";
-  layoutTemplate: "GRID" | "SPLIT" | "COLUMNS";
-  highlightItems: string[];
-  customClassOverrides?: Record<string, string>;
+export interface HighlightItemConfig {
+  itemId: string;
+  style?: string;
 }
 
 export interface ImageSlide extends BaseSlide {
@@ -31,7 +29,53 @@ export interface IframeSlide extends BaseSlide {
   url: string;
 }
 
-export type SignageSlide = MenuSlide | ImageSlide | VideoSlide | IframeSlide;
+export interface TypographyConfig {
+  menuItemTitle?: string;
+  menuItemPrice?: string;
+  menuItemDescription?: string;
+  marketingText?: string;
+}
+
+/**
+ * Represents the content in a single zone/column of a COLUMN_LAYOUT slide.
+ * type="MENU" uses itemIds/highlightItems, type="IMAGE" uses imageUrl,
+ * type="VIDEO" uses videoUrl, type="IFRAME" uses iframeUrl,
+ * type="TEXT" uses title/content, type="EMPTY" is a placeholder.
+ */
+export interface ColumnConfig {
+  type: "MENU" | "IMAGE" | "VIDEO" | "IFRAME" | "TEXT" | "EMPTY";
+  // Menu content
+  itemIds?: string[];
+  highlightItems?: (string | HighlightItemConfig)[];
+  // Image content
+  imageUrl?: string;
+  fit?: "cover" | "contain";
+  // Video content
+  videoUrl?: string;
+  loop?: boolean;
+  mute?: boolean;
+  // Iframe content
+  iframeUrl?: string;
+  // Text / marketing content
+  title?: string;
+  content?: string;
+}
+
+/**
+ * COLUMN_LAYOUT is the universal slide container.
+ * - 1 column = Full Screen layout
+ * - 2 columns (no splitRatio) = equal-width split
+ * - 2 columns with splitRatio = e.g. "60/40" weighted split
+ * - 2–4 columns = column grid
+ */
+export interface ColumnLayoutSlide extends BaseSlide {
+  type: "COLUMN_LAYOUT";
+  columns: ColumnConfig[];
+  /** Optional ratio for 2-column split layouts, e.g. "60/40" or "50/50" */
+  splitRatio?: string;
+}
+
+export type SignageSlide = ImageSlide | VideoSlide | IframeSlide | ColumnLayoutSlide;
 
 export interface SignageOverlay {
   id: string;
@@ -44,6 +88,8 @@ export interface SignageOverlay {
     right?: string;
   };
   customCssClass?: string;
+  /** Z-index for layering overlays above or below content. Defaults to 10. */
+  zIndex?: number;
 }
 
 /**
@@ -61,6 +107,8 @@ export interface SignageLayoutConfig {
   slides: SignageSlide[];
   /** Absolutely positioned layers overlayed on slides. */
   overlays?: SignageOverlay[];
+  /** Typography overrides for individual element types. */
+  typography?: TypographyConfig;
 }
 
 /**
@@ -76,3 +124,24 @@ export interface SignageDisplay {
   lastSeenAt: string | null;
   createdAt: string;
 }
+
+/**
+ * A legacy MenuSlide shape (from before the COLUMN_LAYOUT migration).
+ * Used only by the migration function in the editor — not stored in the DB.
+ */
+export interface LegacyMenuSlide extends Omit<BaseSlide, "type"> {
+  type: "MENU";
+  layoutTemplate: "GRID" | "SPLIT" | "COLUMNS";
+  itemIds?: string[];
+  highlightItems: (string | HighlightItemConfig)[];
+}
+
+/**
+ * Raw record shape stored in DB (may include legacy MENU type).
+ * The editor migrates this on load to the current SignageLayoutConfig shape.
+ */
+export interface RawSignageLayoutConfig extends Omit<SignageLayoutConfig, "slides"> {
+  slides: (SignageSlide | LegacyMenuSlide)[];
+}
+
+

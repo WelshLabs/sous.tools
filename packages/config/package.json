@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "secrets:sync": "tsx src/sync.ts",
+    "secrets:sync": "tsx src/sync.ts && tsc",
     "build": "tsc"
   },
   "dependencies": {

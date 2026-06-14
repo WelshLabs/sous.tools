@@ -17,15 +17,37 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
     const config = layout?.config;
     if (!config) return;
 
+    // Aggregate all unique Google Fonts to load
+    const fontsToLoad = new Set<string>();
     if (config.googleFont) {
-      const fontId = "signage-dynamic-font";
-      document.getElementById(fontId)?.remove();
-      const link = document.createElement("link");
-      link.id = fontId;
-      link.rel = "stylesheet";
-      link.href = `https://fonts.googleapis.com/css2?family=${config.googleFont.replace(/\s+/g, "+")}&display=swap`;
-      document.head.appendChild(link);
+      fontsToLoad.add(config.googleFont);
     }
+    if (config.typography) {
+      const {
+        menuItemTitle,
+        menuItemPrice,
+        menuItemDescription,
+        marketingText,
+      } = config.typography;
+      if (menuItemTitle) fontsToLoad.add(menuItemTitle);
+      if (menuItemPrice) fontsToLoad.add(menuItemPrice);
+      if (menuItemDescription) fontsToLoad.add(menuItemDescription);
+      if (marketingText) fontsToLoad.add(marketingText);
+    }
+
+    // Clean up existing dynamic font links
+    const fontIdPrefix = "signage-dynamic-font";
+    const existingLinks = document.querySelectorAll(`[id^='${fontIdPrefix}']`);
+    existingLinks.forEach((el) => el.remove());
+
+    // Inject links for all unique fonts
+    Array.from(fontsToLoad).forEach((font, idx) => {
+      const link = document.createElement("link");
+      link.id = `${fontIdPrefix}-${idx}`;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`;
+      document.head.appendChild(link);
+    });
 
     const styleId = "signage-custom-css";
     document.getElementById(styleId)?.remove();
@@ -66,7 +88,14 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
   return (
     <main
       className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white"
-      style={{ fontFamily: layout?.config?.googleFont || "inherit" }}
+      style={{
+        fontFamily: layout?.config?.googleFont || "inherit",
+        // CSS variables for typography overrides
+        ["--menu-title-font" as any]: layout?.config?.typography?.menuItemTitle || "inherit",
+        ["--menu-price-font" as any]: layout?.config?.typography?.menuItemPrice || "inherit",
+        ["--menu-description-font" as any]: layout?.config?.typography?.menuItemDescription || "inherit",
+        ["--marketing-text-font" as any]: layout?.config?.typography?.marketingText || "inherit",
+      }}
     >
       <SlideCarousel
         slides={slides}

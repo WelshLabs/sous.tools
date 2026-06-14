@@ -1,143 +1,170 @@
 "use client";
 
-import React, { useState } from "react";
-import { SignageLayoutConfig } from "@soustools/api-types";
-import { Button } from "@soustools/ui";
-import { PlaylistTab } from "./playlist-tab";
-import { DesignTab } from "./design-tab";
-import { StylingTab } from "./styling-tab";
-import { OverlaysTab } from "./overlays-tab";
-import { LayoutPreview } from "./layout-preview";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Save,
-  Palette,
-  ListOrdered,
-  Settings,
-  Layers,
-} from "lucide-react";
+  SignageLayoutConfig,
+  RawSignageLayoutConfig,
+  SignageSlide,
+  PosItem,
+} from "@soustools/api-types";
+import { EditorTopBar } from "./editor-top-bar";
+import { LayoutPickerModal } from "./layout-picker-modal";
+import { SlideFilmstrip } from "./slide-filmstrip";
+import { RightSidePanel } from "./right-side-panel";
+import { LayoutPreview } from "./layout-preview";
+import { migrateConfig, DEFAULT_CONFIG } from "./config-migration";
 
-/**
- * Props for the LayoutBuilder component.
- */
 export interface LayoutBuilderProps {
-  /** Initial layout configuration payload. */
-  initialConfig?: SignageLayoutConfig;
-  /** Callback triggered when layout updates are saved. */
+  initialConfig?: RawSignageLayoutConfig;
   onSave?: (config: SignageLayoutConfig) => void;
-  /** Name of the layout being edited. */
   layoutName?: string;
+  items: PosItem[];
+  saving?: boolean;
 }
 
-const DEFAULT_CONFIG: SignageLayoutConfig = {
-  googleFont: "Outfit",
-  soldOutBehavior: "LABEL",
-  slides: [],
-  overlays: [],
-  customCss: "",
-};
-
-/**
- * LayoutBuilder component provides the core design and tab environment to build signage screen layouts.
- *
- * @tenant-docs-export
- * Use the Layout Builder to configure menu slides, styles, custom fonts, overlays, and live layouts.
- */
 export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
   initialConfig,
   onSave,
-  layoutName = "Digital Menu Layout",
+  layoutName = "TV Signage",
+  items,
+  saving = false,
 }) => {
   const [config, setConfig] = useState<SignageLayoutConfig>(
-    initialConfig || DEFAULT_CONFIG,
+    initialConfig ? migrateConfig(initialConfig) : DEFAULT_CONFIG
   );
-  const [activeTab, setActiveTab] = useState<
-    "playlist" | "design" | "styling" | "overlays"
-  >("playlist");
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const isLooping = true;
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [rightPanelMode, setRightPanelMode] = useState<"styles" | "content" | null>(null);
 
-  const updateConfig = (updates: Partial<SignageLayoutConfig>): void => {
-    setConfig((prev) => ({ ...prev, ...updates }));
+  const updateConfig = useCallback(
+    (updates: Partial<SignageLayoutConfig>) => setConfig((p) => ({ ...p, ...updates })),
+    []
+  );
+
+  const selectSlide = (index: number) => {
+    setActiveSlideIndex(index);
+    setIsPlaying(false);
   };
 
-  const handleSave = (): void => {
-    if (onSave) {
-      onSave(config);
-    } else {
-      alert("Layout configuration saved successfully!");
-    }
+  const updateSlide = (index: number, updates: Partial<SignageSlide>) => {
+    const newSlides = [...config.slides];
+    newSlides[index] = { ...newSlides[index], ...updates } as SignageSlide;
+    updateConfig({ slides: newSlides });
   };
+
+  // Playback timer
+  useEffect(() => {
+    if (!isPlaying || config.slides.length <= 1) return;
+    const current = config.slides[activeSlideIndex] || config.slides[0];
+    const timer = setTimeout(() => {
+      setActiveSlideIndex((prev) => {
+        if (!isLooping && prev === config.slides.length - 1) {
+          setIsPlaying(false);
+          return prev;
+        }
+        return (prev + 1) % config.slides.length;
+      });
+    }, (current?.durationSeconds || 10) * 1000);
+    return () => clearTimeout(timer);
+  }, [isPlaying, activeSlideIndex, config.slides, isLooping]);
+
+  // ESC key to exit preview
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isPreviewing) setIsPreviewing(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isPreviewing]);
+
+  const totalSlides = config.slides.length;
+  const isStylesOpen = rightPanelMode === "styles";
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 bg-[oklch(0.12_0.02_180)] text-slate-100 rounded-2xl border border-[oklch(0.22_0.02_180)] max-w-7xl mx-auto">
-      <div className="xl:col-span-7 space-y-6">
-        <header className="flex justify-between items-center pb-4 border-b border-slate-800">
-          <div>
-            <h2 className="text-xl font-bold text-slate-100">{layoutName}</h2>
-            <p className="text-xs text-slate-400">
-              Configure layouts, playlist, fonts and overlays.
-            </p>
+    <div className="flex flex-col h-full bg-zinc-950 text-slate-100">
+      <EditorTopBar
+        isPlaying={isPlaying}
+        onTogglePlay={() => setIsPlaying(!isPlaying)}
+        activeSlideIndex={activeSlideIndex}
+        totalSlides={totalSlides}
+        onNextSlide={() => selectSlide((activeSlideIndex + 1) % Math.max(totalSlides, 1))}
+        onPrevSlide={() => selectSlide((activeSlideIndex - 1 + Math.max(totalSlides, 1)) % Math.max(totalSlides, 1))}
+        isPreviewing={isPreviewing}
+        onTogglePreview={() => setIsPreviewing(!isPreviewing)}
+        isStylesOpen={isStylesOpen}
+        onToggleStyles={() => setRightPanelMode(isStylesOpen ? null : "styles")}
+        onAddSlide={() => setIsPickerOpen(true)}
+        saving={saving}
+        onSave={() => onSave?.(config)}
+        layoutName={layoutName}
+      />
+
+      {!isPreviewing ? (
+        <div className="flex-1 relative flex overflow-hidden">
+          <div className={`flex-1 flex flex-col transition-all duration-300 ${rightPanelMode ? "mr-80" : ""}`}>
+            <LayoutPreview
+              config={config}
+              items={items}
+              activeSlideIndex={activeSlideIndex}
+              onUpdateSlide={updateSlide}
+              onOpenContentPanel={() => setRightPanelMode("content")}
+            />
           </div>
-          <Button onClick={handleSave} size="sm">
-            <Save className="w-4 h-4 mr-1.5 inline" /> Save Changes
-          </Button>
-        </header>
+          <RightSidePanel
+            mode={rightPanelMode}
+            config={config}
+            activeSlideIndex={activeSlideIndex}
+            onUpdateConfig={updateConfig}
+            onUpdateSlide={(idx, updates) => updateSlide(idx, updates)}
+            onClose={() => setRightPanelMode(null)}
+            items={items}
+          />
+        </div>
+      ) : (
+        <div className="flex-1 relative">
+          <LayoutPreview
+            config={config}
+            items={items}
+            activeSlideIndex={activeSlideIndex}
+            onUpdateSlide={updateSlide}
+            isPreviewing
+          />
+          <button
+            onClick={() => setIsPreviewing(false)}
+            className="absolute top-4 right-4 z-50 px-4 py-2 bg-zinc-900/90 border border-white/10 rounded-xl text-sm text-slate-200 hover:bg-zinc-800 transition cursor-pointer"
+          >
+            Exit Preview (ESC)
+          </button>
+        </div>
+      )}
 
-        <nav className="flex gap-2 border-b border-slate-800 pb-2">
-          {(["playlist", "design", "styling", "overlays"] as const).map(
-            (tab) => {
-              const Icon = {
-                playlist: ListOrdered,
-                design: Settings,
-                styling: Palette,
-                overlays: Layers,
-              }[tab];
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all capitalize cursor-pointer ${
-                    activeTab === tab
-                      ? "bg-primary text-primary-foreground font-bold"
-                      : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" /> {tab}
-                </button>
-              );
-            },
-          )}
-        </nav>
+      {!isPreviewing && (
+        <SlideFilmstrip
+          slides={config.slides}
+          activeSlideIndex={activeSlideIndex}
+          onSelectSlide={selectSlide}
+          onAddSlide={() => setIsPickerOpen(true)}
+          onRemoveSlide={(i) => {
+            const s = [...config.slides];
+            s.splice(i, 1);
+            updateConfig({ slides: s });
+          }}
+          onReorderSlides={(slides) => updateConfig({ slides })}
+          items={items}
+          config={config}
+        />
+      )}
 
-        <main className="bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] rounded-xl p-4">
-          {activeTab === "playlist" && (
-            <PlaylistTab
-              slides={config.slides}
-              onChange={(slides) => updateConfig({ slides })}
-            />
-          )}
-          {activeTab === "design" && (
-            <DesignTab config={config} onChange={updateConfig} />
-          )}
-          {activeTab === "styling" && (
-            <StylingTab config={config} onChange={updateConfig} />
-          )}
-          {activeTab === "overlays" && (
-            <OverlaysTab
-              overlays={config.overlays || []}
-              onChange={(overlays) => updateConfig({ overlays })}
-            />
-          )}
-        </main>
-      </div>
-
-      <LayoutPreview config={config} />
+      <LayoutPickerModal
+        open={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={(slide) => updateConfig({ slides: [...config.slides, slide] })}
+      />
     </div>
   );
 };
 
-/**
- * Default export of the LayoutBuilder component.
- *
- * @tenant-docs-export
- * Use the Layout Builder to configure menu slides, styles, custom fonts, overlays, and live layouts.
- */
 export default LayoutBuilder;
