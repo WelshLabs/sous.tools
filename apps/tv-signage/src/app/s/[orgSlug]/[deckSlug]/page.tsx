@@ -138,6 +138,10 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
         ["--menu-price-font" as any]: deck.config?.typography?.menuItemPrice || "inherit",
         ["--menu-description-font" as any]: deck.config?.typography?.menuItemDescription || "inherit",
         ["--marketing-text-font" as any]: deck.config?.typography?.marketingText || "inherit",
+        ["--menu-title-color" as any]: deck.config?.typography?.menuItemTitleColor || "inherit",
+        ["--menu-price-color" as any]: deck.config?.typography?.menuItemPriceColor || "inherit",
+        ["--menu-desc-color" as any]: deck.config?.typography?.menuItemDescriptionColor || "inherit",
+        ["--marketing-text-color" as any]: deck.config?.typography?.marketingTextColor || "inherit",
       }}
     >
       <SlideCarousel slides={slides} items={items} soldOutBehavior={soldOutBehavior} />
