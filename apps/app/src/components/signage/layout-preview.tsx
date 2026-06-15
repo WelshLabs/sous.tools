@@ -30,16 +30,27 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
     Object.values(config.typography).forEach((f) => f && f !== "Inherit" && fontsToLoad.add(f));
   }
 
+  // Scope all custom styles and typography selections to .signage-preview-container to prevent bleed
   const customStyles = `
-    ${config.customCss ?? ""}
-    ${config.typography?.menuItemTitle ? `h5, .menu-item-title { font-family: '${config.typography.menuItemTitle}', sans-serif !important; }` : ""}
-    ${config.typography?.menuItemTitleColor ? `h5, .menu-item-title { color: ${config.typography.menuItemTitleColor} !important; }` : ""}
-    ${config.typography?.menuItemPrice ? `.text-emerald-400, .menu-item-price { font-family: '${config.typography.menuItemPrice}', sans-serif !important; }` : ""}
-    ${config.typography?.menuItemPriceColor ? `.text-emerald-400, .menu-item-price { color: ${config.typography.menuItemPriceColor} !important; }` : ""}
-    ${config.typography?.menuItemDescription ? `p, .menu-item-desc { font-family: '${config.typography.menuItemDescription}', sans-serif !important; }` : ""}
-    ${config.typography?.menuItemDescriptionColor ? `p, .menu-item-desc { color: ${config.typography.menuItemDescriptionColor} !important; }` : ""}
-    ${config.typography?.marketingText ? `.marketing-text { font-family: '${config.typography.marketingText}', sans-serif !important; }` : ""}
-    ${config.typography?.marketingTextColor ? `.marketing-text { color: ${config.typography.marketingTextColor} !important; }` : ""}
+    .signage-preview-container {
+      ${config.customCss ?? ""}
+    }
+    .signage-preview-container h5, .signage-preview-container .menu-item-title {
+      ${config.typography?.menuItemTitle ? `font-family: '${config.typography.menuItemTitle}', sans-serif !important;` : ""}
+      ${config.typography?.menuItemTitleColor ? `color: ${config.typography.menuItemTitleColor} !important;` : ""}
+    }
+    .signage-preview-container .text-emerald-400, .signage-preview-container .menu-item-price {
+      ${config.typography?.menuItemPrice ? `font-family: '${config.typography.menuItemPrice}', sans-serif !important;` : ""}
+      ${config.typography?.menuItemPriceColor ? `color: ${config.typography.menuItemPriceColor} !important;` : ""}
+    }
+    .signage-preview-container p, .signage-preview-container .menu-item-desc {
+      ${config.typography?.menuItemDescription ? `font-family: '${config.typography.menuItemDescription}', sans-serif !important;` : ""}
+      ${config.typography?.menuItemDescriptionColor ? `color: ${config.typography.menuItemDescriptionColor} !important;` : ""}
+    }
+    .signage-preview-container .marketing-text {
+      ${config.typography?.marketingText ? `font-family: '${config.typography.marketingText}', sans-serif !important;` : ""}
+      ${config.typography?.marketingTextColor ? `color: ${config.typography.marketingTextColor} !important;` : ""}
+    }
   `;
 
   // Build background style from active slide settings
@@ -72,7 +83,7 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
       ))}
       <style>{customStyles}</style>
 
-      <div className="w-full h-full relative overflow-hidden" style={bgStyle}>
+      <div className="w-full h-full relative overflow-hidden signage-preview-container" style={bgStyle}>
         {!activeSlide ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-500 text-sm font-mono">Click + Add Slide to begin</p>
@@ -88,66 +99,8 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
             onOpenContentPanel={onOpenContentPanel}
           />
         )}
-<<<<<<< Updated upstream
-=======
-        <style>
-          {`
-            .signage-preview-container {
-              ${config.customCss || ""}
-            }
-          `}
-        </style>
 
-        <div
-          className="w-full h-full flex flex-col justify-center items-center slide-container relative signage-preview-container"
-          style={{ fontFamily: config.googleFont || "inherit" }}
-        >
-          {config.slides.length === 0 ? (
-            <p className="text-slate-600 text-xs font-mono">
-              No Slides added to Playlist
-            </p>
-          ) : (
-            <div className="text-center p-4">
-              <span className="text-[10px] text-slate-500 uppercase font-mono block mb-1">
-                Active Slide Preview
-              </span>
-              {config.slides[0].type === "MENU" && (
-                <div>
-                  <h3 className="text-lg font-bold text-white category-title">
-                    Dinner Specials
-                  </h3>
-                  <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-lg menu-item">
-                    <div className="flex justify-between items-center text-sm">
-                      <span>Truffle Burger</span>
-                      <span className="price-tag font-mono text-emerald-400">
-                        $24.00
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 item-description mt-0.5">
-                      Wagyu, black truffle aioli, gruyère
-                    </p>
-                  </div>
-                </div>
-              )}
-              {config.slides[0].type === "IMAGE" && (
-                <p className="text-xs text-blue-400 italic">
-                  Image Slide: {config.slides[0].imageUrl || "empty url"}
-                </p>
-              )}
-              {config.slides[0].type === "VIDEO" && (
-                <p className="text-xs text-purple-400 italic">
-                  Video Slide: {config.slides[0].videoUrl || "empty url"}
-                </p>
-              )}
-              {config.slides[0].type === "IFRAME" && (
-                <p className="text-xs text-yellow-400 italic">
-                  Iframe URL: {config.slides[0].url || "empty url"}
-                </p>
-              )}
-            </div>
-          )}
->>>>>>> Stashed changes
-
+        {/* Overlays */}
         {(config.overlays ?? []).map((o) => (
           <div
             key={o.id}
