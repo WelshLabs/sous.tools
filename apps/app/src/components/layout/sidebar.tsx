@@ -8,7 +8,6 @@ import {
   Tv,
   Smartphone,
   Calculator,
-  Settings,
   LogOut,
   ChefHat,
   Scale,
@@ -20,6 +19,7 @@ export interface SidebarProps {
   isMobileOpen: boolean;
   isDesktopCollapsed: boolean;
   onCloseMobile: () => void;
+  onToggleDesktop: () => void;
 }
 
 const NAV_ITEMS = [
@@ -29,7 +29,6 @@ const NAV_ITEMS = [
   { label: "TV Signage", href: "/tv", icon: Tv },
   { label: "Devices", href: "/devices", icon: Smartphone },
   { label: "POS Simulator", href: "/pos", icon: Calculator },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 /**
@@ -39,6 +38,7 @@ export default function Sidebar({
   isMobileOpen,
   isDesktopCollapsed,
   onCloseMobile,
+  onToggleDesktop,
 }: SidebarProps) {
   const pathname = usePathname();
 
@@ -64,21 +64,20 @@ export default function Sidebar({
           ${isDesktopCollapsed ? "md:w-16" : "md:w-16 lg:w-64"}
         `}
       >
-        {/* Header containing Brand Logo and Hamburger (mobile only) */}
-        <div className="h-16 flex items-center justify-between border-b border-white/5 px-4 overflow-hidden">
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-xl font-bold text-sky-500 font-brand transition-all whitespace-nowrap
-              ${isDesktopCollapsed ? "lg:opacity-0 lg:w-0 overflow-hidden" : "lg:opacity-100"}
+        {/* Header containing Brand Logo and Hamburger */}
+        <div
+          className={`h-16 flex items-center border-b border-white/5 transition-all justify-between px-4
+            ${isDesktopCollapsed ? "md:px-0 md:justify-center" : ""}
+          `}
+        >
+          <div
+            className={`flex items-center gap-2 transition-all
+              ${isDesktopCollapsed ? "md:hidden" : ""}
             `}
-            >
+          >
+            <span className="text-xl font-bold text-sky-500 font-brand whitespace-nowrap">
               SOUS TOOLS
             </span>
-            {isDesktopCollapsed && (
-              <span className="text-xl font-bold text-sky-500 font-brand lg:block hidden">
-                S
-              </span>
-            )}
           </div>
 
           {/* Morphing Hamburger inside Sidebar header on Mobile to close the drawer */}
@@ -87,13 +86,25 @@ export default function Sidebar({
             onClick={onCloseMobile}
             className="md:hidden"
           />
+
+          {/* Hamburger for desktop (to toggle collapse) */}
+          <Hamburger
+            isOpen={!isDesktopCollapsed}
+            onClick={onToggleDesktop}
+            className="hidden md:flex"
+          />
         </div>
 
         {/* Navigation list */}
         <nav className="flex-1 py-4 space-y-1 px-3">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : item.href === "/recipes"
+                ? pathname.startsWith("/recipes") && !pathname.startsWith("/recipes/vessels")
+                : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}

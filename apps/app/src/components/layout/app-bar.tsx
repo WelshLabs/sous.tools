@@ -12,12 +12,8 @@ import { Hamburger } from "./hamburger";
 export interface AppBarProps {
   /** Whether the mobile drawer sidebar is currently open. */
   isMobileOpen: boolean;
-  /** Whether the desktop sidebar is currently collapsed. */
-  isDesktopCollapsed: boolean;
   /** Callback to toggle the mobile drawer sidebar. */
   onToggleMobile: () => void;
-  /** Callback to toggle the desktop sidebar collapse state. */
-  onToggleDesktop: () => void;
 }
 
 /**
@@ -30,9 +26,7 @@ export interface AppBarProps {
  */
 export default function AppBar({
   isMobileOpen,
-  isDesktopCollapsed,
   onToggleMobile,
-  onToggleDesktop,
 }: AppBarProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -50,13 +44,6 @@ export default function AppBar({
           isOpen={isMobileOpen}
           onClick={onToggleMobile}
           className="md:hidden"
-        />
-
-        {/* Desktop Hamburger toggle */}
-        <Hamburger
-          isOpen={!isDesktopCollapsed}
-          onClick={onToggleDesktop}
-          className="hidden md:flex"
         />
       </div>
 

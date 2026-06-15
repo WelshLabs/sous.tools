@@ -81,6 +81,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         isMobileOpen={isMobileOpen}
         isDesktopCollapsed={isDesktopCollapsed}
         onCloseMobile={() => setIsMobileOpen(false)}
+        onToggleDesktop={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
       />
 
       {/* Main Content Pane */}
@@ -91,9 +92,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         <AppBar
           isMobileOpen={isMobileOpen}
-          isDesktopCollapsed={isDesktopCollapsed}
           onToggleMobile={() => setIsMobileOpen(!isMobileOpen)}
-          onToggleDesktop={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
         />
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
       </div>

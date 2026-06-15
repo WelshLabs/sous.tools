@@ -88,6 +88,65 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
             onOpenContentPanel={onOpenContentPanel}
           />
         )}
+<<<<<<< Updated upstream
+=======
+        <style>
+          {`
+            .signage-preview-container {
+              ${config.customCss || ""}
+            }
+          `}
+        </style>
+
+        <div
+          className="w-full h-full flex flex-col justify-center items-center slide-container relative signage-preview-container"
+          style={{ fontFamily: config.googleFont || "inherit" }}
+        >
+          {config.slides.length === 0 ? (
+            <p className="text-slate-600 text-xs font-mono">
+              No Slides added to Playlist
+            </p>
+          ) : (
+            <div className="text-center p-4">
+              <span className="text-[10px] text-slate-500 uppercase font-mono block mb-1">
+                Active Slide Preview
+              </span>
+              {config.slides[0].type === "MENU" && (
+                <div>
+                  <h3 className="text-lg font-bold text-white category-title">
+                    Dinner Specials
+                  </h3>
+                  <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-lg menu-item">
+                    <div className="flex justify-between items-center text-sm">
+                      <span>Truffle Burger</span>
+                      <span className="price-tag font-mono text-emerald-400">
+                        $24.00
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 item-description mt-0.5">
+                      Wagyu, black truffle aioli, gruyère
+                    </p>
+                  </div>
+                </div>
+              )}
+              {config.slides[0].type === "IMAGE" && (
+                <p className="text-xs text-blue-400 italic">
+                  Image Slide: {config.slides[0].imageUrl || "empty url"}
+                </p>
+              )}
+              {config.slides[0].type === "VIDEO" && (
+                <p className="text-xs text-purple-400 italic">
+                  Video Slide: {config.slides[0].videoUrl || "empty url"}
+                </p>
+              )}
+              {config.slides[0].type === "IFRAME" && (
+                <p className="text-xs text-yellow-400 italic">
+                  Iframe URL: {config.slides[0].url || "empty url"}
+                </p>
+              )}
+            </div>
+          )}
+>>>>>>> Stashed changes
 
         {(config.overlays ?? []).map((o) => (
           <div
