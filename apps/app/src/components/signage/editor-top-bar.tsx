@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@soustools/ui";
-import { Play, Pause, ChevronLeft, ChevronRight, Plus, Palette, Eye, Save, RefreshCw, Check, Copy, RefreshCcw } from "lucide-react";
+import { Play, Pause, ChevronLeft, ChevronRight, Plus, Palette, Eye, Save, RefreshCw, Check, Copy, RefreshCcw, ExternalLink } from "lucide-react";
 import { useSaveState } from "./use-save-state";
 
 export interface EditorTopBarProps {
@@ -50,7 +50,9 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
 
   const handleCopySlug = async () => {
     if (!deckSlug) return;
-    const url = `${window.location.origin}/s/dtown-cafe/${deckSlug}`;
+    const isLocal = typeof window !== "undefined" && window.location.hostname === "localhost";
+    const origin = isLocal ? "http://localhost:5003" : window.location.origin;
+    const url = `${origin}/s/dtown-cafe/${deckSlug}`;
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -77,9 +79,20 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             title="Click to rename"
           />
           {deckSlug && (
-            <div className="flex items-center gap-1 pl-1 cursor-pointer text-[10px] text-slate-500 hover:text-slate-300 font-mono transition-colors" onClick={handleCopySlug}>
-              <span className="truncate max-w-[100px]">/s/{deckSlug}</span>
-              {copied ? <Check className="w-2.5 h-2.5 text-green-400" /> : <Copy className="w-2.5 h-2.5" />}
+            <div className="flex items-center gap-1.5 pl-1 text-[10px] font-mono">
+              <span className="cursor-pointer text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-0.5" onClick={handleCopySlug} title="Copy live URL">
+                /s/{deckSlug}
+                {copied ? <Check className="w-2.5 h-2.5 text-green-400" /> : <Copy className="w-2.5 h-2.5" />}
+              </span>
+              <a
+                href={typeof window !== "undefined" && window.location.hostname === "localhost" ? `http://localhost:5003/s/dtown-cafe/${deckSlug}` : `/s/dtown-cafe/${deckSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-500 hover:text-slate-300 transition-colors"
+                title="Open live view in new tab"
+              >
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
             </div>
           )}
         </div>

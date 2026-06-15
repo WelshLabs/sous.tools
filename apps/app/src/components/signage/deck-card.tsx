@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Edit2, Copy, Trash2, Check } from "lucide-react";
+import { Edit2, Copy, Trash2, Check, ExternalLink } from "lucide-react";
 
 interface DeckCardProps {
   deck: any; // using any temporarily to avoid strict type mismatch with database snake_case keys
@@ -24,8 +24,15 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
     }
   };
 
+  const getLiveUrl = (s: string) => {
+    if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+      return `http://localhost:5003/s/dtown-cafe/${s}`;
+    }
+    return `${window.location.origin}/s/dtown-cafe/${s}`;
+  };
+
   const handleCopyUrl = async () => {
-    const url = `${window.location.origin}/s/dtown-cafe/${deck.slug}`;
+    const url = getLiveUrl(deck.slug);
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -94,6 +101,15 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
         >
           Edit
         </button>
+        <a
+          href={getLiveUrl(deck.slug)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 border border-white/10 hover:border-white/25 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          title="Open Live View in New Tab"
+        >
+          <ExternalLink className="w-4 h-4" />
+        </a>
         <button
           onClick={handleCopyUrl}
           className="p-2 border border-white/10 hover:border-white/25 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
