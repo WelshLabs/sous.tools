@@ -34,6 +34,10 @@ export interface TypographyConfig {
   menuItemPrice?: string;
   menuItemDescription?: string;
   marketingText?: string;
+  menuItemTitleColor?: string;
+  menuItemPriceColor?: string;
+  menuItemDescriptionColor?: string;
+  marketingTextColor?: string;
 }
 
 /**
@@ -115,19 +119,6 @@ export interface SignageLayoutConfig {
   typography?: TypographyConfig;
 }
 
-/**
- * Representation of a paired signage display hardware node.
- */
-export interface SignageDisplay {
-  id: string;
-  organizationId: string;
-  name: string;
-  layoutId: string | null;
-  pairingCode: string | null;
-  isPaired: boolean;
-  lastSeenAt: string | null;
-  createdAt: string;
-}
 
 /**
  * A legacy MenuSlide shape (from before the COLUMN_LAYOUT migration).

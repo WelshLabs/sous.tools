@@ -29,12 +29,12 @@ export function MenuItemCard({
   });
 
   let itemClasses =
-    "p-6 rounded-2xl transition-all duration-300 flex flex-col justify-between ";
+    "p-6 rounded-2xl transition-all duration-300 flex flex-col justify-between border ";
   if (isHighlighted) {
     itemClasses +=
-      "glass-card border-[oklch(0.60_0.25_250)]/40 shadow-[0_0_20px_-3px_oklch(0.60_0.25_250)] scale-[1.02] ";
+      "bg-white/10 border-[oklch(0.60_0.25_250)]/40 shadow-[0_0_20px_-3px_oklch(0.60_0.25_250)] scale-[1.02] ";
   } else {
-    itemClasses += "bg-white/5 border border-white/5 ";
+    itemClasses += "bg-white/5 border-white/5 ";
   }
 
   if (item.isSoldOut) {
@@ -60,13 +60,13 @@ export function MenuItemCard({
         <div className="flex justify-between items-start gap-4">
           <h3
             className="text-xl font-bold tracking-tight text-white"
-            style={{ fontFamily: "var(--menu-title-font)" }}
+            style={{ fontFamily: "var(--menu-title-font)", color: "var(--menu-title-color)" }}
           >
             {item.name}
           </h3>
           <span
             className="text-lg font-extrabold text-[oklch(0.70_0.25_150)] whitespace-nowrap"
-            style={{ fontFamily: "var(--menu-price-font)" }}
+            style={{ fontFamily: "var(--menu-price-font)", color: "var(--menu-price-color)" }}
           >
             ${Number(item.price).toFixed(2)}
           </span>
@@ -74,7 +74,7 @@ export function MenuItemCard({
         {item.description && (
           <p
             className="text-sm text-zinc-400 line-clamp-2"
-            style={{ fontFamily: "var(--menu-description-font)" }}
+            style={{ fontFamily: "var(--menu-description-font)", color: "var(--menu-desc-color)" }}
           >
             {item.description}
           </p>

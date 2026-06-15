@@ -9,7 +9,12 @@ import {
 } from "@nestjs/common";
 import { LayoutsService } from "./layouts.service";
 import { ApiResponse, SignageLayoutConfig } from "@soustools/api-types";
+import { runControllerAction } from "./response.helper";
 
+/**
+ * REST controller for signage deck CRUD operations.
+ * Replaces the old signage_layouts table with signage_decks.
+ */
 @Controller("signage/layouts")
 export class LayoutsController {
   private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
@@ -18,110 +23,47 @@ export class LayoutsController {
 
   @Get()
   async findAll(): Promise<ApiResponse<unknown[]>> {
-    try {
-      const data = await this.layoutsService.findAll(this.defaultOrgId);
-      return {
-        success: true,
-        data,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return {
-        success: false,
-        error: message,
-        timestamp: new Date().toISOString(),
-      };
-    }
+    return runControllerAction(() => this.layoutsService.findAll(this.defaultOrgId));
+  }
+
+  @Get("slug/:orgSlug/:deckSlug")
+  async findBySlug(
+    @Param("orgSlug") _orgSlug: string,
+    @Param("deckSlug") deckSlug: string,
+  ): Promise<ApiResponse<unknown>> {
+    return runControllerAction(() =>
+      this.layoutsService.findBySlug(this.defaultOrgId, deckSlug),
+    );
   }
 
   @Get(":id")
   async findOne(@Param("id") id: string): Promise<ApiResponse<unknown>> {
-    try {
-      const data = await this.layoutsService.findOne(id);
-      return {
-        success: true,
-        data,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return {
-        success: false,
-        error: message,
-        timestamp: new Date().toISOString(),
-      };
-    }
+    return runControllerAction(() => this.layoutsService.findOne(id));
   }
 
   @Post()
   async create(
     @Body("name") name: string,
-    @Body("type") type: string,
-    @Body("config") config: SignageLayoutConfig,
   ): Promise<ApiResponse<unknown>> {
-    try {
-      const data = await this.layoutsService.create(
-        this.defaultOrgId,
-        name,
-        type,
-        config,
-      );
-      return {
-        success: true,
-        data,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return {
-        success: false,
-        error: message,
-        timestamp: new Date().toISOString(),
-      };
-    }
+    return runControllerAction(() =>
+      this.layoutsService.create(this.defaultOrgId, name ?? "New Deck"),
+    );
   }
 
   @Put(":id")
   async update(
     @Param("id") id: string,
     @Body("name") name?: string,
-    @Body("type") type?: string,
+    @Body("slug") slug?: string,
     @Body("config") config?: SignageLayoutConfig,
   ): Promise<ApiResponse<unknown>> {
-    try {
-      const data = await this.layoutsService.update(id, name, type, config);
-      return {
-        success: true,
-        data,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return {
-        success: false,
-        error: message,
-        timestamp: new Date().toISOString(),
-      };
-    }
+    return runControllerAction(() =>
+      this.layoutsService.update(id, name, slug, config),
+    );
   }
 
   @Delete(":id")
   async remove(@Param("id") id: string): Promise<ApiResponse<unknown>> {
-    try {
-      const data = await this.layoutsService.remove(id);
-      return {
-        success: true,
-        data,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return {
-        success: false,
-        error: message,
-        timestamp: new Date().toISOString(),
-      };
-    }
+    return runControllerAction(() => this.layoutsService.remove(id));
   }
 }

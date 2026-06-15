@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, NotFoundException } from "@nestjs/common";
+import { Controller, Get, Post, Body, Query, NotFoundException } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { SignageGateway } from "../signage/signage.gateway";
 import { ApiResponse } from "@soustools/api-types";
@@ -15,12 +15,13 @@ export class PosSimulatorController {
   constructor(private readonly gateway: SignageGateway) {}
 
   @Get("items")
-  async getItems(): Promise<ApiResponse<unknown[]>> {
+  async getItems(@Query("organizationId") organizationId?: string): Promise<ApiResponse<unknown[]>> {
     return runControllerAction(async () => {
+      const orgId = organizationId || this.defaultOrgId;
       const { data, error } = await supabase
         .from("square_items")
         .select("*")
-        .eq("organization_id", this.defaultOrgId);
+        .eq("organization_id", orgId);
 
       if (error) {
         throw new Error(error.message);
@@ -93,14 +94,27 @@ export class PosSimulatorController {
         throw new NotFoundException(error?.message || "Item not found");
       }
 
-      const { data: displays } = await supabase
-        .from("signage_displays")
-        .select("id")
-        .eq("is_paired", true);
+      // Broadcast updated config and items list to all decks (players will hot-swap in real-time)
+      const { data: decks } = await supabase
+        .from("signage_decks")
+        .select("id, config")
+        .eq("organization_id", orgId);
 
-      if (displays) {
-        for (const display of displays) {
-          this.gateway.broadcastLayoutUpdate(display.id);
+      const { data: allItems } = await supabase
+        .from("square_items")
+        .select("*")
+        .eq("organization_id", orgId);
+
+      if (decks) {
+        for (const deck of decks) {
+          this.gateway.broadcastDeckUpdate(
+            deck.id as string,
+            deck.config as Parameters<typeof this.gateway.broadcastDeckUpdate>[1],
+          );
+          this.gateway.broadcastItemsUpdate(
+            deck.id as string,
+            allItems || [],
+          );
         }
       }
 

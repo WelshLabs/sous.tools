@@ -1,71 +1,94 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LayoutBuilder } from "../../../components/signage/layout-builder";
-import { RawSignageLayoutConfig, PosItem } from "@soustools/api-types";
-import { MOCK_POS_ITEMS } from "../../../components/signage/mock-data";
-import { RefreshCw } from "lucide-react";
+import { DeckCard } from "../../../components/signage/deck-card";
+import { Plus, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-interface LayoutDbRecord {
-  id: string;
-  name: string;
-  type: string;
-  config: RawSignageLayoutConfig;
-}
-
-/**
- * TVSignagePage mounts the centralized digital layout builder component.
- */
-export default function TVSignagePage() {
-  const [layout, setLayout] = useState<LayoutDbRecord | null>(null);
-  const [items, setItems] = useState<PosItem[]>([]);
+export default function TVSignageListPage() {
+  const [decks, setDecks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const router = useRouter();
 
-  const fetchData = async () => {
+  const fetchDecks = async () => {
     setLoading(true);
     try {
-      const [layoutsRes, itemsRes] = await Promise.all([
-        fetch("/api/signage/layouts").then((r) => r.json()),
-        fetch("/api/pos/items").then((r) => r.json()),
-      ]);
-      if (layoutsRes.success && layoutsRes.data && layoutsRes.data.length > 0) {
-        setLayout(layoutsRes.data[0]);
-      }
-      if (itemsRes.success && itemsRes.data) {
-        setItems(itemsRes.data);
-      } else {
-        setItems(MOCK_POS_ITEMS);
+      const res = await fetch("/api/signage/layouts");
+      const data = await res.json();
+      if (data.success && data.data) {
+        setDecks(data.data);
+      } else if (data.error) {
+        console.error("Failed to load decks:", data.error);
       }
     } catch (err) {
-      console.error("Failed to load page data:", err);
-      setItems(MOCK_POS_ITEMS);
+      console.error("Failed to load decks:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchDecks();
+  }, []);
 
-  const handleSave = async (newConfig: RawSignageLayoutConfig) => {
-    setSaving(true);
+  const handleCreate = async () => {
+    setCreating(true);
     try {
-      const url = layout ? `/api/signage/layouts/${layout.id}` : "/api/signage/layouts";
-      const method = layout ? "PUT" : "POST";
-      const payload = layout
-        ? { name: layout.name, type: layout.type, config: newConfig }
-        : { name: "Main Cafe Menu", type: "SPLIT_SCREEN", config: newConfig };
-      const res = await fetch(url, {
-        method,
+      const name = `Deck ${decks.length + 1}`;
+      const res = await fetch("/api/signage/layouts", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ name }),
       });
       const data = await res.json();
-      if (data.success && data.data) setLayout(data.data);
+      if (data.success && data.data) {
+        router.push(`/tv/${data.data.id}`);
+      } else {
+        alert(data.error || "Failed to create deck");
+      }
     } catch (err) {
-      console.error("Save failed:", err instanceof Error ? err.message : String(err));
+      console.error("Failed to create deck:", err);
+      alert("Network error: Failed to create deck");
     } finally {
-      setSaving(false);
+      setCreating(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this deck?")) return;
+    try {
+      const res = await fetch(`/api/signage/layouts/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDecks((prev) => prev.filter((d) => d.id !== id));
+      } else {
+        alert(data.error || "Failed to delete deck");
+      }
+    } catch (err) {
+      console.error("Failed to delete deck:", err);
+      alert("Network error: Failed to delete deck");
+    }
+  };
+
+  const handleRename = async (id: string, name: string, slug: string) => {
+    try {
+      const res = await fetch(`/api/signage/layouts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, slug }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setDecks((prev) => prev.map((d) => (d.id === id ? data.data : d)));
+      } else {
+        alert(data.error || "Failed to rename deck");
+      }
+    } catch (err) {
+      console.error("Failed to rename deck:", err);
+      alert("Network error: Failed to rename deck");
     }
   };
 
@@ -73,20 +96,55 @@ export default function TVSignagePage() {
     return (
       <div className="flex items-center justify-center min-h-[50vh] text-slate-100">
         <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-        <span className="ml-3 text-sm font-mono">Loading layouts and catalog...</span>
+        <span className="ml-3 text-sm font-mono">Loading decks...</span>
       </div>
     );
   }
 
   return (
-    <div className="-m-6 h-[calc(100vh-4rem)] overflow-hidden">
-      <LayoutBuilder
-        layoutName="TV Signage"
-        initialConfig={layout ? layout.config : undefined}
-        items={items}
-        onSave={handleSave}
-        saving={saving}
-      />
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white font-brand">My Slide Decks</h1>
+          <p className="text-sm text-slate-400 font-sans mt-1">Manage and assign layout decks for digital signage screens.</p>
+        </div>
+        <button
+          onClick={handleCreate}
+          disabled={creating}
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
+        >
+          {creating ? (
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          New Deck
+        </button>
+      </div>
+
+      {decks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-2xl p-16 text-center">
+          <p className="text-slate-400 font-sans mb-4">No slide decks created yet.</p>
+          <button
+            onClick={handleCreate}
+            disabled={creating}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
+          >
+            Create Your First Deck
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {decks.map((deck) => (
+            <DeckCard
+              key={deck.id}
+              deck={deck}
+              onDelete={handleDelete}
+              onRename={handleRename}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

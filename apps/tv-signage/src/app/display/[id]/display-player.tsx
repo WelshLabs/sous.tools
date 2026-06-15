@@ -78,8 +78,8 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
     );
   }
 
-  if (display && !display.isPaired) {
-    return <PairingScreen code={display.pairingCode || "PAIR"} />;
+  if (display && !display.deckId) {
+    return <PairingScreen code={display.id.slice(0, 8).toUpperCase()} />;
   }
 
   const slides = layout?.config?.slides || [];
@@ -95,6 +95,10 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
         ["--menu-price-font" as any]: layout?.config?.typography?.menuItemPrice || "inherit",
         ["--menu-description-font" as any]: layout?.config?.typography?.menuItemDescription || "inherit",
         ["--marketing-text-font" as any]: layout?.config?.typography?.marketingText || "inherit",
+        ["--menu-title-color" as any]: layout?.config?.typography?.menuItemTitleColor || "inherit",
+        ["--menu-price-color" as any]: layout?.config?.typography?.menuItemPriceColor || "inherit",
+        ["--menu-desc-color" as any]: layout?.config?.typography?.menuItemDescriptionColor || "inherit",
+        ["--marketing-text-color" as any]: layout?.config?.typography?.marketingTextColor || "inherit",
       }}
     >
       <SlideCarousel

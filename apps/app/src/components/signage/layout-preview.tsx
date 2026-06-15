@@ -33,16 +33,28 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   const customStyles = `
     ${config.customCss ?? ""}
     ${config.typography?.menuItemTitle ? `h5, .menu-item-title { font-family: '${config.typography.menuItemTitle}', sans-serif !important; }` : ""}
+    ${config.typography?.menuItemTitleColor ? `h5, .menu-item-title { color: ${config.typography.menuItemTitleColor} !important; }` : ""}
     ${config.typography?.menuItemPrice ? `.text-emerald-400, .menu-item-price { font-family: '${config.typography.menuItemPrice}', sans-serif !important; }` : ""}
+    ${config.typography?.menuItemPriceColor ? `.text-emerald-400, .menu-item-price { color: ${config.typography.menuItemPriceColor} !important; }` : ""}
     ${config.typography?.menuItemDescription ? `p, .menu-item-desc { font-family: '${config.typography.menuItemDescription}', sans-serif !important; }` : ""}
+    ${config.typography?.menuItemDescriptionColor ? `p, .menu-item-desc { color: ${config.typography.menuItemDescriptionColor} !important; }` : ""}
     ${config.typography?.marketingText ? `.marketing-text { font-family: '${config.typography.marketingText}', sans-serif !important; }` : ""}
+    ${config.typography?.marketingTextColor ? `.marketing-text { color: ${config.typography.marketingTextColor} !important; }` : ""}
   `;
 
   // Build background style from active slide settings
-  const bgStyle: React.CSSProperties = {
+  const bgStyle: React.CSSProperties & Record<string, string> = {
     fontFamily: config.googleFont || "inherit",
     backgroundColor: columnSlide?.backgroundColor ?? "#000000",
-  };
+    "--menu-title-font": config.typography?.menuItemTitle || "inherit",
+    "--menu-price-font": config.typography?.menuItemPrice || "inherit",
+    "--menu-description-font": config.typography?.menuItemDescription || "inherit",
+    "--marketing-text-font": config.typography?.marketingText || "inherit",
+    "--menu-title-color": config.typography?.menuItemTitleColor || "inherit",
+    "--menu-price-color": config.typography?.menuItemPriceColor || "inherit",
+    "--menu-desc-color": config.typography?.menuItemDescriptionColor || "inherit",
+    "--marketing-text-color": config.typography?.marketingTextColor || "inherit",
+  } as any;
   if (columnSlide?.backgroundImageUrl) {
     bgStyle.backgroundImage = `url(${columnSlide.backgroundImageUrl})`;
     bgStyle.backgroundSize = "cover";

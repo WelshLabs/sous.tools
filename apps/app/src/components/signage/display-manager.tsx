@@ -3,50 +3,114 @@
 import React, { useState, useEffect } from "react";
 import { SignageDisplay } from "@soustools/api-types";
 import { Button } from "@soustools/ui";
-import { Monitor, Wifi, WifiOff, Plus, RefreshCw } from "lucide-react";
+import { Monitor, Plus, RefreshCw } from "lucide-react";
 import { PairDisplayDialog } from "./pair-display-dialog";
-import { MOCK_DISPLAYS } from "./mock-data";
+import { DisplayCard } from "./display-card";
 
+const mapDisplay = (d: Record<string, unknown> | null | undefined): SignageDisplay | null => {
+  if (!d) return null;
+  return {
+    id: String(d.id || ""),
+    organizationId: String(d.organization_id || d.organizationId || ""),
+    name: String(d.name || ""),
+    deviceId: d.device_id !== undefined ? (d.device_id as string | null) : (d.deviceId as string | null),
+    portLabel: d.port_label !== undefined ? (d.port_label as string | null) : (d.portLabel as string | null),
+    deckId: d.deck_id !== undefined ? (d.deck_id as string | null) : (d.deckId as string | null),
+    lastSeenAt: d.last_seen_at !== undefined ? (d.last_seen_at as string | null) : (d.lastSeenAt as string | null),
+    createdAt: String(d.created_at || d.createdAt || ""),
+  };
+};
 
-/**
- * DisplayManager monitors and manages signage devices and pairing codes.
- *
- * @tenant-docs-export
- * Use the Display Manager to manage digital signage devices and monitor their online/offline state.
- */
 export const DisplayManager: React.FC = () => {
   const [displays, setDisplays] = useState<SignageDisplay[]>([]);
+  const [decks, setDecks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showPairModal, setShowPairModal] = useState<boolean>(false);
 
-  const fetchDisplays = async (): Promise<void> => {
+  const fetchData = async (): Promise<void> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/signage/displays");
-      if (res.ok) {
-        const payload = await res.json();
-        if (payload.success) {
-          setDisplays(payload.data || []);
-        } else {
-          setMockData();
-        }
-      } else {
-        setMockData();
+      const [dispRes, deckRes] = await Promise.all([
+        fetch("/api/signage/displays").then((r) => r.json()),
+        fetch("/api/signage/layouts").then((r) => r.json()),
+      ]);
+      if (dispRes.success) {
+        const rawList = dispRes.data || [];
+        setDisplays(rawList.map((d: any) => mapDisplay(d)).filter(Boolean) as SignageDisplay[]);
       }
-    } catch {
-      setMockData();
+      if (deckRes.success) setDecks(deckRes.data || []);
+    } catch (err) {
+      console.error("Failed to load display manager data", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const setMockData = (): void => {
-    setDisplays(MOCK_DISPLAYS);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleDeckAssign = async (displayId: string, deckId: string | null) => {
+    try {
+      const res = await fetch(`/api/signage/displays/${displayId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deckId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const mapped = mapDisplay(data.data);
+        if (mapped) {
+          setDisplays((prev) => prev.map((d) => (d.id === displayId ? mapped : d)));
+        }
+      } else {
+        alert(data.error || "Failed to assign deck");
+      }
+    } catch (err) {
+      console.error("Failed to assign deck", err);
+      alert("Network error: Failed to assign deck");
+    }
   };
 
-  useEffect(() => {
-    fetchDisplays();
-  }, []);
+  const handleAddBrowserDisplay = async () => {
+    const name = prompt("Enter standalone browser display name:", "Browser View");
+    if (!name) return;
+    try {
+      const res = await fetch("/api/signage/displays", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        const mapped = mapDisplay(data.data);
+        if (mapped) {
+          setDisplays((prev) => [...prev, mapped]);
+        }
+      } else {
+        alert(data.error || "Failed to add browser display");
+      }
+    } catch (err) {
+      console.error("Failed to add browser display", err);
+      alert("Network error: Failed to add browser display");
+    }
+  };
+
+  const handleDeleteDisplay = async (id: string) => {
+    if (!confirm("Remove this display terminal?")) return;
+    try {
+      const res = await fetch(`/api/signage/displays/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setDisplays((prev) => prev.filter((d) => d.id !== id));
+      } else {
+        alert(data.error || "Failed to delete display");
+      }
+    } catch (err) {
+      console.error("Failed to delete display", err);
+      alert("Network error: Failed to delete display");
+    }
+  };
 
   const isOnline = (lastSeen: string | null): boolean => {
     if (!lastSeen) return false;
@@ -60,76 +124,37 @@ export const DisplayManager: React.FC = () => {
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
             <Monitor className="w-5 h-5 text-primary" /> Display Manager
           </h2>
-          <p className="text-xs text-slate-400">
-            Monitor live signage terminals and pair new TVs.
-          </p>
+          <p className="text-xs text-slate-400">Monitor live signage terminals, pair TVs, or add browser displays.</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={fetchDisplays}
-            className="p-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
-          >
+          <button onClick={fetchData} className="p-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
+          <Button size="sm" variant="outline" onClick={handleAddBrowserDisplay}>
+            <Plus className="w-4 h-4 mr-1 inline" /> Browser Display
+          </Button>
           <Button size="sm" onClick={() => setShowPairModal(true)}>
-            <Plus className="w-4 h-4 mr-1 inline" /> Pair Screen
+            <Plus className="w-4 h-4 mr-1 inline" /> Pair TV Device
           </Button>
         </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {displays.map((disp) => {
-          const online = isOnline(disp.lastSeenAt);
-          return (
-            <div
-              key={disp.id}
-              className="p-4 rounded-xl bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] flex items-center justify-between"
-            >
-              <div>
-                <h3 className="text-sm font-bold text-slate-200">
-                  {disp.name}
-                </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Layout:{" "}
-                  {disp.layoutId ? `Linked (${disp.layoutId})` : "Unlinked"}
-                </p>
-                <div className="mt-2 flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider">
-                  {disp.isPaired ? (
-                    online ? (
-                      <span className="text-emerald-400 flex items-center gap-1">
-                        <Wifi className="w-3.5 h-3.5" /> Online
-                      </span>
-                    ) : (
-                      <span className="text-slate-500 flex items-center gap-1">
-                        <WifiOff className="w-3.5 h-3.5" /> Offline
-                      </span>
-                    )
-                  ) : (
-                    <span className="text-amber-400">
-                      Unpaired (Code: {disp.pairingCode})
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {displays.map((disp) => (
+          <DisplayCard
+            key={disp.id}
+            display={disp}
+            decks={decks}
+            isOnline={isOnline(disp.lastSeenAt)}
+            onDeckAssign={handleDeckAssign}
+            onDelete={handleDeleteDisplay}
+          />
+        ))}
       </div>
 
-      <PairDisplayDialog
-        isOpen={showPairModal}
-        onClose={() => setShowPairModal(false)}
-        onSuccess={fetchDisplays}
-      />
+      <PairDisplayDialog isOpen={showPairModal} onClose={() => setShowPairModal(false)} onSuccess={fetchData} />
     </div>
   );
 };
 
-/**
- * Default export of the DisplayManager component.
- *
- * @tenant-docs-export
- * Use the Display Manager to manage digital signage devices and monitor their online/offline state.
- */
 export default DisplayManager;
-

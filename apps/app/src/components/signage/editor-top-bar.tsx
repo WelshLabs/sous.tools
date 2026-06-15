@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@soustools/ui";
-import { Play, Pause, ChevronLeft, ChevronRight, Plus, Palette, Eye, Save, RefreshCw, Check } from "lucide-react";
+import { Play, Pause, ChevronLeft, ChevronRight, Plus, Palette, Eye, Save, RefreshCw, Check, Copy, RefreshCcw } from "lucide-react";
 import { useSaveState } from "./use-save-state";
 
 export interface EditorTopBarProps {
@@ -20,19 +20,41 @@ export interface EditorTopBarProps {
   saving: boolean;
   onSave: () => void;
   layoutName: string;
+  deckSlug?: string;
+  isDraft?: boolean;
+  onDiscard?: () => void;
+  onRenameDeck?: (name: string, slug: string) => void;
 }
-
-const activeCls = "bg-white/10 border border-white/20 text-white";
-const inactiveCls = "bg-transparent border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-colors";
-const iconBtnCls = "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer";
 
 export const EditorTopBar: React.FC<EditorTopBarProps> = ({
   isPlaying, onTogglePlay, activeSlideIndex, totalSlides,
   onNextSlide, onPrevSlide, isPreviewing, onTogglePreview,
-  isStylesOpen, onToggleStyles, onAddSlide, saving, onSave, layoutName,
+  isStylesOpen, onToggleStyles, onAddSlide, saving, onSave,
+  layoutName, deckSlug, isDraft, onDiscard, onRenameDeck,
 }) => {
   const saveState = useSaveState(saving);
   const noSlides = totalSlides === 0;
+  const [nameInput, setNameInput] = useState(layoutName);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setNameInput(layoutName);
+  }, [layoutName]);
+
+  const handleNameBlur = () => {
+    if (nameInput.trim() && nameInput.trim() !== layoutName) {
+      const newSlug = deckSlug || nameInput.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      onRenameDeck?.(nameInput.trim(), newSlug);
+    }
+  };
+
+  const handleCopySlug = async () => {
+    if (!deckSlug) return;
+    const url = `${window.location.origin}/s/dtown-cafe/${deckSlug}`;
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const SaveIcon = saveState === "saving"
     ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -40,16 +62,28 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
     ? <Check className="w-3.5 h-3.5 text-green-400" />
     : <Save className="w-3.5 h-3.5" />;
 
-  const saveLabel = saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save";
-
   return (
     <div className="flex items-center justify-between gap-2 h-12 px-3 bg-zinc-950/80 backdrop-blur border-b border-white/5 shrink-0 relative">
-      {/* Left — name · play · nav */}
+      {/* Left — name / slug · play · nav */}
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-xs text-slate-500 font-medium truncate max-w-[120px]" title={layoutName}>
-          {layoutName}
-        </span>
-        <div className="w-px h-4 bg-white/10 mx-1" />
+        <div className="flex flex-col min-w-0">
+          <input
+            type="text"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onBlur={handleNameBlur}
+            onKeyDown={(e) => e.key === "Enter" && handleNameBlur()}
+            className="bg-transparent hover:bg-white/5 border border-transparent hover:border-white/10 rounded px-1 py-0.5 text-white font-bold text-xs focus:bg-zinc-950 focus:border-white/20 focus:outline-none max-w-[150px] truncate"
+            title="Click to rename"
+          />
+          {deckSlug && (
+            <div className="flex items-center gap-1 pl-1 cursor-pointer text-[10px] text-slate-500 hover:text-slate-300 font-mono transition-colors" onClick={handleCopySlug}>
+              <span className="truncate max-w-[100px]">/s/{deckSlug}</span>
+              {copied ? <Check className="w-2.5 h-2.5 text-green-400" /> : <Copy className="w-2.5 h-2.5" />}
+            </div>
+          )}
+        </div>
+        <div className="w-px h-6 bg-white/10 mx-1" />
 
         <button
           id="editor-top-bar-play"
@@ -85,23 +119,44 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
         </Button>
       </div>
 
-      {/* Right — Styles · Preview · Save */}
+      {/* Right — Draft badge · Discard · Styles · Preview · Save */}
       <div className="flex items-center gap-1.5">
+        {isDraft && (
+          <>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 border border-amber-500/25 rounded-md">
+              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+              <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Draft</span>
+            </div>
+            {onDiscard && (
+              <button
+                onClick={onDiscard}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-400 hover:text-white bg-transparent border border-white/10 hover:border-white/20 rounded-md cursor-pointer transition-colors"
+                title="Discard unsaved changes"
+              >
+                <RefreshCcw className="w-3 h-3" /> Discard
+              </button>
+            )}
+          </>
+        )}
         <button id="editor-top-bar-styles" onClick={onToggleStyles}
-          className={`${iconBtnCls} ${isStylesOpen ? activeCls : inactiveCls}`}>
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
+            isStylesOpen ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/10 text-slate-400 hover:text-white"
+          }`}>
           <Palette className="w-3.5 h-3.5" /> Styles
         </button>
         <button id="editor-top-bar-preview" onClick={onTogglePreview}
-          className={`${iconBtnCls} ${isPreviewing ? activeCls : inactiveCls}`}>
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
+            isPreviewing ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/10 text-slate-400 hover:text-white"
+          }`}>
           <Eye className="w-3.5 h-3.5" /> Preview
         </button>
         <button id="editor-top-bar-save" onClick={onSave} disabled={saving}
-          className={`${iconBtnCls} border transition-all disabled:opacity-60 ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-all disabled:opacity-60 ${
             saveState === "saved"
               ? "border-green-500/40 bg-green-500/10 text-green-400"
               : "border-white/10 bg-zinc-900 hover:bg-zinc-800 text-slate-300"
           }`}>
-          {SaveIcon} {saveLabel}
+          {SaveIcon} {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save"}
         </button>
       </div>
     </div>

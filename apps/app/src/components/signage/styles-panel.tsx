@@ -4,11 +4,11 @@ import React, { useState } from "react";
 import {
   SignageLayoutConfig,
   ColumnLayoutSlide,
-  TypographyConfig,
 } from "@soustools/api-types";
 import { Code2 } from "lucide-react";
 import { FontPickerPopover } from "./font-picker-popover";
 import { CssEditorModal } from "./css-editor-modal";
+import { TypographySample, TYPOGRAPHY_SAMPLES, TypographyKey } from "./typography-sample";
 
 export interface StylesPanelProps {
   config: SignageLayoutConfig;
@@ -17,8 +17,6 @@ export interface StylesPanelProps {
   onUpdateSlide: (index: number, updates: Partial<ColumnLayoutSlide>) => void;
 }
 
-type TypographyKey = keyof TypographyConfig;
-
 const SOLD_OUT_DESCRIPTIONS: Record<string, string> = {
   HIDE: "Remove item from display",
   LABEL: "Show a 'SOLD OUT' badge",
@@ -26,40 +24,8 @@ const SOLD_OUT_DESCRIPTIONS: Record<string, string> = {
   GRAY_OUT: "Reduce opacity only",
 };
 
-const TYPOGRAPHY_SAMPLES: { key: TypographyKey; label: string; sample: string }[] = [
-  { key: "menuItemTitle", label: "Title", sample: "Burger & Fries" },
-  { key: "menuItemPrice", label: "Price", sample: "$12.99" },
-  { key: "menuItemDescription", label: "Description", sample: "Hand-crafted with care" },
-  { key: "marketingText", label: "Promo", sample: "Chef's Special" },
-];
-
 const DIVIDER = <div className="border-t border-white/5 my-3" />;
 
-const TypographySample: React.FC<{
-  sample: { key: TypographyKey; label: string; sample: string };
-  font: string | undefined; isOpen: boolean;
-  onToggle: () => void; onSelect: (font: string) => void; onClose: () => void;
-}> = ({ sample, font, isOpen, onToggle, onSelect, onClose }) => (
-  <div className="relative">
-    <p className="text-[10px] text-zinc-500 mb-0.5">{sample.label}</p>
-    <button
-      onClick={onToggle}
-      className="w-full text-left px-2.5 py-2 bg-zinc-800 border border-white/10 rounded-xl hover:border-white/20 transition-all cursor-pointer"
-      style={{ fontFamily: font ?? "inherit" }}
-    >
-      <span className="text-xs text-zinc-100 truncate block">{sample.sample}</span>
-      <span className="text-[9px] text-zinc-500">{font ?? "inherit"}</span>
-    </button>
-    {isOpen && (
-      <FontPickerPopover label={sample.label} currentFont={font} onSelect={onSelect} onClose={onClose} />
-    )}
-  </div>
-);
-
-/**
- * StylesPanel renders slide-specific and global style controls
- * inside the right-side panel when in 'styles' mode.
- */
 export const StylesPanel: React.FC<StylesPanelProps> = ({
   config, activeSlideIndex, onUpdateConfig, onUpdateSlide,
 }) => {
@@ -129,9 +95,19 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
         <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Typography</p>
         <div className="grid grid-cols-2 gap-2">
           {TYPOGRAPHY_SAMPLES.map((s) => (
-            <TypographySample key={s.key} sample={s} font={typography[s.key]}
-              isOpen={openKey === s.key} onToggle={() => setOpenKey(openKey === s.key ? null : s.key)}
-              onSelect={(f) => { updateTypo(s.key, f); setOpenKey(null); }} onClose={() => setOpenKey(null)} />
+            <TypographySample
+              key={s.key}
+              sample={s}
+              font={typography[s.key]}
+              color={typography[s.colorKey]}
+              isOpen={openKey === s.key}
+              onToggle={() => setOpenKey(openKey === s.key ? null : s.key)}
+              onSelect={(f) => { updateTypo(s.key, f); setOpenKey(null); }}
+              onColorChange={(color) => {
+                onUpdateConfig({ typography: { ...typography, [s.colorKey]: color } });
+              }}
+              onClose={() => setOpenKey(null)}
+            />
           ))}
         </div>
 

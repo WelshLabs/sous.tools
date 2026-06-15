@@ -83,13 +83,17 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
             }}
           />
         )}
-        <div className="grid gap-1.5 h-full p-2" style={{ gridTemplateColumns: colTemplate }}>
+        <div
+          className={`grid h-full ${isPreviewing ? "gap-0 p-0" : "gap-1.5 p-2"}`}
+          style={{ gridTemplateColumns: colTemplate }}
+        >
           {slide.columns.map((col, idx) => (
             <PreviewColumnEditor
               key={idx}
               column={col}
               items={items}
               soldOutBehavior={config.soldOutBehavior}
+              isPreviewing={isPreviewing}
               onUpdate={(updates) => {
                 const newCols = [...slide.columns];
                 newCols[idx] = { ...newCols[idx], ...updates };

@@ -13,6 +13,7 @@ interface PreviewColumnEditorProps {
   onUpdate: (updates: Partial<ColumnConfig>) => void;
   onClear: () => void;
   soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  isPreviewing?: boolean;
 }
 
 export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
@@ -21,20 +22,25 @@ export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
   onUpdate,
   onClear,
   soldOutBehavior,
+  isPreviewing = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <div className="relative group flex flex-col h-full bg-slate-950/40 rounded-lg border border-slate-800/80 overflow-hidden min-h-[200px]">
-      <div className="flex-1 p-3 flex flex-col justify-center">
+    <div className={`relative group flex flex-col h-full overflow-hidden ${
+      isPreviewing
+        ? "bg-transparent border-none"
+        : "bg-transparent border border-dashed border-white/10 hover:border-white/20 min-h-[200px]"
+    }`}>
+      <div className={`flex-1 flex flex-col justify-center ${isPreviewing ? "p-0" : "p-3"}`}>
         {column.type === "EMPTY" ? (
-          <ColumnEmptyView onUpdate={onUpdate} />
+          <ColumnEmptyView onUpdate={onUpdate} onOpenEditor={() => setIsEditing(true)} />
         ) : (
           <ColumnContentView column={column} items={items} soldOutBehavior={soldOutBehavior} />
         )}
       </div>
 
-      {column.type !== "EMPTY" && !isEditing && (
+      {column.type !== "EMPTY" && !isEditing && !isPreviewing && (
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
           <button
             onClick={() => setIsEditing(true)}

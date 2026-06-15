@@ -11,7 +11,6 @@ INSERT INTO auth.users (
   email,
   encrypted_password,
   email_confirmed_at,
-  confirmed_at,
   role,
   aud,
   raw_app_meta_data,
@@ -30,7 +29,6 @@ VALUES (
   '00000000-0000-0000-0000-000000000000',
   'conar@dtown.cafe',
   crypt('password', gen_salt('bf')),
-  now(),
   now(),
   'authenticated',
   'authenticated',
@@ -141,20 +139,20 @@ VALUES
   ('f0000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000000', 'item_latte', 'Latte', 'Espresso with steamed milk', 4.50, false)
 ON CONFLICT (organization_id, square_id) DO NOTHING;
 
--- Seed Sample Signage Layouts
-INSERT INTO signage_layouts (id, organization_id, name, type, config)
+-- Seed Sample Signage Deck (replaces signage_layouts)
+INSERT INTO signage_decks (id, organization_id, name, slug, config)
 VALUES (
   'd0000000-0000-0000-0000-000000000010',
   'd0000000-0000-0000-0000-000000000000',
   'Main Cafe Menu',
-  'SPLIT_SCREEN',
-  '{"googleFont": "Outfit", "soldOutBehavior": "LABEL", "customCss": "", "slides": [{"id": "slide-menu-1", "type": "MENU", "durationSeconds": 15, "layoutTemplate": "SPLIT", "itemIds": ["f0000000-0000-0000-0000-000000000001", "f0000000-0000-0000-0000-000000000002", "f0000000-0000-0000-0000-000000000003", "f0000000-0000-0000-0000-000000000004"], "highlightItems": [{"itemId": "f0000000-0000-0000-0000-000000000003", "style": "NEON_GLOW"}]}], "overlays": []}'::jsonb
+  'main-cafe-menu',
+  '{"googleFont": "Outfit", "soldOutBehavior": "LABEL", "customCss": "", "slides": [{"id": "slide-menu-1", "type": "COLUMN_LAYOUT", "durationSeconds": 15, "columns": [{"type": "MENU", "itemIds": ["f0000000-0000-0000-0000-000000000001", "f0000000-0000-0000-0000-000000000002", "f0000000-0000-0000-0000-000000000003", "f0000000-0000-0000-0000-000000000004"], "highlightItems": [{"itemId": "f0000000-0000-0000-0000-000000000003", "style": "NEON_GLOW"}]}]}], "overlays": []}'::jsonb
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Sample Signage Displays
-INSERT INTO signage_displays (id, organization_id, name, layout_id, pairing_code, is_paired, last_seen_at)
+-- Seed Sample Signage Displays (new schema: deck_id, no pairing_code/is_paired)
+INSERT INTO signage_displays (id, organization_id, name, deck_id, device_id, port_label, last_seen_at)
 VALUES
-  ('d0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000000', 'Menu Screen Left', 'd0000000-0000-0000-0000-000000000010', 'A1B2', true, now()),
-  ('d0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000000', 'Menu Screen Right', NULL, 'XYZ1', false, NULL)
+  ('d0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000000', 'Menu Screen Left', 'd0000000-0000-0000-0000-000000000010', NULL, NULL, now()),
+  ('d0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000000', 'Menu Screen Right', NULL, NULL, NULL, NULL)
 ON CONFLICT (id) DO NOTHING;

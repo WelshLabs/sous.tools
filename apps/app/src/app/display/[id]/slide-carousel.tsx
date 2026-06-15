@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { SignageSlide, PosItem } from "@soustools/api-types";
+import { SignageSlide, PosItem, ColumnLayoutSlide } from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
 
 interface SlideCarouselProps {
@@ -58,11 +58,22 @@ export function SlideCarousel({
   }
 
   const activeSlide = slides[visibleIndex];
+  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? (activeSlide as ColumnLayoutSlide) : null;
+
+  const bgStyle: React.CSSProperties = {
+    opacity,
+    backgroundColor: columnSlide?.backgroundColor || "oklch(0.08 0.01 260)",
+  };
+  if (columnSlide?.backgroundImageUrl) {
+    bgStyle.backgroundImage = `url(${columnSlide.backgroundImageUrl})`;
+    bgStyle.backgroundSize = "cover";
+    bgStyle.backgroundPosition = "center";
+  }
 
   return (
     <div
       className="w-full h-full min-h-screen transition-opacity duration-500 ease-in-out"
-      style={{ opacity }}
+      style={bgStyle}
     >
       <SlideRenderer
         slide={activeSlide}

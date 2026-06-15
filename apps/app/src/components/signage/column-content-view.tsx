@@ -42,20 +42,40 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
               return (
                 <div
                   key={item.id}
-                  className={`p-1.5 rounded flex items-center justify-between text-[10px] ${
+                  className={`p-1.5 rounded flex flex-col justify-between gap-1 ${
                     isStarred ? "bg-primary/20 border border-primary/40" : "bg-white/5"
                   } ${strikeClass} ${grayClass}`}
                 >
-                  <span className="font-semibold text-white truncate max-w-[70%]">{item.name}</span>
-                  <div className="flex items-center gap-1">
-                    {isSoldOut && soldOutBehavior === "LABEL" && (
-                      <span className="bg-red-600 text-white text-[7px] px-1 py-0.5 rounded font-black uppercase">
-                        Sold Out
+                  <div className="flex items-center justify-between w-full">
+                    <span
+                      className="font-semibold text-white truncate max-w-[70%]"
+                      style={{ fontFamily: "var(--menu-title-font)", color: "var(--menu-title-color)" }}
+                    >
+                      {item.name}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {isSoldOut && soldOutBehavior === "LABEL" && (
+                        <span className="bg-red-600 text-white text-[7px] px-1 py-0.5 rounded font-black uppercase">
+                          Sold Out
+                        </span>
+                      )}
+                      {isStarred && <Sparkles className="w-3 h-3 text-yellow-400 fill-yellow-400" />}
+                      <span
+                        className="text-slate-400 font-mono"
+                        style={{ fontFamily: "var(--menu-price-font)", color: "var(--menu-price-color)" }}
+                      >
+                        ${Number(item.price).toFixed(2)}
                       </span>
-                    )}
-                    {isStarred && <Sparkles className="w-3 h-3 text-yellow-400 fill-yellow-400" />}
-                    <span className="text-slate-400 font-mono">${Number(item.price).toFixed(2)}</span>
+                    </div>
                   </div>
+                  {item.description && (
+                    <p
+                      className="text-[8px] text-slate-400 line-clamp-2 text-left"
+                      style={{ fontFamily: "var(--menu-description-font)", color: "var(--menu-desc-color)" }}
+                    >
+                      {item.description}
+                    </p>
+                  )}
                 </div>
               );
             })
@@ -82,8 +102,18 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
 
       {column.type === "TEXT" && (
         <div className="text-center space-y-1">
-          <h4 className="text-xs font-bold text-white font-brand">{column.title || "Untitled"}</h4>
-          <p className="text-[10px] text-slate-400 leading-normal">{column.content || "Empty content"}</p>
+          <h4
+            className="text-xs font-bold text-white"
+            style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+          >
+            {column.title || "Untitled"}
+          </h4>
+          <p
+            className="text-[10px] text-slate-400 leading-normal"
+            style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+          >
+            {column.content || "Empty content"}
+          </p>
         </div>
       )}
     </>

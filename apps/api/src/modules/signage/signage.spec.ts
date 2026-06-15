@@ -63,11 +63,12 @@ describe("Signage Module & POS Simulator", () => {
     expect(response.data).toEqual(mockLayouts);
   });
 
-  it("should register pairing code successfully", async () => {
+  it("should create a browser display successfully", async () => {
     const mockDisplay = {
       id: "display-1",
-      pairing_code: "A1B2",
-      is_paired: false,
+      name: "Test TV",
+      deck_id: null,
+      device_id: null,
     };
     (supabase.from as jest.Mock).mockReturnValue({
       insert: jest.fn().mockReturnThis(),
@@ -75,51 +76,27 @@ describe("Signage Module & POS Simulator", () => {
       single: jest.fn().mockResolvedValue({ data: mockDisplay, error: null }),
     });
 
-    const response = await displaysController.register("Test TV");
+    const response = await displaysController.create("Test TV");
     expect(response.success).toBe(true);
     expect(response.data).toEqual(mockDisplay);
   });
 
-  it("should confirm pairing successfully and broadcast update", async () => {
-    const mockUnpairedDisplay = {
+  it("should assign a deck to a display", async () => {
+    const mockDisplay = {
       id: "display-1",
       name: "Test TV",
-      pairing_code: "A1B2",
-      is_paired: false,
+      deck_id: "deck-abc",
     };
-    const mockPairedDisplay = {
-      id: "display-1",
-      name: "Test TV",
-      pairing_code: null,
-      is_paired: true,
-    };
-
-    const eqMock = jest.fn();
-    // First call: find by code, second call: update
     (supabase.from as jest.Mock).mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      eq: eqMock,
-      single: jest.fn(),
-    });
-
-    // Mock first single() return (find display)
-    const singleMock = jest
-      .fn()
-      .mockResolvedValueOnce({ data: mockUnpairedDisplay, error: null })
-      .mockResolvedValueOnce({ data: mockPairedDisplay, error: null });
-
-    (supabase.from as jest.Mock).mockReturnValue({
-      select: jest.fn().mockReturnThis(),
       update: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      single: singleMock,
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: mockDisplay, error: null }),
     });
 
-    const response = await displaysController.confirm("A1B2", "Living Room");
+    const response = await displaysController.update("display-1", undefined, "deck-abc");
     expect(response.success).toBe(true);
-    expect(response.data).toEqual(mockPairedDisplay);
-    expect(gateway.server.to).toHaveBeenCalledWith("display:display-1");
+    expect(response.data).toEqual(mockDisplay);
   });
 
   it("should toggle sold out and broadcast layout updates to paired TVs", async () => {
