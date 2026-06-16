@@ -1,5 +1,11 @@
 import type { SignageLayoutConfig } from "./signage";
 
+export interface MaintenanceWindow {
+  hour: number;
+  minute: number;
+  dayOfWeek: number | null;
+}
+
 /** A physical hardware device (e.g., Raspberry Pi). Created on pairing. */
 export interface SignageDevice {
   id: string;
@@ -8,6 +14,8 @@ export interface SignageDevice {
   pairingCode: string;
   isPaired: boolean;
   lastSeenAt: string | null;
+  timezone: string;
+  maintenanceWindow: MaintenanceWindow;
   createdAt: string;
 }
 

@@ -6,26 +6,22 @@ import { Button } from "@soustools/ui";
 import { Monitor, Plus, RefreshCw } from "lucide-react";
 import { PairDisplayDialog } from "./pair-display-dialog";
 import { DisplayCard } from "./display-card";
+import { DeviceSettingsDialog } from "./device-settings-dialog";
+import { mapDisplay, isOnline } from "./display-utils";
 
-const mapDisplay = (d: Record<string, unknown> | null | undefined): SignageDisplay | null => {
-  if (!d) return null;
-  return {
-    id: String(d.id || ""),
-    organizationId: String(d.organization_id || d.organizationId || ""),
-    name: String(d.name || ""),
-    deviceId: d.device_id !== undefined ? (d.device_id as string | null) : (d.deviceId as string | null),
-    portLabel: d.port_label !== undefined ? (d.port_label as string | null) : (d.portLabel as string | null),
-    deckId: d.deck_id !== undefined ? (d.deck_id as string | null) : (d.deckId as string | null),
-    lastSeenAt: d.last_seen_at !== undefined ? (d.last_seen_at as string | null) : (d.lastSeenAt as string | null),
-    createdAt: String(d.created_at || d.createdAt || ""),
-  };
-};
-
+/**
+ * DisplayManager lists all display terminals, showing their status,
+ * paired devices, and active deck assignments.
+ *
+ * @tenant-docs-export
+ * Manage display configurations, pair new TV hardware, or configure devices settings.
+ */
 export const DisplayManager: React.FC = () => {
   const [displays, setDisplays] = useState<SignageDisplay[]>([]);
   const [decks, setDecks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showPairModal, setShowPairModal] = useState<boolean>(false);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
   const fetchData = async (): Promise<void> => {
     setLoading(true);
@@ -36,7 +32,9 @@ export const DisplayManager: React.FC = () => {
       ]);
       if (dispRes.success) {
         const rawList = dispRes.data || [];
-        setDisplays(rawList.map((d: any) => mapDisplay(d)).filter(Boolean) as SignageDisplay[]);
+        setDisplays(
+          rawList.map((d: any) => mapDisplay(d)).filter(Boolean) as SignageDisplay[]
+        );
       }
       if (deckRes.success) setDecks(deckRes.data || []);
     } catch (err) {
@@ -99,7 +97,9 @@ export const DisplayManager: React.FC = () => {
   const handleDeleteDisplay = async (id: string) => {
     if (!confirm("Remove this display terminal?")) return;
     try {
-      const res = await fetch(`/api/signage/displays/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/signage/displays/${id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
       if (data.success) {
         setDisplays((prev) => prev.filter((d) => d.id !== id));
@@ -112,11 +112,6 @@ export const DisplayManager: React.FC = () => {
     }
   };
 
-  const isOnline = (lastSeen: string | null): boolean => {
-    if (!lastSeen) return false;
-    return Date.now() - new Date(lastSeen).getTime() < 30000;
-  };
-
   return (
     <div className="space-y-6 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-slate-100 max-w-4xl mx-auto">
       <header className="flex justify-between items-center pb-4 border-b border-slate-800">
@@ -124,10 +119,15 @@ export const DisplayManager: React.FC = () => {
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
             <Monitor className="w-5 h-5 text-primary" /> Display Manager
           </h2>
-          <p className="text-xs text-slate-400">Monitor live signage terminals, pair TVs, or add browser displays.</p>
+          <p className="text-xs text-slate-400">
+            Monitor live signage terminals, pair TVs, or add browser displays.
+          </p>
         </div>
         <div className="flex gap-2">
-          <button onClick={fetchData} className="p-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
+          <button
+            onClick={fetchData}
+            className="p-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+          >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Button size="sm" variant="outline" onClick={handleAddBrowserDisplay}>
@@ -148,11 +148,22 @@ export const DisplayManager: React.FC = () => {
             isOnline={isOnline(disp.lastSeenAt)}
             onDeckAssign={handleDeckAssign}
             onDelete={handleDeleteDisplay}
+            onDeviceSettingsClick={setSelectedDeviceId}
           />
         ))}
       </div>
 
-      <PairDisplayDialog isOpen={showPairModal} onClose={() => setShowPairModal(false)} onSuccess={fetchData} />
+      <PairDisplayDialog
+        isOpen={showPairModal}
+        onClose={() => setShowPairModal(false)}
+        onSuccess={fetchData}
+      />
+      <DeviceSettingsDialog
+        isOpen={!!selectedDeviceId}
+        deviceId={selectedDeviceId}
+        onClose={() => setSelectedDeviceId(null)}
+        onSuccess={fetchData}
+      />
     </div>
   );
 };

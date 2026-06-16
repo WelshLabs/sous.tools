@@ -1,11 +1,12 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { config } from "@soustools/config";
 
 /**
  * Boots the NestJS application.
  *
  * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
- * and starts listening on port 4000.
+ * and starts listening on the configured PORT.
  *
  * @returns {Promise<void>} Resolves when the application has successfully started.
  */
@@ -15,7 +16,7 @@ async function bootstrap(): Promise<void> {
   // Enable CORS for frontend integration
   app.enableCors();
 
-  const port = 6000;
+  const port = config.PORT;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
 }

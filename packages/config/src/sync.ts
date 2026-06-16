@@ -36,6 +36,7 @@ export const secrets = {
   SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
   GOOGLE_CLIENT_ID: "google-client-id-placeholder",
   GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
+  PORT: 6000,
 };
 `;
     fs.writeFileSync(SECRETS_FILE_PATH, tsContent, "utf8");
@@ -69,9 +70,9 @@ export const secrets = {
       "[@soustools/config] Authenticated successfully. Fetching secrets...",
     );
 
-    // Retrieve all secrets for the development environment
+    // Retrieve all secrets for the environment
     const secretsResponse = await client.secrets().listSecrets({
-      environment: "dev",
+      environment: process.env.INFISICAL_ENV || "dev",
       projectId,
     });
 
@@ -103,6 +104,9 @@ export const secrets = {
     const productionSquareAccessToken = secretsArray.find(
       (s: any) => s.secretKey === "PRODUCTION_SQUARE_ACCESS_TOKEN",
     )?.secretValue || "prod-square-token-placeholder";
+    const port = secretsArray.find(
+      (s: any) => s.secretKey === "PORT",
+    )?.secretValue || "6000";
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error(
@@ -121,6 +125,7 @@ export const secrets = {
   API_BASE_URL: ${JSON.stringify(apiBaseUrl)},
   APP_BASE_URL: ${JSON.stringify(appBaseUrl)},
   PRODUCTION_SQUARE_ACCESS_TOKEN: ${JSON.stringify(productionSquareAccessToken)},
+  PORT: ${Number(port)},
 };
 `;
 

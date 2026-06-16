@@ -2,7 +2,7 @@
 
 import React from "react";
 import { SignageDisplay } from "@soustools/api-types";
-import { Trash2, Wifi, WifiOff, ExternalLink } from "lucide-react";
+import { Trash2, Wifi, WifiOff, ExternalLink, Settings } from "lucide-react";
 
 interface DisplayCardProps {
   display: SignageDisplay;
@@ -10,6 +10,7 @@ interface DisplayCardProps {
   isOnline: boolean;
   onDeckAssign: (displayId: string, deckId: string | null) => void;
   onDelete: (id: string) => void;
+  onDeviceSettingsClick?: (deviceId: string) => void;
 }
 
 export const DisplayCard: React.FC<DisplayCardProps> = ({
@@ -18,6 +19,7 @@ export const DisplayCard: React.FC<DisplayCardProps> = ({
   isOnline,
   onDeckAssign,
   onDelete,
+  onDeviceSettingsClick,
 }) => {
   return (
     <div className="p-4 rounded-xl bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] flex flex-col justify-between gap-3">
@@ -42,6 +44,15 @@ export const DisplayCard: React.FC<DisplayCardProps> = ({
           </div>
         </div>
         <div className="flex gap-1.5 items-center">
+          {display.deviceId && onDeviceSettingsClick && (
+            <button
+              onClick={() => onDeviceSettingsClick(display.deviceId!)}
+              className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-center border-0 bg-transparent"
+              title="Device Settings"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+          )}
           <a
             href={`/display/${display.id}`}
             target="_blank"
