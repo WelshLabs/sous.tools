@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 /**
- * RootLayoutProps defines properties for the tv-signage RootLayout.
+ * RootLayoutProps defines properties for the signage RootLayout.
  */
 export interface RootLayoutProps {
   /**

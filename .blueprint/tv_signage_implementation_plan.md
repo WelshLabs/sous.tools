@@ -43,7 +43,7 @@ Implement a bare-minimum, fully functioning TV Signage system for the **Sous Too
 - Render Layout List, Display List, and active "Pair TV" modal.
 - Build section-based Layout Builder with tabs for Custom CSS textareas, font loaders, and links to synced `square_items`.
 
-### Chunk 6: TV Signage Player Application (`apps/tv-signage`)
+### Chunk 6: TV Signage Player Application (`apps/signage`)
 
 - Main player page running at `/display/[id]`. Generates 4-char pairing code if unpaired.
 - Extends dynamic renderers (`SPLIT_SCREEN`, `FULL_SCREEN_SLIDESHOW`, `GRID_MENU`) and handles sold-out rendering visibility logic.

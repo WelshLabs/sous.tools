@@ -16,7 +16,7 @@
 
 ## 3. Framework-Specific Guardrails
 
-- **Next.js 16 (`apps/app`, `apps/tv-signage`, `apps/customer-site`, `apps/marketing`)**: Use App Router layout architectures. Enforce strict code splitting. Do not import server-only logic into components marked with "use client". Add `@soustools/ui` to `transpilePackages` in `next.config.js`.
+- **Next.js 16 (`apps/app`, `apps/signage`, `apps/customer-site`, `apps/marketing`)**: Use App Router layout architectures. Enforce strict code splitting. Do not import server-only logic into components marked with "use client". Add `@soustools/ui` to `transpilePackages` in `next.config.js`.
 - **NestJS (`apps/api`)**: Follow standard modular structures (Controllers, Services, Modules). Always utilize built-in validation pipes (`class-validator`) on incoming request data Transfer Objects (DTOs).
 
 ## 4. Mandatory AI Output Execution Pipeline

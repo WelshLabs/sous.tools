@@ -6,7 +6,7 @@
 - **Main SaaS Site**: Next.js 16 (`apps/marketing`) for sous.tools sales and subscription landing pages
 - **Unified Kitchen App**: Next.js 16 PWA (`apps/app`) with Workspace-style feature toggles. Built web-first, architecture compatible with future Capacitor native wrappers.
 - **Customer Ordering App**: Next.js 16 (`apps/customer-site`) with multi-tenant custom domain routing
-- **TV Signage App**: Next.js optimized for smart TVs & Raspberry Pi browsers (`apps/tv-signage`)
+- **TV Signage App**: Next.js optimized for smart TVs & Raspberry Pi browsers (`apps/signage`)
 - **Backend API**: NestJS (`apps/api`)
 - **Primary Database**: Supabase (PostgreSQL + Realtime) with Row Level Security (RLS)
 - **Queue & Workers**: Redis + BullMQ (For OCR recipe scanning, invoice processing, POS syncing, and Stripe webhook handling)
