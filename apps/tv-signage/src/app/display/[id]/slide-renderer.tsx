@@ -1,19 +1,49 @@
 "use client";
 
 import React from "react";
-import { SignageSlide, PosItem } from "@soustools/api-types";
+import { SignageSlide, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { ColumnLayoutRenderer } from "./column-layout-renderer";
+
+const FALLBACK_STYLES: MenuItemStyles = {
+  regular: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderRadius: "16px",
+    titleColor: "#ffffff",
+    priceColor: "oklch(0.70 0.25 150)",
+    descriptionColor: "#94a3b8",
+  },
+  highlighted: {
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderColor: "oklch(0.60 0.25 250)",
+    borderWidth: 1,
+    shadow: "0 0 20px -3px oklch(0.60 0.25 250)",
+    animation: "pulse-glow",
+    icon: "\u2b50",
+    iconPosition: "top-right-corner",
+  },
+  soldOut: {
+    dimOpacity: 0.45,
+    badge: {
+      text: "SOLD OUT",
+      color: "oklch(0.60 0.25 25)",
+      textColor: "#ffffff",
+      borderRadius: "4px",
+    },
+  },
+};
 
 interface SlideRendererProps {
   slide: SignageSlide;
   items: PosItem[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
 export function SlideRenderer({
   slide,
   items,
-  soldOutBehavior,
+  menuItemStyles,
 }: SlideRendererProps) {
   switch (slide.type) {
     case "COLUMN_LAYOUT":
@@ -22,7 +52,7 @@ export function SlideRenderer({
           columns={slide.columns}
           splitRatio={slide.splitRatio}
           items={items}
-          soldOutBehavior={soldOutBehavior}
+          menuItemStyles={menuItemStyles ?? FALLBACK_STYLES}
         />
       );
     case "IMAGE": {

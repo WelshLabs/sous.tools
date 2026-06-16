@@ -1,60 +1,70 @@
 "use client";
 
 import React from "react";
-import { PosItem, ColumnConfig } from "@soustools/api-types";
+import { PosItem, ColumnConfig, MenuItemStyles } from "@soustools/api-types";
+import {
+  buildCardStyle,
+  buildTitleStyle,
+  buildPriceStyle,
+  buildDescriptionStyle,
+  resolveItemState,
+  isItemHighlighted,
+} from "./menu-item-style-utils";
+import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 
 interface PreviewMenuRendererProps {
   column: ColumnConfig;
   items: PosItem[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
 export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
   column,
   items,
-  soldOutBehavior,
+  menuItemStyles,
 }) => {
-  const renderPreviewItem = (item: PosItem) => {
-    const isHighlighted = column.highlightItems?.some((h) => {
-      if (!h) return false;
-      if (typeof h === "string") {
-        return h === item.id || h === item.squareId || h.toLowerCase() === item.name.toLowerCase();
-      }
-      return h.itemId === item.id || h.itemId === item.squareId;
-    });
+  const styles = menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES;
 
-    const isSoldOut = item.isSoldOut;
-    let itemClasses =
-      "p-2 rounded-lg text-left text-[10px] transition-all flex flex-col justify-between h-full min-h-[50px] ";
-    if (isHighlighted) {
-      itemClasses += "bg-white/10 border border-primary/40 shadow-[0_0_10px_-2px_oklch(0.60_0.25_250)] ";
-    } else {
-      itemClasses += "bg-white/5 border border-white/5 ";
-    }
-    if (isSoldOut) {
-      if (soldOutBehavior === "STRIKE") itemClasses += "line-through opacity-40 ";
-      else if (soldOutBehavior === "GRAY_OUT") itemClasses += "grayscale opacity-50 ";
-    }
+  const renderPreviewItem = (item: PosItem) => {
+    const highlighted = isItemHighlighted(item, column.highlightItems);
+    const stateStyle = resolveItemState(item, highlighted, styles);
+    const cardStyle = buildCardStyle(stateStyle);
+    const titleStyle = buildTitleStyle(stateStyle);
+    const priceStyle = buildPriceStyle(stateStyle);
+    const descStyle = buildDescriptionStyle(stateStyle);
 
     return (
-      <div key={item.id} className={itemClasses}>
+      <div
+        key={item.id}
+        className="p-2 rounded-lg text-left text-[10px] transition-all flex flex-col justify-between h-full min-h-[50px] border"
+        style={cardStyle}
+      >
         <div className="space-y-0.5">
           <div className="flex justify-between items-start gap-1">
-            <h5 className="font-bold text-white truncate max-w-[70%] text-[10px] leading-tight">
+            <h5 className="font-bold truncate max-w-[70%] text-[10px] leading-tight" style={titleStyle}>
               {item.name}
             </h5>
-            <span className="text-emerald-400 font-semibold text-[9px] whitespace-nowrap">
+            <span className="font-semibold text-[9px] whitespace-nowrap" style={priceStyle}>
               ${Number(item.price).toFixed(2)}
             </span>
           </div>
           {item.description && (
-            <p className="text-[8px] text-slate-400 line-clamp-1 leading-normal">{item.description}</p>
+            <p className="text-[8px] line-clamp-1 leading-normal" style={descStyle}>
+              {item.description}
+            </p>
           )}
         </div>
-        {isSoldOut && soldOutBehavior === "LABEL" && (
+        {stateStyle.badge && (
           <div className="mt-1 flex">
-            <span className="bg-red-600 text-white text-[7px] px-1 py-0.5 rounded font-black uppercase tracking-wider">
-              Sold Out
+            <span
+              className="text-[7px] px-1 py-0.5 rounded font-black uppercase tracking-wider"
+              style={{
+                backgroundColor: stateStyle.badge.color,
+                color: stateStyle.badge.textColor,
+                borderRadius: stateStyle.badge.borderRadius ?? "4px",
+              }}
+            >
+              {stateStyle.badge.text}
             </span>
           </div>
         )}
@@ -68,7 +78,10 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
       .map((id) => items.find((item) => item.id === id || item.squareId === id))
       .filter((item): item is PosItem => !!item);
   }
-  activeItems = activeItems.filter((item) => !(item.isSoldOut && soldOutBehavior === "HIDE"));
+  activeItems = activeItems.filter((item) => {
+    if (!item.isSoldOut) return true;
+    return !styles.soldOut.hidden;
+  });
 
   if (activeItems.length === 0) {
     return (

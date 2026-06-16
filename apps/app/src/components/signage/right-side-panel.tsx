@@ -6,8 +6,10 @@ import {
   SignageLayoutConfig,
   ColumnLayoutSlide,
   PosItem,
+  MenuItemStyles,
 } from "@soustools/api-types";
 import { StylesPanel } from "./styles-panel";
+import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 
 export interface RightSidePanelProps {
   mode: "styles" | "content" | null;
@@ -16,8 +18,8 @@ export interface RightSidePanelProps {
   onUpdateConfig: (updates: Partial<SignageLayoutConfig>) => void;
   onUpdateSlide: (index: number, updates: Partial<ColumnLayoutSlide>) => void;
   onClose: () => void;
-  // Content mode specific
   items: PosItem[];
+  deckId?: string;
 }
 
 /** Stub shown when mode='content'; real zone editors are handled via column popovers. */
@@ -35,17 +37,16 @@ const ContentZoneEditorStub: React.FC = () => (
  * Animates in/out via CSS translate. Returns null when mode is null.
  */
 export const RightSidePanel: React.FC<RightSidePanelProps> = ({
-  mode,
-  config,
-  activeSlideIndex,
-  onUpdateConfig,
-  onUpdateSlide,
-  onClose,
+  mode, config, activeSlideIndex, onUpdateConfig, onUpdateSlide, onClose, deckId,
 }) => {
   if (mode === null) return null;
 
   const isOpen = mode !== null;
   const title = mode === "styles" ? "Styles" : "Content";
+
+  const handleUpdateMenuItemStyles = (s: MenuItemStyles): void => {
+    onUpdateConfig({ menuItemStyles: s });
+  };
 
   return (
     <div
@@ -56,14 +57,9 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 shrink-0">
-        <span className="text-sm font-semibold text-zinc-200 tracking-wide">
-          {title}
-        </span>
-        <button
-          onClick={onClose}
-          aria-label="Close panel"
-          className="text-zinc-500 hover:text-zinc-200 transition-colors p-0.5 cursor-pointer"
-        >
+        <span className="text-sm font-semibold text-zinc-200 tracking-wide">{title}</span>
+        <button onClick={onClose} aria-label="Close panel"
+          className="text-zinc-500 hover:text-zinc-200 transition-colors p-0.5 cursor-pointer">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -75,6 +71,9 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
           activeSlideIndex={activeSlideIndex}
           onUpdateConfig={onUpdateConfig}
           onUpdateSlide={onUpdateSlide}
+          menuItemStyles={config.menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES}
+          onUpdateMenuItemStyles={handleUpdateMenuItemStyles}
+          deckId={deckId}
         />
       ) : (
         <ContentZoneEditorStub />

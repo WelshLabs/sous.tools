@@ -103,7 +103,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
           <div className={`flex-1 flex flex-col transition-all duration-300 ${rightPanelMode ? "mr-80" : ""}`}>
             <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} onUpdateSlide={updateSlide} onOpenContentPanel={() => setRightPanelMode("content")} />
           </div>
-          <RightSidePanel mode={rightPanelMode} config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={updateConfig} onUpdateSlide={(idx, updates) => updateSlide(idx, updates)} onClose={() => setRightPanelMode(null)} items={items} />
+          <RightSidePanel mode={rightPanelMode} config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={updateConfig} onUpdateSlide={(idx, updates) => updateSlide(idx, updates)} onClose={() => setRightPanelMode(null)} items={items} deckId={deckId} />
         </div>
       ) : (
         <div className="flex-1 relative">

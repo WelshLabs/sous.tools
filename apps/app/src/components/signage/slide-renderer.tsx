@@ -92,7 +92,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
               key={idx}
               column={col}
               items={items}
-              soldOutBehavior={config.soldOutBehavior}
+              menuItemStyles={config.menuItemStyles}
               isPreviewing={isPreviewing}
               onUpdate={(updates) => {
                 const newCols = [...slide.columns];

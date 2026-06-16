@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useDisplayPlayer } from "./use-display-player";
 import { PairingScreen } from "./pairing-screen";
 import { SlideCarousel } from "./slide-carousel";
+import { buildAllAnimationCss } from "../../../components/signage/menu-item-style-utils";
 
 interface DisplayPlayerProps {
   displayId: string;
@@ -19,43 +20,37 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
 
     // Aggregate all unique Google Fonts to load
     const fontsToLoad = new Set<string>();
-    if (config.googleFont) {
-      fontsToLoad.add(config.googleFont);
-    }
-    if (config.typography) {
-      const {
-        menuItemTitle,
-        menuItemPrice,
-        menuItemDescription,
-        marketingText,
-      } = config.typography;
-      if (menuItemTitle) fontsToLoad.add(menuItemTitle);
-      if (menuItemPrice) fontsToLoad.add(menuItemPrice);
-      if (menuItemDescription) fontsToLoad.add(menuItemDescription);
-      if (marketingText) fontsToLoad.add(marketingText);
-    }
+    if (config.googleFont) fontsToLoad.add(config.googleFont);
 
     // Clean up existing dynamic font links
-    const fontIdPrefix = "signage-dynamic-font";
-    const existingLinks = document.querySelectorAll(`[id^='${fontIdPrefix}']`);
-    existingLinks.forEach((el) => el.remove());
-
-    // Inject links for all unique fonts
+    document.querySelectorAll("[id^='signage-dynamic-font']").forEach((el) => el.remove());
     Array.from(fontsToLoad).forEach((font, idx) => {
       const link = document.createElement("link");
-      link.id = `${fontIdPrefix}-${idx}`;
+      link.id = `signage-dynamic-font-${idx}`;
       link.rel = "stylesheet";
       link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`;
       document.head.appendChild(link);
     });
 
-    const styleId = "signage-custom-css";
-    document.getElementById(styleId)?.remove();
+    // Inject custom CSS
+    document.getElementById("signage-custom-css")?.remove();
     if (config.customCss) {
       const style = document.createElement("style");
-      style.id = styleId;
+      style.id = "signage-custom-css";
       style.textContent = config.customCss;
       document.head.appendChild(style);
+    }
+
+    // Inject animation keyframes from menuItemStyles
+    document.getElementById("signage-item-animations")?.remove();
+    if (config.menuItemStyles) {
+      const animCss = buildAllAnimationCss(config.menuItemStyles);
+      if (animCss) {
+        const style = document.createElement("style");
+        style.id = "signage-item-animations";
+        style.textContent = animCss;
+        document.head.appendChild(style);
+      }
     }
   }, [layout]);
 
@@ -83,7 +78,7 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
   }
 
   const slides = layout?.config?.slides || [];
-  const soldOutBehavior = layout?.config?.soldOutBehavior || "LABEL";
+  const menuItemStyles = layout?.config?.menuItemStyles;
 
   return (
     <main
@@ -104,7 +99,7 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
       <SlideCarousel
         slides={slides}
         items={items}
-        soldOutBehavior={soldOutBehavior}
+        menuItemStyles={menuItemStyles}
       />
     </main>
   );

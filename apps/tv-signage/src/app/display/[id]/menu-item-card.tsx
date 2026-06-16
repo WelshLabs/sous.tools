@@ -1,89 +1,73 @@
 "use client";
 
 import React from "react";
-import { PosItem, HighlightItemConfig } from "@soustools/api-types";
+import { PosItem, MenuItemStyles, HighlightItemConfig } from "@soustools/api-types";
+import {
+  buildCardStyle,
+  buildTitleStyle,
+  buildPriceStyle,
+  buildDescriptionStyle,
+  resolveItemState,
+  isItemHighlighted,
+} from "./menu-item-style-utils";
 
 export interface MenuItemCardProps {
   item: PosItem;
   highlightItems?: (string | HighlightItemConfig)[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
-  customClassOverrides?: Record<string, string>;
+  menuItemStyles: MenuItemStyles;
 }
 
-export function MenuItemCard({
-  item,
-  highlightItems,
-  soldOutBehavior,
-  customClassOverrides,
-}: MenuItemCardProps) {
-  const isHighlighted = highlightItems?.some((h) => {
-    if (!h) return false;
-    if (typeof h === "string") {
-      return (
-        h === item.id ||
-        h === item.squareId ||
-        h.toLowerCase() === item.name.toLowerCase()
-      );
-    }
-    return h.itemId === item.id || h.itemId === item.squareId;
-  });
+export function MenuItemCard({ item, highlightItems, menuItemStyles }: MenuItemCardProps) {
+  const highlighted = isItemHighlighted(item, highlightItems);
+  const stateStyle = resolveItemState(item, highlighted, menuItemStyles);
 
-  let itemClasses =
-    "p-6 rounded-2xl transition-all duration-300 flex flex-col justify-between border ";
-  if (isHighlighted) {
-    itemClasses +=
-      "bg-white/10 border-[oklch(0.60_0.25_250)]/40 shadow-[0_0_20px_-3px_oklch(0.60_0.25_250)] scale-[1.02] ";
-  } else {
-    itemClasses += "bg-white/5 border-white/5 ";
-  }
+  if (stateStyle.hidden && item.isSoldOut) return null;
 
-  if (item.isSoldOut) {
-    if (soldOutBehavior === "STRIKE") {
-      itemClasses += "line-through opacity-40 ";
-    } else if (soldOutBehavior === "GRAY_OUT") {
-      itemClasses += "grayscale opacity-50 ";
-    }
-  }
-
-  if (customClassOverrides) {
-    const override =
-      customClassOverrides[item.id] ||
-      customClassOverrides[item.squareId];
-    if (override) {
-      itemClasses += ` ${override}`;
-    }
-  }
+  const cardStyle = buildCardStyle(stateStyle);
+  const titleStyle = buildTitleStyle(stateStyle);
+  const priceStyle = buildPriceStyle(stateStyle);
+  const descStyle = buildDescriptionStyle(stateStyle);
 
   return (
-    <div className={itemClasses}>
+    <div
+      className="rounded-2xl transition-all duration-300 flex flex-col justify-between border relative"
+      style={{ ...cardStyle, overflow: "visible", padding: cardStyle.padding ?? "24px" }}
+    >
+      {stateStyle.icon && stateStyle.iconPosition === "top-right-corner" && (
+        <span className="absolute top-2 right-3 text-xl">{stateStyle.icon}</span>
+      )}
       <div className="space-y-2">
         <div className="flex justify-between items-start gap-4">
-          <h3
-            className="text-xl font-bold tracking-tight text-white"
-            style={{ fontFamily: "var(--menu-title-font)", color: "var(--menu-title-color)" }}
-          >
+          <h3 className="text-xl font-bold tracking-tight" style={titleStyle}>
+            {stateStyle.icon && stateStyle.iconPosition === "before-title" && (
+              <span className="mr-1">{stateStyle.icon}</span>
+            )}
             {item.name}
+            {stateStyle.icon && stateStyle.iconPosition === "after-title" && (
+              <span className="ml-1">{stateStyle.icon}</span>
+            )}
           </h3>
-          <span
-            className="text-lg font-extrabold text-[oklch(0.70_0.25_150)] whitespace-nowrap"
-            style={{ fontFamily: "var(--menu-price-font)", color: "var(--menu-price-color)" }}
-          >
+          <span className="text-lg font-extrabold whitespace-nowrap" style={priceStyle}>
             ${Number(item.price).toFixed(2)}
           </span>
         </div>
         {item.description && (
-          <p
-            className="text-sm text-zinc-400 line-clamp-2"
-            style={{ fontFamily: "var(--menu-description-font)", color: "var(--menu-desc-color)" }}
-          >
+          <p className="text-sm line-clamp-2" style={descStyle}>
             {item.description}
           </p>
         )}
       </div>
-      {item.isSoldOut && soldOutBehavior === "LABEL" && (
+      {stateStyle.badge && (
         <div className="mt-4 flex">
-          <span className="bg-[oklch(0.60_0.25_25)] text-white text-[10px] px-2.5 py-1 rounded-md font-black uppercase tracking-wider">
-            Sold Out
+          <span
+            className="text-[10px] px-2.5 py-1 font-black uppercase tracking-wider"
+            style={{
+              backgroundColor: stateStyle.badge.color,
+              color: stateStyle.badge.textColor,
+              borderRadius: stateStyle.badge.borderRadius ?? "4px",
+            }}
+          >
+            {stateStyle.badge.text}
           </span>
         </div>
       )}

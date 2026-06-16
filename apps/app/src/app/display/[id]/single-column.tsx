@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
-import { ColumnConfig, PosItem } from "@soustools/api-types";
+import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { MenuItemCard } from "./menu-item-card";
+import { DEFAULT_MENU_ITEM_STYLES } from "../../../components/signage/config-migration";
 
 interface SingleColumnProps {
   column: ColumnConfig;
   index: number;
   style: React.CSSProperties;
   items: PosItem[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
 export function SingleColumn({
@@ -17,7 +18,7 @@ export function SingleColumn({
   index,
   style,
   items,
-  soldOutBehavior,
+  menuItemStyles = DEFAULT_MENU_ITEM_STYLES,
 }: SingleColumnProps) {
   switch (column.type) {
     case "MENU": {
@@ -28,13 +29,13 @@ export function SingleColumn({
           .filter((item): item is PosItem => !!item);
       }
       columnItems = columnItems.filter(
-        (item) => !(item.isSoldOut && soldOutBehavior === "HIDE")
+        (item) => !(item.isSoldOut && (menuItemStyles.soldOut.hidden ?? false))
       );
       return (
         <div
           key={index}
           style={style}
-          className="flex flex-col gap-4 overflow-y-auto overflow-x-hidden w-full h-full"
+          className="flex flex-col gap-4 overflow-y-auto overflow-x-hidden w-full h-full p-6"
         >
           {columnItems.length > 0 ? (
             columnItems.map((item) => (
@@ -42,7 +43,7 @@ export function SingleColumn({
                 key={item.id}
                 item={item}
                 highlightItems={column.highlightItems}
-                soldOutBehavior={soldOutBehavior}
+                menuItemStyles={menuItemStyles}
               />
             ))
           ) : (

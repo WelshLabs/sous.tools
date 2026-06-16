@@ -1,20 +1,16 @@
 "use client";
 
 import React from "react";
-import { SignageSlide, PosItem } from "@soustools/api-types";
+import { SignageSlide, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { ColumnLayoutRenderer } from "./column-layout-renderer";
 
 interface SlideRendererProps {
   slide: SignageSlide;
   items: PosItem[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
-export function SlideRenderer({
-  slide,
-  items,
-  soldOutBehavior,
-}: SlideRendererProps) {
+export function SlideRenderer({ slide, items, menuItemStyles }: SlideRendererProps) {
   switch (slide.type) {
     case "COLUMN_LAYOUT":
       return (
@@ -22,44 +18,29 @@ export function SlideRenderer({
           columns={slide.columns}
           splitRatio={slide.splitRatio}
           items={items}
-          soldOutBehavior={soldOutBehavior}
+          menuItemStyles={menuItemStyles}
         />
       );
     case "IMAGE": {
-      const fitClass =
-        slide.fit === "contain" ? "object-contain" : "object-cover";
+      const fitClass = slide.fit === "contain" ? "object-contain" : "object-cover";
       return (
         <div className="w-full h-full min-h-screen bg-black flex items-center justify-center">
-          <img
-            src={slide.imageUrl}
-            alt="Signage Promo"
-            className={`w-full h-full min-h-screen ${fitClass}`}
-          />
+          <img src={slide.imageUrl} alt="Signage Promo" className={`w-full h-full min-h-screen ${fitClass}`} />
         </div>
       );
     }
     case "VIDEO":
       return (
         <div className="w-full h-full min-h-screen bg-black">
-          <video
-            src={slide.videoUrl}
-            autoPlay
-            loop={slide.loop !== false}
-            muted={slide.mute !== false}
-            playsInline
-            className="w-full h-full min-h-screen object-cover"
-          />
+          <video src={slide.videoUrl} autoPlay loop={slide.loop !== false} muted={slide.mute !== false}
+            playsInline className="w-full h-full min-h-screen object-cover" />
         </div>
       );
     case "IFRAME":
       return (
         <div className="w-full h-full min-h-screen bg-black">
-          <iframe
-            src={slide.url}
-            title="Google Slides or Web Content"
-            className="w-full h-full min-h-screen border-none"
-            allow="autoplay; encrypted-media"
-          />
+          <iframe src={slide.url} title="Google Slides or Web Content"
+            className="w-full h-full min-h-screen border-none" allow="autoplay; encrypted-media" />
         </div>
       );
     default:

@@ -1,26 +1,38 @@
 "use client";
 
 import React from "react";
-import { ColumnConfig, PosItem, TypographyConfig } from "@soustools/api-types";
+import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { Image as ImageIcon } from "lucide-react";
+import {
+  buildCardStyle,
+  buildTitleStyle,
+  buildPriceStyle,
+  buildDescriptionStyle,
+  resolveItemState,
+  isItemHighlighted,
+} from "./menu-item-style-utils";
+import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 
 interface ColumnPreviewProps {
   column: ColumnConfig;
   items: PosItem[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
-  typography?: TypographyConfig;
+  menuItemStyles?: MenuItemStyles;
 }
 
 export const ColumnMenuPreview: React.FC<ColumnPreviewProps> = ({
   column,
   items,
-  soldOutBehavior,
-  typography,
+  menuItemStyles,
 }) => {
+  const styles = menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES;
+
   const activeItems = (column.itemIds || [])
     .map((id) => items.find((item) => item.id === id || item.squareId === id))
     .filter((item): item is PosItem => !!item)
-    .filter((item) => !(item.isSoldOut && soldOutBehavior === "HIDE"));
+    .filter((item) => {
+      if (!item.isSoldOut) return true;
+      return !styles.soldOut.hidden;
+    });
 
   if (activeItems.length === 0) {
     return (
@@ -33,53 +45,39 @@ export const ColumnMenuPreview: React.FC<ColumnPreviewProps> = ({
   return (
     <div className="w-full h-full p-2 flex flex-col justify-start gap-1 overflow-y-auto max-h-[140px] pr-1">
       {activeItems.map((item) => {
-        const isHighlighted = column.highlightItems?.some((h) => {
-          if (!h) return false;
-          if (typeof h === "string") {
-            return h === item.id || h === item.squareId;
-          }
-          return h.itemId === item.id || h.itemId === item.squareId;
-        });
-
-        const isSoldOut = item.isSoldOut;
-        let classes = "p-1.5 rounded text-[8px] transition-all flex flex-col justify-between shrink-0 ";
-        if (isHighlighted) {
-          classes += "bg-white/10 border border-primary/40 shadow-sm ";
-        } else {
-          classes += "bg-white/5 border border-white/5 ";
-        }
-
-        if (isSoldOut) {
-          if (soldOutBehavior === "STRIKE") classes += "line-through opacity-45 ";
-          else if (soldOutBehavior === "GRAY_OUT") classes += "grayscale opacity-50 ";
-        }
+        const highlighted = isItemHighlighted(item, column.highlightItems);
+        const stateStyle = resolveItemState(item, highlighted, styles);
+        const cardStyle = buildCardStyle(stateStyle);
+        const titleStyle = buildTitleStyle(stateStyle);
+        const priceStyle = buildPriceStyle(stateStyle);
+        const descStyle = buildDescriptionStyle(stateStyle);
 
         return (
-          <div key={item.id} className={classes}>
+          <div
+            key={item.id}
+            className="p-1.5 rounded text-[8px] transition-all flex flex-col justify-between shrink-0 border"
+            style={cardStyle}
+          >
             <div className="flex justify-between items-start gap-1">
-              <h5
-                className="font-bold text-white truncate max-w-[70%] text-[8px]"
-                style={typography?.menuItemTitle ? { fontFamily: typography.menuItemTitle } : undefined}
-              >
+              <h5 className="font-bold truncate max-w-[70%] text-[8px]" style={titleStyle}>
                 {item.name}
               </h5>
-              <span
-                className="text-emerald-400 font-semibold text-[8px]"
-                style={typography?.menuItemPrice ? { fontFamily: typography.menuItemPrice } : undefined}
-              >
+              <span className="font-semibold text-[8px]" style={priceStyle}>
                 ${Number(item.price).toFixed(2)}
               </span>
             </div>
             {item.description && (
-              <p
-                className="text-[6px] text-slate-400 line-clamp-1 mt-0.5"
-                style={typography?.menuItemDescription ? { fontFamily: typography.menuItemDescription } : undefined}
-              >
+              <p className="text-[6px] line-clamp-1 mt-0.5" style={descStyle}>
                 {item.description}
               </p>
             )}
-            {isSoldOut && soldOutBehavior === "LABEL" && (
-              <span className="text-[6px] text-red-500 font-bold uppercase mt-0.5">Sold Out</span>
+            {stateStyle.badge && (
+              <span
+                className="text-[6px] font-bold uppercase mt-0.5"
+                style={{ color: stateStyle.badge.color }}
+              >
+                {stateStyle.badge.text}
+              </span>
             )}
           </div>
         );

@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { ColumnConfig, PosItem } from "@soustools/api-types";
+import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { Trash2, Edit } from "lucide-react";
 import { ColumnEmptyView } from "./column-empty-view";
 import { ColumnContentView } from "./column-content-view";
 import { ColumnPopoverEditor } from "./column-popover-editor";
+import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 
 interface PreviewColumnEditorProps {
   column: ColumnConfig;
   items: PosItem[];
   onUpdate: (updates: Partial<ColumnConfig>) => void;
   onClear: () => void;
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
   isPreviewing?: boolean;
 }
 
@@ -21,7 +22,7 @@ export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
   items,
   onUpdate,
   onClear,
-  soldOutBehavior,
+  menuItemStyles,
   isPreviewing = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -36,7 +37,7 @@ export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
         {column.type === "EMPTY" ? (
           <ColumnEmptyView onUpdate={onUpdate} onOpenEditor={() => setIsEditing(true)} />
         ) : (
-          <ColumnContentView column={column} items={items} soldOutBehavior={soldOutBehavior} />
+          <ColumnContentView column={column} items={items} menuItemStyles={menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES} />
         )}
       </div>
 

@@ -5,6 +5,13 @@ import { io } from "socket.io-client";
 import { PosItem, SignageLayoutConfig } from "@soustools/api-types";
 import { SlideCarousel } from "../../../display/[id]/slide-carousel";
 import { mapDbItemToPosItem, RawDbSquareItem } from "../../../display/[id]/helpers";
+import { buildAllAnimationCss } from "../../../display/[id]/menu-item-style-utils";
+
+interface FriendlyDeck {
+  id: string;
+  organization_id: string;
+  config: SignageLayoutConfig;
+}
 
 interface FriendlyDeckPlayerProps {
   params: Promise<{ orgSlug: string; deckSlug: string }>;
@@ -12,7 +19,7 @@ interface FriendlyDeckPlayerProps {
 
 export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerProps) {
   const { orgSlug, deckSlug } = use(params);
-  const [deck, setDeck] = useState<any | null>(null);
+  const [deck, setDeck] = useState<FriendlyDeck | null>(null);
   const [items, setItems] = useState<PosItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorState, setErrorState] = useState<string | null>(null);
@@ -21,16 +28,13 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
     try {
       const res = await fetch(`/api/signage/layouts/slug/${orgSlug}/${deckSlug}`);
       const deckData = await res.json();
-      if (!deckData.success || !deckData.data) {
-        throw new Error("Deck not found");
-      }
-      setDeck(deckData.data);
+      if (!deckData.success || !deckData.data) throw new Error("Deck not found");
+      setDeck(deckData.data as FriendlyDeck);
 
       const itemsRes = await fetch(`/api/pos/items?organizationId=${deckData.data.organization_id}`);
       const itemsData = await itemsRes.json();
       if (itemsData.success && itemsData.data) {
-        const parsedItems = (itemsData.data as RawDbSquareItem[]).map(mapDbItemToPosItem);
-        setItems(parsedItems);
+        setItems((itemsData.data as RawDbSquareItem[]).map(mapDbItemToPosItem));
       }
       setLoading(false);
     } catch (err) {
@@ -39,11 +43,8 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
     }
   };
 
-  useEffect(() => {
-    fetchDeckAndItems();
-  }, [orgSlug, deckSlug]);
+  useEffect(() => { fetchDeckAndItems(); }, [orgSlug, deckSlug]);
 
-  // Google Font and Custom CSS Injection
   useEffect(() => {
     const config = deck?.config;
     if (!config) return;
@@ -60,7 +61,6 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
 
     const fontIdPrefix = "signage-dynamic-font";
     document.querySelectorAll(`[id^='${fontIdPrefix}']`).forEach((el) => el.remove());
-
     Array.from(fontsToLoad).forEach((font, idx) => {
       const link = document.createElement("link");
       link.id = `${fontIdPrefix}-${idx}`;
@@ -77,36 +77,35 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
       style.textContent = config.customCss;
       document.head.appendChild(style);
     }
+
+    const animStyleId = "signage-item-animations";
+    document.getElementById(animStyleId)?.remove();
+    if (config.menuItemStyles) {
+      const animCss = buildAllAnimationCss(config.menuItemStyles);
+      if (animCss) {
+        const animStyle = document.createElement("style");
+        animStyle.id = animStyleId;
+        animStyle.textContent = animCss;
+        document.head.appendChild(animStyle);
+      }
+    }
   }, [deck]);
 
-  // Socket connection to deck room
   useEffect(() => {
     if (!deck?.id) return;
-    const socketUrl = window.location.origin;
-    const socket = io(socketUrl, {
-      query: { deckId: deck.id },
-    });
-
-    socket.on("connect", () => {
-      socket.emit("join", { deckId: deck.id });
-    });
-
+    const socket = io(window.location.origin, { query: { deckId: deck.id } });
+    socket.on("connect", () => { socket.emit("join", { deckId: deck.id }); });
     socket.on("deck_updated", (payload: { deckId: string; config: SignageLayoutConfig }) => {
       if (payload.deckId === deck.id) {
-        setDeck((prev: any) => prev ? { ...prev, config: payload.config } : null);
+        setDeck((prev) => prev ? { ...prev, config: payload.config } : null);
       }
     });
-
     socket.on("items_updated", (payload: { deckId: string; items: RawDbSquareItem[] }) => {
       if (payload.deckId === deck.id && payload.items) {
-        const parsedItems = payload.items.map(mapDbItemToPosItem);
-        setItems(parsedItems);
+        setItems(payload.items.map(mapDbItemToPosItem));
       }
     });
-
-    return () => {
-      socket.disconnect();
-    };
+    return () => { socket.disconnect(); };
   }, [deck?.id]);
 
   if (loading) {
@@ -127,24 +126,14 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
   }
 
   const slides = deck.config?.slides || [];
-  const soldOutBehavior = deck.config?.soldOutBehavior || "LABEL";
+  const menuItemStyles = deck.config?.menuItemStyles;
 
   return (
     <main
       className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white"
-      style={{
-        fontFamily: deck.config?.googleFont || "inherit",
-        ["--menu-title-font" as any]: deck.config?.typography?.menuItemTitle || "inherit",
-        ["--menu-price-font" as any]: deck.config?.typography?.menuItemPrice || "inherit",
-        ["--menu-description-font" as any]: deck.config?.typography?.menuItemDescription || "inherit",
-        ["--marketing-text-font" as any]: deck.config?.typography?.marketingText || "inherit",
-        ["--menu-title-color" as any]: deck.config?.typography?.menuItemTitleColor || "inherit",
-        ["--menu-price-color" as any]: deck.config?.typography?.menuItemPriceColor || "inherit",
-        ["--menu-desc-color" as any]: deck.config?.typography?.menuItemDescriptionColor || "inherit",
-        ["--marketing-text-color" as any]: deck.config?.typography?.marketingTextColor || "inherit",
-      }}
+      style={{ fontFamily: deck.config?.googleFont || "inherit" }}
     >
-      <SlideCarousel slides={slides} items={items} soldOutBehavior={soldOutBehavior} />
+      <SlideCarousel slides={slides} items={items} menuItemStyles={menuItemStyles} />
     </main>
   );
 }

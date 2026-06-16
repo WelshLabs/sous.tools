@@ -12,6 +12,8 @@ import AppBar from "../../components/layout/app-bar";
 export interface DashboardLayoutProps {
   /** The child views to render within the layout shell. */
   children: React.ReactNode;
+  /** Parallel route slot — populated by @modal routes, null otherwise. */
+  modal: React.ReactNode;
 }
 
 /**
@@ -22,7 +24,7 @@ export interface DashboardLayoutProps {
  * Access to the kitchen portal dashboard is restricted to authorized employees.
  * If your session expires, you will automatically be redirected to the passcode login page.
  */
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, modal }: DashboardLayoutProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
@@ -96,6 +98,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         />
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
       </div>
+      {/* @modal parallel route slot — renders URL-addressed modals (deck preview, device detail, etc.) */}
+      {modal}
     </div>
   );
 }

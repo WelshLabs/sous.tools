@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { SignageLayoutConfig, PosItem, SignageSlide, ColumnLayoutSlide } from "@soustools/api-types";
+import { SignageLayoutConfig, PosItem, SignageSlide } from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
+import { buildAllAnimationCss } from "./menu-item-style-utils";
 
 export interface LayoutPreviewProps {
   config: SignageLayoutConfig;
@@ -22,50 +23,26 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   onOpenContentPanel,
 }) => {
   const activeSlide = config.slides[activeSlideIndex] ?? config.slides[0];
-  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? (activeSlide as ColumnLayoutSlide) : null;
+  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? activeSlide : null;
 
+  // Load Google font for base font only
   const fontsToLoad = new Set<string>();
   if (config.googleFont) fontsToLoad.add(config.googleFont);
-  if (config.typography) {
-    Object.values(config.typography).forEach((f) => f && f !== "Inherit" && fontsToLoad.add(f));
-  }
 
-  // Scope all custom styles and typography selections to .signage-preview-container to prevent bleed
-  const customStyles = `
-    .signage-preview-container {
-      ${config.customCss ?? ""}
-    }
-    .signage-preview-container h5, .signage-preview-container .menu-item-title {
-      ${config.typography?.menuItemTitle ? `font-family: '${config.typography.menuItemTitle}', sans-serif !important;` : ""}
-      ${config.typography?.menuItemTitleColor ? `color: ${config.typography.menuItemTitleColor} !important;` : ""}
-    }
-    .signage-preview-container .text-emerald-400, .signage-preview-container .menu-item-price {
-      ${config.typography?.menuItemPrice ? `font-family: '${config.typography.menuItemPrice}', sans-serif !important;` : ""}
-      ${config.typography?.menuItemPriceColor ? `color: ${config.typography.menuItemPriceColor} !important;` : ""}
-    }
-    .signage-preview-container p, .signage-preview-container .menu-item-desc {
-      ${config.typography?.menuItemDescription ? `font-family: '${config.typography.menuItemDescription}', sans-serif !important;` : ""}
-      ${config.typography?.menuItemDescriptionColor ? `color: ${config.typography.menuItemDescriptionColor} !important;` : ""}
-    }
-    .signage-preview-container .marketing-text {
-      ${config.typography?.marketingText ? `font-family: '${config.typography.marketingText}', sans-serif !important;` : ""}
-      ${config.typography?.marketingTextColor ? `color: ${config.typography.marketingTextColor} !important;` : ""}
-    }
-  `;
+  // Animation keyframes from menuItemStyles
+  const animationCss = config.menuItemStyles
+    ? buildAllAnimationCss(config.menuItemStyles)
+    : "";
 
-  // Build background style from active slide settings
-  const bgStyle: React.CSSProperties & Record<string, string> = {
-    fontFamily: config.googleFont || "inherit",
+  // Custom CSS scoped to preview container
+  const customCss = config.customCss
+    ? `.signage-preview-container { ${config.customCss} }`
+    : "";
+
+  const bgStyle: React.CSSProperties = {
+    fontFamily: config.googleFont ? `'${config.googleFont}', sans-serif` : "inherit",
     backgroundColor: columnSlide?.backgroundColor ?? "#000000",
-    "--menu-title-font": config.typography?.menuItemTitle || "inherit",
-    "--menu-price-font": config.typography?.menuItemPrice || "inherit",
-    "--menu-description-font": config.typography?.menuItemDescription || "inherit",
-    "--marketing-text-font": config.typography?.marketingText || "inherit",
-    "--menu-title-color": config.typography?.menuItemTitleColor || "inherit",
-    "--menu-price-color": config.typography?.menuItemPriceColor || "inherit",
-    "--menu-desc-color": config.typography?.menuItemDescriptionColor || "inherit",
-    "--marketing-text-color": config.typography?.marketingTextColor || "inherit",
-  } as any;
+  };
   if (columnSlide?.backgroundImageUrl) {
     bgStyle.backgroundImage = `url(${columnSlide.backgroundImageUrl})`;
     bgStyle.backgroundSize = "cover";
@@ -81,9 +58,14 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
           href={`https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`}
         />
       ))}
-      <style>{customStyles}</style>
+      {(customCss || animationCss) && (
+        <style>{`${animationCss}\n${customCss}`}</style>
+      )}
 
-      <div className="w-full h-full relative overflow-hidden signage-preview-container" style={bgStyle}>
+      <div
+        className="w-full h-full relative overflow-hidden signage-preview-container"
+        style={bgStyle}
+      >
         {!activeSlide ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-500 text-sm font-mono">Click + Add Slide to begin</p>

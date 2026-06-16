@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Edit2, Copy, Trash2, Check, ExternalLink } from "lucide-react";
+import { Edit2, Copy, Trash2, Check, ExternalLink, Eye } from "lucide-react";
 
 interface DeckCardProps {
   deck: any; // using any temporarily to avoid strict type mismatch with database snake_case keys
@@ -101,6 +102,13 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
         >
           Edit
         </button>
+        <Link
+          href={`/tv/${deck.id}/preview`}
+          className="p-2 border border-white/10 hover:border-primary/40 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          title="Preview Deck"
+        >
+          <Eye className="w-4 h-4" />
+        </Link>
         <a
           href={getLiveUrl(deck.slug)}
           target="_blank"

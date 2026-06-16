@@ -1,121 +1,129 @@
 "use client";
 
 import React from "react";
-import { ColumnConfig, PosItem } from "@soustools/api-types";
-import { Image as ImageIcon, Sparkles } from "lucide-react";
+import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
+import { Image as ImageIcon } from "lucide-react";
+import {
+  buildCardStyle,
+  buildTitleStyle,
+  buildPriceStyle,
+  buildDescriptionStyle,
+  resolveItemState,
+  isItemHighlighted,
+} from "./menu-item-style-utils";
+import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 
 interface ColumnContentViewProps {
   column: ColumnConfig;
   items: PosItem[];
-  soldOutBehavior?: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
+/**
+ * Renders column content in the editor canvas using the same
+ * menuItemStyles system as the live TV player, ensuring visual parity.
+ */
 export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
   column,
   items,
-  soldOutBehavior = "LABEL",
+  menuItemStyles,
 }) => {
-  let selectedItems = (column.itemIds || [])
-    .map((id) => items.find((item) => item.id === id || item.squareId === id))
-    .filter((item): item is PosItem => !!item);
+  const styles = menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES;
 
-  // Apply HIDE behavior
-  if (soldOutBehavior === "HIDE") {
-    selectedItems = selectedItems.filter((item) => !item.isSoldOut);
+  const selectedItems = (column.itemIds || [])
+    .map((id) => items.find((item) => item.id === id || item.squareId === id))
+    .filter((item): item is PosItem => !!item)
+    .filter((item) => !item.isSoldOut || !styles.soldOut.hidden);
+
+  if (column.type === "MENU") {
+    return (
+      <div className="w-full h-full overflow-y-auto flex flex-col gap-1.5 py-1">
+        {selectedItems.length === 0 ? (
+          <span className="text-[10px] text-slate-500 italic block text-center">
+            No items selected
+          </span>
+        ) : (
+          selectedItems.map((item) => {
+            const highlighted = isItemHighlighted(item, column.highlightItems);
+            const stateStyle = resolveItemState(item, highlighted, styles);
+            const cardStyle = buildCardStyle(stateStyle);
+            const titleStyle = buildTitleStyle(stateStyle);
+            const priceStyle = buildPriceStyle(stateStyle);
+            const descStyle = buildDescriptionStyle(stateStyle);
+
+            return (
+              <div
+                key={item.id}
+                className="p-1.5 rounded flex flex-col justify-between gap-1 border transition-all"
+                style={cardStyle}
+              >
+                <div className="flex items-center justify-between w-full gap-1">
+                  <span className="font-semibold truncate max-w-[70%] text-[10px]" style={titleStyle}>
+                    {stateStyle.icon && stateStyle.iconPosition === "before-title" && (
+                      <span className="mr-0.5">{stateStyle.icon}</span>
+                    )}
+                    {item.name}
+                    {stateStyle.icon && stateStyle.iconPosition === "after-title" && (
+                      <span className="ml-0.5">{stateStyle.icon}</span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="font-mono text-[10px]" style={priceStyle}>
+                      ${Number(item.price).toFixed(2)}
+                    </span>
+                    {stateStyle.icon && stateStyle.iconPosition === "top-right-corner" && (
+                      <span className="text-[10px]">{stateStyle.icon}</span>
+                    )}
+                  </div>
+                </div>
+                {item.description && (
+                  <p className="text-[8px] line-clamp-2 text-left" style={descStyle}>
+                    {item.description}
+                  </p>
+                )}
+                {stateStyle.badge && (
+                  <span
+                    className="text-[7px] font-bold uppercase px-1 py-0.5 self-start"
+                    style={{
+                      backgroundColor: stateStyle.badge.color,
+                      color: stateStyle.badge.textColor,
+                      borderRadius: stateStyle.badge.borderRadius ?? "3px",
+                    }}
+                  >
+                    {stateStyle.badge.text}
+                  </span>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    );
   }
 
-  return (
-    <>
-      {column.type === "MENU" && (
-        <div className="space-y-1.5 max-h-[160px] overflow-y-auto w-full">
-          {selectedItems.length === 0 ? (
-            <span className="text-[10px] text-slate-500 italic block text-center">No items selected</span>
-          ) : (
-            selectedItems.map((item) => {
-              const isStarred = column.highlightItems?.some((h) =>
-                typeof h === "string" ? h === item.id : h.itemId === item.id
-              );
-              const isSoldOut = item.isSoldOut;
-              const strikeClass = isSoldOut && soldOutBehavior === "STRIKE" ? "line-through opacity-40" : "";
-              const grayClass = isSoldOut && soldOutBehavior === "GRAY_OUT" ? "grayscale opacity-50" : "";
+  if (column.type === "IMAGE") {
+    return (
+      <div className="w-full h-full min-h-[120px] flex items-center justify-center bg-black/20 rounded overflow-hidden">
+        {column.imageUrl ? (
+          <img src={column.imageUrl} alt="Column visual" className={`w-full h-full object-${column.fit || "cover"}`} />
+        ) : (
+          <div className="flex flex-col items-center text-slate-600 text-[10px]">
+            <ImageIcon className="w-6 h-6 mb-1" />
+            <span>No Image URL</span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
-              return (
-                <div
-                  key={item.id}
-                  className={`p-1.5 rounded flex flex-col justify-between gap-1 ${
-                    isStarred ? "bg-primary/20 border border-primary/40" : "bg-white/5"
-                  } ${strikeClass} ${grayClass}`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span
-                      className="font-semibold text-white truncate max-w-[70%]"
-                      style={{ fontFamily: "var(--menu-title-font)", color: "var(--menu-title-color)" }}
-                    >
-                      {item.name}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {isSoldOut && soldOutBehavior === "LABEL" && (
-                        <span className="bg-red-600 text-white text-[7px] px-1 py-0.5 rounded font-black uppercase">
-                          Sold Out
-                        </span>
-                      )}
-                      {isStarred && <Sparkles className="w-3 h-3 text-yellow-400 fill-yellow-400" />}
-                      <span
-                        className="text-slate-400 font-mono"
-                        style={{ fontFamily: "var(--menu-price-font)", color: "var(--menu-price-color)" }}
-                      >
-                        ${Number(item.price).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                  {item.description && (
-                    <p
-                      className="text-[8px] text-slate-400 line-clamp-2 text-left"
-                      style={{ fontFamily: "var(--menu-description-font)", color: "var(--menu-desc-color)" }}
-                    >
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-      )}
+  if (column.type === "TEXT") {
+    return (
+      <div className="text-center space-y-1">
+        <h4 className="text-xs font-bold text-white">{column.title || "Untitled"}</h4>
+        <p className="text-[10px] text-slate-400 leading-normal">{column.content || "Empty content"}</p>
+      </div>
+    );
+  }
 
-      {column.type === "IMAGE" && (
-        <div className="w-full h-full min-h-[120px] flex items-center justify-center bg-black/20 rounded overflow-hidden relative">
-          {column.imageUrl ? (
-            <img
-              src={column.imageUrl}
-              alt="Column visual"
-              className={`w-full h-full object-${column.fit || "cover"}`}
-            />
-          ) : (
-            <div className="flex flex-col items-center text-slate-600 text-[10px]">
-              <ImageIcon className="w-6 h-6 mb-1" />
-              <span>No Image URL</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {column.type === "TEXT" && (
-        <div className="text-center space-y-1">
-          <h4
-            className="text-xs font-bold text-white"
-            style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
-          >
-            {column.title || "Untitled"}
-          </h4>
-          <p
-            className="text-[10px] text-slate-400 leading-normal"
-            style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
-          >
-            {column.content || "Empty content"}
-          </p>
-        </div>
-      )}
-    </>
-  );
+  return null;
 };

@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { ColumnConfig, PosItem } from "@soustools/api-types";
+import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { SingleColumn } from "./single-column";
 
 interface ColumnLayoutRendererProps {
   columns: ColumnConfig[];
   splitRatio?: string;
   items: PosItem[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
 /** Parse a "60/40" splitRatio into flex-basis values for exactly 2 columns. */
@@ -30,7 +30,7 @@ export function ColumnLayoutRenderer({
   columns,
   splitRatio,
   items,
-  soldOutBehavior,
+  menuItemStyles,
 }: ColumnLayoutRendererProps) {
   return (
     <div className="w-full h-full min-h-screen bg-transparent flex flex-row p-0 gap-0">
@@ -43,7 +43,7 @@ export function ColumnLayoutRenderer({
             index={index}
             style={style}
             items={items}
-            soldOutBehavior={soldOutBehavior}
+            menuItemStyles={menuItemStyles}
           />
         );
       })}

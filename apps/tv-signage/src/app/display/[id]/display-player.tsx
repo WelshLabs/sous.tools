@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useDisplayPlayer } from "./use-display-player";
 import { PairingScreen } from "./pairing-screen";
 import { SlideCarousel } from "./slide-carousel";
+import { buildAllAnimationCss } from "./menu-item-style-utils";
 
 interface DisplayPlayerProps {
   displayId: string;
@@ -17,30 +18,19 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
     const config = layout?.config;
     if (!config) return;
 
-    // Aggregate all unique Google Fonts to load
     const fontsToLoad = new Set<string>();
-    if (config.googleFont) {
-      fontsToLoad.add(config.googleFont);
-    }
+    if (config.googleFont) fontsToLoad.add(config.googleFont);
     if (config.typography) {
-      const {
-        menuItemTitle,
-        menuItemPrice,
-        menuItemDescription,
-        marketingText,
-      } = config.typography;
+      const { menuItemTitle, menuItemPrice, menuItemDescription, marketingText } = config.typography;
       if (menuItemTitle) fontsToLoad.add(menuItemTitle);
       if (menuItemPrice) fontsToLoad.add(menuItemPrice);
       if (menuItemDescription) fontsToLoad.add(menuItemDescription);
       if (marketingText) fontsToLoad.add(marketingText);
     }
 
-    // Clean up existing dynamic font links
     const fontIdPrefix = "signage-dynamic-font";
-    const existingLinks = document.querySelectorAll(`[id^='${fontIdPrefix}']`);
-    existingLinks.forEach((el) => el.remove());
+    document.querySelectorAll(`[id^='${fontIdPrefix}']`).forEach((el) => el.remove());
 
-    // Inject links for all unique fonts
     Array.from(fontsToLoad).forEach((font, idx) => {
       const link = document.createElement("link");
       link.id = `${fontIdPrefix}-${idx}`;
@@ -56,6 +46,18 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
       style.id = styleId;
       style.textContent = config.customCss;
       document.head.appendChild(style);
+    }
+
+    const animStyleId = "signage-item-animations";
+    document.getElementById(animStyleId)?.remove();
+    if (config.menuItemStyles) {
+      const animCss = buildAllAnimationCss(config.menuItemStyles);
+      if (animCss) {
+        const animStyle = document.createElement("style");
+        animStyle.id = animStyleId;
+        animStyle.textContent = animCss;
+        document.head.appendChild(animStyle);
+      }
     }
   }, [layout]);
 
@@ -83,28 +85,17 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
   }
 
   const slides = layout?.config?.slides || [];
-  const soldOutBehavior = layout?.config?.soldOutBehavior || "LABEL";
+  const menuItemStyles = layout?.config?.menuItemStyles;
 
   return (
     <main
       className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white"
-      style={{
-        fontFamily: layout?.config?.googleFont || "inherit",
-        // CSS variables for typography overrides
-        ["--menu-title-font" as any]: layout?.config?.typography?.menuItemTitle || "inherit",
-        ["--menu-price-font" as any]: layout?.config?.typography?.menuItemPrice || "inherit",
-        ["--menu-description-font" as any]: layout?.config?.typography?.menuItemDescription || "inherit",
-        ["--marketing-text-font" as any]: layout?.config?.typography?.marketingText || "inherit",
-        ["--menu-title-color" as any]: layout?.config?.typography?.menuItemTitleColor || "inherit",
-        ["--menu-price-color" as any]: layout?.config?.typography?.menuItemPriceColor || "inherit",
-        ["--menu-desc-color" as any]: layout?.config?.typography?.menuItemDescriptionColor || "inherit",
-        ["--marketing-text-color" as any]: layout?.config?.typography?.marketingTextColor || "inherit",
-      }}
+      style={{ fontFamily: layout?.config?.googleFont || "inherit" }}
     >
       <SlideCarousel
         slides={slides}
         items={items}
-        soldOutBehavior={soldOutBehavior}
+        menuItemStyles={menuItemStyles}
       />
     </main>
   );

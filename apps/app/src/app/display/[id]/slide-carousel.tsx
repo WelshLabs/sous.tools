@@ -1,19 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { SignageSlide, PosItem, ColumnLayoutSlide } from "@soustools/api-types";
+import { SignageSlide, PosItem, ColumnLayoutSlide, MenuItemStyles } from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
 
 interface SlideCarouselProps {
   slides: SignageSlide[];
   items: PosItem[];
-  soldOutBehavior: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
 export function SlideCarousel({
   slides,
   items,
-  soldOutBehavior,
+  menuItemStyles,
 }: SlideCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleIndex, setVisibleIndex] = useState(0);
@@ -78,7 +78,7 @@ export function SlideCarousel({
       <SlideRenderer
         slide={activeSlide}
         items={items}
-        soldOutBehavior={soldOutBehavior}
+        menuItemStyles={menuItemStyles}
       />
     </div>
   );

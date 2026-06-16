@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ColumnLayoutSlide, PosItem, SignageSlide } from "@soustools/api-types";
+import { ColumnLayoutSlide, PosItem, SignageSlide, MenuItemStyles } from "@soustools/api-types";
 import { PreviewColumnEditor } from "./preview-column-editor";
 
 interface PreviewColumnLayoutProps {
@@ -9,7 +9,7 @@ interface PreviewColumnLayoutProps {
   items: PosItem[];
   activeSlideIndex: number;
   onUpdateSlide: (index: number, updates: Partial<SignageSlide>) => void;
-  soldOutBehavior?: "HIDE" | "LABEL" | "STRIKE" | "GRAY_OUT";
+  menuItemStyles?: MenuItemStyles;
 }
 
 export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
@@ -17,7 +17,7 @@ export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
   items,
   activeSlideIndex,
   onUpdateSlide,
-  soldOutBehavior = "LABEL",
+  menuItemStyles,
 }) => {
   const columns = activeSlide.columns || [];
 
@@ -61,7 +61,7 @@ export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
             key={idx}
             column={col}
             items={items}
-            soldOutBehavior={soldOutBehavior}
+            menuItemStyles={menuItemStyles}
             onUpdate={(updates) => {
               const newCols = [...columns];
               newCols[idx] = { ...newCols[idx], ...updates };
