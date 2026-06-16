@@ -7,6 +7,8 @@ import { DisplaysService } from "./displays.service";
 import { SignageGateway } from "./signage.gateway";
 import { PosSimulatorController } from "../pos-simulator/pos-simulator.controller";
 import { supabase } from "../../lib/supabase";
+import { DevicesController } from "./devices.controller";
+import { DevicesService } from "./devices.service";
 
 jest.mock("../../lib/supabase", () => ({
   supabase: {
@@ -28,6 +30,7 @@ describe("Signage Module & POS Simulator", () => {
   let displaysController: DisplaysController;
   let posController: PosSimulatorController;
   let gateway: SignageGateway;
+  let devicesController: DevicesController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,14 +38,16 @@ describe("Signage Module & POS Simulator", () => {
         LayoutsController,
         DisplaysController,
         PosSimulatorController,
+        DevicesController,
       ],
-      providers: [LayoutsService, DisplaysService, SignageGateway],
+      providers: [LayoutsService, DisplaysService, SignageGateway, DevicesService],
     }).compile();
 
     layoutsController = module.get<LayoutsController>(LayoutsController);
     displaysController = module.get<DisplaysController>(DisplaysController);
     posController = module.get<PosSimulatorController>(PosSimulatorController);
     gateway = module.get<SignageGateway>(SignageGateway);
+    devicesController = module.get<DevicesController>(DevicesController);
 
     // Mock WebSocket Server
     gateway.server = {
@@ -145,5 +150,49 @@ describe("Signage Module & POS Simulator", () => {
     expect(response.data).toEqual(mockItem);
     expect(gateway.server.to).toHaveBeenCalledWith("display:display-1");
     expect(gateway.server.to).toHaveBeenCalledWith("display:display-2");
+  });
+
+  it("should find a device successfully", async () => {
+    const mockDevice = {
+      id: "device-1",
+      name: "Device 1",
+      pairing_code: "XYZ1",
+      is_paired: true,
+      timezone: "America/New_York",
+      maintenance_window: { hour: 2, minute: 0, dayOfWeek: null },
+    };
+    (supabase.from as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: mockDevice, error: null }),
+    });
+
+    const response = await devicesController.findOne("device-1");
+    expect(response.success).toBe(true);
+    expect(response.data).toEqual(mockDevice);
+  });
+
+  it("should update a device successfully", async () => {
+    const mockDevice = {
+      id: "device-1",
+      name: "Updated Device",
+      timezone: "UTC",
+      maintenance_window: { hour: 4, minute: 30, dayOfWeek: 2 },
+    };
+    (supabase.from as jest.Mock).mockReturnValue({
+      update: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: mockDevice, error: null }),
+    });
+
+    const response = await devicesController.update(
+      "device-1",
+      "Updated Device",
+      "UTC",
+      { hour: 4, minute: 30, dayOfWeek: 2 }
+    );
+    expect(response.success).toBe(true);
+    expect(response.data).toEqual(mockDevice);
   });
 });

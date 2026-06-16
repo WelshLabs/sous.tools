@@ -12,6 +12,7 @@ export interface Config {
   readonly API_BASE_URL: string;
   readonly APP_BASE_URL: string;
   readonly PRODUCTION_SQUARE_ACCESS_TOKEN: string;
+  readonly PORT: number;
 }
 
 /**
@@ -52,5 +53,10 @@ export const config: Config = Object.freeze({
   PRODUCTION_SQUARE_ACCESS_TOKEN: isMockEnv
     ? "prod-square-token-placeholder"
     : (process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || (secrets as any).PRODUCTION_SQUARE_ACCESS_TOKEN || "prod-square-token-placeholder"),
+  PORT: Number(
+    isMockEnv
+      ? 6000
+      : (process.env.PORT || (secrets as any).PORT || 6000)
+  ),
 });
 
