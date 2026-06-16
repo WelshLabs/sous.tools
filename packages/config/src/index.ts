@@ -9,6 +9,9 @@ export interface Config {
   readonly SQUARE_ENVIRONMENT: string;
   readonly GOOGLE_CLIENT_ID: string;
   readonly GOOGLE_CLIENT_SECRET: string;
+  readonly API_BASE_URL: string;
+  readonly APP_BASE_URL: string;
+  readonly PRODUCTION_SQUARE_ACCESS_TOKEN: string;
 }
 
 /**
@@ -40,5 +43,14 @@ export const config: Config = Object.freeze({
   GOOGLE_CLIENT_SECRET: isMockEnv
     ? "google-client-secret-placeholder"
     : (process.env.GOOGLE_CLIENT_SECRET || secrets.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder"),
+  API_BASE_URL: isMockEnv
+    ? "http://localhost:6000"
+    : (process.env.API_BASE_URL || (secrets as any).API_BASE_URL || "http://localhost:6000"),
+  APP_BASE_URL: isMockEnv
+    ? "http://localhost:3000"
+    : (process.env.APP_BASE_URL || (secrets as any).APP_BASE_URL || "http://localhost:3000"),
+  PRODUCTION_SQUARE_ACCESS_TOKEN: isMockEnv
+    ? "prod-square-token-placeholder"
+    : (process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || (secrets as any).PRODUCTION_SQUARE_ACCESS_TOKEN || "prod-square-token-placeholder"),
 });
 

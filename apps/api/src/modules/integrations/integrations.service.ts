@@ -12,10 +12,10 @@ export class IntegrationsService {
       const isProd = config.SQUARE_ENVIRONMENT === "production";
       const baseUrl = isProd ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
       const scope = "MERCHANT_PROFILE_READ+ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE";
-      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=http://localhost:6000/integrations/callback/square`;
+      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${config.API_BASE_URL}/integrations/callback/square`;
     } else if (provider === "google") {
       const scope = encodeURIComponent("openid email profile https://www.googleapis.com/auth/drive.readonly");
-      const redirectUri = encodeURIComponent("http://localhost:6000/integrations/callback/google");
+      const redirectUri = encodeURIComponent(`${config.API_BASE_URL}/integrations/callback/google`);
       return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${config.GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&state=${state}`;
     }
     throw new Error(`Unsupported provider: ${provider}`);
@@ -29,7 +29,7 @@ export class IntegrationsService {
         code,
         client_id: config.GOOGLE_CLIENT_ID,
         client_secret: config.GOOGLE_CLIENT_SECRET,
-        redirect_uri: "http://localhost:6000/integrations/callback/google",
+        redirect_uri: `${config.API_BASE_URL}/integrations/callback/google`,
         grant_type: "authorization_code",
       }),
     });

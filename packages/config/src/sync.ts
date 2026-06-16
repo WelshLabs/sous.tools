@@ -94,6 +94,15 @@ export const secrets = {
     const googleClientSecret = secretsArray.find(
       (s: any) => s.secretKey === "GOOGLE_CLIENT_SECRET",
     )?.secretValue || "google-client-secret-placeholder";
+    const apiBaseUrl = secretsArray.find(
+      (s: any) => s.secretKey === "API_BASE_URL",
+    )?.secretValue || "http://localhost:6000";
+    const appBaseUrl = secretsArray.find(
+      (s: any) => s.secretKey === "APP_BASE_URL",
+    )?.secretValue || "http://localhost:3000";
+    const productionSquareAccessToken = secretsArray.find(
+      (s: any) => s.secretKey === "PRODUCTION_SQUARE_ACCESS_TOKEN",
+    )?.secretValue || "prod-square-token-placeholder";
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error(
@@ -109,6 +118,9 @@ export const secrets = {
   SQUARE_CLIENT_SECRET: ${JSON.stringify(squareClientSecret)},
   GOOGLE_CLIENT_ID: ${JSON.stringify(googleClientId)},
   GOOGLE_CLIENT_SECRET: ${JSON.stringify(googleClientSecret)},
+  API_BASE_URL: ${JSON.stringify(apiBaseUrl)},
+  APP_BASE_URL: ${JSON.stringify(appBaseUrl)},
+  PRODUCTION_SQUARE_ACCESS_TOKEN: ${JSON.stringify(productionSquareAccessToken)},
 };
 `;
 

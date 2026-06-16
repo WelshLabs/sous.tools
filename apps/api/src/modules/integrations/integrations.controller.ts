@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Param, Query, Res } from "@nestjs/common";
 import { Response } from "express";
 import { ApiResponse, IntegrationStatus } from "@soustools/api-types";
+import { config } from "@soustools/config";
 import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
 
@@ -34,10 +35,10 @@ export class IntegrationsController {
       } else {
         throw new Error(`Unsupported provider: ${provider}`);
       }
-      res.redirect("http://localhost:3000/settings?tab=integrations&status=success");
+      res.redirect(`${config.APP_BASE_URL}/settings?tab=integrations&status=success`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
-      res.redirect(`http://localhost:3000/settings?tab=integrations&status=error&message=${encodeURIComponent(msg)}`);
+      res.redirect(`${config.APP_BASE_URL}/settings?tab=integrations&status=error&message=${encodeURIComponent(msg)}`);
     }
   }
 
