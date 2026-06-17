@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import { SignageDisplay, PosItem } from "@soustools/api-types";
 import { SignageLayout } from "./types";
 import { mapDbItemToPosItem, registerDisplayDevice, RawDbSquareItem } from "./helpers";
+import { config } from "@soustools/config";
 
 export function useDisplayPlayer(displayId: string) {
   const [display, setDisplay] = useState<SignageDisplay | null>(null);
@@ -97,7 +98,7 @@ export function useDisplayPlayer(displayId: string) {
   }, [displayId, fetchDisplayAndLayout]);
 
   useEffect(() => {
-    const socketUrl = window.location.origin;
+    const socketUrl = config.API_BASE_URL || window.location.origin;
     const socket = io(socketUrl, {
       query: { displayId, deckId: display?.deckId || "" },
     });
