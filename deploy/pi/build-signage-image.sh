@@ -9,9 +9,19 @@ DEPLOY_DIR="$WORKDIR/deploy/pi"
 BUILD_DIR="$WORKDIR/build-signage"
 IMAGE_URL="https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/2024-07-04-raspios-bookworm-arm64-lite.img.xz"
 BASE_IMAGE_NAME="2024-07-04-raspios-bookworm-arm64-lite.img"
-OUTPUT_IMAGE_NAME="sous-tools-signage-rpi5.img"
+# Determine target environment
+ENV_TARGET=${1:-prod}
+if [ "$ENV_TARGET" = "staging" ]; then
+  OUTPUT_IMAGE_NAME="sous-tools-signage-rpi5-staging.img"
+  INFISICAL_ENV="staging"
+  SIGNAGE_IMAGE_TAG="staging"
+else
+  OUTPUT_IMAGE_NAME="sous-tools-signage-rpi5-prod.img"
+  INFISICAL_ENV="prod"
+  SIGNAGE_IMAGE_TAG="production"
+fi
 
-echo "=== Starting Customized OS Image Build Pipeline ==="
+echo "=== Starting Customized OS Image Build Pipeline ($ENV_TARGET) ==="
 
 # 1. Install sdm if not present
 if ! command -v sdm &> /dev/null; then
@@ -40,6 +50,16 @@ mkdir -p "$BUILD_DIR/sysfiles"
 cp "$DEPLOY_DIR/labwc-rc.xml" "$BUILD_DIR/sysfiles/"
 cp "$DEPLOY_DIR/kiosk.sh" "$BUILD_DIR/sysfiles/"
 cp "$DEPLOY_DIR/sync-watchtower.js" "$BUILD_DIR/sysfiles/"
+cp "$DEPLOY_DIR/fetch-secrets.js" "$BUILD_DIR/sysfiles/"
+
+# Generate the infisical.env configuration to be copied into the image
+cat > "$BUILD_DIR/sysfiles/sous-infisical.env" <<EOF
+INFISICAL_CLIENT_ID=f4ed7880-ba12-4d75-9894-0771c7fb14c0
+INFISICAL_CLIENT_SECRET=c97c2f8014896437b7af8ef00791e3f92beebfd39e8929140d9fb86dad5181a8
+INFISICAL_PROJECT_ID=4e40fdc4-358b-4216-b7c4-30e5506f9277
+INFISICAL_ENV=$INFISICAL_ENV
+SIGNAGE_IMAGE_TAG=$SIGNAGE_IMAGE_TAG
+EOF
 
 # 5. Run sdm to customize image
 echo "Running sdm image customization..."
@@ -52,11 +72,13 @@ sudo sdm --customize "$OUTPUT_IMAGE_NAME" \
   --plugin copyfile '{"source":"sysfiles/labwc-rc.xml", "destination":"/tmp/labwc-rc.xml"}' \
   --plugin copyfile '{"source":"sysfiles/kiosk.sh", "destination":"/tmp/kiosk.sh"}' \
   --plugin copyfile '{"source":"sysfiles/sync-watchtower.js", "destination":"/tmp/sync-watchtower.js"}' \
+  --plugin copyfile '{"source":"sysfiles/fetch-secrets.js", "destination":"/tmp/fetch-secrets.js"}' \
+  --plugin copyfile '{"source":"sysfiles/sous-infisical.env", "destination":"/etc/sous-infisical.env"}' \
   --plugin chroot "script=$DEPLOY_DIR/customize-chroot.sh"
 
 # 6. Compress customized image for distribution
 echo "Compressing final signage OS image..."
-xz -k -9 "$OUTPUT_IMAGE_NAME"
+xz -f -k -9 "$OUTPUT_IMAGE_NAME"
 
 echo "=== Build Pipeline Completed Successfully ==="
 echo "Customized image is ready: $BUILD_DIR/${OUTPUT_IMAGE_NAME}.xz"

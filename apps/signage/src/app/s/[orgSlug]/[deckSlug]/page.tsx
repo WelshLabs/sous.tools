@@ -6,6 +6,7 @@ import { PosItem, SignageLayoutConfig } from "@soustools/api-types";
 import { SlideCarousel } from "../../../display/[id]/slide-carousel";
 import { mapDbItemToPosItem, RawDbSquareItem } from "../../../display/[id]/helpers";
 import { buildAllAnimationCss } from "../../../display/[id]/menu-item-style-utils";
+import { config } from "@soustools/config";
 
 interface FriendlyDeck {
   id: string;
@@ -93,7 +94,8 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
 
   useEffect(() => {
     if (!deck?.id) return;
-    const socket = io(window.location.origin, { query: { deckId: deck.id } });
+    const socketUrl = config.API_BASE_URL || window.location.origin;
+    const socket = io(socketUrl, { query: { deckId: deck.id } });
     socket.on("connect", () => { socket.emit("join", { deckId: deck.id }); });
     socket.on("deck_updated", (payload: { deckId: string; config: SignageLayoutConfig }) => {
       if (payload.deckId === deck.id) {

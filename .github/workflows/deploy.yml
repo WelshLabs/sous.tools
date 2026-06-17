@@ -1,0 +1,108 @@
+name: Sous Tools CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  migrate:
+    name: Database Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11.5.2
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Fetch Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.7
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-id: ${{ secrets.INFISICAL_PROJECT_ID }}
+          env-slug: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
+
+      - name: Run Supabase Migrations
+        env:
+          SUPABASE_PASSWORD: ${{ env.SUPABASE_PASSWORD }}
+          SUPABASE_REF: ${{ github.ref_name == 'main' && 'gfifeaiooujizfanmwgd' || 'nznsxjjrpabbfutoovuj' }}
+        run: |
+          if [ -z "$SUPABASE_PASSWORD" ]; then
+            echo "Error: SUPABASE_PASSWORD is not defined."
+            exit 1
+          fi
+          npx supabase db push --db-url "postgresql://postgres:$SUPABASE_PASSWORD@db.$SUPABASE_REF.supabase.co:5432/postgres"
+
+  docker-build:
+    name: Build & Push Signage Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/signage/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            conarwelsh/sous-signage:${{ github.ref_name == 'main' && 'production' || 'staging' }}
+            conarwelsh/sous-signage:${{ github.sha }}
+
+  pi-image-build:
+    name: Build & Release Pi OS Image
+    runs-on: ubuntu-latest
+    needs: docker-build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install sdm dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static binfmt-support systemd-container xz-utils
+
+      - name: Run build-signage-image.sh
+        run: |
+          chmod +x deploy/pi/build-signage-image.sh
+          chmod +x deploy/pi/customize-chroot.sh
+          # Build target: 'staging' for staging branch, 'prod' for main branch
+          ./deploy/pi/build-signage-image.sh ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
+
+      - name: Create GitHub Release and Upload Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+          name: ${{ github.ref_name == 'main' && 'Production Signage Image' || 'Staging Signage Image' }}
+          draft: false
+          prerelease: ${{ github.ref_name != 'main' }}
+          files: build-signage/sous-tools-signage-rpi5-${{ github.ref_name == 'main' && 'prod' || 'staging' }}.img.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
