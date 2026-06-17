@@ -41,3 +41,8 @@ lerna-debug.log*
 # Testing coverage
 coverage/
 .nyc_output/
+.vercel
+
+# Deploy secrets
+deploy/vercel-env.sh
+deploy/vercel-rest.js

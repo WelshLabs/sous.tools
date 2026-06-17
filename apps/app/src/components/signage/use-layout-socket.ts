@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { SignageLayoutConfig } from "@soustools/api-types";
+import { config } from "@soustools/config";
 
 export function useLayoutSocket(
   deckId: string | undefined,
@@ -11,7 +12,7 @@ export function useLayoutSocket(
   useEffect(() => {
     if (!deckId) return;
 
-    const socketUrl = window.location.origin;
+    const socketUrl = config.API_BASE_URL || window.location.origin;
     const socket = io(socketUrl, {
       query: { deckId },
     });
