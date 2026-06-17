@@ -13,7 +13,7 @@ interface DbDeviceRow {
   maintenance_window: {
     hour: number;
     minute: number;
-    day_of_week: string;
+    day_of_week: string | number;
   };
   created_at: string;
 }
@@ -21,7 +21,7 @@ interface DbDeviceRow {
 interface MaintenanceWindowInput {
   hour: number;
   minute: number;
-  dayOfWeek: string;
+  dayOfWeek: number | null;
 }
 
 /**
@@ -96,7 +96,9 @@ export class DevicesService {
       maintenanceWindow: {
         hour: row.maintenance_window?.hour ?? 3,
         minute: row.maintenance_window?.minute ?? 0,
-        dayOfWeek: row.maintenance_window?.day_of_week ?? "*",
+        dayOfWeek: typeof row.maintenance_window?.day_of_week === "number"
+          ? row.maintenance_window.day_of_week
+          : null,
       },
       createdAt: row.created_at,
     };
