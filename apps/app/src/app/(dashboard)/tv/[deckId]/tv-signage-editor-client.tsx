@@ -7,6 +7,7 @@ import { MOCK_POS_ITEMS } from "../../../../components/signage/mock-data";
 import { RefreshCw } from "lucide-react";
 import { io } from "socket.io-client";
 import { mapDbItemToPosItem, RawDbSquareItem } from "../../../display/[id]/helpers";
+import { config } from "@soustools/config";
 
 interface TVSignageEditorClientProps {
   deckId: string;
@@ -47,7 +48,7 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
   }, [deckId]);
 
   useEffect(() => {
-    const socketUrl = window.location.origin;
+    const socketUrl = config.API_BASE_URL || window.location.origin;
     const socket = io(socketUrl, {
       query: { deckId },
     });

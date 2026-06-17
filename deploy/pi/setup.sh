@@ -65,7 +65,8 @@ chown -R soustools:soustools /home/soustools/signage/sync
 sudo bash -c 'cat > /etc/systemd/system/signage-sync.service <<EOF
 [Unit]
 Description=Sous Tools Signage Watchtower Sync Daemon
-After=network.target
+After=network.target signage-secrets-fetch.service
+Requires=signage-secrets-fetch.service
 
 [Service]
 Type=simple
@@ -79,8 +80,72 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF'
 
+# 8. Create template Infisical env file if not present
+if [ ! -f /etc/sous-infisical.env ]; then
+  sudo bash -c 'cat > /etc/sous-infisical.env <<EOF
+INFISICAL_CLIENT_ID=your-client-id
+INFISICAL_CLIENT_SECRET=your-client-secret
+INFISICAL_PROJECT_ID=your-project-id
+INFISICAL_ENV=prod
+SIGNAGE_IMAGE_TAG=production
+EOF'
+  echo "Template /etc/sous-infisical.env created. Please configure it with your Infisical credentials."
+fi
+
+# 9. Configure fetch-secrets script
+echo "Configuring fetch-secrets script..."
+mkdir -p /home/soustools/signage/secrets
+cp ./fetch-secrets.js /home/soustools/signage/secrets/fetch-secrets.js
+chmod +x /home/soustools/signage/secrets/fetch-secrets.js
+chown -R soustools:soustools /home/soustools/signage/secrets
+
+# Create systemd service for fetching secrets on boot
+sudo bash -c 'cat > /etc/systemd/system/signage-secrets-fetch.service <<EOF
+[Unit]
+Description=Sous Tools Signage Secrets Fetcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/node /home/soustools/signage/secrets/fetch-secrets.js
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+
+# 10. Create systemd service for signage app container
+echo "Creating systemd service for signage docker container..."
+sudo bash -c 'cat > /etc/systemd/system/signage-app.service <<EOF
+[Unit]
+Description=Sous Tools Signage Docker Application
+After=docker.service network.target signage-secrets-fetch.service
+Requires=docker.service signage-secrets-fetch.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+EnvironmentFile=/etc/sous-infisical.env
+ExecStartPre=-/usr/bin/docker stop signage
+ExecStartPre=-/usr/bin/docker rm signage
+ExecStart=/usr/bin/docker run --name signage \\
+  -p 5003:5003 \\
+  -e INFISICAL_CLIENT_ID=\${INFISICAL_CLIENT_ID} \\
+  -e INFISICAL_CLIENT_SECRET=\${INFISICAL_CLIENT_SECRET} \\
+  -e INFISICAL_PROJECT_ID=\${INFISICAL_PROJECT_ID} \\
+  -e INFISICAL_ENV=\${INFISICAL_ENV} \\
+  conarwelsh/sous-signage:\${SIGNAGE_IMAGE_TAG}
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+
 sudo systemctl daemon-reload
 sudo systemctl enable signage-sync.service
+sudo systemctl enable signage-secrets-fetch.service
+sudo systemctl enable signage-app.service
 
 echo "=== Signage Client Setup Completed Successfully ==="
 echo "Please reboot your Raspberry Pi to initiate the kiosk."

@@ -20,12 +20,14 @@ loginctl enable-linger soustools
 echo "Creating application directories..."
 mkdir -p /home/soustools/.config/labwc
 mkdir -p /home/soustools/signage/sync
+mkdir -p /home/soustools/signage/secrets
 
 # 4. Copy files (placed in chroot /tmp by build-signage-image.sh)
 echo "Deploying client scripts..."
 cp /tmp/labwc-rc.xml /home/soustools/.config/labwc/rc.xml
 cp /tmp/kiosk.sh /home/soustools/signage/kiosk.sh
 cp /tmp/sync-watchtower.js /home/soustools/signage/sync/sync-watchtower.js
+cp /tmp/fetch-secrets.js /home/soustools/signage/secrets/fetch-secrets.js
 
 chmod +x /home/soustools/signage/kiosk.sh
 chown -R soustools:soustools /home/soustools/.config
@@ -55,7 +57,8 @@ echo "Creating systemd sync service..."
 cat > /etc/systemd/system/signage-sync.service <<EOF
 [Unit]
 Description=Sous Tools Signage Watchtower Sync Daemon
-After=network.target
+After=network.target signage-secrets-fetch.service
+Requires=signage-secrets-fetch.service
 
 [Service]
 Type=simple
@@ -69,9 +72,53 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
+# 7. Create systemd service for fetching secrets on boot
+cat > /etc/systemd/system/signage-secrets-fetch.service <<EOF
+[Unit]
+Description=Sous Tools Signage Secrets Fetcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/node /home/soustools/signage/secrets/fetch-secrets.js
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 8. Create systemd service for signage app container
+cat > /etc/systemd/system/signage-app.service <<EOF
+[Unit]
+Description=Sous Tools Signage Docker Application
+After=docker.service network.target signage-secrets-fetch.service
+Requires=docker.service signage-secrets-fetch.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+EnvironmentFile=/etc/sous-infisical.env
+ExecStartPre=-/usr/bin/docker stop signage
+ExecStartPre=-/usr/bin/docker rm signage
+ExecStart=/usr/bin/docker run --name signage \\
+  -p 5003:5003 \\
+  -e INFISICAL_CLIENT_ID=\${INFISICAL_CLIENT_ID} \\
+  -e INFISICAL_CLIENT_SECRET=\${INFISICAL_CLIENT_SECRET} \\
+  -e INFISICAL_PROJECT_ID=\${INFISICAL_PROJECT_ID} \\
+  -e INFISICAL_ENV=\${INFISICAL_ENV} \\
+  conarwelsh/sous-signage:\${SIGNAGE_IMAGE_TAG}
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Enable services
 systemctl enable signage-kiosk.service
 systemctl enable signage-sync.service
+systemctl enable signage-secrets-fetch.service
+systemctl enable signage-app.service
 
 # 7. Configure console autologin behavior
 echo "Enabling console autologin behavior..."
