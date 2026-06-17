@@ -3,7 +3,13 @@
   "globalEnv": ["INFISICAL_MOCK"],
   "tasks": {
     "secrets:sync": {
-      "cache": false
+      "cache": false,
+      "env": [
+        "INFISICAL_CLIENT_ID",
+        "INFISICAL_CLIENT_SECRET",
+        "INFISICAL_PROJECT_ID",
+        "INFISICAL_ENV"
+      ]
     },
     "build": {
       "dependsOn": ["secrets:sync", "^build"],
