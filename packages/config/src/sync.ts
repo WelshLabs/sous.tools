@@ -18,7 +18,6 @@ const SECRETS_FILE_PATH = path.join(__dirname, "secrets.ts");
  */
 async function sync(): Promise<void> {
   console.log("[@soustools/config] Starting secret synchronization...");
-  console.log("[@soustools/config] INFISICAL keys in env:", Object.keys(process.env).filter(k => k.startsWith("INFISICAL")));
 
   const isMock =
     process.env.INFISICAL_MOCK === "true" ||
