@@ -38,7 +38,7 @@ export class DevicesController {
     @Body("maintenanceWindow") maintenanceWindow?: {
       hour: number;
       minute: number;
-      dayOfWeek: string;
+      dayOfWeek: number | null;
     },
   ): Promise<ApiResponse<SignageDevice>> {
     return runControllerAction(() =>
