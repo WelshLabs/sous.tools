@@ -1,7 +1,10 @@
+import { config } from "@soustools/config";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@soustools/ui"],
   async rewrites() {
+    const apiBaseUrl = config.API_BASE_URL || "http://localhost:6000";
     return [
       {
         source: "/s/:path*",
@@ -9,35 +12,34 @@ const nextConfig = {
       },
       {
         source: "/api/integrations/:path*",
-        destination: "http://localhost:6000/integrations/:path*",
+        destination: `${apiBaseUrl}/integrations/:path*`,
       },
       {
         source: "/api/signage/:path*",
-        destination: "http://localhost:6000/signage/:path*",
+        destination: `${apiBaseUrl}/signage/:path*`,
       },
       {
         source: "/api/recipes/:path*",
-        destination: "http://localhost:6000/recipes/:path*",
+        destination: `${apiBaseUrl}/recipes/:path*`,
       },
       {
         source: "/api/pos/simulate-webhook",
-        destination: "http://localhost:6000/pos-simulator/items/toggle-sold-out",
+        destination: `${apiBaseUrl}/pos-simulator/items/toggle-sold-out`,
       },
       {
         source: "/api/pos/:path*",
-        destination: "http://localhost:6000/pos-simulator/:path*",
+        destination: `${apiBaseUrl}/pos-simulator/:path*`,
       },
       {
         source: "/socket.io",
-        destination: "http://localhost:6000/socket.io/",
+        destination: `${apiBaseUrl}/socket.io/`,
       },
       {
         source: "/socket.io/:path*",
-        destination: "http://localhost:6000/socket.io/:path*",
+        destination: `${apiBaseUrl}/socket.io/:path*`,
       },
     ];
-
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
