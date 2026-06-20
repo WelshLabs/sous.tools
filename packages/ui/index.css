@@ -85,4 +85,10 @@
   .glass-card {
     @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
   }
+  .st-glass-panel {
+    @apply bg-zinc-950/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+  }
+  .st-glass-pill {
+    @apply bg-zinc-950/60 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl;
+  }
 }

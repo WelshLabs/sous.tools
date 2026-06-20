@@ -56,8 +56,10 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
             ref={provided.innerRef}
             className="flex flex-row gap-3 overflow-x-auto p-3 bg-zinc-950 border-t border-white/5"
           >
-            {slides.map((slide, index) => (
-              <Draggable key={slide.id} draggableId={slide.id} index={index}>
+            {slides.map((slide, index) => {
+              const slideId = slide.id || `slide-fallback-${index}`;
+              return (
+              <Draggable key={slideId} draggableId={slideId} index={index}>
                 {(drag) => (
                   <div
                     ref={drag.innerRef}
@@ -79,7 +81,7 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
                   </div>
                 )}
               </Draggable>
-            ))}
+            )})}
             {provided.placeholder}
 
             {/* Add Slide card */}

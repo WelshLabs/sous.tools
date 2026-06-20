@@ -35,7 +35,7 @@ describe("Integrations", () => {
 
   it("should generate OAuth URLs correctly", () => {
     const squareUrl = service.getOAuthUrl("square", "org-1");
-    expect(squareUrl).toContain("squareupsandbox.com");
+    expect(squareUrl).toContain("connect.squareup.com");
     expect(squareUrl).toContain("state=org-1");
 
     const googleUrl = service.getOAuthUrl("google", "org-2");

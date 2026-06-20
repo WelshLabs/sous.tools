@@ -1,12 +1,10 @@
 import { PosItem } from "@soustools/api-types";
 
-/**
- * Represents the structure of a raw Square item in the database.
- */
-export interface RawDbSquareItem {
+export interface RawDbPosItem {
   id: string;
   organization_id: string;
-  square_id: string | null;
+  pos_provider: "SQUARE" | "TOAST" | "MANUAL";
+  external_id: string | null;
   name: string;
   description: string | null;
   price: string | number;
@@ -17,16 +15,17 @@ export interface RawDbSquareItem {
 }
 
 /**
- * Maps a database representation of a Square item to a standard POS item.
+ * Maps a database representation of a POS item to a standard POS item.
  *
- * @param item - The raw database square item.
+ * @param item - The raw database POS item.
  * @returns The standard typed POS item.
  */
-export function mapDbItemToPosItem(item: RawDbSquareItem): PosItem {
+export function mapDbItemToPosItem(item: RawDbPosItem): PosItem {
   return {
     id: item.id,
     organizationId: item.organization_id,
-    squareId: item.square_id || "",
+    posProvider: item.pos_provider,
+    externalId: item.external_id,
     name: item.name,
     description: item.description,
     price: Number(item.price),

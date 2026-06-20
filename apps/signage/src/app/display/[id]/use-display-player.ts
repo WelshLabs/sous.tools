@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
-import { SignageDisplay, PosItem } from "@soustools/api-types";
+import { SignageDisplay, PosItem, SignageLayoutConfig } from "@soustools/api-types";
 import { SignageLayout } from "./types";
-import { mapDbItemToPosItem, registerDisplayDevice, RawDbSquareItem } from "./helpers";
+import { mapDbItemToPosItem, registerDisplayDevice, RawDbPosItem } from "./helpers";
 import { config } from "@soustools/config";
 
 export function useDisplayPlayer(displayId: string) {
@@ -52,7 +52,7 @@ export function useDisplayPlayer(displayId: string) {
           localStorage.setItem(CACHE_LAYOUT, JSON.stringify(layoutData.data));
         }
         if (itemsData.success && itemsData.data) {
-          const parsedItems = (itemsData.data as RawDbSquareItem[]).map(mapDbItemToPosItem);
+          const parsedItems = (itemsData.data as RawDbPosItem[]).map(mapDbItemToPosItem);
           setItems(parsedItems);
           localStorage.setItem(CACHE_ITEMS, JSON.stringify(parsedItems));
         }
@@ -107,13 +107,13 @@ export function useDisplayPlayer(displayId: string) {
       socket.emit("join", { displayId, deckId: display?.deckId });
     });
 
-    socket.on("deck_updated", (payload: { deckId: string; config: any }) => {
+    socket.on("deck_updated", (payload: { deckId: string; config: SignageLayoutConfig }) => {
       if (payload.deckId === display?.deckId) {
         setLayout((prev) => prev ? { ...prev, config: payload.config } : null);
       }
     });
 
-    socket.on("items_updated", (payload: { deckId: string; items: RawDbSquareItem[] }) => {
+    socket.on("items_updated", (payload: { deckId: string; items: RawDbPosItem[] }) => {
       if (payload.deckId === display?.deckId && payload.items) {
         const parsedItems = payload.items.map(mapDbItemToPosItem);
         setItems(parsedItems);

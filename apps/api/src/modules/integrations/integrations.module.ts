@@ -1,10 +1,21 @@
 import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bullmq";
 import { IntegrationsController } from "./integrations.controller";
 import { IntegrationsService } from "./integrations.service";
+import { WebhooksController } from "./webhooks.controller";
+import { PosSyncProcessor } from "./pos-sync.processor";
 
+/**
+ * Module responsible for third-party integrations and POS synchronization.
+ */
 @Module({
-  controllers: [IntegrationsController],
-  providers: [IntegrationsService],
+  imports: [
+    BullModule.registerQueue({
+      name: "pos-sync",
+    }),
+  ],
+  controllers: [IntegrationsController, WebhooksController],
+  providers: [IntegrationsService, PosSyncProcessor],
   exports: [IntegrationsService],
 })
 export class IntegrationsModule {}

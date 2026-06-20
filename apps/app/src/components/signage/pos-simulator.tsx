@@ -6,7 +6,7 @@ import { RotateCw, AlertTriangle } from "lucide-react";
 import { PosItemCard } from "./pos-item-card";
 import { MOCK_POS_ITEMS } from "./mock-data";
 import { StockPromptModal } from "./stock-prompt-modal";
-import { mapDbItemToPosItem, RawDbSquareItem } from "../../app/display/[id]/helpers";
+import { mapDbItemToPosItem, RawDbPosItem } from "../../app/display/[id]/helpers";
 
 /**
  * PosSimulator component provides an interactive panel to simulate POS menu item status changes.
@@ -29,7 +29,7 @@ export const PosSimulator: React.FC = () => {
       if (res.ok) {
         const payload = await res.json();
         if (payload.success && payload.data) {
-          const mapped = (payload.data as RawDbSquareItem[]).map(mapDbItemToPosItem);
+          const mapped = (payload.data as RawDbPosItem[]).map(mapDbItemToPosItem);
           setItems(mapped);
           return;
         }

@@ -19,9 +19,10 @@ export class PosSimulatorController {
     return runControllerAction(async () => {
       const orgId = organizationId || this.defaultOrgId;
       const { data, error } = await supabase
-        .from("square_items")
+        .from("pos_items")
         .select("*")
-        .eq("organization_id", orgId);
+        .eq("organization_id", orgId)
+        .eq("pos_provider", "SQUARE");
 
       if (error) {
         throw new Error(error.message);
@@ -36,8 +37,8 @@ export class PosSimulatorController {
       const mockItems = getMockItems(this.defaultOrgId);
 
       const { data, error } = await supabase
-        .from("square_items")
-        .upsert(mockItems, { onConflict: "organization_id,square_id" })
+        .from("pos_items")
+        .upsert(mockItems, { onConflict: "organization_id,pos_provider,external_id" })
         .select();
 
       if (error) {
@@ -74,7 +75,7 @@ export class PosSimulatorController {
       }
 
       let query = supabase
-        .from("square_items")
+        .from("pos_items")
         .update({
           is_sold_out: isSoldOut,
           updated_at: new Date().toISOString(),
@@ -83,7 +84,7 @@ export class PosSimulatorController {
       if (itemId) {
         query = query.eq("id", itemId);
       } else if (targetSquareId) {
-        query = query.eq("square_id", targetSquareId);
+        query = query.eq("external_id", targetSquareId).eq("pos_provider", "SQUARE");
       } else {
         throw new Error("Either itemId or squareId is required");
       }
@@ -101,9 +102,10 @@ export class PosSimulatorController {
         .eq("organization_id", orgId);
 
       const { data: allItems } = await supabase
-        .from("square_items")
+        .from("pos_items")
         .select("*")
-        .eq("organization_id", orgId);
+        .eq("organization_id", orgId)
+        .eq("pos_provider", "SQUARE");
 
       if (decks) {
         for (const deck of decks) {

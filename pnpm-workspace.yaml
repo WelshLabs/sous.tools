@@ -4,6 +4,7 @@ packages:
 allowBuilds:
   '@nestjs/core': true
   esbuild: true
+  msgpackr-extract: true
   sharp: true
 minimumReleaseAgeExclude:
   - '@turbo/darwin-64@2.9.17'

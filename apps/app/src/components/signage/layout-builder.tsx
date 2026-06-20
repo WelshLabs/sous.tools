@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { SignageLayoutConfig, RawSignageLayoutConfig, SignageSlide, PosItem } from "@soustools/api-types";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { SignageLayoutConfig, RawSignageLayoutConfig, SignageSlide, PosItem, SignageBlock } from "@soustools/api-types";
 import { EditorTopBar } from "./editor-top-bar";
-import { LayoutPickerModal } from "./layout-picker-modal";
 import { SlideFilmstrip } from "./slide-filmstrip";
 import { RightSidePanel } from "./right-side-panel";
 import { LayoutPreview } from "./layout-preview";
 import { migrateConfig, DEFAULT_CONFIG } from "./config-migration";
 import { useLayoutSocket } from "./use-layout-socket";
 import { useLayoutDraft } from "./use-layout-draft";
+import { findBlockInTree, updateBlockInTree, removeBlockFromTree, insertBlockAt } from "./block-tree-utils";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 export interface LayoutBuilderProps {
   initialConfig?: RawSignageLayoutConfig;
@@ -23,104 +24,215 @@ export interface LayoutBuilderProps {
 }
 
 export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
-  initialConfig, onSave, layoutName = "TV Signage", items, saving = false,
-  deckId, deckSlug, onRenameDeck,
+  initialConfig, onSave, layoutName = "TV Signage", items, saving = false, deckId, deckSlug, onRenameDeck,
 }) => {
-  const [config, setConfig] = useState<SignageLayoutConfig>(
-    initialConfig ? migrateConfig(initialConfig) : DEFAULT_CONFIG
-  );
-  const [savedConfig, setSavedConfig] = useState<SignageLayoutConfig | null>(
-    initialConfig ? migrateConfig(initialConfig) : DEFAULT_CONFIG
-  );
-
-  useEffect(() => {
-    if (initialConfig) {
-      const parsed = migrateConfig(initialConfig);
-      setSavedConfig(parsed);
-      const localStorageKey = deckId ? `signage-draft-${deckId}` : "";
-      const hasDraft = localStorageKey ? !!localStorage.getItem(localStorageKey) : false;
-      if (!hasDraft) {
-        setConfig(parsed);
-      }
-    }
-  }, [initialConfig, deckId]);
-
+  const [config, setConfig] = useState<SignageLayoutConfig>(initialConfig ? migrateConfig(initialConfig) : DEFAULT_CONFIG);
+  const [savedConfig, setSavedConfig] = useState<SignageLayoutConfig | null>(initialConfig ? migrateConfig(initialConfig) : DEFAULT_CONFIG);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isPreviewing, setIsPreviewing] = useState(false);
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [rightPanelMode, setRightPanelMode] = useState<"styles" | "content" | null>(null);
-
-  const updateConfig = useCallback((updates: Partial<SignageLayoutConfig>) => setConfig((p) => ({ ...p, ...updates })), []);
-  const selectSlide = (idx: number) => { setActiveSlideIndex(idx); setIsPlaying(false); };
-  const updateSlide = (idx: number, updates: Partial<SignageSlide>) => {
-    const newSlides = [...config.slides];
-    newSlides[idx] = { ...newSlides[idx], ...updates } as SignageSlide;
-    updateConfig({ slides: newSlides });
-  };
+  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(true);
+  const [viewMode, setViewMode] = useState<"editor" | "preview" | "live">("editor");
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [showOutlines, setShowOutlines] = useState(false);
 
   useLayoutSocket(deckId, (c) => { setConfig(c); setSavedConfig(c); });
   const { isDraft, discardDraft, clearDraftOnSave } = useLayoutDraft(deckId, config, setConfig, savedConfig);
+  const updateConfig = useCallback((updates: Partial<SignageLayoutConfig>) => setConfig((p) => ({ ...p, ...updates })), []);
+  const selectSlide = (idx: number) => { setActiveSlideIndex(idx); setIsPlaying(false); setSelectedBlockId(null); };
+
+  const handleAddSlide = useCallback(() => {
+    const newSlide: any = {
+      id: `slide-${Date.now()}`,
+      type: "COLUMN_LAYOUT",
+      durationSeconds: 10,
+      columns: [{
+        type: "MENU",
+        blocks: [{
+          id: `block-root-${Date.now()}`,
+          type: "ColumnBlock",
+          blocks: []
+        }]
+      }]
+    };
+    updateConfig({ slides: [...config.slides, newSlide] });
+    setActiveSlideIndex(config.slides.length);
+  }, [config.slides, updateConfig]);
+
+  const updateSlide = useCallback((idx: number, updates: Partial<SignageSlide>) => {
+    const newSlides = [...config.slides];
+    newSlides[idx] = { ...newSlides[idx], ...updates } as SignageSlide;
+    updateConfig({ slides: newSlides });
+  }, [config.slides, updateConfig]);
+
+  const handleUpdateBlock = useCallback((blockId: string, updates: Partial<SignageBlock>) => {
+    const activeSlide = config.slides[activeSlideIndex];
+    if (!activeSlide || activeSlide.type !== "COLUMN_LAYOUT") return;
+    const newCols = activeSlide.columns.map(col => ({
+      ...col,
+      blocks: col.blocks?.map(b => updateBlockInTree(b, blockId, updates))
+    }));
+    updateSlide(activeSlideIndex, { columns: newCols });
+  }, [config.slides, activeSlideIndex, updateSlide]);
+
+  const handleDragEnd = useCallback((result: DropResult) => {
+    if (!result.destination) return;
+    const { source, destination } = result;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    const activeSlide = config.slides[activeSlideIndex];
+    if (!activeSlide || activeSlide.type !== "COLUMN_LAYOUT") return;
+
+    const newCols = activeSlide.columns.map(col => {
+      if (!col.blocks) return col;
+      let newBlocks = [...col.blocks];
+      
+      let movedBlock: SignageBlock | undefined;
+      for (const root of newBlocks) {
+        const sourceParent = findBlockInTree(root, source.droppableId);
+        if (sourceParent) {
+          if (sourceParent.type === "ColumnBlock" || sourceParent.type === "RowBlock" || sourceParent.type === "ExplodedItemBlock") {
+            movedBlock = sourceParent.blocks[source.index];
+          } else if (sourceParent.type === "GridBlock") {
+            movedBlock = sourceParent.cells[source.index];
+          }
+          if (movedBlock) break;
+        }
+      }
+
+      if (!movedBlock || !movedBlock.id) return col;
+
+      if (source.droppableId === destination.droppableId) {
+        const reorderInTree = (b: SignageBlock): SignageBlock => {
+          if (b.id === source.droppableId) {
+             if (b.type === "ColumnBlock" || b.type === "RowBlock" || b.type === "ExplodedItemBlock") {
+               const blks = [...b.blocks];
+               const [removed] = blks.splice(source.index, 1);
+               blks.splice(destination.index, 0, removed);
+               return { ...b, blocks: blks };
+             }
+             if (b.type === "GridBlock") {
+               const cells = [...b.cells];
+               const [removed] = cells.splice(source.index, 1);
+               cells.splice(destination.index, 0, removed);
+               return { ...b, cells };
+             }
+          }
+          if (b.type === "ColumnBlock" || b.type === "RowBlock" || b.type === "ExplodedItemBlock") {
+             return { ...b, blocks: b.blocks.map(child => reorderInTree(child)) };
+          }
+          if (b.type === "GridBlock") {
+             return { ...b, cells: b.cells.map(child => reorderInTree(child)) };
+          }
+          return b;
+        };
+        newBlocks = newBlocks.map(root => reorderInTree(root));
+      } else {
+        newBlocks = newBlocks.map(root => removeBlockFromTree(root, movedBlock!.id!));
+        newBlocks = newBlocks.map(root => insertBlockAt(root, destination.droppableId, destination.index, movedBlock!));
+      }
+      
+      return { ...col, blocks: newBlocks };
+    });
+
+    updateSlide(activeSlideIndex, { columns: newCols });
+  }, [config.slides, activeSlideIndex, updateSlide]);
+
+  const getSelectedBlock = (): SignageBlock | null => {
+    if (!selectedBlockId) return null;
+    const activeSlide = config.slides[activeSlideIndex];
+    if (!activeSlide || activeSlide.type !== "COLUMN_LAYOUT") return null;
+    for (const col of activeSlide.columns) {
+      if (!col.blocks) continue;
+      for (const block of col.blocks) {
+        const found = findBlockInTree(block, selectedBlockId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    if (viewMode !== "preview" || !containerRef.current) { setScale(1); return; }
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setScale(Math.min(entry.contentRect.width / 1920, entry.contentRect.height / 1080) * 0.95);
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, [viewMode]);
 
   useEffect(() => {
     if (!isPlaying || config.slides.length <= 1) return;
-    const current = config.slides[activeSlideIndex] || config.slides[0];
     const timer = setTimeout(() => {
       setActiveSlideIndex((prev) => (prev + 1) % config.slides.length);
-    }, (current?.durationSeconds || 10) * 1000);
+    }, ((config.slides[activeSlideIndex] as any)?.durationSeconds || 10) * 1000);
     return () => clearTimeout(timer);
   }, [isPlaying, activeSlideIndex, config.slides]);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && isPreviewing) setIsPreviewing(false); };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && viewMode !== "editor") setViewMode("editor"); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isPreviewing]);
+  }, [viewMode]);
 
-  const handleSave = () => {
-    onSave?.(config);
-    clearDraftOnSave();
-  };
-
-  const totalSlides = config.slides.length;
-  const isStylesOpen = rightPanelMode === "styles";
+  const activeBlock = getSelectedBlock();
 
   return (
     <div className="flex flex-col h-full bg-zinc-950 text-slate-100">
       <EditorTopBar
         isPlaying={isPlaying} onTogglePlay={() => setIsPlaying(!isPlaying)}
-        activeSlideIndex={activeSlideIndex} totalSlides={totalSlides}
-        onNextSlide={() => selectSlide((activeSlideIndex + 1) % Math.max(totalSlides, 1))}
-        onPrevSlide={() => selectSlide((activeSlideIndex - 1 + Math.max(totalSlides, 1)) % Math.max(totalSlides, 1))}
-        isPreviewing={isPreviewing} onTogglePreview={() => setIsPreviewing(!isPreviewing)}
-        isStylesOpen={isStylesOpen} onToggleStyles={() => setRightPanelMode(isStylesOpen ? null : "styles")}
-        onAddSlide={() => setIsPickerOpen(true)} saving={saving} onSave={handleSave}
+        activeSlideIndex={activeSlideIndex} totalSlides={config.slides.length}
+        onNextSlide={() => selectSlide((activeSlideIndex + 1) % Math.max(config.slides.length, 1))}
+        onPrevSlide={() => selectSlide((activeSlideIndex - 1 + Math.max(config.slides.length, 1)) % Math.max(config.slides.length, 1))}
+        isPreviewing={viewMode !== "editor"} onTogglePreview={() => setViewMode(viewMode === "editor" ? "preview" : "editor")}
+        isStylesOpen={isWorkspaceOpen} onToggleStyles={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
+        saving={saving} onSave={() => { onSave?.(config); clearDraftOnSave(); }}
         layoutName={layoutName} deckSlug={deckSlug} isDraft={isDraft} onDiscard={discardDraft} onRenameDeck={onRenameDeck}
       />
-
-      {!isPreviewing ? (
-        <div className="flex-1 relative flex overflow-hidden">
-          <div className={`flex-1 flex flex-col transition-all duration-300 ${rightPanelMode ? "mr-80" : ""}`}>
-            <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} onUpdateSlide={updateSlide} onOpenContentPanel={() => setRightPanelMode("content")} />
+      <div className="flex-1 relative flex overflow-hidden">
+        <DragDropContext onDragEnd={handleDragEnd}>
+          {viewMode === "editor" && (
+            <>
+              <div className={`flex-1 flex flex-col transition-all duration-300 ${isWorkspaceOpen ? "mr-96" : ""}`}>
+                <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} selectedBlockId={selectedBlockId} onSelectBlock={(id) => { setSelectedBlockId(id); setIsWorkspaceOpen(true); }} />
+              </div>
+              <RightSidePanel items={items} isOpen={isWorkspaceOpen} config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={updateConfig} onUpdateSlide={updateSlide} onClose={() => setIsWorkspaceOpen(false)} deckId={deckId} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} selectedBlock={activeBlock} onUpdateBlock={handleUpdateBlock} />
+            </>
+          )}
+        </DragDropContext>
+      </div>
+      {viewMode === "editor" && (
+        <SlideFilmstrip slides={config.slides} activeSlideIndex={activeSlideIndex} onSelectSlide={selectSlide} onAddSlide={handleAddSlide} onRemoveSlide={(i) => updateConfig({ slides: config.slides.filter((_, idx) => idx !== i) })} onReorderSlides={(slides) => updateConfig({ slides })} items={items} config={config} />
+      )}
+      
+      {viewMode === "preview" && (
+        <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden">
+          {showOutlines && (
+            <style>{`
+              .st-layout-column, .st-layout-row, .st-layout-grid {
+                outline: 1px dashed rgba(255,255,255,0.3);
+                outline-offset: -1px;
+              }
+            `}</style>
+          )}
+          <div className="w-[1920px] h-[1080px] shrink-0 origin-center transform-gpu shadow-2xl" style={{ transform: `scale(${scale})` }}>
+            <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} isPreviewing />
           </div>
-          <RightSidePanel mode={rightPanelMode} config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={updateConfig} onUpdateSlide={(idx, updates) => updateSlide(idx, updates)} onClose={() => setRightPanelMode(null)} items={items} deckId={deckId} />
-        </div>
-      ) : (
-        <div className="flex-1 relative">
-          <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} onUpdateSlide={updateSlide} isPreviewing />
-          <button onClick={() => setIsPreviewing(false)} className="absolute top-4 right-4 z-50 px-4 py-2 bg-zinc-900/90 border border-white/10 rounded-xl text-sm text-slate-200 hover:bg-zinc-800 transition cursor-pointer">Exit Preview (ESC)</button>
+          
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 rounded-full bg-zinc-950/80 backdrop-blur-xl border border-white/10 shadow-2xl z-[60]">
+             <button onClick={() => setShowOutlines(!showOutlines)} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${showOutlines ? "bg-cyan-500 text-black" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>
+                {showOutlines ? "Hide Outlines" : "Show Outlines"}
+             </button>
+             <div className="w-px h-6 bg-white/10" />
+             <button onClick={() => setViewMode("editor")} className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors">
+                Exit Preview
+             </button>
+          </div>
         </div>
       )}
-
-      {!isPreviewing && (
-        <SlideFilmstrip
-          slides={config.slides} activeSlideIndex={activeSlideIndex} onSelectSlide={selectSlide} onAddSlide={() => setIsPickerOpen(true)}
-          onRemoveSlide={(i) => { const s = [...config.slides]; s.splice(i, 1); updateConfig({ slides: s }); }}
-          onReorderSlides={(slides) => updateConfig({ slides })} items={items} config={config}
-        />
-      )}
-
-      <LayoutPickerModal open={isPickerOpen} onClose={() => setIsPickerOpen(false)} onSelect={(slide) => updateConfig({ slides: [...config.slides, slide] })} />
     </div>
   );
 };

@@ -9,10 +9,9 @@ export class IntegrationsService {
   getOAuthUrl(provider: string, orgId?: string): string {
     const state = orgId || "d0000000-0000-0000-0000-000000000000";
     if (provider === "square") {
-      const isProd = config.SQUARE_ENVIRONMENT === "production";
-      const baseUrl = isProd ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com";
+      const baseUrl = "https://connect.squareup.com";
       const scope = "MERCHANT_PROFILE_READ+ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE";
-      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${config.API_BASE_URL}/integrations/callback/square`;
+      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${config.API_BASE_URL}/integrations/callback/square&session=false`;
     } else if (provider === "google") {
       const scope = encodeURIComponent("openid email profile https://www.googleapis.com/auth/drive.readonly");
       const redirectUri = encodeURIComponent(`${config.API_BASE_URL}/integrations/callback/google`);
@@ -93,7 +92,10 @@ export class IntegrationsService {
       refresh_token: tokenData.refresh_token || null,
       expires_at: tokenData.expires_at || null,
       scopes: ["MERCHANT_PROFILE_READ", "ITEMS_READ", "ITEMS_WRITE", "INVENTORY_READ", "INVENTORY_WRITE"],
-      metadata: { connectedAs: businessName || `Square Merchant ${tokenData.merchant_id || ""}` },
+      metadata: { 
+        connectedAs: businessName || `Square Merchant ${tokenData.merchant_id || ""}`,
+        merchantId: tokenData.merchant_id 
+      },
       updated_at: new Date().toISOString(),
     }, { onConflict: "organization_id,provider" });
 

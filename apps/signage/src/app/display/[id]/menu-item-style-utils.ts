@@ -71,9 +71,9 @@ export function isItemHighlighted(
   return highlightItems.some((h) => {
     if (!h) return false;
     if (typeof h === "string") {
-      return h === item.id || h === item.squareId || h.toLowerCase() === item.name.toLowerCase();
+      return h === item.id || h === item.externalId || h.toLowerCase() === item.name.toLowerCase();
     }
-    return h.itemId === item.id || h.itemId === item.squareId;
+    return h.itemId === item.id || h.itemId === item.externalId;
   });
 }
 

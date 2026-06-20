@@ -25,7 +25,7 @@ export function SingleColumn({
       let columnItems = items;
       if (column.itemIds && column.itemIds.length > 0) {
         columnItems = column.itemIds
-          .map((id) => items.find((item) => item.id === id || item.squareId === id))
+          .map((id) => items.find((item) => item.id === id || item.externalId === id))
           .filter((item): item is PosItem => !!item);
       }
       columnItems = columnItems.filter(

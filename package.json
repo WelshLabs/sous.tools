@@ -8,7 +8,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "test": "INFISICAL_MOCK=true turbo test",
     "secrets:sync": "pnpm --filter @soustools/config secrets:sync",
-    "audit:secrets": "npx tsx scripts/audit-secrets.ts"
+    "audit:secrets": "npx tsx scripts/audit-secrets.ts",
+    "clean:all": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist .turbo apps/*/.turbo packages/*/.turbo && pnpm install"
   },
   "devDependencies": {
     "turbo": "^2.9.17",

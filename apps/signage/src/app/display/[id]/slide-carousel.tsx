@@ -62,7 +62,7 @@ export function SlideCarousel({
 
   const bgStyle: React.CSSProperties = {
     opacity,
-    backgroundColor: columnSlide?.backgroundColor || "oklch(0.08 0.01 260)",
+    backgroundColor: columnSlide?.backgroundColor || "transparent",
   };
   if (columnSlide?.backgroundImageUrl) {
     bgStyle.backgroundImage = `url(${columnSlide.backgroundImageUrl})`;

@@ -5,10 +5,22 @@ import { DeckCard } from "../../../components/signage/deck-card";
 import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { SignageLayoutConfig } from "@soustools/api-types";
+
+interface SignageDeck {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  config: SignageLayoutConfig;
+}
+
 export default function TVSignageListPage() {
-  const [decks, setDecks] = useState<any[]>([]);
+  const [decks, setDecks] = useState<SignageDeck[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [deckToDelete, setDeckToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
   const fetchDecks = async () => {
@@ -55,21 +67,29 @@ export default function TVSignageListPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this deck?")) return;
+  const handleDelete = (id: string) => {
+    setDeckToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deckToDelete) return;
+    setIsDeleting(true);
     try {
-      const res = await fetch(`/api/signage/layouts/${id}`, {
+      const res = await fetch(`/api/signage/layouts/${deckToDelete}`, {
         method: "DELETE",
       });
       const data = await res.json();
       if (data.success) {
-        setDecks((prev) => prev.filter((d) => d.id !== id));
+        setDecks((prev) => prev.filter((d) => d.id !== deckToDelete));
       } else {
         alert(data.error || "Failed to delete deck");
       }
     } catch (err) {
       console.error("Failed to delete deck:", err);
       alert("Network error: Failed to delete deck");
+    } finally {
+      setIsDeleting(false);
+      setDeckToDelete(null);
     }
   };
 
@@ -143,6 +163,34 @@ export default function TVSignageListPage() {
               onRename={handleRename}
             />
           ))}
+        </div>
+      )}
+
+      {deckToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2">Delete Deck</h3>
+            <p className="text-sm text-slate-400 mb-6">
+              Are you sure you want to delete this deck? This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeckToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting && <RefreshCw className="w-4 h-4 animate-spin" />}
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,37 +1,14 @@
 "use client";
 
 import React, { useRef } from "react";
-import { Copy, Sparkles, BookOpen } from "lucide-react";
+import { Copy, Sparkles, BookOpen, ChevronDown } from "lucide-react";
 
 interface CssHelperProps {
   value: string;
   onChange: (val: string) => void;
 }
 
-const DICTIONARY = [
-  { className: ".menu-item", desc: "Container for a menu item card" },
-  { className: ".category-title", desc: "Headers for menu sections" },
-  { className: ".price-tag", desc: "Pricing bubble or label text" },
-  { className: ".item-description", desc: "Detail description subtext" },
-  { className: ".sold-out-badge", desc: "Overlay badge on sold-out state" },
-  { className: ".slide-container", desc: "Main slide canvas container" },
-  { className: ".signage-overlay", desc: "Floating absolute layers container" },
-];
-
-const PRESETS = [
-  {
-    name: "Neon Glow",
-    css: `.menu-item {\n  color: #fff;\n  text-shadow: 0 0 5px #0091FF, 0 0 10px #0091FF;\n  border: 2px solid #0091FF;\n  box-shadow: 0 0 10px #0091FF, inset 0 0 10px #0091FF;\n}`,
-  },
-  {
-    name: "Retro Chalkboard",
-    css: `.slide-container {\n  background: #1e281e;\n  font-family: 'Caveat', cursive;\n  color: #f4ebd0;\n  border: 10px dashed #f4ebd0;\n}\n.category-title {\n  border-bottom: 2px dashed #f4ebd0;\n}`,
-  },
-  {
-    name: "Sliding Animations",
-    css: `@keyframes slideIn {\n  from { transform: translateX(100%); opacity: 0; }\n  to { transform: translateX(0); opacity: 1; }\n}\n.menu-item {\n  animation: slideIn 0.5s ease-out;\n}`,
-  },
-];
+import { CSS_DICTIONARY, CSS_PRESETS } from "./css-reference-data";
 
 /**
  * CssHelper is a utility component providing a custom CSS text area editor,
@@ -84,39 +61,33 @@ export const CssHelper: React.FC<CssHelperProps> = ({ value, onChange }) => {
       </div>
 
       <div className="space-y-4 overflow-y-auto pr-1">
-        <div className="bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] rounded-xl p-3">
-          <h3 className="text-xs font-bold text-slate-300 mb-2 flex items-center gap-1">
+        {/* Class Dictionary Accordion */}
+        <div className="bg-zinc-950/50 border border-white/5 rounded-xl p-3">
+          <h3 className="text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5" /> Class Dictionary
           </h3>
-          <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-            {DICTIONARY.map((d) => (
-              <div
-                key={d.className}
-                className="flex justify-between items-start gap-1 p-1.5 rounded hover:bg-slate-800 text-[11px]"
-              >
-                <div className="min-w-0">
-                  <span className="font-mono text-blue-400 font-semibold truncate block">
-                    {d.className}
-                  </span>
-                  <span className="text-slate-400 text-[10px] block">
-                    {d.desc}
-                  </span>
+          <div className="space-y-2">
+            {Object.entries(CSS_DICTIONARY).map(([category, classes]) => (
+              <details key={category} className="group border border-white/5 bg-zinc-900 rounded-lg overflow-hidden">
+                <summary className="flex items-center justify-between px-3 py-2 text-[11px] font-bold text-zinc-300 cursor-pointer hover:bg-zinc-800 transition-colors list-none">
+                  {category}
+                  <span className="group-open:rotate-180 transition-transform"><ChevronDown className="w-3.5 h-3.5 opacity-50" /></span>
+                </summary>
+                <div className="px-2 pb-2 space-y-1.5 pt-1 border-t border-white/5 bg-zinc-950/30">
+                  {classes.map((d) => (
+                    <div key={d.className} className="flex flex-col gap-0.5 p-1.5 rounded hover:bg-zinc-800 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-blue-400 font-semibold">{d.className}</span>
+                        <div className="flex gap-1 shrink-0">
+                          <button onClick={() => insertText(`${d.className} {\n  \n}`)} className="text-[10px] bg-zinc-800 text-zinc-300 hover:bg-zinc-700 px-1.5 py-0.5 rounded cursor-pointer">Insert</button>
+                          <button onClick={() => copyToClipboard(d.className)} className="text-zinc-500 hover:text-zinc-300 cursor-pointer p-0.5"><Copy className="w-3 h-3" /></button>
+                        </div>
+                      </div>
+                      <span className="text-zinc-500 text-[10px] leading-tight">{d.desc}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex gap-1 shrink-0">
-                  <button
-                    onClick={() => insertText(d.className + " {\n  \n}")}
-                    className="text-[10px] bg-slate-800 text-slate-300 hover:bg-slate-700 px-1.5 py-0.5 rounded cursor-pointer"
-                  >
-                    Insert
-                  </button>
-                  <button
-                    onClick={() => copyToClipboard(d.className)}
-                    className="text-slate-500 hover:text-slate-300 cursor-pointer p-0.5"
-                  >
-                    <Copy className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
+              </details>
             ))}
           </div>
         </div>
@@ -126,7 +97,7 @@ export const CssHelper: React.FC<CssHelperProps> = ({ value, onChange }) => {
             <Sparkles className="w-3.5 h-3.5" /> Preset Recipes
           </h3>
           <div className="space-y-2">
-            {PRESETS.map((p) => (
+            {CSS_PRESETS.map((p) => (
               <button
                 key={p.name}
                 onClick={() => insertText(p.css)}

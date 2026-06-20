@@ -30,7 +30,9 @@ export default function LoginPage() {
       if (authError) {
         setError(authError.message);
       } else {
-        router.push("/");
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnTo = urlParams.get("returnTo");
+        router.push(returnTo ? returnTo : "/");
       }
     } catch (err: unknown) {
       setError("An unexpected error occurred during login.");

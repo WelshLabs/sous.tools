@@ -5,6 +5,39 @@ import { useDisplayPlayer } from "./use-display-player";
 import { PairingScreen } from "./pairing-screen";
 import { SlideCarousel } from "./slide-carousel";
 import { buildAllAnimationCss } from "./menu-item-style-utils";
+import { MenuItemStyles } from "@soustools/api-types";
+import { ScaleWrapper } from "./scale-wrapper";
+import { injectSignageHead } from "./helpers";
+
+const defaultMenuItemStyles: MenuItemStyles = {
+  regular: {
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+    borderWidth: 0,
+    titleColor: "#f8fafc",
+    priceColor: "#00f0ff",
+    descriptionColor: "#94a3b8",
+  },
+  highlighted: {
+    backgroundColor: "rgba(0, 240, 255, 0.1)",
+    borderColor: "#00f0ff",
+    borderWidth: 1,
+    titleColor: "#f8fafc",
+    priceColor: "#00f0ff",
+    descriptionColor: "#94a3b8",
+  },
+  soldOut: {
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+    borderWidth: 0,
+    titleColor: "#f8fafc",
+    priceColor: "#00f0ff",
+    descriptionColor: "#94a3b8",
+    dimOpacity: 0.4,
+    strikethrough: true,
+  },
+};
+
 
 interface DisplayPlayerProps {
   displayId: string;
@@ -17,48 +50,9 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
   useEffect(() => {
     const config = layout?.config;
     if (!config) return;
-
-    const fontsToLoad = new Set<string>();
-    if (config.googleFont) fontsToLoad.add(config.googleFont);
-    if (config.typography) {
-      const { menuItemTitle, menuItemPrice, menuItemDescription, marketingText } = config.typography;
-      if (menuItemTitle) fontsToLoad.add(menuItemTitle);
-      if (menuItemPrice) fontsToLoad.add(menuItemPrice);
-      if (menuItemDescription) fontsToLoad.add(menuItemDescription);
-      if (marketingText) fontsToLoad.add(marketingText);
-    }
-
-    const fontIdPrefix = "signage-dynamic-font";
-    document.querySelectorAll(`[id^='${fontIdPrefix}']`).forEach((el) => el.remove());
-
-    Array.from(fontsToLoad).forEach((font, idx) => {
-      const link = document.createElement("link");
-      link.id = `${fontIdPrefix}-${idx}`;
-      link.rel = "stylesheet";
-      link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`;
-      document.head.appendChild(link);
-    });
-
-    const styleId = "signage-custom-css";
-    document.getElementById(styleId)?.remove();
-    if (config.customCss) {
-      const style = document.createElement("style");
-      style.id = styleId;
-      style.textContent = config.customCss;
-      document.head.appendChild(style);
-    }
-
-    const animStyleId = "signage-item-animations";
-    document.getElementById(animStyleId)?.remove();
-    if (config.menuItemStyles) {
-      const animCss = buildAllAnimationCss(config.menuItemStyles);
-      if (animCss) {
-        const animStyle = document.createElement("style");
-        animStyle.id = animStyleId;
-        animStyle.textContent = animCss;
-        document.head.appendChild(animStyle);
-      }
-    }
+    const resolvedStyles = config.menuItemStyles || defaultMenuItemStyles;
+    const animCss = buildAllAnimationCss(resolvedStyles);
+    injectSignageHead(config, animCss);
   }, [layout]);
 
   if (loading) {
@@ -84,19 +78,36 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
     return <PairingScreen code={display.id.slice(0, 8).toUpperCase()} />;
   }
 
-  const slides = layout?.config?.slides || [];
-  const menuItemStyles = layout?.config?.menuItemStyles;
+  const config = layout?.config;
+  const slides = config?.slides || [];
+  const menuItemStyles = config?.menuItemStyles || defaultMenuItemStyles;
+  const isResponsive = config?.aspectRatio === "responsive";
+  const scaleToFit = config?.scaleToFit !== false;
+
+  const content = (
+    <SlideCarousel
+      slides={slides}
+      items={items}
+      menuItemStyles={menuItemStyles}
+    />
+  );
+
+  if (!isResponsive && scaleToFit) {
+    return (
+      <ScaleWrapper>
+        <div className="w-full h-full st-layout-background relative overflow-hidden" style={{ fontFamily: config?.googleFont || "inherit" }}>
+          {content}
+        </div>
+      </ScaleWrapper>
+    );
+  }
 
   return (
     <main
-      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white"
-      style={{ fontFamily: layout?.config?.googleFont || "inherit" }}
+      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white st-layout-background relative overflow-hidden"
+      style={{ fontFamily: config?.googleFont || "inherit" }}
     >
-      <SlideCarousel
-        slides={slides}
-        items={items}
-        menuItemStyles={menuItemStyles}
-      />
+      {content}
     </main>
   );
 }

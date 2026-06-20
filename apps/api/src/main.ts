@@ -11,7 +11,7 @@ import { config } from "@soustools/config";
  * @returns {Promise<void>} Resolves when the application has successfully started.
  */
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Enable CORS for frontend integration
   app.enableCors();

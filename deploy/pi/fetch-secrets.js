@@ -55,7 +55,7 @@ async function run() {
       headers: { 'Content-Type': 'application/json' }
     }, { clientId, clientSecret });
 
-    const token = loginData.token;
+    const token = loginData.accessToken || loginData.token;
 
     console.log(`[Fetch-Secrets] Fetching secrets for environment: ${envSlug}...`);
     const secretsData = await request(`https://app.infisical.com/api/v3/secrets/raw?environment=${envSlug}&projectId=${projectId}`, {

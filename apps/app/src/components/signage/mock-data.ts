@@ -43,7 +43,8 @@ export const MOCK_POS_ITEMS: PosItem[] = [
   {
     id: "item-1",
     organizationId: "org-1",
-    squareId: "sq-truffle-burger",
+    posProvider: "SQUARE",
+    externalId: "sq-truffle-burger",
     name: "Truffle Burger",
     description: "Wagyu beef, black truffle aioli, gruyère cheese",
     price: 24.0,
@@ -55,7 +56,8 @@ export const MOCK_POS_ITEMS: PosItem[] = [
   {
     id: "item-2",
     organizationId: "org-1",
-    squareId: "sq-lobster-roll",
+    posProvider: "SQUARE",
+    externalId: "sq-lobster-roll",
     name: "Maine Lobster Roll",
     description: "Fresh lobster, butter, toasted brioche bun",
     price: 32.0,
@@ -67,7 +69,8 @@ export const MOCK_POS_ITEMS: PosItem[] = [
   {
     id: "item-3",
     organizationId: "org-1",
-    squareId: "sq-caesar-salad",
+    posProvider: "SQUARE",
+    externalId: "sq-caesar-salad",
     name: "Caesar Salad",
     description: "Romaine lettuce, house dressing, sourdough croutons",
     price: 14.0,
@@ -79,7 +82,8 @@ export const MOCK_POS_ITEMS: PosItem[] = [
   {
     id: "item-4",
     organizationId: "org-1",
-    squareId: "sq-chocolate-lava",
+    posProvider: "SQUARE",
+    externalId: "sq-chocolate-lava",
     name: "Chocolate Lava Cake",
     description: "Warm chocolate center, vanilla bean gelato",
     price: 12.0,

@@ -36,10 +36,42 @@ test.describe('TV Signage System E2E', () => {
     });
 
     await page.route('**/api/signage/layouts', async route => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: {
+              id: 'deck-1',
+              name: 'Deck 1',
+              slug: 'deck-1',
+              config: { slides: [] }
+            }
+          })
+        });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, data: [] })
+        });
+      }
+    });
+
+    await page.route('**/api/signage/layouts/deck-1', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, data: [] })
+        body: JSON.stringify({
+          success: true,
+          data: {
+            id: 'deck-1',
+            name: 'Deck 1',
+            slug: 'deck-1',
+            config: { slides: [] }
+          }
+        })
       });
     });
 
@@ -78,6 +110,10 @@ test.describe('TV Signage System E2E', () => {
     // 6. Navigate to TV Signage layouts builder page
     await page.click('nav a:has-text("TV Signage")');
     await expect(page.locator('text=TV Signage').first()).toBeVisible({ timeout: 15000 });
+
+    // Click button to create a deck and navigate to editor
+    await page.click('button:has-text("Create Your First Deck")');
+    await page.waitForURL('**/tv/deck-1');
 
     // Verify new WYSIWYG toolbar controls exist
     await expect(page.locator('#editor-top-bar-add-slide')).toBeVisible();

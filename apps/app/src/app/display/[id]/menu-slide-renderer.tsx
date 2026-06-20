@@ -14,7 +14,7 @@ export function MenuSlideRenderer({ column, items, menuItemStyles }: MenuSlideRe
   let activeItems = items;
   if (column.itemIds && column.itemIds.length > 0) {
     activeItems = column.itemIds
-      .map((id) => items.find((item) => item.id === id || item.squareId === id))
+      .map((id) => items.find((item) => item.id === id || item.externalId === id))
       .filter((item): item is PosItem => !!item);
   }
   activeItems = activeItems.filter((item) => !item.isSoldOut || !menuItemStyles.soldOut.hidden);

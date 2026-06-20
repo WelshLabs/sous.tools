@@ -12,6 +12,7 @@ import {
   isItemHighlighted,
 } from "./menu-item-style-utils";
 import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
+import { PreviewBlockRenderer } from "./preview-block-renderer";
 
 interface ColumnContentViewProps {
   column: ColumnConfig;
@@ -30,8 +31,23 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
 }) => {
   const styles = menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES;
 
+  if (column.blocks && column.blocks.length > 0) {
+    return (
+      <div className="w-full h-full overflow-y-auto flex flex-col gap-2 py-1 st-editor-preview-column">
+        {column.blocks.map((block, idx) => (
+          <PreviewBlockRenderer
+            key={idx}
+            block={block}
+            items={items}
+            styles={styles}
+          />
+        ))}
+      </div>
+    );
+  }
+
   const selectedItems = (column.itemIds || [])
-    .map((id) => items.find((item) => item.id === id || item.squareId === id))
+    .map((id) => items.find((item) => item.id === id || item.externalId === id))
     .filter((item): item is PosItem => !!item)
     .filter((item) => !item.isSoldOut || !styles.soldOut.hidden);
 

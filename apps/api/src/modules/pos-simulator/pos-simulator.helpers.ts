@@ -16,11 +16,11 @@ export async function resolveItemDetails(
   let targetSquareId = squareId;
   let orgId = defaultOrgId;
   if (itemId) {
-    const { data } = await supabaseClient.from("square_items").select("organization_id, square_id").eq("id", itemId).single();
-    if (data) { orgId = data.organization_id; targetSquareId = data.square_id; }
+    const { data } = await supabaseClient.from("pos_items").select("organization_id, external_id").eq("id", itemId).single();
+    if (data) { orgId = data.organization_id; targetSquareId = data.external_id || undefined; }
   }
   if (!orgId && targetSquareId) {
-    const { data } = await supabaseClient.from("square_items").select("organization_id").eq("square_id", targetSquareId).single();
+    const { data } = await supabaseClient.from("pos_items").select("organization_id").eq("external_id", targetSquareId).eq("pos_provider", "SQUARE").single();
     if (data) orgId = data.organization_id;
   }
   return { orgId, targetSquareId };

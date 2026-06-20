@@ -33,12 +33,59 @@ export interface HelloResponse {
 export interface PosItem {
   id: string;
   organizationId: string;
-  squareId: string;
+  posProvider: "SQUARE" | "TOAST" | "MANUAL";
+  externalId: string | null;
   name: string;
   description: string | null;
   price: number;
   imageUrl: string | null;
   isSoldOut: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Represents a POS modifier group.
+ */
+export interface PosModifierGroup {
+  id: string;
+  organizationId: string;
+  posProvider: "SQUARE" | "TOAST" | "MANUAL";
+  externalId: string | null;
+  name: string;
+  minSelectedModifiers: number | null;
+  maxSelectedModifiers: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Represents a POS modifier option.
+ */
+export interface PosModifierOption {
+  id: string;
+  organizationId: string;
+  modifierGroupId: string;
+  posProvider: "SQUARE" | "TOAST" | "MANUAL";
+  externalId: string | null;
+  name: string;
+  price: number;
+  isSoldOut: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Represents a local overlay override for a POS item.
+ */
+export interface PosItemLocalOverlay {
+  id: string;
+  organizationId: string;
+  posItemId: string;
+  name: string | null;
+  description: string | null;
+  price: number | null;
+  isSoldOut: boolean | null;
   createdAt: string;
   updatedAt: string;
 }

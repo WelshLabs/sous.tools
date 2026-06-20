@@ -1,6 +1,7 @@
 export interface MockPosItem {
   organization_id: string;
-  square_id: string;
+  pos_provider: "SQUARE" | "TOAST" | "MANUAL";
+  external_id: string;
   name: string;
   description: string;
   price: number;
@@ -11,7 +12,8 @@ export function getMockItems(organizationId: string): MockPosItem[] {
   return [
     {
       organization_id: organizationId,
-      square_id: "item_coffee",
+      pos_provider: "SQUARE",
+      external_id: "item_coffee",
       name: "Coffee",
       description: "Freshly brewed drip coffee",
       price: 3.5,
@@ -19,7 +21,8 @@ export function getMockItems(organizationId: string): MockPosItem[] {
     },
     {
       organization_id: organizationId,
-      square_id: "item_croissant",
+      pos_provider: "SQUARE",
+      external_id: "item_croissant",
       name: "Croissant",
       description: "Flaky butter croissant",
       price: 4.0,
@@ -27,7 +30,8 @@ export function getMockItems(organizationId: string): MockPosItem[] {
     },
     {
       organization_id: organizationId,
-      square_id: "item_avocado_toast",
+      pos_provider: "SQUARE",
+      external_id: "item_avocado_toast",
       name: "Avocado Toast",
       description: "Sourdough toast with mashed avocado",
       price: 9.5,
@@ -35,7 +39,8 @@ export function getMockItems(organizationId: string): MockPosItem[] {
     },
     {
       organization_id: organizationId,
-      square_id: "item_latte",
+      pos_provider: "SQUARE",
+      external_id: "item_latte",
       name: "Latte",
       description: "Espresso with steamed milk",
       price: 4.5,

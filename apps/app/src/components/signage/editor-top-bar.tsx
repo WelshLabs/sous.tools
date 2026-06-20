@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@soustools/ui";
-import { Play, Pause, ChevronLeft, ChevronRight, Plus, Palette, Eye, Save, RefreshCw, Check, Copy, RefreshCcw, ExternalLink } from "lucide-react";
+
+import { Play, Pause, ChevronLeft, ChevronRight, Palette, Eye, Save, RefreshCw, Check, Copy, RefreshCcw, ExternalLink } from "lucide-react";
 import { useSaveState } from "./use-save-state";
 
 export interface EditorTopBarProps {
@@ -16,7 +16,6 @@ export interface EditorTopBarProps {
   onTogglePreview: () => void;
   isStylesOpen: boolean;
   onToggleStyles: () => void;
-  onAddSlide: () => void;
   saving: boolean;
   onSave: () => void;
   layoutName: string;
@@ -29,7 +28,7 @@ export interface EditorTopBarProps {
 export const EditorTopBar: React.FC<EditorTopBarProps> = ({
   isPlaying, onTogglePlay, activeSlideIndex, totalSlides,
   onNextSlide, onPrevSlide, isPreviewing, onTogglePreview,
-  isStylesOpen, onToggleStyles, onAddSlide, saving, onSave,
+  isStylesOpen, onToggleStyles, saving, onSave,
   layoutName, deckSlug, isDraft, onDiscard, onRenameDeck,
 }) => {
   const saveState = useSaveState(saving);
@@ -124,13 +123,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
         </div>
       </div>
 
-      {/* Center — Add Slide */}
-      <div className="absolute left-1/2 -translate-x-1/2">
-        <Button id="editor-top-bar-add-slide" variant="outline" size="sm" onClick={onAddSlide}
-          className="flex items-center gap-1.5 text-xs font-semibold text-white border-white/20 hover:bg-white/10">
-          <Plus className="w-3.5 h-3.5" /> Add Slide
-        </Button>
-      </div>
+
 
       {/* Right — Draft badge · Discard · Styles · Preview · Save */}
       <div className="flex items-center gap-1.5">
@@ -155,7 +148,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
             isStylesOpen ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/10 text-slate-400 hover:text-white"
           }`}>
-          <Palette className="w-3.5 h-3.5" /> Styles
+          <Palette className="w-3.5 h-3.5" /> Slide Workspace
         </button>
         <button id="editor-top-bar-preview" onClick={onTogglePreview}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${

@@ -1,5 +1,10 @@
 import { config } from "@soustools/config";
 import { getSquareBaseUrl } from "./square-client.helper";
+import {
+  SquareObject,
+  mapModifierListToSandbox,
+  mapItemToSandbox,
+} from "./square-seed-types";
 
 interface StaticSeedItem {
   name: string;
@@ -20,13 +25,11 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
   const sandboxBaseUrl = getSquareBaseUrl();
   const prodToken = config.PRODUCTION_SQUARE_ACCESS_TOKEN;
 
-  let objects: any[] = [];
+  let objects: SquareObject[] = [];
 
-  // Attempt to query the production catalog if the token is valid/present
   if (prodToken && !prodToken.includes("placeholder")) {
     console.log("[Square Seeding] Production token found. Querying production catalog...");
     try {
-      // 1. Fetch production items
       const itemsRes = await fetch("https://connect.squareup.com/v2/catalog/list?types=ITEM", {
         headers: {
           Authorization: `Bearer ${prodToken}`,
@@ -36,22 +39,20 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
       });
 
       if (itemsRes.ok) {
-        const itemsData = (await itemsRes.json()) as { objects?: any[] };
-        const prodItems = (itemsData.objects || []).slice(0, 8); // Seed a subset of 8 items
+        const itemsData = (await itemsRes.json()) as { objects?: SquareObject[] };
+        const prodItems = (itemsData.objects || []).slice(0, 8);
 
         if (prodItems.length > 0) {
-          // Identify all modifier lists referenced by these items
           const referencedModListIds = new Set<string>();
           prodItems.forEach((item) => {
-            (item.item_data?.modifier_list_info || []).forEach((info: any) => {
+            (item.item_data?.modifier_list_info || []).forEach((info) => {
               if (info.modifier_list_id) {
                 referencedModListIds.add(info.modifier_list_id);
               }
             });
           });
 
-          // 2. Fetch those modifier lists from production
-          const modLists: any[] = [];
+          const modLists: SquareObject[] = [];
           if (referencedModListIds.size > 0) {
             console.log(`[Square Seeding] Fetching ${referencedModListIds.size} referenced modifier lists...`);
             const modListsRes = await fetch("https://connect.squareup.com/v2/catalog/list?types=MODIFIER_LIST", {
@@ -62,7 +63,7 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
               },
             });
             if (modListsRes.ok) {
-              const modListsData = (await modListsRes.json()) as { objects?: any[] };
+              const modListsData = (await modListsRes.json()) as { objects?: SquareObject[] };
               (modListsData.objects || []).forEach((modList) => {
                 if (referencedModListIds.has(modList.id)) {
                   modLists.push(modList);
@@ -71,55 +72,12 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
             }
           }
 
-          // 3. Map modifier lists into Sandbox format
           modLists.forEach((ml) => {
-            objects.push({
-              type: "MODIFIER_LIST",
-              id: `#modlist_${ml.id}`,
-              modifier_list_data: {
-                name: ml.modifier_list_data?.name || "Modifiers",
-                selection_type: ml.modifier_list_data?.selection_type || "SINGLE",
-                modifiers: (ml.modifier_list_data?.modifiers || []).map((m: any) => ({
-                  type: "MODIFIER",
-                  id: `#modifier_${m.id}`,
-                  modifier_data: {
-                    name: m.modifier_data?.name || "Option",
-                    price_money: m.modifier_data?.price_money || { amount: 0, currency: "USD" },
-                  },
-                })),
-              },
-            });
+            objects.push(mapModifierListToSandbox(ml));
           });
 
-          // 4. Map items into Sandbox format
           prodItems.forEach((item) => {
-            const mappedModifierInfo = (item.item_data?.modifier_list_info || []).map((info: any) => ({
-              modifier_list_id: `#modlist_${info.modifier_list_id}`,
-              min_selected_modifiers: info.min_selected_modifiers,
-              max_selected_modifiers: info.max_selected_modifiers,
-              enabled: info.enabled,
-            }));
-
-            const mappedVariations = (item.item_data?.variations || []).map((v: any) => ({
-              type: "ITEM_VARIATION",
-              id: `#var_${v.id}`,
-              item_variation_data: {
-                name: v.item_variation_data?.name || "Regular",
-                pricing_type: v.item_variation_data?.pricing_type || "FIXED_PRICING",
-                price_money: v.item_variation_data?.price_money || { amount: 1000, currency: "USD" },
-              },
-            }));
-
-            objects.push({
-              type: "ITEM",
-              id: `#item_${item.id}`,
-              item_data: {
-                name: item.item_data?.name || "Unnamed Item",
-                description: item.item_data?.description || "",
-                modifier_list_info: mappedModifierInfo,
-                variations: mappedVariations,
-              },
-            });
+            objects.push(mapItemToSandbox(item));
           });
 
           console.log(`[Square Seeding] Successfully mapped ${objects.length} objects from production.`);
@@ -130,7 +88,6 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
     }
   }
 
-  // Fallback to static seed items if production mapping failed or wasn't configured
   if (objects.length === 0) {
     console.log("[Square Seeding] Seeding static fallback items...");
     objects = STATIC_SEED_ITEMS.map((item) => ({

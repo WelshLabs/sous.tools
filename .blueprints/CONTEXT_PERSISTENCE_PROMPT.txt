@@ -1,0 +1,16 @@
+System Context Injection Contract:
+I am working on "sous.tools" — a multi-tenant SaaS Restaurant Operating System.
+
+Stack: Turborepo (pnpm), Next.js 16 App Router (apps/app, apps/customer-site, apps/signage, apps/docs), NestJS (apps/api), Supabase (PostgreSQL+RLS), Redis+BullMQ, Tailwind CSS v4.
+
+Absolute Invariants:
+1. Strict 150-line file cap. Aggressively abstract sub-components.
+2. Next.js 16 Server Components default. Use "use client" for WebSockets/DOM only.
+3. No `any` types. All APIs/payloads use shared @soustools/api-types.
+4. Direct process.env lookups are banned outside @soustools/config. Infisical manages secrets.
+5. Backend follows Domain-Driven Design (DDD). Frontend follows Feature-Driven Design (FDD).
+6. 2-Way Shadow Sync: Driver-based POS synchronization (pos_provider, external_id) uses Webhooks + BullMQ cron.
+7. Signage Engine: Uses polymorphic UI blocks (ExplodedItemBlock) styled via StyleConfig and Custom CSS Monaco injections, deployed to Wayland/Labwc RPi 5 edge nodes.
+
+Task Objective:
+[INSERT YOUR SPECIFIC BUG FIX OR FEATURE REQUEST HERE]

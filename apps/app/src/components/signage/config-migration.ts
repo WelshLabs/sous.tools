@@ -44,7 +44,25 @@ export const DEFAULT_MENU_ITEM_STYLES: MenuItemStyles = {
 
 export const DEFAULT_CONFIG: SignageLayoutConfig = {
   googleFont: "Outfit",
-  slides: [],
+  slides: [
+    {
+      id: `slide-default`,
+      type: "COLUMN_LAYOUT",
+      durationSeconds: 10,
+      columns: [
+        {
+          type: "MENU",
+          blocks: [
+            {
+              id: `block-root-default`,
+              type: "ColumnBlock",
+              blocks: [],
+            },
+          ],
+        },
+      ],
+    } as any,
+  ],
   overlays: [],
   customCss: "",
   menuItemStyles: DEFAULT_MENU_ITEM_STYLES,
@@ -56,7 +74,8 @@ export const DEFAULT_CONFIG: SignageLayoutConfig = {
  * SignageLayoutConfig shape.
  */
 export function migrateConfig(rawConfig: RawSignageLayoutConfig): SignageLayoutConfig {
-  const migratedSlides: SignageSlide[] = rawConfig.slides.map((slide) => {
+  const slidesToMigrate = rawConfig.slides.length > 0 ? rawConfig.slides : DEFAULT_CONFIG.slides;
+  const migratedSlides: SignageSlide[] = slidesToMigrate.map((slide) => {
     if (slide.type === "MENU") {
       const legacy = slide as LegacyMenuSlide;
       const converted: ColumnLayoutSlide = {

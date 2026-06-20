@@ -1,12 +1,10 @@
 import { PosItem } from "@soustools/api-types";
 
-/**
- * Represents the structure of a raw Square item in the database.
- */
-export interface RawDbSquareItem {
+export interface RawDbPosItem {
   id: string;
   organization_id: string;
-  square_id: string | null;
+  pos_provider: "SQUARE" | "TOAST" | "MANUAL";
+  external_id: string | null;
   name: string;
   description: string | null;
   price: string | number;
@@ -17,16 +15,17 @@ export interface RawDbSquareItem {
 }
 
 /**
- * Maps a database representation of a Square item to a standard POS item.
+ * Maps a database representation of a POS item to a standard POS item.
  *
- * @param item - The raw database square item.
+ * @param item - The raw database POS item.
  * @returns The standard typed POS item.
  */
-export function mapDbItemToPosItem(item: RawDbSquareItem): PosItem {
+export function mapDbItemToPosItem(item: RawDbPosItem): PosItem {
   return {
     id: item.id,
     organizationId: item.organization_id,
-    squareId: item.square_id || "",
+    posProvider: item.pos_provider,
+    externalId: item.external_id,
     name: item.name,
     description: item.description,
     price: Number(item.price),
@@ -59,4 +58,52 @@ export async function registerDisplayDevice(displayId: string): Promise<string |
     console.error("Device registration request failed", err);
   }
   return null;
+}
+
+/**
+ * Injects Google Fonts, custom CSS, and item animations into the document head.
+ *
+ * @param config - The signage layout configuration.
+ * @param animCss - Optional pre-computed animations CSS string.
+ */
+export function injectSignageHead(config: any, animCss?: string | null): void {
+  if (!config) return;
+
+  const fontsToLoad = new Set<string>();
+  if (config.googleFont) fontsToLoad.add(config.googleFont);
+  if (config.typography) {
+    const { menuItemTitle, menuItemPrice, menuItemDescription, marketingText } = config.typography;
+    if (menuItemTitle) fontsToLoad.add(menuItemTitle);
+    if (menuItemPrice) fontsToLoad.add(menuItemPrice);
+    if (menuItemDescription) fontsToLoad.add(menuItemDescription);
+    if (marketingText) fontsToLoad.add(marketingText);
+  }
+
+  const fontIdPrefix = "signage-dynamic-font";
+  document.querySelectorAll(`[id^='${fontIdPrefix}']`).forEach((el) => el.remove());
+  Array.from(fontsToLoad).forEach((font, idx) => {
+    const link = document.createElement("link");
+    link.id = `${fontIdPrefix}-${idx}`;
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`;
+    document.head.appendChild(link);
+  });
+
+  const styleId = "signage-custom-css";
+  document.getElementById(styleId)?.remove();
+  if (config.customCss) {
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = config.customCss;
+    document.head.appendChild(style);
+  }
+
+  const animStyleId = "signage-item-animations";
+  document.getElementById(animStyleId)?.remove();
+  if (animCss) {
+    const animStyle = document.createElement("style");
+    animStyle.id = animStyleId;
+    animStyle.textContent = animCss;
+    document.head.appendChild(animStyle);
+  }
 }

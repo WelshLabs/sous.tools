@@ -2,46 +2,27 @@
 
 import React, { useState, useCallback } from "react";
 import { ColumnConfig } from "@soustools/api-types";
-import { Menu, Image as ImageIcon, Type } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface ColumnEmptyViewProps {
   onUpdate: (updates: Partial<ColumnConfig>) => void;
-  /** Called after the 300ms flash to auto-open the popover editor */
   onOpenEditor?: () => void;
 }
 
-type AddAction = () => Partial<ColumnConfig>;
-
-const ACTIONS: { label: string; icon: React.ReactNode; color: string; action: AddAction }[] = [
-  {
-    label: "Add Menu",
-    icon: <Menu className="w-3 h-3" />,
-    color: "bg-blue-600 hover:bg-blue-500",
-    action: () => ({ type: "MENU", itemIds: [], highlightItems: [] }),
-  },
-  {
-    label: "Add Image",
-    icon: <ImageIcon className="w-3 h-3" />,
-    color: "bg-purple-600 hover:bg-purple-500",
-    action: () => ({ type: "IMAGE", imageUrl: "", fit: "cover" }),
-  },
-  {
-    label: "Add Text",
-    icon: <Type className="w-3 h-3" />,
-    color: "bg-emerald-600 hover:bg-emerald-500",
-    action: () => ({ type: "TEXT", title: "Specials", content: "Description" }),
-  },
-];
-
-/**
- * ColumnEmptyView renders type-picker buttons for an empty column zone.
- * After selection, briefly flashes green then auto-opens the popover editor.
- */
 export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({ onUpdate, onOpenEditor }) => {
   const [isFlashing, setIsFlashing] = useState(false);
 
-  const handleSelect = useCallback((updates: Partial<ColumnConfig>) => {
-    onUpdate(updates);
+  const handleSelect = useCallback(() => {
+    onUpdate({
+      type: "MENU",
+      blocks: [
+        {
+          id: "block-root-" + Math.random().toString(),
+          type: "ColumnBlock",
+          blocks: [],
+        },
+      ],
+    });
     setIsFlashing(true);
     setTimeout(() => {
       setIsFlashing(false);
@@ -50,19 +31,16 @@ export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({ onUpdate, onOp
   }, [onUpdate, onOpenEditor]);
 
   return (
-    <div className={`flex flex-col gap-2 items-center text-center rounded-lg transition-all duration-150 ${isFlashing ? "ring-2 ring-green-400 ring-offset-1 ring-offset-slate-950" : ""}`}>
-      <span className="text-[10px] text-slate-500 font-mono">Empty Column</span>
-      <div className="flex flex-col gap-1.5 w-full max-w-[120px]">
-        {ACTIONS.map(({ label, icon, color, action }) => (
-          <button
-            key={label}
-            onClick={() => handleSelect(action())}
-            className={`flex items-center justify-center gap-1 px-2 py-1 text-[10px] ${color} text-white rounded font-medium transition cursor-pointer`}
-          >
-            {icon} {label}
-          </button>
-        ))}
+    <div
+      onClick={handleSelect}
+      className={`flex flex-col items-center justify-center w-full h-full min-h-[160px] border-2 border-dashed border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 rounded-xl cursor-pointer transition-all group p-4 ${isFlashing ? "ring-2 ring-cyan-400 ring-offset-1 ring-offset-slate-950" : ""}`}
+    >
+      <div className="p-3 bg-cyan-500/10 rounded-full group-hover:bg-cyan-500/20 group-hover:scale-110 transition-all">
+        <Plus className="w-6 h-6 text-cyan-400" />
       </div>
+      <span className="mt-4 text-xs font-bold text-slate-400 group-hover:text-cyan-400 uppercase tracking-widest text-center transition-colors">
+        Click to Add Component
+      </span>
     </div>
   );
 };

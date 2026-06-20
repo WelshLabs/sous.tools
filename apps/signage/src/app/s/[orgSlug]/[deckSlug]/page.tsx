@@ -4,7 +4,8 @@ import React, { useState, useEffect, use } from "react";
 import { io } from "socket.io-client";
 import { PosItem, SignageLayoutConfig } from "@soustools/api-types";
 import { SlideCarousel } from "../../../display/[id]/slide-carousel";
-import { mapDbItemToPosItem, RawDbSquareItem } from "../../../display/[id]/helpers";
+import { ScaleWrapper } from "../../../display/[id]/scale-wrapper";
+import { mapDbItemToPosItem, RawDbPosItem, injectSignageHead } from "../../../display/[id]/helpers";
 import { buildAllAnimationCss } from "../../../display/[id]/menu-item-style-utils";
 import { config } from "@soustools/config";
 
@@ -35,7 +36,7 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
       const itemsRes = await fetch(`/api/pos/items?organizationId=${deckData.data.organization_id}`);
       const itemsData = await itemsRes.json();
       if (itemsData.success && itemsData.data) {
-        setItems((itemsData.data as RawDbSquareItem[]).map(mapDbItemToPosItem));
+        setItems((itemsData.data as RawDbPosItem[]).map(mapDbItemToPosItem));
       }
       setLoading(false);
     } catch (err) {
@@ -49,47 +50,8 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
   useEffect(() => {
     const config = deck?.config;
     if (!config) return;
-
-    const fontsToLoad = new Set<string>();
-    if (config.googleFont) fontsToLoad.add(config.googleFont);
-    if (config.typography) {
-      const { menuItemTitle, menuItemPrice, menuItemDescription, marketingText } = config.typography;
-      if (menuItemTitle) fontsToLoad.add(menuItemTitle);
-      if (menuItemPrice) fontsToLoad.add(menuItemPrice);
-      if (menuItemDescription) fontsToLoad.add(menuItemDescription);
-      if (marketingText) fontsToLoad.add(marketingText);
-    }
-
-    const fontIdPrefix = "signage-dynamic-font";
-    document.querySelectorAll(`[id^='${fontIdPrefix}']`).forEach((el) => el.remove());
-    Array.from(fontsToLoad).forEach((font, idx) => {
-      const link = document.createElement("link");
-      link.id = `${fontIdPrefix}-${idx}`;
-      link.rel = "stylesheet";
-      link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`;
-      document.head.appendChild(link);
-    });
-
-    const styleId = "signage-custom-css";
-    document.getElementById(styleId)?.remove();
-    if (config.customCss) {
-      const style = document.createElement("style");
-      style.id = styleId;
-      style.textContent = config.customCss;
-      document.head.appendChild(style);
-    }
-
-    const animStyleId = "signage-item-animations";
-    document.getElementById(animStyleId)?.remove();
-    if (config.menuItemStyles) {
-      const animCss = buildAllAnimationCss(config.menuItemStyles);
-      if (animCss) {
-        const animStyle = document.createElement("style");
-        animStyle.id = animStyleId;
-        animStyle.textContent = animCss;
-        document.head.appendChild(animStyle);
-      }
-    }
+    const animCss = config.menuItemStyles ? buildAllAnimationCss(config.menuItemStyles) : null;
+    injectSignageHead(config, animCss);
   }, [deck]);
 
   useEffect(() => {
@@ -102,7 +64,7 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
         setDeck((prev) => prev ? { ...prev, config: payload.config } : null);
       }
     });
-    socket.on("items_updated", (payload: { deckId: string; items: RawDbSquareItem[] }) => {
+    socket.on("items_updated", (payload: { deckId: string; items: RawDbPosItem[] }) => {
       if (payload.deckId === deck.id && payload.items) {
         setItems(payload.items.map(mapDbItemToPosItem));
       }
@@ -127,15 +89,32 @@ export default function FriendlyDeckPlayerPage({ params }: FriendlyDeckPlayerPro
     );
   }
 
-  const slides = deck.config?.slides || [];
-  const menuItemStyles = deck.config?.menuItemStyles;
+  const conf = deck.config;
+  const slides = conf?.slides || [];
+  const menuItemStyles = conf?.menuItemStyles;
+  const isResponsive = conf?.aspectRatio === "responsive";
+  const scaleToFit = conf?.scaleToFit !== false;
+
+  const content = (
+    <SlideCarousel slides={slides} items={items} menuItemStyles={menuItemStyles} />
+  );
+
+  if (!isResponsive && scaleToFit) {
+    return (
+      <ScaleWrapper>
+        <div className="w-full h-full st-layout-background relative overflow-hidden" style={{ fontFamily: conf?.googleFont || "inherit" }}>
+          {content}
+        </div>
+      </ScaleWrapper>
+    );
+  }
 
   return (
     <main
-      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white"
-      style={{ fontFamily: deck.config?.googleFont || "inherit" }}
+      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white st-layout-background relative overflow-hidden"
+      style={{ fontFamily: conf?.googleFont || "inherit" }}
     >
-      <SlideCarousel slides={slides} items={items} menuItemStyles={menuItemStyles} />
+      {content}
     </main>
   );
 }

@@ -13,6 +13,9 @@ export interface Config {
   readonly APP_BASE_URL: string;
   readonly PRODUCTION_SQUARE_ACCESS_TOKEN: string;
   readonly PORT: number;
+  readonly REDIS_HOST: string;
+  readonly REDIS_PORT: number;
+  readonly SQUARE_WEBHOOK_SIGNATURE_KEY: string;
 }
 
 /**
@@ -24,6 +27,8 @@ const isMockEnv =
   process.env.NODE_ENV === "test" ||
   process.env.VITEST === "true" ||
   !!(secrets.SUPABASE_URL && secrets.SUPABASE_URL.includes("placeholder-project.supabase.co"));
+
+const sec = secrets as Record<string, string | number | undefined>;
 
 export const config: Config = Object.freeze({
   SUPABASE_URL: secrets.SUPABASE_URL,
@@ -46,17 +51,27 @@ export const config: Config = Object.freeze({
     : (process.env.GOOGLE_CLIENT_SECRET || secrets.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder"),
   API_BASE_URL: isMockEnv
     ? "http://localhost:6000"
-    : (process.env.API_BASE_URL || (secrets as any).API_BASE_URL || "http://localhost:6000"),
+    : (process.env.API_BASE_URL || (sec.API_BASE_URL as string) || "http://localhost:6000"),
   APP_BASE_URL: isMockEnv
     ? "http://localhost:3000"
-    : (process.env.APP_BASE_URL || (secrets as any).APP_BASE_URL || "http://localhost:3000"),
+    : (process.env.APP_BASE_URL || (sec.APP_BASE_URL as string) || "http://localhost:3000"),
   PRODUCTION_SQUARE_ACCESS_TOKEN: isMockEnv
     ? "prod-square-token-placeholder"
-    : (process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || (secrets as any).PRODUCTION_SQUARE_ACCESS_TOKEN || "prod-square-token-placeholder"),
+    : (process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || (sec.PRODUCTION_SQUARE_ACCESS_TOKEN as string) || "prod-square-token-placeholder"),
   PORT: Number(
     isMockEnv
       ? 6000
-      : (process.env.PORT || (secrets as any).PORT || 6000)
+      : (process.env.PORT || sec.PORT || 6000)
   ),
+  REDIS_HOST: isMockEnv
+    ? "127.0.0.1"
+    : (process.env.REDIS_HOST || (sec.REDIS_HOST as string) || "127.0.0.1"),
+  REDIS_PORT: Number(
+    isMockEnv
+      ? 6379
+      : (process.env.REDIS_PORT || sec.REDIS_PORT || 6379)
+  ),
+  SQUARE_WEBHOOK_SIGNATURE_KEY: isMockEnv
+    ? ""
+    : (process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || (sec.SQUARE_WEBHOOK_SIGNATURE_KEY as string) || ""),
 });
-

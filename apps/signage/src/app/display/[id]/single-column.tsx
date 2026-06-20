@@ -3,6 +3,7 @@
 import React from "react";
 import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { MenuItemCard } from "./menu-item-card";
+import { BlockRenderer } from "./block-renderer";
 
 interface SingleColumnProps {
   column: ColumnConfig;
@@ -14,12 +15,33 @@ interface SingleColumnProps {
 
 export function SingleColumn({ column, index, style, items, menuItemStyles }: SingleColumnProps) {
   const cls = "w-full h-full overflow-hidden relative bg-transparent";
+
+  // Phase 2 Block rendering override
+  if (column.blocks && column.blocks.length > 0) {
+    return (
+      <div
+        key={index}
+        style={style}
+        className="flex flex-col gap-6 overflow-y-auto overflow-x-hidden w-full h-full p-8 st-layout-column"
+      >
+        {column.blocks.map((block, idx) => (
+          <BlockRenderer
+            key={idx}
+            block={block}
+            items={items}
+            menuItemStyles={menuItemStyles}
+          />
+        ))}
+      </div>
+    );
+  }
+
   switch (column.type) {
     case "MENU": {
       let columnItems = items;
       if (column.itemIds && column.itemIds.length > 0) {
         columnItems = column.itemIds
-          .map((id) => items.find((i) => i.id === id || i.squareId === id))
+          .map((id) => items.find((i) => i.id === id || i.externalId === id))
           .filter((i): i is PosItem => !!i);
       }
       columnItems = columnItems.filter((i) => !i.isSoldOut || !menuItemStyles.soldOut.hidden);

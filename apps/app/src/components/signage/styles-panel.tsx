@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { SignageLayoutConfig, ColumnLayoutSlide, MenuItemStyles } from "@soustools/api-types";
-import { Code2, Sliders } from "lucide-react";
+import { SignageLayoutConfig, ColumnLayoutSlide } from "@soustools/api-types";
+import { Code2 } from "lucide-react";
 import { FontPickerPopover } from "./font-picker-popover";
 import { CssEditorModal } from "./css-editor-modal";
-import { MenuItemStyleModal } from "./menu-item-style-modal";
-import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 import { DisplayPicker } from "./display-picker";
 import { BodyPortal } from "./body-portal";
 
@@ -15,20 +13,16 @@ export interface StylesPanelProps {
   activeSlideIndex: number;
   onUpdateConfig: (updates: Partial<SignageLayoutConfig>) => void;
   onUpdateSlide: (index: number, updates: Partial<ColumnLayoutSlide>) => void;
-  menuItemStyles: MenuItemStyles;
-  onUpdateMenuItemStyles: (s: MenuItemStyles) => void;
   deckId?: string;
 }
 
 const DIVIDER = <div className="border-t border-white/5 my-3" />;
 
 export const StylesPanel: React.FC<StylesPanelProps> = ({
-  config, activeSlideIndex, onUpdateConfig, onUpdateSlide,
-  menuItemStyles, onUpdateMenuItemStyles, deckId,
+  config, activeSlideIndex, onUpdateConfig, onUpdateSlide, deckId,
 }) => {
   const [fontOpen, setFontOpen] = useState(false);
   const [cssModalOpen, setCssModalOpen] = useState(false);
-  const [stylesModalOpen, setStylesModalOpen] = useState(false);
 
   const activeSlide = config.slides[activeSlideIndex] as ColumnLayoutSlide | undefined;
 
@@ -57,6 +51,35 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
 
         {DIVIDER}
 
+        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Layout Sizing</p>
+        <p className="text-[10px] text-zinc-400 leading-tight mb-2">This dictates the targeted display output for hardware players. The editor canvas remains responsive for ease of use.</p>
+        <div className="space-y-2 mt-1">
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-xs text-zinc-400">Aspect Ratio</label>
+            <select
+              value={config.aspectRatio ?? "16:9"}
+              onChange={(e) => onUpdateConfig({ aspectRatio: e.target.value as "16:9" | "responsive" })}
+              className="bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none focus:border-primary/60"
+            >
+              <option value="16:9">Fixed 16:9 (1920x1080)</option>
+              <option value="responsive">Responsive</option>
+            </select>
+          </div>
+          {config.aspectRatio !== "responsive" && (
+            <div className="flex items-center justify-between gap-3">
+              <label className="text-xs text-zinc-400">Scale to Fit</label>
+              <input
+                type="checkbox"
+                checked={config.scaleToFit !== false}
+                onChange={(e) => onUpdateConfig({ scaleToFit: e.target.checked })}
+                className="w-4 h-4 rounded border-white/10 bg-zinc-800 focus:ring-0 cursor-pointer"
+              />
+            </div>
+          )}
+        </div>
+
+        {DIVIDER}
+
         <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Base Font</p>
         <div className="relative">
           <button onClick={() => setFontOpen(!fontOpen)}
@@ -78,16 +101,7 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
 
         {DIVIDER}
 
-        <button onClick={() => setStylesModalOpen(true)}
-          className="flex items-center gap-2 w-full px-3 py-2.5 bg-zinc-800 border border-white/10 rounded-xl hover:border-white/20 transition-all cursor-pointer text-left">
-          <Sliders className="w-4 h-4 text-violet-400 shrink-0" />
-          <div>
-            <div className="text-xs font-semibold text-zinc-200">Edit Menu Item Styles</div>
-            <div className="text-[10px] text-zinc-500">Customize per-state card appearance</div>
-          </div>
-        </button>
 
-        {DIVIDER}
 
         <button onClick={() => setCssModalOpen(true)}
           className="flex items-center gap-2 w-full px-3 py-2.5 bg-zinc-800 border border-white/10 rounded-xl hover:border-white/20 transition-all cursor-pointer text-left">
@@ -106,13 +120,7 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
           <CssEditorModal value={config.customCss ?? ""} onChange={(v) => onUpdateConfig({ customCss: v })} onClose={() => setCssModalOpen(false)} />
         </BodyPortal>
       )}
-      {stylesModalOpen && (
-        <BodyPortal>
-          <MenuItemStyleModal open={stylesModalOpen} onClose={() => setStylesModalOpen(false)}
-            styles={menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES}
-            onChange={onUpdateMenuItemStyles} googleFont={config.googleFont} />
-        </BodyPortal>
-      )}
+
     </>
   );
 };

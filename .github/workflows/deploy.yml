@@ -32,7 +32,7 @@ jobs:
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-id: ${{ secrets.INFISICAL_PROJECT_ID }}
+          project-slug: 'sous-tools-1cd-a'
           env-slug: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
 
       - name: Run Supabase Migrations

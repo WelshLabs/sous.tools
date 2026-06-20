@@ -27,7 +27,7 @@ export const ColumnMenuPreview: React.FC<ColumnPreviewProps> = ({
   const styles = menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES;
 
   const activeItems = (column.itemIds || [])
-    .map((id) => items.find((item) => item.id === id || item.squareId === id))
+    .map((id) => items.find((item) => item.id === id || item.externalId === id))
     .filter((item): item is PosItem => !!item)
     .filter((item) => {
       if (!item.isSoldOut) return true;

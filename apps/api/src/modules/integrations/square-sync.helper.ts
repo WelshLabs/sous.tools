@@ -42,7 +42,7 @@ export async function syncSquareCatalog(
     }
   }
 
-  const squareItemsToUpsert = items.map((item) => {
+  const posItemsToUpsert = items.map((item) => {
     const firstVariation = item.item_data?.variations?.[0];
     const variationId = firstVariation?.id || "";
     const priceAmount = firstVariation?.item_variation_data?.price_money?.amount || 0;
@@ -50,7 +50,8 @@ export async function syncSquareCatalog(
     const stockQuantity = countsMap[variationId] !== undefined ? countsMap[variationId] : 1;
     return {
       organization_id: orgId,
-      square_id: item.id,
+      pos_provider: "SQUARE",
+      external_id: item.id,
       name: item.item_data?.name || "Unnamed Item",
       description: item.item_data?.description || null,
       price,
@@ -61,10 +62,10 @@ export async function syncSquareCatalog(
   });
 
   const { error } = await supabaseClient
-    .from("square_items")
-    .upsert(squareItemsToUpsert, { onConflict: "organization_id,square_id" });
+    .from("pos_items")
+    .upsert(posItemsToUpsert, { onConflict: "organization_id,pos_provider,external_id" });
 
   if (error) {
-    throw new Error(`Failed to upsert square items: ${error.message}`);
+    throw new Error(`Failed to upsert POS items: ${error.message}`);
   }
 }

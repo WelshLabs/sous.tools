@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
+import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import Sidebar from "../../components/layout/sidebar";
 import AppBar from "../../components/layout/app-bar";
 
@@ -39,13 +40,13 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
           data: { session },
         } = await supabase.auth.getSession();
         if (!session) {
-          router.push("/login");
+          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
         } else if (mounted) {
           setIsLoading(false);
         }
       } catch (error) {
         console.error("Failed to retrieve authentication session:", error);
-        router.push("/login");
+        router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       }
     };
 
@@ -54,13 +55,15 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
     // Set up auth state change listener to auto-redirect on logout/expiry
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      if (!session) {
-        router.push("/login");
-      } else if (mounted) {
-        setIsLoading(false);
+    } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        if (!session) {
+          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        } else if (mounted) {
+          setIsLoading(false);
+        }
       }
-    });
+    );
 
     return () => {
       mounted = false;

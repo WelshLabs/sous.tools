@@ -6,15 +6,23 @@ import { SignageLayoutConfig, PosItem } from "@soustools/api-types";
 import { MOCK_POS_ITEMS } from "../../../../components/signage/mock-data";
 import { RefreshCw } from "lucide-react";
 import { io } from "socket.io-client";
-import { mapDbItemToPosItem, RawDbSquareItem } from "../../../display/[id]/helpers";
+import { mapDbItemToPosItem, RawDbPosItem } from "../../../display/[id]/helpers";
 import { config } from "@soustools/config";
+
+interface SignageDeck {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  config: SignageLayoutConfig;
+}
 
 interface TVSignageEditorClientProps {
   deckId: string;
 }
 
 export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientProps) {
-  const [deck, setDeck] = useState<any | null>(null);
+  const [deck, setDeck] = useState<SignageDeck | null>(null);
   const [items, setItems] = useState<PosItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,7 +38,7 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
         setDeck(deckRes.data);
       }
       if (itemsRes.success && itemsRes.data) {
-        const parsedItems = (itemsRes.data as RawDbSquareItem[]).map(mapDbItemToPosItem);
+        const parsedItems = (itemsRes.data as RawDbPosItem[]).map(mapDbItemToPosItem);
         setItems(parsedItems);
       } else {
         setItems(MOCK_POS_ITEMS);
@@ -57,7 +65,7 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
       socket.emit("join", { deckId });
     });
 
-    socket.on("items_updated", (payload: { deckId: string; items: RawDbSquareItem[] }) => {
+    socket.on("items_updated", (payload: { deckId: string; items: RawDbPosItem[] }) => {
       if (payload.deckId === deckId && payload.items) {
         const parsedItems = payload.items.map(mapDbItemToPosItem);
         setItems(parsedItems);
