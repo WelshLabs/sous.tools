@@ -37,14 +37,13 @@ jobs:
 
       - name: Run Supabase Migrations
         env:
-          SUPABASE_PASSWORD: ${{ env.SUPABASE_PASSWORD }}
-          SUPABASE_REF: ${{ github.ref_name == 'main' && 'gfifeaiooujizfanmwgd' || 'nznsxjjrpabbfutoovuj' }}
+          SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
         run: |
-          if [ -z "$SUPABASE_PASSWORD" ]; then
-            echo "Error: SUPABASE_PASSWORD is not defined."
+          if [ -z "$SUPABASE_POOLER_URL" ]; then
+            echo "Error: SUPABASE_POOLER_URL is not defined."
             exit 1
           fi
-          npx supabase db push --db-url "postgresql://postgres:$SUPABASE_PASSWORD@db.$SUPABASE_REF.supabase.co:5432/postgres"
+          npx supabase db push --db-url "$SUPABASE_POOLER_URL"
 
   docker-build:
     name: Build & Push Signage Docker Image
