@@ -2,6 +2,12 @@
 # customize-chroot.sh - Raspberry Pi OS image customization script (runs inside chroot)
 # Configures the signage system settings directly on the OS image.
 
+# SDM calls this script 3 times. 
+# We only want to execute our configuration inside the chroot (Phase 1).
+if [ "$1" != "1" ]; then
+    exit 0
+fi
+
 set -e
 
 echo "=== Customizing OS Image Chroot ==="
