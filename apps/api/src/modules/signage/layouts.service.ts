@@ -25,23 +25,31 @@ export class LayoutsService {
   async findOne(id: string): Promise<unknown> {
     const { data, error } = await supabase
       .from("signage_decks")
-      .select("*")
+      .select("*, organizations(design_tokens)")
       .eq("id", id)
       .single();
 
     if (error) throw new Error(error.message);
+    if (data && data.organizations) {
+      data.config = { ...data.config, designTokens: (data.organizations as any).design_tokens };
+      delete data.organizations;
+    }
     return data;
   }
 
   async findBySlug(orgId: string, slug: string): Promise<unknown> {
     const { data, error } = await supabase
       .from("signage_decks")
-      .select("*")
+      .select("*, organizations(design_tokens)")
       .eq("organization_id", orgId)
       .eq("slug", slug)
       .single();
 
     if (error) throw new Error(error.message);
+    if (data && data.organizations) {
+      data.config = { ...data.config, designTokens: (data.organizations as any).design_tokens };
+      delete data.organizations;
+    }
     return data;
   }
 

@@ -23,16 +23,59 @@ export interface BlockSizing {
   margin?: string;
 }
 
+export interface BlockBorder {
+  width?: string;
+  color?: string;
+  radius?: string;
+  style?: "solid" | "dashed" | "dotted";
+}
+
+export interface BlockBackground {
+  color?: string;
+  image?: string;
+  opacity?: number;
+  blur?: string;
+}
+
+export interface BlockShadow {
+  x?: string;
+  y?: string;
+  blur?: string;
+  spread?: string;
+  color?: string;
+}
+
+export interface BlockTypography {
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  fontStyle?: "normal" | "italic";
+  color?: string;
+  textAlign?: "left" | "center" | "right";
+  letterSpacing?: string;
+}
+
+export interface VisualBlockStyles {
+  typography?: BlockTypography;
+  background?: BlockBackground;
+  border?: BlockBorder;
+  shadow?: BlockShadow;
+  opacity?: number;
+}
+
 /**
  * Base properties shared by all structural and content blocks.
  */
 export interface BaseBlock {
   id?: string;
   uniqueSelector?: string;
-  panelStyle?: "glass" | "none";
   className?: string;
   sizing?: BlockSizing;
+  visuals?: VisualBlockStyles;
   styles?: MenuItemStyles;
+  panelStyle?: string;
+  color?: string;
+  fontSize?: string;
   itemIds?: string[];
 }
 

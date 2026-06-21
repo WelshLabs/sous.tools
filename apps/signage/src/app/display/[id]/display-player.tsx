@@ -95,7 +95,7 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
   if (!isResponsive && scaleToFit) {
     return (
       <ScaleWrapper>
-        <div className="w-full h-full st-layout-background relative overflow-hidden" style={{ fontFamily: config?.googleFont || "inherit" }}>
+        <div className="w-full h-full st-layout-background relative overflow-hidden st-signage-root" style={{ fontFamily: config?.googleFont || "inherit" }}>
           {content}
         </div>
       </ScaleWrapper>
@@ -104,7 +104,7 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
 
   return (
     <main
-      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white st-layout-background relative overflow-hidden"
+      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white st-layout-background relative overflow-hidden st-signage-root"
       style={{ fontFamily: config?.googleFont || "inherit" }}
     >
       {content}

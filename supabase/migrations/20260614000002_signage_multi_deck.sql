@@ -68,15 +68,19 @@ ALTER TABLE signage_displays
 ALTER TABLE signage_devices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE signage_decks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON signage_devices;
 CREATE POLICY "Enable read access for all organization members" ON signage_devices
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON signage_devices;
 CREATE POLICY "Enable write access for organization admins" ON signage_devices
   FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON signage_decks;
 CREATE POLICY "Enable read access for all organization members" ON signage_decks
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON signage_decks;
 CREATE POLICY "Enable write access for organization admins" ON signage_decks
   FOR ALL USING (true);
 

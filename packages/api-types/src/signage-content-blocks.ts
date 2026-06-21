@@ -46,12 +46,19 @@ export interface PosItemBlock extends BaseBlock {
   posItemId: string;
 }
 
+export interface ItemModifierOverride {
+  modifierIds: string[];
+  displayNameOverride?: string;
+}
+
 /**
  * Displays a dynamic list of POS items assigned via itemIds.
  */
 export interface MenuListBlock extends BaseBlock {
   type: "MenuListBlock";
   hideDescriptions?: boolean;
+  itemModifiers?: Record<string, ItemModifierOverride[]>;
+  modifierLayout?: "stacked" | "inline";
 }
 
 /**
@@ -70,7 +77,6 @@ export interface CalloutBlock extends BaseBlock {
   icon: string;
   text: string;
   accentBorder?: boolean;
-  orientation?: "horizontal" | "vertical";
 }
 
 /**

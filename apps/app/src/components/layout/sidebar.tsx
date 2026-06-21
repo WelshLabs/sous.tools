@@ -10,7 +10,9 @@ import {
   Calculator,
   LogOut,
   ChefHat,
-  Scale,
+  ShoppingBag,
+  BrainCircuit,
+  PenTool
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Hamburger } from "./hamburger";
@@ -25,8 +27,10 @@ export interface SidebarProps {
 const NAV_ITEMS = [
   { label: "Kitchen Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Recipes", href: "/recipes", icon: ChefHat },
-  { label: "Vessels Manager", href: "/recipes/vessels", icon: Scale },
   { label: "TV Signage", href: "/tv", icon: Tv },
+  { label: "Purchasing", href: "/purchasing", icon: ShoppingBag },
+  { label: "Ingestion Queue", href: "/ingestion", icon: BrainCircuit },
+  { label: "Whiteboard", href: "/inventory/whiteboard", icon: PenTool },
   { label: "Devices", href: "/devices", icon: Smartphone },
   { label: "POS Simulator", href: "/pos", icon: Calculator },
 ];
@@ -102,8 +106,6 @@ export default function Sidebar({
             const isActive =
               item.href === "/"
                 ? pathname === "/"
-                : item.href === "/recipes"
-                ? pathname.startsWith("/recipes") && !pathname.startsWith("/recipes/vessels")
                 : pathname.startsWith(item.href);
             return (
               <Link

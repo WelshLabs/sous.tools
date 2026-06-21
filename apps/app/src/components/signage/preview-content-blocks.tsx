@@ -120,12 +120,14 @@ interface PreviewContentBlocksProps {
   block: SignageBlock;
   items: PosItem[];
   styles: MenuItemStyles;
+  config?: any;
 }
 
 export function PreviewContentBlocks({
   block,
   items,
   styles,
+  config,
 }: PreviewContentBlocksProps): React.JSX.Element {
   switch (block.type) {
     case "CategoryHeaderBlock": {
@@ -138,14 +140,14 @@ export function PreviewContentBlocks({
       return (
         <div className={classes} data-unique-id={block.uniqueSelector}>
           <div className="flex justify-between items-center">
-            <h5 className="text-[10px] font-bold uppercase tracking-wider text-white">
+            <h5 className="text-[10px] font-bold uppercase tracking-wider" style={{ color: block.color || config?.designTokens?.primaryColor, fontSize: block.fontSize }}>
               {block.title}
             </h5>
             {block.badge && (
               <span className={`text-[6px] px-1 bg-red-600 rounded text-white font-bold ${block.animateBadge ? "animate-pulse" : ""}`}>{block.badge}</span>
             )}
           </div>
-          {block.subtitle && <p className="text-[8px] text-slate-400">{block.subtitle}</p>}
+          {block.subtitle && <p className="text-[8px] opacity-80">{block.subtitle}</p>}
         </div>
       );
     }
@@ -194,21 +196,22 @@ export function PreviewContentBlocks({
       const b = block as any;
       const isGlass = block.panelStyle === "glass";
       const classes = [
-        "p-3 rounded text-[10px] flex gap-3 items-start st-callout w-full",
+        "p-5 rounded-xl flex flex-col items-center text-center gap-3 st-callout w-full",
         isGlass ? "st-glass-panel border border-white/10" : (block.panelStyle !== "none" ? "bg-zinc-900 border border-zinc-800" : ""),
-        block.accentBorder ? "border-l-2 border-l-cyan-400" : "",
+        block.accentBorder ? "border-t-4 border-t-cyan-400" : "",
         block.className
       ].filter(Boolean).join(" ");
       
       const IconComponent = b.iconName ? ((LucideIcons as any)[b.iconName] || LucideIcons.Info) : LucideIcons.Info;
+      const bgStyle = b.backgroundOpacity !== undefined && !isGlass && block.panelStyle !== "none" ? { backgroundColor: `rgba(24, 24, 27, ${b.backgroundOpacity})` } : {};
       return (
-        <div className={classes} data-unique-id={block.uniqueSelector}>
-          <div className="shrink-0 mt-0.5">
-             <IconComponent className="w-4 h-4 text-cyan-400" />
+        <div className={classes} data-unique-id={block.uniqueSelector} style={bgStyle}>
+          <div className="shrink-0">
+             <IconComponent className="w-6 h-6 text-cyan-400" />
           </div>
-          <div className="flex flex-col gap-1">
-            {b.title && <span className="text-slate-200 font-bold tracking-wide">{b.title}</span>}
-            {b.message && <span className="text-slate-400 leading-snug">{b.message}</span>}
+          <div className="flex flex-col gap-1 items-center justify-center w-full" style={{ color: b.textColor }}>
+            {b.title && <span className="font-bold tracking-wide text-lg" style={{ fontSize: b.fontSize }}>{b.title}</span>}
+            {b.message && <span className="leading-snug" style={{ fontSize: b.fontSize ? `calc(${b.fontSize} * 0.75)` : undefined }}>{b.message}</span>}
           </div>
         </div>
       );
@@ -259,17 +262,31 @@ export function PreviewContentBlocks({
                  opacity: optStyle.dimOpacity !== undefined ? optStyle.dimOpacity : (item.isSoldOut ? 0.5 : 1),
                  filter: optStyle.grayscale ? "grayscale(1)" : undefined,
                }}>
-                 <div className="flex flex-col truncate max-w-[70%]">
-                   <span style={buildTitleStyle(optStyle)} className="font-semibold truncate st-menu-item-title">
-                     {item.name}
-                   </span>
+                 <div className="flex flex-col truncate w-full">
+                   <div className="flex justify-between items-center w-full">
+                     <span style={buildTitleStyle(optStyle)} className="font-semibold truncate st-menu-item-title">
+                       {item.name}
+                     </span>
+                     {!(block as any).priceDisplay && (
+                       <span style={buildPriceStyle(optStyle)} className="font-mono st-price-tag shrink-0 pl-2">
+                         ${Number(item.price).toFixed(2)}
+                       </span>
+                     )}
+                   </div>
                    {!block.hideDescriptions && item.description && (
-                     <span className="text-[8px] text-zinc-500 truncate">{item.description}</span>
+                     <span className="text-[8px] opacity-70 truncate">{item.description}</span>
+                   )}
+                   {(block as any).priceDisplay && (
+                     <div className="flex gap-8 border-t border-white/10 pt-3 mt-2">
+                       {Object.entries((block as any).priceDisplay).map(([key, value]) => (
+                         <div key={key} className="flex gap-2 items-center">
+                           <span className="text-slate-400 capitalize text-[8px]">{key}</span>
+                           <span className="font-mono st-price-tag text-[9px]">{value as string}</span>
+                         </div>
+                       ))}
+                     </div>
                    )}
                  </div>
-                 <span style={buildPriceStyle(optStyle)} className="font-mono st-price-tag shrink-0 pl-2">
-                   ${Number(item.price).toFixed(2)}
-                 </span>
                </div>
              );
           })}

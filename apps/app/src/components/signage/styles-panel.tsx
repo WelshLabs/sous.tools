@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { SignageLayoutConfig, ColumnLayoutSlide } from "@soustools/api-types";
 import { Code2 } from "lucide-react";
-import { FontPickerPopover } from "./font-picker-popover";
 import { CssEditorModal } from "./css-editor-modal";
 import { DisplayPicker } from "./display-picker";
 import { BodyPortal } from "./body-portal";
@@ -21,7 +20,6 @@ const DIVIDER = <div className="border-t border-white/5 my-3" />;
 export const StylesPanel: React.FC<StylesPanelProps> = ({
   config, activeSlideIndex, onUpdateConfig, onUpdateSlide, deckId,
 }) => {
-  const [fontOpen, setFontOpen] = useState(false);
   const [cssModalOpen, setCssModalOpen] = useState(false);
 
   const activeSlide = config.slides[activeSlideIndex] as ColumnLayoutSlide | undefined;
@@ -78,22 +76,7 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
           )}
         </div>
 
-        {DIVIDER}
-
-        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Base Font</p>
-        <div className="relative">
-          <button onClick={() => setFontOpen(!fontOpen)}
-            className="w-full text-left px-3 py-2.5 bg-zinc-800 border border-white/10 rounded-xl hover:border-white/20 transition-all cursor-pointer"
-            style={{ fontFamily: config.googleFont ?? "Outfit" }}>
-            <span className="text-sm text-zinc-100">The quick brown fox</span>
-            <span className="block text-[10px] text-zinc-500 mt-0.5">{config.googleFont ?? "Outfit"}</span>
-          </button>
-          {fontOpen && (
-            <FontPickerPopover label="Base Font" currentFont={config.googleFont}
-              onSelect={(f) => { onUpdateConfig({ googleFont: f }); setFontOpen(false); }}
-              onClose={() => setFontOpen(false)} />
-          )}
-        </div>
+        {/* Base Font section removed - now handled by Global Design Tokens */}
 
         {DIVIDER}
 

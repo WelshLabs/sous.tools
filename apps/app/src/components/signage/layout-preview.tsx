@@ -40,17 +40,31 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
     const parent = containerRef.current?.parentElement;
     if (!parent) return;
     const observer = new ResizeObserver(([entry]) => {
-      setScale(Math.min(entry.contentRect.width / 1920, entry.contentRect.height / 1080));
+      setScale(Math.max(0.1, (entry.contentRect.width - 64) / 1920));
     });
     observer.observe(parent);
     return () => observer.disconnect();
   }, [config.aspectRatio, config.scaleToFit]);
 
-  const customCss = config.customCss ? `.signage-preview-container { ${config.customCss} }` : "";
+  const cssVars = `
+    .st-signage-root {
+      --global-primary: ${config.designTokens?.primaryColor || "#06b6d4"};
+      --global-accent: ${config.designTokens?.accentColor || "#3b82f6"};
+      --global-heading-font: ${config.designTokens?.headingFont ? `'${config.designTokens.headingFont}', sans-serif` : "inherit"};
+      --global-subtitle-font: ${config.designTokens?.subtitleFont ? `'${config.designTokens.subtitleFont}', sans-serif` : "inherit"};
+      --global-body-font: ${config.designTokens?.bodyFont ? `'${config.designTokens.bodyFont}', sans-serif` : "inherit"};
+    }
+  `;
+
+  let combinedCustomCss = cssVars;
+  if (config.designTokens?.globalCss) combinedCustomCss += `\n@scope (.st-signage-root) {\n${config.designTokens.globalCss}\n}\n`;
+  if (config.customCss) combinedCustomCss += `\n@scope (.st-signage-root) {\n${config.customCss}\n}\n`;
+  
+  const customCss = combinedCustomCss;
   const animationCss = config.menuItemStyles ? buildAllAnimationCss(config.menuItemStyles) : "";
 
   const previewContent = (
-    <div className={`w-full h-full relative st-layout-background overflow-hidden ${config.aspectRatio === "responsive" ? "" : "border-2 border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
+    <div className={`w-full h-full relative st-layout-background ${config.aspectRatio === "responsive" ? "" : "border-2 border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
       {!activeSlide ? (
         <div className="flex items-center justify-center h-full text-slate-500 text-sm font-mono">Click + Add Slide to begin</div>
       ) : (
@@ -69,13 +83,16 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   );
 
   return (
-    <div className="w-full h-full relative flex items-center justify-center overflow-hidden signage-preview-container bg-black">
+    <div className="w-full h-full relative flex items-start justify-center signage-preview-container bg-black pt-8 st-signage-root" ref={containerRef}>
       {config.googleFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.googleFont.replace(/\s+/g, "+")}&display=swap`} />}
-      {(customCss || animationCss) && <style>{`${animationCss}\n${customCss}`}</style>}
+      {config.designTokens?.headingFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.designTokens.headingFont.replace(/\s+/g, "+")}&display=swap`} />}
+      {config.designTokens?.subtitleFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.designTokens.subtitleFont.replace(/\s+/g, "+")}&display=swap`} />}
+      {config.designTokens?.bodyFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.designTokens.bodyFont.replace(/\s+/g, "+")}&display=swap`} />}
+      {(customCss || animationCss) && <style dangerouslySetInnerHTML={{ __html: `${animationCss}\n${customCss}` }} />}
       {isPreviewing && config.aspectRatio !== "responsive" && config.scaleToFit !== false ? (
-        <div ref={containerRef} className="w-[1920px] h-[1080px] shrink-0 origin-center transform-gpu" style={{ transform: `scale(${scale})` }}>{previewContent}</div>
+        <div className="w-[1920px] h-[1080px] shrink-0 origin-top transform-gpu shadow-2xl" style={{ transform: `scale(${scale})` }}>{previewContent}</div>
       ) : (
-        <div className="w-full h-full relative" ref={containerRef}>{previewContent}</div>
+        <div className="w-full h-full">{previewContent}</div>
       )}
     </div>
   );

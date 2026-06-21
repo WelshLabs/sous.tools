@@ -52,6 +52,7 @@ export interface RecipeIngredient {
   id: string;
   recipeId: string;
   masterIngredientId: string | null;
+  subRecipeId: string | null;
   calculationType: "fixed_weight" | "bakers_percentage";
   baseCalculationGroup: boolean;
   amount: number;
@@ -59,6 +60,7 @@ export interface RecipeIngredient {
   prepNotes: string | null;
   createdAt: string;
   masterIngredient?: MasterIngredient;
+  subRecipe?: Recipe;
 }
 
 export interface KitchenTimerState {

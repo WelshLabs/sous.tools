@@ -6,6 +6,8 @@ interface CategoryHeaderBlockProps {
   panelStyle?: string;
   badge?: string;
   className?: string;
+  color?: string;
+  fontSize?: string;
 }
 
 export function CategoryHeaderBlock({
@@ -14,6 +16,8 @@ export function CategoryHeaderBlock({
   panelStyle,
   badge,
   className,
+  color,
+  fontSize,
 }: CategoryHeaderBlockProps) {
   const isGlass = panelStyle === "glass";
   const containerClasses = [
@@ -27,7 +31,7 @@ export function CategoryHeaderBlock({
   return (
     <div className={containerClasses}>
       <div className="flex justify-between items-start gap-4">
-        <h2 className="text-3xl font-extrabold tracking-tight uppercase text-white font-brand">
+        <h2 className="text-3xl font-extrabold tracking-tight uppercase text-white font-brand" style={{ color, fontSize }}>
           {title}
         </h2>
         {badge && (

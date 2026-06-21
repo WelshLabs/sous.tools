@@ -14,6 +14,7 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
+    "@google/genai": "^2.9.0",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
@@ -25,6 +26,7 @@
     "@soustools/supabase": "workspace:*",
     "@supabase/supabase-js": "^2.43.0",
     "bullmq": "^5.79.0",
+    "googleapis": "^173.0.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3"

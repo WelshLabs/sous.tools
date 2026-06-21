@@ -24,11 +24,14 @@ export interface RootLayoutProps {
  *
  * @param props Contains the children node to render inside the body tag.
  */
+import { Toaster } from "sonner";
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body className="antialiased min-h-screen bg-slate-950 text-slate-50 font-sans">
         {children}
+        <Toaster theme="dark" position="bottom-right" richColors />
       </body>
     </html>
   );

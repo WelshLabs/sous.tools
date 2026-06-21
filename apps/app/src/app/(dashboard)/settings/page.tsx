@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { IntegrationsPanel } from "../../../components/settings/integrations-panel";
+import { GlobalStylingSettings } from "../../../components/settings/global-styling-settings";
 import { GeneralSettings } from "../../../components/settings/general-settings";
-import { Settings, Sliders, Cable } from "lucide-react";
+import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"general" | "integrations">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "integrations" | "styling">("general");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -14,6 +15,8 @@ export default function SettingsPage() {
       const tab = params.get("tab");
       if (tab === "integrations") {
         setActiveTab("integrations");
+      } else if (tab === "styling") {
+        setActiveTab("styling");
       }
     }
   }, []);
@@ -26,7 +29,7 @@ export default function SettingsPage() {
           Settings Panel
         </h1>
         <p className="text-xs text-slate-400">
-          Configure global kitchen parameters and control system integration profiles.
+          Configure global kitchen parameters, system integration profiles, and tenant design tokens.
         </p>
       </header>
 
@@ -54,11 +57,24 @@ export default function SettingsPage() {
           <Cable className="w-4 h-4" />
           Integrations
         </button>
+        <button
+          onClick={() => setActiveTab("styling")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer ${
+            activeTab === "styling"
+              ? "border-sky-500 text-sky-400 bg-sky-500/5"
+              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-zinc-900/40"
+          }`}
+        >
+          <Paintbrush className="w-4 h-4" />
+          Global Styling
+        </button>
       </div>
 
       {/* Panels Layout Container */}
       <div className="p-6 rounded-2xl bg-zinc-950/40 border border-zinc-900 shadow-2xl backdrop-blur-2xl">
-        {activeTab === "general" ? <GeneralSettings /> : <IntegrationsPanel />}
+        {activeTab === "general" && <GeneralSettings />}
+        {activeTab === "integrations" && <IntegrationsPanel />}
+        {activeTab === "styling" && <GlobalStylingSettings />}
       </div>
     </div>
   );

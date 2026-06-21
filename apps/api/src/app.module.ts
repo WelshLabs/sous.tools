@@ -7,6 +7,7 @@ import { SignageModule } from "./modules/signage/signage.module";
 import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
 import { IntegrationsModule } from "./modules/integrations/integrations.module";
 import { RecipeModule } from "./modules/recipe/recipe.module";
+import { IngestionModule } from "./modules/ingestion/ingestion.module";
 
 /**
  * Root module of the NestJS application.
@@ -30,6 +31,7 @@ import { RecipeModule } from "./modules/recipe/recipe.module";
     PosSimulatorModule,
     IntegrationsModule,
     RecipeModule,
+    IngestionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

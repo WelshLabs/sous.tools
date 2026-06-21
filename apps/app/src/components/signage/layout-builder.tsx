@@ -34,7 +34,6 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
   const [viewMode, setViewMode] = useState<"editor" | "preview" | "live">("editor");
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
   const [showOutlines, setShowOutlines] = useState(false);
 
   useLayoutSocket(deckId, (c) => { setConfig(c); setSavedConfig(c); });
@@ -88,6 +87,15 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
       if (!col.blocks) return col;
       let newBlocks = [...col.blocks];
       
+      if (source.droppableId === "sidebar-blocks") {
+        const type = result.draggableId.replace("sidebar-add-", "");
+        const newBlock: SignageBlock = type.endsWith("Block") 
+          ? { id: `block-${Date.now()}`, type: type as any, blocks: [], cells: type === "GridBlock" ? [] : undefined } as any
+          : { id: `block-${Date.now()}`, type: type as any } as any;
+        newBlocks = newBlocks.map(root => insertBlockAt(root, destination.droppableId, destination.index, newBlock));
+        return { ...col, blocks: newBlocks };
+      }
+
       let movedBlock: SignageBlock | undefined;
       for (const root of newBlocks) {
         const sourceParent = findBlockInTree(root, source.droppableId);
@@ -153,16 +161,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
     return null;
   };
 
-  useEffect(() => {
-    if (viewMode !== "preview" || !containerRef.current) { setScale(1); return; }
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setScale(Math.min(entry.contentRect.width / 1920, entry.contentRect.height / 1080) * 0.95);
-      }
-    });
-    resizeObserver.observe(containerRef.current);
-    return () => resizeObserver.disconnect();
-  }, [viewMode]);
+
 
   useEffect(() => {
     if (!isPlaying || config.slides.length <= 1) return;
@@ -196,7 +195,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
         <DragDropContext onDragEnd={handleDragEnd}>
           {viewMode === "editor" && (
             <>
-              <div className={`flex-1 flex flex-col transition-all duration-300 ${isWorkspaceOpen ? "mr-96" : ""}`}>
+              <div className={`flex-1 min-h-0 w-full overflow-y-auto transition-all duration-300 ${isWorkspaceOpen ? "mr-96" : ""}`}>
                 <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} selectedBlockId={selectedBlockId} onSelectBlock={(id) => { setSelectedBlockId(id); setIsWorkspaceOpen(true); }} />
               </div>
               <RightSidePanel items={items} isOpen={isWorkspaceOpen} config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={updateConfig} onUpdateSlide={updateSlide} onClose={() => setIsWorkspaceOpen(false)} deckId={deckId} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} selectedBlock={activeBlock} onUpdateBlock={handleUpdateBlock} />
@@ -218,7 +217,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
               }
             `}</style>
           )}
-          <div className="w-[1920px] h-[1080px] shrink-0 origin-center transform-gpu shadow-2xl" style={{ transform: `scale(${scale})` }}>
+          <div className="w-full h-full flex items-center justify-center">
             <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} isPreviewing />
           </div>
           

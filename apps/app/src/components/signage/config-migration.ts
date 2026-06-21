@@ -6,6 +6,7 @@ import {
   SignageSlide,
   MenuItemStyles,
   MenuItemStateStyle,
+  SignageBlock,
 } from "@soustools/api-types";
 
 export const DEFAULT_REGULAR_STYLE: MenuItemStateStyle = {
@@ -69,6 +70,51 @@ export const DEFAULT_CONFIG: SignageLayoutConfig = {
 };
 
 /**
+ * Recursively migrate legacy block styling properties into the unified VisualBlockStyles.
+ */
+function migrateBlockStyles(block: any): SignageBlock {
+  if (!block) return block;
+  const migrated = { ...block };
+  
+  if (!migrated.visuals) migrated.visuals = {};
+  if (!migrated.visuals.typography) migrated.visuals.typography = {};
+  if (!migrated.visuals.background) migrated.visuals.background = {};
+
+  // CategoryHeaderBlock legacy props
+  if (migrated.color) {
+    migrated.visuals.typography.color = migrated.color;
+    delete migrated.color;
+  }
+  if (migrated.fontSize) {
+    migrated.visuals.typography.fontSize = migrated.fontSize;
+    delete migrated.fontSize;
+  }
+
+  // CalloutBlock legacy props
+  if (migrated.textColor) {
+    migrated.visuals.typography.color = migrated.textColor;
+    delete migrated.textColor;
+  }
+  if (migrated.backgroundOpacity !== undefined) {
+    migrated.visuals.background.opacity = migrated.backgroundOpacity;
+    delete migrated.backgroundOpacity;
+  }
+
+  // Common legacy props
+  if (migrated.panelStyle === "glass") {
+    migrated.visuals.background.blur = "10px";
+    migrated.visuals.background.color = "rgba(255,255,255,0.05)";
+    delete migrated.panelStyle;
+  }
+
+  // Recursively process children
+  if (migrated.blocks) migrated.blocks = migrated.blocks.map(migrateBlockStyles);
+  if (migrated.cells) migrated.cells = migrated.cells.map(migrateBlockStyles);
+
+  return migrated as SignageBlock;
+}
+
+/**
  * Converts a RawSignageLayoutConfig (which may contain legacy MENU slides
  * or old typography/soldOutBehavior fields) into the current
  * SignageLayoutConfig shape.
@@ -77,7 +123,7 @@ export function migrateConfig(rawConfig: RawSignageLayoutConfig): SignageLayoutC
   const slidesToMigrate = rawConfig.slides.length > 0 ? rawConfig.slides : DEFAULT_CONFIG.slides;
   const migratedSlides: SignageSlide[] = slidesToMigrate.map((slide) => {
     if (slide.type === "MENU") {
-      const legacy = slide as LegacyMenuSlide;
+      const legacy = slide as LegacyMenuSlide & { blocks?: SignageBlock[] };
       const converted: ColumnLayoutSlide = {
         id: legacy.id,
         type: "COLUMN_LAYOUT",
@@ -87,11 +133,25 @@ export function migrateConfig(rawConfig: RawSignageLayoutConfig): SignageLayoutC
             type: "MENU",
             itemIds: legacy.itemIds ?? [],
             highlightItems: legacy.highlightItems ?? [],
+            blocks: legacy.blocks ? legacy.blocks.map(migrateBlockStyles) : undefined,
           },
         ],
       };
       return converted;
     }
+    
+    // Process layout blocks
+    if (slide.type === "COLUMN_LAYOUT") {
+      const colSlide = slide as ColumnLayoutSlide;
+      return {
+        ...colSlide,
+        columns: colSlide.columns.map(col => ({
+          ...col,
+          blocks: col.blocks ? col.blocks.map(migrateBlockStyles) : undefined,
+        }))
+      };
+    }
+    
     return slide as SignageSlide;
   });
 

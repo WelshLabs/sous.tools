@@ -71,6 +71,9 @@ export function injectSignageHead(config: any, animCss?: string | null): void {
 
   const fontsToLoad = new Set<string>();
   if (config.googleFont) fontsToLoad.add(config.googleFont);
+  if (config.designTokens?.headingFont) fontsToLoad.add(config.designTokens.headingFont);
+  if (config.designTokens?.subtitleFont) fontsToLoad.add(config.designTokens.subtitleFont);
+  if (config.designTokens?.bodyFont) fontsToLoad.add(config.designTokens.bodyFont);
   if (config.typography) {
     const { menuItemTitle, menuItemPrice, menuItemDescription, marketingText } = config.typography;
     if (menuItemTitle) fontsToLoad.add(menuItemTitle);
@@ -91,10 +94,27 @@ export function injectSignageHead(config: any, animCss?: string | null): void {
 
   const styleId = "signage-custom-css";
   document.getElementById(styleId)?.remove();
+  const cssVars = `
+    .st-signage-root {
+      --global-primary: ${config.designTokens?.primaryColor || "#06b6d4"};
+      --global-accent: ${config.designTokens?.accentColor || "#3b82f6"};
+      --global-heading-font: ${config.designTokens?.headingFont ? `'${config.designTokens.headingFont}', sans-serif` : "inherit"};
+      --global-subtitle-font: ${config.designTokens?.subtitleFont ? `'${config.designTokens.subtitleFont}', sans-serif` : "inherit"};
+      --global-body-font: ${config.designTokens?.bodyFont ? `'${config.designTokens.bodyFont}', sans-serif` : "inherit"};
+    }
+  `;
+
+  let finalCss = cssVars;
+  if (config.designTokens?.globalCss) {
+    finalCss += `\n@scope (.st-signage-root) {\n${config.designTokens.globalCss}\n}\n`;
+  }
   if (config.customCss) {
+    finalCss += `\n@scope (.st-signage-root) {\n${config.customCss}\n}\n`;
+  }
+  if (finalCss) {
     const style = document.createElement("style");
     style.id = styleId;
-    style.textContent = config.customCss;
+    style.textContent = finalCss;
     document.head.appendChild(style);
   }
 

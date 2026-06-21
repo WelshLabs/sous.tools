@@ -85,7 +85,7 @@ export const ActiveKitchen: React.FC<ActiveKitchenProps> = ({ recipeId }) => {
   if (!recipe) return <div className="text-center py-24 text-slate-400">Recipe not found.</div>;
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 p-6 flex flex-col justify-between max-w-5xl mx-auto">
+    <div className="min-h-screen bg-black text-slate-100 p-6 flex flex-col justify-between w-full">
       <header className="flex justify-between items-center pb-4 border-b border-zinc-800">
         <div className="flex items-center gap-3">
           <Link href={`/recipes/${recipeId}`} className="p-2 hover:bg-zinc-800 rounded-lg text-slate-400 hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></Link>

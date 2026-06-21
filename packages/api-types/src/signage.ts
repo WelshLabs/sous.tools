@@ -75,8 +75,17 @@ export interface SignageOverlay {
   customCssClass?: string;
   zIndex?: number;
 }
+export interface GlobalDesignTokens {
+  primaryColor?: string;
+  accentColor?: string;
+  headingFont?: string;
+  subtitleFont?: string;
+  bodyFont?: string;
+  globalCss?: string;
+}
 
 export interface SignageLayoutConfig {
+  designTokens?: GlobalDesignTokens;
   googleFont?: string;
   customCss?: string;
   /** @deprecated Use menuItemStyles.soldOut instead. */

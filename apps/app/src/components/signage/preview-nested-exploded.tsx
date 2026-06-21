@@ -36,16 +36,16 @@ export function PreviewNestedItem({ block, items, styles }: ComplexPreviewProps)
 
   const element = (
     <div className={containerClasses} style={isFlat ? undefined : buildCardStyle(optStyle)}>
-      <div className="flex justify-between font-bold text-slate-200">
+      <div className="flex justify-between font-bold">
         <span style={buildTitleStyle(optStyle)} className={isGroupHeader ? "text-[#00f0ff] font-brand st-menu-glow-text text-[10px] tracking-widest uppercase st-category-header" : "st-menu-item-title"}>
           {baseName}
         </span>
         {!isGroupHeader && basePrice > 0 && <span style={buildPriceStyle(optStyle)} className="st-price-tag">${basePrice.toFixed(2)}</span>}
       </div>
       {baseDesc && (
-        <div style={buildDescriptionStyle(optStyle)} className="text-[8px] text-zinc-400 -mt-0.5 mb-1 leading-snug">{baseDesc}</div>
+        <div style={buildDescriptionStyle(optStyle)} className="text-[8px] opacity-80 -mt-0.5 mb-1 leading-snug">{baseDesc}</div>
       )}
-      <ul className={`flex flex-col gap-0.5 text-[8px] text-slate-400 ${isGroupHeader ? "" : "pl-2 border-l border-white/10"}`}>
+      <ul className={`flex flex-col gap-0.5 text-[8px] opacity-80 ${isGroupHeader ? "" : "pl-2 border-l border-white/10"}`}>
         {(b.upgradeItems || []).map((up: any, idx: number) => {
           const upItem = items.find((i) => i.id === up.posItemId || i.externalId === up.posItemId);
           const upName = upItem ? upItem.name : up.posItemId.replace("dummy-", "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
@@ -61,7 +61,7 @@ export function PreviewNestedItem({ block, items, styles }: ComplexPreviewProps)
                   <span style={buildPriceStyle(upOptStyle)} className="font-mono st-price-tag">{isGroupHeader ? `$${upPrice.toFixed(2)}` : `+$${upPrice.toFixed(2)}`}</span>
                 )}
               </div>
-              {upDesc && <div style={buildDescriptionStyle(upOptStyle)} className="text-[7px] text-zinc-500 pl-2 leading-tight">{upDesc}</div>}
+              {upDesc && <div style={buildDescriptionStyle(upOptStyle)} className="text-[7px] opacity-70 pl-2 leading-tight">{upDesc}</div>}
             </li>
           );
         })}

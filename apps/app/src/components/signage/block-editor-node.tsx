@@ -15,6 +15,7 @@ interface BlockEditorNodeProps {
   onSelectBlock: (blockId: string) => void;
   selectedBlockId?: string;
   isRoot?: boolean;
+  config?: any;
   parentType?: "RowBlock" | "ColumnBlock" | "GridBlock" | "ExplodedItemBlock";
   index?: number;
 }
@@ -39,8 +40,8 @@ export function getSizingStyles(sizing?: BlockSizing): React.CSSProperties {
 export function getLayoutClass(direction: "column" | "row" | "grid", panelStyle?: string, className?: string) {
   return [
     direction === "grid"
-      ? "grid gap-3 w-full h-full min-h-[100px] min-w-[100px] st-layout-grid p-3 bg-zinc-950/20"
-      : `flex flex-${direction === "column" ? "col" : "row"} gap-3 w-full h-full min-h-[100px] min-w-[100px] st-layout-${direction} p-3 bg-zinc-950/20`,
+      ? "grid gap-3 w-full h-full min-h-[100px] min-w-[250px] st-layout-grid p-3 bg-zinc-950/20"
+      : `flex flex-${direction === "column" ? "col" : "row"} flex-wrap gap-3 w-full h-full min-h-[100px] min-w-[250px] st-layout-${direction} p-3 bg-zinc-950/20`,
     panelStyle === "glass" ? "st-glass-panel p-4 rounded-2xl" : "",
     className
   ].filter(Boolean).join(" ");
@@ -54,7 +55,8 @@ export function BlockEditorNode({
   onAddBlock,
   onSelectBlock,
   selectedBlockId,
-  isRoot,
+  isRoot = false,
+  config,
   parentType,
   index
 }: BlockEditorNodeProps) {
@@ -110,20 +112,51 @@ export function BlockEditorNode({
           onAddBlock={onAddBlock}
           onSelectBlock={onSelectBlock}
           selectedBlockId={selectedBlockId}
+          config={config}
           parentType={pt}
           index={idx}
         />
         {idx < children.length - 1 && direction !== "grid" && (
           <div
-            className={`flex items-center justify-center bg-transparent hover:bg-cyan-500/50 transition-colors z-30 cursor-${direction === "row" ? "col" : "row"}-resize`}
+            className={`flex items-center justify-center bg-transparent hover:bg-cyan-500/50 transition-colors z-30 cursor-${direction === "row" ? "col" : "row"}-resize group relative`}
             style={{
-              [direction === "row" ? "width" : "height"]: "12px",
-              margin: "-6px",
+              [direction === "row" ? "width" : "height"]: "16px",
+              margin: "-8px",
             }}
             onPointerDown={(e) => {
               e.stopPropagation();
+              e.preventDefault();
+              const startPos = direction === "row" ? e.clientX : e.clientY;
+              const prevChild = children[idx];
+              const nextChild = children[idx + 1];
+              const prevStartGrow = prevChild.sizing?.flexGrow ?? 1;
+              const nextStartGrow = nextChild.sizing?.flexGrow ?? 1;
+              
+              const handleMove = (moveEvent: PointerEvent) => {
+                const currentPos = direction === "row" ? moveEvent.clientX : moveEvent.clientY;
+                const delta = currentPos - startPos;
+                const flexDelta = delta / 50; // Simple heuristic: 50px = 1 flex unit change
+                
+                const newPrevGrow = Math.max(0.1, prevStartGrow + flexDelta);
+                const newNextGrow = Math.max(0.1, nextStartGrow - flexDelta);
+                
+                if (prevChild.id) onUpdate(prevChild.id, { sizing: { ...prevChild.sizing, flexGrow: Number(newPrevGrow.toFixed(2)) } });
+                if (nextChild.id) onUpdate(nextChild.id, { sizing: { ...nextChild.sizing, flexGrow: Number(newNextGrow.toFixed(2)) } });
+              };
+              
+              const handleUp = () => {
+                window.removeEventListener("pointermove", handleMove);
+                window.removeEventListener("pointerup", handleUp);
+                document.body.style.cursor = "";
+              };
+              
+              document.body.style.cursor = direction === "row" ? "col-resize" : "row-resize";
+              window.addEventListener("pointermove", handleMove);
+              window.addEventListener("pointerup", handleUp);
             }}
-          />
+          >
+            <div className={`bg-cyan-500/0 group-hover:bg-cyan-500 rounded-full transition-colors ${direction === "row" ? "w-1 h-8" : "h-1 w-8"}`} />
+          </div>
         )}
       </React.Fragment>
     ));
@@ -203,7 +236,7 @@ export function BlockEditorNode({
                   <LayoutGrid className="w-3 h-3" /> Grid
                 </div>
                 {cells.length === 0 ? renderEmptyState("grid") : cells.map((child, idx) => (
-                  <BlockEditorNode key={child.id || idx} block={child} items={items} menuItemStyles={menuItemStyles} onUpdate={onUpdate} onAddBlock={onAddBlock} onSelectBlock={onSelectBlock} selectedBlockId={selectedBlockId} parentType={block.type} index={idx} />
+                  <BlockEditorNode key={child.id || idx} block={child} items={items} menuItemStyles={menuItemStyles} onUpdate={onUpdate} onAddBlock={onAddBlock} onSelectBlock={onSelectBlock} selectedBlockId={selectedBlockId} config={config} parentType={block.type} index={idx} />
                 ))}
                 {dropProps.placeholder}
               </div>
@@ -269,7 +302,9 @@ export function BlockEditorNode({
                <span>Content</span>
             </div>
           )}
-          <PreviewContentBlocks block={block} items={items} styles={menuItemStyles} />
+          <div className="flex-1 w-full flex items-center justify-center p-2 relative z-10 pointer-events-none">
+            <PreviewContentBlocks block={block} items={items} styles={menuItemStyles} config={config} />
+          </div>
         </div>
       ));
   }

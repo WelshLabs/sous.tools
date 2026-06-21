@@ -16,6 +16,7 @@ export interface Config {
   readonly REDIS_HOST: string;
   readonly REDIS_PORT: number;
   readonly SQUARE_WEBHOOK_SIGNATURE_KEY: string;
+  readonly GEMINI_API_KEY: string;
 }
 
 /**
@@ -74,4 +75,7 @@ export const config: Config = Object.freeze({
   SQUARE_WEBHOOK_SIGNATURE_KEY: isMockEnv
     ? ""
     : (process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || (sec.SQUARE_WEBHOOK_SIGNATURE_KEY as string) || ""),
+  GEMINI_API_KEY: isMockEnv
+    ? "gemini-api-key-placeholder"
+    : (process.env.GEMINI_API_KEY || (sec.GEMINI_API_KEY as string) || "gemini-api-key-placeholder"),
 });

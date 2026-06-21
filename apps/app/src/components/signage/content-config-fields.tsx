@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { SignageBlock, PosItem } from "@soustools/api-types";
-import { Search } from "lucide-react";
+import { PosItemPicker } from "./pos-item-picker";
 
 interface ContentConfigFieldsProps {
   block: SignageBlock;
@@ -15,42 +15,12 @@ export function ContentConfigFields({
   items,
   onChange,
 }: ContentConfigFieldsProps): React.JSX.Element {
-  const [search, setSearch] = useState("");
-
-  const filteredItems = items.filter(
-    (item) =>
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.externalId?.toLowerCase().includes(search.toLowerCase())
-  );
-
   const renderPosItemBinding = () => {
     const activeId = (block as any).posItemId || (block as any).basePosItemId || "";
     return (
       <div className="space-y-3">
         <label className="text-xs font-semibold text-zinc-300 block">POS Item Selection</label>
-        <div className="relative">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-cyan-500 text-zinc-100"
-          />
-        </div>
-        <div className="max-h-40 overflow-y-auto border border-white/5 rounded-xl bg-zinc-950 p-2 space-y-1">
-          {filteredItems.slice(0, 15).map((item) => (
-            <button
-              key={item.id}
-              onClick={() => onChange({ [block.type === "PosItemBlock" ? "posItemId" : "basePosItemId"]: item.id } as any)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition ${
-                activeId === item.id ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-zinc-400 hover:bg-white/5 border border-transparent"
-              }`}
-            >
-              {item.name} (${Number(item.price).toFixed(2)})
-            </button>
-          ))}
-        </div>
+        <PosItemPicker items={items} value={activeId} onChange={(id) => onChange({ [block.type === "PosItemBlock" ? "posItemId" : "basePosItemId"]: id } as any)} />
       </div>
     );
   };
@@ -111,6 +81,8 @@ export function ContentConfigFields({
       </div>
     );
   };
+
+
 
   return (
     <div className="space-y-4 py-2">

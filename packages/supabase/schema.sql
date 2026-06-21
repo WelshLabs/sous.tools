@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS recipe_ingredients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
   master_ingredient_id UUID REFERENCES master_ingredients(id) ON DELETE SET NULL,
+  sub_recipe_id UUID REFERENCES recipes(id) ON DELETE SET NULL,
   calculation_type TEXT NOT NULL CHECK (calculation_type IN ('fixed_weight', 'bakers_percentage')),
   base_calculation_group BOOLEAN DEFAULT false NOT NULL,
   amount NUMERIC NOT NULL,
@@ -158,12 +159,59 @@ CREATE POLICY "Enable read access for all organization members" ON recipe_ingred
 CREATE POLICY "Enable write access for organization admins" ON recipe_ingredients
   FOR ALL USING (true);
 
+-- Notifications Table
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  link TEXT,
+  is_read BOOLEAN DEFAULT false NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Ingestion Reviews Table
+CREATE TABLE IF NOT EXISTS ingestion_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID,
+  source TEXT NOT NULL,
+  raw_text TEXT,
+  parsed_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  status TEXT NOT NULL CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Vendor Item Aliases Table
+CREATE TABLE IF NOT EXISTS vendor_item_aliases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  vendor_id TEXT NOT NULL,
+  vendor_item_name TEXT NOT NULL,
+  internal_item_id UUID,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ingestion_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vendor_item_aliases ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable read access for all organization members" ON notifications FOR SELECT USING (true);
+CREATE POLICY "Enable write access for organization admins" ON notifications FOR ALL USING (true);
+CREATE POLICY "Enable read access for all organization members" ON ingestion_reviews FOR SELECT USING (true);
+CREATE POLICY "Enable write access for organization admins" ON ingestion_reviews FOR ALL USING (true);
+CREATE POLICY "Enable read access for all organization members" ON vendor_item_aliases FOR SELECT USING (true);
+CREATE POLICY "Enable write access for organization admins" ON vendor_item_aliases FOR ALL USING (true);
+
 -- Seed Sample Vessel Profiles
 INSERT INTO vessel_profiles (id, organization_id, name, shape, length, width, height, diameter, volume_ml)
 VALUES 
-  ('v0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000000', '9" Pullman Pan', 'RECTANGULAR', 23, 10, 10, NULL, 2300),
-  ('v0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000000', '13" Pullman Pan', 'RECTANGULAR', 33, 10, 10, NULL, 3300),
-  ('v0000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000000', '9" Round Cake Pan', 'ROUND', NULL, NULL, 5, 23, 2077)
+  ('c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000000', '9" Pullman Pan', 'RECTANGULAR', 23, 10, 10, NULL, 2300),
+  ('c0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000000', '13" Pullman Pan', 'RECTANGULAR', 33, 10, 10, NULL, 3300),
+  ('c0000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000000', '9" Round Cake Pan', 'ROUND', NULL, NULL, 5, 23, 2077)
 ON CONFLICT (id) DO NOTHING;
 
 -- Seed Sample Master Ingredients
@@ -178,5 +226,67 @@ VALUES
   ('i0000000-0000-0000-0000-000000000007', 'd0000000-0000-0000-0000-000000000000', 'Granulated Sugar', 0.84, '{"calories": 387, "proteinG": 0, "carbsG": 100, "fatG": 0}'::jsonb, '[]'::jsonb),
   ('i0000000-0000-0000-0000-000000000008', 'd0000000-0000-0000-0000-000000000000', 'Whole Egg', 1.02, '{"calories": 143, "proteinG": 12.6, "carbsG": 0.7, "fatG": 9.5}'::jsonb, '["egg"]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
+-- Vendors Table
+CREATE TABLE IF NOT EXISTS vendors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  order_method TEXT NOT NULL CHECK (order_method IN ('EMAIL', 'SMS', 'MANUAL')),
+  email TEXT,
+  phone TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
+-- Whiteboard Items Table
+CREATE TABLE IF NOT EXISTS whiteboard_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  raw_name TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
+-- Purchase Orders Table
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  vendor_id UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
+  status TEXT NOT NULL CHECK (status IN ('DRAFT', 'SUBMITTED', 'RECONCILED')),
+  order_date TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Purchase Order Items Table
+CREATE TABLE IF NOT EXISTS purchase_order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  po_id UUID NOT NULL REFERENCES purchase_orders(id) ON DELETE CASCADE,
+  raw_name TEXT NOT NULL,
+  ordered_qty NUMERIC NOT NULL,
+  price_per_unit NUMERIC DEFAULT 0 NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- RLS
+ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE whiteboard_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable read access for all organization members" ON vendors FOR SELECT USING (true);
+CREATE POLICY "Enable write access for organization admins" ON vendors FOR ALL USING (true);
+
+CREATE POLICY "Enable read access for all organization members" ON whiteboard_items FOR SELECT USING (true);
+CREATE POLICY "Enable write access for organization admins" ON whiteboard_items FOR ALL USING (true);
+
+CREATE POLICY "Enable read access for all organization members" ON purchase_orders FOR SELECT USING (true);
+CREATE POLICY "Enable write access for organization admins" ON purchase_orders FOR ALL USING (true);
+
+CREATE POLICY "Enable read access for all organization members" ON purchase_order_items FOR SELECT USING (true);
+CREATE POLICY "Enable write access for organization admins" ON purchase_order_items FOR ALL USING (true);
+
+-- Seed Sample Vendors
+INSERT INTO vendors (id, organization_id, name, order_method, email, phone)
+VALUES
+  ('c0000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000000', 'US Foods', 'EMAIL', 'orders@usfoods.com', NULL),
+  ('c0000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000000', 'Local Produce Market', 'MANUAL', NULL, '555-0123')
+ON CONFLICT (id) DO NOTHING;

@@ -4,10 +4,14 @@ import { ApiResponse, IntegrationStatus } from "@soustools/api-types";
 import { config } from "@soustools/config";
 import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
+import { GoogleDriveService } from "./google-drive.service";
 
 @Controller("integrations")
 export class IntegrationsController {
-  constructor(private readonly service: IntegrationsService) {}
+  constructor(
+    private readonly service: IntegrationsService,
+    private readonly driveService: GoogleDriveService
+  ) {}
 
   @Get("connect/:provider")
   connect(
@@ -75,5 +79,11 @@ export class IntegrationsController {
       const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
       await this.service.seedSquareCatalog(targetOrgId);
     });
+  }
+
+  @Get("google/files")
+  async getGoogleFiles(@Query("q") query?: string, @Query("orgId") orgId?: string) {
+    const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
+    return this.driveService.listFiles(targetOrgId, query);
   }
 }

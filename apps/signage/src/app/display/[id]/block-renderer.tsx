@@ -9,11 +9,13 @@ import { NestedItemBlock } from "./blocks/nested-item-block";
 import { MediaCarouselBlock } from "./blocks/media-carousel-block";
 import { ExplodedItemBlock } from "./blocks/exploded-item-block";
 import { ModifierGroupBlock } from "./blocks/modifier-group-block";
+import { MenuListBlock } from "./blocks/menu-list-block";
 
 interface BlockRendererProps {
   block: SignageBlock;
   items: PosItem[];
   menuItemStyles: MenuItemStyles;
+  config?: any;
 }
 
 export function getSizingStyles(sizing?: BlockSizing): React.CSSProperties {
@@ -49,7 +51,7 @@ export function BlockRenderer({ block, items, menuItemStyles }: BlockRendererPro
       return (
         <div className={getLayoutClass("column", block.panelStyle, block.className)} style={sizingStyles}>
           {block.blocks.map((subBlock) => (
-            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} />
+            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
           ))}
         </div>
       );
@@ -57,7 +59,7 @@ export function BlockRenderer({ block, items, menuItemStyles }: BlockRendererPro
       return (
         <div className={getLayoutClass("row", block.panelStyle, block.className)} style={sizingStyles}>
           {block.blocks.map((subBlock) => (
-            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} />
+            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
           ))}
         </div>
       );
@@ -70,7 +72,7 @@ export function BlockRenderer({ block, items, menuItemStyles }: BlockRendererPro
           style={{ ...sizingStyles, gridTemplateColumns: colTemplate, gridTemplateRows: rowTemplate }}
         >
           {block.cells.map((subBlock) => (
-            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} />
+            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
           ))}
         </div>
       );
@@ -78,7 +80,13 @@ export function BlockRenderer({ block, items, menuItemStyles }: BlockRendererPro
     case "CategoryHeaderBlock":
       return (
         <div style={sizingStyles} className="w-full h-full">
-          <CategoryHeaderBlock {...block} />
+          <CategoryHeaderBlock {...block} color={block.color || config?.designTokens?.primaryColor} />
+        </div>
+      );
+    case "MenuListBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <MenuListBlock {...block as any} items={items} menuItemStyles={menuItemStyles} />
         </div>
       );
     case "PosItemBlock":
@@ -118,7 +126,7 @@ export function BlockRenderer({ block, items, menuItemStyles }: BlockRendererPro
             hideDescription={(block as any).hideDescription}
           >
              {block.blocks?.map((subBlock) => (
-               <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} />
+               <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
              ))}
           </ExplodedItemBlock>
         </div>

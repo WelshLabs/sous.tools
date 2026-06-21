@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, LayoutGrid, Settings, LayoutTemplate, Layers, SlidersHorizontal, Trash2 } from "lucide-react";
+import { X, Settings, LayoutTemplate, Layers, SlidersHorizontal, Trash2 } from "lucide-react";
 import { SignageLayoutConfig, ColumnLayoutSlide, MenuItemStyles, SignageBlock } from "@soustools/api-types";
 import { StylesPanel } from "./styles-panel";
 import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
@@ -11,6 +11,12 @@ import { MenuItemStylesInspector } from "./menu-item-styles-inspector";
 import { PosItem } from "@soustools/api-types";
 import { findBlockInTree, removeBlockFromTree } from "./block-tree-utils";
 import { supabase } from "../../lib/supabase";
+import { PosItemPicker, PosItemMultiPicker } from "./pos-item-picker";
+import { MenuListModifierSettings } from "./menu-list-modifier-settings";
+import { LayoutControls } from "./editor-controls/LayoutControls";
+import { TypographyControls } from "./editor-controls/TypographyControls";
+import { BackgroundControls } from "./editor-controls/BackgroundControls";
+import { BorderControls } from "./editor-controls/BorderControls";
 
 export interface RightSidePanelProps {
   isOpen: boolean;
@@ -27,143 +33,9 @@ export interface RightSidePanelProps {
   items?: PosItem[];
 }
 
-function LayoutContainerSettings({
-  block,
-  onUpdate,
-  items,
-}: {
-  block: SignageBlock;
-  onUpdate: (updates: Partial<SignageBlock>) => void;
-  items?: PosItem[];
-}) {
-  const sizing = block.sizing || {};
-  const updateSizing = (fields: Partial<typeof sizing>) => {
-    onUpdate({ sizing: { ...sizing, ...fields } });
-  };
+// Legacy LayoutContainerSettings removed in favor of generic LayoutControls
 
-  return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-zinc-300">
-      <div className="flex items-center gap-2 text-cyan-400 font-semibold text-xs uppercase tracking-widest">
-        <LayoutGrid className="w-4 h-4" />
-        <span>Container Settings ({block.type})</span>
-      </div>
 
-      <div className="space-y-3">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Gap & Margins</label>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">Gap (e.g. 16px)</label>
-            <input type="text" value={sizing.gap || ""} placeholder="8px"
-              onChange={(e) => updateSizing({ gap: e.target.value })}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-cyan-500" />
-          </div>
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">Padding</label>
-            <input type="text" value={sizing.padding || ""} placeholder="12px"
-              onChange={(e) => updateSizing({ padding: e.target.value })}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-cyan-500" />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Sizing Constraints</label>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">Width</label>
-            <input type="text" value={sizing.width || ""} placeholder="100%"
-              onChange={(e) => updateSizing({ width: e.target.value })}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
-          </div>
-          <div>
-            <label className="text-xs text-zinc-400 block mb-1">Height</label>
-            <input type="text" value={sizing.height || ""} placeholder="auto"
-              onChange={(e) => updateSizing({ height: e.target.value })}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-2 pt-1">
-          <div>
-            <label className="text-[10px] text-zinc-400 block mb-1">Flex Basis</label>
-            <input type="text" value={sizing.flexBasis || ""} placeholder="auto"
-              onChange={(e) => updateSizing({ flexBasis: e.target.value })}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg px-1.5 py-1.5 text-xs text-zinc-100" />
-          </div>
-          <div>
-            <label className="text-[10px] text-zinc-400 block mb-1">Grow</label>
-            <input type="number" value={sizing.flexGrow ?? ""} placeholder="0"
-              onChange={(e) => updateSizing({ flexGrow: e.target.value ? Number(e.target.value) : undefined })}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg px-1.5 py-1.5 text-xs text-zinc-100" />
-          </div>
-          <div>
-            <label className="text-[10px] text-zinc-400 block mb-1">Shrink</label>
-            <input type="number" value={sizing.flexShrink ?? ""} placeholder="1"
-              onChange={(e) => updateSizing({ flexShrink: e.target.value ? Number(e.target.value) : undefined })}
-              className="w-full bg-zinc-900 border border-white/10 rounded-lg px-1.5 py-1.5 text-xs text-zinc-100" />
-          </div>
-        </div>
-      </div>
-
-      {block.type === "GridBlock" && (
-        <div className="space-y-3 pt-2 border-t border-white/5">
-          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Grid Metrics</label>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs text-zinc-400 block mb-1">Columns</label>
-              <input type="number" min={1} value={block.columns ?? 1}
-                onChange={(e) => onUpdate({ columns: Math.max(1, Number(e.target.value)) })}
-                className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
-            </div>
-            <div>
-              <label className="text-xs text-zinc-400 block mb-1">Rows</label>
-              <input type="number" min={1} value={block.rows ?? 1}
-                onChange={(e) => onUpdate({ rows: Math.max(1, Number(e.target.value)) })}
-                className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {block.type === "ExplodedItemBlock" && (
-        <div className="space-y-3 pt-4 border-t border-white/5">
-          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-2">Base POS Item</label>
-          <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-            {(items || []).map(item => {
-              const isSelected = block.menuItemId === item.id;
-              return (
-                <label key={item.id} className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors ${isSelected ? "bg-cyan-900/30 border-cyan-500/50" : "bg-zinc-900 border-white/5 hover:border-cyan-500/30"}`}>
-                  <input type="radio" name="explodedItemPos" checked={isSelected} onChange={(e) => {
-                    if (e.target.checked) onUpdate({ menuItemId: item.id });
-                  }} className="w-4 h-4 text-cyan-500 bg-zinc-900 border-white/10" />
-                  <div className="flex flex-col flex-1 truncate">
-                    <span className="text-xs text-zinc-200 font-medium truncate">{item.name}</span>
-                  </div>
-                </label>
-              );
-            })}
-          </div>
-          <div className="pt-2 mt-2">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-2">Display Elements</label>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
-                <input type="checkbox" checked={!(block as any).hideTitle} onChange={(e) => onUpdate({ hideTitle: !e.target.checked })} className="w-3 h-3 text-cyan-500 bg-zinc-900 border-white/10 rounded" />
-                Show Title
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
-                <input type="checkbox" checked={!(block as any).hidePrice} onChange={(e) => onUpdate({ hidePrice: !e.target.checked })} className="w-3 h-3 text-cyan-500 bg-zinc-900 border-white/10 rounded" />
-                Show Price
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
-                <input type="checkbox" checked={!(block as any).hideDescription} onChange={(e) => onUpdate({ hideDescription: !e.target.checked })} className="w-3 h-3 text-cyan-500 bg-zinc-900 border-white/10 rounded" />
-                Show Description
-              </label>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function ModifierGroupSettings({
   posItemId,
@@ -252,7 +124,6 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
   if (!isOpen) return null;
 
   const activeSlide = config.slides[activeSlideIndex];
-  const isLayoutBlockActive = selectedBlock && ["ColumnBlock", "RowBlock", "GridBlock", "ExplodedItemBlock"].includes(selectedBlock.type);
 
   function findParentExplodedItem(root: SignageBlock, childId: string): SignageBlock | null {
     if (root.type === "ExplodedItemBlock") {
@@ -344,10 +215,27 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                    Delete Block
                  </button>
                </div>
-               {isLayoutBlockActive ? (
-                  <LayoutContainerSettings block={selectedBlock} onUpdate={(updates) => onUpdateBlock(selectedBlockId, updates)} items={items} />
-               ) : (
-                  <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0 space-y-6">
+               <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0 space-y-6">
+                  {/* Generic Layout Controls */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Layout</label>
+                    <LayoutControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
+                  </div>
+                  {/* Generic Typography Controls */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Typography</label>
+                    <TypographyControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
+                  </div>
+                  {/* Generic Background Controls */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Background</label>
+                    <BackgroundControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
+                  </div>
+                  {/* Generic Border Controls */}
+                  <div className="space-y-3">
+                    <BorderControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
+                  </div>
+                  <div className="h-px bg-white/5 w-full my-6" />
                   {/* MenuList Data Source */}
                   {selectedBlock.type === "MenuListBlock" && (
                     <div>
@@ -356,26 +244,20 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                         <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Hide Item Descriptions</span>
                       </label>
                       <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-3">Data Source (POS Items)</label>
-                      <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                        {items.map(item => {
-                          const isSelected = (selectedBlock.itemIds || []).includes(item.id);
-                          return (
-                            <label key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-zinc-900 border border-white/5 cursor-pointer hover:border-cyan-500/50 transition-colors">
-                              <input type="checkbox" checked={isSelected} onChange={(e) => {
-                                const newIds = e.target.checked 
-                                  ? [...(selectedBlock.itemIds || []), item.id] 
-                                  : (selectedBlock.itemIds || []).filter(id => id !== item.id);
-                                onUpdateBlock(selectedBlockId, { itemIds: newIds });
-                              }} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
-                              <div className="flex flex-col">
-                                 <span className="text-xs text-zinc-200 font-medium">{item.name}</span>
-                                 <span className="text-[10px] text-zinc-500">${Number(item.price).toFixed(2)}</span>
-                              </div>
-                            </label>
-                          )
-                        })}
-                        {items.length === 0 && <div className="text-xs text-zinc-500 italic p-2">No POS items available.</div>}
-                      </div>
+                      <PosItemMultiPicker
+                        items={items}
+                        selectedIds={selectedBlock.itemIds || []}
+                        onChange={(ids) => onUpdateBlock(selectedBlockId, { itemIds: ids })}
+                        placeholder="Search items..."
+                      />
+                      <MenuListModifierSettings
+                        items={items}
+                        selectedItemIds={selectedBlock.itemIds || []}
+                        itemModifiers={(selectedBlock as any).itemModifiers || {}}
+                        modifierLayout={(selectedBlock as any).modifierLayout || "stacked"}
+                        onChangeLayout={(layout) => onUpdateBlock(selectedBlockId, { modifierLayout: layout } as any)}
+                        onChangeModifiers={(modifiers) => onUpdateBlock(selectedBlockId, { itemModifiers: modifiers } as any)}
+                      />
                     </div>
                   )}
 
@@ -395,6 +277,18 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" checked={(selectedBlock as any).animateBadge || false} onChange={(e) => onUpdateBlock(selectedBlockId, { animateBadge: e.target.checked } as any)} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
                         <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Animate Badge Pulse</span>
+                      </label>
+                      <select value={(selectedBlock as any).icon || "none"} onChange={(e) => onUpdateBlock(selectedBlockId, { icon: e.target.value } as any)} className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100">
+                        <option value="none">No Icon</option>
+                        <option value="CheckCircle">Check Circle</option>
+                        <option value="ChefHat">Chef Hat</option>
+                        <option value="Star">Star</option>
+                        <option value="Bell">Bell</option>
+                        <option value="Flame">Flame</option>
+                      </select>
+                      <label className="flex items-center gap-3 cursor-pointer mt-2">
+                        <input type="checkbox" checked={(selectedBlock as any).accentBorder || false} onChange={(e) => onUpdateBlock(selectedBlockId, { accentBorder: e.target.checked } as any)} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
+                        <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Accent Border</span>
                       </label>
                     </div>
                   )}
@@ -517,14 +411,7 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                     <div className="space-y-4">
                       <div>
                         <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-2">Base POS Item</label>
-                        <select 
-                          value={(selectedBlock as any).basePosItemId || ""}
-                          onChange={(e) => onUpdateBlock(selectedBlockId, { basePosItemId: e.target.value } as any)}
-                          className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100"
-                        >
-                          <option value="">Select an Item...</option>
-                          {items.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                        </select>
+                        <PosItemPicker items={items} value={(selectedBlock as any).basePosItemId} onChange={(id) => onUpdateBlock(selectedBlockId, { basePosItemId: id } as any)} />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-2">Base Description Override</label>
@@ -534,40 +421,31 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                       </div>
                       <div>
                          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-2">Child Upgrades (Multiselect)</label>
-                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar border border-white/5 p-2 rounded">
-                           {items.map(item => {
-                             const isSelected = ((selectedBlock as any).upgradeItems || []).some((u: any) => u.posItemId === item.id);
-                             return (
-                               <div key={item.id} className="flex flex-col gap-1 p-1 rounded hover:bg-white/5">
-                                 <label className="flex items-center gap-3 cursor-pointer">
-                                   <input type="checkbox" checked={isSelected} onChange={(e) => {
-                                     let current = [...((selectedBlock as any).upgradeItems || [])];
-                                     if (e.target.checked) {
-                                       current.push({ posItemId: item.id });
-                                     } else {
-                                       current = current.filter((u: any) => u.posItemId !== item.id);
-                                     }
-                                     onUpdateBlock(selectedBlockId, { upgradeItems: current } as any);
-                                   }} className="w-3 h-3 text-cyan-500 bg-zinc-900 border-white/10 rounded" />
-                                   <span className="text-xs text-zinc-300">{item.name}</span>
-                                 </label>
-                                 {isSelected && (
-                                   <input type="text" placeholder="Upgrade description override..." 
-                                     value={((selectedBlock as any).upgradeItems || []).find((u: any) => u.posItemId === item.id)?.overrideDescription || ""}
-                                     onChange={(e) => {
-                                       let current = [...((selectedBlock as any).upgradeItems || [])];
-                                       const idx = current.findIndex((u: any) => u.posItemId === item.id);
-                                       if (idx !== -1) {
-                                         current[idx] = { ...current[idx], overrideDescription: e.target.value };
-                                         onUpdateBlock(selectedBlockId, { upgradeItems: current } as any);
-                                       }
-                                     }}
-                                     className="ml-6 mt-1 bg-zinc-950 border border-white/10 rounded px-2 py-1 text-[10px] text-zinc-200" />
-                                 )}
-                               </div>
-                             );
-                           })}
-                         </div>
+                         <PosItemMultiPicker 
+                           items={items} 
+                           selectedIds={((selectedBlock as any).upgradeItems || []).map((u: any) => u.posItemId)} 
+                           onChange={(ids) => {
+                             const current = ((selectedBlock as any).upgradeItems || []) as any[];
+                             const newItems = ids.map(id => {
+                               const existing = current.find(c => c.posItemId === id);
+                               return existing ? existing : { posItemId: id };
+                             });
+                             onUpdateBlock(selectedBlockId, { upgradeItems: newItems } as any);
+                           }} 
+                           renderExtra={(item, isSelected) => isSelected ? (
+                             <input type="text" placeholder="Upgrade description override..." 
+                               value={((selectedBlock as any).upgradeItems || []).find((u: any) => u.posItemId === item.id)?.overrideDescription || ""}
+                               onChange={(e) => {
+                                 let current = [...((selectedBlock as any).upgradeItems || [])];
+                                 const idx = current.findIndex((u: any) => u.posItemId === item.id);
+                                 if (idx !== -1) {
+                                   current[idx] = { ...current[idx], overrideDescription: e.target.value };
+                                   onUpdateBlock(selectedBlockId, { upgradeItems: current } as any);
+                                 }
+                               }}
+                               className="ml-6 mt-1 bg-zinc-950 border border-white/10 rounded px-2 py-1 text-[10px] text-zinc-200" />
+                           ) : null}
+                         />
                       </div>
                     </div>
                   )}
@@ -641,6 +519,36 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                         <option value="Flame">Flame</option>
                         <option value="Utensils">Utensils</option>
                       </select>
+                      <label className="flex items-center gap-3 cursor-pointer mt-2">
+                        <input type="checkbox" checked={(selectedBlock as any).accentBorder || false} onChange={(e) => onUpdateBlock(selectedBlockId, { accentBorder: e.target.checked } as any)} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
+                        <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Accent Border</span>
+                      </label>
+                      <div className="pt-2 border-t border-white/5 space-y-3">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Typography & Colors</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Text Color</label>
+                            <input type="color" value={(selectedBlock as any).textColor || "#ffffff"} onChange={(e) => onUpdateBlock(selectedBlockId, { textColor: e.target.value } as any)} className="w-full h-8 bg-zinc-900 border border-white/10 rounded cursor-pointer" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Font Size</label>
+                            <select value={(selectedBlock as any).fontSize || ""} onChange={(e) => onUpdateBlock(selectedBlockId, { fontSize: e.target.value } as any)} className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-cyan-500">
+                              <option value="">Default</option>
+                              <option value="12px">12px</option>
+                              <option value="16px">16px</option>
+                              <option value="24px">24px</option>
+                              <option value="32px">32px</option>
+                              <option value="48px">48px</option>
+                              <option value="64px">64px</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase block mb-1">Background Opacity</label>
+                          <input type="range" min="0" max="1" step="0.1" value={(selectedBlock as any).backgroundOpacity ?? 1} onChange={(e) => onUpdateBlock(selectedBlockId, { backgroundOpacity: Number(e.target.value) } as any)} className="w-full accent-cyan-500" />
+                          <div className="text-[10px] text-zinc-400 text-right">{Math.round(((selectedBlock as any).backgroundOpacity ?? 1) * 100)}%</div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -655,8 +563,7 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                     </div>
                   )}
                 </div>
-               )}
-             </div>
+              </div>
           ) : (
             <div className="flex flex-1 items-center justify-center p-6 text-center text-xs text-zinc-500">
               Select a block to configure
