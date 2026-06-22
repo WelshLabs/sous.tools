@@ -97,13 +97,13 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
 
       <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-4">
         <button
-          onClick={() => router.push(`/tv/${deck.id}`)}
+          onClick={() => router.push(`/signage/${deck.id}`)}
           className="flex-1 px-3 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors cursor-pointer text-center"
         >
           Edit
         </button>
         <Link
-          href={`/tv/${deck.id}/preview`}
+          href={`/signage/${deck.id}/preview`}
           className="p-2 border border-white/10 hover:border-primary/40 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
           title="Preview Deck"
         >

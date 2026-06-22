@@ -61,7 +61,7 @@ export default function IngestionReviewPage() {
         .eq("id", id);
 
       // Trigger the real commit API synchronously
-      const res = await fetch(`http://localhost:3001/ingestion/review/${id}/commit`, {
+      const res = await fetch(`/api/ingestion/review/${id}/commit`, {
         method: "POST"
       });
 

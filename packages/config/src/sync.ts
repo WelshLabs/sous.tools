@@ -36,7 +36,7 @@ export const secrets = {
   SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
   GOOGLE_CLIENT_ID: "google-client-id-placeholder",
   GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
-  PORT: 6000,
+  PORT: 6001,
 };
 `;
     fs.writeFileSync(SECRETS_FILE_PATH, tsContent, "utf8");
@@ -51,7 +51,7 @@ export const secrets = {
   if (!clientId || !clientSecret || !projectId) {
     throw new Error(
       "Missing Infisical environment variables. " +
-        "Ensure INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID are set in packages/config/.env",
+      "Ensure INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID are set in packages/config/.env",
     );
   }
 
@@ -97,16 +97,16 @@ export const secrets = {
     )?.secretValue || "google-client-secret-placeholder";
     const apiBaseUrl = secretsArray.find(
       (s: any) => s.secretKey === "API_BASE_URL",
-    )?.secretValue || "http://localhost:6000";
+    )?.secretValue || "http://localhost:6001";
     const appBaseUrl = secretsArray.find(
       (s: any) => s.secretKey === "APP_BASE_URL",
-    )?.secretValue || "http://localhost:3000";
+    )?.secretValue || "http://localhost:5001";
     const productionSquareAccessToken = secretsArray.find(
       (s: any) => s.secretKey === "PRODUCTION_SQUARE_ACCESS_TOKEN",
     )?.secretValue || "prod-square-token-placeholder";
     const port = secretsArray.find(
       (s: any) => s.secretKey === "PORT",
-    )?.secretValue || "6000";
+    )?.secretValue || "6001";
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error(

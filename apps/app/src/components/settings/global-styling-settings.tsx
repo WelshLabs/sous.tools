@@ -91,6 +91,7 @@ export const GlobalStylingSettings: React.FC = () => {
                   type="color"
                   value={/^#[0-9A-Fa-f]{6}$/i.test(tokens.primaryColor || "") ? tokens.primaryColor : "#00f0ff"}
                   onChange={(e) => setTokens(prev => ({ ...prev, primaryColor: e.target.value }))}
+                  onClick={() => { if (!tokens.primaryColor) setTokens(prev => ({ ...prev, primaryColor: "#00f0ff" })) }}
                   className="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
                 />
                 <input
@@ -109,6 +110,7 @@ export const GlobalStylingSettings: React.FC = () => {
                   type="color"
                   value={/^#[0-9A-Fa-f]{6}$/i.test(tokens.accentColor || "") ? tokens.accentColor : "#00f0ff"}
                   onChange={(e) => setTokens(prev => ({ ...prev, accentColor: e.target.value }))}
+                  onClick={() => { if (!tokens.accentColor) setTokens(prev => ({ ...prev, accentColor: "#00f0ff" })) }}
                   className="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
                 />
                 <input
@@ -129,54 +131,200 @@ export const GlobalStylingSettings: React.FC = () => {
             <Type className="w-4 h-4 text-cyan-400" />
             Global Typography
           </h3>
-          <datalist id="google-fonts-list">
-            <option value="Inter" />
-            <option value="Roboto" />
-            <option value="Plus Jakarta Sans" />
-            <option value="Outfit" />
-            <option value="Oswald" />
-            <option value="Playfair Display" />
-            <option value="Merriweather" />
-            <option value="Montserrat" />
-            <option value="Lora" />
-            <option value="Lato" />
-            <option value="Poppins" />
-            <option value="Nunito" />
-            <option value="Raleway" />
-          </datalist>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">Heading Font</label>
-              <input
-                type="text"
-                list="google-fonts-list"
-                placeholder="e.g. Plus Jakarta Sans"
-                value={tokens.headingFont || ""}
-                onChange={(e) => setTokens(prev => ({ ...prev, headingFont: e.target.value }))}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
-              />
+          <div className="grid grid-cols-1 gap-4">
+            {/* Heading */}
+            <div className="space-y-2 border border-white/5 rounded-xl p-4 bg-zinc-900/30">
+              <div className="text-xs font-bold text-zinc-300">Heading Typography</div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Font Family</label>
+                  <select
+                    value={tokens.headingFont || ""}
+                    onChange={(e) => setTokens(prev => ({ ...prev, headingFont: e.target.value }))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  >
+                    <option value="">Default Font</option>
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                    <option value="Outfit">Outfit</option>
+                    <option value="Oswald">Oswald</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                    <option value="Merriweather">Merriweather</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Lora">Lora</option>
+                    <option value="Lato">Lato</option>
+                    <option value="Poppins">Poppins</option>
+                    <option value="Nunito">Nunito</option>
+                    <option value="Raleway">Raleway</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Color</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={/^#[0-9A-Fa-f]{6}$/i.test(tokens.headingColor || "") ? tokens.headingColor : "#ffffff"}
+                      onChange={(e) => setTokens(prev => ({ ...prev, headingColor: e.target.value }))}
+                      className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
+                    />
+                    <input
+                      type="text"
+                      placeholder="e.g. #ffffff"
+                      value={tokens.headingColor || ""}
+                      onChange={(e) => setTokens(prev => ({ ...prev, headingColor: e.target.value }))}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Weight</label>
+                  <select
+                    value={tokens.headingWeight || ""}
+                    onChange={(e) => setTokens(prev => ({ ...prev, headingWeight: e.target.value }))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  >
+                    <option value="">Default</option>
+                    <option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                    <option value="100">100 - Thin</option>
+                    <option value="300">300 - Light</option>
+                    <option value="500">500 - Medium</option>
+                    <option value="700">700 - Bold</option>
+                    <option value="900">900 - Black</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">Subtitle Font</label>
-              <input
-                type="text"
-                list="google-fonts-list"
-                placeholder="e.g. Outfit"
-                value={tokens.subtitleFont || ""}
-                onChange={(e) => setTokens(prev => ({ ...prev, subtitleFont: e.target.value }))}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
-              />
+
+            {/* Subtitle */}
+            <div className="space-y-2 border border-white/5 rounded-xl p-4 bg-zinc-900/30">
+              <div className="text-xs font-bold text-zinc-300">Subtitle Typography</div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Font Family</label>
+                  <select
+                    value={tokens.subtitleFont || ""}
+                    onChange={(e) => setTokens(prev => ({ ...prev, subtitleFont: e.target.value }))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  >
+                    <option value="">Default Font</option>
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                    <option value="Outfit">Outfit</option>
+                    <option value="Oswald">Oswald</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                    <option value="Merriweather">Merriweather</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Lora">Lora</option>
+                    <option value="Lato">Lato</option>
+                    <option value="Poppins">Poppins</option>
+                    <option value="Nunito">Nunito</option>
+                    <option value="Raleway">Raleway</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Color</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={/^#[0-9A-Fa-f]{6}$/i.test(tokens.subtitleColor || "") ? tokens.subtitleColor : "#ffffff"}
+                      onChange={(e) => setTokens(prev => ({ ...prev, subtitleColor: e.target.value }))}
+                      className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
+                    />
+                    <input
+                      type="text"
+                      placeholder="e.g. #ffffff"
+                      value={tokens.subtitleColor || ""}
+                      onChange={(e) => setTokens(prev => ({ ...prev, subtitleColor: e.target.value }))}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Weight</label>
+                  <select
+                    value={tokens.subtitleWeight || ""}
+                    onChange={(e) => setTokens(prev => ({ ...prev, subtitleWeight: e.target.value }))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  >
+                    <option value="">Default</option>
+                    <option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                    <option value="100">100 - Thin</option>
+                    <option value="300">300 - Light</option>
+                    <option value="500">500 - Medium</option>
+                    <option value="700">700 - Bold</option>
+                    <option value="900">900 - Black</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">Body Font</label>
-              <input
-                type="text"
-                list="google-fonts-list"
-                placeholder="e.g. Inter"
-                value={tokens.bodyFont || ""}
-                onChange={(e) => setTokens(prev => ({ ...prev, bodyFont: e.target.value }))}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
-              />
+
+            {/* Body */}
+            <div className="space-y-2 border border-white/5 rounded-xl p-4 bg-zinc-900/30">
+              <div className="text-xs font-bold text-zinc-300">Body Typography</div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Font Family</label>
+                  <select
+                    value={tokens.bodyFont || ""}
+                    onChange={(e) => setTokens(prev => ({ ...prev, bodyFont: e.target.value }))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  >
+                    <option value="">Default Font</option>
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                    <option value="Outfit">Outfit</option>
+                    <option value="Oswald">Oswald</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                    <option value="Merriweather">Merriweather</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Lora">Lora</option>
+                    <option value="Lato">Lato</option>
+                    <option value="Poppins">Poppins</option>
+                    <option value="Nunito">Nunito</option>
+                    <option value="Raleway">Raleway</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Color</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={/^#[0-9A-Fa-f]{6}$/i.test(tokens.bodyColor || "") ? tokens.bodyColor : "#ffffff"}
+                      onChange={(e) => setTokens(prev => ({ ...prev, bodyColor: e.target.value }))}
+                      className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
+                    />
+                    <input
+                      type="text"
+                      placeholder="e.g. #ffffff"
+                      value={tokens.bodyColor || ""}
+                      onChange={(e) => setTokens(prev => ({ ...prev, bodyColor: e.target.value }))}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Weight</label>
+                  <select
+                    value={tokens.bodyWeight || ""}
+                    onChange={(e) => setTokens(prev => ({ ...prev, bodyWeight: e.target.value }))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  >
+                    <option value="">Default</option>
+                    <option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                    <option value="100">100 - Thin</option>
+                    <option value="300">300 - Light</option>
+                    <option value="500">500 - Medium</option>
+                    <option value="700">700 - Bold</option>
+                    <option value="900">900 - Black</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>

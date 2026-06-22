@@ -19,8 +19,8 @@ interface DeckData {
 
 /**
  * Deck Preview Modal — rendered in the @modal parallel slot when
- * the user navigates to /tv/[deckId]/preview from the deck list.
- * The editor route /tv/[deckId] remains untouched.
+ * the user navigates to /signage/[deckId]/preview from the deck list.
+ * The editor route /signage/[deckId] remains untouched.
  */
 export default function DeckPreviewModal({
   params,
@@ -78,7 +78,7 @@ export default function DeckPreviewModal({
             Close
           </button>
           <button
-            onClick={() => router.push(`/tv/${deckId}`)}
+            onClick={() => router.push(`/signage/${deckId}`)}
             className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-white rounded-lg transition cursor-pointer"
           >
             <Edit className="w-3.5 h-3.5" /> Open Editor

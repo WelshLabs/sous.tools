@@ -31,7 +31,7 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
   const handleSearch = async (q: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/integrations/google/files?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/integrations/google/files?q=${encodeURIComponent(q)}`);
       if (res.ok) {
         const data = await res.json();
         setFiles(data);
@@ -58,7 +58,7 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
     setLoading(true);
     try {
       const session = await supabase.auth.getSession();
-      await fetch("http://localhost:3001/ingestion/submit", {
+      await fetch("/api/ingestion/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -121,9 +121,8 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
                   <div
                     key={f.id}
                     onClick={() => toggleSelect(f.id)}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
-                      isSelected ? "bg-sky-500/10 border border-sky-500/30" : "hover:bg-white/5 border border-transparent"
-                    }`}
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-sky-500/10 border border-sky-500/30" : "hover:bg-white/5 border border-transparent"
+                      }`}
                   >
                     <div className="text-sky-400">
                       {isFolder ? <Folder className="w-5 h-5 fill-current opacity-80" /> : <FileText className="w-5 h-5 opacity-80" />}

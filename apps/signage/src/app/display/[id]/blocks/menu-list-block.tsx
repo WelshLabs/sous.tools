@@ -2,10 +2,10 @@ import React from "react";
 import { PosItem, MenuItemStyles, SignageBlock } from "@soustools/api-types";
 import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle, buildDescriptionStyle } from "../menu-item-style-utils";
 
-interface MenuListBlockProps extends SignageBlock {
+type MenuListBlockProps = Extract<SignageBlock, { type: "MenuListBlock" }> & {
   items: PosItem[];
   menuItemStyles: MenuItemStyles;
-}
+};
 
 export function MenuListBlock({
   itemIds,

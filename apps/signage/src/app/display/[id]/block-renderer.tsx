@@ -43,7 +43,7 @@ export function getLayoutClass(direction: "column" | "row" | "grid", panelStyle?
   ].filter(Boolean).join(" ");
 }
 
-export function BlockRenderer({ block, items, menuItemStyles }: BlockRendererProps): React.JSX.Element {
+export function BlockRenderer({ block, items, menuItemStyles, config }: BlockRendererProps): React.JSX.Element {
   const sizingStyles = getSizingStyles(block.sizing);
 
   switch (block.type) {
@@ -92,13 +92,29 @@ export function BlockRenderer({ block, items, menuItemStyles }: BlockRendererPro
     case "PosItemBlock":
       return (
         <div style={sizingStyles} className="w-full h-full">
-          <PosItemBlock {...block} items={items} menuItemStyles={menuItemStyles} />
+          <PosItemBlock
+            {...block}
+            items={items}
+            menuItemStyles={menuItemStyles}
+            panelStyle={
+              block.panelStyle === "glass" || block.panelStyle === "none"
+                ? block.panelStyle
+                : undefined
+            }
+          />
         </div>
       );
     case "CalloutBlock":
       return (
         <div style={sizingStyles} className="w-full h-full">
-          <CalloutBlock {...block} />
+          <CalloutBlock
+            {...block}
+            panelStyle={
+              block.panelStyle === "glass" || block.panelStyle === "none"
+                ? block.panelStyle
+                : undefined
+            }
+          />
         </div>
       );
     case "NestedItemBlock":

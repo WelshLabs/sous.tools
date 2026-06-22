@@ -47,8 +47,8 @@ CONSTRAINT unique_org_square_item UNIQUE (organization_id, square_id)
 - Window Placement Rules: Because Wayland ignores explicit coordinate window position flags, window mapping must utilize custom window titles (SignageDisplay1 and SignageDisplay2) caught by the Labwc composition rules to lock windows onto distinct hardware outputs (HDMI-A-1 and HDMI-A-2).
 - Kiosk Script Execution File (kiosk.sh):
   #!/bin/bash
-  chromium-browser --title="SignageDisplay1" --url="http://localhost:3000/display/tv-one" &
-  chromium-browser --title="SignageDisplay2" --url="http://localhost:3000/display/tv-two" &
+  chromium-browser --title="SignageDisplay1" --url="http://localhost:5001/display/tv-one" &
+  chromium-browser --title="SignageDisplay2" --url="http://localhost:5001/display/tv-two" &
 
 ### C. Real-Time WebSocket Synchronization Pipeline
 

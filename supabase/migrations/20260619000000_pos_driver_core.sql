@@ -79,16 +79,26 @@ ALTER TABLE pos_modifier_options ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pos_item_modifier_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pos_item_local_overlays ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON pos_items;
 CREATE POLICY "Enable read access for all organization members" ON pos_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON pos_modifier_groups;
 CREATE POLICY "Enable read access for all organization members" ON pos_modifier_groups FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON pos_modifier_options;
 CREATE POLICY "Enable read access for all organization members" ON pos_modifier_options FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON pos_item_modifier_groups;
 CREATE POLICY "Enable read access for all organization members" ON pos_item_modifier_groups FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON pos_item_local_overlays;
 CREATE POLICY "Enable read access for all organization members" ON pos_item_local_overlays FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON pos_items;
 CREATE POLICY "Enable write access for organization admins" ON pos_items FOR ALL USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON pos_modifier_groups;
 CREATE POLICY "Enable write access for organization admins" ON pos_modifier_groups FOR ALL USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON pos_modifier_options;
 CREATE POLICY "Enable write access for organization admins" ON pos_modifier_options FOR ALL USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON pos_item_modifier_groups;
 CREATE POLICY "Enable write access for organization admins" ON pos_item_modifier_groups FOR ALL USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON pos_item_local_overlays;
 CREATE POLICY "Enable write access for organization admins" ON pos_item_local_overlays FOR ALL USING (true);
 
 -- 8. Grants

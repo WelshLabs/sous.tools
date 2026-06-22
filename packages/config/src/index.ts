@@ -17,6 +17,8 @@ export interface Config {
   readonly REDIS_PORT: number;
   readonly SQUARE_WEBHOOK_SIGNATURE_KEY: string;
   readonly GEMINI_API_KEY: string;
+  readonly IS_DEVELOPMENT: boolean;
+  readonly TV_BASE_URL: string;
 }
 
 /**
@@ -29,12 +31,15 @@ const isMockEnv =
   process.env.VITEST === "true" ||
   !!(secrets.SUPABASE_URL && secrets.SUPABASE_URL.includes("placeholder-project.supabase.co"));
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 const sec = secrets as Record<string, string | number | undefined>;
 
 export const config: Config = Object.freeze({
   SUPABASE_URL: secrets.SUPABASE_URL,
   SUPABASE_ANON_KEY: secrets.SUPABASE_ANON_KEY,
   IS_MOCK_ENV: isMockEnv,
+  IS_DEVELOPMENT: isDevelopment,
   SQUARE_CLIENT_ID: isMockEnv
     ? "sandbox-sq0idb-placeholder"
     : (process.env.SQUARE_CLIENT_ID || secrets.SQUARE_CLIENT_ID || "sandbox-sq0idb-placeholder"),
@@ -51,18 +56,18 @@ export const config: Config = Object.freeze({
     ? "google-client-secret-placeholder"
     : (process.env.GOOGLE_CLIENT_SECRET || secrets.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder"),
   API_BASE_URL: isMockEnv
-    ? "http://localhost:6000"
-    : (process.env.API_BASE_URL || (sec.API_BASE_URL as string) || "http://localhost:6000"),
+    ? "http://localhost:6001"
+    : (process.env.API_BASE_URL || (sec.API_BASE_URL as string) || "http://localhost:6001"),
   APP_BASE_URL: isMockEnv
-    ? "http://localhost:3000"
-    : (process.env.APP_BASE_URL || (sec.APP_BASE_URL as string) || "http://localhost:3000"),
+    ? "http://localhost:5001"
+    : (process.env.APP_BASE_URL || (sec.APP_BASE_URL as string) || "http://localhost:5001"),
   PRODUCTION_SQUARE_ACCESS_TOKEN: isMockEnv
     ? "prod-square-token-placeholder"
     : (process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || (sec.PRODUCTION_SQUARE_ACCESS_TOKEN as string) || "prod-square-token-placeholder"),
   PORT: Number(
     isMockEnv
-      ? 6000
-      : (process.env.PORT || sec.PORT || 6000)
+      ? 6001
+      : (process.env.PORT || sec.PORT || 6001)
   ),
   REDIS_HOST: isMockEnv
     ? "127.0.0.1"
@@ -78,4 +83,7 @@ export const config: Config = Object.freeze({
   GEMINI_API_KEY: isMockEnv
     ? "gemini-api-key-placeholder"
     : (process.env.GEMINI_API_KEY || (sec.GEMINI_API_KEY as string) || "gemini-api-key-placeholder"),
+  TV_BASE_URL: isMockEnv
+    ? "http://localhost:5003"
+    : (process.env.NEXT_PUBLIC_TV_URL || (sec.NEXT_PUBLIC_TV_URL as string) || "http://localhost:5003"),
 });

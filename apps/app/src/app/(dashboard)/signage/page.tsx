@@ -55,7 +55,7 @@ export default function TVSignageListPage() {
       });
       const data = await res.json();
       if (data.success && data.data) {
-        router.push(`/tv/${data.data.id}`);
+        router.push(`/signage/${data.data.id}`);
       } else {
         alert(data.error || "Failed to create deck");
       }

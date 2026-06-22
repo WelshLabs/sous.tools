@@ -45,16 +45,24 @@ ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS Policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON vendors;
 CREATE POLICY "Enable read access for all organization members" ON vendors FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON vendors;
 CREATE POLICY "Enable write access for organization admins" ON vendors FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON whiteboard_items;
 CREATE POLICY "Enable read access for all organization members" ON whiteboard_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON whiteboard_items;
 CREATE POLICY "Enable write access for organization admins" ON whiteboard_items FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON purchase_orders;
 CREATE POLICY "Enable read access for all organization members" ON purchase_orders FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON purchase_orders;
 CREATE POLICY "Enable write access for organization admins" ON purchase_orders FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON purchase_order_items;
 CREATE POLICY "Enable read access for all organization members" ON purchase_order_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON purchase_order_items;
 CREATE POLICY "Enable write access for organization admins" ON purchase_order_items FOR ALL USING (true);
 
 -- Seed Sample Vendors
@@ -63,3 +71,8 @@ VALUES
   ('c0000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000000', 'US Foods', 'EMAIL', 'orders@usfoods.com', NULL),
   ('c0000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000000', 'Local Produce Market', 'MANUAL', NULL, '555-0123')
 ON CONFLICT (id) DO NOTHING;
+
+-- Grant permissions to Supabase roles
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO postgres, anon, authenticated, service_role;

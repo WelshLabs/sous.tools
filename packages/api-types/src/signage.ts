@@ -79,8 +79,14 @@ export interface GlobalDesignTokens {
   primaryColor?: string;
   accentColor?: string;
   headingFont?: string;
+  headingColor?: string;
+  headingWeight?: string;
   subtitleFont?: string;
+  subtitleColor?: string;
+  subtitleWeight?: string;
   bodyFont?: string;
+  bodyColor?: string;
+  bodyWeight?: string;
   globalCss?: string;
 }
 

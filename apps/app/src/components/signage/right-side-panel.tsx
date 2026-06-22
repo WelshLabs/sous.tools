@@ -216,26 +216,6 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                  </button>
                </div>
                <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0 space-y-6">
-                  {/* Generic Layout Controls */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Layout</label>
-                    <LayoutControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
-                  </div>
-                  {/* Generic Typography Controls */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Typography</label>
-                    <TypographyControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
-                  </div>
-                  {/* Generic Background Controls */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Background</label>
-                    <BackgroundControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
-                  </div>
-                  {/* Generic Border Controls */}
-                  <div className="space-y-3">
-                    <BorderControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
-                  </div>
-                  <div className="h-px bg-white/5 w-full my-6" />
                   {/* MenuList Data Source */}
                   {selectedBlock.type === "MenuListBlock" && (
                     <div>
@@ -263,33 +243,35 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
 
                   {/* Category Header */}
                   {selectedBlock.type === "CategoryHeaderBlock" && (
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Header Details</label>
-                      <input type="text" value={selectedBlock.title || ""} placeholder="Title"
-                        onChange={(e) => onUpdateBlock(selectedBlockId, { title: e.target.value } as any)}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
-                      <input type="text" value={selectedBlock.subtitle || ""} placeholder="Subtitle"
-                        onChange={(e) => onUpdateBlock(selectedBlockId, { subtitle: e.target.value })}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
-                      <input type="text" value={selectedBlock.badge || ""} placeholder="Badge (Optional)"
-                        onChange={(e) => onUpdateBlock(selectedBlockId, { badge: e.target.value })}
-                        className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" checked={(selectedBlock as any).animateBadge || false} onChange={(e) => onUpdateBlock(selectedBlockId, { animateBadge: e.target.checked } as any)} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
-                        <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Animate Badge Pulse</span>
-                      </label>
-                      <select value={(selectedBlock as any).icon || "none"} onChange={(e) => onUpdateBlock(selectedBlockId, { icon: e.target.value } as any)} className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100">
-                        <option value="none">No Icon</option>
-                        <option value="CheckCircle">Check Circle</option>
-                        <option value="ChefHat">Chef Hat</option>
-                        <option value="Star">Star</option>
-                        <option value="Bell">Bell</option>
-                        <option value="Flame">Flame</option>
-                      </select>
-                      <label className="flex items-center gap-3 cursor-pointer mt-2">
-                        <input type="checkbox" checked={(selectedBlock as any).accentBorder || false} onChange={(e) => onUpdateBlock(selectedBlockId, { accentBorder: e.target.checked } as any)} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
-                        <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Accent Border</span>
-                      </label>
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Header Details</label>
+                        <input type="text" value={selectedBlock.title || ""} placeholder="Title"
+                          onChange={(e) => onUpdateBlock(selectedBlockId, { title: e.target.value } as any)}
+                          className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
+                        <input type="text" value={selectedBlock.subtitle || ""} placeholder="Subtitle"
+                          onChange={(e) => onUpdateBlock(selectedBlockId, { subtitle: e.target.value })}
+                          className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
+                        <input type="text" value={selectedBlock.badge || ""} placeholder="Badge (Optional)"
+                          onChange={(e) => onUpdateBlock(selectedBlockId, { badge: e.target.value })}
+                          className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100" />
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input type="checkbox" checked={(selectedBlock as any).animateBadge || false} onChange={(e) => onUpdateBlock(selectedBlockId, { animateBadge: e.target.checked } as any)} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
+                          <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Animate Badge Pulse</span>
+                        </label>
+                        <select value={(selectedBlock as any).icon || "none"} onChange={(e) => onUpdateBlock(selectedBlockId, { icon: e.target.value } as any)} className="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100">
+                          <option value="none">No Icon</option>
+                          <option value="CheckCircle">Check Circle</option>
+                          <option value="ChefHat">Chef Hat</option>
+                          <option value="Star">Star</option>
+                          <option value="Bell">Bell</option>
+                          <option value="Flame">Flame</option>
+                        </select>
+                        <label className="flex items-center gap-3 cursor-pointer mt-2">
+                          <input type="checkbox" checked={(selectedBlock as any).accentBorder || false} onChange={(e) => onUpdateBlock(selectedBlockId, { accentBorder: e.target.checked } as any)} className="w-4 h-4 rounded border-white/10 bg-black text-cyan-500 focus:ring-cyan-500" />
+                          <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Accent Border</span>
+                        </label>
+                      </div>
                     </div>
                   )}
 
@@ -562,6 +544,47 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
                       />
                     </div>
                   )}
+
+                  <div className="h-px bg-white/5 w-full my-6" />
+                  {/* Generic Layout Controls */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Layout</label>
+                    <LayoutControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
+                  </div>
+                  {/* Generic Typography Controls */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">
+                      {selectedBlock.type === "CategoryHeaderBlock" ? "Heading Typography" : "Typography"}
+                    </label>
+                    <TypographyControls 
+                      block={selectedBlock} 
+                      onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} 
+                      globalTokens={config.designTokens}
+                      context={selectedBlock.type === "CategoryHeaderBlock" ? "heading" : selectedBlock.type === "CalloutBlock" ? "body" : "body"}
+                    />
+                  </div>
+                  {/* Category Header Subtitle Typography */}
+                  {selectedBlock.type === "CategoryHeaderBlock" && (
+                    <div className="space-y-3 mt-6">
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Subtitle Typography</label>
+                      <TypographyControls 
+                        block={selectedBlock} 
+                        onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} 
+                        globalTokens={config.designTokens}
+                        context="subtitle"
+                        targetField="subtitleTypography"
+                      />
+                    </div>
+                  )}
+                  {/* Generic Background Controls */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Background</label>
+                    <BackgroundControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
+                  </div>
+                  {/* Generic Border Controls */}
+                  <div className="space-y-3">
+                    <BorderControls block={selectedBlock} onUpdate={(u) => onUpdateBlock(selectedBlockId, u)} />
+                  </div>
                 </div>
               </div>
           ) : (

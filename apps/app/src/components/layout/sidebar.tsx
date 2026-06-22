@@ -24,15 +24,16 @@ export interface SidebarProps {
   onToggleDesktop: () => void;
 }
 
-const NAV_ITEMS = [
+import { config } from "@soustools/config";
+
+const BASE_NAV_ITEMS = [
   { label: "Kitchen Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Recipes", href: "/recipes", icon: ChefHat },
-  { label: "TV Signage", href: "/tv", icon: Tv },
+  { label: "Signage", href: "/signage", icon: Tv },
   { label: "Purchasing", href: "/purchasing", icon: ShoppingBag },
   { label: "Ingestion Queue", href: "/ingestion", icon: BrainCircuit },
   { label: "Whiteboard", href: "/inventory/whiteboard", icon: PenTool },
   { label: "Devices", href: "/devices", icon: Smartphone },
-  { label: "POS Simulator", href: "/pos", icon: Calculator },
 ];
 
 /**
@@ -45,6 +46,11 @@ export default function Sidebar({
   onToggleDesktop,
 }: SidebarProps) {
   const pathname = usePathname();
+
+  const navItems = [...BASE_NAV_ITEMS];
+  if (config.IS_DEVELOPMENT) {
+    navItems.push({ label: "POS Simulator", href: "http://localhost:5009", icon: Calculator });
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -99,27 +105,20 @@ export default function Sidebar({
           />
         </div>
 
-        {/* Navigation list */}
+         {/* Navigation list */}
         <nav className="flex-1 py-4 space-y-1 px-3">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
+            const isExternal = item.href.startsWith("http");
             const isActive =
-              item.href === "/"
+              isExternal
+                ? false
+                : item.href === "/"
                 ? pathname === "/"
                 : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-colors group
-                  ${
-                    isActive
-                      ? "bg-sky-500/10 text-sky-500"
-                      : "text-zinc-400 hover:bg-white/5 hover:text-white"
-                  }
-                `}
-                onClick={onCloseMobile}
-              >
+
+            const content = (
+              <>
                 <Icon className="w-5 h-5 flex-shrink-0" />
                 <span
                   className={`text-sm font-medium transition-all duration-200 whitespace-nowrap md:hidden
@@ -128,6 +127,36 @@ export default function Sidebar({
                 >
                   {item.label}
                 </span>
+              </>
+            );
+
+            const className = `flex items-center gap-3 p-3 rounded-lg transition-colors group
+              ${
+                isActive
+                  ? "bg-sky-500/10 text-sky-500"
+                  : "text-zinc-400 hover:bg-white/5 hover:text-white"
+              }
+            `;
+
+            return isExternal ? (
+              <a
+                key={item.href}
+                href={item.href}
+                className={className}
+                onClick={onCloseMobile}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {content}
+              </a>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={className}
+                onClick={onCloseMobile}
+              >
+                {content}
               </Link>
             );
           })}

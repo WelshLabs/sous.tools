@@ -52,23 +52,29 @@ ALTER TABLE signage_displays ENABLE ROW LEVEL SECURITY;
 ALTER TABLE square_items ENABLE ROW LEVEL SECURITY;
 
 -- Layouts policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON signage_layouts;
 CREATE POLICY "Enable read access for all organization members" ON signage_layouts
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON signage_layouts;
 CREATE POLICY "Enable write access for organization admins" ON signage_layouts
   FOR ALL USING (true);
 
 -- Displays policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON signage_displays;
 CREATE POLICY "Enable read access for all organization members" ON signage_displays
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON signage_displays;
 CREATE POLICY "Enable write access for organization admins" ON signage_displays
   FOR ALL USING (true);
 
 -- Square items policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON square_items;
 CREATE POLICY "Enable read access for all organization members" ON square_items
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON square_items;
 CREATE POLICY "Enable write access for organization admins" ON square_items
   FOR ALL USING (true);
 
@@ -130,25 +136,33 @@ ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recipe_ingredients ENABLE ROW LEVEL SECURITY;
 
 -- Vessel profiles policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON vessel_profiles;
 CREATE POLICY "Enable read access for all organization members" ON vessel_profiles
   FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON vessel_profiles;
 CREATE POLICY "Enable write access for organization admins" ON vessel_profiles
   FOR ALL USING (true);
 
 -- Master ingredients policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON master_ingredients;
 CREATE POLICY "Enable read access for all organization members" ON master_ingredients
   FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON master_ingredients;
 CREATE POLICY "Enable write access for organization admins" ON master_ingredients
   FOR ALL USING (true);
 
 -- Recipes policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON recipes;
 CREATE POLICY "Enable read access for all organization members" ON recipes
   FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON recipes;
 CREATE POLICY "Enable write access for organization admins" ON recipes
   FOR ALL USING (true);
 
 -- Recipe ingredients policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON recipe_ingredients;
 CREATE POLICY "Enable read access for all organization members" ON recipe_ingredients
   FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON recipe_ingredients;
 CREATE POLICY "Enable write access for organization admins" ON recipe_ingredients
   FOR ALL USING (true);

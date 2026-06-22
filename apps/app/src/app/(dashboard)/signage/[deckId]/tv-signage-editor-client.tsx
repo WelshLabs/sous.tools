@@ -7,7 +7,8 @@ import { MOCK_POS_ITEMS } from "../../../../components/signage/mock-data";
 import { RefreshCw } from "lucide-react";
 import { io } from "socket.io-client";
 import { mapDbItemToPosItem, RawDbPosItem } from "../../../display/[id]/helpers";
-import { config } from "@soustools/config";
+import { config as appConfig } from "@soustools/config";
+import { createBrowserClient } from "@soustools/supabase";
 
 interface SignageDeck {
   id: string;
@@ -30,12 +31,18 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [deckRes, itemsRes] = await Promise.all([
+      const supabase = createBrowserClient();
+      const [deckRes, itemsRes, orgRes] = await Promise.all([
         fetch(`/api/signage/layouts/${deckId}`).then((r) => r.json()),
         fetch("/api/pos/items").then((r) => r.json()),
+        supabase.from("organizations").select("design_tokens").limit(1).single()
       ]);
       if (deckRes.success && deckRes.data) {
-        setDeck(deckRes.data);
+        const d = deckRes.data;
+        if (orgRes.data?.design_tokens && d.config) {
+          d.config.designTokens = orgRes.data.design_tokens;
+        }
+        setDeck(d);
       }
       if (itemsRes.success && itemsRes.data) {
         const parsedItems = (itemsRes.data as RawDbPosItem[]).map(mapDbItemToPosItem);
@@ -56,7 +63,7 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
   }, [deckId]);
 
   useEffect(() => {
-    const socketUrl = config.API_BASE_URL || window.location.origin;
+    const socketUrl = appConfig.API_BASE_URL || window.location.origin;
     const socket = io(socketUrl, {
       query: { deckId },
     });

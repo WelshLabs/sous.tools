@@ -59,7 +59,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 
     return (
       <div 
-        className="relative w-full h-full flex flex-col p-4 overflow-y-auto"
+        className="relative w-full h-full flex flex-col p-4"
         onClick={(e) => { e.stopPropagation(); onSelectBlock?.(null); }}
       >
         {blocks.length > 0 ? blocks.map((block, idx) => (

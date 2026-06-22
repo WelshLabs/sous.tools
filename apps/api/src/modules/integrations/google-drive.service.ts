@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { google } from "googleapis";
+import { config } from "@soustools/config";
 import { supabase } from "../../lib/supabase";
 
 @Injectable()
@@ -16,7 +17,12 @@ export class GoogleDriveService {
       throw new NotFoundException("Google Drive integration not connected.");
     }
 
-    const oauth2Client = new google.auth.OAuth2();
+    const redirectUri = `${config.API_BASE_URL}/integrations/callback/google`;
+    const oauth2Client = new google.auth.OAuth2(
+      config.GOOGLE_CLIENT_ID,
+      config.GOOGLE_CLIENT_SECRET,
+      redirectUri
+    );
     oauth2Client.setCredentials({
       access_token: integration.access_token,
       refresh_token: integration.refresh_token,

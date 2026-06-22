@@ -11,6 +11,17 @@ import { PreviewNestedItem } from "./preview-nested-exploded";
 import * as LucideIcons from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
+const getTypoStyle = (block: any, context: "heading" | "subtitle" | "body", field: string = "typography") => {
+  const typo = block.visuals?.[field] || {};
+  return {
+    fontFamily: typo.fontFamily ? `'${typo.fontFamily}', sans-serif` : `var(--global-${context}-font)`,
+    color: typo.color || `var(--global-${context}-color)`,
+    fontWeight: typo.fontWeight || `var(--global-${context}-weight)`,
+    fontSize: typo.fontSize || undefined,
+    textAlign: typo.textAlign || undefined,
+  };
+};
+
 const PreviewMediaCarousel = ({ block }: { block: any }) => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const slides = block.slides || [];
@@ -127,27 +138,28 @@ export function PreviewContentBlocks({
   block,
   items,
   styles,
-  config,
+  config: _config,
 }: PreviewContentBlocksProps): React.JSX.Element {
   switch (block.type) {
     case "CategoryHeaderBlock": {
       const isGlass = block.panelStyle === "glass";
       const classes = [
-        "p-2 rounded flex flex-col gap-0.5 st-category-header",
+        "w-full p-2 rounded flex flex-col gap-0.5 st-category-header",
         isGlass ? "st-glass-panel" : "",
         block.className
       ].filter(Boolean).join(" ");
+      const typoStyle = getTypoStyle(block, "heading", "typography");
       return (
         <div className={classes} data-unique-id={block.uniqueSelector}>
-          <div className="flex justify-between items-center">
-            <h5 className="text-[10px] font-bold uppercase tracking-wider" style={{ color: block.color || config?.designTokens?.primaryColor, fontSize: block.fontSize }}>
+          <div className="flex justify-between items-center w-full gap-2">
+            <h5 className="text-[10px] uppercase tracking-wider flex-1" style={{ ...typoStyle, fontSize: typoStyle.fontSize || block.fontSize }}>
               {block.title}
             </h5>
             {block.badge && (
-              <span className={`text-[6px] px-1 bg-red-600 rounded text-white font-bold ${block.animateBadge ? "animate-pulse" : ""}`}>{block.badge}</span>
+              <span className={`text-[6px] px-1 bg-red-600 rounded text-white font-bold shrink-0 ${block.animateBadge ? "animate-pulse" : ""}`}>{block.badge}</span>
             )}
           </div>
-          {block.subtitle && <p className="text-[8px] opacity-80">{block.subtitle}</p>}
+          {block.subtitle && <p className="text-[8px] opacity-80" style={getTypoStyle(block, "subtitle", "subtitleTypography")}>{block.subtitle}</p>}
         </div>
       );
     }
@@ -204,14 +216,16 @@ export function PreviewContentBlocks({
       
       const IconComponent = b.iconName ? ((LucideIcons as any)[b.iconName] || LucideIcons.Info) : LucideIcons.Info;
       const bgStyle = b.backgroundOpacity !== undefined && !isGlass && block.panelStyle !== "none" ? { backgroundColor: `rgba(24, 24, 27, ${b.backgroundOpacity})` } : {};
+      const typoStyle = getTypoStyle(block, "body");
+      
       return (
         <div className={classes} data-unique-id={block.uniqueSelector} style={bgStyle}>
           <div className="shrink-0">
              <IconComponent className="w-6 h-6 text-cyan-400" />
           </div>
-          <div className="flex flex-col gap-1 items-center justify-center w-full" style={{ color: b.textColor }}>
-            {b.title && <span className="font-bold tracking-wide text-lg" style={{ fontSize: b.fontSize }}>{b.title}</span>}
-            {b.message && <span className="leading-snug" style={{ fontSize: b.fontSize ? `calc(${b.fontSize} * 0.75)` : undefined }}>{b.message}</span>}
+          <div className="flex flex-col gap-1 items-center justify-center w-full" style={{ ...typoStyle, fontSize: typoStyle.fontSize || b.fontSize, color: typoStyle.color || b.textColor }}>
+            {b.title && <span className="font-bold tracking-wide text-lg" style={{ fontFamily: `var(--global-heading-font)` }}>{b.title}</span>}
+            {b.message && <span className="leading-snug" style={{ fontSize: typoStyle.fontSize ? `calc(${typoStyle.fontSize} * 0.75)` : (b.fontSize ? `calc(${b.fontSize} * 0.75)` : undefined) }}>{b.message}</span>}
           </div>
         </div>
       );
@@ -357,9 +371,9 @@ export function PreviewContentBlocks({
             steps.map((step: any) => (
               <div key={step.id} className="flex gap-4 items-start relative z-10 py-2">
                 <div className="w-4 h-4 rounded-full bg-cyan-900 border-2 border-cyan-400 shrink-0 mt-0.5 shadow-[0_0_8px_rgba(34,211,238,0.5)]"></div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-bold text-slate-200">{step.text}</span>
-                  {step.subtitle && <span className="text-slate-400 text-[8px]">{step.subtitle}</span>}
+                <div className="flex flex-col gap-0.5" style={getTypoStyle(block, "body")}>
+                  <span className="font-bold">{step.text}</span>
+                  {step.subtitle && <span className="text-[8px]" style={{ opacity: 0.8 }}>{step.subtitle}</span>}
                 </div>
               </div>
             ))

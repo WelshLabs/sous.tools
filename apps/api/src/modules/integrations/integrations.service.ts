@@ -92,9 +92,9 @@ export class IntegrationsService {
       refresh_token: tokenData.refresh_token || null,
       expires_at: tokenData.expires_at || null,
       scopes: ["MERCHANT_PROFILE_READ", "ITEMS_READ", "ITEMS_WRITE", "INVENTORY_READ", "INVENTORY_WRITE"],
-      metadata: { 
+      metadata: {
         connectedAs: businessName || `Square Merchant ${tokenData.merchant_id || ""}`,
-        merchantId: tokenData.merchant_id 
+        merchantId: tokenData.merchant_id
       },
       updated_at: new Date().toISOString(),
     }, { onConflict: "organization_id,provider" });

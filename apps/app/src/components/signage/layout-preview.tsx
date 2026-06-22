@@ -25,6 +25,25 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   const activeSlide = config.slides[activeSlideIndex] ?? config.slides[0];
   const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? activeSlide : null;
 
+  const fontFamilies = new Set<string>();
+  if (config.googleFont) fontFamilies.add(config.googleFont);
+  if (config.designTokens?.headingFont) fontFamilies.add(config.designTokens.headingFont);
+  if (config.designTokens?.subtitleFont) fontFamilies.add(config.designTokens.subtitleFont);
+  if (config.designTokens?.bodyFont) fontFamilies.add(config.designTokens.bodyFont);
+
+  config.slides.forEach(slide => {
+    if (slide.type === "COLUMN_LAYOUT") {
+      slide.columns.forEach(col => {
+        col.blocks?.forEach(block => {
+          if (block.visuals?.typography?.fontFamily) fontFamilies.add(block.visuals.typography.fontFamily);
+          if (block.visuals?.subtitleTypography?.fontFamily) fontFamilies.add(block.visuals.subtitleTypography.fontFamily);
+        });
+      });
+    }
+  });
+
+  const uniqueFonts = Array.from(fontFamilies).filter(f => f && f !== "inherit" && f !== "Global Default");
+
   const bgStyle: React.CSSProperties = {
     fontFamily: config.googleFont ? `'${config.googleFont}', sans-serif` : "inherit",
     backgroundColor: columnSlide?.backgroundColor ?? "transparent",
@@ -46,17 +65,30 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
     return () => observer.disconnect();
   }, [config.aspectRatio, config.scaleToFit]);
 
-  const cssVars = `
-    .st-signage-root {
-      --global-primary: ${config.designTokens?.primaryColor || "#06b6d4"};
-      --global-accent: ${config.designTokens?.accentColor || "#3b82f6"};
-      --global-heading-font: ${config.designTokens?.headingFont ? `'${config.designTokens.headingFont}', sans-serif` : "inherit"};
-      --global-subtitle-font: ${config.designTokens?.subtitleFont ? `'${config.designTokens.subtitleFont}', sans-serif` : "inherit"};
-      --global-body-font: ${config.designTokens?.bodyFont ? `'${config.designTokens.bodyFont}', sans-serif` : "inherit"};
-    }
-  `;
+    const cssVars = `
+      .st-signage-root {
+        --global-primary: ${config.designTokens?.primaryColor || "#06b6d4"};
+        --global-accent: ${config.designTokens?.accentColor || "#3b82f6"};
+        --global-heading-font: ${config.designTokens?.headingFont ? `'${config.designTokens.headingFont}', sans-serif` : "inherit"};
+        --global-heading-color: ${config.designTokens?.headingColor || "inherit"};
+        --global-heading-weight: ${config.designTokens?.headingWeight || "inherit"};
+        --global-subtitle-font: ${config.designTokens?.subtitleFont ? `'${config.designTokens.subtitleFont}', sans-serif` : "inherit"};
+        --global-subtitle-color: ${config.designTokens?.subtitleColor || "inherit"};
+        --global-subtitle-weight: ${config.designTokens?.subtitleWeight || "inherit"};
+        --global-body-font: ${config.designTokens?.bodyFont ? `'${config.designTokens.bodyFont}', sans-serif` : "inherit"};
+        --global-body-color: ${config.designTokens?.bodyColor || "inherit"};
+        --global-body-weight: ${config.designTokens?.bodyWeight || "inherit"};
+      }
+    `;
 
-  let combinedCustomCss = cssVars;
+  const googleFontsUrl = uniqueFonts.length > 0
+    ? `https://fonts.googleapis.com/css2?${uniqueFonts.map(f => `family=${f.replace(/\s+/g, "+")}:wght@300;400;500;600;700`).join("&")}&display=swap`
+    : "";
+
+  let combinedCustomCss = "";
+  if (googleFontsUrl) combinedCustomCss += `@import url('${googleFontsUrl}');\n`;
+  combinedCustomCss += cssVars;
+  
   if (config.designTokens?.globalCss) combinedCustomCss += `\n@scope (.st-signage-root) {\n${config.designTokens.globalCss}\n}\n`;
   if (config.customCss) combinedCustomCss += `\n@scope (.st-signage-root) {\n${config.customCss}\n}\n`;
   
@@ -64,7 +96,7 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   const animationCss = config.menuItemStyles ? buildAllAnimationCss(config.menuItemStyles) : "";
 
   const previewContent = (
-    <div className={`w-full h-full relative st-layout-background ${config.aspectRatio === "responsive" ? "" : "border-2 border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
+    <div className={`w-full flex-1 min-h-[100vh] relative st-layout-background flex flex-col ${config.aspectRatio === "responsive" ? "" : "border-2 border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
       {!activeSlide ? (
         <div className="flex items-center justify-center h-full text-slate-500 text-sm font-mono">Click + Add Slide to begin</div>
       ) : (
@@ -83,16 +115,12 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   );
 
   return (
-    <div className="w-full h-full relative flex items-start justify-center signage-preview-container bg-black pt-8 st-signage-root" ref={containerRef}>
-      {config.googleFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.googleFont.replace(/\s+/g, "+")}&display=swap`} />}
-      {config.designTokens?.headingFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.designTokens.headingFont.replace(/\s+/g, "+")}&display=swap`} />}
-      {config.designTokens?.subtitleFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.designTokens.subtitleFont.replace(/\s+/g, "+")}&display=swap`} />}
-      {config.designTokens?.bodyFont && <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${config.designTokens.bodyFont.replace(/\s+/g, "+")}&display=swap`} />}
+    <div className="w-full min-h-full relative flex items-start justify-center signage-preview-container bg-black pt-8 pb-32 st-signage-root" ref={containerRef}>
       {(customCss || animationCss) && <style dangerouslySetInnerHTML={{ __html: `${animationCss}\n${customCss}` }} />}
       {isPreviewing && config.aspectRatio !== "responsive" && config.scaleToFit !== false ? (
         <div className="w-[1920px] h-[1080px] shrink-0 origin-top transform-gpu shadow-2xl" style={{ transform: `scale(${scale})` }}>{previewContent}</div>
       ) : (
-        <div className="w-full h-full">{previewContent}</div>
+        <div className="w-full min-h-full flex-1 flex flex-col">{previewContent}</div>
       )}
     </div>
   );

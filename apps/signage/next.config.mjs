@@ -4,7 +4,7 @@ import { config } from "@soustools/config";
 const nextConfig = {
   transpilePackages: ["@soustools/ui"],
   async rewrites() {
-    const apiBaseUrl = config.API_BASE_URL || "http://localhost:6000";
+    const apiBaseUrl = (config.API_BASE_URL || "http://127.0.0.1:6001").replace('localhost', '127.0.0.1');
     return [
       {
         source: "/api/signage/:path*",

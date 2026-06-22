@@ -57,6 +57,8 @@ export interface BlockTypography {
 
 export interface VisualBlockStyles {
   typography?: BlockTypography;
+  subtitleTypography?: BlockTypography;
+  badgeTypography?: BlockTypography;
   background?: BlockBackground;
   border?: BlockBorder;
   shadow?: BlockShadow;

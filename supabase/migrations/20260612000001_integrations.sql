@@ -17,8 +17,10 @@ CREATE TABLE IF NOT EXISTS integrations (
 ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
 
 -- Integrations policies
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON integrations;
 CREATE POLICY "Enable read access for all organization members" ON integrations
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON integrations;
 CREATE POLICY "Enable write access for organization admins" ON integrations
   FOR ALL USING (true);

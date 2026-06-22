@@ -3,19 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { PosItem } from "@soustools/api-types";
 import { RotateCw, AlertTriangle } from "lucide-react";
-import { PosItemCard } from "./pos-item-card";
-import { MOCK_POS_ITEMS } from "./mock-data";
-import { StockPromptModal } from "./stock-prompt-modal";
-import { mapDbItemToPosItem, RawDbPosItem } from "../../app/display/[id]/helpers";
+import { PosItemCard } from "./PosItemCard";
+import { StockPromptModal } from "./StockPromptModal";
+import { MOCK_POS_ITEMS, mapDbItemToPosItem, RawDbPosItem } from "./helpers";
 
-/**
- * PosSimulator component provides an interactive panel to simulate POS menu item status changes.
- * It fetches the items and triggers socket updates when they are toggled.
- *
- * @tenant-docs-export
- * Use the POS Simulator panel to simulate live menu updates from Toast or Square.
- * Toggle items to 'SOLD OUT' to test immediate updates on your digital menu signage boards.
- */
 export const PosSimulator: React.FC = () => {
   const [items, setItems] = useState<PosItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -99,7 +90,7 @@ export const PosSimulator: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-slate-100 max-w-4xl mx-auto animate-fadeIn">
+    <div className="space-y-4 bg-slate-950 p-6 rounded-2xl border border-slate-800 text-slate-100 max-w-4xl mx-auto">
       <header className="flex justify-between items-center pb-3 border-b border-slate-800">
         <div>
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">

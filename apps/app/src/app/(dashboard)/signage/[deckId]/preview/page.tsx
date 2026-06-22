@@ -2,6 +2,7 @@ import React from "react";
 import { use } from "react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { config } from "@soustools/config";
 
 interface Params {
   deckId: string;
@@ -16,7 +17,7 @@ interface DeckData {
 
 async function fetchDeck(deckId: string): Promise<DeckData | null> {
   try {
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5001";
+    const base = config.APP_BASE_URL;
     const res = await fetch(`${base}/api/signage/layouts/${deckId}`, {
       cache: "no-store",
     });
@@ -27,7 +28,7 @@ async function fetchDeck(deckId: string): Promise<DeckData | null> {
   }
 }
 
-/** Full-page fallback shown when navigating directly to /tv/[deckId]/preview (not intercepted). */
+/** Full-page fallback shown when navigating directly to /signage/[deckId]/preview (not intercepted). */
 export default async function DeckPreviewPage({
   params,
 }: {
@@ -36,8 +37,7 @@ export default async function DeckPreviewPage({
   const { deckId } = await use(params);
   const deck = await fetchDeck(deckId);
 
-  const liveBase =
-    process.env.NEXT_PUBLIC_TV_URL ?? "http://localhost:5003";
+  const liveBase = config.TV_BASE_URL;
   const liveUrl = deck
     ? `${liveBase}/s/dtown-cafe/${deck.slug}`
     : null;
@@ -46,7 +46,7 @@ export default async function DeckPreviewPage({
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-500">
         <p>Deck not found.</p>
-        <Link href="/tv" className="mt-4 text-xs text-primary hover:underline">
+        <Link href="/signage" className="mt-4 text-xs text-primary hover:underline">
           ← Back to Decks
         </Link>
       </div>
@@ -64,13 +64,13 @@ export default async function DeckPreviewPage({
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/tv"
+            href="/signage"
             className="px-3 py-1.5 text-xs border border-white/10 hover:border-white/20 text-zinc-300 rounded-lg transition"
           >
             ← Decks
           </Link>
           <Link
-            href={`/tv/${deckId}`}
+            href={`/signage/${deckId}`}
             className="px-3 py-1.5 text-xs bg-primary hover:bg-primary/90 text-white rounded-lg transition font-semibold"
           >
             Open Editor
