@@ -4,16 +4,22 @@ import React, { useEffect, useState } from "react";
 import { IntegrationStatus } from "@soustools/api-types";
 import { IntegrationCard } from "./integration-card";
 import { Loader2 } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 export const IntegrationsPanel: React.FC = () => {
   const [integrations, setIntegrations] = useState<IntegrationStatus[]>([]);
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
-  const fetchStatus = async () => {
+  const fetchStatus = async (targetOrgId?: string) => {
     try {
-      const res = await fetch("/api/integrations/status");
+      const url = `/api/integrations/status${targetOrgId ? `?orgId=${encodeURIComponent(targetOrgId)}` : ""}`;
+      const res = await fetch(url);
       if (res.ok) {
         const payload = await res.json();
         if (payload.success) {
@@ -28,7 +34,23 @@ export const IntegrationsPanel: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchStatus();
+    const loadOrgAndStatus = async () => {
+      try {
+        const { data: orgData, error: orgErr } = await supabase
+          .from("organizations")
+          .select("id")
+          .limit(1)
+          .single();
+        const currentOrgId = orgData?.id || null;
+        setOrgId(currentOrgId);
+        await fetchStatus(currentOrgId || undefined);
+      } catch (err) {
+        console.error("Failed to load organization for integrations", err);
+        await fetchStatus();
+      }
+    };
+
+    loadOrgAndStatus();
 
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -36,7 +58,10 @@ export const IntegrationsPanel: React.FC = () => {
       const tab = params.get("tab");
       if (tab === "integrations" && status) {
         if (status === "success") {
-          setNotification({ type: "success", message: "Account connected successfully!" });
+          setNotification({
+            type: "success",
+            message: "Account connected successfully!",
+          });
         } else {
           const msg = params.get("message") || "Failed to connect integration.";
           setNotification({ type: "error", message: msg });
@@ -48,53 +73,98 @@ export const IntegrationsPanel: React.FC = () => {
   }, []);
 
   const handleConnect = (provider: string) => {
-    window.location.href = `/api/integrations/connect/${provider.toLowerCase()}`;
+    if (!orgId) {
+      setNotification({
+        type: "error",
+        message: "Organization not loaded yet. Please refresh the page.",
+      });
+      return;
+    }
+    window.location.href = `/api/integrations/connect/${provider.toLowerCase()}?orgId=${encodeURIComponent(orgId)}`;
   };
 
   const handleDisconnect = async (provider: string) => {
+    if (!orgId) {
+      setNotification({
+        type: "error",
+        message: "Organization not loaded yet. Please refresh the page.",
+      });
+      return;
+    }
     setActionLoading(true);
     setNotification(null);
     try {
-      const res = await fetch(`/api/integrations/disconnect/${provider.toLowerCase()}`, { method: "DELETE" });
+      const res = await fetch(
+        `/api/integrations/disconnect/${provider.toLowerCase()}?orgId=${encodeURIComponent(orgId)}`,
+        { method: "DELETE" },
+      );
       const payload = await res.json();
       if (payload.success) {
-        setNotification({ type: "success", message: `${provider} integration disconnected.` });
-        fetchStatus();
+        setNotification({
+          type: "success",
+          message: `${provider} integration disconnected.`,
+        });
+        fetchStatus(orgId);
       } else {
-        setNotification({ type: "error", message: payload.error || "Failed to disconnect." });
+        setNotification({
+          type: "error",
+          message: payload.error || "Failed to disconnect.",
+        });
       }
     } catch {
-      setNotification({ type: "error", message: "Network error during disconnection." });
+      setNotification({
+        type: "error",
+        message: "Network error during disconnection.",
+      });
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleSquareAction = async (action: "sync" | "seed") => {
+    if (!orgId) {
+      setNotification({
+        type: "error",
+        message: "Organization not loaded yet. Please refresh the page.",
+      });
+      return;
+    }
     setActionLoading(true);
     setNotification(null);
     try {
-      const res = await fetch(`/api/integrations/square/${action}`, { method: "POST" });
+      const res = await fetch(
+        `/api/integrations/square/${action}?orgId=${encodeURIComponent(orgId)}`,
+        { method: "POST" },
+      );
       const payload = await res.json();
       if (payload.success) {
         setNotification({
           type: "success",
-          message: action === "sync"
-            ? "Square menu catalog synchronized successfully!"
-            : "Square sandbox catalog seeded successfully!",
+          message:
+            action === "sync"
+              ? "Square menu catalog synchronized successfully!"
+              : "Square sandbox catalog seeded successfully!",
         });
       } else {
-        setNotification({ type: "error", message: payload.error || `Failed to ${action} catalog.` });
+        setNotification({
+          type: "error",
+          message: payload.error || `Failed to ${action} catalog.`,
+        });
       }
     } catch {
-      setNotification({ type: "error", message: "Network error during square operation." });
+      setNotification({
+        type: "error",
+        message: "Network error during square operation.",
+      });
     } finally {
       setActionLoading(false);
     }
   };
 
-  const isDev = typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const isDev =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
 
   if (loading) {
     return (
@@ -130,8 +200,16 @@ export const IntegrationsPanel: React.FC = () => {
               status={status}
               onConnect={() => handleConnect(provider)}
               onDisconnect={() => handleDisconnect(provider)}
-              onSync={provider === "SQUARE" ? () => handleSquareAction("sync") : undefined}
-              onSeed={provider === "SQUARE" ? () => handleSquareAction("seed") : undefined}
+              onSync={
+                provider === "SQUARE"
+                  ? () => handleSquareAction("sync")
+                  : undefined
+              }
+              onSeed={
+                provider === "SQUARE"
+                  ? () => handleSquareAction("seed")
+                  : undefined
+              }
               isDev={isDev}
               isActionLoading={actionLoading}
             />

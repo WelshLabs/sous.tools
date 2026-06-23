@@ -20,14 +20,9 @@ CREATE POLICY "Members can view own org memberships" ON org_members
   FOR SELECT USING (user_id = auth.uid());
 
 CREATE POLICY "Admins can manage org memberships" ON org_members
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM org_members om
-      WHERE om.organization_id = org_members.organization_id
-        AND om.user_id = auth.uid()
-        AND om.role = 'admin'
-    )
-  );
+  FOR ALL
+  USING (is_org_admin(organization_id))
+  WITH CHECK (is_org_admin(organization_id));
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON org_members TO authenticated;
 GRANT ALL ON org_members TO service_role;
@@ -38,7 +33,7 @@ CREATE OR REPLACE FUNCTION is_org_member(org_id UUID)
   LANGUAGE sql
   STABLE
   SECURITY DEFINER
-  SET search_path = public
+  SET search_path = public, row_security = off
 AS $$
   SELECT EXISTS (
     SELECT 1 FROM org_members
@@ -51,7 +46,7 @@ CREATE OR REPLACE FUNCTION is_org_admin(org_id UUID)
   LANGUAGE sql
   STABLE
   SECURITY DEFINER
-  SET search_path = public
+  SET search_path = public, row_security = off
 AS $$
   SELECT EXISTS (
     SELECT 1 FROM org_members
