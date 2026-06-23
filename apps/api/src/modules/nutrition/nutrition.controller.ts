@@ -1,39 +1,47 @@
-import { Controller, Get, Param, Query, Header, NotFoundException } from '@nestjs/common';
-import { NutritionService } from './nutrition.service';
-import { LabelRendererService } from './label-renderer.service';
-import { SupabaseService } from '@soustools/supabase';
-import { Recipe } from '@soustools/api-types';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Header,
+  NotFoundException,
+} from "@nestjs/common";
+import { NutritionService } from "./nutrition.service";
+import { LabelRendererService } from "./label-renderer.service";
+import { createServerClient } from "@soustools/supabase";
+// import { Recipe } from "@soustools/api-types";
 
-@Controller('recipes')
+@Controller("recipes")
 export class NutritionController {
   constructor(
     private readonly nutritionService: NutritionService,
     private readonly labelRenderer: LabelRendererService,
-    private readonly supabaseService: SupabaseService,
+    private readonly createServerClient: createServerClient,
   ) {}
 
-  @Get(':id/nutrition-label')
-  @Header('Content-Type', 'image/svg+xml')
+  @Get(":id/nutrition-label")
+  @Header("Content-Type", "image/svg+xml")
   async getNutritionLabel(
-    @Param('id') recipeId: string,
-    @Query('format') format: 'svg' | 'png' | 'pdf' = 'svg',
-    @Query('servings') servings?: string,
+    @Param("id") recipeId: string,
+    @Query("format") format: "svg" | "png" | "pdf" = "svg",
+    @Query("servings") servings?: string,
   ): Promise<string> {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.createServerClient();
 
     // Try to get from cache first
     let { data: cache } = await supabase
-      .from('recipe_nutrition_cache')
-      .select('*')
-      .eq('recipe_id', recipeId)
+      .from("recipe_nutrition_cache")
+      .select("*")
+      .eq("recipe_id", recipeId)
       .single();
 
     // If no cache, compute it on the fly
     if (!cache || !cache.computed_at) {
       // Get full recipe
       const { data: recipeData } = await supabase
-        .from('recipes')
-        .select(`
+        .from("recipes")
+        .select(
+          `
           *,
           recipe_ingredients(
             amount,
@@ -51,8 +59,9 @@ export class NutritionController {
               is_gluten_source
             )
           )
-        `)
-        .eq('id', recipeId)
+        `,
+        )
+        .eq("id", recipeId)
         .single();
 
       if (!recipeData) {
@@ -60,39 +69,42 @@ export class NutritionController {
       }
 
       // Compute nutrition
-      const computedCache = await this.nutritionService.aggregateRecipeNutrition(recipeData as any);
-      
+      const computedCache =
+        await this.nutritionService.aggregateRecipeNutrition(recipeData as any);
+
       // Save cache asynchronously (don't block response)
-      supabase.from('recipe_nutrition_cache').upsert(computedCache as any).then();
-      
+      supabase
+        .from("recipe_nutrition_cache")
+        .upsert(computedCache as any)
+        .then();
+
       cache = computedCache as any;
     }
 
-    if (format === 'svg') {
+    if (format === "svg") {
       return this.labelRenderer.renderSvg(cache as any);
     } else {
       throw new Error(`Format ${format} not supported yet in renderer`);
     }
   }
 
-  @Get(':id/nutrition')
-  async getNutrition(
-    @Param('id') recipeId: string,
-  ): Promise<any> {
+  @Get(":id/nutrition")
+  async getNutrition(@Param("id") recipeId: string): Promise<any> {
     const supabase = this.supabaseService.getClient();
 
     // Try to get from cache first
     let { data: cache } = await supabase
-      .from('recipe_nutrition_cache')
-      .select('*')
-      .eq('recipe_id', recipeId)
+      .from("recipe_nutrition_cache")
+      .select("*")
+      .eq("recipe_id", recipeId)
       .single();
 
     // If no cache, compute it on the fly
     if (!cache || !cache.computed_at) {
       const { data: recipeData } = await supabase
-        .from('recipes')
-        .select(`
+        .from("recipes")
+        .select(
+          `
           *,
           recipe_ingredients(
             amount,
@@ -110,17 +122,22 @@ export class NutritionController {
               is_gluten_source
             )
           )
-        `)
-        .eq('id', recipeId)
+        `,
+        )
+        .eq("id", recipeId)
         .single();
 
       if (!recipeData) {
         throw new NotFoundException(`Recipe ${recipeId} not found`);
       }
 
-      const computedCache = await this.nutritionService.aggregateRecipeNutrition(recipeData as any);
-      supabase.from('recipe_nutrition_cache').upsert(computedCache as any).then();
-      
+      const computedCache =
+        await this.nutritionService.aggregateRecipeNutrition(recipeData as any);
+      supabase
+        .from("recipe_nutrition_cache")
+        .upsert(computedCache as any)
+        .then();
+
       cache = computedCache as any;
     }
 
@@ -131,12 +148,13 @@ export class NutritionController {
       data: {
         recipeId: cache.recipe_id || cache.recipeId,
         servings: Number(cache.servings),
-        perServingNutrition: cache.per_serving_nutrition || cache.perServingNutrition,
+        perServingNutrition:
+          cache.per_serving_nutrition || cache.perServingNutrition,
         per100gNutrition: cache.per_100g_nutrition || cache.per100gNutrition,
         dietaryFlags: cache.dietary_flags || cache.dietaryFlags,
         computedAt: cache.computed_at || cache.computedAt,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

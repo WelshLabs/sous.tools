@@ -22,11 +22,14 @@ import { HealthModule } from "./health/health.module";
   imports: [
     BullModule.forRoot({
       connection: {
-        host: config.REDIS_HOST === 'localhost' ? '127.0.0.1' : config.REDIS_HOST,
+        host:
+          config.REDIS_HOST === "localhost" ? "127.0.0.1" : config.REDIS_HOST,
         port: config.REDIS_PORT,
         family: 4,
         retryStrategy: (times: number) => {
-          console.warn(`[Redis] Connection failed (attempt ${times}). Retrying gracefully...`);
+          console.warn(
+            `[Redis] Connection failed (attempt ${times}). Retrying gracefully...`,
+          );
           return Math.min(times * 100, 3000);
         },
       },
@@ -38,6 +41,7 @@ import { HealthModule } from "./health/health.module";
     IntegrationsModule,
     RecipeModule,
     IngestionModule,
+    NutritionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
