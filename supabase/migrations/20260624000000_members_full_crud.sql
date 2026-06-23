@@ -218,42 +218,14 @@ CREATE POLICY "org_members_full_crud_recipe_tag_assignments" ON recipe_tag_assig
     )
   );
 
--- 2) auth.users special policy: users may manage their own row; org admins may manage any user in their organization
--- Note: this relies on `org_members` linking users -> organizations.
-ALTER TABLE auth.users ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "users_self_or_org_admin" ON auth.users;
-CREATE POLICY "users_self_or_org_admin" ON auth.users
-  FOR ALL
-  USING (
-    id = auth.uid()
-    OR EXISTS (
-      SELECT 1 FROM org_members target
-      WHERE target.user_id = auth.users.id
-        AND EXISTS (
-          SELECT 1 FROM org_members caller
-          WHERE caller.user_id = auth.uid()
-            AND caller.organization_id = target.organization_id
-            AND caller.role = 'admin'
-        )
-    )
-  )
-  WITH CHECK (
-    id = auth.uid()
-    OR EXISTS (
-      SELECT 1 FROM org_members target
-      WHERE target.user_id = auth.users.id
-        AND EXISTS (
-          SELECT 1 FROM org_members caller
-          WHERE caller.user_id = auth.uid()
-            AND caller.organization_id = target.organization_id
-            AND caller.role = 'admin'
-        )
-    )
-  );
+-- NOTE: auth.users RLS must be configured via Supabase dashboard or API, not in migrations,
+-- as it is a protected system table. The user_profiles table (created in separate migration)
+-- provides the user settings extension with proper RLS policies.
 
--- 3) Seed: ensure `conar@dtown.cafe` is an admin of the seeded organization
+-- Seed: ensure `conar@dtown.cafe` is an admin of the seeded organization
 INSERT INTO org_members (organization_id, user_id, role)
 VALUES ('d0000000-0000-0000-0000-000000000000', 'd0000000-0000-0000-0000-000000000000', 'admin')
 ON CONFLICT (organization_id, user_id) DO UPDATE SET role = 'admin';
 
 -- End of migration
+

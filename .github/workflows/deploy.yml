@@ -78,6 +78,8 @@ jobs:
   pi-image-build:
     name: Build & Release Pi OS Image
     runs-on: ubuntu-latest
+    env:
+      DEBIAN_FRONTEND: noninteractive
     needs: docker-build
     steps:
       - name: Checkout Code
@@ -114,10 +116,16 @@ jobs:
 
       - name: Install sdm dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-user-static binfmt-support systemd-container xz-utils
-          sudo apt-get clean
+          # Use alternate apt cache location to avoid filling /var/cache/apt/archives
+          sudo apt-get -o Dir::Cache::archives=/tmp/apt-archives update
+          sudo apt-get -o Dir::Cache::archives=/tmp/apt-archives install -y qemu-user-static binfmt-support systemd-container xz-utils
+          sudo apt-get -o Dir::Cache::archives=/tmp/apt-archives clean
           sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Prepare apt cache dir
+        run: |
+          sudo mkdir -p /tmp/apt-archives
+          sudo chmod 1777 /tmp/apt-archives
 
       - name: Run build-signage-image.sh
         env:

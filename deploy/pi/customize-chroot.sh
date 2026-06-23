@@ -12,10 +12,15 @@ set -e
 
 echo "=== Customizing OS Image Chroot ==="
 
+# Non-interactive apt and alternate cache to avoid filling /var/cache
+export DEBIAN_FRONTEND=noninteractive
+mkdir -p /tmp/apt-archives
+chmod 1777 /tmp/apt-archives
+
 # 1. Install Node.js, Docker, Labwc, and Chromium
 echo "Installing base packages..."
-apt-get update
-apt-get install -y labwc chromium-browser docker.io curl git nodejs npm
+apt-get -o Dir::Cache::archives=/tmp/apt-archives update
+apt-get -o Dir::Cache::archives=/tmp/apt-archives install -y --no-install-recommends labwc chromium-browser docker.io curl git nodejs npm
 
 # Aggressive cleanup to free disk space immediately
 echo "Cleaning up package cache..."
