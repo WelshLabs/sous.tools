@@ -8,7 +8,7 @@ import {
   Param,
 } from "@nestjs/common";
 import { RecipesService } from "./recipes.service";
-import { ApiResponse, Recipe } from "@soustools/api-types";
+import { ApiResponse, Recipe, RecipeIngredient } from "@soustools/api-types";
 
 @Controller("recipes")
 export class RecipesController {
@@ -47,7 +47,7 @@ export class RecipesController {
   @Post()
   async create(
     @Body("recipe") recipe: Omit<Recipe, "id" | "organizationId" | "createdAt" | "recipeIngredients" | "vessel">,
-    @Body("recipeIngredients") recipeIngredients: any[]
+    @Body("recipeIngredients") recipeIngredients: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
   ): Promise<ApiResponse<Recipe>> {
     try {
       const data = await this.recipesService.create(this.defaultOrgId, recipe, recipeIngredients);
@@ -65,7 +65,7 @@ export class RecipesController {
   async update(
     @Param("id") id: string,
     @Body("recipe") recipe: Partial<Recipe>,
-    @Body("recipeIngredients") recipeIngredients?: any[]
+    @Body("recipeIngredients") recipeIngredients?: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
   ): Promise<ApiResponse<Recipe>> {
     try {
       const data = await this.recipesService.update(id, recipe, recipeIngredients);

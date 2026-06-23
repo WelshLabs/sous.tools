@@ -1,18 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { Recipe } from "@soustools/api-types";
+import { Recipe, RecipeIngredient } from "@soustools/api-types";
+import { mapRecipeRow } from "./recipes.mapper";
 
+/**
+ * RecipesService manages recipe queries and CRUD operations.
+ * @tenant-docs-export
+ */
 @Injectable()
 export class RecipesService {
   async findAll(orgId: string): Promise<Recipe[]> {
     const { data, error } = await supabase
       .from("recipes")
-      .select("*, vessel:vessel_profiles(*)")
+      .select("*, vessel:vessel_profiles(*), recipe_tag_assignments(tag_id)")
       .eq("organization_id", orgId)
       .order("title", { ascending: true });
 
     if (error) throw new Error(error.message);
-    return (data || []).map((row) => this.mapRecipeRow(row));
+    return (data || []).map((row) => mapRecipeRow(row as Record<string, unknown>));
   }
 
   async findOne(id: string): Promise<Recipe> {
@@ -24,19 +29,20 @@ export class RecipesService {
         recipe_ingredients (
           *,
           master_ingredients (*)
-        )
+        ),
+        recipe_tag_assignments(tag_id)
       `)
       .eq("id", id)
       .single();
 
     if (error) throw new Error(error.message);
-    return this.mapRecipeRow(data);
+    return mapRecipeRow(data as Record<string, unknown>);
   }
 
   async create(
     orgId: string,
     recipePayload: Omit<Recipe, "id" | "organizationId" | "createdAt" | "recipeIngredients" | "vessel">,
-    ingredientsPayload: any[]
+    ingredientsPayload: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
   ): Promise<Recipe> {
     const { data: recipe, error: recipeError } = await supabase
       .from("recipes")
@@ -48,6 +54,12 @@ export class RecipesService {
           yield_unit: recipePayload.yieldUnit,
           vessel_id: recipePayload.vesselId,
           instructions: recipePayload.instructions,
+          category_id: recipePayload.categoryId,
+          status: recipePayload.status || "PENDING_REVIEW",
+          source_book: recipePayload.sourceBook,
+          source_author: recipePayload.sourceAuthor,
+          source_page_start: recipePayload.sourcePageStart,
+          source_page_end: recipePayload.sourcePageEnd,
         },
       ])
       .select()
@@ -71,7 +83,6 @@ export class RecipesService {
         .insert(dbIngredients);
 
       if (ingError) {
-        // Cleanup created recipe to mimic transactional rollback
         await supabase.from("recipes").delete().eq("id", recipe.id);
         throw new Error(ingError.message);
       }
@@ -83,14 +94,20 @@ export class RecipesService {
   async update(
     id: string,
     recipePayload: Partial<Recipe>,
-    ingredientsPayload?: any[]
+    ingredientsPayload?: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
   ): Promise<Recipe> {
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (recipePayload.title !== undefined) updateData.title = recipePayload.title;
     if (recipePayload.yieldCount !== undefined) updateData.yield_count = recipePayload.yieldCount;
     if (recipePayload.yieldUnit !== undefined) updateData.yield_unit = recipePayload.yieldUnit;
     if (recipePayload.vesselId !== undefined) updateData.vessel_id = recipePayload.vesselId;
     if (recipePayload.instructions !== undefined) updateData.instructions = recipePayload.instructions;
+    if (recipePayload.categoryId !== undefined) updateData.category_id = recipePayload.categoryId;
+    if (recipePayload.status !== undefined) updateData.status = recipePayload.status;
+    if (recipePayload.sourceBook !== undefined) updateData.source_book = recipePayload.sourceBook;
+    if (recipePayload.sourceAuthor !== undefined) updateData.source_author = recipePayload.sourceAuthor;
+    if (recipePayload.sourcePageStart !== undefined) updateData.source_page_start = recipePayload.sourcePageStart;
+    if (recipePayload.sourcePageEnd !== undefined) updateData.source_page_end = recipePayload.sourcePageEnd;
 
     const { error: recipeError } = await supabase
       .from("recipes")
@@ -100,7 +117,6 @@ export class RecipesService {
     if (recipeError) throw new Error(recipeError.message);
 
     if (ingredientsPayload !== undefined) {
-      // Clear old ingredients
       const { error: clearError } = await supabase
         .from("recipe_ingredients")
         .delete()
@@ -108,7 +124,6 @@ export class RecipesService {
 
       if (clearError) throw new Error(clearError.message);
 
-      // Re-insert new ones
       if (ingredientsPayload.length > 0) {
         const dbIngredients = ingredientsPayload.map((ing) => ({
           recipe_id: id,
@@ -140,51 +155,5 @@ export class RecipesService {
 
     if (error) throw new Error(error.message);
     return recipe;
-  }
-
-  private mapRecipeRow(row: any): Recipe {
-    return {
-      id: row.id,
-      organizationId: row.organization_id,
-      title: row.title,
-      yieldCount: Number(row.yield_count),
-      yieldUnit: row.yield_unit,
-      vesselId: row.vessel_id,
-      instructions: row.instructions || [],
-      createdAt: row.created_at,
-      vessel: row.vessel ? {
-        id: row.vessel.id,
-        organizationId: row.vessel.organization_id,
-        name: row.vessel.name,
-        shape: row.vessel.shape,
-        length: row.vessel.length !== null ? Number(row.vessel.length) : null,
-        width: row.vessel.width !== null ? Number(row.vessel.width) : null,
-        height: row.vessel.height !== null ? Number(row.vessel.height) : null,
-        diameter: row.vessel.diameter !== null ? Number(row.vessel.diameter) : null,
-        volumeMl: Number(row.vessel.volume_ml),
-        createdAt: row.vessel.created_at,
-      } : undefined,
-      recipeIngredients: row.recipe_ingredients ? row.recipe_ingredients.map((ri: any) => ({
-        id: ri.id,
-        recipeId: ri.recipe_id,
-        masterIngredientId: ri.master_ingredient_id,
-        calculationType: ri.calculation_type,
-        baseCalculationGroup: ri.base_calculation_group,
-        amount: Number(ri.amount),
-        unit: ri.unit,
-        prepNotes: ri.prep_notes,
-        createdAt: ri.created_at,
-        masterIngredient: ri.master_ingredients ? {
-          id: ri.master_ingredients.id,
-          organizationId: ri.master_ingredients.organization_id,
-          name: ri.master_ingredients.name,
-          densityGMl: Number(ri.master_ingredients.density_g_ml),
-          nutritionMacros: ri.master_ingredients.nutrition_macros,
-          allergens: ri.master_ingredients.allergens,
-          createdAt: ri.master_ingredients.created_at,
-          updatedAt: ri.master_ingredients.updated_at,
-        } : undefined,
-      })) : [],
-    };
   }
 }

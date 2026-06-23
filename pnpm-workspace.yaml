@@ -2,8 +2,12 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
+  '@apollo/protobufjs': set this to true or false
+  '@datadog/pprof': set this to true or false
   '@google/genai': true
   '@nestjs/core': true
+  '@newrelic/fn-inspect': set this to true or false
+  '@newrelic/native-metrics': set this to true or false
   esbuild: true
   msgpackr-extract: true
   protobufjs: true

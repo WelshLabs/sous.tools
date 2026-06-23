@@ -65,12 +65,6 @@ CREATE POLICY "Enable read access for all organization members" ON purchase_orde
 DROP POLICY IF EXISTS "Enable write access for organization admins" ON purchase_order_items;
 CREATE POLICY "Enable write access for organization admins" ON purchase_order_items FOR ALL USING (true);
 
--- Seed Sample Vendors
-INSERT INTO vendors (id, organization_id, name, order_method, email, phone)
-VALUES
-  ('c0000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000000', 'US Foods', 'EMAIL', 'orders@usfoods.com', NULL),
-  ('c0000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000000', 'Local Produce Market', 'MANUAL', NULL, '555-0123')
-ON CONFLICT (id) DO NOTHING;
 
 -- Grant permissions to Supabase roles
 GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;

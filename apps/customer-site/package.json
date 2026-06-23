@@ -11,9 +11,12 @@
   "dependencies": {
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
+    "@soustools/logger": "workspace:*",
     "@soustools/supabase": "workspace:*",
     "@soustools/ui": "workspace:*",
     "@supabase/supabase-js": "^2.43.0",
+    "@vercel/analytics": "^1.2.2",
+    "@vercel/speed-insights": "^1.0.10",
     "next": "^16.0.0-canary.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -1,22 +1,18 @@
 #!/usr/bin/env node
 /**
  * sync-watchtower.js
- * Synchronizes the Watchtower container cron schedule with the device settings in Supabase.
- * Reads device ID from /etc/sous-device-id, queries Supabase, applies random jitter, and restarts Watchtower.
+ * Syncs Watchtower cron container and local user crontab for TV power scripts with Supabase settings.
  */
 
 const fs = require('fs');
-const path = require('path');
 const { execSync } = require('child_process');
 
-// 1. Load Secrets from Environment or File
 let SUPABASE_URL = process.env.SUPABASE_URL;
 let SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 const ENV_FILE = '/etc/sous-secrets.env';
 if (fs.existsSync(ENV_FILE)) {
-  const envContent = fs.readFileSync(ENV_FILE, 'utf8');
-  envContent.split('\n').forEach(line => {
+  fs.readFileSync(ENV_FILE, 'utf8').split('\n').forEach(line => {
     const parts = line.split('=');
     if (parts.length >= 2) {
       const key = parts[0].trim();
@@ -32,102 +28,69 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   process.exit(1);
 }
 
-// 2. Read Device ID
 const DEVICE_ID_FILE = '/etc/sous-device-id';
-let deviceId = null;
-
-try {
-  if (fs.existsSync(DEVICE_ID_FILE)) {
-    deviceId = fs.readFileSync(DEVICE_ID_FILE, 'utf8').trim();
-  } else {
-    // If it doesn't exist, try reading a local placeholder
-    deviceId = 'd0000000-0000-0000-0000-000000000010'; // Default test device ID
-    console.warn(`[Sync] Warning: ${DEVICE_ID_FILE} not found. Defaulting to: ${deviceId}`);
-  }
-} catch (err) {
-  console.error(`[Sync] Error reading device ID:`, err);
-  process.exit(1);
+let deviceId = 'd0000000-0000-0000-0000-000000000010';
+if (fs.existsSync(DEVICE_ID_FILE)) {
+  deviceId = fs.readFileSync(DEVICE_ID_FILE, 'utf8').trim();
 }
 
 let lastCron = null;
 let lastTimezone = null;
+let lastOperatingHours = null;
 
-// 3. Fetch Settings and Sync
 async function checkAndSync() {
   try {
     console.log(`[Sync] Fetching settings for device ${deviceId}...`);
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/signage_devices?id=eq.${deviceId}&select=timezone,maintenance_window`, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      }
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/signage_devices?id=eq.${deviceId}&select=timezone,maintenance_window,operating_hours`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
     });
 
-    if (!res.ok) {
-      throw new Error(`HTTP error ${res.status}: ${await res.text()}`);
-    }
-
+    if (!res.ok) throw new Error(`HTTP error ${res.status}: ${await res.text()}`);
     const data = await res.json();
-    if (!data || data.length === 0) {
-      console.warn(`[Sync] No device settings found for ID: ${deviceId}`);
-      return;
-    }
+    if (!data || data.length === 0) return;
 
     const device = data[0];
     const timezone = device.timezone || 'UTC';
     const mw = device.maintenance_window || {};
+    const oh = device.operating_hours || { sleep_hour: 22, sleep_minute: 0, wake_hour: 6, wake_minute: 0 };
     
     const baseHour = mw.hour !== undefined ? mw.hour : 2;
     const baseMinute = mw.minute !== undefined ? mw.minute : 0;
-    const dayOfWeek = (mw.day_of_week !== undefined && mw.day_of_week !== null && mw.day_of_week !== '*') 
-      ? mw.day_of_week 
-      : '*';
+    const dayOfWeek = (mw.day_of_week !== undefined && mw.day_of_week !== null && mw.day_of_week !== '*') ? mw.day_of_week : '*';
 
-    // Apply random 0-30 min jitter
     const jitter = Math.floor(Math.random() * 31);
     const totalMinutes = baseMinute + jitter;
     const scheduledMinute = totalMinutes % 60;
     const scheduledHour = (baseHour + Math.floor(totalMinutes / 60)) % 24;
-    const scheduledSecond = 0;
+    const cronSchedule = `0 ${scheduledMinute} ${scheduledHour} * * ${dayOfWeek}`;
 
-    // Watchtower cron format: Second Minute Hour DayOfMonth Month DayOfWeek
-    const cronSchedule = `${scheduledSecond} ${scheduledMinute} ${scheduledHour} * * ${dayOfWeek}`;
+    let updated = false;
 
-    if (cronSchedule === lastCron && timezone === lastTimezone) {
-      console.log(`[Sync] Settings unchanged (Cron: "${cronSchedule}", TZ: "${timezone}"). Skipping update.`);
-      return;
+    if (cronSchedule !== lastCron || timezone !== lastTimezone) {
+      console.log(`[Sync] Updating Watchtower: Cron="${cronSchedule}", TZ="${timezone}"`);
+      try { execSync('docker rm -f watchtower', { stdio: 'ignore' }); } catch (_) {}
+      execSync(`docker run -d --name watchtower --restart always -v /var/run/docker.sock:/var/run/docker.sock -e TZ="${timezone}" containrrr/watchtower --cleanup --schedule "${cronSchedule}"`);
+      lastCron = cronSchedule;
+      lastTimezone = timezone;
+      updated = true;
     }
 
-    console.log(`[Sync] Updating Watchtower: Cron="${cronSchedule}", Timezone="${timezone}" (Jitter added: +${jitter}m)`);
-    
-    // Stop and remove existing Watchtower
-    try {
-      execSync('docker rm -f watchtower', { stdio: 'ignore' });
-    } catch (_) {}
+    const ohString = JSON.stringify(oh);
+    if (ohString !== lastOperatingHours) {
+      console.log(`[Sync] Updating crontab: Sleep ${oh.sleep_hour}:${oh.sleep_minute}, Wake ${oh.wake_hour}:${oh.wake_minute}`);
+      const cronContent = `# Generated\n${oh.wake_minute} ${oh.wake_hour} * * * /home/soustools/signage/tv-wake.sh >> /home/soustools/signage/tv-power.log 2>&1\n${oh.sleep_minute} ${oh.sleep_hour} * * * /home/soustools/signage/tv-sleep.sh >> /home/soustools/signage/tv-power.log 2>&1\n`;
+      fs.writeFileSync('/tmp/soustools-cron', cronContent);
+      execSync('crontab -u soustools /tmp/soustools-cron');
+      fs.unlinkSync('/tmp/soustools-cron');
+      lastOperatingHours = ohString;
+      updated = true;
+    }
 
-    // Run new Watchtower container
-    const dockerCmd = `docker run -d \\
-      --name watchtower \\
-      --restart always \\
-      -v /var/run/docker.sock:/var/run/docker.sock \\
-      -e TZ="${timezone}" \\
-      containrrr/watchtower \\
-      --cleanup \\
-      --schedule "${cronSchedule}"`;
-
-    execSync(dockerCmd);
-    console.log(`[Sync] Watchtower container successfully configured and started.`);
-
-    lastCron = cronSchedule;
-    lastTimezone = timezone;
-
+    if (!updated) console.log('[Sync] Settings unchanged.');
   } catch (err) {
-    console.error(`[Sync] Synchronization failed:`, err);
+    console.error(`[Sync] Sync failed:`, err);
   }
 }
 
-// Initial Sync
 checkAndSync();
-
-// Poll every 10 minutes
 setInterval(checkAndSync, 10 * 60 * 1000);

@@ -8,6 +8,10 @@ import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module
 import { IntegrationsModule } from "./modules/integrations/integrations.module";
 import { RecipeModule } from "./modules/recipe/recipe.module";
 import { IngestionModule } from "./modules/ingestion/ingestion.module";
+import { NutritionModule } from "./modules/nutrition/nutrition.module";
+
+import { AppGraphQLModule } from "./graphql/graphql.module";
+import { HealthModule } from "./health/health.module";
 
 /**
  * Root module of the NestJS application.
@@ -27,6 +31,8 @@ import { IngestionModule } from "./modules/ingestion/ingestion.module";
         },
       },
     }),
+    AppGraphQLModule,
+    HealthModule,
     SignageModule,
     PosSimulatorModule,
     IntegrationsModule,

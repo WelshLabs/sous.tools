@@ -1,6 +1,12 @@
+import 'newrelic';
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { config } from "@soustools/config";
+import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
+import { logger, patchConsole } from "@soustools/logger";
+
+patchConsole();
+
 
 /**
  * Boots the NestJS application.
@@ -13,15 +19,18 @@ import { config } from "@soustools/config";
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
+  // Use global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+
   // Enable CORS for frontend integration
   app.enableCors();
 
   const port = config.PORT;
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+  logger.info(`Application is running on: http://localhost:${port}`);
 }
 
 bootstrap().catch((err: unknown) => {
-  console.error("Failed to start the application:", err);
+  logger.error(err, "Failed to start the application");
   process.exit(1);
 });

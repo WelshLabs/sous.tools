@@ -83,12 +83,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Free disk space
+        run: |
+          sudo docker image prune --all --force || true
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/powershell /usr/share/swift /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
       - name: Install sdm dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-user-static binfmt-support systemd-container xz-utils
 
       - name: Run build-signage-image.sh
+        env:
+          INFISICAL_PI_CLIENT_SECRET: ${{ secrets.INFISICAL_PI_CLIENT_SECRET }}
         run: |
           chmod +x deploy/pi/build-signage-image.sh
           chmod +x deploy/pi/customize-chroot.sh

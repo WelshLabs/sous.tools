@@ -37,6 +37,7 @@ export const secrets = {
   GOOGLE_CLIENT_ID: "google-client-id-placeholder",
   GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
   PORT: 6001,
+  NEW_RELIC_LICENSE_KEY: "new-relic-license-key-placeholder",
 };
 `;
     fs.writeFileSync(SECRETS_FILE_PATH, tsContent, "utf8");
@@ -107,6 +108,9 @@ export const secrets = {
     const port = secretsArray.find(
       (s: any) => s.secretKey === "PORT",
     )?.secretValue || "6001";
+    const newRelicLicenseKey = secretsArray.find(
+      (s: any) => s.secretKey === "NEW_RELIC_LICENSE_KEY",
+    )?.secretValue || "new-relic-license-key-placeholder";
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error(
@@ -126,6 +130,7 @@ export const secrets = {
   APP_BASE_URL: ${JSON.stringify(appBaseUrl)},
   PRODUCTION_SQUARE_ACCESS_TOKEN: ${JSON.stringify(productionSquareAccessToken)},
   PORT: ${Number(port)},
+  NEW_RELIC_LICENSE_KEY: ${JSON.stringify(newRelicLicenseKey)},
 };
 `;
 

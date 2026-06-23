@@ -54,7 +54,16 @@ ALTER TABLE signage_displays
   ADD COLUMN IF NOT EXISTS deck_id UUID REFERENCES signage_decks(id) ON DELETE SET NULL;
 
 -- Migrate existing layout_id → deck_id
-UPDATE signage_displays SET deck_id = layout_id WHERE layout_id IS NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 
+    FROM information_schema.columns 
+    WHERE table_name = 'signage_displays' AND column_name = 'layout_id'
+  ) THEN
+    EXECUTE 'UPDATE signage_displays SET deck_id = layout_id WHERE layout_id IS NOT NULL';
+  END IF;
+END $$;
 
 -- Drop old columns (after data migration)
 ALTER TABLE signage_displays

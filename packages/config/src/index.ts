@@ -19,6 +19,7 @@ export interface Config {
   readonly GEMINI_API_KEY: string;
   readonly IS_DEVELOPMENT: boolean;
   readonly TV_BASE_URL: string;
+  readonly NEW_RELIC_LICENSE_KEY: string;
 }
 
 /**
@@ -86,4 +87,7 @@ export const config: Config = Object.freeze({
   TV_BASE_URL: isMockEnv
     ? "http://localhost:5003"
     : (process.env.NEXT_PUBLIC_TV_URL || (sec.NEXT_PUBLIC_TV_URL as string) || "http://localhost:5003"),
+  NEW_RELIC_LICENSE_KEY: isMockEnv
+    ? "new-relic-license-key-placeholder"
+    : (process.env.NEW_RELIC_LICENSE_KEY || (sec.NEW_RELIC_LICENSE_KEY as string) || "new-relic-license-key-placeholder"),
 });

@@ -16,6 +16,8 @@ echo "=== Customizing OS Image Chroot ==="
 echo "Installing base packages..."
 apt-get update
 apt-get install -y labwc chromium-browser docker.io curl git nodejs npm
+apt-get clean
+rm -rf /var/lib/apt/lists/*
 
 # 2. Add soustools user to the docker group
 echo "Configuring user permissions..."
@@ -34,8 +36,12 @@ cp /tmp/labwc-rc.xml /home/soustools/.config/labwc/rc.xml
 cp /tmp/kiosk.sh /home/soustools/signage/kiosk.sh
 cp /tmp/sync-watchtower.js /home/soustools/signage/sync/sync-watchtower.js
 cp /tmp/fetch-secrets.js /home/soustools/signage/secrets/fetch-secrets.js
+cp /tmp/tv-sleep.sh /home/soustools/signage/tv-sleep.sh
+cp /tmp/tv-wake.sh /home/soustools/signage/tv-wake.sh
 
 chmod +x /home/soustools/signage/kiosk.sh
+chmod +x /home/soustools/signage/tv-sleep.sh
+chmod +x /home/soustools/signage/tv-wake.sh
 chown -R soustools:soustools /home/soustools/.config
 chown -R soustools:soustools /home/soustools/signage
 

@@ -148,3 +148,9 @@ INSERT INTO pos_item_modifier_groups (pos_item_id, modifier_group_id) VALUES
 ('f0000000-0000-0000-0000-000000000200', 'e0000000-0000-0000-0000-000000000013')
 ON CONFLICT DO NOTHING;
 
+-- Seed Sample Vendors
+INSERT INTO vendors (id, organization_id, name, order_method, email, phone)
+VALUES
+  ('c0000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000000', 'US Foods', 'EMAIL', 'orders@usfoods.com', NULL),
+  ('c0000000-0000-0000-0000-000000000005', 'd0000000-0000-0000-0000-000000000000', 'Local Produce Market', 'MANUAL', NULL, '555-0123')
+ON CONFLICT (id) DO NOTHING;

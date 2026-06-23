@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { Recipe, VesselProfile } from "@soustools/api-types";
-import { Button } from "@soustools/ui";
-
+import { Button, calculateRecipeScale } from "@soustools/ui";
 import { ArrowLeft, Play, Info, Scale } from "lucide-react";
 import Link from "next/link";
 import { RecipeScalingPanel } from "./recipe-scaling-panel";
-import { calculateRecipeScale } from "@soustools/ui";
+import { RecipeNutritionPanel } from "./recipe-nutrition-panel";
 
 interface RecipeViewerProps {
   recipeId: string;
@@ -131,6 +130,7 @@ export const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipeId }) => {
 
       <div className="space-y-6">
         <RecipeScalingPanel recipe={recipe} vessels={vessels} onScaleChange={handleScaleChange} currentMultiplier={finalMultiplier} />
+        <RecipeNutritionPanel recipeId={recipeId} />
 
         <div className="p-4 rounded-2xl bg-zinc-900 border border-white/5 space-y-4 shadow-xl">
           <h3 className="text-sm font-bold text-slate-300 flex items-center gap-1">
