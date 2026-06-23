@@ -16,7 +16,6 @@ export class NutritionController {
   constructor(
     private readonly nutritionService: NutritionService,
     private readonly labelRenderer: LabelRendererService,
-    // private readonly createServerClient: any,
   ) {}
 
   @Get(":id/nutrition-label")

@@ -16,8 +16,18 @@ echo "=== Customizing OS Image Chroot ==="
 echo "Installing base packages..."
 apt-get update
 apt-get install -y labwc chromium-browser docker.io curl git nodejs npm
+
+# Aggressive cleanup to free disk space immediately
+echo "Cleaning up package cache..."
 apt-get clean
+apt-get autoclean
+apt-get autoremove -y
 rm -rf /var/lib/apt/lists/*
+rm -rf /var/cache/apt/archives/*
+rm -rf /tmp/*
+
+echo "Disk space after cleanup:"
+df -h
 
 # 2. Add soustools user to the docker group
 echo "Configuring user permissions..."
