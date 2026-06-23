@@ -32,7 +32,7 @@ jobs:
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: 'sous-tools-1cd-a'
+          project-slug: "sous-tools-1cd-a"
           env-slug: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
 
       - name: Run Supabase Migrations
@@ -87,7 +87,7 @@ jobs:
         run: |
           echo "Disk space before cleanup:"
           df -h
-          
+
           # Remove unnecessary software
           sudo rm -rf /usr/share/dotnet || true
           sudo rm -rf /usr/local/lib/android || true
@@ -96,19 +96,19 @@ jobs:
           sudo rm -rf /usr/share/swift || true
           sudo rm -rf /usr/local/share/boost || true
           sudo rm -rf "$AGENT_TOOLSDIRECTORY" || true
-          
+
           # Remove large package caches
           sudo apt-get clean || true
           sudo apt-get autoclean || true
           sudo rm -rf /var/lib/apt/lists/* || true
           sudo rm -rf /var/cache/apt/archives/* || true
-          
+
           # Remove Docker images
           sudo docker image prune --all --force || true
-          
+
           # Remove snapd data
           sudo rm -rf /var/lib/snapd || true
-          
+
           echo "Disk space after cleanup:"
           df -h
 
