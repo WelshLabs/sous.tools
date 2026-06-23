@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { NutritionService } from "./nutrition.service";
 import { LabelRendererService } from "./label-renderer.service";
-import { createServerClient } from "@soustools/supabase";
+import { createAdminClient } from "@soustools/supabase";
 // import { Recipe } from "@soustools/api-types";
 
 @Controller("recipes")
@@ -26,7 +26,7 @@ export class NutritionController {
     @Query("format") format: "svg" | "png" | "pdf" = "svg",
     // @Query("servings") servings?: string,
   ): Promise<string> {
-    const supabase = createServerClient();
+    const supabase = createAdminClient();
 
     // Try to get from cache first
     let { data: cache } = await supabase
@@ -90,7 +90,7 @@ export class NutritionController {
 
   @Get(":id/nutrition")
   async getNutrition(@Param("id") recipeId: string): Promise<any> {
-    const supabase = createServerClient();
+    const supabase = createAdminClient();
 
     // Try to get from cache first
     let { data: cache } = await supabase
