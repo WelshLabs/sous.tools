@@ -16,7 +16,7 @@ export class NutritionController {
   constructor(
     private readonly nutritionService: NutritionService,
     private readonly labelRenderer: LabelRendererService,
-    private readonly createServerClient: any,
+    // private readonly createServerClient: any,
   ) {}
 
   @Get(":id/nutrition-label")
@@ -26,7 +26,7 @@ export class NutritionController {
     @Query("format") format: "svg" | "png" | "pdf" = "svg",
     // @Query("servings") servings?: string,
   ): Promise<string> {
-    const supabase = this.createServerClient();
+    const supabase = createServerClient();
 
     // Try to get from cache first
     let { data: cache } = await supabase
@@ -90,7 +90,7 @@ export class NutritionController {
 
   @Get(":id/nutrition")
   async getNutrition(@Param("id") recipeId: string): Promise<any> {
-    const supabase = this.createServerClient();
+    const supabase = createServerClient();
 
     // Try to get from cache first
     let { data: cache } = await supabase
