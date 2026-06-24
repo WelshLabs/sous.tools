@@ -5,13 +5,7 @@
   ],
   "tasks": {
     "secrets:sync": {
-      "cache": false,
-      "env": [
-        "INFISICAL_CLIENT_ID",
-        "INFISICAL_CLIENT_SECRET",
-        "INFISICAL_PROJECT_ID",
-        "INFISICAL_ENV"
-      ]
+      "cache": false
     },
     "build": {
       "dependsOn": [
