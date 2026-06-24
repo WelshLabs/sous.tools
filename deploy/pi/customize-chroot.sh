@@ -14,13 +14,14 @@ echo "=== Customizing OS Image Chroot ==="
 
 # Non-interactive apt and alternate cache to avoid filling /var/cache
 export DEBIAN_FRONTEND=noninteractive
-mkdir -p /tmp/apt-archives
+mkdir -p /tmp/apt-archives/partial
 chmod 1777 /tmp/apt-archives
+chmod 1777 /tmp/apt-archives/partial
 
-# 1. Install Node.js, Docker, Labwc, and Chromium
+# 1. Install Node.js, Docker, Labwc (Chromium deferred to first-boot service)
 echo "Installing base packages..."
 apt-get -o Dir::Cache::archives=/tmp/apt-archives update
-apt-get -o Dir::Cache::archives=/tmp/apt-archives install -y --no-install-recommends labwc chromium-browser docker.io curl git nodejs npm
+apt-get -o Dir::Cache::archives=/tmp/apt-archives install -y --no-install-recommends labwc docker.io curl git nodejs npm
 
 # Aggressive cleanup to free disk space immediately
 echo "Cleaning up package cache..."
@@ -45,7 +46,7 @@ mkdir -p /home/soustools/.config/labwc
 mkdir -p /home/soustools/signage/sync
 mkdir -p /home/soustools/signage/secrets
 
-# 4. Copy files (placed in chroot /tmp by build-signage-image.sh)
+# Copy deployment scripts to temporary location for sdm to import
 echo "Deploying client scripts..."
 cp /tmp/labwc-rc.xml /home/soustools/.config/labwc/rc.xml
 cp /tmp/kiosk.sh /home/soustools/signage/kiosk.sh
@@ -53,19 +54,43 @@ cp /tmp/sync-watchtower.js /home/soustools/signage/sync/sync-watchtower.js
 cp /tmp/fetch-secrets.js /home/soustools/signage/secrets/fetch-secrets.js
 cp /tmp/tv-sleep.sh /home/soustools/signage/tv-sleep.sh
 cp /tmp/tv-wake.sh /home/soustools/signage/tv-wake.sh
+cp /tmp/install-chromium-firstboot.sh /opt/install-chromium-firstboot.sh
 
 chmod +x /home/soustools/signage/kiosk.sh
 chmod +x /home/soustools/signage/tv-sleep.sh
 chmod +x /home/soustools/signage/tv-wake.sh
+chmod +x /opt/install-chromium-firstboot.sh
 chown -R soustools:soustools /home/soustools/.config
 chown -R soustools:soustools /home/soustools/signage
 
-# 5. Create Systemd service for signage kiosk launcher
+# 5. Create Systemd service for first-boot Chromium installation
+echo "Creating systemd chromium install service..."
+cat > /etc/systemd/system/signage-chromium-install.service <<EOF
+[Unit]
+Description=Sous Tools Signage Chromium First-Boot Installer
+After=network-online.target
+Wants=network-online.target
+Before=signage-kiosk.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/opt/install-chromium-firstboot.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 6. Create Systemd service for signage kiosk launcher
 echo "Creating systemd kiosk service..."
 cat > /etc/systemd/system/signage-kiosk.service <<EOF
 [Unit]
 Description=Sous Tools Digital Signage Kiosk Launcher
-After=network.target sound.target
+After=network.target sound.target signage-chromium-install.service
+Wants=signage-chromium-install.service
 
 [Service]
 Type=simple
@@ -79,7 +104,7 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# 6. Create Systemd service for Watchtower sync daemon
+# 7. Create Systemd service for Watchtower sync daemon
 echo "Creating systemd sync service..."
 cat > /etc/systemd/system/signage-sync.service <<EOF
 [Unit]
@@ -99,7 +124,7 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-# 7. Create systemd service for fetching secrets on boot
+# 8. Create systemd service for fetching secrets on boot
 cat > /etc/systemd/system/signage-secrets-fetch.service <<EOF
 [Unit]
 Description=Sous Tools Signage Secrets Fetcher
@@ -116,7 +141,7 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
-# 8. Create systemd service for signage app container
+# 9. Create systemd service for signage app container
 cat > /etc/systemd/system/signage-app.service <<EOF
 [Unit]
 Description=Sous Tools Signage Docker Application
@@ -142,12 +167,13 @@ WantedBy=multi-user.target
 EOF
 
 # Enable services
+systemctl enable signage-chromium-install.service
 systemctl enable signage-kiosk.service
 systemctl enable signage-sync.service
 systemctl enable signage-secrets-fetch.service
 systemctl enable signage-app.service
 
-# 7. Configure console autologin behavior
+# 10. Configure console autologin behavior
 echo "Enabling console autologin behavior..."
 # raspi-config autologin sets lightdm or systemd gettys. For console autologin:
 systemctl set-default multi-user.target

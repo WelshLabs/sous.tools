@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -83,7 +83,7 @@ jobs:
     needs: docker-build
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Free disk space
         run: |
@@ -114,6 +114,13 @@ jobs:
           echo "Disk space after cleanup:"
           df -h
 
+      - name: Prepare apt cache directory
+        run: |
+          # Create full apt cache structure to avoid "partial directory missing" error
+          sudo mkdir -p /tmp/apt-archives/partial
+          sudo chmod 1777 /tmp/apt-archives
+          sudo chmod 1777 /tmp/apt-archives/partial
+
       - name: Install sdm dependencies
         run: |
           # Use alternate apt cache location to avoid filling /var/cache/apt/archives
@@ -121,11 +128,6 @@ jobs:
           sudo apt-get -o Dir::Cache::archives=/tmp/apt-archives install -y qemu-user-static binfmt-support systemd-container xz-utils
           sudo apt-get -o Dir::Cache::archives=/tmp/apt-archives clean
           sudo rm -rf /var/lib/apt/lists/*
-
-      - name: Prepare apt cache dir
-        run: |
-          sudo mkdir -p /tmp/apt-archives
-          sudo chmod 1777 /tmp/apt-archives
 
       - name: Run build-signage-image.sh
         env:
