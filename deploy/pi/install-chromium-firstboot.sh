@@ -18,10 +18,10 @@ for i in {1..120}; do
   sleep 1
 done
 
-echo "Installing Chromium..."
+echo "Installing runtime packages..."
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y --no-install-recommends chromium-browser
+apt-get install -y --no-install-recommends labwc chromium-browser docker.io curl git nodejs npm
 
 # Clean up apt cache
 apt-get clean
@@ -29,4 +29,4 @@ apt-get autoclean
 rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/archives/*
 
-echo "=== Chromium Installation Complete ==="
+echo "=== Runtime Package Installation Complete ==="

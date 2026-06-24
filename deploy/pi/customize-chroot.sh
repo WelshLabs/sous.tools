@@ -12,28 +12,8 @@ set -e
 
 echo "=== Customizing OS Image Chroot ==="
 
-# Non-interactive apt and alternate cache to avoid filling /var/cache
-export DEBIAN_FRONTEND=noninteractive
-mkdir -p /tmp/apt-archives/partial
-chmod 1777 /tmp/apt-archives
-chmod 1777 /tmp/apt-archives/partial
-
-# 1. Install Node.js, Docker, Labwc (Chromium deferred to first-boot service)
-echo "Installing base packages..."
-apt-get -o Dir::Cache::archives=/tmp/apt-archives update
-apt-get -o Dir::Cache::archives=/tmp/apt-archives install -y --no-install-recommends labwc docker.io curl git nodejs npm
-
-# Aggressive cleanup to free disk space immediately
-echo "Cleaning up package cache..."
-apt-get clean
-apt-get autoclean
-apt-get autoremove -y
-rm -rf /var/lib/apt/lists/*
-rm -rf /var/cache/apt/archives/*
-rm -rf /tmp/*
-
-echo "Disk space after cleanup:"
-df -h
+# No heavy runtime package installation should occur inside the image build.
+# All runtime dependencies are deferred to first boot to keep the image small.
 
 # 2. Add soustools user to the docker group
 echo "Configuring user permissions..."
@@ -63,14 +43,14 @@ chmod +x /opt/install-chromium-firstboot.sh
 chown -R soustools:soustools /home/soustools/.config
 chown -R soustools:soustools /home/soustools/signage
 
-# 5. Create Systemd service for first-boot Chromium installation
-echo "Creating systemd chromium install service..."
-cat > /etc/systemd/system/signage-chromium-install.service <<EOF
+# 5. Create Systemd service for first-boot runtime dependency installation
+echo "Creating systemd runtime dependency install service..."
+cat > /etc/systemd/system/signage-deps-install.service <<EOF
 [Unit]
-Description=Sous Tools Signage Chromium First-Boot Installer
+Description=Sous Tools Signage First-Boot Runtime Dependency Installer
 After=network-online.target
 Wants=network-online.target
-Before=signage-kiosk.service
+Before=signage-kiosk.service signage-sync.service signage-secrets-fetch.service signage-app.service
 
 [Service]
 Type=oneshot
@@ -89,8 +69,8 @@ echo "Creating systemd kiosk service..."
 cat > /etc/systemd/system/signage-kiosk.service <<EOF
 [Unit]
 Description=Sous Tools Digital Signage Kiosk Launcher
-After=network.target sound.target signage-chromium-install.service
-Wants=signage-chromium-install.service
+After=network-online.target network.target sound.target signage-deps-install.service
+Wants=network-online.target signage-deps-install.service
 
 [Service]
 Type=simple
@@ -109,8 +89,9 @@ echo "Creating systemd sync service..."
 cat > /etc/systemd/system/signage-sync.service <<EOF
 [Unit]
 Description=Sous Tools Signage Watchtower Sync Daemon
-After=network.target signage-secrets-fetch.service
-Requires=signage-secrets-fetch.service
+After=network-online.target network.target signage-secrets-fetch.service signage-deps-install.service
+Wants=network-online.target
+Requires=signage-secrets-fetch.service signage-deps-install.service
 
 [Service]
 Type=simple
@@ -128,8 +109,8 @@ EOF
 cat > /etc/systemd/system/signage-secrets-fetch.service <<EOF
 [Unit]
 Description=Sous Tools Signage Secrets Fetcher
-After=network-online.target
-Wants=network-online.target
+After=network-online.target network.target signage-deps-install.service
+Wants=network-online.target network.target signage-deps-install.service
 
 [Service]
 Type=oneshot
@@ -145,8 +126,9 @@ EOF
 cat > /etc/systemd/system/signage-app.service <<EOF
 [Unit]
 Description=Sous Tools Signage Docker Application
-After=docker.service network.target signage-secrets-fetch.service
-Requires=docker.service signage-secrets-fetch.service
+After=network-online.target docker.service network.target signage-secrets-fetch.service signage-deps-install.service
+Wants=network-online.target
+Requires=docker.service signage-secrets-fetch.service signage-deps-install.service
 
 [Service]
 TimeoutStartSec=0
@@ -167,7 +149,7 @@ WantedBy=multi-user.target
 EOF
 
 # Enable services
-systemctl enable signage-chromium-install.service
+systemctl enable signage-deps-install.service
 systemctl enable signage-kiosk.service
 systemctl enable signage-sync.service
 systemctl enable signage-secrets-fetch.service
