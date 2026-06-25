@@ -7,10 +7,12 @@ import { VesselsController } from "./vessels.controller";
 import { VesselsService } from "./vessels.service";
 import { RecipeMetaController } from "./recipe-meta.controller";
 import { RecipeMetaService } from "./recipe-meta.service";
+import { RecipeCostService } from "./recipe-cost.service";
+import { RecipeVersionsController } from "./recipe-versions.controller";
 
 @Module({
-  controllers: [RecipesController, IngredientsController, VesselsController, RecipeMetaController],
-  providers: [RecipesService, IngredientsService, VesselsService, RecipeMetaService],
-  exports: [RecipesService, IngredientsService, VesselsService, RecipeMetaService],
+  controllers: [RecipesController, IngredientsController, VesselsController, RecipeMetaController, RecipeVersionsController],
+  providers: [RecipesService, IngredientsService, VesselsService, RecipeMetaService, RecipeCostService],
+  exports: [RecipesService, IngredientsService, VesselsService, RecipeMetaService, RecipeCostService],
 })
 export class RecipeModule {}

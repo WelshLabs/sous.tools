@@ -8,6 +8,12 @@ VALUES ('00000000-0000-0000-0000-000000000000', 'd0000000-0000-0000-0000-0000000
 INSERT INTO auth.identities (id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at) 
 VALUES ('d0000000-0000-0000-0000-000000000000', 'd0000000-0000-0000-0000-000000000000', '{"sub": "d0000000-0000-0000-0000-000000000000", "email": "conar@dtown.cafe"}'::jsonb, 'email', 'd0000000-0000-0000-0000-000000000000', now(), now(), now()) ON CONFLICT DO NOTHING;
 
+-- Seed: ensure `conar@dtown.cafe` is an admin of the seeded organization
+INSERT INTO org_members (organization_id, user_id, role)
+VALUES ('d0000000-0000-0000-0000-000000000000', 'd0000000-0000-0000-0000-000000000000', 'admin')
+ON CONFLICT (organization_id, user_id) DO UPDATE SET role = 'admin';
+
+
 -- CULINARY VESSEL PROFILES SEED
 INSERT INTO vessel_profiles (id, organization_id, name, shape, length, width, height, volume_ml) VALUES 
 ('c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000000', '9" Pullman Pan', 'RECTANGULAR', 23, 10, 10, 2300),

@@ -222,10 +222,5 @@ CREATE POLICY "org_members_full_crud_recipe_tag_assignments" ON recipe_tag_assig
 -- as it is a protected system table. The user_profiles table (created in separate migration)
 -- provides the user settings extension with proper RLS policies.
 
--- Seed: ensure `conar@dtown.cafe` is an admin of the seeded organization
-INSERT INTO org_members (organization_id, user_id, role)
-VALUES ('d0000000-0000-0000-0000-000000000000', 'd0000000-0000-0000-0000-000000000000', 'admin')
-ON CONFLICT (organization_id, user_id) DO UPDATE SET role = 'admin';
-
 -- End of migration
 

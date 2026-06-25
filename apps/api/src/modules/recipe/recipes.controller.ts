@@ -8,18 +8,36 @@ import {
   Param,
 } from "@nestjs/common";
 import { RecipesService } from "./recipes.service";
+import { RecipeCostService } from "./recipe-cost.service";
 import { ApiResponse, Recipe, RecipeIngredient } from "@soustools/api-types";
 
 @Controller("recipes")
 export class RecipesController {
   private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
 
-  constructor(private readonly recipesService: RecipesService) {}
+  constructor(
+    private readonly recipesService: RecipesService,
+    private readonly recipeCostService: RecipeCostService
+  ) {}
 
   @Get()
   async findAll(): Promise<ApiResponse<Recipe[]>> {
     try {
       const data = await this.recipesService.findAll(this.defaultOrgId);
+      return { success: true, data, timestamp: new Date().toISOString() };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  @Get(":id/cost")
+  async getRecipeCost(@Param("id") id: string): Promise<ApiResponse<unknown>> {
+    try {
+      const data = await this.recipeCostService.getRecipeCost(id);
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {

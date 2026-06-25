@@ -9,6 +9,8 @@ import { IntegrationsModule } from "./modules/integrations/integrations.module";
 import { RecipeModule } from "./modules/recipe/recipe.module";
 import { IngestionModule } from "./modules/ingestion/ingestion.module";
 import { NutritionModule } from "./modules/nutrition/nutrition.module";
+import { ItemsModule } from "./modules/items/items.module";
+import { PosModule } from "./modules/pos/pos.module";
 
 import { AppGraphQLModule } from "./graphql/graphql.module";
 import { HealthModule } from "./health/health.module";
@@ -42,6 +44,8 @@ import { HealthModule } from "./health/health.module";
     RecipeModule,
     IngestionModule,
     NutritionModule,
+    ItemsModule,
+    PosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

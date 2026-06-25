@@ -16,7 +16,11 @@ const VOLUME_CONVERSIONS: Record<string, number> = {
   tsp: 4.92892,
   tbsp: 14.7868,
   cup: 236.588,
+  gal: 3785.41,
+  qt: 946.353,
 };
+
+const COUNT_UNITS = new Set(['each', 'case']);
 
 /**
  * Converts a numeric amount from one unit of measurement to another.
@@ -26,15 +30,34 @@ const VOLUME_CONVERSIONS: Record<string, number> = {
  * @param fromUnit The unit of the input amount
  * @param toUnit The target unit to convert to
  * @param densityGMl The density coefficient in grams per milliliter (default 1.0)
+ * @param eachWeightG Optional weight in grams per single each unit
+ * @param unitsPerCase Optional units per case for case conversion
  */
 export function convertUnit(
   amount: number,
   fromUnit: string,
   toUnit: string,
-  densityGMl: number = 1.0
+  densityGMl: number = 1.0,
+  eachWeightG?: number,
+  unitsPerCase?: number
 ): number {
   const from = fromUnit.toLowerCase();
   const to = toUnit.toLowerCase();
+
+  // Handle count units (each, case) → grams conversion
+  if (COUNT_UNITS.has(from)) {
+    if (eachWeightG === undefined || eachWeightG <= 0) {
+      throw new Error(`Unit "${fromUnit}" requires eachWeightG to convert to mass/volume`);
+    }
+    const totalG =
+      from === 'case'
+        ? amount * (unitsPerCase ?? 1) * eachWeightG
+        : amount * eachWeightG;
+    if (to === 'g') return totalG;
+    if (WEIGHT_CONVERSIONS[to] !== undefined) return totalG / WEIGHT_CONVERSIONS[to];
+    if (VOLUME_CONVERSIONS[to] !== undefined) return (totalG / densityGMl) / VOLUME_CONVERSIONS[to];
+    return totalG;
+  }
 
   if (from === to) {
     return amount;

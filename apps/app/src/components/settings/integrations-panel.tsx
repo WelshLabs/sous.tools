@@ -36,7 +36,7 @@ export const IntegrationsPanel: React.FC = () => {
   useEffect(() => {
     const loadOrgAndStatus = async () => {
       try {
-        const { data: orgData, error: orgErr } = await supabase
+        const { data: orgData } = await supabase
           .from("organizations")
           .select("id")
           .limit(1)
