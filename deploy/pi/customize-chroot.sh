@@ -17,6 +17,7 @@ echo "=== Customizing OS Image Chroot ==="
 
 # 2. Add soustools user to the docker group
 echo "Configuring user permissions..."
+groupadd -f docker
 usermod -aG docker soustools
 loginctl enable-linger soustools
 

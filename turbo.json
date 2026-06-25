@@ -1,40 +1,30 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
-    "INFISICAL_MOCK"
+    "INFISICAL_MOCK",
+    "INFISICAL_CLIENT_ID",
+    "INFISICAL_CLIENT_SECRET",
+    "INFISICAL_PROJECT_ID",
+    "INFISICAL_ENV"
   ],
   "tasks": {
     "secrets:sync": {
       "cache": false
     },
     "build": {
-      "dependsOn": [
-        "secrets:sync",
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**"
-      ]
+      "dependsOn": ["secrets:sync", "^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
-      "dependsOn": [
-        "secrets:sync",
-        "^build"
-      ],
+      "dependsOn": ["secrets:sync", "^build"],
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": [
-        "^lint"
-      ]
+      "dependsOn": ["^lint"]
     },
     "test": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     }
   }
 }

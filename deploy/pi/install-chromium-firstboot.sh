@@ -30,3 +30,7 @@ rm -rf /var/lib/apt/lists/*
 rm -rf /var/cache/apt/archives/*
 
 echo "=== Runtime Package Installation Complete ==="
+echo "Rebooting to apply docker permissions and start kiosk..."
+# Disable this service so it doesn't run again on the next boot
+systemctl disable signage-deps-install.service 
+reboot
