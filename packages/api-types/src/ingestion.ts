@@ -9,6 +9,7 @@ export interface IngestionPayload {
   imagesBase64?: string[];
   reviewId?: string;
   sourceDocumentUrl?: string;
+  sourceName?: string;
 }
 
 export type IngestionStatus = "PENDING" | "APPROVED" | "REJECTED";
@@ -18,7 +19,9 @@ export interface IngestionReview {
   organizationId: string;
   userId: string;
   source: IngestionSource;
+  sourceName?: string | null;
   rawText: string | null;
+  sourceDocumentUrl?: string | null;
   parsedData: Record<string, any>;
   status: IngestionStatus;
   createdAt: string;

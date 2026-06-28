@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import { IntegrationsPanel } from "../../../components/settings/integrations-panel";
 import { GlobalStylingSettings } from "../../../components/settings/global-styling-settings";
 import { GeneralSettings } from "../../../components/settings/general-settings";
+import { DownloadsPanel } from "../../../components/settings/downloads-panel";
 import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"general" | "integrations" | "styling">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "integrations" | "styling" | "downloads">("general");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -17,6 +18,8 @@ export default function SettingsPage() {
         setActiveTab("integrations");
       } else if (tab === "styling") {
         setActiveTab("styling");
+      } else if (tab === "downloads") {
+        setActiveTab("downloads");
       }
     }
   }, []);
@@ -68,6 +71,17 @@ export default function SettingsPage() {
           <Paintbrush className="w-4 h-4" />
           Global Styling
         </button>
+        <button
+          onClick={() => setActiveTab("downloads")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer ${
+            activeTab === "downloads"
+              ? "border-sky-500 text-sky-400 bg-sky-500/5"
+              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-zinc-900/40"
+          }`}
+        >
+          <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Downloads
+        </button>
       </div>
 
       {/* Panels Layout Container */}
@@ -75,6 +89,7 @@ export default function SettingsPage() {
         {activeTab === "general" && <GeneralSettings />}
         {activeTab === "integrations" && <IntegrationsPanel />}
         {activeTab === "styling" && <GlobalStylingSettings />}
+        {activeTab === "downloads" && <DownloadsPanel />}
       </div>
     </div>
   );

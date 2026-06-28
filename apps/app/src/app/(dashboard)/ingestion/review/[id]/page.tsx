@@ -8,6 +8,7 @@ import { IngestionReview } from "@soustools/api-types";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ConfirmModal } from "../../../../../components/ui/confirm-modal";
+import { VisualBuilder } from "./visual-builder";
 
 export default function IngestionReviewPage() {
   const params = useParams();
@@ -18,6 +19,7 @@ export default function IngestionReviewPage() {
   const [loading, setLoading] = useState(true);
   const [editedData, setEditedData] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
 
   useEffect(() => {
     const fetchReview = async () => {
@@ -141,30 +143,63 @@ export default function IngestionReviewPage() {
           <div className="p-4 bg-zinc-900/80 border-b border-white/10">
             <h2 className="text-sm font-semibold text-zinc-200">Raw Source Document</h2>
           </div>
-          <div className="flex-1 p-4 overflow-y-auto bg-black/40">
-            <pre className="text-sm text-zinc-400 whitespace-pre-wrap font-mono">
-              {review.rawText || "No raw text available (possibly an image)."}
-            </pre>
+          <div className="flex-1 overflow-auto bg-black/40">
+            {review.sourceDocumentUrl ? (
+              review.sourceDocumentUrl.endsWith(".pdf") ? (
+                <iframe src={review.sourceDocumentUrl} className="w-full h-full border-none" />
+              ) : (
+                <img src={review.sourceDocumentUrl} className="w-full h-auto object-contain" alt="Raw Document" />
+              )
+            ) : (
+              <pre className="text-sm text-zinc-400 whitespace-pre-wrap font-mono p-4">
+                {review.rawText || "No raw text available."}
+              </pre>
+            )}
           </div>
         </div>
 
         {/* Right Pane: AI Structured Data Editable */}
         <div className="bg-zinc-900 border border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
           <div className="p-4 bg-zinc-900/80 border-b border-white/10 flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-zinc-200">AI Extracted JSON (Editable)</h2>
-            <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">Vendor Aliases Applied</span>
+            <h2 className="text-sm font-semibold text-zinc-200">AI Extracted Data</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">Vendor Aliases Applied</span>
+              <div className="flex bg-black/50 rounded-lg p-1">
+                <button 
+                  onClick={() => setViewMode("visual")}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-white/10 text-white" : "text-zinc-500 hover:text-white"}`}
+                >
+                  Visual
+                </button>
+                <button 
+                  onClick={() => setViewMode("json")}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-white/10 text-white" : "text-zinc-500 hover:text-white"}`}
+                >
+                  JSON
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <textarea
-              value={editedData}
-              onChange={(e) => setEditedData(e.target.value)}
-              className={`w-full h-full bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
-                editedData.includes('"error":') ? 'text-red-400' : 'text-emerald-400'
-              }`}
-              spellCheck={false}
-              disabled={review.status !== "PENDING"}
-            />
-          </div>
+          {viewMode === "visual" ? (
+             <VisualBuilder 
+               editedData={editedData}
+               onChange={setEditedData}
+               disabled={review.status !== "PENDING"}
+               organizationId={review.organizationId}
+             />
+          ) : (
+            <div className="flex-1">
+              <textarea
+                value={editedData}
+                onChange={(e) => setEditedData(e.target.value)}
+                className={`w-full h-full bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
+                  editedData.includes('"error":') ? 'text-red-400' : 'text-emerald-400'
+                }`}
+                spellCheck={false}
+                disabled={review.status !== "PENDING"}
+              />
+            </div>
+          )}
         </div>
       </div>
 

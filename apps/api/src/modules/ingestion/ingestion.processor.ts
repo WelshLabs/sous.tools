@@ -17,12 +17,19 @@ export class IngestionProcessor extends WorkerHost {
     
     let rawText = "";
     let sourceDocumentUrl = "";
+    let sourceName = null;
 
     try {
       if (source === "google_drive" && fileIds && fileIds.length > 0) {
         for (const fileId of fileIds) {
-          const text = await this.driveService.extractFileContent(fileId, organizationId);
-          rawText += text + "\n";
+          const { text, sourceDocumentUrl: driveDocUrl, sourceName: driveSourceName } = await this.driveService.processDriveFile(fileId, organizationId, job.data.reviewId || "new");
+          if (text) rawText += text + "\n";
+          if (driveDocUrl && !sourceDocumentUrl) {
+            sourceDocumentUrl = driveDocUrl;
+          }
+          if (driveSourceName && !sourceName) {
+            sourceName = driveSourceName;
+          }
         }
       }
 
@@ -34,6 +41,10 @@ export class IngestionProcessor extends WorkerHost {
           title: { type: Type.STRING },
           yieldCount: { type: Type.NUMBER },
           yieldUnit: { type: Type.STRING },
+          sourceBook: { type: Type.STRING, description: "Book or publication title if visible" },
+          sourceAuthor: { type: Type.STRING, description: "Author of the recipe if visible" },
+          sourcePageStart: { type: Type.NUMBER },
+          sourcePageEnd: { type: Type.NUMBER },
           vessel: {
             type: Type.OBJECT,
             properties: {
@@ -55,7 +66,9 @@ export class IngestionProcessor extends WorkerHost {
                 name: { type: Type.STRING },
                 amount: { type: Type.NUMBER },
                 unit: { type: Type.STRING },
-                calculationType: { type: Type.STRING, enum: ["WEIGHT", "VOLUME", "COUNT"] }
+                component: { type: Type.STRING, description: "The component or section this ingredient belongs to, e.g., 'Dough', 'Glaze', 'Filling', 'Caramelized apples'. Leave null if the recipe has no sections." },
+                calculationType: { type: Type.STRING, enum: ["WEIGHT", "VOLUME", "COUNT"] },
+                prepNotes: { type: Type.STRING, description: "e.g., diced, melted, room temp" }
               },
               required: ["name", "amount", "unit"]
             }
@@ -73,9 +86,7 @@ export class IngestionProcessor extends WorkerHost {
             }
           },
           prepTimeMinutes: { type: Type.NUMBER, description: "Preparation time in minutes" },
-          cookTimeMinutes: { type: Type.NUMBER, description: "Cooking/baking/proofing time in minutes" },
-          sourceBook: { type: Type.STRING, description: "Book or publication title if visible" },
-          sourceAuthor: { type: Type.STRING, description: "Author of the recipe if visible" }
+          cookTimeMinutes: { type: Type.NUMBER, description: "Cooking/baking/proofing time in minutes" }
         },
         required: ["title", "ingredients", "instructions"]
       };
@@ -121,20 +132,28 @@ export class IngestionProcessor extends WorkerHost {
 
       if (actualSourceDocumentUrl) {
         try {
-          const res = await fetch(actualSourceDocumentUrl);
-          if (res.ok) {
-            const arrayBuffer = await res.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const mimeType = res.headers.get("content-type") || "image/jpeg";
-            inlineDataParts.push({
-              inlineData: {
-                mimeType,
-                data: buffer.toString("base64")
-              }
-            });
+          const fileName = actualSourceDocumentUrl.split('/').pop();
+          if (fileName) {
+            const { data: fileData, error: downloadErr } = await supabase.storage
+              .from("ingestion-sources")
+              .download(fileName);
+              
+            if (downloadErr) throw downloadErr;
+            if (fileData) {
+              const arrayBuffer = await fileData.arrayBuffer();
+              const buffer = Buffer.from(arrayBuffer);
+              let mimeType = fileData.type || "image/jpeg";
+              if (actualSourceDocumentUrl.toLowerCase().endsWith(".pdf")) mimeType = "application/pdf";
+              inlineDataParts.push({
+                inlineData: {
+                  mimeType,
+                  data: buffer.toString("base64")
+                }
+              });
+            }
           }
         } catch (fetchErr) {
-          console.error("Failed to fetch source document for processing:", fetchErr);
+          console.error("Failed to download source document from Supabase storage:", fetchErr);
         }
       }
 
@@ -142,23 +161,28 @@ export class IngestionProcessor extends WorkerHost {
       const genConfig = {
         responseMimeType: "application/json",
         responseSchema: documentType === "recipe" ? recipeResponseSchema : (documentType === "invoice" ? invoiceSchema : undefined),
-        systemInstruction: `You are an expert culinary and back-office AI. Extract structured data from the provided document. For recipes, extract an array of ALL recipes found in the document under the 'recipes' key. For each recipe, capture the title, ingredients, step-by-step instructions (with timer durations in seconds if mentioned), and any pan/vessel details. Be thorough and do not return an empty array if you see text resembling a recipe. The requested document type is: ${documentType}`
+        systemInstruction: `You are an expert culinary and back-office AI. Extract structured data from the provided document. For recipes, extract an array of ALL recipes found in the document under the 'recipes' key. 
+- You MUST aggressively search for all distinct recipes and group them into the 'recipes' array. DO NOT return an empty array if you see any culinary content.
+- For vessels/pans, if dimensions are mentioned (e.g., 9x13 pan), automatically calculate the volumeMl (e.g., 9 * 13 * 2 (height) * 16.387 = ~3800ml) and set shape to RECTANGULAR.
+- Extract any cooking/prep times into timerDurationSeconds accurately.
+The requested document type is: ${documentType}`
       };
 
-      if (rawText) {
+      if (inlineDataParts.length > 0) {
+        const contents: any[] = [...inlineDataParts];
+        if (rawText) contents.push({ text: rawText });
+        contents.push({ text: `Extract the ${documentType} data from this document.` });
+        
         const response = await ai.models.generateContent({
           model: "gemini-2.5-flash",
-          contents: rawText,
+          contents,
           config: genConfig
         });
         parsedData = JSON.parse(response.text || "{}");
-      } else if ((source === "camera" || source === "upload") && inlineDataParts.length > 0) {
+      } else if (rawText) {
         const response = await ai.models.generateContent({
           model: "gemini-2.5-flash",
-          contents: [
-            ...inlineDataParts,
-            { text: `Extract the ${documentType} data from these images.` }
-          ],
+          contents: rawText,
           config: genConfig
         });
         parsedData = JSON.parse(response.text || "{}");
@@ -166,14 +190,17 @@ export class IngestionProcessor extends WorkerHost {
 
       // 3. Save Ingestion Review
       if (job.data.reviewId) {
-        await supabase.from("ingestion_reviews").update({
+        const updatePayload: any = {
           raw_text: rawText,
           parsed_data: parsedData,
           status: "PENDING",
           source_document_url: sourceDocumentUrl || null
-        }).eq("id", job.data.reviewId);
+        };
+        if (sourceName) updatePayload.source_name = sourceName;
+
+        await supabase.from("ingestion_reviews").update(updatePayload).eq("id", job.data.reviewId);
       } else {
-        const { error } = await supabase.from("ingestion_reviews").insert({
+        const insertPayload: any = {
           organization_id: organizationId,
           user_id: userId,
           source,
@@ -181,7 +208,10 @@ export class IngestionProcessor extends WorkerHost {
           parsed_data: parsedData,
           status: "PENDING",
           source_document_url: sourceDocumentUrl || null
-        });
+        };
+        if (sourceName) insertPayload.source_name = sourceName;
+
+        const { error } = await supabase.from("ingestion_reviews").insert(insertPayload);
         if (error) throw new Error(`Failed to save ingestion review: ${error.message}`);
       }
 

@@ -110,6 +110,7 @@ export interface RecipeIngredient {
   baseCalculationGroup: boolean;
   amount: number;
   unit: string;
+  component?: string | null;
   prepNotes: string | null;
   createdAt: string;
   masterIngredient?: MasterIngredient;

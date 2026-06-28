@@ -29,6 +29,7 @@ export class IngestionController {
         organization_id: payload.organizationId,
         user_id: payload.userId,
         source: payload.source,
+        source_name: payload.sourceName || null,
         raw_text: "",
         parsed_data: { processing: true },
         status: "PENDING"
@@ -126,7 +127,7 @@ export class IngestionController {
             }
           }
 
-          // Insert recipe (extracted recipes default to PENDING_REVIEW)
+          // Insert recipe
           const { data: createdRecipe, error: recipeErr } = await supabase.from("recipes").insert({
             organization_id: review.organization_id,
             title: recipe.title,
@@ -134,7 +135,7 @@ export class IngestionController {
             yield_count: recipe.yieldCount || 1,
             yield_unit: recipe.yieldUnit || "servings",
             vessel_id: vesselId,
-            status: "PENDING_REVIEW",
+            status: "APPROVED",
             source_document_url: review.source_document_url || null,
             source_book: recipe.sourceBook || null,
             source_author: recipe.sourceAuthor || null,
@@ -153,6 +154,13 @@ export class IngestionController {
                 .ilike("name", ing.name)
                 .maybeSingle();
 
+              let mappedCalcType = "fixed_weight";
+              if (ing.calculationType === "WEIGHT" || ing.calculationType === "VOLUME" || ing.calculationType === "COUNT") {
+                mappedCalcType = "fixed_weight"; // Our schema doesn't differentiate volume/count yet, it's all fixed_weight unless bakers%
+              } else if (ing.calculationType === "BAKERS_PERCENTAGE") {
+                mappedCalcType = "bakers_percentage";
+              }
+
               await supabase.from("recipe_ingredients").insert({
                 organization_id: review.organization_id,
                 recipe_id: createdRecipe.id,
@@ -161,7 +169,10 @@ export class IngestionController {
                 name: ing.name,
                 amount: ing.amount,
                 unit: ing.unit,
-                calculation_type: ing.calculationType || "WEIGHT"
+                calculation_type: mappedCalcType,
+                base_calculation_group: ing.baseCalculationGroup || false,
+                component: ing.component || null,
+                prep_notes: ing.prepNotes || null
               });
             }
           }

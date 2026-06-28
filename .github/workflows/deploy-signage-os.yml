@@ -15,14 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.7
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "prod"
-          export-env: true
+
 
       - name: Install libguestfs-tools
         run: |
@@ -69,12 +62,12 @@ jobs:
         run: |
           xz -T0 -9 sous-signage-os.img
           
-      - name: Upload to Supabase Storage
-        env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          curl -X POST "${SUPABASE_URL}/storage/v1/object/signage-os-images/sous-signage-os-latest.img.xz" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Content-Type: application/x-xz" \
-            --data-binary "@sous-signage-os.img.xz"
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: conarwelsh/signage-os
+          token: ${{ secrets.SIGNAGE_GITHUB_PAT }}
+          tag_name: v${{ github.run_number }}
+          name: Signage OS v${{ github.run_number }}
+          files: sous-signage-os.img.xz
+          make_latest: true

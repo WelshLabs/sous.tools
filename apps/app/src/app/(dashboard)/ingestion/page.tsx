@@ -23,12 +23,13 @@ export default function IngestionDashboardPage() {
             organizationId: d.organization_id,
             userId: d.user_id,
             source: d.source,
+            sourceName: d.source_name,
             rawText: d.raw_text,
             parsedData: d.parsed_data,
             status: d.status,
             createdAt: d.created_at,
             updatedAt: d.updated_at
-          })) as IngestionReview[];
+          })) as (IngestionReview & { sourceName?: string | null })[];
           setReviews(parsed);
         }
       }
@@ -75,7 +76,9 @@ export default function IngestionDashboardPage() {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-2">
                     <BrainCircuit className="w-5 h-5 text-sky-400" />
-                    <h2 className="text-xl font-bold capitalize">{review.source.replace("_", " ").toLowerCase()}</h2>
+                    <h2 className="text-xl font-bold truncate max-w-[200px]" title={review.sourceName || review.source.replace("_", " ").toLowerCase()}>
+                      {review.sourceName || review.source.replace("_", " ").toLowerCase()}
+                    </h2>
                   </div>
                   <span className={`px-2 py-1 text-xs font-bold rounded uppercase tracking-wider ${
                     review.status === "PENDING" ? "bg-amber-500/20 text-amber-300" :
