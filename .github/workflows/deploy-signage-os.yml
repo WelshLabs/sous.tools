@@ -23,7 +23,7 @@ jobs:
         run: |
           wget -qO pi-os.img.xz "https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz"
           unxz pi-os.img.xz
-          mv 2024-03-15-raspios-bookworm-arm64-lite.img sous-signage-os.img
+          mv pi-os.img sous-signage-os.img
 
       - name: Inject Cloud-Init and Ansible Playbook
         run: |

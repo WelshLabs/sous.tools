@@ -16,16 +16,19 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Allow authenticated users to read/write their org files
+DROP POLICY IF EXISTS "Org members can upload ingestion sources" ON storage.objects;
 CREATE POLICY "Org members can upload ingestion sources"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'ingestion-sources');
 
+DROP POLICY IF EXISTS "Org members can read ingestion sources" ON storage.objects;
 CREATE POLICY "Org members can read ingestion sources"
 ON storage.objects FOR SELECT
 TO authenticated, service_role
 USING (bucket_id = 'ingestion-sources');
 
+DROP POLICY IF EXISTS "Service role can manage ingestion sources" ON storage.objects;
 CREATE POLICY "Service role can manage ingestion sources"
 ON storage.objects FOR ALL
 TO service_role

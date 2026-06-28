@@ -17,6 +17,7 @@
 -- signage_layouts
 DROP POLICY IF EXISTS "org_members_read_signage_layouts" ON signage_layouts;
 DROP POLICY IF EXISTS "org_admins_write_signage_layouts" ON signage_layouts;
+DROP POLICY IF EXISTS "org_members_full_crud_signage_layouts" ON signage_layouts;
 CREATE POLICY "org_members_full_crud_signage_layouts" ON signage_layouts
   FOR ALL
   USING (is_org_member(organization_id))
@@ -25,6 +26,7 @@ CREATE POLICY "org_members_full_crud_signage_layouts" ON signage_layouts
 -- signage_displays
 DROP POLICY IF EXISTS "org_members_read_signage_displays" ON signage_displays;
 DROP POLICY IF EXISTS "org_admins_write_signage_displays" ON signage_displays;
+DROP POLICY IF EXISTS "org_members_full_crud_signage_displays" ON signage_displays;
 CREATE POLICY "org_members_full_crud_signage_displays" ON signage_displays
   FOR ALL
   USING (is_org_member(organization_id))
@@ -33,6 +35,7 @@ CREATE POLICY "org_members_full_crud_signage_displays" ON signage_displays
 -- signage_devices
 DROP POLICY IF EXISTS "org_members_read_signage_devices" ON signage_devices;
 DROP POLICY IF EXISTS "org_admins_write_signage_devices" ON signage_devices;
+DROP POLICY IF EXISTS "org_members_full_crud_signage_devices" ON signage_devices;
 CREATE POLICY "org_members_full_crud_signage_devices" ON signage_devices
   FOR ALL
   USING (is_org_member(organization_id))
@@ -41,6 +44,7 @@ CREATE POLICY "org_members_full_crud_signage_devices" ON signage_devices
 -- signage_decks
 DROP POLICY IF EXISTS "org_members_read_signage_decks" ON signage_decks;
 DROP POLICY IF EXISTS "org_admins_write_signage_decks" ON signage_decks;
+DROP POLICY IF EXISTS "org_members_full_crud_signage_decks" ON signage_decks;
 CREATE POLICY "org_members_full_crud_signage_decks" ON signage_decks
   FOR ALL
   USING (is_org_member(organization_id))
@@ -49,6 +53,7 @@ CREATE POLICY "org_members_full_crud_signage_decks" ON signage_decks
 -- vessel_profiles
 DROP POLICY IF EXISTS "org_members_read_vessel_profiles" ON vessel_profiles;
 DROP POLICY IF EXISTS "org_admins_write_vessel_profiles" ON vessel_profiles;
+DROP POLICY IF EXISTS "org_members_full_crud_vessel_profiles" ON vessel_profiles;
 CREATE POLICY "org_members_full_crud_vessel_profiles" ON vessel_profiles
   FOR ALL
   USING (is_org_member(organization_id))
@@ -57,6 +62,7 @@ CREATE POLICY "org_members_full_crud_vessel_profiles" ON vessel_profiles
 -- master_ingredients
 DROP POLICY IF EXISTS "org_members_read_master_ingredients" ON master_ingredients;
 DROP POLICY IF EXISTS "org_admins_write_master_ingredients" ON master_ingredients;
+DROP POLICY IF EXISTS "org_members_full_crud_master_ingredients" ON master_ingredients;
 CREATE POLICY "org_members_full_crud_master_ingredients" ON master_ingredients
   FOR ALL
   USING (is_org_member(organization_id))
@@ -65,6 +71,7 @@ CREATE POLICY "org_members_full_crud_master_ingredients" ON master_ingredients
 -- recipes
 DROP POLICY IF EXISTS "org_members_read_recipes" ON recipes;
 DROP POLICY IF EXISTS "org_admins_write_recipes" ON recipes;
+DROP POLICY IF EXISTS "org_members_full_crud_recipes" ON recipes;
 CREATE POLICY "org_members_full_crud_recipes" ON recipes
   FOR ALL
   USING (is_org_member(organization_id))
@@ -73,6 +80,7 @@ CREATE POLICY "org_members_full_crud_recipes" ON recipes
 -- recipe_categories
 DROP POLICY IF EXISTS "org_members_read_recipe_categories" ON recipe_categories;
 DROP POLICY IF EXISTS "org_admins_write_recipe_categories" ON recipe_categories;
+DROP POLICY IF EXISTS "org_members_full_crud_recipe_categories" ON recipe_categories;
 CREATE POLICY "org_members_full_crud_recipe_categories" ON recipe_categories
   FOR ALL
   USING (is_org_member(organization_id))
@@ -81,6 +89,7 @@ CREATE POLICY "org_members_full_crud_recipe_categories" ON recipe_categories
 -- recipe_tags
 DROP POLICY IF EXISTS "org_members_read_recipe_tags" ON recipe_tags;
 DROP POLICY IF EXISTS "org_admins_write_recipe_tags" ON recipe_tags;
+DROP POLICY IF EXISTS "org_members_full_crud_recipe_tags" ON recipe_tags;
 CREATE POLICY "org_members_full_crud_recipe_tags" ON recipe_tags
   FOR ALL
   USING (is_org_member(organization_id))
@@ -89,6 +98,7 @@ CREATE POLICY "org_members_full_crud_recipe_tags" ON recipe_tags
 -- integrations
 DROP POLICY IF EXISTS "org_members_read_integrations" ON integrations;
 DROP POLICY IF EXISTS "org_admins_write_integrations" ON integrations;
+DROP POLICY IF EXISTS "org_members_full_crud_integrations" ON integrations;
 CREATE POLICY "org_members_full_crud_integrations" ON integrations
   FOR ALL
   USING (is_org_member(organization_id))
@@ -97,6 +107,7 @@ CREATE POLICY "org_members_full_crud_integrations" ON integrations
 -- pos_items
 DROP POLICY IF EXISTS "org_members_read_pos_items" ON pos_items;
 DROP POLICY IF EXISTS "org_admins_write_pos_items" ON pos_items;
+DROP POLICY IF EXISTS "org_members_full_crud_pos_items" ON pos_items;
 CREATE POLICY "org_members_full_crud_pos_items" ON pos_items
   FOR ALL
   USING (is_org_member(organization_id))
@@ -105,6 +116,7 @@ CREATE POLICY "org_members_full_crud_pos_items" ON pos_items
 -- pos_modifier_groups
 DROP POLICY IF EXISTS "org_members_read_pos_modifier_groups" ON pos_modifier_groups;
 DROP POLICY IF EXISTS "org_admins_write_pos_modifier_groups" ON pos_modifier_groups;
+DROP POLICY IF EXISTS "org_members_full_crud_pos_modifier_groups" ON pos_modifier_groups;
 CREATE POLICY "org_members_full_crud_pos_modifier_groups" ON pos_modifier_groups
   FOR ALL
   USING (is_org_member(organization_id))
@@ -113,6 +125,7 @@ CREATE POLICY "org_members_full_crud_pos_modifier_groups" ON pos_modifier_groups
 -- pos_modifier_options
 DROP POLICY IF EXISTS "org_members_read_pos_modifier_options" ON pos_modifier_options;
 DROP POLICY IF EXISTS "org_admins_write_pos_modifier_options" ON pos_modifier_options;
+DROP POLICY IF EXISTS "org_members_full_crud_pos_modifier_options" ON pos_modifier_options;
 CREATE POLICY "org_members_full_crud_pos_modifier_options" ON pos_modifier_options
   FOR ALL
   USING (is_org_member(organization_id))
@@ -121,6 +134,7 @@ CREATE POLICY "org_members_full_crud_pos_modifier_options" ON pos_modifier_optio
 -- pos_item_local_overlays
 DROP POLICY IF EXISTS "org_members_read_pos_item_local_overlays" ON pos_item_local_overlays;
 DROP POLICY IF EXISTS "org_admins_write_pos_item_local_overlays" ON pos_item_local_overlays;
+DROP POLICY IF EXISTS "org_members_full_crud_pos_item_local_overlays" ON pos_item_local_overlays;
 CREATE POLICY "org_members_full_crud_pos_item_local_overlays" ON pos_item_local_overlays
   FOR ALL
   USING (is_org_member(organization_id))
@@ -129,6 +143,7 @@ CREATE POLICY "org_members_full_crud_pos_item_local_overlays" ON pos_item_local_
 -- vendors
 DROP POLICY IF EXISTS "org_members_read_vendors" ON vendors;
 DROP POLICY IF EXISTS "org_admins_write_vendors" ON vendors;
+DROP POLICY IF EXISTS "org_members_full_crud_vendors" ON vendors;
 CREATE POLICY "org_members_full_crud_vendors" ON vendors
   FOR ALL
   USING (is_org_member(organization_id))
@@ -137,6 +152,7 @@ CREATE POLICY "org_members_full_crud_vendors" ON vendors
 -- whiteboard_items
 DROP POLICY IF EXISTS "org_members_read_whiteboard_items" ON whiteboard_items;
 DROP POLICY IF EXISTS "org_admins_write_whiteboard_items" ON whiteboard_items;
+DROP POLICY IF EXISTS "org_members_full_crud_whiteboard_items" ON whiteboard_items;
 CREATE POLICY "org_members_full_crud_whiteboard_items" ON whiteboard_items
   FOR ALL
   USING (is_org_member(organization_id))
@@ -145,6 +161,7 @@ CREATE POLICY "org_members_full_crud_whiteboard_items" ON whiteboard_items
 -- purchase_orders
 DROP POLICY IF EXISTS "org_members_read_purchase_orders" ON purchase_orders;
 DROP POLICY IF EXISTS "org_admins_write_purchase_orders" ON purchase_orders;
+DROP POLICY IF EXISTS "org_members_full_crud_purchase_orders" ON purchase_orders;
 CREATE POLICY "org_members_full_crud_purchase_orders" ON purchase_orders
   FOR ALL
   USING (is_org_member(organization_id))
@@ -153,6 +170,7 @@ CREATE POLICY "org_members_full_crud_purchase_orders" ON purchase_orders
 -- purchase_order_items (uses parent purchase_orders)
 DROP POLICY IF EXISTS "org_members_read_purchase_order_items" ON purchase_order_items;
 DROP POLICY IF EXISTS "org_admins_write_purchase_order_items" ON purchase_order_items;
+DROP POLICY IF EXISTS "org_members_full_crud_purchase_order_items" ON purchase_order_items;
 CREATE POLICY "org_members_full_crud_purchase_order_items" ON purchase_order_items
   FOR ALL
   USING (
@@ -173,6 +191,7 @@ CREATE POLICY "org_members_full_crud_purchase_order_items" ON purchase_order_ite
 -- pos_item_modifier_groups (join table: use pos_items -> organization_id)
 DROP POLICY IF EXISTS "org_members_read_pos_item_modifier_groups" ON pos_item_modifier_groups;
 DROP POLICY IF EXISTS "org_admins_write_pos_item_modifier_groups" ON pos_item_modifier_groups;
+DROP POLICY IF EXISTS "org_members_full_crud_pos_item_modifier_groups" ON pos_item_modifier_groups;
 CREATE POLICY "org_members_full_crud_pos_item_modifier_groups" ON pos_item_modifier_groups
   FOR ALL
   USING (
@@ -189,6 +208,7 @@ CREATE POLICY "org_members_full_crud_pos_item_modifier_groups" ON pos_item_modif
 -- recipe_ingredients (join -> recipes)
 DROP POLICY IF EXISTS "org_members_read_recipe_ingredients" ON recipe_ingredients;
 DROP POLICY IF EXISTS "org_admins_write_recipe_ingredients" ON recipe_ingredients;
+DROP POLICY IF EXISTS "org_members_full_crud_recipe_ingredients" ON recipe_ingredients;
 CREATE POLICY "org_members_full_crud_recipe_ingredients" ON recipe_ingredients
   FOR ALL
   USING (
@@ -205,6 +225,7 @@ CREATE POLICY "org_members_full_crud_recipe_ingredients" ON recipe_ingredients
 -- recipe_tag_assignments (join -> recipes)
 DROP POLICY IF EXISTS "org_members_read_recipe_tag_assignments" ON recipe_tag_assignments;
 DROP POLICY IF EXISTS "org_admins_write_recipe_tag_assignments" ON recipe_tag_assignments;
+DROP POLICY IF EXISTS "org_members_full_crud_recipe_tag_assignments" ON recipe_tag_assignments;
 CREATE POLICY "org_members_full_crud_recipe_tag_assignments" ON recipe_tag_assignments
   FOR ALL
   USING (

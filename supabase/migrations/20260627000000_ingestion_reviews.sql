@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS ingestion_reviews (
 
 ALTER TABLE ingestion_reviews ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON ingestion_reviews;
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON ingestion_reviews;
 CREATE POLICY "Enable read access for all organization members" ON ingestion_reviews FOR SELECT USING (true);
 CREATE POLICY "Enable write access for organization admins" ON ingestion_reviews FOR ALL USING (true) WITH CHECK (true);
 
@@ -29,6 +31,8 @@ CREATE TABLE IF NOT EXISTS vendor_item_aliases (
 );
 
 ALTER TABLE vendor_item_aliases ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Enable read access for all organization members" ON vendor_item_aliases;
+DROP POLICY IF EXISTS "Enable write access for organization admins" ON vendor_item_aliases;
 CREATE POLICY "Enable read access for all organization members" ON vendor_item_aliases FOR SELECT USING (true);
 CREATE POLICY "Enable write access for organization admins" ON vendor_item_aliases FOR ALL USING (true) WITH CHECK (true);
 
