@@ -18,7 +18,9 @@ jobs:
       - name: Install libguestfs-tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y libguestfs-tools xz-utils
+          sudo apt-get install -y libguestfs-tools xz-utils linux-image-generic
+          sudo chmod 0644 /boot/vmlinuz-*
+          if [ -e /dev/kvm ]; then sudo chmod 0666 /dev/kvm; fi
 
       - name: Download Stock Raspberry Pi OS Lite
         run: |
@@ -28,6 +30,7 @@ jobs:
 
       - name: Inject Cloud-Init and Ansible Playbook
         run: |
+          export LIBGUESTFS_BACKEND=direct
           # Use guestfish to inject files into the FAT32 boot partition (sda1)
           # We need LIBGUESTFS_BACKEND=direct if nested virtualization isn't supported, 
           # but GitHub Actions supports default backend usually.
