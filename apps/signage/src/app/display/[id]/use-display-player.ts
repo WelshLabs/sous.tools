@@ -204,6 +204,7 @@ export function useDisplayPlayer(displayId: string) {
         socket.disconnect();
       };
     }
+    return;
   }, [displayId, display?.deckId, isPaired, deviceId, fetchDisplayAndLayout]);
 
   return { display, layout, items, loading, errorState, isPaired, pairingCode };

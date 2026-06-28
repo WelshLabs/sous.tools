@@ -15,6 +15,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Fetch Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.7
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
       - name: Install libguestfs-tools
         run: |
           sudo apt-get update
@@ -62,8 +71,8 @@ jobs:
           
       - name: Upload to Supabase Storage
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           curl -X POST "${SUPABASE_URL}/storage/v1/object/signage-os-images/sous-signage-os-latest.img.xz" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \

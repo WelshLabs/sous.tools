@@ -27,6 +27,10 @@ const nextConfig = {
         destination: `${apiBaseUrl}/recipes/:path*`,
       },
       {
+        source: "/api/recipes-meta/:path*",
+        destination: `${apiBaseUrl}/recipes-meta/:path*`,
+      },
+      {
         source: "/api/pos/simulate-webhook",
         destination: `${apiBaseUrl}/pos-simulator/items/toggle-sold-out`,
       },
