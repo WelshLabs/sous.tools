@@ -32,6 +32,7 @@ async function sync(): Promise<void> {
 export const secrets = {
   SUPABASE_URL: "https://placeholder-project.supabase.co",
   SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
+  SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
   SQUARE_CLIENT_ID: "sandbox-sq0idb-placeholder",
   SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
   GOOGLE_CLIENT_ID: "google-client-id-placeholder",
