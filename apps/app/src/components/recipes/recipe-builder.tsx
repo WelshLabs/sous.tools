@@ -65,6 +65,7 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
           baseCalculationGroup: ing.baseCalculationGroup,
           amount: ing.amount,
           unit: ing.unit,
+          rawName: ing.rawName || null,
           prepNotes: ing.prepNotes,
         })),
       };

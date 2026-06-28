@@ -39,6 +39,8 @@ export default function IngestionReviewPage() {
           rawText: data.raw_text,
           parsedData: data.parsed_data,
           status: data.status,
+          sourceDocumentUrl: data.source_document_url,
+          sourceName: data.source_name,
           createdAt: data.created_at,
           updatedAt: data.updated_at
         } as IngestionReview;

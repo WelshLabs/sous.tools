@@ -32,6 +32,32 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
     return <div className="p-4 text-red-400">Invalid JSON data. Use JSON Editor to fix.</div>;
   }
 
+  // Auto-map ingredient itemIds based on raw names when items load
+  useEffect(() => {
+    if (items.length === 0 || disabled) return;
+    let modified = false;
+    const newData = { ...parsed };
+    const targetRecipes = newData.recipes ? newData.recipes : (newData.title && newData.ingredients ? [newData] : []);
+    
+    targetRecipes.forEach((recipe: any) => {
+      if (recipe.ingredients) {
+        recipe.ingredients.forEach((ing: any) => {
+          if (!ing.itemId && ing.name) {
+            const match = items.find(i => i.name.toLowerCase() === String(ing.name).trim().toLowerCase());
+            if (match) {
+              ing.itemId = match.id;
+              modified = true;
+            }
+          }
+        });
+      }
+    });
+
+    if (modified) {
+      onChange(JSON.stringify(newData, null, 2));
+    }
+  }, [items, parsed, disabled, onChange]);
+
   const recipes = parsed.recipes ? parsed.recipes : (parsed.title && parsed.ingredients ? [parsed] : []);
 
   if (recipes.length === 0) {
@@ -121,9 +147,56 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-sm font-semibold border-b border-white/10 pb-2">
-                    Ingredients
-                  </h4>
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                    <h4 className="text-sm font-semibold">Ingredients</h4>
+                    <button 
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => {
+                        // Math logic: Calculate base weights per component
+                        const componentBaseWeights: Record<string, number> = {};
+                        const ings = recipe.ingredients || [];
+                        ings.forEach((ing: any) => {
+                          if (ing.baseCalculationGroup) {
+                            const comp = ing.component || "Base Recipe";
+                            componentBaseWeights[comp] = (componentBaseWeights[comp] || 0) + Number(ing.amount || 0);
+                          }
+                        });
+
+                        const hasAnyBase = Object.values(componentBaseWeights).some(w => w > 0);
+                        if (!hasAnyBase) {
+                          alert("Please select at least one Base ingredient (in any component) to convert!");
+                          return;
+                        }
+
+                        // Convert ingredients to percentages relative to their component's base weight
+                        const newData = { ...parsed };
+                        const targetRecipe = newData.recipes ? newData.recipes[rIdx] : newData;
+                        
+                        targetRecipe.ingredients = targetRecipe.ingredients.map((ing: any) => {
+                          const comp = ing.component || "Base Recipe";
+                          const compBaseWeight = componentBaseWeights[comp] || 0;
+                          
+                          if (compBaseWeight === 0) return ing; // Skip if no base for this component
+
+                          const originalAmount = Number(ing.amount || 0);
+                          const percentage = (originalAmount / compBaseWeight) * 100;
+                          return {
+                            ...ing,
+                            amount: Number(percentage.toFixed(2)),
+                            unit: "%",
+                            calculationType: "BAKERS_PERCENTAGE",
+                            // Keep baseCalculationGroup true for the base items
+                          };
+                        });
+                        
+                        onChange(JSON.stringify(newData, null, 2));
+                      }}
+                      className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded hover:bg-amber-500/30 transition-colors"
+                    >
+                      Convert to Baker's %
+                    </button>
+                  </div>
                   
                   {Object.entries(components).map(([compName, ings]) => (
                     <div key={compName} className="space-y-3">
@@ -133,16 +206,28 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
                       <div className="space-y-2">
                         {ings.map((ing) => (
                           <div key={ing.originalIndex} className="grid grid-cols-12 gap-3 items-center bg-black/30 p-3 rounded-lg border border-white/5">
-                            <div className="col-span-4 relative">
+                            <div className="col-span-4 flex flex-col gap-1 relative">
                               <input 
                                 disabled={disabled}
                                 type="text"
                                 value={ing.name || ""}
-                                list="items-list-global"
                                 onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "name", e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
-                                placeholder="Ingredient name"
+                                className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none placeholder:text-white/20"
+                                placeholder="Raw Name (from text)"
                               />
+                              <select 
+                                disabled={disabled}
+                                value={ing.itemId || ""}
+                                onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "itemId", e.target.value || null)}
+                                className={`w-full bg-black/40 border rounded px-2 py-1.5 text-sm outline-none transition-colors ${
+                                  !ing.itemId ? "border-red-500/70 text-red-300 focus:border-red-400" : "border-white/10 text-emerald-400 focus:border-sky-500"
+                                }`}
+                              >
+                                <option value="">⚠️ Select Master Ingredient...</option>
+                                {items.map(it => (
+                                  <option key={it.id} value={it.id}>{it.name}</option>
+                                ))}
+                              </select>
                             </div>
                             <div className="col-span-3 flex gap-1">
                               <input 
@@ -210,12 +295,6 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
         );
       })}
       
-      {/* Global Datalist for autocomplete */}
-      <datalist id={`items-list-global`}>
-        {items.map(item => (
-          <option key={item.id} value={item.name} />
-        ))}
-      </datalist>
     </div>
   );
 }

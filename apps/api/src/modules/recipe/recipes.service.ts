@@ -75,6 +75,7 @@ export class RecipesService {
         base_calculation_group: ing.baseCalculationGroup || false,
         amount: ing.amount,
         unit: ing.unit,
+        raw_name: ing.rawName || null,
         prep_notes: ing.prepNotes || null,
       }));
 
@@ -132,6 +133,7 @@ export class RecipesService {
           base_calculation_group: ing.baseCalculationGroup || false,
           amount: ing.amount,
           unit: ing.unit,
+          raw_name: ing.rawName || null,
           prep_notes: ing.prepNotes || null,
         }));
 

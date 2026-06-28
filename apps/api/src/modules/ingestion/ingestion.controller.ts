@@ -164,9 +164,8 @@ export class IngestionController {
               await supabase.from("recipe_ingredients").insert({
                 organization_id: review.organization_id,
                 recipe_id: createdRecipe.id,
-                item_id: master?.id || null,
-                sub_recipe_id: null,
-                name: ing.name,
+                item_id: ing.itemId || master?.id || null,
+                raw_name: ing.name,
                 amount: ing.amount,
                 unit: ing.unit,
                 calculation_type: mappedCalcType,

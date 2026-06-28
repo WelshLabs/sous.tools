@@ -141,9 +141,8 @@ export function calculateRecipeScale(
   }
 
   // 1. Calculate the weight of each ingredient in grams to find base total/flour weights
-  // First, find base flour weight (sum of baseCalculationGroup ingredients)
-  let baseFlourWeightG = 0;
   const ingredientBaseWeightsG: Record<string, number> = {};
+  const componentBaseFlourWeightsG: Record<string, number> = {};
 
   // Resolve fixed weight values first
   ingredients.forEach((ing) => {
@@ -152,7 +151,8 @@ export function calculateRecipeScale(
       const weightG = convertUnit(ing.amount, ing.unit, "g", density);
       ingredientBaseWeightsG[ing.id] = weightG;
       if (ing.baseCalculationGroup) {
-        baseFlourWeightG += weightG;
+        const comp = ing.component || "Base Recipe";
+        componentBaseFlourWeightsG[comp] = (componentBaseFlourWeightsG[comp] || 0) + weightG;
       }
     }
   });
@@ -160,8 +160,10 @@ export function calculateRecipeScale(
   // Resolve baker's percentage values based on base flour weight
   ingredients.forEach((ing) => {
     if (ing.calculationType === "bakers_percentage" && !ing.baseCalculationGroup) {
+      const comp = ing.component || "Base Recipe";
+      const baseWeightG = componentBaseFlourWeightsG[comp] || 0;
       // Amount represents percentage (e.g. 60%)
-      const weightG = baseFlourWeightG * (ing.amount / 100);
+      const weightG = baseWeightG * (ing.amount / 100);
       ingredientBaseWeightsG[ing.id] = weightG;
     }
   });
@@ -204,7 +206,7 @@ export function calculateRecipeScale(
   // 3. Map ingredients to scaled outputs
   const items = ingredients.map((ing): ScaledIngredientResult => {
     const density = ing.masterIngredient?.densityGMl ?? 1.0;
-    const name = ing.masterIngredient?.name ?? "Unknown Ingredient";
+    const name = ing.masterIngredient?.name ?? ing.rawName ?? "Unknown Ingredient";
 
     let scaledAmount = 0;
     let scaledUnit = ing.unit;
@@ -217,7 +219,8 @@ export function calculateRecipeScale(
     } else {
       // bakers_percentage
       percentageOfBase = ing.amount; // Percentage stays constant
-      const targetFlourG = baseFlourWeightG * multiplier;
+      const comp = ing.component || "Base Recipe";
+      const targetFlourG = (componentBaseFlourWeightsG[comp] || 0) * multiplier;
       weightInGrams = targetFlourG * (ing.amount / 100);
 
       // Baker's percentage units in DB is '%'. For display, we can either return weight in grams or %

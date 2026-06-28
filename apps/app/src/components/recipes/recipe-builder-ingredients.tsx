@@ -64,7 +64,8 @@ export const RecipeBuilderIngredients: React.FC<RecipeBuilderIngredientsProps> =
           {lines.map((line, idx) => (
             <div key={idx} className="p-3 rounded-xl bg-zinc-900 border border-white/5 flex flex-col md:flex-row gap-3 items-start md:items-center">
               <div className="flex-1 w-full">
-                <select value={line.masterIngredientId} onChange={(e) => handleUpdateLine(idx, { masterIngredientId: e.target.value })} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs focus:border-sky-500 focus:outline-none text-slate-200">
+                <select value={line.masterIngredientId || ""} onChange={(e) => handleUpdateLine(idx, { masterIngredientId: e.target.value || null })} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs focus:border-sky-500 focus:outline-none text-slate-200">
+                  <option value="">-- Unmapped Item {line.rawName ? `(${line.rawName})` : ""} --</option>
                   {masterIngredients.map((mi) => (
                     <option key={mi.id} value={mi.id}>{mi.name}</option>
                   ))}

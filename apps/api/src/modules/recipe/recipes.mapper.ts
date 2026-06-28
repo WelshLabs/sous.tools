@@ -61,6 +61,8 @@ export function mapRecipeRow(row: Record<string, unknown>): Recipe {
       amount: Number(ri.amount),
       unit: String(ri.unit),
       prepNotes: ri.prep_notes ? String(ri.prep_notes) : null,
+      rawName: ri.raw_name ? String(ri.raw_name) : null,
+      component: ri.component ? String(ri.component) : null,
       createdAt: String(ri.created_at),
       masterIngredient,
     };

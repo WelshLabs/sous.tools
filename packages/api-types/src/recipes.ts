@@ -111,6 +111,7 @@ export interface RecipeIngredient {
   amount: number;
   unit: string;
   component?: string | null;
+  rawName?: string | null;
   prepNotes: string | null;
   createdAt: string;
   masterIngredient?: MasterIngredient;
