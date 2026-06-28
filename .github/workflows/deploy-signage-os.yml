@@ -6,6 +6,7 @@ on:
     paths:
       - 'deploy/pi/**'
       - 'deploy/ansible/**'
+  workflow_dispatch:
 
 jobs:
   build:
