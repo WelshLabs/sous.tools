@@ -15,7 +15,7 @@ export function useDisplayPlayer(displayId: string) {
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [pairingCode, setPairingCode] = useState<string | null>(null);
   const [isPaired, setIsPaired] = useState<boolean>(true); // assume true until we check
-  const [tenantConfig, setTenantConfig] = useState<{ url: string; key: string; orgId: string } | null>(null);
+  const [, setTenantConfig] = useState<{ url: string; key: string; orgId: string } | null>(null);
 
   const CACHE_DISPLAY = `display_${displayId}`;
   const CACHE_LAYOUT = `layout_${displayId}`;
