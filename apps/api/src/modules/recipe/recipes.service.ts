@@ -28,7 +28,7 @@ export class RecipesService {
         vessel:vessel_profiles(*),
         recipe_ingredients (
           *,
-          master_ingredients (*)
+          items (*)
         ),
         recipe_tag_assignments(tag_id)
       `)
@@ -70,7 +70,7 @@ export class RecipesService {
     if (ingredientsPayload && ingredientsPayload.length > 0) {
       const dbIngredients = ingredientsPayload.map((ing) => ({
         recipe_id: recipe.id,
-        master_ingredient_id: ing.masterIngredientId,
+        item_id: ing.masterIngredientId,
         calculation_type: ing.calculationType,
         base_calculation_group: ing.baseCalculationGroup || false,
         amount: ing.amount,
@@ -127,7 +127,7 @@ export class RecipesService {
       if (ingredientsPayload.length > 0) {
         const dbIngredients = ingredientsPayload.map((ing) => ({
           recipe_id: id,
-          master_ingredient_id: ing.masterIngredientId,
+          item_id: ing.masterIngredientId,
           calculation_type: ing.calculationType,
           base_calculation_group: ing.baseCalculationGroup || false,
           amount: ing.amount,

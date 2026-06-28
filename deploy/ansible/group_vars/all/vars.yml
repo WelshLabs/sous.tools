@@ -1,0 +1,14 @@
+---
+# Non-secret variables — safe to commit
+signage_user: soustools
+signage_home: /home/soustools
+signage_dir: /home/soustools/signage
+docker_image: conarwelsh/sous-signage
+infisical_env_file: /etc/sous-infisical.env
+secrets_env_file: /etc/sous-secrets.env
+device_id_file: /etc/sous-device-id
+ansible_vault_pass_file: /etc/sous-ansible-vault-pass
+
+# ansible-pull source (PAT injected at runtime from vault)
+ansible_pull_branch: main
+ansible_pull_playbook: deploy/ansible/playbook.yml

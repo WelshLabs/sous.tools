@@ -39,20 +39,18 @@ export function mapDbItemToPosItem(item: RawDbPosItem): PosItem {
 /**
  * Registers a display device with the backend service.
  *
- * @param displayId - The custom name or ID of the display device.
- * @returns The registered display ID, or null if registration fails.
+ * @returns The registered device ID and pairing code, or null if registration fails.
  */
-export async function registerDisplayDevice(displayId: string): Promise<string | null> {
-  const registerUrl = `${window.location.protocol}//${window.location.hostname}:6000/signage/displays/pair/register`;
+export async function registerDisplayDevice(): Promise<{ deviceId: string; pairingCode: string } | null> {
+  const registerUrl = `/api/signage/devices/register`;
   try {
     const res = await fetch(registerUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: `Display ${displayId}` }),
     });
     const result = await res.json();
-    if (result.success && result.data?.id) {
-      return result.data.id;
+    if (result.success && result.data?.deviceId) {
+      return result.data;
     }
   } catch (err) {
     console.error("Device registration request failed", err);

@@ -1,41 +1,58 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../../../lib/supabase";
 import { IngestionReview } from "@soustools/api-types";
 import Link from "next/link";
-import { BrainCircuit, Clock, CheckCircle } from "lucide-react";
+import { BrainCircuit, Clock, CheckCircle, Trash2 } from "lucide-react";
+import { ConfirmModal } from "../../../components/ui/confirm-modal";
 
 export default function IngestionDashboardPage() {
   const [reviews, setReviews] = useState<IngestionReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const fetchReviews = async () => {
-    const { data } = await supabase
-      .from("ingestion_reviews")
-      .select("*")
-      .order("created_at", { ascending: false });
-    
-    if (data) {
-      const parsed = data.map((d: any) => ({
-        id: d.id,
-        organizationId: d.organization_id,
-        userId: d.user_id,
-        source: d.source,
-        rawText: d.raw_text,
-        parsedData: d.parsed_data,
-        status: d.status,
-        createdAt: d.created_at,
-        updatedAt: d.updated_at
-      })) as IngestionReview[];
-      setReviews(parsed);
+    try {
+      const res = await fetch("/api/ingestion");
+      if (res.ok) {
+        const payload = await res.json();
+        const data = payload.data;
+        if (data) {
+          const parsed = data.map((d: any) => ({
+            id: d.id,
+            organizationId: d.organization_id,
+            userId: d.user_id,
+            source: d.source,
+            rawText: d.raw_text,
+            parsedData: d.parsed_data,
+            status: d.status,
+            createdAt: d.created_at,
+            updatedAt: d.updated_at
+          })) as IngestionReview[];
+          setReviews(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load ingestion reviews", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchReviews();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      setReviews(prev => prev.filter(r => r.id !== id));
+      setDeleteId(null);
+    } catch (err) {
+      console.error("Failed to delete review", err);
+    }
+  };
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
@@ -61,7 +78,9 @@ export default function IngestionDashboardPage() {
                     <h2 className="text-xl font-bold capitalize">{review.source.replace("_", " ").toLowerCase()}</h2>
                   </div>
                   <span className={`px-2 py-1 text-xs font-bold rounded uppercase tracking-wider ${
-                    review.status === "PENDING" ? "bg-amber-500/20 text-amber-300" : "bg-emerald-500/20 text-emerald-300"
+                    review.status === "PENDING" ? "bg-amber-500/20 text-amber-300" :
+                    review.status === "REJECTED" ? "bg-red-500/20 text-red-300" :
+                    "bg-emerald-500/20 text-emerald-300"
                   }`}>
                     {review.status}
                   </span>
@@ -70,6 +89,8 @@ export default function IngestionDashboardPage() {
                 <div className="flex-1 text-sm text-gray-400 mb-6">
                   {review.status === "PENDING" ? (
                     <span className="flex items-center gap-2"><Clock size={16}/> Needs Human Review</span>
+                  ) : review.status === "REJECTED" ? (
+                    <span className="flex items-center gap-2 text-red-400"><CheckCircle size={16}/> Rejected</span>
                   ) : (
                     <span className="flex items-center gap-2 text-emerald-400"><CheckCircle size={16}/> Approved</span>
                   )}
@@ -78,14 +99,32 @@ export default function IngestionDashboardPage() {
                   </div>
                 </div>
 
-                <div className="w-full flex items-center justify-center gap-2 bg-white/5 text-white py-2 rounded-md font-medium group-hover:bg-sky-500 group-hover:text-white transition-colors">
-                  Open Review
+                <div className="w-full flex items-center gap-2">
+                  <div className="flex-1 flex items-center justify-center bg-white/5 text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
+                    Open Review
+                  </div>
+                  <button
+                    onClick={(e) => { e.preventDefault(); setDeleteId(review.id); }}
+                    className="p-2 bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded-md transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             </Link>
           ))
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Delete Ingestion Review"
+        message="Are you sure you want to delete this item? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        onCancel={() => setDeleteId(null)}
+        onConfirm={() => { if (deleteId) handleDelete(deleteId); }}
+      />
     </div>
   );
 }

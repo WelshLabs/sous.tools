@@ -1,7 +1,12 @@
-import 'newrelic';
+import { config } from "@soustools/config";
+
+if (config.NEW_RELIC_ENABLED) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require("newrelic");
+}
+
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-import { config } from "@soustools/config";
 import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
 import { logger, patchConsole } from "@soustools/logger";
 

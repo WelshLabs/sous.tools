@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { NutritionService } from "./nutrition.service";
 import { LabelRendererService } from "./label-renderer.service";
+import { UsdaResolverService } from "./usda-resolver.service";
 import { createAdminClient } from "@soustools/supabase";
 // import { Recipe } from "@soustools/api-types";
 
@@ -16,6 +17,7 @@ export class NutritionController {
   constructor(
     private readonly nutritionService: NutritionService,
     private readonly labelRenderer: LabelRendererService,
+    private readonly usdaResolver: UsdaResolverService,
   ) {}
 
   @Get(":id/nutrition-label")
@@ -155,5 +157,12 @@ export class NutritionController {
       },
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Get("usda/search")
+  async searchUsda(@Query("query") query: string): Promise<any> {
+    if (!query) throw new Error("Query is required");
+    const result = await this.usdaResolver.resolveIngredient(query); 
+    return { success: true, data: result };
   }
 }

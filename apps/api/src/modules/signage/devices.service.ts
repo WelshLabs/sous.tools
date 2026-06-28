@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { SignageDevice } from "@soustools/api-types";
+import { config } from "@soustools/config";
 
 interface DbDeviceRow {
   id: string;
@@ -35,6 +36,53 @@ interface MaintenanceWindowInput {
  */
 @Injectable()
 export class DevicesService {
+  /**
+   * Registers a new device natively from the Pi, returning a pairing code.
+   */
+  async register(): Promise<{ deviceId: string; pairingCode: string }> {
+    const pairingCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const { data, error } = await supabase
+      .from("signage_devices")
+      .insert([{
+        name: "Unpaired Device",
+        pairing_code: pairingCode,
+        is_paired: false,
+        timezone: "UTC",
+        maintenance_window: { hour: 3, minute: 0, day_of_week: null },
+      }])
+      .select("id, pairing_code")
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return { deviceId: data.id, pairingCode: data.pairing_code };
+  }
+
+  /**
+   * Checks pairing status. If paired, returns the auth config for the Pi.
+   */
+  async getStatus(id: string): Promise<{ paired: boolean; supabaseUrl?: string; supabaseAnonKey?: string }> {
+    const { data, error } = await supabase
+      .from("signage_devices")
+      .select("is_paired")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.is_paired) {
+      return {
+        paired: true,
+        supabaseUrl: config.SUPABASE_URL,
+        supabaseAnonKey: config.SUPABASE_ANON_KEY,
+      };
+    }
+    return { paired: false };
+  }
+
   /**
    * Fetches a single paired hardware device's settings by ID.
    */

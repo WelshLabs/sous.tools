@@ -49,10 +49,10 @@ export const RecipeNutritionPanel: React.FC<RecipeNutritionPanelProps> = ({ reci
     return <div className="text-xs text-slate-400 animate-pulse">Calculating nutrition profiles...</div>;
   }
 
-  if (!nutrition || !nutrition.perServingNutrition) {
+  if (!nutrition || !nutrition.perServingNutrition || Object.keys(nutrition.perServingNutrition).length === 0) {
     return (
       <div className="p-4 rounded-xl border border-white/5 bg-zinc-950/20 text-xs text-slate-400 flex items-center gap-2">
-        <ShieldAlert className="w-4 h-4 text-amber-500" />
+        <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0" />
         No nutrition facts resolved for this recipe. Ensure ingredients are matched with USDA profiles.
       </div>
     );

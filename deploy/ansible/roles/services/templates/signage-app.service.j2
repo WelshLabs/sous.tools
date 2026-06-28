@@ -1,0 +1,20 @@
+[Unit]
+Description=Sous Tools Signage Docker Application
+After=network-online.target docker.service network.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop signage
+ExecStartPre=-/usr/bin/docker rm signage
+ExecStart=/usr/bin/docker run --name signage \
+  -p 5003:5003 \
+  -v /etc/sous-tenant:/data \
+  {{ docker_image }}:${SIGNAGE_IMAGE_TAG}
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

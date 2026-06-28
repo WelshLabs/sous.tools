@@ -1,0 +1,46 @@
+---
+# roles/user/tasks/main.yml
+# Creates the soustools user, sets up groups and lingering.
+
+- name: Create soustools group
+  ansible.builtin.group:
+    name: "{{ signage_user }}"
+    state: present
+
+- name: Create soustools user
+  ansible.builtin.user:
+    name: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    groups:
+      - docker
+    append: true
+    shell: /bin/bash
+    home: "{{ signage_home }}"
+    create_home: true
+    state: present
+
+- name: Enable systemd lingering for soustools
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ signage_user }}"
+  changed_when: false
+
+- name: Create signage application directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    mode: "0755"
+  loop:
+    - "{{ signage_dir }}"
+    - "{{ signage_dir }}/sync"
+    - "{{ signage_dir }}/secrets"
+    - "{{ signage_home }}/.config/labwc"
+
+- name: Create soustools sudoers entry (for docker and crontab)
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/soustools
+    content: |
+      soustools ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/crontab
+    mode: "0440"
+    validate: "visudo -cf %s"

@@ -73,13 +73,13 @@ export function createServerClient(cookieStore: CookieStore): any {
 /**
  * Creates an administrative or backend Supabase client instance for NestJS or background script execution.
  *
- * @param {string} [serviceRoleKey] Optional override service role key. Defaults to anon key.
+ * @param {string} [serviceRoleKey] Optional override service role key. Defaults to service role key from config.
  * @returns {SupabaseClient} Administrative Supabase client.
  */
 export function createAdminClient(serviceRoleKey?: string): SupabaseClient {
   validateConfig();
   return createClient(
     config.SUPABASE_URL,
-    serviceRoleKey || config.SUPABASE_ANON_KEY,
+    serviceRoleKey || config.SUPABASE_SERVICE_ROLE_KEY || config.SUPABASE_ANON_KEY,
   );
 }

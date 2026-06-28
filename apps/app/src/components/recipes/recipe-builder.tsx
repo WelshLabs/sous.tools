@@ -23,6 +23,7 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
   const [steps, setSteps] = useState<any[]>([]);
   const [vessels, setVessels] = useState<VesselProfile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string>("APPROVED");
 
   useEffect(() => {
     // Fetch vessels
@@ -45,6 +46,7 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
             setVesselId(rec.vesselId || "");
             setIngredients(rec.recipeIngredients || []);
             setSteps(rec.instructions || []);
+            setStatus(rec.status || "APPROVED");
           }
         })
         .finally(() => setLoading(false));
@@ -56,7 +58,7 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
     setLoading(true);
     try {
       const payload = {
-        recipe: { title, yieldCount, yieldUnit, vesselId: vesselId || null, instructions: steps },
+        recipe: { title, yieldCount, yieldUnit, vesselId: vesselId || null, instructions: steps, status },
         recipeIngredients: ingredients.map((ing) => ({
           masterIngredientId: ing.masterIngredientId,
           calculationType: ing.calculationType,
@@ -123,6 +125,15 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
           {vessels.map((v) => (
             <option key={v.id} value={v.id}>{v.name} ({v.volumeMl} ml)</option>
           ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-xs text-slate-400 font-medium mb-1">Recipe Status</label>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200">
+          <option value="PENDING_REVIEW">Pending Review</option>
+          <option value="APPROVED">Approved</option>
+          <option value="ARCHIVED">Archived</option>
         </select>
       </div>
 

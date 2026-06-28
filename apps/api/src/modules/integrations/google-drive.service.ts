@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { google } from "googleapis";
 import { config } from "@soustools/config";
 import { supabase } from "../../lib/supabase";
@@ -23,10 +23,14 @@ export class GoogleDriveService {
       config.GOOGLE_CLIENT_SECRET,
       redirectUri
     );
+    
     oauth2Client.setCredentials({
       access_token: integration.access_token,
       refresh_token: integration.refresh_token,
+      token_type: 'Bearer',
+      expiry_date: integration.expires_at ? new Date(integration.expires_at).getTime() : undefined,
     });
+    
     return oauth2Client;
   }
 
@@ -48,6 +52,14 @@ export class GoogleDriveService {
       q,
       fields: "files(id, name, mimeType, webViewLink)",
       spaces: "drive",
+    }).catch(error => {
+      if (error.code === 401 || (error.response && error.response.status === 401)) {
+        throw new UnauthorizedException("Google Drive authentication failed. Please reconnect.");
+      }
+      if (error.code === 403 || (error.response && error.response.status === 403)) {
+        throw new UnauthorizedException("Insufficient Google Drive permissions. Please reconnect and ensure you check the box to grant Drive access on the consent screen.");
+      }
+      throw error;
     });
 
     return response.data.files || [];
@@ -57,22 +69,32 @@ export class GoogleDriveService {
     const auth = await this.getAuthClient(orgId);
     const drive = google.drive({ version: "v3", auth });
 
-    const file = await drive.files.get({ fileId, fields: "mimeType" });
-    const mimeType = file.data.mimeType;
+    try {
+      const file = await drive.files.get({ fileId, fields: "mimeType" });
+      const mimeType = file.data.mimeType;
 
-    if (mimeType === "application/vnd.google-apps.document") {
-      const response = await drive.files.export({
-        fileId,
-        mimeType: "text/plain",
-      });
-      return response.data as string;
-    } else {
-      // For simple text files or other readable formats
-      const response = await drive.files.get({
-        fileId,
-        alt: "media",
-      });
-      return typeof response.data === "string" ? response.data : JSON.stringify(response.data);
+      if (mimeType === "application/vnd.google-apps.document") {
+        const response = await drive.files.export({
+          fileId,
+          mimeType: "text/plain",
+        });
+        return response.data as string;
+      } else {
+        // For simple text files or other readable formats
+        const response = await drive.files.get({
+          fileId,
+          alt: "media",
+        });
+        return typeof response.data === "string" ? response.data : JSON.stringify(response.data);
+      }
+    } catch (error: any) {
+      if (error.code === 401 || (error.response && error.response.status === 401)) {
+        throw new UnauthorizedException("Google Drive authentication failed. Please reconnect.");
+      }
+      if (error.code === 403 || (error.response && error.response.status === 403)) {
+        throw new UnauthorizedException("Insufficient Google Drive permissions. Please reconnect and ensure you check the box to grant Drive access on the consent screen.");
+      }
+      throw error;
     }
   }
 }

@@ -1,4 +1,4 @@
-export type IngestionSource = "google_drive" | "camera" | "share_target";
+export type IngestionSource = "google_drive" | "camera" | "share_target" | "upload";
 
 export interface IngestionPayload {
   organizationId: string;
@@ -7,6 +7,7 @@ export interface IngestionPayload {
   documentType: "recipe" | "invoice";
   fileIds?: string[];
   imagesBase64?: string[];
+  reviewId?: string;
 }
 
 export type IngestionStatus = "PENDING" | "APPROVED" | "REJECTED";

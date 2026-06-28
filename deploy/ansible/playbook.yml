@@ -1,0 +1,34 @@
+---
+# Main Sous Tools Signage Node Playbook
+# Configures a Raspberry Pi 5 running Raspberry Pi OS Lite (arm64)
+# as a fully operational kiosk signage node.
+#
+# Usage:
+#   ansible-playbook -i inventory.ini playbook.yml --ask-vault-pass
+#
+# Dry-run:
+#   ansible-playbook -i inventory.ini playbook.yml --check --ask-vault-pass
+#
+# Self-update on Pi (ansible-pull):
+#   ansible-pull -U https://<GITHUB_PAT>@github.com/conarwelsh/sous.tools.git \
+#     deploy/ansible/playbook.yml \
+#     --vault-password-file /etc/sous-ansible-vault-pass
+
+- name: Configure Sous Tools Signage Node
+  hosts: signage_nodes
+  become: true
+  vars_files:
+    - group_vars/all/vars.yml
+    - group_vars/all/vault.yml
+
+  roles:
+    - role: system
+      tags: [system]
+    - role: user
+      tags: [user]
+    - role: secrets_bootstrap
+      tags: [secrets]
+    - role: config
+      tags: [config]
+    - role: services
+      tags: [services]

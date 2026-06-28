@@ -1,0 +1,19 @@
+[Unit]
+Description=Sous Tools Signage Ansible Self-Update
+After=signage-sync.service
+Wants=signage-sync.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/ansible-pull \
+  -U "https://$(cat /etc/sous-github-pat)@github.com/conarwelsh/sous.tools.git" \
+  deploy/ansible/playbook.yml \
+  --vault-password-file {{ ansible_vault_pass_file }} \
+  --accept-host-key
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

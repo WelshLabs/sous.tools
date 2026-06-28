@@ -1,0 +1,23 @@
+[Unit]
+Description=Sous Tools Signage First-Boot Runtime Dependency Installer
+After=network-online.target
+Wants=network-online.target
+Before=signage-kiosk.service signage-sync.service signage-app.service
+ConditionPathExists=!/etc/sous-deps-installed
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/bin/bash -c '\
+  export DEBIAN_FRONTEND=noninteractive && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends wlr-randr && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* && \
+  touch /etc/sous-deps-installed'
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

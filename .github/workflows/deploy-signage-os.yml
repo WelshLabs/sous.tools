@@ -1,0 +1,67 @@
+name: Build and Release Signage OS Image
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'deploy/pi/**'
+      - 'deploy/ansible/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install libguestfs-tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libguestfs-tools xz-utils
+
+      - name: Download Stock Raspberry Pi OS Lite
+        run: |
+          wget -qO pi-os.img.xz "https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz"
+          unxz pi-os.img.xz
+          mv 2024-03-15-raspios-bookworm-arm64-lite.img sous-signage-os.img
+
+      - name: Inject Cloud-Init and Ansible Playbook
+        run: |
+          # Use guestfish to inject files into the FAT32 boot partition (sda1)
+          # We need LIBGUESTFS_BACKEND=direct if nested virtualization isn't supported, 
+          # but GitHub Actions supports default backend usually.
+          
+          cat << 'EOF' > guestfish.script
+          add sous-signage-os.img
+          run
+          mount /dev/sda1 /
+          copy-in deploy/pi/cloud-init/user-data /
+          mkdir /ansible
+          # copy-in requires trailing slash for directories sometimes, or we can tar it first
+          EOF
+          
+          # We tar the ansible directory to easily copy it in and extract it, or use copy-in
+          # guestfish copy-in copies the directory itself if we specify the directory
+          
+          guestfish --rw -a sous-signage-os.img -m /dev/sda1 << 'EOF'
+          copy-in deploy/pi/cloud-init/user-data /
+          mkdir /ansible
+          copy-in deploy/ansible /
+          EOF
+          
+          # Note: guestfish copy-in deploy/ansible / will create /ansible directory with the contents?
+          # Actually copy-in deploy/ansible / puts 'ansible' folder in /
+
+      - name: Compress Custom OS Image
+        run: |
+          xz -T0 -9 sous-signage-os.img
+          
+      - name: Upload to Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          curl -X POST "${SUPABASE_URL}/storage/v1/object/signage-os-images/sous-signage-os-latest.img.xz" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Content-Type: application/x-xz" \
+            --data-binary "@sous-signage-os.img.xz"

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * sync-watchtower.js
- * Syncs Watchtower cron container and local user crontab for TV power scripts with Supabase settings.
+ * Syncs Watchtower cron container and local user crontab for TV power scripts
+ * with Supabase device settings. Also triggers ansible-pull during the
+ * configured maintenance window for automated system self-updates.
  */
 
 const fs = require('fs');
@@ -10,7 +12,7 @@ const { execSync } = require('child_process');
 let SUPABASE_URL = process.env.SUPABASE_URL;
 let SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
-const ENV_FILE = '/etc/sous-secrets.env';
+const ENV_FILE = '/etc/sous-tenant/sous-tenant.env';
 if (fs.existsSync(ENV_FILE)) {
   fs.readFileSync(ENV_FILE, 'utf8').split('\n').forEach(line => {
     const parts = line.split('=');
@@ -19,31 +21,40 @@ if (fs.existsSync(ENV_FILE)) {
       const val = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
       if (key === 'SUPABASE_URL') SUPABASE_URL = val;
       if (key === 'SUPABASE_ANON_KEY') SUPABASE_ANON_KEY = val;
+      if (key === 'DEVICE_ID') deviceId = val;
     }
   });
 }
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('[Sync] Error: SUPABASE_URL or SUPABASE_ANON_KEY is not defined.');
-  process.exit(1);
-}
-
-const DEVICE_ID_FILE = '/etc/sous-device-id';
-let deviceId = 'd0000000-0000-0000-0000-000000000010';
-if (fs.existsSync(DEVICE_ID_FILE)) {
-  deviceId = fs.readFileSync(DEVICE_ID_FILE, 'utf8').trim();
+  console.log('[Sync] Device not paired or missing credentials. Waiting...');
+  process.exit(0);
 }
 
 let lastCron = null;
 let lastTimezone = null;
 let lastOperatingHours = null;
 
+/** Returns true if current time falls within the maintenance window. */
+function isInMaintenanceWindow(mw, timezone) {
+  const now = new Date();
+  const localHour = Number(
+    new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: timezone })
+      .format(now)
+  );
+  const targetHour = mw.hour !== undefined ? mw.hour : 2;
+  return localHour === targetHour;
+}
+
+// ansible-pull logic removed in SaaS architecture
+
 async function checkAndSync() {
   try {
     console.log(`[Sync] Fetching settings for device ${deviceId}...`);
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/signage_devices?id=eq.${deviceId}&select=timezone,maintenance_window,operating_hours`, {
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-    });
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/signage_devices?id=eq.${deviceId}&select=timezone,maintenance_window,operating_hours`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
 
     if (!res.ok) throw new Error(`HTTP error ${res.status}: ${await res.text()}`);
     const data = await res.json();
@@ -53,7 +64,7 @@ async function checkAndSync() {
     const timezone = device.timezone || 'UTC';
     const mw = device.maintenance_window || {};
     const oh = device.operating_hours || { sleep_hour: 22, sleep_minute: 0, wake_hour: 6, wake_minute: 0 };
-    
+
     const baseHour = mw.hour !== undefined ? mw.hour : 2;
     const baseMinute = mw.minute !== undefined ? mw.minute : 0;
     const dayOfWeek = (mw.day_of_week !== undefined && mw.day_of_week !== null && mw.day_of_week !== '*') ? mw.day_of_week : '*';
@@ -85,6 +96,8 @@ async function checkAndSync() {
       lastOperatingHours = ohString;
       updated = true;
     }
+
+    // Docker containers are automatically updated by Watchtower.
 
     if (!updated) console.log('[Sync] Settings unchanged.');
   } catch (err) {

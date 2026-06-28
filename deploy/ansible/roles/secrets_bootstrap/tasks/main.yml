@@ -1,0 +1,34 @@
+---
+# roles/secrets_bootstrap/tasks/main.yml
+# Writes the Infisical bootstrap env file and ansible-vault pass to the Pi.
+# These are the ONLY credentials that live on-device — everything else is
+# fetched from Infisical at runtime by fetch-secrets.js.
+
+- name: Write Infisical bootstrap env file
+  ansible.builtin.copy:
+    dest: "{{ infisical_env_file }}"
+    content: |
+      INFISICAL_CLIENT_ID={{ vault_infisical_client_id }}
+      INFISICAL_CLIENT_SECRET={{ vault_infisical_client_secret }}
+      INFISICAL_PROJECT_ID={{ vault_infisical_project_id }}
+      INFISICAL_ENV={{ vault_infisical_env }}
+      SIGNAGE_IMAGE_TAG={{ vault_signage_image_tag }}
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Write ansible-vault password file
+  ansible.builtin.copy:
+    dest: "{{ ansible_vault_pass_file }}"
+    content: "{{ vault_ansible_vault_pass }}\n"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Write GitHub PAT for ansible-pull
+  ansible.builtin.copy:
+    dest: /etc/sous-github-pat
+    content: "{{ vault_github_pat }}\n"
+    owner: root
+    group: root
+    mode: "0600"

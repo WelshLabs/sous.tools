@@ -17,6 +17,7 @@ export async function runControllerAction<T>(
       timestamp: new Date().toISOString(),
     };
   } catch (err) {
+    console.error("[runControllerAction] Exception:", err);
     const message = err instanceof Error ? err.message : "Unknown error";
     return {
       success: false,

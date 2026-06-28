@@ -21,17 +21,25 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [currentFolder, setCurrentFolder] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      handleSearch("");
+      setQuery("");
+      setCurrentFolder(null);
+      handleSearch("", "");
     }
   }, [isOpen]);
 
-  const handleSearch = async (q: string) => {
+  const handleSearch = async (q: string, folderId?: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/integrations/google/files?q=${encodeURIComponent(q)}`);
+      const activeFolder = folderId !== undefined ? folderId : currentFolder?.id;
+      let url = `/api/integrations/google/files?q=${encodeURIComponent(q)}`;
+      if (activeFolder) {
+        url += `&folderId=${encodeURIComponent(activeFolder)}`;
+      }
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setFiles(data);
@@ -58,7 +66,7 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
     setLoading(true);
     try {
       const session = await supabase.auth.getSession();
-      await fetch("/api/ingestion/submit", {
+      const res = await fetch("/api/ingestion/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -69,11 +77,15 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
           fileIds: Array.from(selectedIds)
         })
       });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to enqueue files");
+      }
       toast.success("Files sent to ingestion queue.");
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error("Failed to enqueue files");
+      toast.error(err.message || "Failed to enqueue files");
     } finally {
       setLoading(false);
     }
@@ -94,6 +106,21 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
         </div>
 
         <div className="p-4 border-b border-white/5 bg-zinc-900/50">
+          {currentFolder && (
+            <div className="mb-3 flex items-center gap-2 text-sm text-zinc-300">
+              <button
+                onClick={() => {
+                  setCurrentFolder(null);
+                  handleSearch(query, "");
+                }}
+                className="text-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
+              >
+                Root
+              </button>
+              <span className="text-zinc-500">/</span>
+              <span className="text-zinc-100">{currentFolder.name}</span>
+            </div>
+          )}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input
@@ -128,6 +155,19 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
                       {isFolder ? <Folder className="w-5 h-5 fill-current opacity-80" /> : <FileText className="w-5 h-5 opacity-80" />}
                     </div>
                     <span className="flex-1 text-sm text-zinc-200 truncate">{f.name}</span>
+                    {isFolder && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentFolder({ id: f.id, name: f.name });
+                          setQuery("");
+                          handleSearch("", f.id);
+                        }}
+                        className="px-3 py-1 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 transition-colors cursor-pointer"
+                      >
+                        Open
+                      </button>
+                    )}
                     {isSelected && <CheckCircle className="w-4 h-4 text-sky-400" />}
                   </div>
                 );

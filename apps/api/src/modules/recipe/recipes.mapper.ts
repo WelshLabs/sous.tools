@@ -22,7 +22,7 @@ export function mapRecipeRow(row: Record<string, unknown>): Recipe {
   } : undefined;
 
   const recipeIngredients: RecipeIngredient[] = ingredientsRaw ? ingredientsRaw.map((ri) => {
-    const mi = ri.master_ingredients as Record<string, unknown> | null;
+    const mi = ri.items as Record<string, unknown> | null;
     const macros = (mi?.nutrition_macros || {}) as Record<string, unknown>;
     const nutritionMacros: NutritionMacros = {
       calories: macros.calories !== undefined && macros.calories !== null ? Number(macros.calories) : null,
@@ -54,7 +54,7 @@ export function mapRecipeRow(row: Record<string, unknown>): Recipe {
     return {
       id: String(ri.id),
       recipeId: String(ri.recipe_id),
-      masterIngredientId: ri.master_ingredient_id ? String(ri.master_ingredient_id) : null,
+      masterIngredientId: ri.item_id ? String(ri.item_id) : null,
       subRecipeId: ri.sub_recipe_id ? String(ri.sub_recipe_id) : null,
       calculationType: ri.calculation_type as "fixed_weight" | "bakers_percentage",
       baseCalculationGroup: Boolean(ri.base_calculation_group),

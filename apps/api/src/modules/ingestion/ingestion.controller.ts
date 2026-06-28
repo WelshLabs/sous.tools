@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param } from "@nestjs/common";
+import { Controller, Post, Body, Param, Get, Delete } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { ApiResponse, IngestionPayload } from "@soustools/api-types";
@@ -9,14 +9,38 @@ import { supabase } from "../../lib/supabase";
 export class IngestionController {
   constructor(@InjectQueue("ingestion") private readonly ingestionQueue: Queue) {}
 
+  @Get()
+  async getReviews(): Promise<ApiResponse<any[]>> {
+    return runControllerAction(async () => {
+      const { data, error } = await supabase
+        .from("ingestion_reviews")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return data;
+    });
+  }
+
   @Post("submit")
   async submit(@Body() payload: IngestionPayload): Promise<ApiResponse<{ jobId: string }>> {
     return runControllerAction(async () => {
-      const job = await this.ingestionQueue.add("process-ingestion", payload, {
+      // Create initial review record so it shows in the UI immediately
+      const { data: review, error } = await supabase.from("ingestion_reviews").insert({
+        organization_id: payload.organizationId,
+        user_id: payload.userId,
+        source: payload.source,
+        raw_text: "",
+        parsed_data: { processing: true },
+        status: "PENDING"
+      }).select().single();
+
+      if (error) throw new Error(error.message);
+
+      const job = await this.ingestionQueue.add("process-ingestion", { ...payload, reviewId: review.id }, {
         attempts: 3,
         backoff: { type: "exponential", delay: 2000 },
       });
-      return { jobId: job.id! };
+      return { jobId: job.id!, reviewId: review.id };
     });
   }
 
@@ -30,38 +54,80 @@ export class IngestionController {
 
       const parsed = review.parsed_data as any;
 
-      if (parsed.title && parsed.ingredients) {
-        // Recipe commit
-        const { data: recipe, error: recipeErr } = await supabase.from("recipes").insert({
-          organization_id: review.organization_id,
-          title: parsed.title,
-          instructions: [],
-          yield_count: parsed.yieldCount || 1,
-          yield_unit: parsed.yieldUnit || "servings",
-          cost_per_yield: 0,
-          gross_margin: 0
-        }).select().single();
+      const recipesToCommit = parsed.recipes ? parsed.recipes : (parsed.title && parsed.ingredients ? [parsed] : []);
 
-        if (recipeErr) throw new Error(recipeErr.message);
+      if (recipesToCommit.length > 0) {
+        for (const recipe of recipesToCommit) {
+          // Resolve vessel
+          let vesselId: string | null = null;
+          if (recipe.vessel?.name) {
+            const { data: existingVessel } = await supabase
+              .from("vessel_profiles")
+              .select("id")
+              .eq("organization_id", review.organization_id)
+              .ilike("name", recipe.vessel.name)
+              .maybeSingle();
 
-        for (const ing of parsed.ingredients) {
-          const { data: master } = await supabase
-            .from("master_ingredients")
-            .select("id")
-            .eq("organization_id", review.organization_id)
-            .ilike("name", ing.name)
-            .maybeSingle();
+            if (existingVessel) {
+              vesselId = existingVessel.id;
+            } else {
+              const { data: newVessel } = await supabase
+                .from("vessel_profiles")
+                .insert({
+                  organization_id: review.organization_id,
+                  name: recipe.vessel.name,
+                  shape: recipe.vessel.shape || "ROUND",
+                  length: recipe.vessel.length || null,
+                  width: recipe.vessel.width || null,
+                  height: recipe.vessel.height || null,
+                  diameter: recipe.vessel.diameter || null,
+                  volume_ml: recipe.vessel.volumeMl || 0
+                })
+                .select()
+                .single();
+              if (newVessel) vesselId = newVessel.id;
+            }
+          }
 
-          await supabase.from("recipe_ingredients").insert({
+          // Insert recipe (extracted recipes default to PENDING_REVIEW)
+          const { data: createdRecipe, error: recipeErr } = await supabase.from("recipes").insert({
             organization_id: review.organization_id,
-            recipe_id: recipe.id,
-            master_ingredient_id: master?.id || null,
-            sub_recipe_id: null,
-            name: ing.name,
-            amount: ing.amount,
-            unit: ing.unit,
-            calculation_type: ing.calculationType || "WEIGHT"
-          });
+            title: recipe.title,
+            instructions: recipe.instructions || [],
+            yield_count: recipe.yieldCount || 1,
+            yield_unit: recipe.yieldUnit || "servings",
+            vessel_id: vesselId,
+            status: "PENDING_REVIEW",
+            source_document_url: review.source_document_url || null,
+            source_book: recipe.sourceBook || null,
+            source_author: recipe.sourceAuthor || null,
+            cost_per_yield: 0,
+            gross_margin: 0
+          }).select().single();
+
+          if (recipeErr) throw new Error(recipeErr.message);
+
+          if (recipe.ingredients) {
+            for (const ing of recipe.ingredients) {
+              const { data: master } = await supabase
+                .from("items")
+                .select("id")
+                .eq("organization_id", review.organization_id)
+                .ilike("name", ing.name)
+                .maybeSingle();
+
+              await supabase.from("recipe_ingredients").insert({
+                organization_id: review.organization_id,
+                recipe_id: createdRecipe.id,
+                item_id: master?.id || null,
+                sub_recipe_id: null,
+                name: ing.name,
+                amount: ing.amount,
+                unit: ing.unit,
+                calculation_type: ing.calculationType || "WEIGHT"
+              });
+            }
+          }
         }
       } else if (parsed.vendorName && parsed.items) {
         // Invoice commit
@@ -101,6 +167,14 @@ export class IngestionController {
       }
 
       await supabase.from("ingestion_reviews").update({ status: "APPROVED", parsed_data: parsed }).eq("id", id);
+    });
+  }
+
+  @Delete(":id")
+  async deleteReview(@Param("id") id: string): Promise<ApiResponse<void>> {
+    return runControllerAction(async () => {
+      const { error } = await supabase.from("ingestion_reviews").delete().eq("id", id);
+      if (error) throw new Error(error.message);
     });
   }
 }

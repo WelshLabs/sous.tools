@@ -11,11 +11,11 @@ interface PairDisplayDialogProps {
 }
 
 /**
- * PairDisplayDialog is a modal dialog that prompts the user for a 4-character pairing code
+ * PairDisplayDialog is a modal dialog that prompts the user for a 6-character pairing code
  * to connect a digital signage device to their organization.
  *
  * @tenant-docs-export
- * Use the Pair Display Dialog to securely connect a new hardware screen/device using a 4-digit pairing code.
+ * Use the Pair Display Dialog to securely connect a new hardware screen/device using a 6-digit pairing code.
  */
 export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
   isOpen,
@@ -31,8 +31,8 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
 
   const handlePairSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    if (pairingCode.length !== 4) {
-      setError("Pairing code must be exactly 4 characters.");
+    if (pairingCode.length !== 6) {
+      setError("Pairing code must be exactly 6 characters.");
       return;
     }
     setSubmitting(true);
@@ -89,15 +89,15 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
         )}
         <div className="space-y-1">
           <label className="block text-xs text-slate-400">
-            4-Character Pairing Code
+            6-Character Pairing Code
           </label>
           <input
             type="text"
-            maxLength={4}
+            maxLength={6}
             required
             value={pairingCode}
             onChange={(e) => setPairingCode(e.target.value.toUpperCase())}
-            placeholder="E.g. X1Y3"
+            placeholder="E.g. 847291"
             className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-center text-lg font-mono tracking-widest text-slate-100 uppercase"
           />
         </div>

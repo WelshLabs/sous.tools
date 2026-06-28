@@ -6,7 +6,7 @@ import { MasterIngredient } from "@soustools/api-types";
 export class IngredientsService {
   async findAll(orgId: string): Promise<MasterIngredient[]> {
     const { data, error } = await supabase
-      .from("master_ingredients")
+      .from("items")
       .select("*")
       .eq("organization_id", orgId)
       .order("name", { ascending: true });
@@ -17,7 +17,7 @@ export class IngredientsService {
 
   async findOne(id: string): Promise<MasterIngredient> {
     const { data, error } = await supabase
-      .from("master_ingredients")
+      .from("items")
       .select("*")
       .eq("id", id)
       .single();
@@ -31,7 +31,7 @@ export class IngredientsService {
     payload: Omit<MasterIngredient, "id" | "organizationId" | "createdAt" | "updatedAt">
   ): Promise<MasterIngredient> {
     const { data, error } = await supabase
-      .from("master_ingredients")
+      .from("items")
       .insert([
         {
           organization_id: orgId,
@@ -58,7 +58,7 @@ export class IngredientsService {
     if (payload.allergens !== undefined) updateData.allergens = payload.allergens;
 
     const { data, error } = await supabase
-      .from("master_ingredients")
+      .from("items")
       .update(updateData)
       .eq("id", id)
       .select()
@@ -70,7 +70,7 @@ export class IngredientsService {
 
   async remove(id: string): Promise<MasterIngredient> {
     const { data, error } = await supabase
-      .from("master_ingredients")
+      .from("items")
       .delete()
       .eq("id", id)
       .select()

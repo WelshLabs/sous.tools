@@ -9,6 +9,7 @@ import { GoogleDriveBrowser } from "../integrations/google-drive-browser";
 import { VesselManager } from "./vessel-manager";
 import { RecipeCard } from "./recipe-card";
 import { RecipeFilter } from "./recipe-filter";
+import { toast } from "sonner";
 
 /**
  * RecipeList manages recipe collection state, filtering controls, and ingestion options.
@@ -101,7 +102,7 @@ export const RecipeList: React.FC = () => {
       try {
         const { supabase } = await import("../../lib/supabase");
         const session = await supabase.auth.getSession();
-        await fetch("/api/ingestion/submit", {
+        const res = await fetch("/api/ingestion/submit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -109,13 +110,23 @@ export const RecipeList: React.FC = () => {
             userId: session.data.session?.user?.id,
             source,
             documentType: "recipe",
-            imagesBase64: [base64.split(",")[1]],
+            imagesBase64: [base64],
           }),
         });
-        alert(`${source === "camera" ? "Photo" : "File"} uploaded to ingestion queue.`);
-      } catch (err) {
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Failed to enqueue file");
+        }
+        toast.success(`${source === "camera" ? "Photo" : "File"} uploaded successfully!`, {
+          description: "Processing recipe in ingestion queue.",
+          action: {
+            label: "Open Review",
+            onClick: () => window.location.href = `/ingestion/review/${data.data.reviewId}`
+          }
+        });
+      } catch (err: any) {
         console.error(err);
-        alert(`Failed to queue ${source === "camera" ? "photo" : "file"}`);
+        toast.error(`Failed to queue ${source === "camera" ? "photo" : "file"}: ${err.message}`);
       }
     };
     reader.readAsDataURL(file);
@@ -160,8 +171,8 @@ export const RecipeList: React.FC = () => {
               </div>
             </>
           )}
-          <input type="file" accept="image/*" capture="environment" id="camera-upload" className="hidden" onChange={(e) => handleIngestUpload(e, "camera")} />
-          <input type="file" accept="image/*,application/pdf" id="file-upload" className="hidden" onChange={(e) => handleIngestUpload(e, "upload")} />
+          <input type="file" accept="image/*,application/pdf" id="camera-upload" className="hidden" onChange={(e) => handleIngestUpload(e, "camera")} />
+          <input type="file" accept="image/*,application/pdf" id="file-upload" className="hidden" onChange={(e) => handleIngestUpload(e, "upload" as any)} />
           <Link href="/recipes/new"><Button size="sm"><Plus className="w-4 h-4 mr-1 inline" /> Create Recipe</Button></Link>
         </div>
       </header>

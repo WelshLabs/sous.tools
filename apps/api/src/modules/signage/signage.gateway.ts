@@ -12,6 +12,7 @@ interface JoinPayload {
   displayId?: string;
   deckId?: string;
   id?: string;
+  pairingDeviceId?: string;
 }
 
 @WebSocketGateway({ cors: { origin: "*" } })
@@ -22,12 +23,15 @@ export class SignageGateway
   server!: Server;
 
   handleConnection(client: Socket): void {
-    const { displayId, deckId } = client.handshake.query;
+    const { displayId, deckId, pairingDeviceId } = client.handshake.query;
     if (displayId && typeof displayId === "string") {
       client.join(`display:${displayId}`);
     }
     if (deckId && typeof deckId === "string") {
       client.join(`deck:${deckId}`);
+    }
+    if (pairingDeviceId && typeof pairingDeviceId === "string") {
+      client.join(`pairing:${pairingDeviceId}`);
     }
   }
 
@@ -43,6 +47,7 @@ export class SignageGateway
     const joined: string[] = [];
     const displayId = payload?.displayId ?? payload?.id;
     const deckId = payload?.deckId;
+    const pairingDeviceId = payload?.pairingDeviceId;
 
     if (displayId) {
       client.join(`display:${displayId}`);
@@ -51,6 +56,10 @@ export class SignageGateway
     if (deckId) {
       client.join(`deck:${deckId}`);
       joined.push(`deck:${deckId}`);
+    }
+    if (pairingDeviceId) {
+      client.join(`pairing:${pairingDeviceId}`);
+      joined.push(`pairing:${pairingDeviceId}`);
     }
     return joined.length ? { status: "success", joined } : { status: "error" };
   }
@@ -83,5 +92,23 @@ export class SignageGateway
         .to(`deck:${deckId}`)
         .emit("items_updated", { deckId, items });
     }
+  }
+
+  /**
+   * Broadcasts pairing confirmation to a device listening on its pairing room.
+   */
+  broadcastDevicePaired(deviceId: string, orgId: string): void {
+    import("@soustools/config").then(({ config }) => {
+      if (this.server) {
+        this.server
+          .to(`pairing:${deviceId}`)
+          .emit("device_paired", { 
+            deviceId, 
+            orgId,
+            supabaseUrl: config.SUPABASE_URL,
+            supabaseAnonKey: config.SUPABASE_ANON_KEY
+          });
+      }
+    });
   }
 }

@@ -44,7 +44,7 @@ interface DisplayPlayerProps {
 }
 
 export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
-  const { display, layout, items, loading, errorState } =
+  const { display, layout, items, loading, errorState, isPaired, pairingCode } =
     useDisplayPlayer(displayId);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
     );
   }
 
-  if (errorState && !display) {
+  if (errorState && !display && isPaired) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
         <h2 className="text-2xl font-bold text-[oklch(0.60_0.25_25)] mb-2 font-brand">
@@ -74,8 +74,18 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
     );
   }
 
+  if (!isPaired) {
+    return <PairingScreen code={pairingCode || "......"} />;
+  }
+
   if (display && !display.deckId) {
-    return <PairingScreen code={display.id.slice(0, 8).toUpperCase()} />;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
+        <h2 className="text-2xl font-bold text-[oklch(0.60_0.25_25)] mb-2 font-brand text-center">
+          Display Paired successfully!<br/>Assign a Deck in the Dashboard.
+        </h2>
+      </div>
+    );
   }
 
   const config = layout?.config;

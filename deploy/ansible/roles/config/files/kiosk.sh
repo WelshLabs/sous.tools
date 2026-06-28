@@ -6,9 +6,9 @@
 export WAYLAND_DISPLAY=wayland-0
 export XDG_RUNTIME_DIR=/run/user/1000
 
-# Define screen URLs (can be paired display IDs or channels)
-TV_ONE_URL="http://localhost:5003/display/dtown-left"
-TV_TWO_URL="http://localhost:5003/display/dtown-right"
+# Define screen URLs
+TV_ONE_URL="http://localhost:5003/display/hdmi-1"
+TV_TWO_URL="http://localhost:5003/display/hdmi-2"
 
 # Delay to ensure Labwc is fully running
 sleep 3

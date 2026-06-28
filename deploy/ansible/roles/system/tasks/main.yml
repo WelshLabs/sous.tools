@@ -1,0 +1,61 @@
+---
+# roles/system/tasks/main.yml
+# Installs all system packages needed for the signage node.
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+
+- name: Install base system packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - xz-utils
+      - ca-certificates
+      - gnupg
+      - lsb-release
+    state: present
+
+- name: Install Wayland compositor (labwc)
+  ansible.builtin.apt:
+    name: labwc
+    state: present
+
+- name: Install Chromium browser
+  ansible.builtin.apt:
+    name: chromium-browser
+    state: present
+
+- name: Install Docker
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+
+- name: Enable and start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Install Node.js and npm
+  ansible.builtin.apt:
+    name:
+      - nodejs
+      - npm
+    state: present
+
+- name: Install Ansible (for ansible-pull self-updates)
+  ansible.builtin.apt:
+    name: ansible
+    state: present
+
+- name: Clean apt cache
+  ansible.builtin.apt:
+    autoclean: true
+    autoremove: true

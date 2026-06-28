@@ -3,6 +3,7 @@ import { secrets } from "./secrets.js";
 export interface Config {
   readonly SUPABASE_URL: string;
   readonly SUPABASE_ANON_KEY: string;
+  readonly SUPABASE_SERVICE_ROLE_KEY: string;
   readonly IS_MOCK_ENV: boolean;
   readonly SQUARE_CLIENT_ID: string;
   readonly SQUARE_CLIENT_SECRET: string;
@@ -20,6 +21,9 @@ export interface Config {
   readonly IS_DEVELOPMENT: boolean;
   readonly TV_BASE_URL: string;
   readonly NEW_RELIC_LICENSE_KEY: string;
+  readonly NEW_RELIC_ENABLED: boolean;
+  readonly USDA_FDC_API_KEY: string;
+  readonly VERCEL_AI_GATEWAY_API_KEY: string;
 }
 
 /**
@@ -39,6 +43,7 @@ const sec = secrets as Record<string, string | number | undefined>;
 export const config: Config = Object.freeze({
   SUPABASE_URL: secrets.SUPABASE_URL,
   SUPABASE_ANON_KEY: secrets.SUPABASE_ANON_KEY,
+  SUPABASE_SERVICE_ROLE_KEY: isMockEnv ? "supabase_service_role_key_placeholder" : (process.env.SUPABASE_SERVICE_ROLE_KEY || (sec.SUPABASE_SERVICE_ROLE_KEY as string) || "supabase_service_role_key_placeholder"),
   IS_MOCK_ENV: isMockEnv,
   IS_DEVELOPMENT: isDevelopment,
   SQUARE_CLIENT_ID: isMockEnv
@@ -81,13 +86,17 @@ export const config: Config = Object.freeze({
   SQUARE_WEBHOOK_SIGNATURE_KEY: isMockEnv
     ? ""
     : (process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || (sec.SQUARE_WEBHOOK_SIGNATURE_KEY as string) || ""),
-  GEMINI_API_KEY: isMockEnv
-    ? "gemini-api-key-placeholder"
-    : (process.env.GEMINI_API_KEY || (sec.GEMINI_API_KEY as string) || "gemini-api-key-placeholder"),
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || (sec.GEMINI_API_KEY as string) || (isMockEnv ? "gemini-api-key-placeholder" : "gemini-api-key-placeholder"),
   TV_BASE_URL: isMockEnv
     ? "http://localhost:5003"
     : (process.env.NEXT_PUBLIC_TV_URL || (sec.NEXT_PUBLIC_TV_URL as string) || "http://localhost:5003"),
   NEW_RELIC_LICENSE_KEY: isMockEnv
     ? "new-relic-license-key-placeholder"
     : (process.env.NEW_RELIC_LICENSE_KEY || (sec.NEW_RELIC_LICENSE_KEY as string) || "new-relic-license-key-placeholder"),
+  NEW_RELIC_ENABLED: !isMockEnv &&
+    !isDevelopment &&
+    !!(process.env.NEW_RELIC_LICENSE_KEY || sec.NEW_RELIC_LICENSE_KEY) &&
+    (process.env.NEW_RELIC_LICENSE_KEY || sec.NEW_RELIC_LICENSE_KEY) !== "new-relic-license-key-placeholder",
+  USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY || (sec.USDA_FDC_API_KEY as string) || (isMockEnv ? "DEMO_KEY" : "DEMO_KEY"),
+  VERCEL_AI_GATEWAY_API_KEY: process.env.VERCEL_AI_GATEWAY_API_KEY || (sec.VERCEL_AI_GATEWAY_API_KEY as string) || "",
 });

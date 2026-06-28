@@ -1,0 +1,57 @@
+---
+# roles/services/tasks/main.yml
+# Writes and enables all systemd services for the signage node.
+
+- name: Create systemd unit directory
+  ansible.builtin.file:
+    path: /etc/systemd/system
+    state: directory
+    mode: "0755"
+
+- name: Deploy systemd service files from templates
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    mode: "0644"
+  loop:
+    - signage-deps-install.service
+    - signage-kiosk.service
+    - signage-app.service
+    - signage-sync.service
+    - signage-ansible-update.service
+  notify: Reload systemd
+
+- name: Flush handlers before enabling services
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable all signage services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    daemon_reload: true
+  loop:
+    - signage-deps-install.service
+    - signage-kiosk.service
+    - signage-app.service
+    - signage-sync.service
+    - signage-ansible-update.service
+
+- name: Create getty drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/getty@tty1.service.d
+    state: directory
+    mode: "0755"
+
+- name: Configure console autologin for soustools
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty --autologin {{ signage_user }} --noclear %I $TERM
+    mode: "0644"
+
+- name: Set default systemd target to multi-user (non-graphical)
+  ansible.builtin.command:
+    cmd: systemctl set-default multi-user.target
+  changed_when: false

@@ -1,0 +1,62 @@
+---
+# roles/config/tasks/main.yml
+# Deploys all runtime scripts and config files to the signage node.
+
+- name: Copy Labwc window rules
+  ansible.builtin.copy:
+    src: labwc-rc.xml
+    dest: "{{ signage_home }}/.config/labwc/rc.xml"
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    mode: "0644"
+
+- name: Copy kiosk launcher script
+  ansible.builtin.copy:
+    src: kiosk.sh
+    dest: "{{ signage_dir }}/kiosk.sh"
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    mode: "0755"
+
+- name: Copy TV sleep script
+  ansible.builtin.copy:
+    src: tv-sleep.sh
+    dest: "{{ signage_dir }}/tv-sleep.sh"
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    mode: "0755"
+
+- name: Copy TV wake script
+  ansible.builtin.copy:
+    src: tv-wake.sh
+    dest: "{{ signage_dir }}/tv-wake.sh"
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    mode: "0755"
+
+- name: Copy Watchtower sync daemon
+  ansible.builtin.copy:
+    src: sync-watchtower.js
+    dest: "{{ signage_dir }}/sync/sync-watchtower.js"
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    mode: "0644"
+
+- name: Copy Infisical secrets fetcher
+  ansible.builtin.copy:
+    src: fetch-secrets.js
+    dest: "{{ signage_dir }}/secrets/fetch-secrets.js"
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    mode: "0644"
+
+- name: Ensure all signage dirs have correct ownership
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ signage_user }}"
+    group: "{{ signage_user }}"
+    recurse: true
+  loop:
+    - "{{ signage_dir }}"
+    - "{{ signage_home }}/.config"

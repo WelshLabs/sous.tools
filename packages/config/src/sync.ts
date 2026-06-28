@@ -38,6 +38,9 @@ export const secrets = {
   GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
   PORT: 6001,
   NEW_RELIC_LICENSE_KEY: "new-relic-license-key-placeholder",
+  GEMINI_API_KEY: "gemini-api-key-placeholder",
+  USDA_FDC_API_KEY: "DEMO_KEY",
+  VERCEL_AI_GATEWAY_API_KEY: "",
 };
 `;
     fs.writeFileSync(SECRETS_FILE_PATH, tsContent, "utf8");
@@ -111,6 +114,15 @@ export const secrets = {
     const newRelicLicenseKey = secretsArray.find(
       (s: any) => s.secretKey === "NEW_RELIC_LICENSE_KEY",
     )?.secretValue || "new-relic-license-key-placeholder";
+    const geminiApiKey = secretsArray.find(
+      (s: any) => s.secretKey === "GEMINI_API_KEY",
+    )?.secretValue || "gemini-api-key-placeholder";
+    const usdaFdcApiKey = secretsArray.find(
+      (s: any) => s.secretKey === "USDA_FDC_API_KEY",
+    )?.secretValue || "DEMO_KEY";
+    const vercelAiGatewayApiKey = secretsArray.find(
+      (s: any) => s.secretKey === "VERCEL_AI_GATEWAY_API_KEY",
+    )?.secretValue || "";
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error(
@@ -131,6 +143,9 @@ export const secrets = {
   PRODUCTION_SQUARE_ACCESS_TOKEN: ${JSON.stringify(productionSquareAccessToken)},
   PORT: ${Number(port)},
   NEW_RELIC_LICENSE_KEY: ${JSON.stringify(newRelicLicenseKey)},
+  GEMINI_API_KEY: ${JSON.stringify(geminiApiKey)},
+  USDA_FDC_API_KEY: ${JSON.stringify(usdaFdcApiKey)},
+  VERCEL_AI_GATEWAY_API_KEY: ${JSON.stringify(vercelAiGatewayApiKey)},
 };
 `;
 

@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, CheckCircle, BrainCircuit } from "lucide-react";
+import { Loader2, ArrowLeft, CheckCircle, BrainCircuit, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { IngestionReview } from "@soustools/api-types";
 import { toast } from "sonner";
 import Link from "next/link";
+import { ConfirmModal } from "../../../../../components/ui/confirm-modal";
 
 export default function IngestionReviewPage() {
   const params = useParams();
@@ -16,6 +17,7 @@ export default function IngestionReviewPage() {
   const [review, setReview] = useState<IngestionReview | null>(null);
   const [loading, setLoading] = useState(true);
   const [editedData, setEditedData] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchReview = async () => {
@@ -74,6 +76,18 @@ export default function IngestionReviewPage() {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      toast.success("Review deleted successfully");
+      router.push("/ingestion");
+    } catch (err) {
+      toast.error("Failed to delete review");
+      setShowDeleteConfirm(false);
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-sky-500" /></div>;
   }
@@ -84,7 +98,7 @@ export default function IngestionReviewPage() {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/recipes" className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+          <Link href="/ingestion" className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
             <ArrowLeft className="w-5 h-5 text-zinc-300" />
           </Link>
           <div>
@@ -95,19 +109,30 @@ export default function IngestionReviewPage() {
             <p className="text-sm text-zinc-400">Review AI extracted data from {review.source.replace("_", " ")}</p>
           </div>
         </div>
-        
-        {review.status === "PENDING" ? (
+        <div className="flex items-center gap-3">
           <button
-            onClick={handleApprove}
-            className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-2 text-zinc-400 hover:text-red-500 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
+            title="Delete Review"
           >
-            <CheckCircle className="w-5 h-5" /> Approve & Save
+            <Trash2 className="w-5 h-5" />
           </button>
-        ) : (
-          <div className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold border border-emerald-500/30">
-            Already {review.status}
-          </div>
-        )}
+          
+          {review.status === "PENDING" ? (
+            <button
+              onClick={handleApprove}
+              className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20"
+            >
+              <CheckCircle className="w-5 h-5" /> Approve & Save
+            </button>
+          ) : (
+            <div className={`px-4 py-2 rounded-lg font-bold border ${
+              review.status === "REJECTED" ? "bg-red-500/20 text-red-400 border-red-500/30" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+            }`}>
+              Already {review.status}
+            </div>
+          )}
+        </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
@@ -133,13 +158,25 @@ export default function IngestionReviewPage() {
             <textarea
               value={editedData}
               onChange={(e) => setEditedData(e.target.value)}
-              className="w-full h-full bg-black/60 text-emerald-400 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50"
+              className={`w-full h-full bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
+                editedData.includes('"error":') ? 'text-red-400' : 'text-emerald-400'
+              }`}
               spellCheck={false}
               disabled={review.status !== "PENDING"}
             />
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Delete Ingestion Review"
+        message="Are you sure you want to delete this item? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

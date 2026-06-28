@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-// import { config } from '@soustools/config';
+import { config } from "@soustools/config";
 
 @Injectable()
 export class UsdaResolverService {
   private readonly logger = new Logger(UsdaResolverService.name);
   private readonly baseUrl = "https://api.nal.usda.gov/fdc/v1";
-  private readonly apiKey = "DEMO_KEY"; // Can be moved to config if needed
+  private readonly apiKey = config.USDA_FDC_API_KEY;
 
   async resolveIngredient(query: string): Promise<any> {
     try {

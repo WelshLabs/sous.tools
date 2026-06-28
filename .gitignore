@@ -43,8 +43,8 @@ coverage/
 .nyc_output/
 .vercel
 
-# Deploy secrets
-deploy/vercel-env.sh
-deploy/vercel-rest.js
+# Ansible secrets — never commit real vault or inventory
+deploy/ansible/group_vars/all/vault.yml
+deploy/ansible/inventory.ini
 
 mcp_config.bu.json

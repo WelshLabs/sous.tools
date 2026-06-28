@@ -94,7 +94,7 @@ export class DisplaysService {
 
     const { data: updatedDevice, error: updateError } = await supabase
       .from("signage_devices")
-      .update({ is_paired: true, name })
+      .update({ is_paired: true, name, organization_id: orgId })
       .eq("id", device.id)
       .select()
       .single();
@@ -131,6 +131,8 @@ export class DisplaysService {
         .insert(displaysToCreate);
       if (insertError) throw new Error(insertError.message);
     }
+
+    this.gateway.broadcastDevicePaired(device.id, orgId);
 
     return updatedDevice;
   }

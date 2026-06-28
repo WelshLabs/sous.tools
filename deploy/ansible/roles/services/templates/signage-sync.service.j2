@@ -1,0 +1,17 @@
+[Unit]
+Description=Sous Tools Signage Watchtower Sync Daemon
+After=network-online.target network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory={{ signage_dir }}/sync
+ExecStart=/usr/bin/node {{ signage_dir }}/sync/sync-watchtower.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

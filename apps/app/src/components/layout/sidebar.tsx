@@ -32,6 +32,7 @@ const BASE_NAV_ITEMS = [
   { label: "Signage", href: "/signage", icon: Tv },
   { label: "Purchasing", href: "/purchasing", icon: ShoppingBag },
   { label: "Ingestion Queue", href: "/ingestion", icon: BrainCircuit },
+  { label: "Items Ledger", href: "/inventory/items-ledger", icon: ShoppingBag },
   { label: "Whiteboard", href: "/inventory/whiteboard", icon: PenTool },
   { label: "Devices", href: "/devices", icon: Smartphone },
 ];

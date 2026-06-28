@@ -82,8 +82,8 @@ export class IntegrationsController {
   }
 
   @Get("google/files")
-  async getGoogleFiles(@Query("q") query?: string, @Query("orgId") orgId?: string) {
+  async getGoogleFiles(@Query("q") query?: string, @Query("folderId") folderId?: string, @Query("orgId") orgId?: string) {
     const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
-    return this.driveService.listFiles(targetOrgId, query);
+    return this.driveService.listFiles(targetOrgId, query, folderId);
   }
 }
