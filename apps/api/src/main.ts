@@ -13,6 +13,8 @@ import { logger, patchConsole } from "@soustools/logger";
 patchConsole();
 
 
+import * as express from "express";
+
 /**
  * Boots the NestJS application.
  *
@@ -23,6 +25,9 @@ patchConsole();
  */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { rawBody: true });
+  
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   // Use global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());

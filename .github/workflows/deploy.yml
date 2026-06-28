@@ -44,7 +44,7 @@ jobs:
             echo "Error: SUPABASE_POOLER_URL is not defined."
             exit 1
           fi
-          npx supabase db push --db-url "$SUPABASE_POOLER_URL"
+          npx supabase db push --db-url "${SUPABASE_POOLER_URL}?statement_cache_mode=describe"
 
   docker-build:
     name: Build & Push Signage Docker Image

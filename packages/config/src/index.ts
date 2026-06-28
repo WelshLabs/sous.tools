@@ -43,7 +43,7 @@ const sec = secrets as Record<string, string | number | undefined>;
 export const config: Config = Object.freeze({
   SUPABASE_URL: secrets.SUPABASE_URL,
   SUPABASE_ANON_KEY: secrets.SUPABASE_ANON_KEY,
-  SUPABASE_SERVICE_ROLE_KEY: isMockEnv ? "supabase_service_role_key_placeholder" : (process.env.SUPABASE_SERVICE_ROLE_KEY || (sec.SUPABASE_SERVICE_ROLE_KEY as string) || "supabase_service_role_key_placeholder"),
+  SUPABASE_SERVICE_ROLE_KEY: isMockEnv ? "supabase_service_role_key_placeholder" : (process.env.SUPABASE_SERVICE_ROLE_KEY || (sec.SUPABASE_SERVICE_ROLE_KEY as string) || ""),
   IS_MOCK_ENV: isMockEnv,
   IS_DEVELOPMENT: isDevelopment,
   SQUARE_CLIENT_ID: isMockEnv
