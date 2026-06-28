@@ -36,7 +36,44 @@ export class IngestionController {
 
       if (error) throw new Error(error.message);
 
-      const job = await this.ingestionQueue.add("process-ingestion", { ...payload, reviewId: review.id }, {
+      let sourceDocumentUrl = "";
+      if (payload.imagesBase64 && payload.imagesBase64.length > 0) {
+        const primaryB64 = payload.imagesBase64[0];
+        const match = primaryB64.match(/^data:(.+?);base64,(.+)$/);
+        const mimeType = match ? match[1] : "image/jpeg";
+        const rawB64 = match ? match[2] : primaryB64;
+        const buffer = Buffer.from(rawB64, "base64");
+        
+        const ext = mimeType.split("/")[1] || "jpg";
+        const fileName = `${review.id}.${ext}`;
+
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from("ingestion-sources")
+          .upload(fileName, buffer, { contentType: mimeType, upsert: true });
+
+        if (uploadErr) {
+          console.error("Failed to upload source file:", uploadErr);
+        } else if (uploadData) {
+          const { data: urlData } = supabase.storage
+            .from("ingestion-sources")
+            .getPublicUrl(fileName);
+          sourceDocumentUrl = urlData?.publicUrl || "";
+          
+          await supabase.from("ingestion_reviews").update({
+            source_document_url: sourceDocumentUrl
+          }).eq("id", review.id);
+        }
+      }
+
+      // Omit the huge base64 payload to prevent Redis from crashing/OOM
+      const jobPayload = { 
+        ...payload, 
+        imagesBase64: undefined, 
+        sourceDocumentUrl, 
+        reviewId: review.id 
+      };
+
+      const job = await this.ingestionQueue.add("process-ingestion", jobPayload, {
         attempts: 3,
         backoff: { type: "exponential", delay: 2000 },
       });

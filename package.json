@@ -12,11 +12,14 @@
     "clean:all": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist .turbo apps/*/.turbo packages/*/.turbo && pnpm install"
   },
   "devDependencies": {
-    "turbo": "^2.9.17",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "turbo": "^2.9.17"
   },
   "engines": {
     "node": ">=22.22.0"
   },
-  "packageManager": "pnpm@11.5.2"
+  "packageManager": "pnpm@11.5.2",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3"
+  }
 }

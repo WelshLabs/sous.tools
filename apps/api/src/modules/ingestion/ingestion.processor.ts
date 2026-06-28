@@ -13,7 +13,7 @@ export class IngestionProcessor extends WorkerHost {
   }
 
   async process(job: Job<IngestionPayload, any, string>): Promise<any> {
-    const { source, organizationId, userId, fileIds, imagesBase64, documentType } = job.data;
+    const { source, organizationId, userId, fileIds, documentType } = job.data;
     
     let rawText = "";
     let sourceDocumentUrl = "";
@@ -116,31 +116,25 @@ export class IngestionProcessor extends WorkerHost {
       };
 
       let parsedData: any = {};
-      // 1. Upload source file to storage first (if base64 is provided)
-      if (imagesBase64 && imagesBase64.length > 0) {
-        const primaryB64 = imagesBase64[0];
-        const match = primaryB64.match(/^data:(.+?);base64,(.+)$/);
-        const mimeType = match ? match[1] : "image/jpeg";
-        const rawB64 = match ? match[2] : primaryB64;
-        const buffer = Buffer.from(rawB64, "base64");
-        
-        const ext = mimeType.split("/")[1] || "jpg";
-        const fileName = `${job.data.reviewId || Date.now()}.${ext}`;
+      const actualSourceDocumentUrl = job.data.sourceDocumentUrl || sourceDocumentUrl;
+      const inlineDataParts: any[] = [];
 
-        const { data: uploadData, error: uploadErr } = await supabase.storage
-          .from("ingestion-sources")
-          .upload(fileName, buffer, {
-            contentType: mimeType,
-            upsert: true
-          });
-
-        if (uploadErr) {
-          console.error("Failed to upload source file to storage:", uploadErr);
-        } else if (uploadData) {
-          const { data: urlData } = supabase.storage
-            .from("ingestion-sources")
-            .getPublicUrl(fileName);
-          sourceDocumentUrl = urlData?.publicUrl || "";
+      if (actualSourceDocumentUrl) {
+        try {
+          const res = await fetch(actualSourceDocumentUrl);
+          if (res.ok) {
+            const arrayBuffer = await res.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const mimeType = res.headers.get("content-type") || "image/jpeg";
+            inlineDataParts.push({
+              inlineData: {
+                mimeType,
+                data: buffer.toString("base64")
+              }
+            });
+          }
+        } catch (fetchErr) {
+          console.error("Failed to fetch source document for processing:", fetchErr);
         }
       }
 
@@ -158,18 +152,11 @@ export class IngestionProcessor extends WorkerHost {
           config: genConfig
         });
         parsedData = JSON.parse(response.text || "{}");
-      } else if ((source === "camera" || source === "upload") && imagesBase64 && imagesBase64.length > 0) {
-        const parts = imagesBase64.map(b64 => {
-          const match = b64.match(/^data:(.+?);base64,(.+)$/);
-          if (match) {
-            return { inlineData: { mimeType: match[1], data: match[2] } };
-          }
-          return { inlineData: { mimeType: "image/jpeg", data: b64 } };
-        });
+      } else if ((source === "camera" || source === "upload") && inlineDataParts.length > 0) {
         const response = await ai.models.generateContent({
           model: "gemini-2.5-flash",
           contents: [
-            ...parts as any[],
+            ...inlineDataParts,
             { text: `Extract the ${documentType} data from these images.` }
           ],
           config: genConfig
