@@ -1,41 +1,39 @@
 import React from "react";
 import "./globals.css";
-
-/**
- * Metadata configuration for the unified kitchen app.
- */
-export const metadata = {
-  title: "Sous Tools - Kitchen App",
-  description: "Interactive kitchen display system and dashboard",
-};
-
-/**
- * RootLayoutProps defines properties for the kitchen RootLayout.
- */
-export interface RootLayoutProps {
-  /**
-   * The child components to render inside the layout.
-   */
-  children: React.ReactNode;
-}
-
-/**
- * RootLayout is the default layout for the kitchen app, importing the global style sheet.
- *
- * @param props Contains the children node to render inside the body tag.
- */
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata, Viewport } from "next";
+import { ThemeProvider } from "../components/theme-provider";
+
+export const metadata: Metadata = {
+  title: "Sous Tools - Kitchen App",
+  description: "Interactive kitchen display system and dashboard",
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#020617",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+export interface RootLayoutProps {
+  children: React.ReactNode;
+}
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
-      <body className="antialiased min-h-screen bg-slate-950 text-slate-50 font-sans">
-        {children}
-        <Toaster theme="dark" position="bottom-right" richColors />
-        <Analytics />
-        <SpeedInsights />
+    <html lang="en" className="overflow-x-hidden" suppressHydrationWarning>
+      <body className="antialiased min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 font-sans overflow-x-hidden transition-colors duration-300">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster theme="system" position="bottom-right" richColors />
+          <Analytics />
+          <SpeedInsights />
+        </ThemeProvider>
       </body>
     </html>
   );

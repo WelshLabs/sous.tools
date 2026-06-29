@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { AppNotification } from "@soustools/api-types";
 import { toast } from "sonner";
 import { Hamburger } from "./hamburger";
+import { ThemeToggle } from "./theme-toggle";
 
 /**
  * Props for the AppBar component.
@@ -94,7 +95,7 @@ export default function AppBar({
   };
 
   return (
-    <header className="sticky top-0 z-[35] h-16 bg-zinc-950/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4">
+    <header className="sticky top-0 z-[35] h-16 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/5 flex items-center justify-between px-4 transition-colors duration-300">
       {/* Left section: Hamburger toggles */}
       <div className="flex items-center gap-3">
         {/* Mobile Hamburger toggle */}
@@ -106,12 +107,16 @@ export default function AppBar({
       </div>
 
       {/* Right section: Notifications and Profile */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="relative flex items-center justify-center">
+          <ThemeToggle />
+        </div>
+        
         {/* Notifications Bell */}
         <div className="relative">
           <button
             onClick={() => setIsNotifOpen(!isNotifOpen)}
-            className="relative p-2 rounded-full hover:bg-white/5 transition-colors focus:outline-none cursor-pointer text-zinc-400 hover:text-white"
+            className="relative p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors focus:outline-none cursor-pointer text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
             aria-label="Notifications menu"
           >
             <Bell className="w-5 h-5" />
@@ -126,13 +131,13 @@ export default function AppBar({
                 className="fixed inset-0 z-30 cursor-default"
                 onClick={() => setIsNotifOpen(false)}
               />
-              <div className="absolute right-0 mt-2 w-80 rounded-xl bg-zinc-900 border border-white/10 shadow-2xl z-40 animate-in fade-in slide-in-from-top-2 duration-150 flex flex-col overflow-hidden max-h-96">
-                <div className="flex items-center justify-between p-3 border-b border-white/5 bg-zinc-900/50">
-                  <span className="text-sm font-medium text-white">Notifications</span>
+              <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shadow-2xl z-40 animate-in fade-in slide-in-from-top-2 duration-150 flex flex-col overflow-hidden max-h-96">
+                <div className="flex items-center justify-between p-3 border-b border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900/50">
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white">Notifications</span>
                   {notifications.length > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <Check className="w-3 h-3" />
                       Mark all read
@@ -149,10 +154,10 @@ export default function AppBar({
                       <div
                         key={n.id}
                         onClick={() => markAsRead(n.id, n.link)}
-                        className="p-3 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer text-left last:border-b-0"
+                        className="p-3 border-b border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors cursor-pointer text-left last:border-b-0"
                       >
-                        <div className="text-sm font-medium text-zinc-200">{n.title}</div>
-                        <div className="text-xs text-zinc-400 mt-0.5 line-clamp-2">{n.message}</div>
+                        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-200">{n.title}</div>
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2">{n.message}</div>
                       </div>
                     ))
                   )}
@@ -166,14 +171,14 @@ export default function AppBar({
         <div className="relative">
         <button
           onClick={() => setIsProfileOpen(!isProfileOpen)}
-          className="flex items-center gap-2 p-1.5 rounded-full hover:bg-white/5 transition-colors focus:outline-none cursor-pointer"
+          className="flex items-center gap-2 p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors focus:outline-none cursor-pointer"
           aria-label="User profile menu"
         >
-          <div className="w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-500">
+          <div className="w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-500">
             <User className="w-4 h-4" />
           </div>
           <ChevronDown
-            className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
+            className={`w-4 h-4 text-zinc-500 dark:text-zinc-400 transition-transform duration-200 ${
               isProfileOpen ? "rotate-180" : ""
             }`}
           />
@@ -186,10 +191,10 @@ export default function AppBar({
               className="fixed inset-0 z-30 cursor-default"
               onClick={() => setIsProfileOpen(false)}
             />
-            <div className="absolute right-0 mt-2 w-48 rounded-xl bg-zinc-900 border border-white/10 shadow-2xl py-1 z-40 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shadow-2xl py-1 z-40 animate-in fade-in slide-in-from-top-2 duration-150">
               <Link
                 href="/settings"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white transition-colors"
                 onClick={() => setIsProfileOpen(false)}
               >
                 <Settings className="w-4 h-4" />
@@ -200,7 +205,7 @@ export default function AppBar({
                   setIsProfileOpen(false);
                   handleLogout();
                 }}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-red-500/10 hover:text-red-500 transition-colors text-left cursor-pointer"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-500 transition-colors text-left cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 Logout

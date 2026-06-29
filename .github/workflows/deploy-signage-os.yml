@@ -62,11 +62,23 @@ jobs:
         run: |
           xz -T0 -9 sous-signage-os.img
           
+      - name: Fetch Secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_MACHINE_IDENTITY_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools"
+        env:
+          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+          
       - name: Release to GitHub
         uses: softprops/action-gh-release@v2
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
           repository: conarwelsh/signage-os
-          token: ${{ secrets.SIGNAGE_GITHUB_PAT }}
+          token: ${{ env.SIGNAGE_GITHUB_PAT }}
           tag_name: v${{ github.run_number }}
           name: Signage OS v${{ github.run_number }}
           files: sous-signage-os.img.xz

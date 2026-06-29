@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase";
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import Sidebar from "../../components/layout/sidebar";
 import AppBar from "../../components/layout/app-bar";
+import { BottomNav } from "../../components/layout/bottom-nav";
 
 /**
  * Props for the DashboardLayout component.
@@ -73,14 +74,14 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 flex">
+    <div className="min-h-screen w-full bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 flex overflow-x-hidden transition-colors duration-300">
       {/* Sidebar Navigation */}
       <Sidebar
         isMobileOpen={isMobileOpen}
@@ -91,16 +92,24 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
 
       {/* Main Content Pane */}
       <div
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-300
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full max-w-full
           ${isDesktopCollapsed ? "md:pl-16" : "md:pl-16 lg:pl-64"}
         `}
       >
-        <AppBar
-          isMobileOpen={isMobileOpen}
-          onToggleMobile={() => setIsMobileOpen(!isMobileOpen)}
-        />
-        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+        <div className="hidden md:block">
+          <AppBar
+            isMobileOpen={isMobileOpen}
+            onToggleMobile={() => setIsMobileOpen(!isMobileOpen)}
+          />
+        </div>
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-y-auto w-full max-w-full overflow-x-hidden">
+          {children}
+        </main>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <BottomNav onToggleMobile={() => setIsMobileOpen(true)} />
+      
       {/* @modal parallel route slot — renders URL-addressed modals (deck preview, device detail, etc.) */}
       {modal}
     </div>

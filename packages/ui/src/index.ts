@@ -6,5 +6,6 @@
 export * from "./theme";
 export { Button } from "./components/Button";
 export type { ButtonProps } from "./components/Button";
+export * from "./components/logos";
 export * from "./utils/scaling";
 

@@ -12,10 +12,11 @@ import {
   ChefHat,
   ShoppingBag,
   BrainCircuit,
-  PenTool
+  Building2
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Hamburger } from "./hamburger";
+import { PrimaryLogo, MicroIcon } from "@soustools/ui";
 
 export interface SidebarProps {
   isMobileOpen: boolean;
@@ -30,10 +31,9 @@ const BASE_NAV_ITEMS = [
   { label: "Kitchen Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Recipes", href: "/recipes", icon: ChefHat },
   { label: "Signage", href: "/signage", icon: Tv },
-  { label: "Purchasing", href: "/purchasing", icon: ShoppingBag },
+  { label: "Orders", href: "/inventory/orders", icon: ShoppingBag },
+  { label: "Vendors", href: "/inventory/vendors", icon: Building2 },
   { label: "Ingestion Queue", href: "/ingestion", icon: BrainCircuit },
-  { label: "Items Ledger", href: "/inventory/items-ledger", icon: ShoppingBag },
-  { label: "Whiteboard", href: "/inventory/whiteboard", icon: PenTool },
   { label: "Devices", href: "/devices", icon: Smartphone },
 ];
 
@@ -70,25 +70,28 @@ export default function Sidebar({
 
       {/* Sidebar shell */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 bg-zinc-950 border-r border-white/5 flex flex-col transition-all duration-300 ease-in-out
+        className={`fixed inset-y-0 left-0 z-40 bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-white/5 flex flex-col transition-all duration-300 ease-in-out
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
           ${isDesktopCollapsed ? "md:w-16" : "md:w-16 lg:w-64"}
         `}
       >
         {/* Header containing Brand Logo and Hamburger */}
         <div
-          className={`h-16 flex items-center border-b border-white/5 transition-all justify-between px-4
+          className={`h-16 flex items-center border-b border-zinc-200 dark:border-white/5 transition-all justify-between px-4
             ${isDesktopCollapsed ? "md:px-0 md:justify-center" : ""}
           `}
         >
           <div
-            className={`flex items-center gap-2 transition-all
-              ${isDesktopCollapsed ? "md:hidden" : ""}
-            `}
+            className={`flex items-center gap-2 transition-all ${
+              isDesktopCollapsed ? "cursor-pointer hover:opacity-85" : ""
+            }`}
+            onClick={isDesktopCollapsed ? onToggleDesktop : undefined}
           >
-            <span className="text-xl font-bold text-sky-500 font-brand whitespace-nowrap">
-              SOUS TOOLS
-            </span>
+            {isDesktopCollapsed ? (
+              <MicroIcon className="w-8 h-8 text-sky-500" />
+            ) : (
+              <PrimaryLogo className="h-10 w-auto text-sky-500" />
+            )}
           </div>
 
           {/* Morphing Hamburger inside Sidebar header on Mobile to close the drawer */}
@@ -98,12 +101,14 @@ export default function Sidebar({
             className="md:hidden"
           />
 
-          {/* Hamburger for desktop (to toggle collapse) */}
-          <Hamburger
-            isOpen={!isDesktopCollapsed}
-            onClick={onToggleDesktop}
-            className="hidden md:flex"
-          />
+          {/* Hamburger for desktop (to toggle collapse) - only show when expanded */}
+          {!isDesktopCollapsed && (
+            <Hamburger
+              isOpen={true}
+              onClick={onToggleDesktop}
+              className="hidden md:flex"
+            />
+          )}
         </div>
 
          {/* Navigation list */}
@@ -134,8 +139,8 @@ export default function Sidebar({
             const className = `flex items-center gap-3 p-3 rounded-lg transition-colors group
               ${
                 isActive
-                  ? "bg-sky-500/10 text-sky-500"
-                  : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                  ? "bg-sky-500/10 text-sky-600 dark:text-sky-500"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
               }
             `;
 
@@ -164,10 +169,10 @@ export default function Sidebar({
         </nav>
 
         {/* Logout button */}
-        <div className="p-3 border-t border-white/5">
+        <div className="p-3 border-t border-zinc-200 dark:border-white/5">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 p-3 rounded-lg text-zinc-400 hover:bg-red-500/10 hover:text-red-500 transition-colors group text-left"
+            className="w-full flex items-center gap-3 p-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-500 transition-colors group text-left"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             <span
