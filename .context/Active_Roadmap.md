@@ -1,115 +1,122 @@
-Active Roadmap: sous.tools [Immediate Sprints]
+Active_Roadmap.md
 
-1. High-Level Mission & Aesthetic Constraints
+1. Phase I: Agent Governance & Skill Optimization
 
-Mission Synthesis: Syntax and Heat The objective is to collapse the hospitality "Franken-stack"—a fragmented graveyard of disconnected POS, inventory, and procurement tools—into a unified intelligence layer. We are not just building software; we are closing the visibility gaps and stopping the margin erosion caused by operational drift. This system provides proactive orchestration, identifying labor-to-sales drift and vendor price creep in real-time before the damage reaches the P&L.
+Audit and Refactor Directive for Agent Skills
 
-Neon-Glass Design Mandates UI development must survive the high-glare, high-velocity environment of a commercial kitchen. All work must adhere to these tokens:
+Rewrite the following skill definitions in .agents/skills/ (migrations/SKILL.md, supabase-client/SKILL.md, and nextjs-patterns/SKILL.md) to align with the "AI Execution Rules." Use the following prompt for the LLM execution:
 
-Neon-Glass Technical Specifications
+Directive: Audit the current skill definitions. Standardize them to enforce the following architectural constraints:
 
-- Color Space: High-vibrancy, luminance-locked OKLCH tokens to ensure vibrancy across inconsistent display hardware.
-  - Primary (Vibrant Blue): oklch(0.60 0.25 250)
-  - Background (Light): oklch(0.98 0.005 240)
-  - Background (Dark): oklch(0.12 0.02 240)
-- Ambient Radiance: Every layout requires dual-node refraction depth.
-  - Top-Left: blue-500/10 | Bottom-Right: cyan-500/5 | Blur: 120px.
-- Glassmorphism: .glass-panel utilities (bg-zinc-950/40, backdrop-blur-2xl, border-white/5).
-- Typography: Strict scannability via Inter (Sans), Outfit (Brand), and Geist Mono (Technical Data).
-- Logo Rule: The identity is the "Cloud and Chef Hat" hybrid. Legacy culinary tropes (whisks, knives, rustic textures) are strictly forbidden.
+1. Server-Side Supremacy: All data fetching must occur in Next.js Server Components or via the NestJS API. Explicitly forbid client-side supabase-js calls within apps/app unless specifically authorized for real-time subscriptions.
+2. Library First: Mandate the use of @soustools/ui for all JSX/TSX. If a component does not exist, it must be added to the package rather than built locally in the app.
+3. Modular Logic: Enforce the "Skeletal App" pattern where apps/app and apps/api are routing/orchestration layers, and business logic resides in shared packages.
 
-2. Priority 1: AI Agent Intelligence & Database Integrity
+Code Quality Enforcement Skill
 
-AI Skill Initialization Every new AI session must begin by injecting the following protocol into .agents/skills. This ensures the "Autonomous Executor" maintains architectural hygiene.
+Generate a new skill file: .agents/skills/quality-enforcement/SKILL.md.
 
-### AI EXECUTION PROTOCOL: SOUS.TOOLS
+- Goal: Eradicate "hacky" workarounds and hydration errors.
+- Logic: Implement a pre-commit check-style rule for LLMs that flags any use client component performing direct database mutations.
+- Enforcement: Priority must be placed on the @soustools/ui design system. Any generated UI code must be checked against packages/ui/src/index.ts exports.
 
-1. ATOMIC FILE RULE: Strictly enforce a 150-line cap on all TS/TSX files to maintain context-window precision.
-2. 3-TIER HIERARCHY:
-   - Tier 1: NotebookLM (Static Context Briefs)
-   - Tier 2: Gemini (Feature Lab planning via GEMINI.md)
-   - Tier 3: Antigravity 2.0 (Autonomous Executor)
-3. ZERO-PROMPT TOOLING: Ensure write_file and git access are enabled via `~/.gemini/` configuration.
-4. RLS MANDATE: Every table migration must include:
-   - ALTER TABLE [name] ENABLE ROW LEVEL SECURITY;
-   - GRANT ALL ON TABLE [name] TO authenticated, service_role;
-   - Policy: (organization_id = auth.uid_org_id())
+2. Phase II: Database Infrastructure Reset & Hardening
 
-Database Flattening Protocol To eliminate production migration drift, the "Migration Purge" is initiated:
+Triple-Environment Truncation Protocol
 
-- [ ] Flatten: Collapse all current migrations into a single, ordered .sql file.
-- [ ] Isolation: Ensure the /users admin route is restricted to the Superadmin tier (conar@dtown.cafe).
-- [ ] Multi-tenancy: Validate that every query is logically isolated via organization_id.
-- [ ] Cleanup: Permanently deprecate the staging database; focus entirely on production-grade data integrity.
+Execute the following "Clean Slate" command set across dev, staging, and prod to clear migration debt.
 
-3. Priority 2: Raspberry Pi 5 Hardware & Signage Deployment
+-- High-Verbosity Truncation Script
+SET session_replication_role = 'replica';
+DO $$
+DECLARE
+r RECORD;
+BEGIN
+FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
+END LOOP;
+END $$;
+SET session_replication_role = 'origin';
 
-Hardware Configuration Signage nodes are localized on Raspberry Pi 5 hardware for "Invisible yet Bulletproof" performance.
+Migration Flattening & Schema Consolidation
 
-- Deployment: Docker + Watchtower for zero-touch updates.
-- Persistence: Local heartbeats aggregated via Better Stack uptime monitors.
+Standardize the schema by merging the fragmented history starting from supabase/migrations/20260612000000_schema.sql through 20260630000002_alter_vendors_schema.sql.
 
-Window Management Strategy Wayland lacks coordinate-based window positioning. Therefore, we utilize title-based mapping in the Labwc compositor configuration (rc.xml):
+- Task: Flatten these into a single supabase/migrations/00000000000000_init_schema.sql.
+- Requirement: Ensure all GRANT and ALTER DEFAULT PRIVILEGES statements are explicitly defined at the end of the file to prevent recurring permission errors.
 
-- SignageDisplay1 -> HDMI-A-1
-- SignageDisplay2 -> HDMI-A-2
-- Trigger: Zero-latency refreshes via NestJS WebSockets on layout_updated events.
+RLS Reinforcement & Permission Mapping
 
-Visual Editor: The Generalized Canvas The signage editor is not just a menu tool; it is a Generalized Canvas designed for signage, then web, then print-labeling (labels for frozen meals). It must achieve pixel-perfect parity with Dtown Cafe mockups for:
+Harder the security layer based on apps/api/src/common/guards/admin.guard.ts logic:
 
-- Breakfast Masterpieces: Egg & Cheese Sandwich on scratch brioche ($10.00).
-- Soup of the Week: Chili (highlighting 8oz vs 12oz pricing parity).
-- Frozen Take Home Dinners: Scratch Pierogi (Potato & Cheese, Sauerkraut & Bacon) and Chicken Pot Pie.
+1. Admin Scoping: Restrict the admin schema and specific routes to the Users table (System Superadmins).
+2. Organization Isolation: Apply the following policy template to all tenant-facing tables (recipes, inventory, signage):
 
-4. Priority 3: Recipe Engine Beta & Data Entry
+3. Phase III: Dtown Cafe Identity & Data Seeding
 
-Core Math & Substitution Intelligence Implement the "Generalized Base-Ingredient Logic" to unify savory and baking workflows:
+Master Seed Configuration
 
-- Base Divisor: Use the base_calculation_group flag. Sum weights of "base" ingredients (e.g., flour or base liquid) to establish the 100% divisor.
-- Substitution Logic: Implement "Intelligence Ratios" for high-impact swaps (e.g., 1:0.33 ratio for fresh vs. instant yeast).
+Populate supabase/seed.sql with the foundational data for the first tenant:
 
-Data Entry Backlog [Dtown Cafe]
+INSERT INTO public.organizations (id, name, slug, logo_url)
+VALUES (gen_random_uuid(), 'Dtown Cafe', 'dtown-cafe', 'cloud-chef-hat-logo.svg');
 
-- Chili: Ensure 8oz and 12oz pricing points are mapped.
-- Scratch Pierogi: Initialize varieties (Potato/Cheese, Sauerkraut/Bacon, Farmers Cheese).
-- Egg & Cheese: Link to Brioche Bun sub-recipe requirements.
+INSERT INTO public.profiles (id, email, organization_id, role)
+VALUES ('[CONAR_AUTH_ID]', 'conar@dtown.cafe', (SELECT id FROM organizations WHERE slug = 'dtown-cafe'), 'superadmin');
 
-Kitchen Mode UI
+Logo Verification
 
-- Live Cook Interface: Full-screen walkthroughs with haptic-ready timers.
-- Vessel Awareness: Scaling logic linked to tenant equipment volumes (e.g., scaling a recipe to fit exactly three 12-quart Cambros or four Pullman Pans).
+- Check: Verify packages/ui/src/components/logos/PrimaryLogo.tsx for the "Cloud + Chef Hat" implementation.
+- Action: Standardize the PrimaryLogo component to accept a variant prop for digital signage vs. POS headers.
 
-5. Essential Refactor & Hygiene Backlog
+4. Phase IV: Signage Hardware & OS Deployment
 
-The Purge Protocol Engineering practices are now binary. Non-compliance results in immediate PR rejection.
+Raspberry Pi 5 Wayland Technical Checklist
 
-Practice Forbidden Mandatory
-Data Fetching Client-side Supabase calls Next.js 16 Server Components
-UI Components Local code in apps/ Migration to @soustools/ui
-Logging console.log @soustools/logger (Better Stack)
-Logic Extraction Inline app logic @soustools/api-types / @soustools/utils
-Config process.env in apps @soustools/config (Infisical)
+1. OS: Flash Ubuntu Desktop 24.04 (64-bit) or Raspberry Pi OS (Bookworm).
+2. Window Manager: Configure labwc as the Wayland compositor (reference: deploy/ansible/roles/config/files/labwc-rc.xml).
+3. Display: Force 1920x1080 resolution on HDMI-A-1 and HDMI-A-2.
+4. Kiosk Mode: Update deploy/ansible/roles/config/files/kiosk.sh to launch the signage player in a hardware-accelerated Wayland session.
 
-Singleton Utility Audit Singletons from @soustools/utils must be used to prevent race conditions:
+Auto-Update & Sync Integration
 
-- SingletonLock: Redis-backed distributed locking for BullMQ ingestion pipelines.
-- SingletonSocket: Persistent auto-reconnecting bridge for RPi signage.
-- SingletonCookie: Unified client/server resolution.
+Configure the signage-sync.service using the template at deploy/ansible/roles/services/templates/signage-sync.service.j2.
 
-6. Deployment & Resilience Checklist
+- Webhook Logic: Link the service to the NestJS SignageGateway (Websockets) to trigger an immediate git pull and service restart upon content changes in the visual editor.
 
-Infrastructure Health
+5. Phase V: UI Salvage & Design System Extraction
 
-- Keep Warm: Better Stack monitors hitting NestJS health-check routes every 60s to bypass Render.com instance sleep limits.
-- Centralized Observability: All server and browser logs must pipe through @soustools/logger.
+Neon-Glass UI Extraction
 
-Sync Integrity: "Sign-then-Drop" Protocol To prevent infinite sync loops with Square/Toast:
+Use Repomix to isolate components from the legacy directory.
 
-1. Every outgoing sync carries a unique actor_id.
-2. Incoming webhooks are inspected.
-3. Matching actor_id signatures are dropped immediately at the gateway.
+- Directive: Identify the "Neon-Glass" CSS variables and glassmorphism layouts.
+- Migration: Refactor these into @soustools/ui/src/components/signage-glass.
+- Constraint: Convert all functional components into presentation-only components. Strip any internal useEffect or useState that handles data fetching; data must be passed via props from server-side signage renders.
 
-Local Mesh Strategy For survival in kitchen Wi-Fi dead zones, use the Delta-Action Log architecture:
+6. Phase VI: Operational Data Entry & Launch
 
-- Journal mutations (e.g., toggle_step) locally.
-- Resolve state conflicts via CRDTs using deterministic vector timestamps upon reconnection to the mesh.
+Recipe Data Ingestion Workflow
+
+Initialize the Dtown Cafe digital cookbook with OCR-assisted entry.
+
+- Test Cases: Prioritize "Egg & Cheese Sandwich," "The Chef's Spicy Breakfast," and "Famous Cinnamon Knots."
+- Accuracy Check: Cross-reference against Source Images 1 and 2 to ensure "Breakfast Masterpieces" and "Scratch Pastries" categories match pixel-perfect.
+
+Live Cook Mode Validation
+
+Test the kitchen interface (apps/app/src/app/(fullscreen)/recipes/[id]/kitchen/page.tsx):
+
+1. Scaling: Verify scaling logic for "Pullman loaves" (weight-based) and "burger buns" (unit-based).
+2. Encylopedia Integration: Ensure yeast substitution ratios (Fresh vs. Instant) are accessible via the recipe UI.
+
+3. Roadmap Appendix: Success Metrics & Validation
+
+Phase Required Output Validation Criteria
+
+1. Agent Governance Rewritten .agents/skills/ Agent-generated PRs show 0% client-side supabase-js usage in apps/app.
+2. DB Infrastructure Consolidated init_schema.sql Zero RLS violations in logs when accessing data from a non-admin organization_id.
+3. Identity Seeding Seeded "Dtown Cafe" Org conar@dtown.cafe successfully logs in with both Superadmin and Org-Admin flags.
+4. Hardware Deployment Wayland RPi 5 Node Signage displays dual 1080p slide decks without screen tearing; refreshes on webhook.
+5. UI Salvage Neon-Glass Components packages/ui contains refactored glassmorphism components with zero data-fetching side effects.
+6. Operational Launch Dtown Recipe Book "Live Cook Mode" correctly scales "Chef's Spicy Breakfast" for 12, 24, and 48 servings.
