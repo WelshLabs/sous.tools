@@ -4,11 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@soustools/ui";
 import { supabase } from "../../lib/supabase";
+import { KeyRound, Mail, Sparkles } from "lucide-react";
 
-/**
- * LoginPage renders the authentication email/password form for kitchen/admin staff.
- * It uses oklch colors, the shared UI Button component, and signs in via Supabase.
- */
 export default function LoginPage() {
   const [email, setEmail] = useState("conar@dtown.cafe");
   const [password, setPassword] = useState("password");
@@ -32,7 +29,7 @@ export default function LoginPage() {
       } else {
         const urlParams = new URLSearchParams(window.location.search);
         const returnTo = urlParams.get("returnTo");
-        router.push(returnTo ? returnTo : "/");
+        router.push(returnTo ? returnTo : "/dashboard");
       }
     } catch (err: unknown) {
       setError("An unexpected error occurred during login.");
@@ -42,20 +39,34 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-8 bg-[oklch(0.12_0.01_220)]">
-      <div className="w-full max-w-sm p-6 rounded-2xl shadow-xl bg-[oklch(0.18_0.02_220)] border border-[oklch(0.28_0.03_220)]">
-        <h1 className="text-3xl font-bold mb-6 text-[oklch(0.85_0.1_140)] text-center">
-          Kitchen Login
-        </h1>
+    <main className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+      {/* Background Neon Orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/20 blur-[120px] rounded-full animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: "6s" }} />
+
+      <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl relative z-10">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 flex items-center justify-center border border-sky-500/30 mb-4 shadow-lg shadow-sky-500/10">
+            <Sparkles className="w-6 h-6 text-sky-400" />
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight text-center">
+            Kitchen Portal
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 text-center">
+            Standardize your culinary operations in real-time.
+          </p>
+        </div>
+
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-500/30 text-red-200 text-sm text-center font-sans">
+          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm text-center font-medium animate-fadeIn">
             {error}
           </div>
         )}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-[oklch(0.75_0.03_220)]">
-              Email Address
+
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5" /> Email Address
             </label>
             <input
               type="email"
@@ -63,12 +74,13 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded-lg bg-[oklch(0.14_0.01_220)] border border-[oklch(0.24_0.02_220)] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[oklch(0.6_0.15_140)]"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-[oklch(0.75_0.03_220)]">
-              Password
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5" /> Password
             </label>
             <input
               type="password"
@@ -76,12 +88,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded-lg bg-[oklch(0.14_0.01_220)] border border-[oklch(0.24_0.02_220)] text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[oklch(0.6_0.15_140)]"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
             />
           </div>
-          <div className="pt-2 flex justify-center">
-            <Button disabled={loading}>
-              {loading ? "Signing In..." : "Sign In"}
+
+          <div className="pt-2">
+            <Button disabled={loading} className="w-full justify-center py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-sky-500/20">
+              {loading ? "Signing In..." : "Access Control"}
             </Button>
           </div>
         </form>
@@ -89,4 +102,3 @@ export default function LoginPage() {
     </main>
   );
 }
-

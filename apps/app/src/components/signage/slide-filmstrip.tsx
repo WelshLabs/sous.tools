@@ -54,7 +54,7 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex flex-row gap-3 overflow-x-auto p-3 bg-zinc-950 border-t border-white/5"
+            className="flex flex-row gap-3 overflow-x-auto p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-black/5 dark:border-white/5"
           >
             {slides.map((slide, index) => {
               const slideId = slide.id || `slide-fallback-${index}`;

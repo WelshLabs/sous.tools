@@ -99,13 +99,13 @@ export default function ItemEditorModal({ item, onClose, onSave }: ItemEditorMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-zinc-900/90 backdrop-blur z-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="p-6 border-b border-black/10 dark:border-white/10 flex justify-between items-center sticky top-0 bg-zinc-900/90 backdrop-blur z-10">
           <h2 className="text-xl font-bold text-white">
             {item ? "Edit Ledger Item" : "New Ledger Item"}
           </h2>
-          <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-white/10 transition-colors">
+          <button onClick={onClose} className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-white rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -120,7 +120,7 @@ export default function ItemEditorModal({ item, onClose, onSave }: ItemEditorMod
               <input
                 type="text"
                 placeholder="Search USDA (e.g. 'All Purpose Flour')"
-                className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                className="flex-1 bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
                 value={usdaQuery}
                 onChange={e => setUsdaQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), searchUSDA())}
@@ -141,12 +141,12 @@ export default function ItemEditorModal({ item, onClose, onSave }: ItemEditorMod
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-zinc-400 uppercase">Item Name</label>
-              <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none" />
+              <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">Item Name</label>
+              <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-zinc-400 uppercase">Category</label>
-              <select name="category" value={formData.category} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none">
+              <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">Category</label>
+              <select name="category" value={formData.category} onChange={handleChange} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none">
                 <option value="INGREDIENT">INGREDIENT</option>
                 <option value="PACKAGING">PACKAGING</option>
                 <option value="CLEANING">CLEANING</option>
@@ -158,8 +158,8 @@ export default function ItemEditorModal({ item, onClose, onSave }: ItemEditorMod
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-zinc-400 uppercase">Default Purchase Unit</label>
-              <select name="purchase_unit" value={formData.purchase_unit} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none">
+              <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">Default Purchase Unit</label>
+              <select name="purchase_unit" value={formData.purchase_unit} onChange={handleChange} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none">
                 <option value="LB">LB</option>
                 <option value="KG">KG</option>
                 <option value="CASE">CASE</option>
@@ -168,40 +168,40 @@ export default function ItemEditorModal({ item, onClose, onSave }: ItemEditorMod
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-zinc-400 uppercase">Density (g/mL)</label>
-              <input required type="number" step="0.001" name="density_g_ml" value={formData.density_g_ml} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none" />
+              <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">Density (g/mL)</label>
+              <input required type="number" step="0.001" name="density_g_ml" value={formData.density_g_ml} onChange={handleChange} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none" />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-zinc-400 uppercase">Allergens (comma separated)</label>
-            <input type="text" value={formData.allergens.join(", ")} onChange={handleAllergensChange} placeholder="Dairy, Nuts, Wheat" className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none" />
+            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">Allergens (comma separated)</label>
+            <input type="text" value={formData.allergens.join(", ")} onChange={handleAllergensChange} placeholder="Dairy, Nuts, Wheat" className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-white focus:border-sky-500 outline-none" />
           </div>
 
-          <div className="pt-4 border-t border-white/5">
-            <h3 className="text-sm font-semibold text-zinc-300 mb-4">Nutritional Macros (per 100g)</h3>
+          <div className="pt-4 border-t border-black/5 dark:border-white/5">
+            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-4">Nutritional Macros (per 100g)</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="space-y-1">
-                <label className="text-xs text-zinc-500">Calories (kcal)</label>
-                <input type="number" step="0.1" name="calories" value={formData.nutrition_macros.calories || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
+                <label className="text-xs text-zinc-400 dark:text-zinc-500">Calories (kcal)</label>
+                <input type="number" step="0.1" name="calories" value={formData.nutrition_macros.calories || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-black/5 dark:border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-zinc-500">Protein (g)</label>
-                <input type="number" step="0.1" name="protein_g" value={formData.nutrition_macros.protein_g || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
+                <label className="text-xs text-zinc-400 dark:text-zinc-500">Protein (g)</label>
+                <input type="number" step="0.1" name="protein_g" value={formData.nutrition_macros.protein_g || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-black/5 dark:border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-zinc-500">Carbs (g)</label>
-                <input type="number" step="0.1" name="total_carbohydrate_g" value={formData.nutrition_macros.total_carbohydrate_g || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
+                <label className="text-xs text-zinc-400 dark:text-zinc-500">Carbs (g)</label>
+                <input type="number" step="0.1" name="total_carbohydrate_g" value={formData.nutrition_macros.total_carbohydrate_g || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-black/5 dark:border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-zinc-500">Fat (g)</label>
-                <input type="number" step="0.1" name="total_fat_g" value={formData.nutrition_macros.total_fat_g || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
+                <label className="text-xs text-zinc-400 dark:text-zinc-500">Fat (g)</label>
+                <input type="number" step="0.1" name="total_fat_g" value={formData.nutrition_macros.total_fat_g || ""} onChange={handleMacroChange} className="w-full bg-black/20 border border-black/5 dark:border-white/5 rounded-lg px-2 py-1 text-sm text-white focus:border-sky-500 outline-none" />
               </div>
             </div>
           </div>
 
           <div className="pt-6 flex justify-end gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-zinc-400 hover:text-white transition-colors">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-white transition-colors">
               Cancel
             </button>
             <button type="submit" disabled={loading} className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors shadow-lg shadow-sky-500/20 flex items-center gap-2">

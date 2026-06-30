@@ -82,15 +82,15 @@ export const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipeId }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-slate-100 max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-zinc-900 dark:text-slate-100 max-w-6xl mx-auto">
       <div className="lg:col-span-2 space-y-6">
         <header className="flex justify-between items-center pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <Link href="/recipes" className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
-            <h2 className="text-2xl font-extrabold text-slate-100 font-brand">{recipe.title}</h2>
+            <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-slate-100 font-brand">{recipe.title}</h2>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" onClick={() => setIsHistoryOpen(true)} className="bg-zinc-800 hover:bg-zinc-750 text-slate-300 font-bold flex items-center gap-1.5 shadow-lg border border-white/10">
+            <Button size="sm" onClick={() => setIsHistoryOpen(true)} className="bg-zinc-800 hover:bg-zinc-750 text-slate-300 font-bold flex items-center gap-1.5 shadow-lg border border-black/10 dark:border-white/10">
               <History className="w-4 h-4" /> History
             </Button>
             <Link href={`/recipes/${recipeId}/kitchen`}>
@@ -113,7 +113,7 @@ export const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipeId }) => {
               {recipe.instructions.map((step, idx) => {
                 const stepText = typeof step === "string" ? step : (step as any).text;
                 return (
-                  <div key={idx} className="flex gap-4 p-4 bg-zinc-900/50 rounded-xl border border-white/5">
+                  <div key={idx} className="flex gap-4 p-4 bg-zinc-900/50 rounded-xl border border-black/5 dark:border-white/5">
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs font-bold">
                       {idx + 1}
                     </div>
@@ -133,14 +133,14 @@ export const RecipeViewer: React.FC<RecipeViewerProps> = ({ recipeId }) => {
         <RecipeCostPanel recipeId={recipeId} />
         <RecipeNutritionPanel recipeId={recipeId} />
 
-        <div className="p-4 rounded-2xl bg-zinc-900 border border-white/5 space-y-4 shadow-xl">
+        <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 space-y-4 shadow-xl">
           <h3 className="text-sm font-bold text-slate-300 flex items-center gap-1">
             <Info className="w-4 h-4 text-sky-400" /> Batch Summary
           </h3>
           <div className="space-y-2 text-xs text-slate-300">
-            <div className="flex justify-between border-b border-white/5 pb-2"><span>Target Yield:</span><span className="font-bold text-slate-100">{(recipe.yieldCount * finalMultiplier).toFixed(1)} {recipe.yieldUnit}</span></div>
-            <div className="flex justify-between border-b border-white/5 pb-2"><span>Total Batch Weight:</span><span className="font-bold text-slate-100">{scaledIngredients.reduce((acc, item) => acc + item.weightInGrams, 0).toFixed(0)} g</span></div>
-            <div className="flex justify-between border-b border-white/5 pb-2"><span>Target Pan/Vessel:</span><span className="font-bold text-slate-100">{recipe.vessel?.name || "Standard Yield"}</span></div>
+            <div className="flex justify-between border-b border-black/5 dark:border-white/5 pb-2"><span>Target Yield:</span><span className="font-bold text-zinc-900 dark:text-slate-100">{(recipe.yieldCount * finalMultiplier).toFixed(1)} {recipe.yieldUnit}</span></div>
+            <div className="flex justify-between border-b border-black/5 dark:border-white/5 pb-2"><span>Total Batch Weight:</span><span className="font-bold text-zinc-900 dark:text-slate-100">{scaledIngredients.reduce((acc, item) => acc + item.weightInGrams, 0).toFixed(0)} g</span></div>
+            <div className="flex justify-between border-b border-black/5 dark:border-white/5 pb-2"><span>Target Pan/Vessel:</span><span className="font-bold text-zinc-900 dark:text-slate-100">{recipe.vessel?.name || "Standard Yield"}</span></div>
           </div>
           <Button size="sm" onClick={() => setIsWastageOpen(true)} className="w-full bg-red-950/40 hover:bg-red-900/40 border border-red-900/30 text-red-400 font-bold flex items-center justify-center gap-1.5">
             <Trash2 className="w-4 h-4" /> Log Food Waste

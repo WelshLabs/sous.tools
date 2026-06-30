@@ -8,11 +8,13 @@ import {
   Tv,
   Smartphone,
   Calculator,
-  LogOut,
   ChefHat,
   ShoppingBag,
   BrainCircuit,
-  Building2
+  Building2,
+  Users,
+  Receipt,
+  Database
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Hamburger } from "./hamburger";
@@ -28,12 +30,16 @@ export interface SidebarProps {
 import { config } from "@soustools/config";
 
 const BASE_NAV_ITEMS = [
-  { label: "Kitchen Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Kitchen Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "KDS Screen", href: "/kds", icon: Tv },
+  { label: "POS Register", href: "/pos", icon: Calculator },
   { label: "Recipes", href: "/recipes", icon: ChefHat },
   { label: "Signage", href: "/signage", icon: Tv },
+  { label: "Transactions", href: "/transactions", icon: Receipt },
+  { label: "Catalog Editor", href: "/catalog", icon: Database },
   { label: "Orders", href: "/inventory/orders", icon: ShoppingBag },
   { label: "Vendors", href: "/inventory/vendors", icon: Building2 },
-  { label: "Ingestion Queue", href: "/ingestion", icon: BrainCircuit },
+  { label: "Processing Hub", href: "/ingestion", icon: BrainCircuit },
   { label: "Devices", href: "/devices", icon: Smartphone },
 ];
 
@@ -47,16 +53,34 @@ export default function Sidebar({
   onToggleDesktop,
 }: SidebarProps) {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: orgData } = await supabase.from("organizations").select("id").limit(1).single();
+      if (orgData?.id) {
+        const { data: membership } = await supabase
+          .from("org_members")
+          .select("role")
+          .eq("organization_id", orgData.id)
+          .eq("user_id", user.id)
+          .limit(1)
+          .single();
+        if (membership?.role === "admin") {
+          setIsAdmin(true);
+        }
+      }
+    };
+    checkRole();
+  }, []);
 
   const navItems = [...BASE_NAV_ITEMS];
   if (config.IS_DEVELOPMENT) {
     navItems.push({ label: "POS Simulator", href: "http://localhost:5009", icon: Calculator });
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  };
 
   return (
     <>
@@ -140,7 +164,7 @@ export default function Sidebar({
               ${
                 isActive
                   ? "bg-sky-500/10 text-sky-600 dark:text-sky-500"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-black/5 dark:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
               }
             `;
 
@@ -166,24 +190,24 @@ export default function Sidebar({
               </Link>
             );
           })}
+          
+          {isAdmin && (
+            <>
+              <div className="my-2 border-t border-zinc-200 dark:border-white/5" />
+              <Link
+                href="/admin/users"
+                className={`flex items-center gap-3 p-3 rounded-lg transition-colors group text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-black/5 dark:bg-white/5 hover:text-zinc-900 dark:hover:text-white ${pathname.startsWith("/admin/users") ? "bg-sky-500/10 text-sky-600 dark:text-sky-500" : ""}`}
+                onClick={onCloseMobile}
+              >
+                <Users className="w-5 h-5 flex-shrink-0" />
+                <span className={`text-sm font-medium transition-all duration-200 whitespace-nowrap md:hidden ${isDesktopCollapsed ? "lg:hidden" : "lg:block"}`}>
+                  Users Admin
+                </span>
+              </Link>
+            </>
+          )}
         </nav>
 
-        {/* Logout button */}
-        <div className="p-3 border-t border-zinc-200 dark:border-white/5">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 p-3 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-500 transition-colors group text-left"
-          >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span
-              className={`text-sm font-medium transition-all duration-200 whitespace-nowrap md:hidden
-              ${isDesktopCollapsed ? "lg:hidden" : "lg:block"}
-            `}
-            >
-              Logout
-            </span>
-          </button>
-        </div>
       </aside>
     </>
   );

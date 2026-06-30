@@ -72,7 +72,7 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
       <form
         onSubmit={handlePairSubmit}
-        className="w-full max-w-sm bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl relative space-y-4 text-slate-100"
+        className="w-full max-w-sm bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl relative space-y-4 text-zinc-900 dark:text-slate-100"
       >
         <button
           type="button"
@@ -81,7 +81,7 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
         >
           <X className="w-5 h-5" />
         </button>
-        <h3 className="text-md font-bold text-slate-100">Pair New Display</h3>
+        <h3 className="text-md font-bold text-zinc-900 dark:text-slate-100">Pair New Display</h3>
         {error && (
           <div className="text-xs text-red-400 bg-red-950/20 border border-red-900 p-2 rounded">
             {error}
@@ -98,7 +98,7 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
             value={pairingCode}
             onChange={(e) => setPairingCode(e.target.value.toUpperCase())}
             placeholder="E.g. 847291"
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-center text-lg font-mono tracking-widest text-slate-100 uppercase"
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-center text-lg font-mono tracking-widest text-zinc-900 dark:text-slate-100 uppercase"
           />
         </div>
         <div className="space-y-1">
@@ -109,7 +109,7 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="E.g. Bar TV Left"
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100"
+            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-slate-100"
           />
         </div>
         <Button type="submit" className="w-full" disabled={submitting}>

@@ -22,7 +22,7 @@ export function PreviewBlockRenderer({
     case "ColumnBlock": {
       const classes = [
         "flex flex-col gap-2 w-full st-layout-column",
-        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-white/10 bg-white/5 rounded" : "",
+        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "",
         isRoot ? "flex-1 h-full" : "",
         block.className
       ].filter(Boolean).join(" ");
@@ -38,7 +38,7 @@ export function PreviewBlockRenderer({
     case "RowBlock": {
       const classes = [
         "flex flex-row gap-2 w-full overflow-x-auto st-layout-row",
-        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-white/10 bg-white/5 rounded" : "",
+        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "",
         isRoot ? "flex-1 h-full" : "",
         block.className
       ].filter(Boolean).join(" ");
@@ -56,7 +56,7 @@ export function PreviewBlockRenderer({
       const classes = [
         "grid gap-2 w-full st-layout-grid",
         colClass,
-        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-white/10 bg-white/5 rounded" : "",
+        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "",
         isRoot ? "flex-1 h-full" : "",
         block.className
       ].filter(Boolean).join(" ");
@@ -75,7 +75,7 @@ export function PreviewBlockRenderer({
     case "ExplodedItemBlock": {
       const classes = [
         "flex flex-col gap-2 w-full st-exploded-item",
-        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-white/10 bg-white/5 rounded" : "",
+        block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "",
         isRoot ? "flex-1 h-full" : "",
         block.className
       ].filter(Boolean).join(" ");

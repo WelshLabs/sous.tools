@@ -80,7 +80,7 @@ export default function SelfShopPage() {
               className={`p-4 md:p-6 rounded-xl border flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] ${
                 isChecked 
                   ? "bg-green-500/10 border-green-500/30 text-gray-300" 
-                  : "glass-panel border-white/10 hover:border-white/20 text-white"
+                  : "glass-panel border-black/10 dark:border-white/10 hover:border-white/20 text-white"
               }`}
             >
               <div className="flex items-center gap-4">
@@ -103,7 +103,7 @@ export default function SelfShopPage() {
 
       <div className="mt-8 sticky bottom-8">
         <div className={`p-6 rounded-xl border backdrop-blur-xl transition-all ${
-          allChecked ? "bg-green-600/20 border-green-500/50" : "bg-black/60 border-white/10"
+          allChecked ? "bg-green-600/20 border-green-500/50" : "bg-white/50 dark:bg-black/60 border-black/10 dark:border-white/10"
         }`}>
           <div className="flex items-center justify-between mb-4">
             <span className="text-lg font-medium">Progress</span>

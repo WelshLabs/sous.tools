@@ -14,9 +14,10 @@ interface DriveFile {
 interface GoogleDriveBrowserProps {
   isOpen: boolean;
   onClose: () => void;
+  documentType?: "RECIPE" | "INVOICE" | "ORDER";
 }
 
-export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps) {
+export const GoogleDriveBrowser: React.FC<GoogleDriveBrowserProps> = ({ isOpen, onClose, documentType = "RECIPE" }) => {
   const [query, setQuery] = useState("");
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,7 +74,7 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
           organizationId: "d0000000-0000-0000-0000-000000000000",
           userId: session.data.session?.user?.id,
           source: "google_drive",
-          documentType: "recipe",
+          documentType: documentType.toLowerCase(),
           fileIds: Array.from(selectedIds)
         })
       });
@@ -81,7 +82,7 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to enqueue files");
       }
-      toast.success("Files sent to ingestion queue.");
+      toast.success("Files sent to processing hub.");
       onClose();
     } catch (err: any) {
       console.error(err);
@@ -94,20 +95,20 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/50 dark:bg-black/60 backdrop-blur-sm">
+      <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             Import from Google Drive
           </h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors cursor-pointer">
+          <button onClick={onClose} className="text-zinc-500 dark:text-zinc-400 hover:text-white transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-4 border-b border-white/5 bg-zinc-900/50">
+        <div className="p-4 border-b border-black/5 dark:border-white/5 bg-zinc-900/50">
           {currentFolder && (
-            <div className="mb-3 flex items-center gap-2 text-sm text-zinc-300">
+            <div className="mb-3 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
               <button
                 onClick={() => {
                   setCurrentFolder(null);
@@ -117,28 +118,28 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
               >
                 Root
               </button>
-              <span className="text-zinc-500">/</span>
-              <span className="text-zinc-100">{currentFolder.name}</span>
+              <span className="text-zinc-400 dark:text-zinc-500">/</span>
+              <span className="text-zinc-900 dark:text-zinc-100">{currentFolder.name}</span>
             </div>
           )}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
             <input
               type="text"
               placeholder="Search files and folders..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
-              className="w-full bg-black/50 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500/50"
+              className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500/50"
             />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
-            <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-zinc-500" /></div>
+            <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-zinc-400 dark:text-zinc-500" /></div>
           ) : files.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-sm">No files found.</div>
+            <div className="text-center py-12 text-zinc-400 dark:text-zinc-500 text-sm">No files found.</div>
           ) : (
             <div className="space-y-1">
               {files.map(f => {
@@ -148,13 +149,13 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
                   <div
                     key={f.id}
                     onClick={() => toggleSelect(f.id)}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-sky-500/10 border border-sky-500/30" : "hover:bg-white/5 border border-transparent"
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-sky-500/10 border border-sky-500/30" : "hover:bg-black/5 dark:bg-white/5 border border-transparent"
                       }`}
                   >
                     <div className="text-sky-400">
                       {isFolder ? <Folder className="w-5 h-5 fill-current opacity-80" /> : <FileText className="w-5 h-5 opacity-80" />}
                     </div>
-                    <span className="flex-1 text-sm text-zinc-200 truncate">{f.name}</span>
+                    <span className="flex-1 text-sm text-zinc-800 dark:text-zinc-200 truncate">{f.name}</span>
                     {isFolder && (
                       <button
                         onClick={(e) => {
@@ -163,7 +164,7 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
                           setQuery("");
                           handleSearch("", f.id);
                         }}
-                        className="px-3 py-1 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 transition-colors cursor-pointer"
+                        className="px-3 py-1 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
                       >
                         Open
                       </button>
@@ -176,10 +177,10 @@ export function GoogleDriveBrowser({ isOpen, onClose }: GoogleDriveBrowserProps)
           )}
         </div>
 
-        <div className="p-4 border-t border-white/5 flex justify-between items-center bg-zinc-900/80 rounded-b-2xl">
-          <span className="text-xs text-zinc-500">{selectedIds.size} file(s) selected</span>
+        <div className="p-4 border-t border-black/5 dark:border-white/5 flex justify-between items-center bg-zinc-900/80 rounded-b-2xl">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">{selectedIds.size} file(s) selected</span>
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-300 hover:bg-white/5 transition-colors cursor-pointer">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer">
               Cancel
             </button>
             <button

@@ -1,4 +1,4 @@
-import type { SignageLayoutConfig } from "./signage";
+import type { SignageLayoutConfig } from "./signage.js";
 
 export interface MaintenanceWindow {
   hour: number;

@@ -96,7 +96,7 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   const animationCss = config.menuItemStyles ? buildAllAnimationCss(config.menuItemStyles) : "";
 
   const previewContent = (
-    <div className={`w-full flex-1 min-h-[100vh] relative st-layout-background flex flex-col ${config.aspectRatio === "responsive" ? "" : "border-2 border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
+    <div className={`w-full flex-1 min-h-[100vh] relative st-layout-background flex flex-col ${config.aspectRatio === "responsive" ? "" : "border-2 border-black/10 dark:border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
       {!activeSlide ? (
         <div className="flex items-center justify-center h-full text-slate-500 text-sm font-mono">Click + Add Slide to begin</div>
       ) : (
@@ -115,7 +115,7 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   );
 
   return (
-    <div className="w-full min-h-full relative flex items-start justify-center signage-preview-container bg-black pt-8 pb-32 st-signage-root" ref={containerRef}>
+    <div className="w-full min-h-full relative flex items-start justify-center signage-preview-container bg-white dark:bg-black pt-8 pb-32 st-signage-root" ref={containerRef}>
       {(customCss || animationCss) && <style dangerouslySetInnerHTML={{ __html: `${animationCss}\n${customCss}` }} />}
       {isPreviewing && config.aspectRatio !== "responsive" && config.scaleToFit !== false ? (
         <div className="w-[1920px] h-[1080px] shrink-0 origin-top transform-gpu shadow-2xl" style={{ transform: `scale(${scale})` }}>{previewContent}</div>

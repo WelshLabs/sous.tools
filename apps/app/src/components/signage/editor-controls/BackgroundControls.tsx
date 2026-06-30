@@ -19,7 +19,7 @@ export function BackgroundControls({ block, onUpdate }: BackgroundControlsProps)
   return (
     <div className="space-y-3">
       <div>
-        <label className="text-[10px] text-zinc-500 uppercase block mb-1">Background Color</label>
+        <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Background Color</label>
         <div className="flex items-center gap-2">
           <input 
             type="color" 
@@ -32,30 +32,30 @@ export function BackgroundControls({ block, onUpdate }: BackgroundControlsProps)
             placeholder="Transparent" 
             value={bg.color || ""} 
             onChange={(e) => updateBg({ color: e.target.value })} 
-            className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1 text-xs text-zinc-100 placeholder:text-zinc-600" 
+            className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" 
           />
         </div>
       </div>
       
       <div>
-        <label className="text-[10px] text-zinc-500 uppercase block mb-1">Backdrop Blur</label>
+        <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Backdrop Blur</label>
         <input 
           type="text" 
           placeholder="e.g. 10px (Glass effect)" 
           value={bg.blur || ""} 
           onChange={e => updateBg({ blur: e.target.value })} 
-          className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" 
+          className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" 
         />
       </div>
 
       <div>
-        <label className="text-[10px] text-zinc-500 uppercase block mb-1">Image URL</label>
+        <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Image URL</label>
         <input 
           type="text" 
           placeholder="https://" 
           value={bg.image || ""} 
           onChange={e => updateBg({ image: e.target.value })} 
-          className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" 
+          className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" 
         />
       </div>
     </div>

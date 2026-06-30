@@ -26,7 +26,7 @@ export function Hamburger({ isOpen, onClick, className = "" }: HamburgerProps) {
   return (
     <button
       onClick={onClick}
-      className={`relative w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-white focus:outline-none transition-colors ${className}`}
+      className={`relative w-10 h-10 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-white focus:outline-none transition-colors ${className}`}
       aria-label={isOpen ? "Close menu" : "Open menu"}
     >
       <div className="relative w-6 h-5">

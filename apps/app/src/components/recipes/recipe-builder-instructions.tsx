@@ -60,21 +60,21 @@ export const RecipeBuilderInstructions: React.FC<RecipeBuilderInstructionsProps>
             };
 
             return (
-              <div key={idx} className="p-4 rounded-xl bg-zinc-900 border border-white/5 flex flex-col md:flex-row gap-3 items-start">
+              <div key={idx} className="p-4 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 flex flex-col md:flex-row gap-3 items-start">
                 <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-300 flex-shrink-0 mt-1">
                   {step.stepNumber}
                 </div>
 
                 <div className="flex-1 w-full">
-                  <textarea rows={2} value={step.text} onChange={(e) => handleUpdateStep(idx, { text: e.target.value })} placeholder="Describe the instruction details..." className="w-full bg-zinc-800 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs focus:border-sky-500 focus:outline-none text-slate-200 resize-none" required />
+                  <textarea rows={2} value={step.text} onChange={(e) => handleUpdateStep(idx, { text: e.target.value })} placeholder="Describe the instruction details..." className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-2.5 py-1.5 text-xs focus:border-sky-500 focus:outline-none text-slate-200 resize-none" required />
                 </div>
 
                 <div className="flex flex-col gap-2 w-full md:w-auto">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-slate-400" />
-                    <input type="number" min="0" value={minutesVal} onChange={(e) => handleTimerChange(e.target.value, secondsVal.toString())} placeholder="Min" className="w-14 bg-zinc-800 border border-white/5 rounded-lg px-2 py-1 text-center text-xs focus:border-sky-500 focus:outline-none text-slate-200" />
+                    <input type="number" min="0" value={minutesVal} onChange={(e) => handleTimerChange(e.target.value, secondsVal.toString())} placeholder="Min" className="w-14 bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-2 py-1 text-center text-xs focus:border-sky-500 focus:outline-none text-slate-200" />
                     <span className="text-slate-400 text-xs">:</span>
-                    <input type="number" min="0" max="59" value={secondsVal} onChange={(e) => handleTimerChange(minutesVal.toString(), e.target.value)} placeholder="Sec" className="w-14 bg-zinc-800 border border-white/5 rounded-lg px-2 py-1 text-center text-xs focus:border-sky-500 focus:outline-none text-slate-200" />
+                    <input type="number" min="0" max="59" value={secondsVal} onChange={(e) => handleTimerChange(minutesVal.toString(), e.target.value)} placeholder="Sec" className="w-14 bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-2 py-1 text-center text-xs focus:border-sky-500 focus:outline-none text-slate-200" />
                   </div>
                   <span className="text-[10px] text-slate-500 text-center">(Optional step timer)</span>
                 </div>

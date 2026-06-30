@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Query, Res } from "@nestjs/common";
+import { Controller, Get, Post, Delete, Param, Query, Res, Body } from "@nestjs/common";
 import { Response } from "express";
 import { ApiResponse, IntegrationStatus } from "@soustools/api-types";
 import { config } from "@soustools/config";
@@ -85,5 +85,13 @@ export class IntegrationsController {
   async getGoogleFiles(@Query("q") query?: string, @Query("folderId") folderId?: string, @Query("orgId") orgId?: string) {
     const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
     return this.driveService.listFiles(targetOrgId, query, folderId);
+  }
+
+  @Post("checkout")
+  async checkout(@Body() body: { orgId: string; orderData: any }) {
+    return runControllerAction(async () => {
+      const orgId = body.orgId || "d0000000-0000-0000-0000-000000000000";
+      return this.service.checkout(orgId, body.orderData);
+    });
   }
 }

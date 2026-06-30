@@ -114,7 +114,7 @@ export default function TVSignageListPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] text-slate-100">
+      <div className="flex items-center justify-center min-h-[50vh] text-zinc-900 dark:text-slate-100">
         <RefreshCw className="w-8 h-8 animate-spin text-primary" />
         <span className="ml-3 text-sm font-mono">Loading decks...</span>
       </div>
@@ -143,7 +143,7 @@ export default function TVSignageListPage() {
       </div>
 
       {decks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-2xl p-16 text-center">
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-black/5 dark:border-white/5 rounded-2xl p-16 text-center">
           <p className="text-slate-400 font-sans mb-4">No slide decks created yet.</p>
           <button
             onClick={handleCreate}
@@ -168,7 +168,7 @@ export default function TVSignageListPage() {
 
       {deckToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-2">Delete Deck</h3>
             <p className="text-sm text-slate-400 mb-6">
               Are you sure you want to delete this deck? This cannot be undone.

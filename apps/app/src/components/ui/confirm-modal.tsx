@@ -52,14 +52,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 cursor-pointer"
+        className="absolute inset-0 bg-white/50 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 cursor-pointer"
         onClick={!loading ? onCancel : undefined}
       />
-      <div className="relative z-[101] bg-zinc-900 border border-white/10 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 fade-in duration-200">
+      <div className="relative z-[101] bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 fade-in duration-200">
         <button
           onClick={onCancel}
           disabled={loading}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+          className="absolute top-4 right-4 text-zinc-500 dark:text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
         >
           <X className="w-5 h-5" />
         </button>
@@ -69,13 +69,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <AlertTriangle className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-white">{title}</h2>
-          <p className="text-zinc-400 text-sm">{message}</p>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">{message}</p>
         </div>
 
         <div className="flex gap-3 mt-8">
           <Button 
             variant="outline" 
-            className="flex-1 border-white/10 hover:bg-white/5 text-zinc-300"
+            className="flex-1 border-black/10 dark:border-white/10 hover:bg-black/5 dark:bg-white/5 text-zinc-700 dark:text-zinc-300"
             onClick={onCancel}
             disabled={loading}
           >

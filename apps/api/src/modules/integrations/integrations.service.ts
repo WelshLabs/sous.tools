@@ -3,9 +3,16 @@ import { config } from "@soustools/config";
 import { IntegrationStatus } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
 import { seedSquareCatalog, syncSquareCatalog } from "./square-sync.helper";
+import { SquareDriver } from "./drivers/square.driver";
 
 @Injectable()
 export class IntegrationsService {
+  constructor(private readonly squareDriver: SquareDriver) {}
+
+  async checkout(orgId: string, orderData: any): Promise<any> {
+    // Route order creation through the driver
+    return this.squareDriver.createOrder(orgId, orderData);
+  }
   getOAuthUrl(provider: string, orgId?: string): string {
     const state = orgId || "d0000000-0000-0000-0000-000000000000";
     if (provider === "square") {

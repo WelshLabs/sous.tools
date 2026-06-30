@@ -113,10 +113,10 @@ export const DisplayManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-slate-100 max-w-4xl mx-auto">
+    <div className="space-y-6 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-zinc-900 dark:text-slate-100 max-w-4xl mx-auto">
       <header className="flex justify-between items-center pb-4 border-b border-slate-800">
         <div>
-          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
             <Monitor className="w-5 h-5 text-primary" /> Display Manager
           </h2>
           <p className="text-xs text-slate-400">

@@ -102,21 +102,21 @@ export default function IngestionReviewPage() {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/ingestion" className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-            <ArrowLeft className="w-5 h-5 text-zinc-300" />
+          <Link href="/ingestion" className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors">
+            <ArrowLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
           </Link>
           <div>
             <h1 className="text-xl font-bold text-white flex items-center gap-2">
               <BrainCircuit className="w-6 h-6 text-sky-400" />
               Human-in-the-Loop Review
             </h1>
-            <p className="text-sm text-zinc-400">Review AI extracted data from {review.source.replace("_", " ")}</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Review AI extracted data from {review.source.replace("_", " ")}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="p-2 text-zinc-400 hover:text-red-500 bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
+            className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 bg-black/5 dark:bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
             title="Delete Review"
           >
             <Trash2 className="w-5 h-5" />
@@ -141,11 +141,11 @@ export default function IngestionReviewPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
         {/* Left Pane: Raw Document text or Image */}
-        <div className="bg-zinc-900 border border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-          <div className="p-4 bg-zinc-900/80 border-b border-white/10">
-            <h2 className="text-sm font-semibold text-zinc-200">Raw Source Document</h2>
+        <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+          <div className="p-4 bg-zinc-900/80 border-b border-black/10 dark:border-white/10">
+            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Raw Source Document</h2>
           </div>
-          <div className="flex-1 overflow-auto bg-black/40">
+          <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40">
             {review.sourceDocumentUrl ? (
               review.sourceDocumentUrl.endsWith(".pdf") ? (
                 <iframe src={review.sourceDocumentUrl} className="w-full h-full border-none" />
@@ -153,7 +153,7 @@ export default function IngestionReviewPage() {
                 <img src={review.sourceDocumentUrl} className="w-full h-auto object-contain" alt="Raw Document" />
               )
             ) : (
-              <pre className="text-sm text-zinc-400 whitespace-pre-wrap font-mono p-4">
+              <pre className="text-sm text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap font-mono p-4">
                 {review.rawText || "No raw text available."}
               </pre>
             )}
@@ -161,21 +161,21 @@ export default function IngestionReviewPage() {
         </div>
 
         {/* Right Pane: AI Structured Data Editable */}
-        <div className="bg-zinc-900 border border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-          <div className="p-4 bg-zinc-900/80 border-b border-white/10 flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-zinc-200">AI Extracted Data</h2>
+        <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+          <div className="p-4 bg-zinc-900/80 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
+            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">AI Extracted Data</h2>
             <div className="flex items-center gap-2">
               <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">Vendor Aliases Applied</span>
               <div className="flex bg-black/50 rounded-lg p-1">
                 <button 
                   onClick={() => setViewMode("visual")}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-white/10 text-white" : "text-zinc-500 hover:text-white"}`}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
                 >
                   Visual
                 </button>
                 <button 
                   onClick={() => setViewMode("json")}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-white/10 text-white" : "text-zinc-500 hover:text-white"}`}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
                 >
                   JSON
                 </button>
@@ -194,7 +194,7 @@ export default function IngestionReviewPage() {
               <textarea
                 value={editedData}
                 onChange={(e) => setEditedData(e.target.value)}
-                className={`w-full h-full bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
+                className={`w-full h-full bg-white/50 dark:bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
                   editedData.includes('"error":') ? 'text-red-400' : 'text-emerald-400'
                 }`}
                 spellCheck={false}

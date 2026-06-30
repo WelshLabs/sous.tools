@@ -105,7 +105,7 @@ export const ColumnTextPreview: React.FC<{
   marketingText?: string;
 }> = ({ title, content, marketingText }) => (
   <div
-    className="w-full h-full p-3 bg-white/5 border border-white/10 rounded flex flex-col justify-center text-center space-y-1 overflow-hidden"
+    className="w-full h-full p-3 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded flex flex-col justify-center text-center space-y-1 overflow-hidden"
     style={marketingText ? { fontFamily: marketingText } : undefined}
   >
     {title ? (

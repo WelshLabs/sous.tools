@@ -11,6 +11,7 @@ import { IngestionModule } from "./modules/ingestion/ingestion.module";
 import { NutritionModule } from "./modules/nutrition/nutrition.module";
 import { ItemsModule } from "./modules/items/items.module";
 import { PosModule } from "./modules/pos/pos.module";
+import { UsersModule } from "./modules/users/users.module";
 
 import { AppGraphQLModule } from "./graphql/graphql.module";
 import { HealthModule } from "./health/health.module";
@@ -46,6 +47,7 @@ import { HealthModule } from "./health/health.module";
     NutritionModule,
     ItemsModule,
     PosModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

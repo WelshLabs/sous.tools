@@ -42,7 +42,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-lg font-bold text-slate-100">{displayName}</h3>
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-slate-100">{displayName}</h3>
             <p className="text-xs text-slate-400 mt-1 max-w-md">{desc}</p>
           </div>
           {status.connected ? (
@@ -50,7 +50,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
               <CheckCircle className="w-3.5 h-3.5" /> Connected
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900/50 px-2.5 py-1 rounded-full border border-zinc-800">
+            <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-900/50 px-2.5 py-1 rounded-full border border-zinc-800">
               <AlertCircle className="w-3.5 h-3.5" /> Disconnected
             </span>
           )}
@@ -59,8 +59,8 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
         {/* Connected account details */}
         {status.connected && (
           <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-3 text-xs">
-            <span className="text-zinc-500 block">Connected Account:</span>
-            <span className="text-zinc-200 font-medium font-mono truncate block">
+            <span className="text-zinc-400 dark:text-zinc-500 block">Connected Account:</span>
+            <span className="text-zinc-800 dark:text-zinc-200 font-medium font-mono truncate block">
               {status.connectedAs || "Active Session"}
             </span>
           </div>

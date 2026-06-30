@@ -1,0 +1,25 @@
+{
+  "output": {
+    "filePath": "codebase-snapshot.md",
+    "style": "markdown"
+  },
+  "include": ["**/*"],
+  "ignore": {
+    "customPatterns": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.next/**",
+      "**/out/**",
+      "**/build/**",
+      "package-lock.json",
+      "yarn.lock",
+      "pnpm-lock.yaml",
+      "**/.git/**",
+      "**/*.png",
+      "**/*.jpg",
+      "**/*.jpeg",
+      "**/*.svg",
+      "**/*.ico"
+    ]
+  }
+}

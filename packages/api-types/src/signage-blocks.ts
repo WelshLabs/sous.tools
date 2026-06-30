@@ -3,10 +3,10 @@
  * @description Recursive block structure and layout components for the signage visual editor.
  */
 
-import { ContentComponent } from "./signage-content-blocks";
-import { MenuItemStyles } from "./signage-base";
+import { ContentComponent } from "./signage-content-blocks.js";
+import { MenuItemStyles } from "./signage-base.js";
 
-export * from "./signage-content-blocks";
+export * from "./signage-content-blocks.js";
 
 /**
  * Sizing configuration for layout and content blocks.

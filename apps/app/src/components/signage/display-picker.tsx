@@ -71,7 +71,7 @@ export const DisplayPicker: React.FC<DisplayPickerProps> = ({ deckId }) => {
 
   return (
     <>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-1.5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-1 flex items-center gap-1.5">
         <Monitor className="w-3 h-3" /> Assign Displays
       </p>
       <div className="space-y-1.5">
@@ -80,7 +80,7 @@ export const DisplayPicker: React.FC<DisplayPickerProps> = ({ deckId }) => {
             <input type="checkbox" checked={assignedIds.has(disp.id)}
               onChange={(e) => handleToggle(disp.id, e.target.checked)}
               className="accent-primary w-3.5 h-3.5" />
-            <span className="text-xs text-zinc-300 group-hover:text-zinc-100 transition-colors">{disp.name}</span>
+            <span className="text-xs text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:text-zinc-100 transition-colors">{disp.name}</span>
           </label>
         ))}
       </div>

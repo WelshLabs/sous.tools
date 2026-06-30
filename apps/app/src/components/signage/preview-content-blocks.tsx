@@ -38,7 +38,7 @@ const PreviewMediaCarousel = ({ block }: { block: any }) => {
 
   const objectFitClass = block.objectFit === "contain" ? "object-contain" : (block.objectFit === "fill" ? "object-fill" : "object-cover");
   const classes = [
-    "relative overflow-hidden w-full h-full min-h-[200px] bg-zinc-950 rounded border border-white/5 flex items-center justify-center text-[9px] st-media-carousel",
+    "relative overflow-hidden w-full h-full min-h-[200px] bg-zinc-50 dark:bg-zinc-950 rounded border border-black/5 dark:border-white/5 flex items-center justify-center text-[9px] st-media-carousel",
     block.className
   ].filter(Boolean).join(" ");
   return (
@@ -89,7 +89,7 @@ const PreviewModifierGroup = ({ block }: { block: any }) => {
 
   if (loading) {
     return (
-      <div className="w-full min-h-[60px] flex items-center justify-center p-4 bg-zinc-950 border border-dashed border-white/5 rounded text-slate-500 italic text-[10px] animate-pulse">
+      <div className="w-full min-h-[60px] flex items-center justify-center p-4 bg-zinc-50 dark:bg-zinc-950 border border-dashed border-black/5 dark:border-white/5 rounded text-slate-500 italic text-[10px] animate-pulse">
         Loading Options...
       </div>
     );
@@ -97,20 +97,20 @@ const PreviewModifierGroup = ({ block }: { block: any }) => {
 
   if (options.length === 0) {
     return (
-      <div className="p-3 bg-zinc-950 border border-dashed border-white/5 rounded text-[10px] text-slate-500 italic flex items-center justify-center">
+      <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-dashed border-black/5 dark:border-white/5 rounded text-[10px] text-slate-500 italic flex items-center justify-center">
         Modifier Group: {block.modifierGroupId || "Dynamic"} (No options found)
       </div>
     );
   }
 
   const classes = [
-    "w-full bg-black/40 rounded border border-white/5 overflow-hidden",
+    "w-full bg-black/5 dark:bg-black/40 rounded border border-black/5 dark:border-white/5 overflow-hidden",
     block.className
   ].filter(Boolean).join(" ");
 
   return (
     <div className={classes} data-unique-id={block.uniqueSelector}>
-      <div className="px-3 py-2 bg-white/5 border-b border-white/5 font-semibold text-[10px] text-slate-300 uppercase tracking-wider">
+      <div className="px-3 py-2 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 font-semibold text-[10px] text-slate-300 uppercase tracking-wider">
         Options
       </div>
       <div className="flex flex-col divide-y divide-white/5">
@@ -180,7 +180,7 @@ export function PreviewContentBlocks({
 
       const classes = [
         "p-1.5 rounded flex justify-between items-center text-[9px] st-menu-item",
-        isGlass ? "st-glass-panel" : (isFlat ? "bg-transparent border-transparent" : "border border-white/5 bg-white/5"),
+        isGlass ? "st-glass-panel" : (isFlat ? "bg-transparent border-transparent" : "border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5"),
         item.isSoldOut ? "st-sold-out" : "",
         block.className
       ].filter(Boolean).join(" ");
@@ -209,7 +209,7 @@ export function PreviewContentBlocks({
       const isGlass = block.panelStyle === "glass";
       const classes = [
         "p-5 rounded-xl flex flex-col items-center text-center gap-3 st-callout w-full",
-        isGlass ? "st-glass-panel border border-white/10" : (block.panelStyle !== "none" ? "bg-zinc-900 border border-zinc-800" : ""),
+        isGlass ? "st-glass-panel border border-black/10 dark:border-white/10" : (block.panelStyle !== "none" ? "bg-zinc-100 dark:bg-zinc-900 border border-zinc-800" : ""),
         block.accentBorder ? "border-t-4 border-t-cyan-400" : "",
         block.className
       ].filter(Boolean).join(" ");
@@ -234,7 +234,7 @@ export function PreviewContentBlocks({
     case "MenuListBlock": {
       if (!block.itemIds || block.itemIds.length === 0) {
         return (
-          <div className="flex flex-col items-center justify-center w-full min-h-[60px] p-4 border border-dashed border-white/10 rounded-xl bg-white/5 opacity-80" data-unique-id={block.uniqueSelector}>
+          <div className="flex flex-col items-center justify-center w-full min-h-[60px] p-4 border border-dashed border-black/10 dark:border-white/10 rounded-xl bg-black/5 dark:bg-white/5 opacity-80" data-unique-id={block.uniqueSelector}>
              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
                Select POS items from Block Settings to populate this space.
              </span>
@@ -246,7 +246,7 @@ export function PreviewContentBlocks({
 
       const containerClasses = [
         "flex flex-col gap-2 w-full st-menu-list",
-        isGlass ? "st-glass-panel p-2 border border-white/10 bg-white/5 rounded" : "",
+        isGlass ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "",
         block.className
       ].filter(Boolean).join(" ");
 
@@ -267,7 +267,7 @@ export function PreviewContentBlocks({
 
              const itemClasses = [
                "p-1.5 rounded flex justify-between items-center text-[9px] st-menu-item",
-               isGlass ? "bg-transparent border-transparent" : (isFlatItem ? "bg-transparent border-transparent" : "border border-white/5 bg-white/5"),
+               isGlass ? "bg-transparent border-transparent" : (isFlatItem ? "bg-transparent border-transparent" : "border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5"),
                item.isSoldOut ? "st-sold-out" : ""
              ].filter(Boolean).join(" ");
 
@@ -291,7 +291,7 @@ export function PreviewContentBlocks({
                      <span className="text-[8px] opacity-70 truncate">{item.description}</span>
                    )}
                    {(block as any).priceDisplay && (
-                     <div className="flex gap-8 border-t border-white/10 pt-3 mt-2">
+                     <div className="flex gap-8 border-t border-black/10 dark:border-white/10 pt-3 mt-2">
                        {Object.entries((block as any).priceDisplay).map(([key, value]) => (
                          <div key={key} className="flex gap-2 items-center">
                            <span className="text-slate-400 capitalize text-[8px]">{key}</span>
@@ -322,7 +322,7 @@ export function PreviewContentBlocks({
       const b = block as any;
       const objectFitClass = b.objectFit === "contain" ? "object-contain" : (b.objectFit === "fill" ? "object-fill" : "object-cover");
       const classes = [
-        "w-full h-full min-h-[60px] flex items-center justify-center bg-zinc-950/50 border border-dashed border-white/10 rounded overflow-hidden",
+        "w-full h-full min-h-[60px] flex items-center justify-center bg-zinc-950/50 border border-dashed border-black/10 dark:border-white/10 rounded overflow-hidden",
         block.className
       ].filter(Boolean).join(" ");
       return (
@@ -340,15 +340,15 @@ export function PreviewContentBlocks({
       const b = block as any;
       const videoSrc = b.videoUrl || "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
       const classes = [
-        "w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-zinc-950/50 border border-dashed border-white/10 rounded overflow-hidden p-0 relative st-video-container aspect-video",
+        "w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-zinc-950/50 border border-dashed border-black/10 dark:border-white/10 rounded overflow-hidden p-0 relative st-video-container aspect-video",
         block.className
       ].filter(Boolean).join(" ");
       return (
         <div className={classes} data-unique-id={block.uniqueSelector}>
            <video src={videoSrc} autoPlay loop muted playsInline className="w-full h-full object-cover st-video-player" />
            {!b.videoUrl && (
-             <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none z-10">
-               <span className="text-[10px] text-slate-300 italic px-3 py-1 bg-black/60 rounded">Placeholder Video</span>
+             <div className="absolute inset-0 bg-black/5 dark:bg-black/40 flex items-center justify-center pointer-events-none z-10">
+               <span className="text-[10px] text-slate-300 italic px-3 py-1 bg-white/50 dark:bg-black/60 rounded">Placeholder Video</span>
              </div>
            )}
         </div>
@@ -366,7 +366,7 @@ export function PreviewContentBlocks({
         <div className={classes} data-unique-id={block.uniqueSelector}>
           <div className="absolute left-[15px] top-4 bottom-4 w-px bg-white/20 z-0"></div>
           {steps.length === 0 ? (
-            <span className="text-[10px] text-slate-500 italic relative z-10 bg-zinc-950 pl-2">No timeline steps configured.</span>
+            <span className="text-[10px] text-slate-500 italic relative z-10 bg-zinc-50 dark:bg-zinc-950 pl-2">No timeline steps configured.</span>
           ) : (
             steps.map((step: any) => (
               <div key={step.id} className="flex gap-4 items-start relative z-10 py-2">

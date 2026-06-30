@@ -68,7 +68,7 @@ export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
         <h2 className="text-2xl font-bold text-[oklch(0.60_0.25_25)] mb-2 font-brand">
           Display Load Failed
         </h2>
-        <p className="text-zinc-400 font-sans">{errorState}</p>
+        <p className="text-zinc-500 dark:text-zinc-400 font-sans">{errorState}</p>
       </div>
     );
   }

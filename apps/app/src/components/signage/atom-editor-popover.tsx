@@ -36,55 +36,55 @@ export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({ atom, acti
           <ColorRow label="Background" value={style.backgroundColor} onChange={(v) => onChange({ backgroundColor: v })} />
           <ColorRow label="Border color" value={style.borderColor} onChange={(v) => onChange({ borderColor: v })} />
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-zinc-400">Border width</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Border width</span>
             <input type="number" min={0} max={8} value={style.borderWidth ?? 1}
               onChange={(e) => onChange({ borderWidth: Number(e.target.value) })}
-              className="w-16 bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none" />
+              className="w-16 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none" />
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-zinc-400">Border radius</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Border radius</span>
             <input type="text" value={style.borderRadius ?? "12px"}
               onChange={(e) => onChange({ borderRadius: e.target.value })}
-              className="w-24 bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none" />
+              className="w-24 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none" />
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-zinc-400">Box shadow</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Box shadow</span>
             <input type="text" value={style.shadow ?? ""}
               onChange={(e) => onChange({ shadow: e.target.value || undefined })}
-              className="w-36 bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none" />
+              className="w-36 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none" />
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-zinc-400">Card padding</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Card padding</span>
             <input type="text" value={style.cardPadding ?? "16px"}
               onChange={(e) => onChange({ cardPadding: e.target.value })}
               placeholder="16px"
-              className="w-24 bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none" />
+              className="w-24 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none" />
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-zinc-400">Animation</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Animation</span>
             <select value={style.animation ?? "none"}
               onChange={(e) => onChange({ animation: e.target.value as typeof style.animation })}
-              className="bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-100 cursor-pointer focus:outline-none">
+              className="bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 cursor-pointer focus:outline-none">
               {ANIMATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-zinc-400">Dim opacity</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">Dim opacity</span>
             <input type="number" min={0} max={1} step={0.05} value={style.dimOpacity ?? 1}
               onChange={(e) => onChange({ dimOpacity: Number(e.target.value) })}
-              className="w-16 bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none" />
+              className="w-16 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none" />
           </div>
           <div className="flex gap-4 flex-wrap">
-            <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer">
               <input type="checkbox" checked={style.grayscale ?? false}
                 onChange={(e) => onChange({ grayscale: e.target.checked })} className="accent-primary" />Grayscale
             </label>
-            <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer">
               <input type="checkbox" checked={style.strikethrough ?? false}
                 onChange={(e) => onChange({ strikethrough: e.target.checked })} className="accent-primary" />Strikethrough
             </label>
             {activeState === "soldOut" && (
-              <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer">
+              <label className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer">
                 <input type="checkbox" checked={style.hidden ?? false}
                   onChange={(e) => onChange({ hidden: e.target.checked })} className="accent-primary" />Hidden
               </label>
@@ -125,10 +125,10 @@ export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({ atom, acti
   })();
 
   return (
-    <div className="bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl p-4 w-72">
+    <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl p-4 w-72">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-zinc-200 uppercase tracking-wider">{ATOM_LABELS[atom]}</span>
-        <button onClick={onClose} className="text-zinc-500 hover:text-zinc-200 transition-colors p-0.5 cursor-pointer" aria-label="Close">
+        <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">{ATOM_LABELS[atom]}</span>
+        <button onClick={onClose} className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 transition-colors p-0.5 cursor-pointer" aria-label="Close">
           <X className="w-4 h-4" />
         </button>
       </div>

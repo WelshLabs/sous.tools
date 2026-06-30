@@ -42,7 +42,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
   const slideCount = deck.config?.slides?.length || 0;
 
   return (
-    <div className="flex flex-col bg-zinc-900/60 backdrop-blur border border-white/10 rounded-xl p-5 hover:border-white/20 transition-all duration-300">
+    <div className="flex flex-col bg-zinc-900/60 backdrop-blur border border-black/10 dark:border-white/10 rounded-xl p-5 hover:border-white/20 transition-all duration-300">
       <div className="flex-1 min-w-0">
         {isEditing ? (
           <div className="space-y-2 mb-3">
@@ -52,7 +52,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
               onChange={(e) => setName(e.target.value)}
               onBlur={handleSaveRename}
               onKeyDown={(e) => e.key === "Enter" && handleSaveRename()}
-              className="w-full px-2 py-1 text-sm bg-zinc-950 border border-white/15 rounded text-white focus:outline-none focus:border-primary"
+              className="w-full px-2 py-1 text-sm bg-zinc-50 dark:bg-zinc-950 border border-white/15 rounded text-white focus:outline-none focus:border-primary"
               placeholder="Deck Name"
               autoFocus
             />
@@ -64,7 +64,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
                 onChange={(e) => setSlug(e.target.value)}
                 onBlur={handleSaveRename}
                 onKeyDown={(e) => e.key === "Enter" && handleSaveRename()}
-                className="flex-1 px-2 py-0.5 text-xs bg-zinc-950 border border-white/15 rounded text-slate-300 font-mono focus:outline-none focus:border-primary"
+                className="flex-1 px-2 py-0.5 text-xs bg-zinc-50 dark:bg-zinc-950 border border-white/15 rounded text-slate-300 font-mono focus:outline-none focus:border-primary"
                 placeholder="slug"
               />
             </div>
@@ -77,7 +77,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
               </h3>
               <button
                 onClick={() => setIsEditing(true)}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-black/10 dark:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
               >
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
@@ -95,7 +95,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-4">
+      <div className="flex items-center justify-between gap-2 border-t border-black/5 dark:border-white/5 pt-4">
         <button
           onClick={() => router.push(`/signage/${deck.id}`)}
           className="flex-1 px-3 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors cursor-pointer text-center"
@@ -104,7 +104,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
         </button>
         <Link
           href={`/signage/${deck.id}/preview`}
-          className="p-2 border border-white/10 hover:border-primary/40 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-primary/40 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
           title="Preview Deck"
         >
           <Eye className="w-4 h-4" />
@@ -113,21 +113,21 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
           href={getLiveUrl(deck.slug)}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 border border-white/10 hover:border-white/25 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center"
           title="Open Live View in New Tab"
         >
           <ExternalLink className="w-4 h-4" />
         </a>
         <button
           onClick={handleCopyUrl}
-          className="p-2 border border-white/10 hover:border-white/25 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
           title="Copy Deck URL"
         >
           {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
         </button>
         <button
           onClick={() => onDelete(deck.id)}
-          className="p-2 border border-white/10 hover:border-red-500/30 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg transition-all cursor-pointer"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-red-500/30 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg transition-all cursor-pointer"
           title="Delete Deck"
         >
           <Trash2 className="w-4 h-4" />

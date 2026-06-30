@@ -115,21 +115,21 @@ export function DraftPoModal({ isOpen, onClose, items, vendors, onSuccess }: Dra
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-sm">
       <div className="glass-panel p-8 max-w-2xl w-full">
         <h2 className="text-3xl font-bold mb-6">Select Items for PO</h2>
         
         <div className="mb-6 space-y-2">
           <label className="text-sm font-medium text-gray-400">Select Vendor</label>
-          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-black/60 border border-white/20 rounded-md p-3 text-white">
+          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-white/50 dark:bg-black/60 border border-white/20 rounded-md p-3 text-white">
             <option value="">-- Choose Vendor --</option>
             {vendors.map(v => <option key={v.id} value={v.id}>{v.name} ({v.order_method})</option>)}
           </select>
         </div>
 
-        <div className="max-h-64 overflow-y-auto space-y-2 border border-white/10 p-4 rounded-md mb-6">
+        <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-white/10 p-4 rounded-md mb-6">
           {items.map(item => (
-            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-white/5 rounded">
+            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-white/5 rounded">
               <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5" />
               <span className="text-lg">{item.raw_name}</span>
             </label>
@@ -137,7 +137,7 @@ export function DraftPoModal({ isOpen, onClose, items, vendors, onSuccess }: Dra
         </div>
 
         <div className="flex justify-end gap-4">
-          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium hover:bg-white/10 transition-colors disabled:opacity-50">
+          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium hover:bg-black/10 dark:bg-white/10 transition-colors disabled:opacity-50">
             Cancel
           </button>
           <button 

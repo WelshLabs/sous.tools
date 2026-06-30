@@ -121,7 +121,7 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] text-slate-100">
+      <div className="flex items-center justify-center min-h-[50vh] text-zinc-900 dark:text-slate-100">
         <RefreshCw className="w-8 h-8 animate-spin text-primary" />
         <span className="ml-3 text-sm font-mono">Loading editor...</span>
       </div>
@@ -130,7 +130,7 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
 
   if (!deck) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-100">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-900 dark:text-slate-100">
         <h2 className="text-xl font-bold text-red-400">Deck Not Found</h2>
         <p className="text-sm text-slate-400 mt-2">The requested slide deck could not be loaded.</p>
       </div>

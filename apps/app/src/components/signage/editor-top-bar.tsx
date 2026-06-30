@@ -64,7 +64,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
     : <Save className="w-3.5 h-3.5" />;
 
   return (
-    <div className="flex items-center justify-between gap-2 h-12 px-3 bg-zinc-950/80 backdrop-blur border-b border-white/5 shrink-0 relative">
+    <div className="flex items-center justify-between gap-2 h-12 px-3 bg-zinc-950/80 backdrop-blur border-b border-black/5 dark:border-white/5 shrink-0 relative">
       {/* Left — name / slug · play · nav */}
       <div className="flex items-center gap-2 min-w-0">
         <div className="flex flex-col min-w-0">
@@ -74,7 +74,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             onChange={(e) => setNameInput(e.target.value)}
             onBlur={handleNameBlur}
             onKeyDown={(e) => e.key === "Enter" && handleNameBlur()}
-            className="bg-transparent hover:bg-white/5 border border-transparent hover:border-white/10 rounded px-1 py-0.5 text-white font-bold text-xs focus:bg-zinc-950 focus:border-white/20 focus:outline-none max-w-[150px] truncate"
+            className="bg-transparent hover:bg-black/5 dark:bg-white/5 border border-transparent hover:border-black/10 dark:border-white/10 rounded px-1 py-0.5 text-white font-bold text-xs focus:bg-zinc-50 dark:bg-zinc-950 focus:border-white/20 focus:outline-none max-w-[150px] truncate"
             title="Click to rename"
           />
           {deckSlug && (
@@ -95,13 +95,13 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </div>
           )}
         </div>
-        <div className="w-px h-6 bg-white/10 mx-1" />
+        <div className="w-px h-6 bg-black/10 dark:bg-white/10 mx-1" />
 
         <button
           id="editor-top-bar-play"
           onClick={onTogglePlay}
           disabled={noSlides}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border border-white/10 hover:border-white/25 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-40 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border border-black/10 dark:border-white/10 hover:border-white/25 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-800 disabled:opacity-40 transition-all cursor-pointer"
         >
           {isPlaying
             ? <Pause className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
@@ -111,13 +111,13 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           </span>
         </button>
 
-        <div className="flex items-center rounded-md overflow-hidden border border-white/10">
+        <div className="flex items-center rounded-md overflow-hidden border border-black/10 dark:border-white/10">
           <button id="editor-top-bar-prev" onClick={onPrevSlide} disabled={noSlides}
-            className="p-1 hover:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer">
+            className="p-1 hover:bg-black/10 dark:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer">
             <ChevronLeft className="w-4 h-4 text-slate-400" />
           </button>
           <button id="editor-top-bar-next" onClick={onNextSlide} disabled={noSlides}
-            className="p-1 hover:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer">
+            className="p-1 hover:bg-black/10 dark:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer">
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </button>
         </div>
@@ -136,7 +136,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             {onDiscard && (
               <button
                 onClick={onDiscard}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-400 hover:text-white bg-transparent border border-white/10 hover:border-white/20 rounded-md cursor-pointer transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-400 hover:text-white bg-transparent border border-black/10 dark:border-white/10 hover:border-white/20 rounded-md cursor-pointer transition-colors"
                 title="Discard unsaved changes"
               >
                 <RefreshCcw className="w-3 h-3" /> Discard
@@ -146,13 +146,13 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
         )}
         <button id="editor-top-bar-styles" onClick={onToggleStyles}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
-            isStylesOpen ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/10 text-slate-400 hover:text-white"
+            isStylesOpen ? "bg-black/10 dark:bg-white/10 border-white/20 text-white" : "bg-transparent border-black/10 dark:border-white/10 text-slate-400 hover:text-white"
           }`}>
           <Palette className="w-3.5 h-3.5" /> Slide Workspace
         </button>
         <button id="editor-top-bar-preview" onClick={onTogglePreview}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
-            isPreviewing ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/10 text-slate-400 hover:text-white"
+            isPreviewing ? "bg-black/10 dark:bg-white/10 border-white/20 text-white" : "bg-transparent border-black/10 dark:border-white/10 text-slate-400 hover:text-white"
           }`}>
           <Eye className="w-3.5 h-3.5" /> Preview
         </button>
@@ -160,7 +160,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-all disabled:opacity-60 ${
             saveState === "saved"
               ? "border-green-500/40 bg-green-500/10 text-green-400"
-              : "border-white/10 bg-zinc-900 hover:bg-zinc-800 text-slate-300"
+              : "border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-800 text-slate-300"
           }`}>
           {SaveIcon} {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save"}
         </button>

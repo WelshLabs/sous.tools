@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Recipe } from "@soustools/api-types";
-import { Play, Edit3, Trash2, Scale } from "lucide-react";
+import { Play, Edit3, Trash2, Scale, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 
 interface RecipeCardProps {
@@ -41,6 +41,15 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onDelete }) => {
         {recipe.vessel && (
           <p className="text-[11px] text-sky-400 mt-1 flex items-center gap-1 font-semibold">
             <Scale className="w-3.5 h-3.5" /> Pan: {recipe.vessel.name}
+          </p>
+        )}
+        {recipe.posItemId ? (
+          <p className="text-[11px] text-green-400 mt-1 flex items-center gap-1 font-semibold">
+            <LinkIcon className="w-3.5 h-3.5" /> Linked POS Item
+          </p>
+        ) : (
+          <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+            <LinkIcon className="w-3.5 h-3.5" /> Unlinked POS
           </p>
         )}
         <div className="text-xs text-slate-500 mt-3 line-clamp-2">

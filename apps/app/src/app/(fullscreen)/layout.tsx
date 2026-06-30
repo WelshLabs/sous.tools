@@ -54,14 +54,14 @@ export default function FullscreenLayout({ children }: FullscreenLayoutProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-zinc-100">
       {children}
     </div>
   );

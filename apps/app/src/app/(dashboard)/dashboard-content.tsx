@@ -17,7 +17,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen p-6 bg-[oklch(0.1_0.01_180)] text-slate-100">
+    <main className="min-h-screen p-6 bg-[oklch(0.1_0.01_180)] text-zinc-900 dark:text-slate-100">
       <header className="flex justify-between items-center mb-8 pb-4 border-b border-[oklch(0.2_0.02_180)]">
         <div>
           <h1 className="text-2xl font-bold text-[oklch(0.85_0.08_140)]">

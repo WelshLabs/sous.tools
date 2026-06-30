@@ -49,7 +49,7 @@ export const RecipeScalingPanel: React.FC<RecipeScalingPanelProps> = ({
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-zinc-900 border border-white/5 space-y-4">
+    <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 space-y-4">
       <h3 className="text-sm font-bold text-slate-300 flex items-center gap-1.5">
         <Scale className="w-4 h-4 text-primary" /> Hybrid Scaling Tool
       </h3>
@@ -67,7 +67,7 @@ export const RecipeScalingPanel: React.FC<RecipeScalingPanelProps> = ({
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Target Yield</label>
-              <input type="number" step="any" min="0.01" value={targetYield} onChange={(e) => setTargetYield(parseFloat(e.target.value) || 1)} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" />
+              <input type="number" step="any" min="0.01" value={targetYield} onChange={(e) => setTargetYield(parseFloat(e.target.value) || 1)} className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" />
             </div>
             <div className="text-xs text-slate-400 pt-4 font-semibold">
               Multiplier: {currentMultiplier.toFixed(2)}x
@@ -79,7 +79,7 @@ export const RecipeScalingPanel: React.FC<RecipeScalingPanelProps> = ({
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Target Total Batch Weight (g)</label>
-              <input type="number" step="any" min="0" value={targetWeight} onChange={(e) => handleWeightChange(e.target.value)} placeholder="Enter target grams..." className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" />
+              <input type="number" step="any" min="0" value={targetWeight} onChange={(e) => handleWeightChange(e.target.value)} placeholder="Enter target grams..." className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" />
             </div>
             <div className="text-xs text-slate-400 pt-4 font-semibold">
               Multiplier: {currentMultiplier.toFixed(2)}x
@@ -91,7 +91,7 @@ export const RecipeScalingPanel: React.FC<RecipeScalingPanelProps> = ({
           <div className="space-y-2">
             <div>
               <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Swap Vessel Profile</label>
-              <select value={selectedVesselId} onChange={(e) => setSelectedVesselId(e.target.value)} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" disabled={!recipe.vesselId}>
+              <select value={selectedVesselId} onChange={(e) => setSelectedVesselId(e.target.value)} className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" disabled={!recipe.vesselId}>
                 <option value="">Select Target Pan...</option>
                 {vessels.map((v) => (
                   <option key={v.id} value={v.id}>{v.name} ({v.volumeMl} ml)</option>

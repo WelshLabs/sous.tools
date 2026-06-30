@@ -61,7 +61,7 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
   const recipes = parsed.recipes ? parsed.recipes : (parsed.title && parsed.ingredients ? [parsed] : []);
 
   if (recipes.length === 0) {
-    return <div className="p-4 text-zinc-400">No recipes found in data.</div>;
+    return <div className="p-4 text-zinc-500 dark:text-zinc-400">No recipes found in data.</div>;
   }
 
   const handleUpdate = (recipeIndex: number, field: string, value: any) => {
@@ -86,7 +86,7 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-black/40 p-4 space-y-4">
+    <div className="flex-1 overflow-y-auto bg-black/5 dark:bg-black/40 p-4 space-y-4">
       {recipes.map((recipe: any, rIdx: number) => {
         const isExpanded = expandedRecipes[rIdx] !== false;
         
@@ -100,9 +100,9 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
         });
 
         return (
-          <div key={rIdx} className="border border-white/10 rounded-xl bg-zinc-900/50 overflow-hidden shadow-sm">
+          <div key={rIdx} className="border border-black/10 dark:border-white/10 rounded-xl bg-zinc-900/50 overflow-hidden shadow-sm">
             <div 
-              className="p-3 bg-white/5 flex items-center gap-2 cursor-pointer hover:bg-white/10"
+              className="p-3 bg-black/5 dark:bg-white/5 flex items-center gap-2 cursor-pointer hover:bg-black/10 dark:bg-white/10"
               onClick={() => toggleExpand(rIdx)}
             >
               {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
@@ -113,41 +113,41 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
               <div className="p-4 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-zinc-400 font-bold uppercase tracking-wide">Title</label>
+                    <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">Title</label>
                     <input 
                       disabled={disabled}
                       type="text" 
                       value={recipe.title || ""} 
                       onChange={(e) => handleUpdate(rIdx, "title", e.target.value)}
-                      className="w-full bg-black/50 border border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                      className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
                     />
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
-                      <label className="text-xs text-zinc-400 font-bold uppercase tracking-wide">Yield</label>
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">Yield</label>
                       <input 
                         disabled={disabled}
                         type="number" 
                         value={recipe.yieldCount || 1} 
                         onChange={(e) => handleUpdate(rIdx, "yieldCount", Number(e.target.value))}
-                        className="w-full bg-black/50 border border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                        className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-xs text-zinc-400 font-bold uppercase tracking-wide">Unit</label>
+                      <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">Unit</label>
                       <input 
                         disabled={disabled}
                         type="text" 
                         value={recipe.yieldUnit || "servings"} 
                         onChange={(e) => handleUpdate(rIdx, "yieldUnit", e.target.value)}
-                        className="w-full bg-black/50 border border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                        className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                  <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-2">
                     <h4 className="text-sm font-semibold">Ingredients</h4>
                     <button 
                       type="button"
@@ -205,22 +205,22 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
                       </h5>
                       <div className="space-y-2">
                         {ings.map((ing) => (
-                          <div key={ing.originalIndex} className="grid grid-cols-12 gap-3 items-center bg-black/30 p-3 rounded-lg border border-white/5">
+                          <div key={ing.originalIndex} className="grid grid-cols-12 gap-3 items-center bg-black/30 p-3 rounded-lg border border-black/5 dark:border-white/5">
                             <div className="col-span-4 flex flex-col gap-1 relative">
                               <input 
                                 disabled={disabled}
                                 type="text"
                                 value={ing.name || ""}
                                 onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "name", e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none placeholder:text-white/20"
+                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none placeholder:text-white/20"
                                 placeholder="Raw Name (from text)"
                               />
                               <select 
                                 disabled={disabled}
                                 value={ing.itemId || ""}
                                 onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "itemId", e.target.value || null)}
-                                className={`w-full bg-black/40 border rounded px-2 py-1.5 text-sm outline-none transition-colors ${
-                                  !ing.itemId ? "border-red-500/70 text-red-300 focus:border-red-400" : "border-white/10 text-emerald-400 focus:border-sky-500"
+                                className={`w-full bg-black/5 dark:bg-black/40 border rounded px-2 py-1.5 text-sm outline-none transition-colors ${
+                                  !ing.itemId ? "border-red-500/70 text-red-300 focus:border-red-400" : "border-black/10 dark:border-white/10 text-emerald-400 focus:border-sky-500"
                                 }`}
                               >
                                 <option value="">⚠️ Select Master Ingredient...</option>
@@ -235,14 +235,14 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
                                 type="number"
                                 value={ing.amount || 0}
                                 onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "amount", Number(e.target.value))}
-                                className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
+                                className="w-16 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
                               />
                               <input 
                                 disabled={disabled}
                                 type="text"
                                 value={ing.unit || ""}
                                 onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "unit", e.target.value)}
-                                className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none placeholder:text-white/20"
+                                className="w-16 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none placeholder:text-white/20"
                                 placeholder="Unit"
                               />
                             </div>
@@ -252,7 +252,7 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
                                   disabled={disabled}
                                   value={ing.calculationType || "WEIGHT"}
                                   onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "calculationType", e.target.value)}
-                                  className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs focus:border-sky-500 outline-none"
+                                  className="flex-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs focus:border-sky-500 outline-none"
                                 >
                                   <option value="WEIGHT">Weight</option>
                                   <option value="VOLUME">Volume</option>
@@ -279,7 +279,7 @@ export function VisualBuilder({ editedData, onChange, disabled, organizationId }
                                 value={ing.component || ""}
                                 onChange={(e) => handleIngredientUpdate(rIdx, ing.originalIndex, "component", e.target.value || null)}
                                 placeholder="Section (e.g. Glaze)"
-                                className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none text-zinc-400"
+                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none text-zinc-500 dark:text-zinc-400"
                               />
                             </div>
                           </div>

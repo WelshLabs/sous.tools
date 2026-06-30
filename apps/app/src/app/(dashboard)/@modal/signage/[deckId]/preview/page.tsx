@@ -73,7 +73,7 @@ export default function DeckPreviewModal({
         <>
           <button
             onClick={() => router.back()}
-            className="px-4 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 border border-white/10 hover:border-white/20 rounded-lg transition cursor-pointer"
+            className="px-4 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 border border-black/10 dark:border-white/10 hover:border-white/20 rounded-lg transition cursor-pointer"
           >
             Close
           </button>
@@ -91,13 +91,13 @@ export default function DeckPreviewModal({
           <div className="w-8 h-8 border-4 border-t-transparent border-primary rounded-full animate-spin" />
         </div>
       ) : !deck ? (
-        <div className="flex items-center justify-center h-64 text-zinc-500">
+        <div className="flex items-center justify-center h-64 text-zinc-400 dark:text-zinc-500">
           Deck not found.
         </div>
       ) : (
         <div className="flex flex-col">
           {/* 16:9 live preview iframe */}
-          <div className="relative w-full bg-black" style={{ paddingTop: "56.25%" }}>
+          <div className="relative w-full bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
             <iframe
               src={getLiveUrl()}
               title={deck.name}
@@ -106,12 +106,12 @@ export default function DeckPreviewModal({
             />
           </div>
           {/* Action strip */}
-          <div className="flex items-center gap-3 px-5 py-4 border-t border-white/5 bg-zinc-950">
-            <Monitor className="w-4 h-4 text-zinc-500 shrink-0" />
-            <p className="text-xs text-zinc-400 flex-1 font-mono truncate">{getLiveUrl()}</p>
+          <div className="flex items-center gap-3 px-5 py-4 border-t border-black/5 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950">
+            <Monitor className="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 flex-1 font-mono truncate">{getLiveUrl()}</p>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied!" : "Copy URL"}
@@ -120,7 +120,7 @@ export default function DeckPreviewModal({
               href={getLiveUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
             >
               <ExternalLink className="w-3.5 h-3.5" /> Open in Tab
             </a>

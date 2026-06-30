@@ -226,10 +226,11 @@ The requested document type is: ${documentType}`
 
       if (notifError) console.error("Failed to create notification:", notifError);
     } catch (err: any) {
+      console.error(`AI Ingestion job failed for review ID ${job.data.reviewId || "unknown"}:`, err);
       if (job.data.reviewId) {
         await supabase.from("ingestion_reviews").update({
           parsed_data: { error: err.message || "Failed to process ingestion" },
-          status: "REJECTED",
+          status: "FAILED",
           source_document_url: sourceDocumentUrl || null
         }).eq("id", job.data.reviewId);
       }

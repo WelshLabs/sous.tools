@@ -5,7 +5,7 @@ export const DownloadsPanel: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-2">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-slate-100">
+        <h2 className="text-xl font-bold flex items-center gap-2 text-zinc-900 dark:text-slate-100">
           <Download className="w-5 h-5 text-sky-400" />
           OS Downloads
         </h2>
@@ -35,10 +35,10 @@ export const DownloadsPanel: React.FC = () => {
             </p>
 
             <div className="flex items-center gap-2 p-3 bg-zinc-950/50 rounded-lg border border-zinc-900 mb-6">
-              <Cpu className="w-4 h-4 text-zinc-500" />
-              <span className="text-xs text-zinc-400">Architecture: <strong className="text-zinc-300">AArch64</strong></span>
+              <Cpu className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">Architecture: <strong className="text-zinc-700 dark:text-zinc-300">AArch64</strong></span>
               <span className="text-zinc-700">|</span>
-              <span className="text-xs text-zinc-400">Size: <strong className="text-zinc-300">~415 MB (.xz)</strong></span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">Size: <strong className="text-zinc-700 dark:text-zinc-300">~415 MB (.xz)</strong></span>
             </div>
           </div>
 
@@ -66,21 +66,21 @@ export const DownloadsPanel: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-800 text-[10px] text-zinc-400">1</span>
-                Option A: Balena Etcher (Recommended)
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-800 text-[10px] text-zinc-500 dark:text-zinc-400">1</span>
+                Option A: Raspberry Pi Imager (Recommended)
               </h4>
               <p className="text-xs text-slate-400 ml-7">
-                Download and install <a href="https://etcher.balena.io/" target="_blank" rel="noreferrer" className="text-sky-400 hover:underline">Balena Etcher</a>. Select the downloaded `.img.xz` file, select your SD card, and click Flash. Etcher will automatically extract and write the image.
+                Using <a href="https://www.raspberrypi.com/software/" target="_blank" rel="noreferrer" className="text-sky-400 hover:underline">Raspberry Pi Imager</a>, choose "Use custom" from the OS selection menu and select the downloaded image file.
               </p>
             </div>
 
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-800 text-[10px] text-zinc-400">2</span>
-                Option B: Raspberry Pi Imager
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-800 text-[10px] text-zinc-500 dark:text-zinc-400">2</span>
+                Option B: Balena Etcher
               </h4>
               <p className="text-xs text-slate-400 ml-7">
-                Using <a href="https://www.raspberrypi.com/software/" target="_blank" rel="noreferrer" className="text-sky-400 hover:underline">Raspberry Pi Imager</a>, choose "Use custom" from the OS selection menu and select the downloaded image file.
+                Download and install <a href="https://etcher.balena.io/" target="_blank" rel="noreferrer" className="text-sky-400 hover:underline">Balena Etcher</a>. Select the downloaded `.img.xz` file, select your SD card, and click Flash. Etcher will automatically extract and write the image.
               </p>
             </div>
 

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-background: hsl(var(--background));
@@ -80,15 +81,15 @@
     box-shadow: inset 0 0 10px var(--neon-color, theme('colors.sky.500')), 0 0 10px var(--neon-color, theme('colors.sky.500'));
   }
   .glass-panel {
-    @apply bg-zinc-950/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+    @apply bg-white/40 dark:bg-zinc-950/40 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-2xl;
   }
   .glass-card {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+    @apply bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-xl;
   }
   .st-glass-panel {
-    @apply bg-zinc-950/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+    @apply bg-white/40 dark:bg-zinc-950/40 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-2xl;
   }
   .st-glass-pill {
-    @apply bg-zinc-950/60 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl;
+    @apply bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl rounded-2xl;
   }
 }

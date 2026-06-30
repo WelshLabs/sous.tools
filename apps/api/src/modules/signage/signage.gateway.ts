@@ -111,4 +111,10 @@ export class SignageGateway
       }
     });
   }
+
+  isDisplayOnline(displayId: string): boolean {
+    if (!this.server) return false;
+    const room = this.server.sockets.adapter.rooms.get(`display:${displayId}`);
+    return room ? room.size > 0 : false;
+  }
 }

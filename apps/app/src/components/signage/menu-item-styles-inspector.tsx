@@ -32,13 +32,13 @@ export const MenuItemStylesInspector: React.FC<MenuItemStylesInspectorProps> = (
 
   return (
     <div className="flex flex-col gap-4 py-2">
-      <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
+      <div className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
         Menu Item Styles
       </div>
       
       <StateTabBar activeState={activeState} onChange={(s) => { setActiveState(s); setSelectedAtom(null); }} styles={styles} />
 
-      <div className="flex justify-center p-4 bg-zinc-900/50 rounded-xl border border-white/5">
+      <div className="flex justify-center p-4 bg-zinc-900/50 rounded-xl border border-black/5 dark:border-white/5">
         <div className="w-full max-w-[260px]">
           <MenuItemPreviewCard
             stateStyle={styles[activeState]}
@@ -51,7 +51,7 @@ export const MenuItemStylesInspector: React.FC<MenuItemStylesInspectorProps> = (
       </div>
 
       {selectedAtom ? (
-        <div className="border border-white/5 rounded-xl bg-zinc-900/30 overflow-hidden">
+        <div className="border border-black/5 dark:border-white/5 rounded-xl bg-zinc-900/30 overflow-hidden">
           <AtomEditorPopover
             atom={selectedAtom}
             activeState={activeState}
@@ -61,7 +61,7 @@ export const MenuItemStylesInspector: React.FC<MenuItemStylesInspectorProps> = (
           />
         </div>
       ) : (
-        <div className="text-center p-4 rounded-xl border border-dashed border-white/10 text-[11px] text-zinc-500">
+        <div className="text-center p-4 rounded-xl border border-dashed border-black/10 dark:border-white/10 text-[11px] text-zinc-400 dark:text-zinc-500">
           Click elements on the preview card above to edit colors, sizes, borders, and animations.
         </div>
       )}

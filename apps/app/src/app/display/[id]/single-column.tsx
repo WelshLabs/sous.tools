@@ -47,7 +47,7 @@ export function SingleColumn({
               />
             ))
           ) : (
-            <div className="flex-1 flex items-center justify-center text-zinc-500 text-sm">
+            <div className="flex-1 flex items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm">
               No Menu Items Selected
             </div>
           )}
@@ -68,7 +68,7 @@ export function SingleColumn({
               className={`w-full h-full object-${column.fit || "cover"}`}
             />
           ) : (
-            <div className="text-zinc-500 text-sm">No Image Selected</div>
+            <div className="text-zinc-400 dark:text-zinc-500 text-sm">No Image Selected</div>
           )}
         </div>
       );
@@ -89,7 +89,7 @@ export function SingleColumn({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-zinc-500 text-sm">
+            <div className="flex items-center justify-center h-full text-zinc-400 dark:text-zinc-500 text-sm">
               No Video Selected
             </div>
           )}
@@ -110,7 +110,7 @@ export function SingleColumn({
               allow="autoplay; encrypted-media"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-zinc-500 text-sm">
+            <div className="flex items-center justify-center h-full text-zinc-400 dark:text-zinc-500 text-sm">
               No URL Configured
             </div>
           )}
@@ -133,14 +133,14 @@ export function SingleColumn({
           )}
           {column.content && (
             <p
-              className="text-lg text-zinc-300 whitespace-pre-line"
+              className="text-lg text-zinc-700 dark:text-zinc-300 whitespace-pre-line"
               style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
             >
               {column.content}
             </p>
           )}
           {!column.title && !column.content && (
-            <div className="text-zinc-500 text-sm">No Text Configured</div>
+            <div className="text-zinc-400 dark:text-zinc-500 text-sm">No Text Configured</div>
           )}
         </div>
       );

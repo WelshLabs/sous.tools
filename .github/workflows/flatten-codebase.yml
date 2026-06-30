@@ -1,0 +1,34 @@
+name: Flatten Codebase for NotebookLM
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows you to run it manually from the Actions tab
+
+jobs:
+  flatten:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Repomix
+        run: npm install -g repomix
+
+      - name: Run Repomix
+        # This ignores node_modules, build outputs, and git folders by default
+        run: repomix --output codebase-snapshot.md
+
+      - name: Upload Snapshot as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codebase-snapshot
+          path: codebase-snapshot.md
+          retention-days: 7

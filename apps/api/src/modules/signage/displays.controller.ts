@@ -8,6 +8,7 @@ import {
   Param,
 } from "@nestjs/common";
 import { DisplaysService } from "./displays.service";
+import { SignageGateway } from "./signage.gateway";
 import { ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "./response.helper";
 
@@ -21,7 +22,22 @@ import { runControllerAction } from "./response.helper";
 export class DisplaysController {
   private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
 
-  constructor(private readonly displaysService: DisplaysService) {}
+  constructor(
+    private readonly displaysService: DisplaysService,
+    private readonly signageGateway: SignageGateway
+  ) {}
+
+  @Get("active-connections")
+  async getActiveConnections(): Promise<ApiResponse<Record<string, boolean>>> {
+    return runControllerAction(async () => {
+      const displays = (await this.displaysService.findAll(this.defaultOrgId)) as any[];
+      const connections: Record<string, boolean> = {};
+      for (const display of displays) {
+        connections[display.id] = this.signageGateway.isDisplayOnline(display.id);
+      }
+      return connections;
+    });
+  }
 
   @Get()
   async findAll(): Promise<ApiResponse<unknown[]>> {

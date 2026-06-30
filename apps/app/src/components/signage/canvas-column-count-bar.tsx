@@ -25,7 +25,7 @@ export const CanvasColumnCountBar: React.FC<CanvasColumnCountBarProps> = ({
   return (
     <div
       className="absolute top-3 left-3 z-20
-                 bg-zinc-900/90 backdrop-blur border border-white/10
+                 bg-zinc-900/90 backdrop-blur border border-black/10 dark:border-white/10
                  rounded-full flex items-center gap-1 px-2 py-1"
       role="group"
       aria-label="Column count control"
@@ -38,7 +38,7 @@ export const CanvasColumnCountBar: React.FC<CanvasColumnCountBarProps> = ({
         onClick={() => onChangeCount(count - 1)}
         disabled={count <= 1}
         className="w-5 h-5 rounded-full flex items-center justify-center
-                   text-white/70 hover:bg-white/10 hover:text-white
+                   text-white/70 hover:bg-black/10 dark:bg-white/10 hover:text-white
                    disabled:opacity-30 disabled:cursor-not-allowed
                    transition-colors"
         aria-label="Remove column"
@@ -54,7 +54,7 @@ export const CanvasColumnCountBar: React.FC<CanvasColumnCountBarProps> = ({
         onClick={() => onChangeCount(count + 1)}
         disabled={count >= 4}
         className="w-5 h-5 rounded-full flex items-center justify-center
-                   text-white/70 hover:bg-white/10 hover:text-white
+                   text-white/70 hover:bg-black/10 dark:bg-white/10 hover:text-white
                    disabled:opacity-30 disabled:cursor-not-allowed
                    transition-colors"
         aria-label="Add column"

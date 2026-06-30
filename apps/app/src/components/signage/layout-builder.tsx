@@ -180,7 +180,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
   const activeBlock = getSelectedBlock();
 
   return (
-    <div className="flex flex-col h-full bg-zinc-950 text-slate-100">
+    <div className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-slate-100">
       <EditorTopBar
         isPlaying={isPlaying} onTogglePlay={() => setIsPlaying(!isPlaying)}
         activeSlideIndex={activeSlideIndex} totalSlides={config.slides.length}
@@ -208,7 +208,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
       )}
       
       {viewMode === "preview" && (
-        <div ref={containerRef} className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden">
+        <div ref={containerRef} className="fixed inset-0 z-50 bg-white dark:bg-black flex items-center justify-center overflow-hidden">
           {showOutlines && (
             <style>{`
               .st-layout-column, .st-layout-row, .st-layout-grid {
@@ -221,11 +221,11 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
             <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} isPreviewing />
           </div>
           
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 rounded-full bg-zinc-950/80 backdrop-blur-xl border border-white/10 shadow-2xl z-[60]">
-             <button onClick={() => setShowOutlines(!showOutlines)} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${showOutlines ? "bg-cyan-500 text-black" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}>
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 rounded-full bg-zinc-950/80 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl z-[60]">
+             <button onClick={() => setShowOutlines(!showOutlines)} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${showOutlines ? "bg-cyan-500 text-black" : "bg-black/5 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 hover:bg-black/10 dark:bg-white/10"}`}>
                 {showOutlines ? "Hide Outlines" : "Show Outlines"}
              </button>
-             <div className="w-px h-6 bg-white/10" />
+             <div className="w-px h-6 bg-black/10 dark:bg-white/10" />
              <button onClick={() => setViewMode("editor")} className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors">
                 Exit Preview
              </button>

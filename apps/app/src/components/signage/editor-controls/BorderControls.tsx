@@ -25,11 +25,11 @@ export function BorderControls({ block, onUpdate }: BorderControlsProps) {
     <div className="space-y-4">
       {/* Border Settings */}
       <div className="space-y-3">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Border</label>
+        <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block border-b border-black/5 dark:border-white/5 pb-1">Border</label>
         
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Color</label>
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Color</label>
             <div className="flex items-center gap-2">
               <input 
                 type="color" 
@@ -42,16 +42,16 @@ export function BorderControls({ block, onUpdate }: BorderControlsProps) {
                 placeholder="None" 
                 value={border.color || ""} 
                 onChange={(e) => updateBorder({ color: e.target.value })} 
-                className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1 text-xs text-zinc-100 placeholder:text-zinc-600" 
+                className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" 
               />
             </div>
           </div>
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Style</label>
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Style</label>
             <select 
               value={border.style || ""} 
               onChange={e => updateBorder({ style: e.target.value as any })}
-              className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100"
+              className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
             >
               <option value="">None</option>
               <option value="solid">Solid</option>
@@ -63,23 +63,23 @@ export function BorderControls({ block, onUpdate }: BorderControlsProps) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Width</label>
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Width</label>
             <input 
               type="text" 
               placeholder="e.g. 1px" 
               value={border.width || ""} 
               onChange={e => updateBorder({ width: e.target.value })} 
-              className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" 
+              className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" 
             />
           </div>
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Radius</label>
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Radius</label>
             <input 
               type="text" 
               placeholder="e.g. 8px" 
               value={border.radius || ""} 
               onChange={e => updateBorder({ radius: e.target.value })} 
-              className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" 
+              className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" 
             />
           </div>
         </div>
@@ -87,27 +87,27 @@ export function BorderControls({ block, onUpdate }: BorderControlsProps) {
 
       {/* Shadow Settings */}
       <div className="space-y-3">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block border-b border-white/5 pb-1">Shadow</label>
+        <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block border-b border-black/5 dark:border-white/5 pb-1">Shadow</label>
         
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">X Offset</label>
-            <input type="text" placeholder="0px" value={shadow.x || ""} onChange={e => updateShadow({ x: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" />
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">X Offset</label>
+            <input type="text" placeholder="0px" value={shadow.x || ""} onChange={e => updateShadow({ x: e.target.value })} className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" />
           </div>
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Y Offset</label>
-            <input type="text" placeholder="4px" value={shadow.y || ""} onChange={e => updateShadow({ y: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" />
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Y Offset</label>
+            <input type="text" placeholder="4px" value={shadow.y || ""} onChange={e => updateShadow({ y: e.target.value })} className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" />
           </div>
         </div>
         
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Blur</label>
-            <input type="text" placeholder="10px" value={shadow.blur || ""} onChange={e => updateShadow({ blur: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" />
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Blur</label>
+            <input type="text" placeholder="10px" value={shadow.blur || ""} onChange={e => updateShadow({ blur: e.target.value })} className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" />
           </div>
           <div>
-            <label className="text-[10px] text-zinc-500 uppercase block mb-1">Color</label>
-            <input type="text" placeholder="rgba(0,0,0,0.5)" value={shadow.color || ""} onChange={e => updateShadow({ color: e.target.value })} className="w-full bg-zinc-900 border border-white/10 rounded px-2 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600" />
+            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">Color</label>
+            <input type="text" placeholder="rgba(0,0,0,0.5)" value={shadow.color || ""} onChange={e => updateShadow({ color: e.target.value })} className="w-full bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600" />
           </div>
         </div>
       </div>

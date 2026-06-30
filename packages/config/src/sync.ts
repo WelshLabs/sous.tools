@@ -130,6 +130,10 @@ export const secrets = {
       "[@soustools/config] Failed to synchronize secrets from Infisical:",
       error,
     );
+    if (fs.existsSync(SECRETS_FILE_PATH)) {
+      console.log("[@soustools/config] Falling back to existing secrets.ts file.");
+      return;
+    }
     process.exit(1);
   }
 }

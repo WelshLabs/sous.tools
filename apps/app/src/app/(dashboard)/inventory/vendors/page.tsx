@@ -107,7 +107,7 @@ export default function VendorsPage() {
         )}
         
         {isLoading ? (
-          <div className="col-span-full py-12 text-center text-zinc-500">Loading vendors...</div>
+          <div className="col-span-full py-12 text-center text-zinc-400 dark:text-zinc-500">Loading vendors...</div>
         ) : vendors.map(vendor => (
           isEditing === vendor.id ? (
             <VendorCardForm
@@ -123,10 +123,10 @@ export default function VendorsPage() {
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-semibold text-lg text-zinc-900 dark:text-white">{vendor.name}</h3>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => { setIsEditing(vendor.id); setEditForm(vendor); }} className="p-1.5 text-zinc-400 hover:text-sky-500 rounded-md hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
+                    <button onClick={() => { setIsEditing(vendor.id); setEditForm(vendor); }} className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 rounded-md hover:bg-zinc-100 dark:hover:bg-black/5 dark:bg-white/5 transition-colors">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(vendor.id)} className="p-1.5 text-zinc-400 hover:text-red-500 rounded-md hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
+                    <button onClick={() => handleDelete(vendor.id)} className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-red-500 rounded-md hover:bg-zinc-100 dark:hover:bg-black/5 dark:bg-white/5 transition-colors">
                       <Trash className="w-4 h-4" />
                     </button>
                   </div>
@@ -134,18 +134,18 @@ export default function VendorsPage() {
                 
                 <div className="space-y-2 mt-4 text-sm text-zinc-600 dark:text-zinc-400">
                   <div className="flex justify-between">
-                    <span className="font-medium text-zinc-500">Method:</span>
+                    <span className="font-medium text-zinc-400 dark:text-zinc-500">Method:</span>
                     <span className="capitalize">{vendor.order_method || 'None set'}</span>
                   </div>
                   {vendor.email && (
                     <div className="flex justify-between">
-                      <span className="font-medium text-zinc-500">Email:</span>
+                      <span className="font-medium text-zinc-400 dark:text-zinc-500">Email:</span>
                       <span className="truncate ml-2">{vendor.email}</span>
                     </div>
                   )}
                   {vendor.phone && (
                     <div className="flex justify-between">
-                      <span className="font-medium text-zinc-500">Phone:</span>
+                      <span className="font-medium text-zinc-400 dark:text-zinc-500">Phone:</span>
                       <span>{vendor.phone}</span>
                     </div>
                   )}
@@ -153,7 +153,7 @@ export default function VendorsPage() {
               </div>
               
               <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
-                <span className="text-xs font-medium text-zinc-500 block mb-2">Order Days</span>
+                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Order Days</span>
                 <div className="flex flex-wrap gap-1">
                   {vendor.order_days && vendor.order_days.length > 0 ? (
                     vendor.order_days.map(day => (
@@ -162,7 +162,7 @@ export default function VendorsPage() {
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-zinc-400">No days scheduled</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">No days scheduled</span>
                   )}
                 </div>
               </div>
@@ -217,7 +217,7 @@ export default function VendorsPage() {
         )}
 
         <div className="mt-2">
-          <span className="text-xs font-medium text-zinc-500 block mb-2">Select Order Days</span>
+          <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Select Order Days</span>
           <div className="flex flex-wrap gap-1.5">
             {DAYS_OF_WEEK.map(day => {
               const isSelected = form.order_days?.includes(day);

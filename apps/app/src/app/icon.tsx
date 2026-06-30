@@ -6,8 +6,8 @@ export const runtime = 'edge';
 
 // Image metadata
 export const size = {
-  width: 32,
-  height: 32,
+  width: 512,
+  height: 512,
 };
 export const contentType = 'image/png';
 
@@ -23,9 +23,10 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          background: 'transparent',
         }}
       >
-        <MicroIcon color="#0095FF" width={24} height={24} />
+        <MicroIcon color="#0095FF" width={384} height={384} />
       </div>
     ),
     // ImageResponse options

@@ -72,7 +72,7 @@ export const AddBlocksPalette: React.FC<AddBlocksPaletteProps> = ({
           )}
           {["Layout Container", "Content Block"].map((group) => (
             <div key={group}>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-3">{group}s</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-3">{group}s</h3>
               <div className="grid grid-cols-2 gap-2">
                 {BLOCKS.filter(b => b.type === group).map((block) => {
                   const globalIdx = BLOCKS.findIndex(b => b.id === block.id);
@@ -85,18 +85,18 @@ export const AddBlocksPalette: React.FC<AddBlocksPaletteProps> = ({
                           {...dragProvided.draggableProps} 
                           {...dragProvided.dragHandleProps}
                           onClick={() => handleAddBlock(block.id)}
-                          className={`flex flex-col items-center justify-center p-3 gap-2 bg-zinc-900 border rounded-xl transition-all cursor-grab active:cursor-grabbing group ${
-                            isSuccess ? "border-green-500 bg-green-500/10" : "border-white/5 hover:bg-white/5 hover:border-cyan-400/50"
+                          className={`flex flex-col items-center justify-center p-3 gap-2 bg-zinc-100 dark:bg-zinc-900 border rounded-xl transition-all cursor-grab active:cursor-grabbing group ${
+                            isSuccess ? "border-green-500 bg-green-500/10" : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:bg-white/5 hover:border-cyan-400/50"
                           } ${snapshot.isDragging ? "shadow-2xl ring-2 ring-cyan-500 scale-105 z-50 bg-zinc-800" : ""}`}
                         >
                           {isSuccess ? (
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
                           ) : (
                             <div className="relative">
-                              <block.icon className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400" />
+                              <block.icon className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-cyan-400" />
                             </div>
                           )}
-                          <span className={`text-[10px] font-medium text-center leading-tight ${isSuccess ? "text-green-400" : "text-zinc-300"}`}>{block.label}</span>
+                          <span className={`text-[10px] font-medium text-center leading-tight ${isSuccess ? "text-green-400" : "text-zinc-700 dark:text-zinc-300"}`}>{block.label}</span>
                         </div>
                       )}
                     </Draggable>

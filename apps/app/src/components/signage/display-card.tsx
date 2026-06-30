@@ -47,7 +47,7 @@ export const DisplayCard: React.FC<DisplayCardProps> = ({
           {display.deviceId && onDeviceSettingsClick && (
             <button
               onClick={() => onDeviceSettingsClick(display.deviceId!)}
-              className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-center border-0 bg-transparent"
+              className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-black/5 dark:bg-white/5 cursor-pointer transition-colors flex items-center justify-center border-0 bg-transparent"
               title="Device Settings"
             >
               <Settings className="w-3.5 h-3.5" />
@@ -57,7 +57,7 @@ export const DisplayCard: React.FC<DisplayCardProps> = ({
             href={`/display/${display.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-center"
+            className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-black/5 dark:bg-white/5 cursor-pointer transition-colors flex items-center justify-center"
             title="View Display Content"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -72,12 +72,12 @@ export const DisplayCard: React.FC<DisplayCardProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-t border-white/5 pt-2">
+      <div className="flex items-center gap-2 border-t border-black/5 dark:border-white/5 pt-2">
         <span className="text-[10px] text-slate-400 font-semibold whitespace-nowrap">Show Deck:</span>
         <select
           value={display.deckId || ""}
           onChange={(e) => onDeckAssign(display.id, e.target.value || null)}
-          className="w-full text-xs bg-zinc-900 border border-white/10 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-primary font-sans cursor-pointer"
+          className="w-full text-xs bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-primary font-sans cursor-pointer"
         >
           <option value="">-- Unassigned --</option>
           {decks.map((deck) => (

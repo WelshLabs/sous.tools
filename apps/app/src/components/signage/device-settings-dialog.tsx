@@ -100,7 +100,7 @@ export const DeviceSettingsDialog: React.FC<DeviceSettingsDialogProps> = ({
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
       <form
         onSubmit={handleSave}
-        className="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl relative space-y-4 text-slate-100"
+        className="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl relative space-y-4 text-zinc-900 dark:text-slate-100"
       >
         <button
           type="button"
@@ -109,7 +109,7 @@ export const DeviceSettingsDialog: React.FC<DeviceSettingsDialogProps> = ({
         >
           <X className="w-5 h-5" />
         </button>
-        <h3 className="text-md font-bold text-slate-100">Device Settings</h3>
+        <h3 className="text-md font-bold text-zinc-900 dark:text-slate-100">Device Settings</h3>
         {error && (
           <div className="text-xs text-red-400 bg-red-950/20 border border-red-900 p-2 rounded">
             {error}

@@ -65,7 +65,7 @@ export const GlobalStylingSettings: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-zinc-500 animate-pulse text-sm">Loading design tokens...</div>;
+    return <div className="text-zinc-400 dark:text-zinc-500 animate-pulse text-sm">Loading design tokens...</div>;
   }
 
   return (
@@ -79,7 +79,7 @@ export const GlobalStylingSettings: React.FC = () => {
       <div className="space-y-6">
         {/* Colors */}
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2 border-b border-white/5 pb-2">
+          <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
             <Palette className="w-4 h-4 text-cyan-400" />
             Brand Colors
           </h3>
@@ -99,7 +99,7 @@ export const GlobalStylingSettings: React.FC = () => {
                   placeholder="e.g. oklch(0.7 0.15 200) or #00f0ff"
                   value={tokens.primaryColor || ""}
                   onChange={(e) => setTokens(prev => ({ ...prev, primaryColor: e.target.value }))}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all"
                 />
               </div>
             </div>
@@ -118,7 +118,7 @@ export const GlobalStylingSettings: React.FC = () => {
                   placeholder="e.g. oklch(0.8 0.1 250)"
                   value={tokens.accentColor || ""}
                   onChange={(e) => setTokens(prev => ({ ...prev, accentColor: e.target.value }))}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                 />
               </div>
             </div>
@@ -127,21 +127,21 @@ export const GlobalStylingSettings: React.FC = () => {
 
         {/* Typography */}
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2 border-b border-white/5 pb-2">
+          <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
             <Type className="w-4 h-4 text-cyan-400" />
             Global Typography
           </h3>
           <div className="grid grid-cols-1 gap-4">
             {/* Heading */}
-            <div className="space-y-2 border border-white/5 rounded-xl p-4 bg-zinc-900/30">
-              <div className="text-xs font-bold text-zinc-300">Heading Typography</div>
+            <div className="space-y-2 border border-black/5 dark:border-white/5 rounded-xl p-4 bg-zinc-900/30">
+              <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Heading Typography</div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Font Family</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Font Family</label>
                   <select
                     value={tokens.headingFont || ""}
                     onChange={(e) => setTokens(prev => ({ ...prev, headingFont: e.target.value }))}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default Font</option>
                     <option value="Inter">Inter</option>
@@ -160,7 +160,7 @@ export const GlobalStylingSettings: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Color</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -173,16 +173,16 @@ export const GlobalStylingSettings: React.FC = () => {
                       placeholder="e.g. #ffffff"
                       value={tokens.headingColor || ""}
                       onChange={(e) => setTokens(prev => ({ ...prev, headingColor: e.target.value }))}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Weight</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Weight</label>
                   <select
                     value={tokens.headingWeight || ""}
                     onChange={(e) => setTokens(prev => ({ ...prev, headingWeight: e.target.value }))}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default</option>
                     <option value="normal">Normal</option>
@@ -198,15 +198,15 @@ export const GlobalStylingSettings: React.FC = () => {
             </div>
 
             {/* Subtitle */}
-            <div className="space-y-2 border border-white/5 rounded-xl p-4 bg-zinc-900/30">
-              <div className="text-xs font-bold text-zinc-300">Subtitle Typography</div>
+            <div className="space-y-2 border border-black/5 dark:border-white/5 rounded-xl p-4 bg-zinc-900/30">
+              <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Subtitle Typography</div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Font Family</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Font Family</label>
                   <select
                     value={tokens.subtitleFont || ""}
                     onChange={(e) => setTokens(prev => ({ ...prev, subtitleFont: e.target.value }))}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default Font</option>
                     <option value="Inter">Inter</option>
@@ -225,7 +225,7 @@ export const GlobalStylingSettings: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Color</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -238,16 +238,16 @@ export const GlobalStylingSettings: React.FC = () => {
                       placeholder="e.g. #ffffff"
                       value={tokens.subtitleColor || ""}
                       onChange={(e) => setTokens(prev => ({ ...prev, subtitleColor: e.target.value }))}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Weight</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Weight</label>
                   <select
                     value={tokens.subtitleWeight || ""}
                     onChange={(e) => setTokens(prev => ({ ...prev, subtitleWeight: e.target.value }))}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default</option>
                     <option value="normal">Normal</option>
@@ -263,15 +263,15 @@ export const GlobalStylingSettings: React.FC = () => {
             </div>
 
             {/* Body */}
-            <div className="space-y-2 border border-white/5 rounded-xl p-4 bg-zinc-900/30">
-              <div className="text-xs font-bold text-zinc-300">Body Typography</div>
+            <div className="space-y-2 border border-black/5 dark:border-white/5 rounded-xl p-4 bg-zinc-900/30">
+              <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Body Typography</div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Font Family</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Font Family</label>
                   <select
                     value={tokens.bodyFont || ""}
                     onChange={(e) => setTokens(prev => ({ ...prev, bodyFont: e.target.value }))}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default Font</option>
                     <option value="Inter">Inter</option>
@@ -290,7 +290,7 @@ export const GlobalStylingSettings: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Color</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -303,16 +303,16 @@ export const GlobalStylingSettings: React.FC = () => {
                       placeholder="e.g. #ffffff"
                       value={tokens.bodyColor || ""}
                       onChange={(e) => setTokens(prev => ({ ...prev, bodyColor: e.target.value }))}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Weight</label>
+                  <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">Weight</label>
                   <select
                     value={tokens.bodyWeight || ""}
                     onChange={(e) => setTokens(prev => ({ ...prev, bodyWeight: e.target.value }))}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default</option>
                     <option value="normal">Normal</option>
@@ -331,11 +331,11 @@ export const GlobalStylingSettings: React.FC = () => {
 
         {/* Custom CSS */}
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2 border-b border-white/5 pb-2">
+          <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
             <Code className="w-4 h-4 text-cyan-400" />
             Global Custom CSS
           </h3>
-          <p className="text-xs text-zinc-500 leading-relaxed">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed">
             Write raw CSS to define utility classes (e.g., .ambient-wrapper, .glass-panel, .menu-glow-text) 
             that can be attached to layout containers and blocks in the signage editor.
           </p>
@@ -345,7 +345,7 @@ export const GlobalStylingSettings: React.FC = () => {
               placeholder=".glass-panel { backdrop-filter: blur(10px); }"
               value={tokens.globalCss || ""}
               onChange={(e) => setTokens(prev => ({ ...prev, globalCss: e.target.value }))}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-sky-400 font-mono focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all resize-y"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-sky-400 font-mono focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all resize-y"
             />
           </div>
         </div>

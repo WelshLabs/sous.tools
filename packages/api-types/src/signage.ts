@@ -1,11 +1,11 @@
-import { SignageBlock } from "./signage-blocks";
+import { SignageBlock } from "./signage-blocks.js";
 import {
   BaseSlide,
   HighlightItemConfig,
   MenuItemStyles,
-} from "./signage-base";
+} from "./signage-base.js";
 
-export * from "./signage-base";
+export * from "./signage-base.js";
 
 
 export interface ImageSlide extends BaseSlide {

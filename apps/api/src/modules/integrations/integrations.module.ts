@@ -5,6 +5,7 @@ import { IntegrationsService } from "./integrations.service";
 import { WebhooksController } from "./webhooks.controller";
 import { PosSyncProcessor } from "./pos-sync.processor";
 import { GoogleDriveService } from "./google-drive.service";
+import { SquareDriver } from "./drivers/square.driver";
 
 /**
  * Module responsible for third-party integrations and POS synchronization.
@@ -16,7 +17,7 @@ import { GoogleDriveService } from "./google-drive.service";
     }),
   ],
   controllers: [IntegrationsController, WebhooksController],
-  providers: [IntegrationsService, PosSyncProcessor, GoogleDriveService],
-  exports: [IntegrationsService, GoogleDriveService],
+  providers: [IntegrationsService, PosSyncProcessor, GoogleDriveService, SquareDriver],
+  exports: [IntegrationsService, GoogleDriveService, SquareDriver],
 })
 export class IntegrationsModule {}

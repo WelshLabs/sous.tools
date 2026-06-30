@@ -58,7 +58,7 @@ export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
 
   return (
     <div className={`relative group flex flex-col h-full overflow-hidden ${
-      isPreviewing ? "bg-transparent border-none" : "bg-transparent border border-dashed border-white/10 hover:border-white/20 min-h-[200px] rounded-xl"
+      isPreviewing ? "bg-transparent border-none" : "bg-transparent border border-dashed border-black/10 dark:border-white/10 hover:border-white/20 min-h-[200px] rounded-xl"
     }`}>
       <div className={`flex-1 flex flex-col justify-center ${isPreviewing ? "p-0" : "p-3"}`}>
         {renderContent()}

@@ -33,7 +33,7 @@ export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({ onUpdate, onOp
   return (
     <div
       onClick={handleSelect}
-      className={`flex flex-col items-center justify-center w-full h-full min-h-[160px] border-2 border-dashed border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 rounded-xl cursor-pointer transition-all group p-4 ${isFlashing ? "ring-2 ring-cyan-400 ring-offset-1 ring-offset-slate-950" : ""}`}
+      className={`flex flex-col items-center justify-center w-full h-full min-h-[160px] border-2 border-dashed border-black/10 dark:border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 rounded-xl cursor-pointer transition-all group p-4 ${isFlashing ? "ring-2 ring-cyan-400 ring-offset-1 ring-offset-slate-950" : ""}`}
     >
       <div className="p-3 bg-cyan-500/10 rounded-full group-hover:bg-cyan-500/20 group-hover:scale-110 transition-all">
         <Plus className="w-6 h-6 text-cyan-400" />

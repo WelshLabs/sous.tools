@@ -65,12 +65,12 @@ export default function VendorsPage() {
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Vendor Name</label>
-              <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-md p-2 text-white" />
+              <input required value={name} onChange={e => setName(e.target.value)} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-md p-2 text-white" />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Order Method</label>
-              <select value={orderMethod} onChange={e => setOrderMethod(e.target.value as any)} className="w-full bg-black/40 border border-white/10 rounded-md p-2 text-white">
+              <select value={orderMethod} onChange={e => setOrderMethod(e.target.value as any)} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-md p-2 text-white">
                 <option value="EMAIL">Email</option>
                 <option value="SMS">Text Message</option>
                 <option value="MANUAL">Manual / Phone Call</option>
@@ -80,14 +80,14 @@ export default function VendorsPage() {
             {orderMethod === "EMAIL" && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Order Email Address</label>
-                <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-md p-2 text-white" />
+                <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-md p-2 text-white" />
               </div>
             )}
 
             {orderMethod === "SMS" && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Order Phone Number</label>
-                <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-md p-2 text-white" />
+                <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-md p-2 text-white" />
               </div>
             )}
 

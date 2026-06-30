@@ -4,8 +4,5 @@
  * @tenant-docs-export
  */
 export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    const { patchConsole } = await import("@soustools/logger");
-    patchConsole();
-  }
+  // Console monkey patching removed to prevent Next.js Webpack deadlocks
 }

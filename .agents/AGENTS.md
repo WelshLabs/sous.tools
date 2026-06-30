@@ -5,6 +5,7 @@
 - **Strict Typing**: The `any` type is strictly forbidden.
 - **Environment Isolation**: `process.env` lookups are forbidden outside `packages/config/`.
 - **Next.js**: Use Server Components by default; `"use client"` is for leaf/interactive nodes.
+- **Isomorphic Validation**: All API inputs, form submissions, and data payloads MUST use isomorphic Zod schemas shared between the Next.js frontend (e.g., via react-hook-form resolvers) and the NestJS backend (via ValidationPipe/ZodGuard).
 - **WSL Execution**: Run all project commands in WSL with standard paths and bypass scopes.
 
 ## Git & Workflow

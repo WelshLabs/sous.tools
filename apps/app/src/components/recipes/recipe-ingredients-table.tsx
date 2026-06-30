@@ -23,10 +23,10 @@ export const RecipeIngredientsTable: React.FC<RecipeIngredientsTableProps> = ({
   onWeightChange,
 }) => {
   return (
-    <div className="overflow-hidden border border-white/5 rounded-xl bg-zinc-900/50">
+    <div className="overflow-hidden border border-black/5 dark:border-white/5 rounded-xl bg-zinc-900/50">
       <table className="w-full text-left text-xs border-collapse">
         <thead>
-          <tr className="bg-zinc-900 border-b border-white/5 text-slate-400 uppercase font-semibold tracking-wider">
+          <tr className="bg-zinc-100 dark:bg-zinc-900 border-b border-black/5 dark:border-white/5 text-slate-400 uppercase font-semibold tracking-wider">
             <th className="p-3">Ingredient</th>
             <th className="p-3 w-32">Scaled Weight</th>
             <th className="p-3 w-24">Unit</th>
@@ -35,7 +35,7 @@ export const RecipeIngredientsTable: React.FC<RecipeIngredientsTableProps> = ({
         </thead>
         <tbody className="divide-y divide-white/5">
           {ingredients.map((ing) => (
-            <tr key={ing.ingredientId} className="hover:bg-white/5 transition-colors">
+            <tr key={ing.ingredientId} className="hover:bg-black/5 dark:bg-white/5 transition-colors">
               <td className="p-3 font-semibold text-slate-200">{ing.name}</td>
               <td className="p-3">
                 <input
@@ -45,7 +45,7 @@ export const RecipeIngredientsTable: React.FC<RecipeIngredientsTableProps> = ({
                   onChange={(e) =>
                     onWeightChange(ing.ingredientId, parseFloat(e.target.value) || 0, ing.scaledUnit)
                   }
-                  className="w-24 bg-zinc-800 border border-white/5 rounded px-2 py-1 focus:border-sky-500 focus:outline-none text-slate-200 text-xs font-bold"
+                  className="w-24 bg-zinc-800 border border-black/5 dark:border-white/5 rounded px-2 py-1 focus:border-sky-500 focus:outline-none text-slate-200 text-xs font-bold"
                 />
               </td>
               <td className="p-3 text-slate-400 font-medium">{ing.scaledUnit}</td>

@@ -51,7 +51,7 @@ export const RecipeNutritionPanel: React.FC<RecipeNutritionPanelProps> = ({ reci
 
   if (!nutrition || !nutrition.perServingNutrition || Object.keys(nutrition.perServingNutrition).length === 0) {
     return (
-      <div className="p-4 rounded-xl border border-white/5 bg-zinc-950/20 text-xs text-slate-400 flex items-center gap-2">
+      <div className="p-4 rounded-xl border border-black/5 dark:border-white/5 bg-zinc-950/20 text-xs text-slate-400 flex items-center gap-2">
         <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0" />
         No nutrition facts resolved for this recipe. Ensure ingredients are matched with USDA profiles.
       </div>
@@ -61,32 +61,32 @@ export const RecipeNutritionPanel: React.FC<RecipeNutritionPanelProps> = ({ reci
   const macros = nutrition.perServingNutrition;
 
   return (
-    <div className="p-4 rounded-2xl bg-zinc-900 border border-white/5 space-y-4 shadow-xl glass-panel">
-      <div className="flex justify-between items-center pb-2 border-b border-white/5">
+    <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 space-y-4 shadow-xl glass-panel">
+      <div className="flex justify-between items-center pb-2 border-b border-black/5 dark:border-white/5">
         <h3 className="text-sm font-bold text-slate-300 flex items-center gap-1.5">
           <Activity className="w-4 h-4 text-emerald-400" /> Nutrition & Diets
         </h3>
-        <Button size="sm" onClick={handleDownloadLabel} className="bg-zinc-800 hover:bg-zinc-700 text-slate-200 border border-white/5 flex items-center gap-1">
+        <Button size="sm" onClick={handleDownloadLabel} className="bg-zinc-800 hover:bg-zinc-700 text-slate-200 border border-black/5 dark:border-white/5 flex items-center gap-1">
           <Download className="w-3.5 h-3.5" /> FDA Label
         </Button>
       </div>
 
       <div className="grid grid-cols-4 gap-2 text-center">
-        <div className="p-2 bg-zinc-950/40 rounded-lg border border-white/5">
+        <div className="p-2 bg-zinc-950/40 rounded-lg border border-black/5 dark:border-white/5">
           <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Calories</div>
-          <div className="text-sm font-bold text-slate-100">{Math.round(macros.calories || 0)}</div>
+          <div className="text-sm font-bold text-zinc-900 dark:text-slate-100">{Math.round(macros.calories || 0)}</div>
         </div>
-        <div className="p-2 bg-zinc-950/40 rounded-lg border border-white/5">
+        <div className="p-2 bg-zinc-950/40 rounded-lg border border-black/5 dark:border-white/5">
           <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Fat</div>
-          <div className="text-sm font-bold text-slate-100">{Math.round(macros.total_fat_g || 0)}g</div>
+          <div className="text-sm font-bold text-zinc-900 dark:text-slate-100">{Math.round(macros.total_fat_g || 0)}g</div>
         </div>
-        <div className="p-2 bg-zinc-950/40 rounded-lg border border-white/5">
+        <div className="p-2 bg-zinc-950/40 rounded-lg border border-black/5 dark:border-white/5">
           <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Carbs</div>
-          <div className="text-sm font-bold text-slate-100">{Math.round(macros.total_carbohydrate_g || 0)}g</div>
+          <div className="text-sm font-bold text-zinc-900 dark:text-slate-100">{Math.round(macros.total_carbohydrate_g || 0)}g</div>
         </div>
-        <div className="p-2 bg-zinc-950/40 rounded-lg border border-white/5">
+        <div className="p-2 bg-zinc-950/40 rounded-lg border border-black/5 dark:border-white/5">
           <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Protein</div>
-          <div className="text-sm font-bold text-slate-100">{Math.round(macros.protein_g || 0)}g</div>
+          <div className="text-sm font-bold text-zinc-900 dark:text-slate-100">{Math.round(macros.protein_g || 0)}g</div>
         </div>
       </div>
 

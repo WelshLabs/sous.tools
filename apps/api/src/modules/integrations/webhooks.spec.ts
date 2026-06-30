@@ -43,13 +43,13 @@ describe("WebhooksController", () => {
     expect(controller).toBeDefined();
   });
 
-  it("should throw UnauthorizedException if merchant_id is missing", async () => {
+  it("should throw UnauthorizedException if event_id is missing", async () => {
     const mockReq = {
       rawBody: Buffer.from(JSON.stringify({ type: "catalog.version.updated" })),
     } as unknown as Request;
 
     await expect(
-      controller.handleSquareWebhook("sig", mockReq)
+      controller.handleWebhook("square", "sig", "", mockReq)
     ).rejects.toThrow(UnauthorizedException);
   });
 
@@ -57,6 +57,7 @@ describe("WebhooksController", () => {
     const mockReq = {
       rawBody: Buffer.from(
         JSON.stringify({
+          event_id: "event-123",
           merchant_id: "merchant-123",
           type: "catalog.version.updated",
           data: { id: "event-1", object: {} },
@@ -71,7 +72,7 @@ describe("WebhooksController", () => {
     });
 
     await expect(
-      controller.handleSquareWebhook("sig", mockReq)
+      controller.handleWebhook("square", "sig", "", mockReq)
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -79,6 +80,7 @@ describe("WebhooksController", () => {
     const mockReq = {
       rawBody: Buffer.from(
         JSON.stringify({
+          event_id: "event-123",
           merchant_id: "merchant-123",
           type: "catalog.version.updated",
           data: { id: "event-1", object: { key: "val" } },
@@ -89,13 +91,14 @@ describe("WebhooksController", () => {
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockResolvedValue({ error: null }),
       maybeSingle: jest.fn().mockResolvedValue({
         data: { organization_id: "org-uuid-123" },
         error: null,
       }),
     });
 
-    const result = await controller.handleSquareWebhook("sig", mockReq);
+    const result = await controller.handleWebhook("square", "sig", "", mockReq);
     expect(result).toEqual({ status: "queued" });
     expect(queue.add).toHaveBeenCalledWith("pos-sync-job", {
       orgId: "org-uuid-123",

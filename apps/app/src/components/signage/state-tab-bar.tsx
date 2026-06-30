@@ -24,7 +24,7 @@ const TABS: TabDef[] = [
 ];
 
 export const StateTabBar: React.FC<StateTabBarProps> = ({ activeState, onChange, styles }) => (
-  <div className="flex gap-1.5 px-4 py-2 border-b border-white/5 shrink-0">
+  <div className="flex gap-1.5 px-4 py-2 border-b border-black/5 dark:border-white/5 shrink-0">
     {TABS.map(({ key, label, sub }) => {
       const isActive = activeState === key;
       const bg = styles[key].backgroundColor ?? (key === "highlighted" ? "#3b5" : key === "soldOut" ? "#f55" : "#888");
@@ -35,7 +35,7 @@ export const StateTabBar: React.FC<StateTabBarProps> = ({ activeState, onChange,
           className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl border text-center transition-all cursor-pointer ${
             isActive
               ? "bg-primary/20 border-primary text-white"
-              : "bg-zinc-800 border-white/10 text-zinc-400 hover:border-white/20 hover:text-zinc-300"
+              : "bg-zinc-800 border-black/10 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-white/20 hover:text-zinc-700 dark:text-zinc-300"
           }`}
         >
           <div className="flex items-center gap-1.5">
@@ -45,7 +45,7 @@ export const StateTabBar: React.FC<StateTabBarProps> = ({ activeState, onChange,
             />
             <span className="text-xs font-semibold">{label}</span>
           </div>
-          <span className="text-[9px] text-zinc-500 leading-none">{sub}</span>
+          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 leading-none">{sub}</span>
         </button>
       );
     })}

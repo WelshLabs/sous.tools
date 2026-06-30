@@ -44,7 +44,7 @@ export default async function DeckPreviewPage({
 
   if (!deck) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-500">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-400 dark:text-zinc-500">
         <p>Deck not found.</p>
         <Link href="/signage" className="mt-4 text-xs text-primary hover:underline">
           ← Back to Decks
@@ -58,14 +58,14 @@ export default async function DeckPreviewPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">{deck.name}</h1>
-          <p className="text-xs text-zinc-500 font-mono mt-0.5">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">
             {deck.config?.slides?.length ?? 0} slides
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/signage"
-            className="px-3 py-1.5 text-xs border border-white/10 hover:border-white/20 text-zinc-300 rounded-lg transition"
+            className="px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 rounded-lg transition"
           >
             ← Decks
           </Link>
@@ -80,7 +80,7 @@ export default async function DeckPreviewPage({
               href={liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-white/10 hover:border-white/20 text-zinc-300 rounded-lg transition"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 rounded-lg transition"
             >
               <ExternalLink className="w-3.5 h-3.5" /> Live View
             </a>
@@ -89,7 +89,7 @@ export default async function DeckPreviewPage({
       </div>
 
       {liveUrl && (
-        <div className="relative w-full rounded-xl overflow-hidden border border-white/10 bg-black" style={{ paddingTop: "56.25%" }}>
+        <div className="relative w-full rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
           <iframe
             src={liveUrl}
             title={deck.name}

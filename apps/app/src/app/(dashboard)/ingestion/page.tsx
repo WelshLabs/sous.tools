@@ -59,7 +59,7 @@ export default function IngestionDashboardPage() {
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Ingestion Queue</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Processing Hub</h1>
           <p className="text-gray-500 mt-2">Review AI-extracted documents and invoices.</p>
         </div>
       </div>
@@ -103,12 +103,12 @@ export default function IngestionDashboardPage() {
                 </div>
 
                 <div className="w-full flex items-center gap-2">
-                  <div className="flex-1 flex items-center justify-center bg-white/5 text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
+                  <div className="flex-1 flex items-center justify-center bg-black/5 dark:bg-white/5 text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
                     Open Review
                   </div>
                   <button
                     onClick={(e) => { e.preventDefault(); setDeleteId(review.id); }}
-                    className="p-2 bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded-md transition-colors"
+                    className="p-2 bg-black/5 dark:bg-white/5 hover:bg-red-500/20 text-zinc-500 dark:text-zinc-400 hover:text-red-400 rounded-md transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>

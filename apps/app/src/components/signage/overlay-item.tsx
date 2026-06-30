@@ -67,7 +67,7 @@ export const OverlayItem: React.FC<OverlayItemProps> = ({
             type="text"
             value={overlay.content}
             onChange={(e) => onUpdate({ content: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-slate-100"
+            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-zinc-900 dark:text-slate-100"
           />
         </div>
         <div>
@@ -78,7 +78,7 @@ export const OverlayItem: React.FC<OverlayItemProps> = ({
             type="text"
             value={overlay.customCssClass || ""}
             onChange={(e) => onUpdate({ customCssClass: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-slate-100"
+            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-zinc-900 dark:text-slate-100"
           />
         </div>
       </div>
@@ -95,7 +95,7 @@ export const OverlayItem: React.FC<OverlayItemProps> = ({
               placeholder={posKey}
               value={overlay.position[posKey] || ""}
               onChange={(e) => onUpdatePosition(posKey, e.target.value)}
-              className="bg-slate-800 border border-slate-700 rounded px-1.5 py-1 text-center text-xs text-slate-100 placeholder-slate-600"
+              className="bg-slate-800 border border-slate-700 rounded px-1.5 py-1 text-center text-xs text-zinc-900 dark:text-slate-100 placeholder-slate-600"
             />
           ))}
         </div>

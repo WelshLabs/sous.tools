@@ -45,7 +45,7 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-primary"
+          className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-slate-100 focus:outline-none focus:border-primary"
         />
       </div>
       <div className="space-y-1">
@@ -53,7 +53,7 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
         <select
           value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-primary cursor-pointer"
+          className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-slate-100 focus:outline-none focus:border-primary cursor-pointer"
         >
           {TZs.map((tz) => (
             <option key={tz} value={tz}>
@@ -70,7 +70,7 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             <select
               value={hour}
               onChange={(e) => setHour(parseInt(e.target.value, 10))}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none cursor-pointer"
+              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-slate-100 focus:outline-none cursor-pointer"
             >
               {Array.from({ length: 24 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -84,7 +84,7 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             <select
               value={minute}
               onChange={(e) => setMinute(parseInt(e.target.value, 10))}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none cursor-pointer"
+              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-slate-100 focus:outline-none cursor-pointer"
             >
               {Array.from({ length: 60 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -98,7 +98,7 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             <select
               value={dayOfWeek}
               onChange={(e) => setDayOfWeek(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 focus:outline-none cursor-pointer"
+              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-slate-100 focus:outline-none cursor-pointer"
             >
               <option value="all">Every Day</option>
               {DAYs.map((d, i) => (

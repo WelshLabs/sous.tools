@@ -22,7 +22,7 @@ export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full p-2 bg-[oklch(0.08_0.01_260)] rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between mb-2 border-b border-white/5 pb-1">
+      <div className="flex items-center justify-between mb-2 border-b border-black/5 dark:border-white/5 pb-1">
         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Layout Preview</span>
       </div>
       <div className="flex flex-col gap-1.5 h-full items-stretch overflow-y-auto">

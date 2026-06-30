@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export interface Vendor {
   id: string;
   organization_id: string;
@@ -24,8 +26,8 @@ export interface PurchaseOrder {
   order_date: string;
   created_at: string;
   
-  vendor?: Vendor;
-  items?: PurchaseOrderItem[];
+  vendors?: Vendor;
+  purchase_order_items?: PurchaseOrderItem[];
 }
 
 export interface PurchaseOrderItem {
@@ -36,3 +38,18 @@ export interface PurchaseOrderItem {
   price_per_unit: number;
   created_at: string;
 }
+
+export const OrderItemSchema = z.object({
+  raw_name: z.string().min(1, "Item name is required"),
+  ordered_qty: z.number().min(0, "Quantity cannot be negative"),
+  price_per_unit: z.number().min(0, "Price cannot be negative"),
+});
+
+export const CreatePurchaseOrderSchema = z.object({
+  vendor_id: z.string().uuid("Invalid vendor ID"),
+  items: z.array(OrderItemSchema).min(1, "Must have at least one item"),
+});
+
+export type OrderItemPayload = z.infer<typeof OrderItemSchema>;
+export type CreatePurchaseOrderPayload = z.infer<typeof CreatePurchaseOrderSchema>;
+

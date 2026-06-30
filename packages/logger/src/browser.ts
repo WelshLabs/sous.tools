@@ -54,3 +54,22 @@ export const logger = pino({
     }
   }
 });
+
+/**
+ * Patches global console methods to route through pino logger on the client.
+ * @tenant-docs-export
+ */
+export function patchConsole(): void {
+  console.log = (...args: unknown[]) => {
+    logger.info(args.length === 1 && typeof args[0] === 'string' ? args[0] : args);
+  };
+  console.error = (...args: unknown[]) => {
+    logger.error(args.length === 1 && typeof args[0] === 'string' ? args[0] : args);
+  };
+  console.warn = (...args: unknown[]) => {
+    logger.warn(args.length === 1 && typeof args[0] === 'string' ? args[0] : args);
+  };
+  console.info = (...args: unknown[]) => {
+    logger.info(args.length === 1 && typeof args[0] === 'string' ? args[0] : args);
+  };
+}

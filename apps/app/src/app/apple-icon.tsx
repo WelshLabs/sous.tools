@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { Lettermark } from '@soustools/ui';
+import { MicroIcon } from '@soustools/ui';
 
 export const runtime = 'edge';
 
@@ -20,11 +20,10 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#020617', // slate-950
-          borderRadius: '20px',
+          background: 'transparent',
         }}
       >
-        <Lettermark color="#0095FF" width={120} height={120} />
+        <MicroIcon color="#0095FF" width={130} height={130} />
       </div>
     ),
     {

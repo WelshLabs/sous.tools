@@ -13,11 +13,20 @@ interface RecipeFilterProps {
   onSelectTag: (id: string | null) => void;
   selectedStatus: string;
   onSelectStatus: (status: "ALL" | "APPROVED" | "PENDING_REVIEW" | "ARCHIVED") => void;
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
 }
+
+const STATUS_LABELS = {
+  APPROVED: "Approved",
+  PENDING_REVIEW: "Pending Review",
+  ARCHIVED: "Archived",
+  ALL: "All Recipes",
+};
 
 /**
  * RecipeFilter provides filtering UI for recipe list, supporting
- * categories, tags, and workflow status (Verification Queue).
+ * categories, tags, and workflow status (Pending Review).
  * @tenant-docs-export
  */
 export const RecipeFilter: React.FC<RecipeFilterProps> = ({
@@ -29,6 +38,8 @@ export const RecipeFilter: React.FC<RecipeFilterProps> = ({
   onSelectTag,
   selectedStatus,
   onSelectStatus,
+  searchQuery,
+  onSearchQueryChange,
 }) => {
   return (
     <div className="glass-panel p-4 rounded-xl border border-slate-800 bg-slate-900/40 space-y-4">
@@ -49,7 +60,7 @@ export const RecipeFilter: React.FC<RecipeFilterProps> = ({
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                {status === "PENDING_REVIEW" ? "Verification Queue" : status === "ALL" ? "All Recipes" : status}
+                {STATUS_LABELS[status]}
               </button>
             ))}
           </div>
@@ -96,6 +107,20 @@ export const RecipeFilter: React.FC<RecipeFilterProps> = ({
             </select>
           </div>
         )}
+
+        {/* Search Filter */}
+        <div className="space-y-1 flex-1 min-w-[200px]">
+          <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider flex items-center gap-1">
+            Search
+          </label>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
+            placeholder="Search recipes..."
+            className="w-full text-xs bg-slate-950 text-slate-300 border border-slate-800 rounded-lg p-1.5 focus:outline-none focus:border-slate-700"
+          />
+        </div>
       </div>
     </div>
   );

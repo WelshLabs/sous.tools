@@ -94,7 +94,7 @@ export const ActiveKitchenTimers: React.FC<ActiveKitchenTimersProps> = ({
   if (tickedTimers.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 w-80 bg-zinc-950/90 border border-white/10 rounded-2xl shadow-2xl p-4 backdrop-blur-md text-slate-100 max-h-[400px] overflow-y-auto space-y-3">
+    <div className="fixed bottom-6 right-6 z-40 w-80 bg-zinc-950/90 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl p-4 backdrop-blur-md text-zinc-900 dark:text-slate-100 max-h-[400px] overflow-y-auto space-y-3">
       <h4 className="text-xs font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-wider border-b border-slate-800 pb-2">
         <Clock className="w-4 h-4 text-emerald-400 animate-pulse" /> Active Timers ({tickedTimers.length})
       </h4>
@@ -117,15 +117,15 @@ export const ActiveKitchenTimers: React.FC<ActiveKitchenTimersProps> = ({
           const progressPercent = Math.min(100, (totalElapsed / timer.durationSeconds) * 100);
 
           return (
-            <div key={timer.id} className={`p-3 rounded-xl border transition-all ${isDone ? "bg-red-950/20 border-red-800/40 animate-pulse" : "bg-zinc-900 border-white/5"}`}>
+            <div key={timer.id} className={`p-3 rounded-xl border transition-all ${isDone ? "bg-red-950/20 border-red-800/40 animate-pulse" : "bg-zinc-100 dark:bg-zinc-900 border-black/5 dark:border-white/5"}`}>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs font-bold text-slate-300">Step {timer.stepIndex} Timer</span>
-                <button onClick={() => handleRemove(idx)} className="p-1 hover:bg-white/5 rounded text-slate-500 hover:text-white transition-colors cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+                <button onClick={() => handleRemove(idx)} className="p-1 hover:bg-black/5 dark:bg-white/5 rounded text-slate-500 hover:text-white transition-colors cursor-pointer"><X className="w-3.5 h-3.5" /></button>
               </div>
 
               <div className="flex items-center justify-between mt-1.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-black font-mono tracking-tight text-slate-100">
+                  <span className="text-2xl font-black font-mono tracking-tight text-zinc-900 dark:text-slate-100">
                     {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
                   </span>
                   {isDone && <Bell className="w-4 h-4 text-red-500 animate-bounce inline" />}

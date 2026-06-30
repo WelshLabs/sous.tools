@@ -23,6 +23,15 @@ create policy "Enable update access for authenticated users" on public.vendors
 create policy "Enable delete access for authenticated users" on public.vendors
     for delete using (auth.role() = 'authenticated');
 
+-- Create helper function for updated_at if not exists
+create or replace function public.handle_updated_at()
+returns trigger as $$
+begin
+    new.updated_at = timezone('utc'::text, now());
+    return new;
+end;
+$$ language plpgsql;
+
 -- Create trigger for updated_at
 create trigger set_vendors_updated_at
     before update on public.vendors

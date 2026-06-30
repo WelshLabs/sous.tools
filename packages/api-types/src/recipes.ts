@@ -99,6 +99,7 @@ export interface Recipe {
   vessel?: VesselProfile;
   recipeIngredients?: RecipeIngredient[];
   tagIds?: string[];
+  posItemId?: string | null;
 }
 
 export interface RecipeIngredient {

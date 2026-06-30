@@ -70,16 +70,16 @@ export function WastageEntryModal({ isOpen, onClose, defaultItemId }: WastageEnt
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 border border-white/5 rounded-2xl p-6 w-96 max-w-full glass-panel relative text-white space-y-4 shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-white transition"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 bg-white/50 dark:bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 w-96 max-w-full glass-panel relative text-white space-y-4 shadow-2xl">
+        <button onClick={onClose} className="absolute top-4 right-4 text-zinc-500 dark:text-zinc-400 hover:text-white transition"><X className="w-5 h-5" /></button>
         <h3 className="text-lg font-semibold">Record Wastage</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1 relative">
-            <label className="text-xs text-zinc-400">Search Item</label>
-            <input type="text" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setSelectedItem(null); }} placeholder="Type item name..." className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500" required />
+            <label className="text-xs text-zinc-500 dark:text-zinc-400">Search Item</label>
+            <input type="text" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setSelectedItem(null); }} placeholder="Type item name..." className="w-full bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500" required />
             {items.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-zinc-850 border border-white/10 rounded-lg mt-1 z-50 max-h-48 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 bg-zinc-850 border border-black/10 dark:border-white/10 rounded-lg mt-1 z-50 max-h-48 overflow-y-auto">
                 {items.map(item => (
                   <button key={item.id} type="button" onClick={() => { setSelectedItem(item); setSearchQuery(item.name); setItems([]); }} className="w-full text-left px-3 py-2 text-sm hover:bg-zinc-850">{item.name}</button>
                 ))}
@@ -88,12 +88,12 @@ export function WastageEntryModal({ isOpen, onClose, defaultItemId }: WastageEnt
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <label className="text-xs text-zinc-400">Amount</label>
-              <input type="number" step="any" min="0" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm" required />
+              <label className="text-xs text-zinc-500 dark:text-zinc-400">Amount</label>
+              <input type="number" step="any" min="0" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm" required />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-zinc-400">Unit</label>
-              <select value={unit} onChange={e => setUnit(e.target.value)} className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm">
+              <label className="text-xs text-zinc-500 dark:text-zinc-400">Unit</label>
+              <select value={unit} onChange={e => setUnit(e.target.value)} className="w-full bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm">
                 <option value="g">grams (g)</option>
                 <option value="oz">ounces (oz)</option>
                 <option value="lb">pounds (lb)</option>
@@ -102,8 +102,8 @@ export function WastageEntryModal({ isOpen, onClose, defaultItemId }: WastageEnt
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-zinc-400">Reason</label>
-            <select value={reason} onChange={e => setReason(e.target.value)} className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm">
+            <label className="text-xs text-zinc-500 dark:text-zinc-400">Reason</label>
+            <select value={reason} onChange={e => setReason(e.target.value)} className="w-full bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm">
               <option value="TRIM">Trim / Prep Waste</option>
               <option value="SPOILAGE">Spoilage</option>
               <option value="OVERPRODUCTION">Overproduction</option>

@@ -72,8 +72,8 @@ export const ComplianceSearch: React.FC<ComplianceSearchProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg bg-zinc-900 border border-white/10 rounded-2xl p-6 shadow-2xl text-slate-100 flex flex-col max-h-[85vh]">
-        <button onClick={onClose} className="absolute top-4 right-4 p-1 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
+      <div className="relative w-full max-w-lg bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-slate-100 flex flex-col max-h-[85vh]">
+        <button onClick={onClose} className="absolute top-4 right-4 p-1 hover:bg-black/5 dark:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
           <X className="w-5 h-5" />
         </button>
         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -81,7 +81,7 @@ export const ComplianceSearch: React.FC<ComplianceSearchProps> = ({
         </h3>
 
         <form onSubmit={handleSearch} className="flex gap-2 mb-4">
-          <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search food ingredients (e.g. Milk, Butter, Flour)..." className="flex-1 bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" required />
+          <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search food ingredients (e.g. Milk, Butter, Flour)..." className="flex-1 bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" required />
           <button type="submit" disabled={loading} className="bg-sky-500 hover:bg-sky-600 disabled:bg-sky-500/50 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Search
           </button>
@@ -96,7 +96,7 @@ export const ComplianceSearch: React.FC<ComplianceSearchProps> = ({
             <div className="text-center py-16 text-xs text-slate-500">Search for ingredients to auto-fill nutritional values.</div>
           ) : (
             results.map((prod) => (
-              <button key={prod.code || Math.random()} onClick={() => handleSelectProduct(prod)} className="w-full text-left p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 border border-white/5 hover:border-white/10 transition-all cursor-pointer flex justify-between items-center gap-4">
+              <button key={prod.code || Math.random()} onClick={() => handleSelectProduct(prod)} className="w-full text-left p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 border border-black/5 dark:border-white/5 hover:border-black/10 dark:border-white/10 transition-all cursor-pointer flex justify-between items-center gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-slate-200 line-clamp-1">{prod.product_name || prod.product_name_en || "Unnamed Product"}</h4>
                   <p className="text-xs text-slate-400">{prod.brands || "Unknown Brand"}</p>

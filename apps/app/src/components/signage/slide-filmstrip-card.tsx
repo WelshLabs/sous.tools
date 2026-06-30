@@ -62,7 +62,7 @@ export function SlideCard({ slide, isActive, onSelect, onRemove }: SlideCardProp
       <SlideMiniature slide={slide} />
       <button
         onClick={onRemove}
-        className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 hover:bg-red-500/80 rounded p-0.5"
+        className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/50 dark:bg-black/60 hover:bg-red-500/80 rounded p-0.5"
         aria-label="Remove slide"
       >
         <Trash2 className="w-3 h-3 text-white" />

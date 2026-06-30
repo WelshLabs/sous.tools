@@ -50,7 +50,7 @@ export function SlideCarousel({
   if (!slides || slides.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white font-sans">
-        <p className="text-xl text-zinc-400">
+        <p className="text-xl text-zinc-500 dark:text-zinc-400">
           No slides configured for this display.
         </p>
       </div>

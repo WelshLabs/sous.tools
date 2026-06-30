@@ -24,28 +24,28 @@ export function SlideRenderer({ slide, items, menuItemStyles }: SlideRendererPro
     case "IMAGE": {
       const fitClass = slide.fit === "contain" ? "object-contain" : "object-cover";
       return (
-        <div className="w-full h-full min-h-screen bg-black flex items-center justify-center">
+        <div className="w-full h-full min-h-screen bg-white dark:bg-black flex items-center justify-center">
           <img src={slide.imageUrl} alt="Signage Promo" className={`w-full h-full min-h-screen ${fitClass}`} />
         </div>
       );
     }
     case "VIDEO":
       return (
-        <div className="w-full h-full min-h-screen bg-black">
+        <div className="w-full h-full min-h-screen bg-white dark:bg-black">
           <video src={slide.videoUrl} autoPlay loop={slide.loop !== false} muted={slide.mute !== false}
             playsInline className="w-full h-full min-h-screen object-cover" />
         </div>
       );
     case "IFRAME":
       return (
-        <div className="w-full h-full min-h-screen bg-black">
+        <div className="w-full h-full min-h-screen bg-white dark:bg-black">
           <iframe src={slide.url} title="Google Slides or Web Content"
             className="w-full h-full min-h-screen border-none" allow="autoplay; encrypted-media" />
         </div>
       );
     default:
       return (
-        <div className="flex items-center justify-center min-h-screen bg-zinc-900 text-white font-sans">
+        <div className="flex items-center justify-center min-h-screen bg-zinc-100 dark:bg-zinc-900 text-white font-sans">
           <p>Unsupported Slide Type</p>
         </div>
       );

@@ -87,12 +87,12 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-slate-100 max-w-5xl mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-6 bg-[oklch(0.12_0.02_180)] p-6 rounded-2xl border border-[oklch(0.22_0.02_180)] text-zinc-900 dark:text-slate-100 max-w-5xl mx-auto">
       <header className="flex justify-between items-center pb-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <Link href="/recipes" className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></Link>
           <div>
-            <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
               <ChefHat className="w-5 h-5 text-primary" /> {recipeId ? "Edit Recipe" : "Create Recipe"}
             </h2>
             <p className="text-xs text-slate-400">Configure yields, baseline flour groups, and step durations.</p>
@@ -107,21 +107,21 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-2">
           <label className="block text-xs text-slate-400 font-medium mb-1">Recipe Title</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Traditional Sourdough Bread" className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" required />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Traditional Sourdough Bread" className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" required />
         </div>
         <div>
           <label className="block text-xs text-slate-400 font-medium mb-1">Default Yield</label>
-          <input type="number" step="any" min="0.01" value={yieldCount} onChange={(e) => setYieldCount(parseFloat(e.target.value) || 1)} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" required />
+          <input type="number" step="any" min="0.01" value={yieldCount} onChange={(e) => setYieldCount(parseFloat(e.target.value) || 1)} className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" required />
         </div>
         <div>
           <label className="block text-xs text-slate-400 font-medium mb-1">Yield Unit</label>
-          <input type="text" value={yieldUnit} onChange={(e) => setYieldUnit(e.target.value)} placeholder="e.g. loaves, portions" className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" required />
+          <input type="text" value={yieldUnit} onChange={(e) => setYieldUnit(e.target.value)} placeholder="e.g. loaves, portions" className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200" required />
         </div>
       </div>
 
       <div>
         <label className="block text-xs text-slate-400 font-medium mb-1">Default Vessel Profile (Optional)</label>
-        <select value={vesselId} onChange={(e) => setVesselId(e.target.value)} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200">
+        <select value={vesselId} onChange={(e) => setVesselId(e.target.value)} className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200">
           <option value="">None (Standard Yield Scaling only)</option>
           {vessels.map((v) => (
             <option key={v.id} value={v.id}>{v.name} ({v.volumeMl} ml)</option>
@@ -131,7 +131,7 @@ export const RecipeBuilder: React.FC<RecipeBuilderProps> = ({ recipeId }) => {
 
       <div>
         <label className="block text-xs text-slate-400 font-medium mb-1">Recipe Status</label>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full bg-zinc-800 border border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200">
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full bg-zinc-800 border border-black/5 dark:border-white/5 rounded-lg px-3 py-2 text-sm focus:border-sky-500 focus:outline-none text-slate-200">
           <option value="PENDING_REVIEW">Pending Review</option>
           <option value="APPROVED">Approved</option>
           <option value="ARCHIVED">Archived</option>

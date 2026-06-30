@@ -63,16 +63,16 @@ export const FontPickerPopover: React.FC<FontPickerPopoverProps> = ({
   return (
     <div
       ref={ref}
-      className="absolute z-50 bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl p-4 w-72"
+      className="absolute z-50 bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl p-4 w-72"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
           {label}
         </span>
         <button
           onClick={onClose}
-          className="text-zinc-500 hover:text-zinc-200 transition-colors p-0.5 cursor-pointer"
+          className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 transition-colors p-0.5 cursor-pointer"
           aria-label="Close font picker"
         >
           <X className="w-4 h-4" />
@@ -91,7 +91,7 @@ export const FontPickerPopover: React.FC<FontPickerPopoverProps> = ({
               className={`px-2 py-2 text-[11px] rounded-lg border text-center truncate transition-all cursor-pointer ${
                 isActive
                   ? "ring-2 ring-primary border-primary bg-primary/10 text-white"
-                  : "border-white/10 bg-zinc-800 text-zinc-300 hover:border-white/25 hover:bg-zinc-700"
+                  : "border-black/10 dark:border-white/10 bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-white/25 hover:bg-zinc-700"
               }`}
             >
               {font}
@@ -108,7 +108,7 @@ export const FontPickerPopover: React.FC<FontPickerPopoverProps> = ({
         onBlur={commitCustomFont}
         onKeyDown={handleKeyDown}
         placeholder="Or type any Google Font name..."
-        className="w-full bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-primary/60 transition-colors"
+        className="w-full bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-primary/60 transition-colors"
       />
     </div>
   );
