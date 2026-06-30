@@ -1,4 +1,5 @@
 # SOUS.TOOLS Agent Rules
+
 > **Source of Truth**: This file is read FIRST on every session. No deviation is permitted without a Tier 1 update here.
 
 ---
@@ -7,9 +8,9 @@
 
 All agent operations must follow this exact sequence:
 
-1. **Tier 1 — Analysis & State Update**: Analyze the prompt against current context. Update this file (`.agents/AGENTS.md`) to reflect planned changes and updated state *before* touching any source code.
+1. **Tier 1 — Analysis & Architectural Anchor**: Analyze the prompt against the current context. Treat `.agents/AGENTS.md` as a **READ-ONLY** architectural anchor. Do NOT write state updates, transaction logs, or planned changes to this file unless explicitly commanded by the user to permanently update an agent skill.
 2. **Tier 2 — Specialized Execution**: Execute logic using the specific skills defined in `.agents/skills/`. Use `@soustools/` workspace conventions exclusively.
-3. **Tier 3 — Validation & Documentation**: Verify implementation against standards and update all documentation tiers simultaneously (tenant docs, dev docs, internal docs).
+3. **Tier 3 — Validation & Documentation**: Verify implementation against standards. Update Tenant Docs and Dev Docs simultaneously. Internal developer documentation must be handled strictly via highly descriptive Git commit messages.
 
 ---
 
@@ -50,12 +51,12 @@ All agent operations must follow this exact sequence:
 
 ## Architecture — Skeleton App Pattern
 
-| Concern | Location | Technology |
-|---|---|---|
-| UI / Design System | `packages/ui` | React / Tailwind (`@soustools/ui`) |
-| Business Logic / API | `apps/api` | NestJS |
-| Routing / Data Fetching | `apps/app` | Next.js 16 (Skeleton Pattern) |
-| Shared Types / Logic | `packages/api-types` | TypeScript (`@soustools/api-types`) |
+| Concern                 | Location             | Technology                          |
+| ----------------------- | -------------------- | ----------------------------------- |
+| UI / Design System      | `packages/ui`        | React / Tailwind (`@soustools/ui`)  |
+| Business Logic / API    | `apps/api`           | NestJS                              |
+| Routing / Data Fetching | `apps/app`           | Next.js 16 (Skeleton Pattern)       |
+| Shared Types / Logic    | `packages/api-types` | TypeScript (`@soustools/api-types`) |
 
 All shared logic, configs, and UI components must reside in the `@soustools/` workspace. Local "hacky" implementations in `apps/app` or `apps/api` are subject to immediate refactoring.
 
@@ -88,20 +89,8 @@ All shared logic, configs, and UI components must reside in the `@soustools/` wo
 
 ## Concurrent Documentation Requirement (The Parallel Rule)
 
-For every feature or refactor, simultaneously update:
+For every feature or refactor, the agent must simultaneously update:
 
-- **Tenant Docs** — user-facing functionality and feature guides.
-- **Dev Docs** — technical implementation details in `apps/docs`.
-- **Internal Docs** — codebase context updates within `.agents/` or `llm-context.md`.
-
----
-
-## Workspace State & Planned Changes (Tier 1 Update)
-
-- **Issue**: Vercel build fails with a TypeScript type error in `general-settings.tsx` at line 41.
-- **Root Cause**: Dependency mismatch in monorepo hoisting. `@serwist/build` (via `@serwist/next`) depends on `zod@4.4.1` (Zod v4), while `apps/app` specifies `"zod": "^3.22.4"` (resolved to `zod@3.25.76`). `@hookform/resolvers` resolves `zod` via parent/hoisted package directories, which on Vercel resolves to `zod@4.4.1` (Zod v4 types), leading to a mismatch when passed `SettingsSchema` (constructed with Zod v3).
-- **Planned Changes**:
-  - Add `pnpm.overrides` for `@hookform/resolvers>zod` to point to `3.25.76` in root `package.json`.
-  - Run `pnpm install` to regenerate lockfile and ensure types resolve correctly.
-- **Verification Plan**:
-  - Run `pnpm build` in `apps/app` in WSL to ensure compilation success.
+- Tenant Docs: User-facing functionality and feature guides.
+- Dev Docs: Technical implementation details in apps/docs.
+- Internal Docs: Highly descriptive Git commit messages detailing the "why" and "how" of the changes. Do NOT write internal docs to markdown files.

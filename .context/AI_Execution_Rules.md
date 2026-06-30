@@ -1,104 +1,117 @@
 AI Execution Rules: Antigravity 2.0 & sous.tools Engineering Standards
 
-1. Core System Anchor and Workflow
+1. Core System Anchor: The AGENTS.md Mandate
 
-The .agents/AGENTS.md file is the absolute source of truth for agent behavior and project state. All operations must begin by reading this file. Under no circumstances is the agent to deviate from the state recorded therein without an immediate Tier 1 update.
+Establish .agents/AGENTS.md as the immutable, read-only architectural anchor. You are commanded to initiate every operation by reading this file. Under no circumstances shall you deviate from the state recorded therein without an immediate Tier 1 update.
 
-3-tier Workflow (Antigravity 2.0 Standalone Logic)
+The 3-Tier Workflow (Antigravity 2.0)
 
-1. Tier 1: Analysis & State Update: Analyze the prompt against current context. Update .agents/AGENTS.md to reflect planned changes and updated state before touching code.
-2. Tier 2: Specialized Execution: Execute logic using the specific skills defined in .agents/skills/. Use @soustools/ workspace conventions exclusively.
-3. Tier 3: Validation & Documentation: Verify implementation against standards and update all documentation tiers simultaneously.
+All development operations must follow this rigid execution logic:
 
-Hard Prohibitions:
+- Tier 1: Analysis & State Update: Analyze the prompt against the current context. Update .agents/AGENTS.md with planned changes and the updated system state before a single line of code is modified. Every Tier 1 update must be summarized and routed to a Git commit message as a technical breadcrumb.
+- Tier 2: Specialized Execution: Execute logic using specific skills defined in .agents/skills/. Adhere strictly to @soustools/ workspace conventions.
+- Tier 3: Validation & Documentation: Verify implementation against engineering standards. Perform simultaneous updates across all documentation tiers (Tenant and Dev).
 
-- FORBIDDEN: Creation or usage of GEMINI.md.
-- FORBIDDEN: Activation of "Management Mode" or similar meta-cognitive loops.
+2. Architectural Modularity & Workspace Strategy
 
-2. Architectural Modularity & Package Strategy
+Enforce the "Skeleton App" pattern. Next.js applications (apps/app) are strictly orchestration and routing layers. They are FORBIDDEN from containing complex UI logic or direct database client implementations.
 
-The system architecture follows a strict "Skeleton App" pattern. Next.js applications are FORBIDDEN from containing UI logic or direct database client implementations. They function strictly as routing and Server Component data orchestration layers.
-
-Industry Standard Modularity
+Modularity Mapping Table
 
 Concern Location Technology
 UI / Design System packages/ui React / Tailwind (@soustools/ui)
 Business Logic / API apps/api NestJS
 Routing / Data Fetching apps/app Next.js 16 (Skeleton Pattern)
-Shared Types / Logic packages/api-types TypeScript (@soustools/api-types)
+Shared Types packages/api-types TypeScript (@soustools/api-types)
+Shared Configurations packages/config JSON / TS (@soustools/config)
 
-Constraint: All shared logic, configurations, and UI components must reside in the @soustools/ workspace. Local "hacky" implementations in apps/app or apps/api are subject to immediate refactoring.
+[!IMPORTANT] WORKSPACE SUPREMACY: All shared logic, configurations, and components must reside in the @soustools/ workspace. You are mandated to refactor local "hacky" implementations in apps/app or apps/api into the appropriate package immediately upon discovery.
 
-3. Next.js 16 & NestJS Technical Standards
+3. Technical Standards: Next.js 16 & NestJS
 
 Next.js 16 (Server-First)
 
-- Server Components: Mandated by default.
-- Data Fetching: Direct client-side fetching to Supabase is STRICTLY PROHIBITED. All data must be fetched via Server Components or the NestJS API.
+- Server Components: Mandated as the default.
+- Data Fetching: Direct client-side fetching via supabase-js is STRICTLY PROHIBITED within apps/app unless specifically authorized for real-time subscriptions. All data must be orchestrated via Server Components or the NestJS API.
 
-NestJS (Service Architecture)
+NestJS Service Architecture
 
-Adhere to the established patterns in apps/api:
+Adhere to these patterns within apps/api:
 
-- Guards: AdminGuard is reserved ONLY for the Users route.
-- Pipes: Mandatory ZodValidationPipe for all request payloads.
-- Filters: AllExceptionsFilter must be applied to maintain standardized error responses.
+- ZodValidationPipe: Mandatory for all request payloads.
+- AllExceptionsFilter: Mandated for standardized error normalization.
+- AdminGuard: Restricted exclusively to the Users route; all other routes must be member-accessible but RLS-restricted.
 
-Supabase & RLS Enforcement
+4. Supabase & RLS Enforcement Protocol
 
-Row Level Security (RLS) is the primary security boundary. Every table must be scoped to the organization.
+Row Level Security (RLS) is the absolute security boundary. Every table must be organization-scoped.
 
-1. Verify migration files for ALTER TABLE ... ENABLE ROW LEVEL SECURITY.
-2. Grant specific permissions to the authenticated role for all non-admin tables.
-3. Ensure all queries include organization scoping. Note: The "Users" route is the only Admin-only exception; all other routes must be member-accessible but RLS-restricted.
+Security Enforcement Protocol
 
-4. Operational Protocols & Error Handling
+1. Mandatory RLS Commands: Ensure migration files contain both ALTER TABLE ... ENABLE ROW LEVEL SECURITY and FORCE ROW LEVEL SECURITY.
+2. Helper Functions: Implement organization isolation using the is_org_member() and is_org_admin() helper functions.
+3. Permission Grants: Explicitly grant permissions to the authenticated role for all non-admin tables.
 
-[!CAUTION] CRITICAL: HALT-ON-ERROR RULE If any error occurs—TypeScript, Database Migration, Runtime, or Playwright/E2E test failure—the agent MUST STOP IMMEDIATELY. Do not attempt to guess or enter a circular correction loop. Request user intervention or local verification.
+Migration Flattening Rule
 
-Testing & Deployment Parity
+You are commanded to resolve migration debt by consolidating the fragmented history (specifically the 32 files spanning June 12–30, 2026).
 
-- Local Verification: All migrations must be verified against a clean local database reset before pushing.
-- Staging Policy: Ignore the staging database. Focus exclusively on Local -> Production parity to resolve "works in dev, fails in prod" discrepancies.
-- Manual Testing: Automatic test runs are forbidden. Execute tests only upon explicit user command or to debug a remote push failure.
+- Target: Create a single supabase/migrations/00000000000000_init_schema.sql.
+- Action: DELETE the 32 legacy migration files.
+- Requirement: Explicitly define all GRANT and ALTER DEFAULT PRIVILEGES statements at the end of the flattened file to prevent recurring permission errors.
 
-5. Concurrent Documentation Requirements (The Parallel Rule)
+5. Operational Protocols: HALT-ON-ERROR
 
-For every feature or refactor, the agent must simultaneously update:
+[!CAUTION] CRITICAL: HALT-ON-ERROR RULE If any error occurs—TypeScript, Database Migration, Runtime, or Playwright/E2E failure—you MUST STOP IMMEDIATELY.
 
-- Tenant Docs: User-facing functionality and feature guides.
-- Dev Docs: Technical implementation details in apps/docs.
-- Internal Docs: Codebase context updates within .agents/ or llm-context.md.
+- No Guessing: Do not attempt to guess a fix or enter circular correction loops.
+- Local-First Parity: Focus exclusively on Local -> Production parity. Ignore the staging database.
+- Verification: All migrations must be verified against a clean local database reset (supabase db reset) before pushing.
+- Manual Testing: Automated test runs are forbidden. Execute tests only upon explicit user command.
 
-6. Module-Specific Execution Context
+6. Internal Documentation & Git Commit Routing
 
-Signage (Hardware Target: Raspberry Pi 5)
+- Hard Prohibition: Purge all references to llm-context.md and GEMINI.md.
+- Git Routing: Route all codebase context updates and internal documentation breadcrumbs strictly to Git commit messages.
+- Parallel Documentation Rule: You must update the following tiers concurrently with every feature:
+  - Tenant Docs: User-facing functionality and feature guides.
+  - Dev Docs: Technical implementation in apps/docs.
 
-- Hardware Constraints: Target display is a dual-head 1080p TV setup. CSS and performance logic must be optimized for Raspberry Pi hardware.
-- Architecture: Implement a "Multi-deck" system (Slide Decks/Screen 2). The visual editor must be abstracted from the signage logic to support future website editing and label making.
-- Branding: Use the "Cloud + Chef Hat" logo from packages/ui exclusively.
+7. Module-Specific Execution Contexts
 
-Recipes / Ingestion (Vendor Wars)
+Signage (Hardware: Raspberry Pi 5)
 
-- AI/OCR Logic: Prioritize logic that "learns" vendor naming conventions over time. Minimize chef manual input by reconciling vendor names to standardized FDA/Internal naming.
-- Scaling Logic: Include specific handling for bread shapes (Pullman loaves, burger buns) and yeast ratios (fresh vs. instant yeast conversion).
-- Business Intelligence: Implement "Vendor Wars" metrics—comparing pricing between vendors for the same ingredient to identify cost-saving opportunities.
+- Target: Dual-head 1080p setup running Wayland/LabWC.
+- Logo: Use the "Cloud + Chef Hat" logo from packages/ui/src/components/logos/PrimaryLogo.tsx exclusively.
+- Abstraction: Implement the "Multi-deck" visual editor abstraction, decoupling editor logic from signage rendering to support future label and website generation.
+
+Recipes & Ingestion (Vendor Wars)
+
+- OCR/AI Logic: Prioritize logic that "learns" vendor naming conventions to reconcile them with FDA/Internal standards.
+- Scaling Logic: Implement mandatory support for:
+  1. Volumetric/Unit-based scaling.
+  2. Weight-based scaling (specifically for Pullman loaves).
+  3. Yeast Substitution Ratios: Integrated conversion for Fresh vs. Instant yeast.
+- Metrics: Implement "Vendor Wars" dashboards to compare cross-vendor pricing for identical ingredients.
 
 KDS & POS (Parallel Operation)
 
-- Square Compatibility: The system must run alongside existing Square POS systems. Do not replace Square's money-handling logic until the final phase.
-- Goal: Provide a restaurant-optimized interface that tech-illiterate chefs can navigate without training.
+- Shadow POS Strategy: Maintain compatibility with Square POS. Do not replace Square's financial logic initially.
+- Business Priority: Support the "Bring-Your-Own-Processor" (BYOP) model.
+- UX: Deliver a high-contrast, restaurant-optimized interface navigable by staff with zero technical training.
 
-7. Code Quality & Refactoring Guardrails
+8. Absolute Prohibitions & Anti-Patterns
 
-Anti-Patterns to Eliminate
+The Forbidden List
 
-- API Bypassing: Bypassing the NestJS API for direct Supabase client calls in the frontend.
-- Inline Styles: Using inline CSS instead of @soustools/ui components and Tailwind utility classes.
-- Fragmented Migrations: "Messy" or broken migration chains.
+- NO creation or usage of GEMINI.md or llm-context.md.
+- NO activation of "Management Mode" or meta-cognitive loops.
+- NO inline CSS. Use Tailwind utility classes or @soustools/ui components.
+- NO direct client-side supabase-js calls in apps/app unless authorized for real-time subscriptions.
+- NO API bypassing. The frontend must communicate with the NestJS API.
 
 Refactoring Priorities
 
-- Migration Flattening: When requested, flatten all database migrations into a single, properly ordered schema to resolve persistent permission errors.
-- Logic Abstraction: Extract UI logic from apps/app and relocate it to @soustools/ui.
-- Typescript Compliance: Resolve all "hacky" types; maintain strict Type safety across the workspace boundary.
+1. Migration Flattening: Merge legacy chains into the dependency-safe init_schema.sql.
+2. Design System Migration: Move all app-level components from apps/app to @soustools/ui.
+3. TypeScript Compliance: Eradicate all "hacky" types and any declarations; maintain strict type safety across workspace boundaries using @soustools/api-types.
