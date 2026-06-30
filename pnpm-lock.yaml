@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@hookform/resolvers>zod': 3.25.76
+
 importers:
 
   .:

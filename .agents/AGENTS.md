@@ -93,3 +93,15 @@ For every feature or refactor, simultaneously update:
 - **Tenant Docs** — user-facing functionality and feature guides.
 - **Dev Docs** — technical implementation details in `apps/docs`.
 - **Internal Docs** — codebase context updates within `.agents/` or `llm-context.md`.
+
+---
+
+## Workspace State & Planned Changes (Tier 1 Update)
+
+- **Issue**: Vercel build fails with a TypeScript type error in `general-settings.tsx` at line 41.
+- **Root Cause**: Dependency mismatch in monorepo hoisting. `@serwist/build` (via `@serwist/next`) depends on `zod@4.4.1` (Zod v4), while `apps/app` specifies `"zod": "^3.22.4"` (resolved to `zod@3.25.76`). `@hookform/resolvers` resolves `zod` via parent/hoisted package directories, which on Vercel resolves to `zod@4.4.1` (Zod v4 types), leading to a mismatch when passed `SettingsSchema` (constructed with Zod v3).
+- **Planned Changes**:
+  - Add `pnpm.overrides` for `@hookform/resolvers>zod` to point to `3.25.76` in root `package.json`.
+  - Run `pnpm install` to regenerate lockfile and ensure types resolve correctly.
+- **Verification Plan**:
+  - Run `pnpm build` in `apps/app` in WSL to ensure compilation success.
