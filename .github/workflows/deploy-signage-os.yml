@@ -2,10 +2,10 @@ name: Build and Release Signage OS Image
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
-      - 'deploy/pi/**'
-      - 'deploy/ansible/**'
+      - "deploy/pi/**"
+      - "deploy/ansible/**"
   workflow_dispatch:
 
 jobs:
@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-
 
       - name: Install libguestfs-tools
         run: |
@@ -36,7 +34,7 @@ jobs:
           # Use guestfish to inject files into the FAT32 boot partition (sda1)
           # We need LIBGUESTFS_BACKEND=direct if nested virtualization isn't supported, 
           # but GitHub Actions supports default backend usually.
-          
+
           cat << 'EOF' > guestfish.script
           add sous-signage-os.img
           run
@@ -45,33 +43,32 @@ jobs:
           mkdir /ansible
           # copy-in requires trailing slash for directories sometimes, or we can tar it first
           EOF
-          
+
           # We tar the ansible directory to easily copy it in and extract it, or use copy-in
           # guestfish copy-in copies the directory itself if we specify the directory
-          
+
           guestfish --rw -a sous-signage-os.img -m /dev/sda1 << 'EOF'
           copy-in deploy/pi/cloud-init/user-data /
           mkdir /ansible
           copy-in deploy/ansible /
           EOF
-          
+
           # Note: guestfish copy-in deploy/ansible / will create /ansible directory with the contents?
           # Actually copy-in deploy/ansible / puts 'ansible' folder in /
 
       - name: Compress Custom OS Image
         run: |
           xz -T0 -9 sous-signage-os.img
-          
+
       - name: Fetch Secrets from Infisical
-        uses: Infisical/secrets-action@v1.0.8
+        uses: infisical/secrets-action@v1.0.7
         with:
-          client-id: ${{ secrets.INFISICAL_MACHINE_IDENTITY_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET }}
-          env-slug: "prod"
-          project-slug: "sous-tools"
-        env:
-          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
-          
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
+          export-env: true
+
       - name: Release to GitHub
         uses: softprops/action-gh-release@v2
         env:
