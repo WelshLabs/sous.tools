@@ -44,50 +44,15 @@
  * ─────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* Dark-first: the default root IS the dark/glass-frosted theme */
-    --background: 240 10% 3.9%;          /* zinc-950 equivalent              */
-    --foreground: 0 0% 98%;              /* near-white                       */
-    --card: 240 8% 7%;                  /* zinc-900-ish card surface         */
-    --card-foreground: 0 0% 98%;
-    --popover: 240 8% 7%;
-    --popover-foreground: 0 0% 98%;
-
-    /* Cyan / sky-400 primary — #4cc9f0 ≈ hsl(198 84% 63%) */
-    --primary: 198 84% 63%;
-    --primary-foreground: 240 10% 3.9%;  /* dark text on bright cyan badge   */
-
-    --secondary: 240 5% 14%;            /* subtle elevated surface           */
-    --secondary-foreground: 0 0% 90%;
-
-    --muted: 240 5% 12%;
-    --muted-foreground: 240 5% 55%;     /* low-contrast helper text          */
-
-    --accent: 198 84% 63%;              /* same cyan band as primary         */
-    --accent-foreground: 240 10% 3.9%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 4% 16%;               /* subtle separator                  */
-    --input: 240 4% 16%;
-    --ring: 198 84% 63%;                /* focus ring = cyan                 */
-
-    --radius: 1rem;
-
-    /* Neon colour variables used by utility classes below */
-    --neon-cyan: 76 201 240;            /* #4cc9f0 in RGB                    */
-    --neon-pink: 247 37 133;            /* #f72585 in RGB                    */
-  }
-
-  /* Light override — preserved for non-kitchen contexts */
-  .light {
+    /* Light theme — default for ThemeProvider class strategy */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 198 84% 45%;             /* darker cyan for light bg          */
+    /* Cyan primary — lighter for legibility on white */
+    --primary: 198 84% 45%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -100,6 +65,33 @@
     --border: 240 5.9% 91%;
     --input: 240 5.9% 91%;
     --ring: 198 84% 45%;
+    --radius: 1rem;
+    --neon-cyan: 76 201 240;
+    --neon-pink: 247 37 133;
+  }
+
+  /* Dark theme — glass-frosted aesthetic, applied by ThemeProvider via .dark on <html> */
+  .dark {
+    --background: 240 10% 3.9%;          /* zinc-950 equivalent              */
+    --foreground: 0 0% 98%;
+    --card: 240 8% 7%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 8% 7%;
+    --popover-foreground: 0 0% 98%;
+    /* Cyan / sky-400 primary — #4cc9f0 ≈ hsl(198 84% 63%) */
+    --primary: 198 84% 63%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 55%;
+    --accent: 198 84% 63%;
+    --accent-foreground: 240 10% 3.9%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 198 84% 63%;
   }
 }
 

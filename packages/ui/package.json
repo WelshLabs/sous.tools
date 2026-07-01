@@ -16,17 +16,20 @@
   "devDependencies": {
     "@soustools/api-types": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "jsdom": "^24.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.2",
-    "@testing-library/react": "^14.2.1",
-    "@testing-library/jest-dom": "^6.4.2",
-    "jsdom": "^24.0.0"
+    "vitest": "^1.2.2"
   },
   "scripts": {
     "test": "vitest run"
+  },
+  "dependencies": {
+    "lucide-react": "^1.17.0"
   }
 }
