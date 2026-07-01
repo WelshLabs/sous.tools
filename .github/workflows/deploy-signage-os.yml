@@ -6,9 +6,10 @@ on:
     paths:
       - "deploy/pi/**"
       - "deploy/ansible/**"
-  permissions:
-    contents: write
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
