@@ -34,30 +34,22 @@ jobs:
       - name: Inject Cloud-Init and Ansible Playbook
         run: |
           export LIBGUESTFS_BACKEND=direct
+
+          # Create an empty ssh file to force-enable the SSH daemon on boot
+          touch ssh
+
+          # Create a default userconf.txt (Username: 'pi', Password: 'raspberry')
+          # The Ansible playbook will change this later, but it bypasses the initial prompt
+          echo 'pi:$6$zBvY7nO6$2e.4rM4p8xV.xJ.L.5.S.b.V.z.Y.w.T.x.Z.u.r.C.Q.N.H.F.v.K.O.J.I.U.y.E.M.g.D.c.A.1' > userconf.txt
+
           # Use guestfish to inject files into the FAT32 boot partition (sda1)
-          # We need LIBGUESTFS_BACKEND=direct if nested virtualization isn't supported, 
-          # but GitHub Actions supports default backend usually.
-
-          cat << 'EOF' > guestfish.script
-          add sous-signage-os.img
-          run
-          mount /dev/sda1 /
-          copy-in deploy/pi/cloud-init/user-data /
-          mkdir /ansible
-          # copy-in requires trailing slash for directories sometimes, or we can tar it first
-          EOF
-
-          # We tar the ansible directory to easily copy it in and extract it, or use copy-in
-          # guestfish copy-in copies the directory itself if we specify the directory
-
           guestfish --rw -a sous-signage-os.img -m /dev/sda1 << 'EOF'
+          copy-in ssh /
+          copy-in userconf.txt /
           copy-in deploy/pi/cloud-init/user-data /
           mkdir /ansible
           copy-in deploy/ansible /
           EOF
-
-          # Note: guestfish copy-in deploy/ansible / will create /ansible directory with the contents?
-          # Actually copy-in deploy/ansible / puts 'ansible' folder in /
 
       - name: Compress Custom OS Image
         run: |
