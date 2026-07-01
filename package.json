@@ -9,7 +9,8 @@
     "test": "INFISICAL_MOCK=true turbo test",
     "secrets:sync": "pnpm --filter @soustools/config secrets:sync",
     "audit:secrets": "npx tsx scripts/audit-secrets.ts",
-    "clean:all": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist .turbo apps/*/.turbo packages/*/.turbo && pnpm install"
+    "clean:all": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist .turbo apps/*/.turbo packages/*/.turbo && pnpm install",
+    "push:all": "git push origin HEAD:main HEAD:staging"
   },
   "devDependencies": {
     "prettier": "^3.0.0",
