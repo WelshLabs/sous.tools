@@ -1,0 +1,693 @@
+[
+  {
+    "vendor": {
+      "name": "Theodore L. Gross, Inc.",
+      "customer_account_number": "2260",
+      "contact": {
+        "address": "317 South 7th Street, Perkasie, PA 18944",
+        "phone": "(215) 453-0200",
+        "fax": "(215) 453-1049",
+        "website": null,
+        "hours": "Mon-Thurs 7am-3:15pm, Fri 7am-3pm, Saturday 7am-11:45am"
+      }
+    },
+    "customer_details_on_invoice": {
+      "bill_to": "DTown Cafe, 2005 South Easton Rd. Suite 104, Doylestown, PA 18901",
+      "ship_to": null
+    },
+    "invoice_metadata": {
+      "invoice_number": "297328",
+      "order_number": "636573",
+      "po_number": null,
+      "date": "2026-04-29",
+      "type": "DELIVERY",
+      "terms": null,
+      "sales_rep": null,
+      "route": null,
+      "requested_by": null
+    },
+    "financials": {
+      "subtotal": 475.9,
+      "tax": 0.0,
+      "invoice_total": 475.9,
+      "previous_balance": 527.33,
+      "total_account_balance": 1003.23
+    },
+    "payment_status": {
+      "is_paid": false,
+      "method": null,
+      "authorization_code": null,
+      "terminal_aid": null
+    },
+    "printed_notes_and_policies": [
+      "Thank you for your business!",
+      "Return Checks Subject to $50.00 Service Charge",
+      "Received on Acct ________",
+      "Received by ________"
+    ],
+    "handwritten_notes": null,
+    "line_items": [
+      {
+        "vendor_item_code": null,
+        "raw_description": "DISTRIBUTION FEE FUEL SURCHG",
+        "pack_size": null,
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "EACH",
+        "unit_price": 2.0,
+        "extended_price": 2.0,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Fuel Surcharge (Fee)",
+        "yield_intelligence": null
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "CUTLET BLACK.L 1/2 S/T",
+        "pack_size": null,
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 40.0,
+        "shipped_unit": "LBS",
+        "unit_price": 2.36,
+        "extended_price": 94.4,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Chicken Cutlet (Unbreaded)",
+        "yield_intelligence": { "total_weight_lbs": 40.0 }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "DELI TURKEY BROWNED 47572",
+        "pack_size": null,
+        "ordered_quantity": 1.0,
+        "ordered_unit": "PC",
+        "shipped_quantity": 0.0,
+        "shipped_unit": "LBS",
+        "unit_price": 0.0,
+        "extended_price": 0.0,
+        "is_taxable": false,
+        "is_shortage": true,
+        "predicted_internal_ingredient": "Deli Turkey",
+        "yield_intelligence": null
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "TURKEYBRST PAN 46612 OIL BRA",
+        "pack_size": "2/9",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "PC",
+        "shipped_quantity": 9.4,
+        "shipped_unit": "LBS",
+        "unit_price": 4.96,
+        "extended_price": 46.62,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Oven Roasted Turkey Breast",
+        "yield_intelligence": { "total_weight_lbs": 9.4 }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "SOUR CREAM 5 LB",
+        "pack_size": "5 LB TUB",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "TUB",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "TUB",
+        "unit_price": 9.14,
+        "extended_price": 9.14,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Sour Cream",
+        "yield_intelligence": { "total_weight_lbs": 5.0 }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "EGGS LARGE LOOSE",
+        "pack_size": "15 DOZ",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CASE",
+        "unit_price": 15.74,
+        "extended_price": 15.74,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Eggs (Large)",
+        "yield_intelligence": {
+          "derived_unit_count": 180,
+          "derived_unit_type": "egg"
+        }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "BUTTER EURO 83% UNSALTED WU",
+        "pack_size": "36/1LB",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CASE",
+        "unit_price": 115.8,
+        "extended_price": 115.8,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Unsalted Butter (European 83%)",
+        "yield_intelligence": { "total_weight_lbs": 36.0 }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "AMERICAN SL WHITE 160",
+        "pack_size": "4/5LB",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CASE",
+        "unit_price": 50.95,
+        "extended_price": 50.95,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "White American Cheese (Sliced)",
+        "yield_intelligence": {
+          "total_weight_lbs": 20.0,
+          "derived_unit_count": 160,
+          "derived_unit_type": "slice"
+        }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "BACON SLICED HATF. 2223 MED S",
+        "pack_size": "15 LB",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CASE",
+        "unit_price": 67.3,
+        "extended_price": 67.3,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Bacon (Medium Slice)",
+        "yield_intelligence": { "total_weight_lbs": 15.0 }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "DRIED CRANBERRIES 6LB",
+        "pack_size": "2/48",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CASE",
+        "unit_price": 24.15,
+        "extended_price": 24.15,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Dried Cranberries",
+        "yield_intelligence": { "total_weight_lbs": 6.0 }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "B&M XL 6 OZ BEEF STEAK TRADP",
+        "pack_size": "10 LBS",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CASE",
+        "unit_price": 49.8,
+        "extended_price": 49.8,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Beef Steak (6oz Portions)",
+        "yield_intelligence": { "total_weight_lbs": 10.0 }
+      }
+    ]
+  },
+  {
+    "vendor": {
+      "name": "Doylestown Produce",
+      "customer_account_number": null,
+      "contact": {
+        "address": "214 S. Main St. Doylestown, PA 18901",
+        "phone": "(215) 340-9474",
+        "fax": null,
+        "website": "doylestownproduce.com",
+        "hours": null
+      }
+    },
+    "customer_details_on_invoice": null,
+    "invoice_metadata": {
+      "invoice_number": "THzU",
+      "order_number": null,
+      "po_number": null,
+      "date": "2026-06-30T09:59:00",
+      "type": "RETAIL_RECEIPT",
+      "terms": null,
+      "sales_rep": "Hannah",
+      "route": null,
+      "requested_by": null
+    },
+    "financials": {
+      "subtotal": 33.43,
+      "tax": 0.0,
+      "invoice_total": 33.43,
+      "previous_balance": 0.0,
+      "total_account_balance": 0.0
+    },
+    "payment_status": {
+      "is_paid": true,
+      "method": "Visa 3081 (Contactless)",
+      "authorization_code": "874583",
+      "terminal_aid": "A0 00 00 00 98 08 40"
+    },
+    "printed_notes_and_policies": [
+      "US DEBIT",
+      "Return Policy: No returns on plants. All other returns must be made with a receipt within 24 hours of purchase."
+    ],
+    "handwritten_notes": null,
+    "line_items": [
+      {
+        "vendor_item_code": null,
+        "raw_description": "Milk x 1 Whole, Half Gallon",
+        "pack_size": "Half Gallon",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "EACH",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "EACH",
+        "unit_price": 5.49,
+        "extended_price": 5.49,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Whole Milk",
+        "yield_intelligence": {
+          "derived_unit_count": 0.5,
+          "derived_unit_type": "gallon"
+        }
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "Lettuce x 4 Hearts",
+        "pack_size": null,
+        "ordered_quantity": 4.0,
+        "ordered_unit": "EACH",
+        "shipped_quantity": 4.0,
+        "shipped_unit": "EACH",
+        "unit_price": 4.99,
+        "extended_price": 19.96,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Romaine Hearts",
+        "yield_intelligence": null
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "Tomato x 1 Regular",
+        "pack_size": null,
+        "ordered_quantity": 1.0,
+        "ordered_unit": "EACH",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "EACH",
+        "unit_price": 2.99,
+        "extended_price": 2.99,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Tomato",
+        "yield_intelligence": null
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "Cucumbers x 2 Seedless",
+        "pack_size": null,
+        "ordered_quantity": 2.0,
+        "ordered_unit": "EACH",
+        "shipped_quantity": 2.0,
+        "shipped_unit": "EACH",
+        "unit_price": 1.5,
+        "extended_price": 3.0,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Cucumber (Seedless)",
+        "yield_intelligence": null
+      },
+      {
+        "vendor_item_code": null,
+        "raw_description": "Peppers x 1 Jalapeño 1lb",
+        "pack_size": "1lb",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "LB",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "LB",
+        "unit_price": 1.99,
+        "extended_price": 1.99,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Jalapeño Peppers",
+        "yield_intelligence": { "total_weight_lbs": 1.0 }
+      }
+    ]
+  },
+  {
+    "vendor": {
+      "name": "Triple A Paper Co.",
+      "customer_account_number": "267-406-4263",
+      "contact": {
+        "address": "3161 State Road Unit B, Bensalem, PA 19020",
+        "phone": "215.245.0551",
+        "fax": "215.245.2635",
+        "website": null,
+        "hours": null
+      }
+    },
+    "customer_details_on_invoice": {
+      "bill_to": "DTown Cafe, 2005 S Easton Rd Suite 104, Doylestown, PA 18901",
+      "ship_to": null
+    },
+    "invoice_metadata": {
+      "invoice_number": "292852",
+      "order_number": null,
+      "po_number": null,
+      "date": "2026-03-19",
+      "type": "DELIVERY",
+      "terms": "Net 7",
+      "sales_rep": "KB",
+      "route": "RC30",
+      "requested_by": null
+    },
+    "financials": {
+      "subtotal": 283.54,
+      "tax": 10.18,
+      "invoice_total": 293.72,
+      "previous_balance": 604.9,
+      "total_account_balance": 898.62
+    },
+    "payment_status": {
+      "is_paid": false,
+      "method": null,
+      "authorization_code": null,
+      "terminal_aid": null
+    },
+    "printed_notes_and_policies": [
+      "PLEASE COLLECT CHECK....CHECK WILL BE TAPED ON THE FRONT DOOR",
+      "$40 Fee on returned checks",
+      "We Accept all major Credit Cards"
+    ],
+    "handwritten_notes": "Signature line has ink. Marked 'Check In Mail' or similar.",
+    "line_items": [
+      {
+        "vendor_item_code": "A37",
+        "raw_description": "15x17 2Ply Dinner Napkin 3M/cs",
+        "pack_size": "3M/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 32.95,
+        "extended_price": 32.95,
+        "is_taxable": true,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Dinner Napkins (2-Ply)",
+        "yield_intelligence": {
+          "derived_unit_count": 3000,
+          "derived_unit_type": "napkin"
+        }
+      },
+      {
+        "vendor_item_code": "A46",
+        "raw_description": "Green Soap 4/gal",
+        "pack_size": "4/gal",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 24.95,
+        "extended_price": 24.95,
+        "is_taxable": true,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Hand Soap (Green)",
+        "yield_intelligence": {
+          "derived_unit_count": 4,
+          "derived_unit_type": "gallon"
+        }
+      },
+      {
+        "vendor_item_code": "B10",
+        "raw_description": "Multi-Fold Towel 4M/cs",
+        "pack_size": "4M/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 31.9,
+        "extended_price": 31.9,
+        "is_taxable": true,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Paper Towels (Multi-Fold)",
+        "yield_intelligence": {
+          "derived_unit_count": 4000,
+          "derived_unit_type": "towel"
+        }
+      },
+      {
+        "vendor_item_code": "C22A1",
+        "raw_description": "LBH663 - 6x9 Clear 350/cs",
+        "pack_size": "350/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 89.9,
+        "extended_price": 89.9,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Clear Bags (6x9)",
+        "yield_intelligence": {
+          "derived_unit_count": 350,
+          "derived_unit_type": "bag"
+        }
+      },
+      {
+        "vendor_item_code": "D00A5",
+        "raw_description": "Sanitary Tabs 6BTL/CS",
+        "pack_size": "6BTL/CS",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 40.9,
+        "extended_price": 40.9,
+        "is_taxable": true,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Sanitary Tablets",
+        "yield_intelligence": {
+          "derived_unit_count": 6,
+          "derived_unit_type": "bottle"
+        }
+      },
+      {
+        "vendor_item_code": "D17",
+        "raw_description": "Household Roll Towel 30rl/cs",
+        "pack_size": "30rl/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 29.95,
+        "extended_price": 29.95,
+        "is_taxable": true,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Paper Towels (Rolls)",
+        "yield_intelligence": {
+          "derived_unit_count": 30,
+          "derived_unit_type": "roll"
+        }
+      },
+      {
+        "vendor_item_code": "D50A2",
+        "raw_description": "Black All Purpose Stirrers",
+        "pack_size": null,
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 23.9,
+        "extended_price": 23.9,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Coffee Stirrers (Black)",
+        "yield_intelligence": null
+      }
+    ]
+  },
+  {
+    "vendor": {
+      "name": "Triple A Paper Co.",
+      "customer_account_number": "267-406-4263",
+      "contact": {
+        "address": "3161 State Road Unit B, Bensalem, PA 19020",
+        "phone": "215.245.0551",
+        "fax": "215.245.2635",
+        "website": null,
+        "hours": null
+      }
+    },
+    "customer_details_on_invoice": {
+      "bill_to": "DTown Cafe, 2005 S Easton Rd Suite 104, Doylestown, PA 18901",
+      "ship_to": null
+    },
+    "invoice_metadata": {
+      "invoice_number": "266220",
+      "order_number": null,
+      "po_number": null,
+      "date": "2024-02-01",
+      "type": "DELIVERY",
+      "terms": "Net 7",
+      "sales_rep": "KB",
+      "route": "RC62",
+      "requested_by": null
+    },
+    "financials": {
+      "subtotal": 304.56,
+      "tax": 1.44,
+      "invoice_total": 306.0,
+      "previous_balance": 286.39,
+      "total_account_balance": 592.39
+    },
+    "payment_status": {
+      "is_paid": true,
+      "method": "Check #1040",
+      "authorization_code": null,
+      "terminal_aid": null
+    },
+    "printed_notes_and_policies": [
+      "$40 Fee on returned checks",
+      "We Accept all major Credit Cards"
+    ],
+    "handwritten_notes": "CK# 1040 $306.00. Checkmark at top.",
+    "line_items": [
+      {
+        "vendor_item_code": "A63",
+        "raw_description": "38x58 Black Liner 60GAL 100/cs",
+        "pack_size": "100/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 23.95,
+        "extended_price": 23.95,
+        "is_taxable": true,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Trash Liners (60GAL Black)",
+        "yield_intelligence": {
+          "derived_unit_count": 100,
+          "derived_unit_type": "liner"
+        }
+      },
+      {
+        "vendor_item_code": "A69B1",
+        "raw_description": "12 x 12 x 2-1/2 Clay Cake Box 100/cs",
+        "pack_size": "100/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 58.9,
+        "extended_price": 58.9,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Cake Box (12x12x2.5)",
+        "yield_intelligence": {
+          "derived_unit_count": 100,
+          "derived_unit_type": "box"
+        }
+      },
+      {
+        "vendor_item_code": "B49",
+        "raw_description": "12 oz Hot Cup 1000/cs",
+        "pack_size": "1000/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 51.95,
+        "extended_price": 51.95,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "12oz Hot Cups",
+        "yield_intelligence": {
+          "derived_unit_count": 1000,
+          "derived_unit_type": "cup"
+        }
+      },
+      {
+        "vendor_item_code": "C26B1",
+        "raw_description": "LBH663 - 6x9 Clear 350/cs",
+        "pack_size": "350/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 89.9,
+        "extended_price": 89.9,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Clear Bags (6x9)",
+        "yield_intelligence": {
+          "derived_unit_count": 350,
+          "derived_unit_type": "bag"
+        }
+      },
+      {
+        "vendor_item_code": "C50A3",
+        "raw_description": "16HGB Black Gourmet Dome Lid 1M/cs",
+        "pack_size": "1M/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 36.95,
+        "extended_price": 36.95,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "16oz Soup Dome Lids (Black)",
+        "yield_intelligence": {
+          "derived_unit_count": 1000,
+          "derived_unit_type": "lid"
+        }
+      },
+      {
+        "vendor_item_code": "D62B2",
+        "raw_description": "HD 18\" Heavy Duty Foil 500'",
+        "pack_size": "500'",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "ROLL",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "ROLL",
+        "unit_price": 23.95,
+        "extended_price": 23.95,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "Aluminum Foil (18in x 500ft)",
+        "yield_intelligence": {
+          "derived_unit_count": 500,
+          "derived_unit_type": "foot"
+        }
+      },
+      {
+        "vendor_item_code": "D67A3",
+        "raw_description": "9\" Flat Lam/Foil Lid 500/cs",
+        "pack_size": "500/cs",
+        "ordered_quantity": 1.0,
+        "ordered_unit": "CS",
+        "shipped_quantity": 1.0,
+        "shipped_unit": "CS",
+        "unit_price": 18.96,
+        "extended_price": 18.96,
+        "is_taxable": false,
+        "is_shortage": false,
+        "predicted_internal_ingredient": "9in Foil Lids",
+        "yield_intelligence": {
+          "derived_unit_count": 500,
+          "derived_unit_type": "lid"
+        }
+      }
+    ]
+  }
+]
