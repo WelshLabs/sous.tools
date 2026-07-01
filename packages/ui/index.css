@@ -1,11 +1,14 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ─── Token Bridge: CSS custom props → Tailwind color utilities ─────────────── */
 @theme {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
   --color-secondary: hsl(var(--secondary));
@@ -23,16 +26,68 @@
   --font-sans: "Inter", sans-serif;
   --font-brand: "Outfit", sans-serif;
   --font-mono: "Geist Mono", monospace;
+
   --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 
+/* ─── Base Theme: Dark/Cyan (glass-frosted aesthetic, v2 reference) ──────────
+ *
+ *  Sourced from:
+ *    - v2/packages/ui/src/styles.css  →  dark {} block
+ *    - v2/themes/glass-frosted.toml   →  cyan #4cc9f0 / hue 198-206
+ *
+ *  Primary accent = sky/cyan band (hsl 198 100% ~57%)  (#4cc9f0 ≈ 198 100% 60%)
+ *  Background     = near-black zinc-950 plane
+ *  Card           = zinc-900 with glass-panel overlay support
+ * ─────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
+    /* Dark-first: the default root IS the dark/glass-frosted theme */
+    --background: 240 10% 3.9%;          /* zinc-950 equivalent              */
+    --foreground: 0 0% 98%;              /* near-white                       */
+    --card: 240 8% 7%;                  /* zinc-900-ish card surface         */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 8% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Cyan / sky-400 primary — #4cc9f0 ≈ hsl(198 84% 63%) */
+    --primary: 198 84% 63%;
+    --primary-foreground: 240 10% 3.9%;  /* dark text on bright cyan badge   */
+
+    --secondary: 240 5% 14%;            /* subtle elevated surface           */
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 55%;     /* low-contrast helper text          */
+
+    --accent: 198 84% 63%;              /* same cyan band as primary         */
+    --accent-foreground: 240 10% 3.9%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 4% 16%;               /* subtle separator                  */
+    --input: 240 4% 16%;
+    --ring: 198 84% 63%;                /* focus ring = cyan                 */
+
+    --radius: 1rem;
+
+    /* Neon colour variables used by utility classes below */
+    --neon-cyan: 76 201 240;            /* #4cc9f0 in RGB                    */
+    --neon-pink: 247 37 133;            /* #f72585 in RGB                    */
+  }
+
+  /* Light override — preserved for non-kitchen contexts */
+  .light {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
-    --primary: 206 100% 50%; /* Brand Blue #0091FF */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 198 84% 45%;             /* darker cyan for light bg          */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -44,52 +99,86 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 91%;
     --input: 240 5.9% 91%;
-    --ring: 206 100% 50%;
-    --radius: 1rem;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --primary: 206 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 206 100% 50%;
+    --ring: 198 84% 45%;
   }
 }
 
+/* ─── Utility Layer ───────────────────────────────────────────────────────── */
 @layer utilities {
+  /* Neon glow — cyan by default, override via --neon-color */
   .neon-glow {
-    box-shadow: 0 0 15px -3px var(--neon-color, theme('colors.sky.500')), 0 0 6px -2px var(--neon-color, theme('colors.sky.500'));
+    box-shadow:
+      0 0 15px -3px rgb(var(--neon-cyan) / 0.7),
+      0 0 6px -2px  rgb(var(--neon-cyan) / 0.5);
   }
   .neon-glow-lg {
-    box-shadow: 0 0 25px -5px var(--neon-color, theme('colors.sky.500')), 0 0 10px -3px var(--neon-color, theme('colors.sky.500'));
+    box-shadow:
+      0 0 35px -5px rgb(var(--neon-cyan) / 0.6),
+      0 0 15px -3px rgb(var(--neon-cyan) / 0.4);
+  }
+  .neon-glow-pink {
+    box-shadow:
+      0 0 15px -3px rgb(var(--neon-pink) / 0.7),
+      0 0 6px -2px  rgb(var(--neon-pink) / 0.5);
   }
   .neon-border {
-    border-color: var(--neon-color, theme('colors.sky.500'));
-    box-shadow: inset 0 0 10px var(--neon-color, theme('colors.sky.500')), 0 0 10px var(--neon-color, theme('colors.sky.500'));
+    border-color: rgb(var(--neon-cyan) / 0.6);
+    box-shadow:
+      inset 0 0 12px rgb(var(--neon-cyan) / 0.15),
+      0 0 12px rgb(var(--neon-cyan) / 0.25);
   }
+
+  /* Glass panels — matches v2 glass-frosted KDS/POS surfaces */
   .glass-panel {
-    @apply bg-white/40 dark:bg-zinc-950/40 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-2xl;
+    @apply bg-zinc-950/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
   }
   .glass-card {
-    @apply bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-xl;
+    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
   }
+
+  /* Named aliases used in v3 component library */
   .st-glass-panel {
-    @apply bg-white/40 dark:bg-zinc-950/40 backdrop-blur-2xl border border-black/5 dark:border-white/5 shadow-2xl;
+    @apply bg-zinc-950/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
   }
   .st-glass-pill {
-    @apply bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl rounded-2xl;
+    @apply bg-zinc-950/60 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl;
+  }
+
+  /* Shimmer animation for skeleton loaders */
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+  }
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+  }
+}
+
+/* ─── Base Resets ─────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  a, button {
+    cursor: pointer;
+  }
+
+  /* Slim scrollbar — dark surface optimised */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-700 rounded-full transition-colors;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-600;
   }
 }
