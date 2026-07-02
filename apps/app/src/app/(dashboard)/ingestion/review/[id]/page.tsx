@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, CheckCircle, BrainCircuit, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  CheckCircle,
+  BrainCircuit,
+  Trash2,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { IngestionReview } from "@soustools/api-types";
 import { toast } from "sonner";
@@ -42,9 +48,9 @@ export default function IngestionReviewPage() {
           sourceDocumentUrl: data.source_document_url,
           sourceName: data.source_name,
           createdAt: data.created_at,
-          updatedAt: data.updated_at
+          updatedAt: data.updated_at,
         } as IngestionReview;
-        
+
         setReview(parsed);
         setEditedData(JSON.stringify(parsed.parsedData, null, 2));
       } else {
@@ -59,7 +65,7 @@ export default function IngestionReviewPage() {
   const handleApprove = async () => {
     try {
       const finalJson = JSON.parse(editedData);
-      
+
       // Update the DB record with latest JSON changes first
       await supabase
         .from("ingestion_reviews")
@@ -68,13 +74,13 @@ export default function IngestionReviewPage() {
 
       // Trigger the real commit API synchronously
       const res = await fetch(`/api/ingestion/review/${id}/commit`, {
-        method: "POST"
+        method: "POST",
       });
 
       if (!res.ok) throw new Error("Failed to commit data");
-      
+
       toast.success("Ingestion Approved and mapped to Live Data!");
-      router.push("/recipes"); 
+      router.push("/recipes");
     } catch (err) {
       toast.error("Failed to commit changes. Ensure JSON is valid.");
     }
@@ -93,7 +99,11 @@ export default function IngestionReviewPage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-[50vh]"><Loader2 className="w-8 h-8 animate-spin text-sky-500" /></div>;
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+      </div>
+    );
   }
 
   if (!review) return null;
@@ -102,7 +112,10 @@ export default function IngestionReviewPage() {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/ingestion" className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors">
+          <Link
+            href="/ingestion"
+            className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
+          >
             <ArrowLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
           </Link>
           <div>
@@ -110,7 +123,9 @@ export default function IngestionReviewPage() {
               <BrainCircuit className="w-6 h-6 text-sky-400" />
               Human-in-the-Loop Review
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Review AI extracted data from {review.source.replace("_", " ")}</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Review AI extracted data from {review.source.replace("_", " ")}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -121,7 +136,7 @@ export default function IngestionReviewPage() {
           >
             <Trash2 className="w-5 h-5" />
           </button>
-          
+
           {review.status === "PENDING" ? (
             <button
               onClick={handleApprove}
@@ -130,9 +145,13 @@ export default function IngestionReviewPage() {
               <CheckCircle className="w-5 h-5" /> Approve & Save
             </button>
           ) : (
-            <div className={`px-4 py-2 rounded-lg font-bold border ${
-              review.status === "REJECTED" ? "bg-red-500/20 text-red-400 border-red-500/30" : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-            }`}>
+            <div
+              className={`px-4 py-2 rounded-lg font-bold border ${
+                review.status === "REJECTED"
+                  ? "bg-red-500/20 text-red-400 border-red-500/30"
+                  : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+              }`}
+            >
               Already {review.status}
             </div>
           )}
@@ -141,16 +160,25 @@ export default function IngestionReviewPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
         {/* Left Pane: Raw Document text or Image */}
-        <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-          <div className="p-4 bg-zinc-900/80 border-b border-black/10 dark:border-white/10">
-            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Raw Source Document</h2>
+        <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+          <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10">
+            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              Raw Source Document
+            </h2>
           </div>
           <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40">
             {review.sourceDocumentUrl ? (
               review.sourceDocumentUrl.endsWith(".pdf") ? (
-                <iframe src={review.sourceDocumentUrl} className="w-full h-full border-none" />
+                <iframe
+                  src={review.sourceDocumentUrl}
+                  className="w-full h-full border-none"
+                />
               ) : (
-                <img src={review.sourceDocumentUrl} className="w-full h-auto object-contain" alt="Raw Document" />
+                <img
+                  src={review.sourceDocumentUrl}
+                  className="w-full h-auto object-contain"
+                  alt="Raw Document"
+                />
               )
             ) : (
               <pre className="text-sm text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap font-mono p-4">
@@ -161,19 +189,23 @@ export default function IngestionReviewPage() {
         </div>
 
         {/* Right Pane: AI Structured Data Editable */}
-        <div className="bg-zinc-100 dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-          <div className="p-4 bg-zinc-900/80 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">AI Extracted Data</h2>
+        <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+          <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
+            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              AI Extracted Data
+            </h2>
             <div className="flex items-center gap-2">
-              <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">Vendor Aliases Applied</span>
+              <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">
+                Vendor Aliases Applied
+              </span>
               <div className="flex bg-black/50 rounded-lg p-1">
-                <button 
+                <button
                   onClick={() => setViewMode("visual")}
                   className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
                 >
                   Visual
                 </button>
-                <button 
+                <button
                   onClick={() => setViewMode("json")}
                   className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
                 >
@@ -183,19 +215,21 @@ export default function IngestionReviewPage() {
             </div>
           </div>
           {viewMode === "visual" ? (
-             <VisualBuilder 
-               editedData={editedData}
-               onChange={setEditedData}
-               disabled={review.status !== "PENDING"}
-               organizationId={review.organizationId}
-             />
+            <VisualBuilder
+              editedData={editedData}
+              onChange={setEditedData}
+              disabled={review.status !== "PENDING"}
+              organizationId={review.organizationId}
+            />
           ) : (
             <div className="flex-1">
               <textarea
                 value={editedData}
                 onChange={(e) => setEditedData(e.target.value)}
                 className={`w-full h-full bg-white/50 dark:bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
-                  editedData.includes('"error":') ? 'text-red-400' : 'text-emerald-400'
+                  editedData.includes('"error":')
+                    ? "text-red-400"
+                    : "text-emerald-400"
                 }`}
                 spellCheck={false}
                 disabled={review.status !== "PENDING"}

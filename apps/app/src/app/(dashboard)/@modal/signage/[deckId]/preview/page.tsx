@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
 import { ExternalLink, Edit, Monitor, Copy, Check } from "lucide-react";
-import { ModalShell } from "../../../../../../components/signage/modal-shell";
+import { ModalShell } from "@soustools/domain-signage";
 
 interface Params {
   deckId: string;

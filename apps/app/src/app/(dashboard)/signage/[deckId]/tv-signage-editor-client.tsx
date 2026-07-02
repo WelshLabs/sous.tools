@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LayoutBuilder } from "../../../../components/signage/layout-builder";
+import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
 import { SignageLayoutConfig, PosItem } from "@soustools/api-types";
-import { MOCK_POS_ITEMS } from "../../../../components/signage/mock-data";
-import { RefreshCw } from "lucide-react";
 import { io } from "socket.io-client";
 import { mapDbItemToPosItem, RawDbPosItem } from "../../../display/[id]/helpers";
 import { config as appConfig } from "@soustools/config";
-import { createBrowserClient } from "@soustools/supabase";
+import { useRouter } from "next/navigation";
 
 interface SignageDeck {
   id: string;
@@ -20,47 +18,32 @@ interface SignageDeck {
 
 interface TVSignageEditorClientProps {
   deckId: string;
+  initialDeck: SignageDeck | null;
+  initialItems: RawDbPosItem[];
 }
 
-export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientProps) {
-  const [deck, setDeck] = useState<SignageDeck | null>(null);
-  const [items, setItems] = useState<PosItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const supabase = createBrowserClient();
-      const [deckRes, itemsRes, orgRes] = await Promise.all([
-        fetch(`/api/signage/layouts/${deckId}`).then((r) => r.json()),
-        fetch("/api/pos/items").then((r) => r.json()),
-        supabase.from("organizations").select("design_tokens").limit(1).single()
-      ]);
-      if (deckRes.success && deckRes.data) {
-        const d = deckRes.data;
-        if (orgRes.data?.design_tokens && d.config) {
-          d.config.designTokens = orgRes.data.design_tokens;
-        }
-        setDeck(d);
-      }
-      if (itemsRes.success && itemsRes.data) {
-        const parsedItems = (itemsRes.data as RawDbPosItem[]).map(mapDbItemToPosItem);
-        setItems(parsedItems);
-      } else {
-        setItems(MOCK_POS_ITEMS);
-      }
-    } catch (err) {
-      console.error("Failed to fetch editor data:", err);
-      setItems(MOCK_POS_ITEMS);
-    } finally {
-      setLoading(false);
+export default function TVSignageEditorClient({ deckId, initialDeck, initialItems }: TVSignageEditorClientProps) {
+  const [deck, setDeck] = useState<SignageDeck | null>(initialDeck);
+  const [items, setItems] = useState<PosItem[]>(() => {
+    if (initialItems && initialItems.length > 0) {
+      return initialItems.map(mapDbItemToPosItem);
     }
-  };
+    return MOCK_POS_ITEMS;
+  });
+  const [saving, setSaving] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    fetchData();
-  }, [deckId]);
+    setDeck(initialDeck);
+  }, [initialDeck]);
+
+  useEffect(() => {
+    if (initialItems && initialItems.length > 0) {
+      setItems(initialItems.map(mapDbItemToPosItem));
+    } else {
+      setItems(MOCK_POS_ITEMS);
+    }
+  }, [initialItems]);
 
   useEffect(() => {
     const socketUrl = appConfig.API_BASE_URL || window.location.origin;
@@ -95,6 +78,7 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
       const data = await res.json();
       if (data.success && data.data) {
         setDeck(data.data);
+        router.refresh();
       }
     } catch (err) {
       console.error("Save failed:", err);
@@ -113,20 +97,12 @@ export default function TVSignageEditorClient({ deckId }: TVSignageEditorClientP
       const data = await res.json();
       if (data.success && data.data) {
         setDeck(data.data);
+        router.refresh();
       }
     } catch (err) {
       console.error("Rename failed:", err);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] text-zinc-900 dark:text-slate-100">
-        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-        <span className="ml-3 text-sm font-mono">Loading editor...</span>
-      </div>
-    );
-  }
 
   if (!deck) {
     return (

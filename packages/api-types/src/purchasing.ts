@@ -4,9 +4,10 @@ export interface Vendor {
   id: string;
   organization_id: string;
   name: string;
-  order_method: 'EMAIL' | 'SMS' | 'MANUAL';
+  order_method: 'EMAIL' | 'SMS' | 'MANUAL' | '';
   email?: string;
   phone?: string;
+  order_days?: string[];
   created_at: string;
 }
 

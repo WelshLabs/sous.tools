@@ -2,16 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
-import { 
-  TrendingDown, 
-  TrendingUp, 
-  DollarSign, 
-  AlertTriangle, 
-  Tv, 
-  Activity, 
-  ArrowUpRight, 
+import {
+  TrendingDown,
+  TrendingUp,
+  DollarSign,
+  AlertTriangle,
+  Tv,
+  Activity,
+  ArrowUpRight,
   ArrowDownRight,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@soustools/ui";
 
@@ -28,15 +28,25 @@ export default function DashboardPage() {
 
   // Top Metrics
   const foodCostPercent = 28.4;
-  const mtdGrossProfit = 34520.00;
-  const totalSales = 121549.50;
+  const mtdGrossProfit = 34520.0;
+  const totalSales = 121549.5;
 
   // Alerts
   const priceSpikes = [
-    { name: "Unsalted Butter (Euro)", oldPrice: 4.20, newPrice: 5.80, change: 38 },
-    { name: "Fresh Cilantro (Bunch)", oldPrice: 0.89, newPrice: 1.45, change: 62 },
+    {
+      name: "Unsalted Butter (Euro)",
+      oldPrice: 4.2,
+      newPrice: 5.8,
+      change: 38,
+    },
+    {
+      name: "Fresh Cilantro (Bunch)",
+      oldPrice: 0.89,
+      newPrice: 1.45,
+      change: 62,
+    },
   ];
-  
+
   const lowPars = [
     { name: "Truffle Oil", current: 2, par: 5 },
     { name: "Ribeye Steak 12oz", current: 8, par: 20 },
@@ -74,7 +84,7 @@ export default function DashboardPage() {
         const mapped = dbDisplays.map((d: any) => ({
           id: d.id,
           name: d.name,
-          isOnline: !!activeConnections[d.id]
+          isOnline: !!activeConnections[d.id],
         }));
         setOnlineDisplays(mapped);
       }
@@ -95,11 +105,22 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-slate-100 tracking-tight">BOH Command Center</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Real-time telemetry and profit margins for your kitchen.</p>
+          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-slate-100 tracking-tight">
+            BOH Command Center
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+            Real-time telemetry and profit margins for your kitchen.
+          </p>
         </div>
-        <Button onClick={fetchActiveDisplays} disabled={refreshing} variant="outline" className="flex items-center gap-1.5 border-zinc-800">
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+        <Button
+          onClick={fetchActiveDisplays}
+          disabled={refreshing}
+          variant="outline"
+          className="flex items-center gap-1.5 border-zinc-800"
+        >
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+          />
           Reload Analytics
         </Button>
       </div>
@@ -110,8 +131,12 @@ export default function DashboardPage() {
           <div className="absolute top-4 right-4 text-sky-400 bg-sky-500/10 p-2 rounded-xl border border-sky-500/20">
             <TrendingDown className="w-5 h-5" />
           </div>
-          <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">Food Cost %</span>
-          <span className="text-3xl font-extrabold text-white mt-3 block">{foodCostPercent}%</span>
+          <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">
+            Food Cost %
+          </span>
+          <span className="text-3xl font-extrabold text-white mt-3 block">
+            {foodCostPercent}%
+          </span>
           <span className="text-emerald-400 text-xs mt-2 flex items-center gap-1 font-medium">
             <ArrowDownRight className="w-3.5 h-3.5" /> -1.2% this week
           </span>
@@ -121,9 +146,15 @@ export default function DashboardPage() {
           <div className="absolute top-4 right-4 text-violet-400 bg-violet-500/10 p-2 rounded-xl border border-violet-500/20">
             <TrendingUp className="w-5 h-5" />
           </div>
-          <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">MTD Gross Profit</span>
+          <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">
+            MTD Gross Profit
+          </span>
           <span className="text-3xl font-extrabold text-white mt-3 block">
-            ${mtdGrossProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            $
+            {mtdGrossProfit.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </span>
           <span className="text-emerald-400 text-xs mt-2 flex items-center gap-1 font-medium">
             <ArrowUpRight className="w-3.5 h-3.5" /> +8.4% vs last month
@@ -134,9 +165,15 @@ export default function DashboardPage() {
           <div className="absolute top-4 right-4 text-sky-400 bg-sky-500/10 p-2 rounded-xl border border-sky-500/20">
             <DollarSign className="w-5 h-5" />
           </div>
-          <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">Total Synced Sales</span>
+          <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block">
+            Total Synced Sales
+          </span>
           <span className="text-3xl font-extrabold text-white mt-3 block">
-            ${totalSales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            $
+            {totalSales.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </span>
           <span className="text-emerald-400 text-xs mt-2 flex items-center gap-1 font-medium">
             <ArrowUpRight className="w-3.5 h-3.5" /> Synchronized with Square
@@ -146,24 +183,32 @@ export default function DashboardPage() {
 
       {/* Main Grid: Alerts / Drivers & Signage Health */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Alerts & Critical Stock */}
         <div className="lg:col-span-2 space-y-6">
-          
           {/* Price Spikes & Low Pars */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="glass-panel p-6 rounded-2xl border border-black/5 dark:border-white/5">
               <h3 className="text-sm font-bold text-zinc-900 dark:text-slate-100 flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-4 h-4 text-amber-400" /> Critical Price Spikes
+                <AlertTriangle className="w-4 h-4 text-amber-400" /> Critical
+                Price Spikes
               </h3>
               <div className="space-y-3">
                 {priceSpikes.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3">
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3"
+                  >
                     <div>
-                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block">{item.name}</span>
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 block">${item.oldPrice} ➔ ${item.newPrice}</span>
+                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block">
+                        {item.name}
+                      </span>
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 block">
+                        ${item.oldPrice} ➔ ${item.newPrice}
+                      </span>
                     </div>
-                    <span className="text-rose-400 text-xs font-bold font-mono">+{item.change}%</span>
+                    <span className="text-rose-400 text-xs font-bold font-mono">
+                      +{item.change}%
+                    </span>
                   </div>
                 ))}
               </div>
@@ -171,16 +216,26 @@ export default function DashboardPage() {
 
             <div className="glass-panel p-6 rounded-2xl border border-black/5 dark:border-white/5">
               <h3 className="text-sm font-bold text-zinc-900 dark:text-slate-100 flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-4 h-4 text-rose-500" /> Low Par Alert
+                <AlertTriangle className="w-4 h-4 text-rose-500" /> Low Par
+                Alert
               </h3>
               <div className="space-y-3">
                 {lowPars.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3">
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3"
+                  >
                     <div>
-                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block">{item.name}</span>
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 block">Target Par: {item.par}</span>
+                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 block">
+                        {item.name}
+                      </span>
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 block">
+                        Target Par: {item.par}
+                      </span>
                     </div>
-                    <span className="text-rose-400 text-xs font-bold font-mono">{item.current} remaining</span>
+                    <span className="text-rose-400 text-xs font-bold font-mono">
+                      {item.current} remaining
+                    </span>
                   </div>
                 ))}
               </div>
@@ -195,9 +250,16 @@ export default function DashboardPage() {
               </h3>
               <div className="space-y-3">
                 {marginDrivers.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3">
-                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{item.name}</span>
-                    <span className="text-emerald-400 text-xs font-extrabold">{item.margin}% margin</span>
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3"
+                  >
+                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                      {item.name}
+                    </span>
+                    <span className="text-emerald-400 text-xs font-extrabold">
+                      {item.margin}% margin
+                    </span>
                   </div>
                 ))}
               </div>
@@ -209,15 +271,21 @@ export default function DashboardPage() {
               </h3>
               <div className="space-y-3">
                 {marginBleeders.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3">
-                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{item.name}</span>
-                    <span className="text-rose-400 text-xs font-extrabold">{item.margin}% margin</span>
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3"
+                  >
+                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                      {item.name}
+                    </span>
+                    <span className="text-rose-400 text-xs font-extrabold">
+                      {item.margin}% margin
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Digital Signage Connection Statuses */}
@@ -227,21 +295,34 @@ export default function DashboardPage() {
           </h3>
           <div className="flex-1 space-y-3 overflow-y-auto">
             {loading ? (
-              <div className="text-center text-zinc-400 dark:text-zinc-500 py-6 text-xs">Polling active display ports...</div>
+              <div className="text-center text-zinc-400 dark:text-zinc-500 py-6 text-xs">
+                Polling active display ports...
+              </div>
             ) : onlineDisplays.length === 0 ? (
-              <div className="text-center text-zinc-400 dark:text-zinc-500 py-6 text-xs">No active displays registered.</div>
+              <div className="text-center text-zinc-400 dark:text-zinc-500 py-6 text-xs">
+                No active displays registered.
+              </div>
             ) : (
               onlineDisplays.map((display) => (
-                <div key={display.id} className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3.5">
+                <div
+                  key={display.id}
+                  className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3.5"
+                >
                   <div>
-                    <span className="text-xs font-bold text-slate-200 block">{display.name}</span>
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block mt-0.5">Port ID: {display.id.slice(0, 8)}...</span>
+                    <span className="text-xs font-bold text-slate-200 block">
+                      {display.name}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block mt-0.5">
+                      Port ID: {display.id.slice(0, 8)}...
+                    </span>
                   </div>
-                  <span className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                    display.isOnline 
-                      ? "text-emerald-400 bg-emerald-950/20 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-                      : "text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-900 border-zinc-800"
-                  }`}>
+                  <span
+                    className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                      display.isOnline
+                        ? "text-emerald-400 bg-emerald-950/20 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+                        : "text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-card border-zinc-800"
+                    }`}
+                  >
                     <Activity className="w-3 h-3" />
                     {display.isOnline ? "Active" : "Offline"}
                   </span>
@@ -250,7 +331,6 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

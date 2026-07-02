@@ -1,0 +1,86 @@
+import * as React from "react";
+
+/**
+ * Props for the TwoToneHeader component.
+ */
+export interface TwoToneHeaderProps {
+  /**
+   * The full heading string. The first word is rendered in `text-foreground`
+   * (slate-50); all remaining words are rendered in `text-primary`
+   * (Neon-Glass cyan #4cc9f0).
+   *
+   * @example "Order Manager" → "Order" (white) + " Manager" (cyan)
+   */
+  title: string;
+  /**
+   * Optional breadcrumb line rendered above the heading in muted uppercase
+   * tracking. E.g. "Procurement / Living Order List".
+   */
+  breadcrumb?: string;
+  /**
+   * Optional right-side slot — render a badge, tag, or icon cluster here.
+   */
+  trailing?: React.ReactNode;
+  /** Additional className applied to the outer wrapper `<div>`. */
+  className?: string;
+}
+
+/**
+ * Page-level heading component for the Neon-Glass design language.
+ *
+ * Renders the first word of `title` in the default foreground color and all
+ * remaining words in the brand cyan (`--color-primary: #4cc9f0`). Pairs with
+ * an optional breadcrumb line and a trailing slot for actions or badges.
+ *
+ * Used on every primary route page to enforce the "Order **Manager**" /
+ * "Active **Orders**" brand split pattern.
+ *
+ * @tenant-docs-export
+ * # TwoToneHeader
+ * ```tsx
+ * import { TwoToneHeader } from "@soustools/design-system";
+ *
+ * <TwoToneHeader
+ *   breadcrumb="Procurement / Living Order List"
+ *   title="Order Manager"
+ * />
+ * ```
+ */
+export function TwoToneHeader({
+  title,
+  breadcrumb,
+  trailing,
+  className = "",
+}: TwoToneHeaderProps) {
+  const spaceIdx = title.indexOf(" ");
+  const firstWord = spaceIdx === -1 ? title : title.slice(0, spaceIdx);
+  const rest = spaceIdx === -1 ? "" : title.slice(spaceIdx); // leading space preserved
+
+  return (
+    <div
+      className={`flex items-start justify-between gap-4 ${className}`}
+    >
+      <div>
+        {breadcrumb && (
+          <p
+            className="text-[10px] font-black uppercase tracking-[0.2em] mb-2"
+            style={{ color: "var(--color-muted-foreground)" }}
+          >
+            {breadcrumb}
+          </p>
+        )}
+        <h1
+          className="text-4xl font-black uppercase tracking-tighter leading-none"
+        >
+          <span style={{ color: "var(--color-foreground)" }}>{firstWord}</span>
+          {rest && (
+            <span style={{ color: "var(--color-primary)" }}>{rest}</span>
+          )}
+        </h1>
+      </div>
+      {trailing && (
+        <div className="flex items-center gap-2 shrink-0 mt-1">{trailing}</div>
+      )}
+    </div>
+  );
+}

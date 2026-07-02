@@ -9,7 +9,7 @@ import {
   buildDescriptionStyle,
   resolveItemState,
   isItemHighlighted,
-} from "../../../components/signage/menu-item-style-utils";
+} from "@soustools/domain-signage";
 
 export interface MenuItemCardProps {
   item: PosItem;

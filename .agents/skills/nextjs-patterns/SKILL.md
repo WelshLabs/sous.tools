@@ -1,6 +1,6 @@
 ---
 name: nextjs-patterns
-description: Guidelines for Next.js 16 (App Router), enforcing the Skeleton App pattern, Server Components, and @soustools/ui-first UI development.
+description: Guidelines for Next.js 16 (App Router), enforcing the Skeleton App pattern, Server Components, and @soustools/design-system-first UI development.
 ---
 
 # Next.js 16 Patterns — Skeleton App Enforcement
@@ -14,7 +14,7 @@ description: Guidelines for Next.js 16 (App Router), enforcing the Skeleton App 
 > - Route group configuration
 >
 > It does **NOT** contain: UI components, business logic, local hooks, or inline styles.
-> Any such code found in `apps/app` must be **immediately refactored** into `@soustools/ui` or `packages/`.
+> Any such code found in `apps/app` must be **immediately refactored** into `@soustools/design-system` or `packages/`.
 
 ## Server Components — Default Mandate
 
@@ -52,24 +52,29 @@ useEffect(() => { supabase.from('recipes').select(); }, []); // BANNED
 
 **Exception**: Real-time Supabase subscriptions (`supabase.channel(...)`) in a dedicated `"use client"` leaf component are the only authorized use of client-side `supabase-js` in `apps/app`. Document the exception with a comment.
 
-## UI — Library-First Rule
+## UI — Library-First Rule (`@soustools/design-system`)
 
 > [!IMPORTANT]
-> All JSX/TSX must use `@soustools/ui` components. **No local component creation in `apps/app`.**
+> All JSX/TSX must use `@soustools/design-system` components. **No local component creation in `apps/app`.**
 >
-> If a required component does not exist in `packages/ui/src/index.ts`:
-> 1. **Add it to `packages/ui`** first.
-> 2. Export it from `packages/ui/src/index.ts`.
+> `@soustools/ui` is **deprecated**. Do NOT import from it in new code.
+>
+> If a required component does not exist in `packages/design-system/src/index.ts`:
+> 1. **Add it to `packages/design-system`** first.
+> 2. Export it from `packages/design-system/src/index.ts`.
 > 3. Then import and use it in `apps/app`.
 >
 > Building UI locally in `apps/app` and deferring the extraction is forbidden.
 
 ```tsx
 // ✅ CORRECT
-import { Button, Card, RecipeCard } from '@soustools/ui';
+import { Button, Card, TwoToneHeader } from '@soustools/design-system';
 
-// ❌ FORBIDDEN
-import { Button } from '../../components/Button'; // local — move to @soustools/ui
+// ❌ FORBIDDEN — deprecated package
+import { Button } from '@soustools/ui'; // deprecated — move to @soustools/design-system
+
+// ❌ FORBIDDEN — local component
+import { Button } from '../../components/Button'; // local — move to @soustools/design-system
 ```
 
 ## `"use client"` Checklist
@@ -92,6 +97,6 @@ Before adding `"use client"` to any file, verify:
 
 - **FORBIDDEN**: `useEffect` data fetching from Supabase in `apps/app`.
 - **FORBIDDEN**: Local UI components defined inside `apps/app/src/components/`.
-- **FORBIDDEN**: Inline `style={{}}` attributes — use `@soustools/ui` and Tailwind classes.
+- **FORBIDDEN**: Inline `style={{}}` attributes — use `@soustools/design-system` and semantic token classes.
 - **FORBIDDEN**: `"use client"` on page-level route files (`page.tsx`).
-- **FORBIDDEN**: Files in `apps/app` exceeding 150 lines — extract to `@soustools/ui` or `packages/`.
+- **FORBIDDEN**: Importing from `@soustools/ui` in new code — it is deprecated.

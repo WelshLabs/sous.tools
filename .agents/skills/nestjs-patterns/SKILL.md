@@ -8,4 +8,3 @@ description: Guidelines and patterns for NestJS backend modules, services, contr
 - **Controller/Resolver Separation**: Controllers handle REST; Resolvers handle GraphQL.
 - **Service Isolation**: Services contain all business logic.
 - **Strict DTO validation**: Use `class-validator` and `class-transformer` on all incoming payloads.
-- **Line Limit**: Keep files under 150 lines. Break up large controllers/services into domain components.

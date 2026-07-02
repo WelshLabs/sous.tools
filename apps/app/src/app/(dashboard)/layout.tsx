@@ -26,7 +26,10 @@ export interface DashboardLayoutProps {
  * Access to the kitchen portal dashboard is restricted to authorized employees.
  * If your session expires, you will automatically be redirected to the passcode login page.
  */
-export default function DashboardLayout({ children, modal }: DashboardLayoutProps) {
+export default function DashboardLayout({
+  children,
+  modal,
+}: DashboardLayoutProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
@@ -41,13 +44,17 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
           data: { session },
         } = await supabase.auth.getSession();
         if (!session) {
-          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+          router.push(
+            `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+          );
         } else if (mounted) {
           setIsLoading(false);
         }
       } catch (error) {
         console.error("Failed to retrieve authentication session:", error);
-        router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        router.push(
+          `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        );
       }
     };
 
@@ -59,11 +66,13 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
     } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
         if (!session) {
-          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+          router.push(
+            `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+          );
         } else if (mounted) {
           setIsLoading(false);
         }
-      }
+      },
     );
 
     return () => {
@@ -81,19 +90,28 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
   }
 
   return (
-    <div className="min-h-screen w-full bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 flex overflow-x-hidden transition-colors duration-300">
+    <div className="min-h-screen w-full bg-white text-zinc-900 dark:bg-card dark:text-zinc-100 flex overflow-x-hidden transition-colors duration-300">
       {/* Sidebar Navigation */}
       <Sidebar
         isMobileOpen={isMobileOpen}
         isDesktopCollapsed={isDesktopCollapsed}
         onCloseMobile={() => setIsMobileOpen(false)}
         onToggleDesktop={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
+        navItems={[
+          { label: "Dashboard", href: "/dashboard", icon: () => <svg className="w-5 h-5"/> },
+          { label: "Signage", href: "/signage", icon: () => <svg className="w-5 h-5"/> },
+          { label: "Recipes", href: "/recipes", icon: () => <svg className="w-5 h-5"/> },
+          { label: "Devices", href: "/devices", icon: () => <svg className="w-5 h-5"/> }
+        ]}
+        isAdmin={true}
+        expandedLogo={<div>Logo</div>}
+        collapsedIcon={<div>L</div>}
       />
 
       {/* Main Content Pane */}
       <div
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full max-w-full
-          ${isDesktopCollapsed ? "md:pl-16" : "md:pl-16 lg:pl-64"}
+          ${isDesktopCollapsed ? "md:pl-16" : "md:pl-16 lg:pl-16 xl:pl-64"}
         `}
       >
         <div className="hidden md:block">
@@ -106,10 +124,10 @@ export default function DashboardLayout({ children, modal }: DashboardLayoutProp
           {children}
         </main>
       </div>
-      
+
       {/* Mobile Bottom Navigation */}
       <BottomNav onToggleMobile={() => setIsMobileOpen(true)} />
-      
+
       {/* @modal parallel route slot — renders URL-addressed modals (deck preview, device detail, etc.) */}
       {modal}
     </div>

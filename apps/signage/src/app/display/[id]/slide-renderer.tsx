@@ -94,7 +94,7 @@ export function SlideRenderer({
       );
     default:
       return (
-        <div className="flex items-center justify-center min-h-screen bg-zinc-900 text-white font-sans">
+        <div className="flex items-center justify-center min-h-screen bg-card text-white font-sans">
           <p>Unsupported Slide Type</p>
         </div>
       );

@@ -1,6 +1,6 @@
 ---
 name: quality-enforcement
-description: Pre-commit check-style rules for LLMs that flag client-side DB mutations, enforce @soustools/ui design system usage, and eradicate hacky workarounds and hydration errors.
+description: Pre-commit check-style rules for LLMs that flag client-side DB mutations, enforce @soustools/design-system usage, and eradicate hacky workarounds and hydration errors.
 ---
 
 # Quality Enforcement — Pre-Commit LLM Checklist
@@ -35,29 +35,34 @@ const handleDelete = () => deleteRecipe(id);
 
 ---
 
-## Check 2 — `@soustools/ui` Design System Compliance
+## Check 2 — `@soustools/design-system` Design System Compliance
 
 > [!IMPORTANT]
-> All JSX/TSX elements must come from `@soustools/ui`. Verify against `packages/ui/src/index.ts` exports before generating any component.
+> All JSX/TSX elements must come from `@soustools/design-system`. Verify against `packages/design-system/src/index.ts` exports before generating any component.
+> **`@soustools/ui` is deprecated.** Any import from `@soustools/ui` in new code is a violation.
 
 **Trigger pattern** — flag if a file in `apps/app` contains:
-- A JSX element (`<Button>`, `<Card>`, `<Input>`, `<Badge>`, etc.) **not** imported from `@soustools/ui`
+- A JSX element (`<Button>`, `<Card>`, `<Input>`, `<Badge>`, etc.) **not** imported from `@soustools/design-system`
+- OR an import from `@soustools/ui` (deprecated package — must migrate)
 - OR an import of a component from a relative path within `apps/app` (e.g., `../../components/Button`)
 - OR an inline `style={{}}` prop on any element
 
 **Required action**:
-1. Check `packages/ui/src/index.ts` — does the component exist?
-   - **YES** → replace the local/relative import with `import { ComponentName } from '@soustools/ui'`.
-   - **NO** → add it to `packages/ui` first, export it, then import it.
-2. Replace all `style={{}}` usages with Tailwind utility classes or `oklch` CSS variables.
+1. Check `packages/design-system/src/index.ts` — does the component exist?
+   - **YES** → replace the local/relative/deprecated import with `import { ComponentName } from '@soustools/design-system'`.
+   - **NO** → add it to `packages/design-system` first, export it, then import it.
+2. Replace all `style={{}}` usages with semantic token CSS variables or Tailwind utility classes.
 
 ```tsx
-// ❌ VIOLATION — triggers Check 2 (local component + inline style)
-import { Button } from '../../components/Button';
+// ❌ VIOLATION — triggers Check 2 (deprecated import + inline style)
+import { Button } from '@soustools/ui'; // deprecated package
 <Button style={{ color: 'red' }}>Save</Button>
 
+// ❌ VIOLATION — triggers Check 2 (local component)
+import { Button } from '../../components/Button';
+
 // ✅ COMPLIANT
-import { Button } from '@soustools/ui';
+import { Button } from '@soustools/design-system';
 <Button variant="destructive">Save</Button>
 ```
 
@@ -90,18 +95,7 @@ import { Button } from '@soustools/ui';
 
 ---
 
-## Check 5 — 150-Line Hard Limit
-
-**Trigger**: Any `.ts` or `.tsx` file exceeding 150 lines.
-
-**Required action**: Split the file. Common extraction targets:
-- Helper functions → `lib/` within the relevant package.
-- Sub-components → new files in `packages/ui/src/components/`.
-- Business logic → `packages/` shared module or `apps/api` service.
-
----
-
-## Check 6 — HALT-ON-ERROR Compliance
+## Check 5 — HALT-ON-ERROR Compliance
 
 > [!CAUTION]
 > **Circular correction loops are forbidden.**
@@ -120,8 +114,7 @@ import { Button } from '@soustools/ui';
 | Check | Trigger | Action |
 |---|---|---|
 | 1 — Client DB Mutation | `"use client"` + `.from().insert/update/delete` | Route via Server Action / NestJS API |
-| 2 — UI System | Component not from `@soustools/ui` or `style={{}}` | Add to `packages/ui`, re-import |
+| 2 — UI System | Component not from `@soustools/design-system`, import from `@soustools/ui`, or `style={{}}` | Add to `packages/design-system`, re-import |
 | 3 — Hydration | `typeof window` in render, non-deterministic render values | Move to `useEffect` or SSR-safe pattern |
 | 4 — TypeScript | `any`, `@ts-ignore`, double-cast | Proper types from `@soustools/api-types` |
-| 5 — 150-Line Limit | File > 150 lines | Extract to `packages/` or `@soustools/ui` |
-| 6 — HALT | Unresolvable violation | STOP and surface to user |
+| 5 — HALT | Unresolvable violation | STOP and surface to user |

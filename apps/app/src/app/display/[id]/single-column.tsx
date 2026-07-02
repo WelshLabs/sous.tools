@@ -3,7 +3,7 @@
 import React from "react";
 import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { MenuItemCard } from "./menu-item-card";
-import { DEFAULT_MENU_ITEM_STYLES } from "../../../components/signage/config-migration";
+import { DEFAULT_MENU_ITEM_STYLES } from "@soustools/domain-signage";
 
 interface SingleColumnProps {
   column: ColumnConfig;

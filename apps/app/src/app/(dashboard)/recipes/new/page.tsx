@@ -1,12 +1,36 @@
-"use client";
+import { config } from "@soustools/config";
+import { RecipeBuilderClient } from "../RecipeBuilderClient";
 
-import React from "react";
-import { RecipeBuilder } from "../../../../components/recipes/recipe-builder";
+export default async function NewRecipePage() {
+  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  
+  let vessels = [];
+  let masterIngredients = [];
 
-export default function NewRecipePage() {
+  try {
+    const [vesselsRes, ingRes] = await Promise.all([
+      fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
+      fetch(`${baseUrl}/recipes/ingredients`, { cache: "no-store" })
+    ]);
+    
+    if (vesselsRes.ok) {
+      const payload = await vesselsRes.json();
+      vessels = payload.data || [];
+    }
+    if (ingRes.ok) {
+      const payload = await ingRes.json();
+      masterIngredients = payload.data || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch initial builder data:", err);
+  }
+
   return (
     <div className="py-6 px-4">
-      <RecipeBuilder />
+      <RecipeBuilderClient 
+        vessels={vessels} 
+        masterIngredients={masterIngredients} 
+      />
     </div>
   );
 }

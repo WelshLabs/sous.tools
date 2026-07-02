@@ -5,12 +5,23 @@ import { SignageLayout } from "./types";
 import { mapDbItemToPosItem, registerDisplayDevice, RawDbPosItem } from "./helpers";
 import { config } from "@soustools/config";
 
-export function useDisplayPlayer(displayId: string) {
-  const [display, setDisplay] = useState<SignageDisplay | null>(null);
-  const [layout, setLayout] = useState<SignageLayout | null>(null);
-  const [items, setItems] = useState<PosItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [errorState, setErrorState] = useState<string | null>(null);
+export function useDisplayPlayer(
+  displayId: string,
+  initialDisplay?: SignageDisplay | null,
+  initialLayout?: any | null,
+  initialItems?: RawDbPosItem[],
+  initialErrorState?: string | null
+) {
+  const [display, setDisplay] = useState<SignageDisplay | null>(initialDisplay || null);
+  const [layout, setLayout] = useState<SignageLayout | null>(initialLayout || null);
+  const [items, setItems] = useState<PosItem[]>(() => {
+    if (initialItems && initialItems.length > 0) {
+      return initialItems.map(mapDbItemToPosItem);
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!initialDisplay && !initialErrorState);
+  const [errorState, setErrorState] = useState<string | null>(initialErrorState || null);
 
   const CACHE_DISPLAY = `display_${displayId}`;
   const CACHE_LAYOUT = `layout_${displayId}`;

@@ -9,12 +9,22 @@ const withSerwist = withSerwistInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@soustools/ui"],
+  transpilePackages: [
+    "@soustools/ui", 
+    "@soustools/design-system", 
+    "@soustools/domain-recipes", 
+    "@soustools/domain-signage",
+    "@soustools/domain-inventory",
+    "@soustools/domain-settings"
+  ],
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
   async rewrites() {
-    const apiBaseUrl = (config.API_BASE_URL || "http://127.0.0.1:6001").replace('localhost', '127.0.0.1');
+    const apiBaseUrl = (config.API_BASE_URL || "http://127.0.0.1:6001").replace(
+      "localhost",
+      "127.0.0.1",
+    );
     return [
       {
         source: "/s/:path*",
@@ -35,6 +45,22 @@ const nextConfig = {
       {
         source: "/api/recipes/:path*",
         destination: `${apiBaseUrl}/recipes/:path*`,
+      },
+      {
+        source: "/api/items/:path*",
+        destination: `${apiBaseUrl}/items/:path*`,
+      },
+      {
+        source: "/api/vendors/:path*",
+        destination: `${apiBaseUrl}/vendors/:path*`,
+      },
+      {
+        source: "/api/whiteboard/:path*",
+        destination: `${apiBaseUrl}/whiteboard/:path*`,
+      },
+      {
+        source: "/api/purchase-orders/:path*",
+        destination: `${apiBaseUrl}/purchase-orders/:path*`,
       },
       {
         source: "/api/recipes-meta/:path*",

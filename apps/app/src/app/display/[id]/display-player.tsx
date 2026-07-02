@@ -4,15 +4,21 @@ import React, { useEffect } from "react";
 import { useDisplayPlayer } from "./use-display-player";
 import { PairingScreen } from "./pairing-screen";
 import { SlideCarousel } from "./slide-carousel";
-import { buildAllAnimationCss } from "../../../components/signage/menu-item-style-utils";
+import { buildAllAnimationCss } from "@soustools/domain-signage";
+import { SignageDisplay } from "@soustools/api-types";
+import { RawDbPosItem } from "./helpers";
 
 interface DisplayPlayerProps {
   displayId: string;
+  initialDisplay?: SignageDisplay | null;
+  initialLayout?: any | null;
+  initialItems?: RawDbPosItem[];
+  initialErrorState?: string | null;
 }
 
-export function DisplayPlayer({ displayId }: DisplayPlayerProps) {
+export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initialItems, initialErrorState }: DisplayPlayerProps) {
   const { display, layout, items, loading, errorState } =
-    useDisplayPlayer(displayId);
+    useDisplayPlayer(displayId, initialDisplay, initialLayout, initialItems, initialErrorState);
 
   useEffect(() => {
     const config = layout?.config;
