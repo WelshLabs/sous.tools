@@ -8,6 +8,35 @@ import Sidebar from "../../components/layout/sidebar";
 import AppBar from "../../components/layout/app-bar";
 import { BottomNav } from "../../components/layout/bottom-nav";
 
+import { config } from "@soustools/config";
+import {
+  LayoutDashboard,
+  Tv,
+  Smartphone,
+  Calculator,
+  ChefHat,
+  ShoppingBag,
+  BrainCircuit,
+  Building2,
+  Receipt,
+  Database
+} from "lucide-react";
+import { PrimaryLogo, MicroIcon } from "@soustools/ui";
+
+const BASE_NAV_ITEMS = [
+  { label: "Kitchen Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "KDS Screen", href: "/kds", icon: Tv },
+  { label: "POS Register", href: "/pos", icon: Calculator },
+  { label: "Recipes", href: "/recipes", icon: ChefHat },
+  { label: "Signage", href: "/signage", icon: Tv },
+  { label: "Transactions", href: "/transactions", icon: Receipt },
+  { label: "Catalog Editor", href: "/catalog", icon: Database },
+  { label: "Orders", href: "/inventory/orders", icon: ShoppingBag },
+  { label: "Vendors", href: "/inventory/vendors", icon: Building2 },
+  { label: "Processing Hub", href: "/ingestion", icon: BrainCircuit },
+  { label: "Devices", href: "/devices", icon: Smartphone },
+];
+
 /**
  * Props for the DashboardLayout component.
  */
@@ -33,12 +62,13 @@ export default function DashboardLayout({
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
 
-    const checkSession = async () => {
+    const checkSessionAndRole = async () => {
       try {
         const {
           data: { session },
@@ -47,7 +77,27 @@ export default function DashboardLayout({
           router.push(
             `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
           );
-        } else if (mounted) {
+          return;
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: orgData } = await supabase.from("organizations").select("id").limit(1).single();
+          if (orgData?.id) {
+            const { data: membership } = await supabase
+              .from("org_members")
+              .select("role")
+              .eq("organization_id", orgData.id)
+              .eq("user_id", user.id)
+              .limit(1)
+              .single();
+            if (membership?.role === "admin" && mounted) {
+              setIsAdmin(true);
+            }
+          }
+        }
+
+        if (mounted) {
           setIsLoading(false);
         }
       } catch (error) {
@@ -58,7 +108,7 @@ export default function DashboardLayout({
       }
     };
 
-    checkSession();
+    checkSessionAndRole();
 
     // Set up auth state change listener to auto-redirect on logout/expiry
     const {
@@ -89,6 +139,11 @@ export default function DashboardLayout({
     );
   }
 
+  const navItems = [...BASE_NAV_ITEMS];
+  if (config.IS_DEVELOPMENT) {
+    navItems.push({ label: "POS Simulator", href: "http://localhost:5009", icon: Calculator });
+  }
+
   return (
     <div className="min-h-screen w-full bg-white text-zinc-900 dark:bg-card dark:text-zinc-100 flex overflow-x-hidden transition-colors duration-300">
       {/* Sidebar Navigation */}
@@ -97,15 +152,10 @@ export default function DashboardLayout({
         isDesktopCollapsed={isDesktopCollapsed}
         onCloseMobile={() => setIsMobileOpen(false)}
         onToggleDesktop={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
-        navItems={[
-          { label: "Dashboard", href: "/dashboard", icon: () => <svg className="w-5 h-5"/> },
-          { label: "Signage", href: "/signage", icon: () => <svg className="w-5 h-5"/> },
-          { label: "Recipes", href: "/recipes", icon: () => <svg className="w-5 h-5"/> },
-          { label: "Devices", href: "/devices", icon: () => <svg className="w-5 h-5"/> }
-        ]}
-        isAdmin={true}
-        expandedLogo={<div>Logo</div>}
-        collapsedIcon={<div>L</div>}
+        navItems={navItems}
+        isAdmin={isAdmin}
+        expandedLogo={<PrimaryLogo className="h-10 w-auto text-sky-500" />}
+        collapsedIcon={<MicroIcon className="w-8 h-8 text-sky-500" />}
       />
 
       {/* Main Content Pane */}
@@ -126,7 +176,10 @@ export default function DashboardLayout({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <BottomNav onToggleMobile={() => setIsMobileOpen(true)} />
+      <BottomNav 
+        onToggleMobile={() => setIsMobileOpen(true)} 
+        centerIcon={<MicroIcon className="w-8 h-8 text-sky-500" />}
+      />
 
       {/* @modal parallel route slot — renders URL-addressed modals (deck preview, device detail, etc.) */}
       {modal}
