@@ -1,3 +1,10 @@
+@import "@soustools/design-system/index.css";
 @import "@soustools/ui/index.css";
 
 @source "../../../../packages/ui/src/**/*.tsx";
+@source "../../../../packages/design-system/src/**/*.tsx";
+@source "../../../../packages/domain-signage/src/**/*.tsx";
+@source "../../../../packages/domain-inventory/src/**/*.tsx";
+@source "../../../../packages/domain-settings/src/**/*.tsx";
+@source "../../../../packages/domain-recipes/src/**/*.tsx";
+@source "../../../../apps/app/src/**/*.tsx";
