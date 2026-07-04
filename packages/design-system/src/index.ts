@@ -59,3 +59,13 @@ export type { AppBarProps, AppBarNotification } from "./components/AppBar";
 
 export { Sidebar } from "./components/Sidebar";
 export type { SidebarProps, SidebarNavItem } from "./components/Sidebar";
+
+export { OmniBar, OmniBarPresentation } from "./components/OmniBar";
+export type { OmniBarPresentationProps } from "./components/OmniBar";
+
+export { GlobalAppBar, GlobalAppBarPresentation } from "./components/GlobalAppBar";
+export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";
+
+export { PrimaryLogo } from "./components/logos/PrimaryLogo";
+export { MicroIcon } from "./components/logos/MicroIcon";
+export { Lettermark } from "./components/logos/Lettermark";

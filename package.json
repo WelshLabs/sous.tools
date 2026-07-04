@@ -10,10 +10,17 @@
     "secrets:sync": "pnpm --filter @soustools/config secrets:sync",
     "audit:secrets": "npx tsx scripts/audit-secrets.ts",
     "clean:all": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist .turbo apps/*/.turbo packages/*/.turbo && pnpm install",
-    "push:all": "git push origin HEAD:main HEAD:staging"
+    "push:all": "git push origin HEAD:main HEAD:staging",
+    "context:root": "repomix . --include \"package.json,turbo.json,tsconfig.json,*.md\" --output .context/context-root.md",
+    "context:agents": "repomix .agents --output .context/context-agents.md",
+    "context:api": "repomix apps/api/src --ignore \"**/*.spec.ts\" --output .context/context-api.md",
+    "context:app": "repomix apps/app/src --ignore \"**/*.test.tsx\" --output .context/context-app.md",
+    "context:ui": "repomix packages/ui/src --output .context/context-ui.md",
+    "context:all": "pnpm run context:root && pnpm run context:agents && pnpm run context:api && pnpm run context:app && pnpm run context:ui"
   },
   "devDependencies": {
     "prettier": "^3.0.0",
+    "repomix": "^1.16.0",
     "turbo": "^2.9.17"
   },
   "engines": {

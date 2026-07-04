@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+
 
 /**
  * Props for the Hamburger component.

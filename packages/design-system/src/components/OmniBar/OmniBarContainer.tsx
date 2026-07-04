@@ -1,0 +1,81 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { OmniBarPresentation } from "./OmniBarPresentation";
+
+export function OmniBarContainer() {
+  const pathname = usePathname();
+  const isFocusPage = pathname === "/os";
+
+  // If we are on the OS focus page, it should always be expanded.
+  // Otherwise, it can be toggled via the circular button in the app bar.
+  const [isExpanded, setIsExpanded] = useState(isFocusPage);
+  const [isListening, setIsListening] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [volume, setVolume] = useState(0);
+
+  // Sync expanded state if user navigates to/from /os
+  useEffect(() => {
+    if (isFocusPage) {
+      setIsExpanded(true);
+    } else {
+      setIsExpanded(false);
+    }
+  }, [isFocusPage]);
+
+  // Scaffold for Web Audio API to detect volume (for pulsing border)
+  useEffect(() => {
+    let animationFrameId: number;
+
+    if (isListening) {
+      // Dummy volume pulse for visual scaffold
+      let t = 0;
+      const pulse = () => {
+        t += 0.05;
+        // Simple sine wave mapping to 0-1
+        setVolume((Math.sin(t) + 1) / 2);
+        animationFrameId = requestAnimationFrame(pulse);
+      };
+      pulse();
+    } else {
+      setVolume(0);
+    }
+
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
+  }, [isListening]);
+
+
+
+  const handleToggle = () => {
+    // If we are on the OS page, clicking outside shouldn't collapse it
+    // because it's the main interface.
+    if (!isFocusPage) {
+      setIsExpanded((prev) => !prev);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    
+    // Auto-listen trigger scaffold (if user deletes all text)
+    if (e.target.value === "") {
+      setIsListening(true);
+    } else {
+      setIsListening(false);
+    }
+  };
+
+  return (
+    <OmniBarPresentation
+      isExpanded={isExpanded}
+      isListening={isListening}
+      inputText={inputText}
+      volume={volume}
+      onToggle={handleToggle}
+      onChange={handleChange}
+    />
+  );
+}

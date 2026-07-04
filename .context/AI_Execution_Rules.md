@@ -1,117 +1,262 @@
 AI Execution Rules: Antigravity 2.0 & sous.tools Engineering Standards
 
-1. Core System Anchor: The AGENTS.md Mandate
+1. Core System Anchor: Antigravity 2.0
 
-Establish .agents/AGENTS.md as the immutable, read-only architectural anchor. You are commanded to initiate every operation by reading this file. Under no circumstances shall you deviate from the state recorded therein without an immediate Tier 1 update.
+The .agents/AGENTS.md file is the absolute source of truth for all agent behavior and system state. All operations must begin by reading this file. Agents are forbidden from deviating from the state recorded in this document without an immediate Tier 1 update.
 
-The 3-Tier Workflow (Antigravity 2.0)
+The Mandatory 3-Tier Workflow Execute this sequence for every task without exception:
 
-All development operations must follow this rigid execution logic:
+1. Tier 1: Analysis & State Update
 
-- Tier 1: Analysis & State Update: Analyze the prompt against the current context. Update .agents/AGENTS.md with planned changes and the updated system state before a single line of code is modified. Every Tier 1 update must be summarized and routed to a Git commit message as a technical breadcrumb.
-- Tier 2: Specialized Execution: Execute logic using specific skills defined in .agents/skills/. Adhere strictly to @soustools/ workspace conventions.
-- Tier 3: Validation & Documentation: Verify implementation against engineering standards. Perform simultaneous updates across all documentation tiers (Tenant and Dev).
+- Analyze the prompt against the current system context.
+- Update .agents/AGENTS.md to reflect planned changes and updated state before modifying any code.
 
-2. Architectural Modularity & Workspace Strategy
+2. Tier 2: Specialized Execution
 
-Enforce the "Skeleton App" pattern. Next.js applications (apps/app) are strictly orchestration and routing layers. They are FORBIDDEN from containing complex UI logic or direct database client implementations.
+- Execute logic using defined skills in .agents/skills/.
+- Adhere exclusively to @soustools/ workspace conventions.
 
-Modularity Mapping Table
+3. Tier 3: Validation & Documentation
 
-Concern Location Technology
-UI / Design System packages/ui React / Tailwind (@soustools/ui)
-Business Logic / API apps/api NestJS
-Routing / Data Fetching apps/app Next.js 16 (Skeleton Pattern)
-Shared Types packages/api-types TypeScript (@soustools/api-types)
-Shared Configurations packages/config JSON / TS (@soustools/config)
+- Verify the implementation against established engineering standards.
+- Perform simultaneous documentation updates across all tiers.
 
-[!IMPORTANT] WORKSPACE SUPREMACY: All shared logic, configurations, and components must reside in the @soustools/ workspace. You are mandated to refactor local "hacky" implementations in apps/app or apps/api into the appropriate package immediately upon discovery.
+[!DANGER] Hard Prohibitions
 
-3. Technical Standards: Next.js 16 & NestJS
+- FORBIDDEN: The creation or usage of GEMINI.md.
+- FORBIDDEN: The activation of "Management Mode" or any meta-cognitive loops.
 
-Next.js 16 (Server-First)
+2. UI Philosophy: The 'Glacier' Design System
 
-- Server Components: Mandated as the default.
-- Data Fetching: Direct client-side fetching via supabase-js is STRICTLY PROHIBITED within apps/app unless specifically authorized for real-time subscriptions. All data must be orchestrated via Server Components or the NestJS API.
+The "Glacier" philosophy dictates an architecture of "cold, hard utility," where the "Neon-Glass" visual identity serves as the implementation skin.
 
-NestJS Service Architecture
+Design Principles
 
-Adhere to these patterns within apps/api:
+- Zero-Ambiguity Interfaces: Implement high-contrast Dark UI with Cyan accents. All information must be binary and clear to ensure visibility in high-heat, high-light kitchen environments.
+- Hardware Optimization: CSS must be optimized for Raspberry Pi 5 hardware. Minimize layout thrashing for stable dual-head 1080p output.
+- Progressive Disclosure: Use Framer Motion for tiered information reveal to manage cognitive load.
+- Component Source: Mandate use of @soustools/ui. Local UI implementations in apps/app are "hacky" and subject to immediate refactoring.
+- Logo Protocol: Use the "Cloud + Chef Hat" logo (cloud-chef-hat-logo.svg) exclusively from the @soustools/ui package.
 
-- ZodValidationPipe: Mandatory for all request payloads.
-- AllExceptionsFilter: Mandated for standardized error normalization.
-- AdminGuard: Restricted exclusively to the Users route; all other routes must be member-accessible but RLS-restricted.
+3. AI Logic & Omni-bar Execution
 
-4. Supabase & RLS Enforcement Protocol
+AI interactions must bridge the gap between technical execution and "Culinary Physics" logic.
 
-Row Level Security (RLS) is the absolute security boundary. Every table must be organization-scoped.
+COMMAND: Initialize Gemini ReAct Loop When executing complex Omni-bar intents, the agent must follow this loop structure:
 
-Security Enforcement Protocol
+Thought: [Reasoning about the user's culinary or technical intent]
+Action: [Specific tool invocation or code modification]
+Observation: [Result of the action, e.g., TypeScript error or successful data fetch]
+... (Repeat until final response)
 
-1. Mandatory RLS Commands: Ensure migration files contain both ALTER TABLE ... ENABLE ROW LEVEL SECURITY and FORCE ROW LEVEL SECURITY.
-2. Helper Functions: Implement organization isolation using the is_org_member() and is_org_admin() helper functions.
-3. Permission Grants: Explicitly grant permissions to the authenticated role for all non-admin tables.
+Culinary Physics Logic Requirements
 
-Migration Flattening Rule
+- 3-Tier Governance Enforcement:
+  1. Global/FDA: Standardized nutritional and ingredient data.
+  2. Organization: Tenant-wide operational rules (e.g., Dtown Cafe standards).
+  3. Local: Site-specific overrides.
+- Vendor Wars Logic: Compare pricing across vendors for the same ingredient to identify cost-saving paths.
+- Voice Wastage Integration: Support WearOS NLP commands to record physical loss (e.g., "Dropped a dozen eggs") into the real-time inventory ledger.
+- Bread Encyclopedia: Apply scaling logic for specific shapes (Pullman loaves vs. burger buns) and yeast conversion ratios (Fresh vs. Instant).
 
-You are commanded to resolve migration debt by consolidating the fragmented history (specifically the 32 files spanning June 12–30, 2026).
+4. Architectural Modularity: The 'Skeleton App' Pattern
 
-- Target: Create a single supabase/migrations/00000000000000_init_schema.sql.
-- Action: DELETE the 32 legacy migration files.
-- Requirement: Explicitly define all GRANT and ALTER DEFAULT PRIVILEGES statements at the end of the flattened file to prevent recurring permission errors.
+Enforce strict separation of concerns. Next.js applications function solely as routing and orchestration layers.
 
-5. Operational Protocols: HALT-ON-ERROR
+Concern Location / Technology
+UI / Design System packages/ui (React/Tailwind/Framer Motion)
+Business Logic / API apps/api (NestJS)
+Routing / Data Fetching apps/app (Next.js 16 Server Components)
+Shared Types @soustools/api-types (TypeScript)
 
-[!CAUTION] CRITICAL: HALT-ON-ERROR RULE If any error occurs—TypeScript, Database Migration, Runtime, or Playwright/E2E failure—you MUST STOP IMMEDIATELY.
+Mandate: Next.js applications are FORBIDDEN from containing direct database client implementations or complex UI logic. Local implementations are subject to immediate extraction into the @soustools/ workspace.
 
-- No Guessing: Do not attempt to guess a fix or enter circular correction loops.
-- Local-First Parity: Focus exclusively on Local -> Production parity. Ignore the staging database.
-- Verification: All migrations must be verified against a clean local database reset (supabase db reset) before pushing.
-- Manual Testing: Automated test runs are forbidden. Execute tests only upon explicit user command.
+5. Technical Standards: Data Fetching & Security
 
-6. Internal Documentation & Git Commit Routing
+"Server-Side Supremacy" and Row Level Security (RLS) are non-negotiable.
 
-- Hard Prohibition: Purge all references to llm-context.md and GEMINI.md.
-- Git Routing: Route all codebase context updates and internal documentation breadcrumbs strictly to Git commit messages.
-- Parallel Documentation Rule: You must update the following tiers concurrently with every feature:
-  - Tenant Docs: User-facing functionality and feature guides.
-  - Dev Docs: Technical implementation in apps/docs.
+- COMMAND: Enforce Server-Side Supremacy. Prohibit all client-side fetching to Supabase within apps/app. Use Server Components by default. supabase-js is authorized on the client only for real-time WebSocket subscriptions.
+- COMMAND: Mandate RLS Organization Scoping. Every table must be scoped to an organization_id.
+  - Verify ALTER TABLE ... ENABLE ROW LEVEL SECURITY in all migrations.
+  - The Users route is the only Admin-only exception; all other routes must be member-accessible but RLS-restricted.
+- COMMAND: Standardize NestJS Patterns. Use ZodValidationPipe for all request payloads and AllExceptionsFilter for standardized error responses.
+- COMMAND: Limit Admin Access. Restrict AdminGuard and the admin schema strictly to the Users table and System Superadmins.
 
-7. Module-Specific Execution Contexts
+6. Operational Protocols & Error Handling
 
-Signage (Hardware: Raspberry Pi 5)
+Operational stability takes precedence over feature velocity.
 
-- Target: Dual-head 1080p setup running Wayland/LabWC.
-- Logo: Use the "Cloud + Chef Hat" logo from packages/ui/src/components/logos/PrimaryLogo.tsx exclusively.
-- Abstraction: Implement the "Multi-deck" visual editor abstraction, decoupling editor logic from signage rendering to support future label and website generation.
+[!IMPORTANT] CRITICAL: HALT-ON-ERROR RULE If a TypeScript, Migration, Runtime, or Test error occurs, the agent MUST STOP IMMEDIATELY. Circular correction loops are forbidden. Request manual intervention.
 
-Recipes & Ingestion (Vendor Wars)
+Triple-Environment Truncation Protocol To resolve migration debt and ensure a clean state, execute this high-verbosity script:
 
-- OCR/AI Logic: Prioritize logic that "learns" vendor naming conventions to reconcile them with FDA/Internal standards.
-- Scaling Logic: Implement mandatory support for:
-  1. Volumetric/Unit-based scaling.
-  2. Weight-based scaling (specifically for Pullman loaves).
-  3. Yeast Substitution Ratios: Integrated conversion for Fresh vs. Instant yeast.
-- Metrics: Implement "Vendor Wars" dashboards to compare cross-vendor pricing for identical ingredients.
+SET session_replication_role = 'replica';
+DO $$
+DECLARE r RECORD;
+BEGIN
+FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
+END LOOP;
+END $$;
+SET session_replication_role = 'origin';
 
-KDS & POS (Parallel Operation)
+Deployment Standards
 
-- Shadow POS Strategy: Maintain compatibility with Square POS. Do not replace Square's financial logic initially.
-- Business Priority: Support the "Bring-Your-Own-Processor" (BYOP) model.
-- UX: Deliver a high-contrast, restaurant-optimized interface navigable by staff with zero technical training.
+- Migration Flattening: Consolidate history into supabase/migrations/00000000000000_init_schema.sql. All GRANT and ALTER DEFAULT PRIVILEGES must be at the end.
+- Hardware Target: Raspberry Pi 5 dual-head 1080p. Use the labwc Wayland compositor for kiosk mode.
 
-8. Absolute Prohibitions & Anti-Patterns
+7. Concurrent Documentation (The Parallel Rule)
 
-The Forbidden List
+No code change is complete until the following task list is satisfied:
 
-- NO creation or usage of GEMINI.md or llm-context.md.
-- NO activation of "Management Mode" or meta-cognitive loops.
-- NO inline CSS. Use Tailwind utility classes or @soustools/ui components.
-- NO direct client-side supabase-js calls in apps/app unless authorized for real-time subscriptions.
-- NO API bypassing. The frontend must communicate with the NestJS API.
+- [ ] Tenant Docs: Update user-facing features, guides, and "Live Cook Mode" instructions.
+- [ ] Dev Docs: Document technical implementations in apps/docs.
+- [ ] Internal Docs: Update codebase context in .agents/ or llm-context.md.
 
-Refactoring Priorities
+8. Anti-Patterns & Refactoring Guardrails
 
-1. Migration Flattening: Merge legacy chains into the dependency-safe init_schema.sql.
-2. Design System Migration: Move all app-level components from apps/app to @soustools/ui.
-3. TypeScript Compliance: Eradicate all "hacky" types and any declarations; maintain strict type safety across workspace boundaries using @soustools/api-types.
+Eradicate legacy logic and "hacky" workarounds systematically.
+
+Anti-Patterns Checklist
+
+- [ ] API Bypassing: Direct Supabase calls from the frontend instead of the NestJS API.
+- [ ] Inline Styles: Local CSS/Tailwind instead of @soustools/ui components.
+- [ ] Fragmented Migrations: Messy migration chains instead of flattened schemas.
+- [ ] Hacky Types: Usage of any or imprecise types across workspace boundaries.
+
+UI Salvage Workflow
+
+1. Extract UI logic from apps/app to @soustools/ui.
+2. Mandate: Refactored components must be presentation-only.
+3. Mandate: Strip all internal useEffect or useState hooks handling data fetching. Data must be passed via props from server-side renders.
+   AI Execution Rules: Antigravity 2.0 & sous.tools Engineering Standards
+
+4. Core System Anchor: Antigravity 2.0
+
+The .agents/AGENTS.md file is the absolute source of truth for all agent behavior and system state. All operations must begin by reading this file. Agents are forbidden from deviating from the state recorded in this document without an immediate Tier 1 update.
+
+The Mandatory 3-Tier Workflow Execute this sequence for every task without exception:
+
+1. Tier 1: Analysis & State Update
+
+- Analyze the prompt against the current system context.
+- Update .agents/AGENTS.md to reflect planned changes and updated state before modifying any code.
+
+2. Tier 2: Specialized Execution
+
+- Execute logic using defined skills in .agents/skills/.
+- Adhere exclusively to @soustools/ workspace conventions.
+
+3. Tier 3: Validation & Documentation
+
+- Verify the implementation against established engineering standards.
+- Perform simultaneous documentation updates across all tiers.
+
+[!DANGER] Hard Prohibitions
+
+- FORBIDDEN: The creation or usage of GEMINI.md.
+- FORBIDDEN: The activation of "Management Mode" or any meta-cognitive loops.
+
+2. UI Philosophy: The 'Glacier' Design System
+
+The "Glacier" philosophy dictates an architecture of "cold, hard utility," where the "Neon-Glass" visual identity serves as the implementation skin.
+
+Design Principles
+
+- Zero-Ambiguity Interfaces: Implement high-contrast Dark UI with Cyan accents. All information must be binary and clear to ensure visibility in high-heat, high-light kitchen environments.
+- Hardware Optimization: CSS must be optimized for Raspberry Pi 5 hardware. Minimize layout thrashing for stable dual-head 1080p output.
+- Progressive Disclosure: Use Framer Motion for tiered information reveal to manage cognitive load.
+- Component Source: Mandate use of @soustools/ui. Local UI implementations in apps/app are "hacky" and subject to immediate refactoring.
+- Logo Protocol: Use the "Cloud + Chef Hat" logo (cloud-chef-hat-logo.svg) exclusively from the @soustools/ui package.
+
+3. AI Logic & Omni-bar Execution
+
+AI interactions must bridge the gap between technical execution and "Culinary Physics" logic.
+
+COMMAND: Initialize Gemini ReAct Loop When executing complex Omni-bar intents, the agent must follow this loop structure:
+
+Thought: [Reasoning about the user's culinary or technical intent]
+Action: [Specific tool invocation or code modification]
+Observation: [Result of the action, e.g., TypeScript error or successful data fetch]
+... (Repeat until final response)
+
+Culinary Physics Logic Requirements
+
+- 3-Tier Governance Enforcement:
+  1. Global/FDA: Standardized nutritional and ingredient data.
+  2. Organization: Tenant-wide operational rules (e.g., Dtown Cafe standards).
+  3. Local: Site-specific overrides.
+- Vendor Wars Logic: Compare pricing across vendors for the same ingredient to identify cost-saving paths.
+- Voice Wastage Integration: Support WearOS NLP commands to record physical loss (e.g., "Dropped a dozen eggs") into the real-time inventory ledger.
+- Bread Encyclopedia: Apply scaling logic for specific shapes (Pullman loaves vs. burger buns) and yeast conversion ratios (Fresh vs. Instant).
+
+4. Architectural Modularity: The 'Skeleton App' Pattern
+
+Enforce strict separation of concerns. Next.js applications function solely as routing and orchestration layers.
+
+Concern Location / Technology
+UI / Design System packages/ui (React/Tailwind/Framer Motion)
+Business Logic / API apps/api (NestJS)
+Routing / Data Fetching apps/app (Next.js 16 Server Components)
+Shared Types @soustools/api-types (TypeScript)
+
+Mandate: Next.js applications are FORBIDDEN from containing direct database client implementations or complex UI logic. Local implementations are subject to immediate extraction into the @soustools/ workspace.
+
+5. Technical Standards: Data Fetching & Security
+
+"Server-Side Supremacy" and Row Level Security (RLS) are non-negotiable.
+
+- COMMAND: Enforce Server-Side Supremacy. Prohibit all client-side fetching to Supabase within apps/app. Use Server Components by default. supabase-js is authorized on the client only for real-time WebSocket subscriptions.
+- COMMAND: Mandate RLS Organization Scoping. Every table must be scoped to an organization_id.
+  - Verify ALTER TABLE ... ENABLE ROW LEVEL SECURITY in all migrations.
+  - The Users route is the only Admin-only exception; all other routes must be member-accessible but RLS-restricted.
+- COMMAND: Standardize NestJS Patterns. Use ZodValidationPipe for all request payloads and AllExceptionsFilter for standardized error responses.
+- COMMAND: Limit Admin Access. Restrict AdminGuard and the admin schema strictly to the Users table and System Superadmins.
+
+6. Operational Protocols & Error Handling
+
+Operational stability takes precedence over feature velocity.
+
+[!IMPORTANT] CRITICAL: HALT-ON-ERROR RULE If a TypeScript, Migration, Runtime, or Test error occurs, the agent MUST STOP IMMEDIATELY. Circular correction loops are forbidden. Request manual intervention.
+
+Triple-Environment Truncation Protocol To resolve migration debt and ensure a clean state, execute this high-verbosity script:
+
+SET session_replication_role = 'replica';
+DO $$
+DECLARE r RECORD;
+BEGIN
+FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
+END LOOP;
+END $$;
+SET session_replication_role = 'origin';
+
+Deployment Standards
+
+- Migration Flattening: Consolidate history into supabase/migrations/00000000000000_init_schema.sql. All GRANT and ALTER DEFAULT PRIVILEGES must be at the end.
+- Hardware Target: Raspberry Pi 5 dual-head 1080p. Use the labwc Wayland compositor for kiosk mode.
+
+7. Concurrent Documentation (The Parallel Rule)
+
+No code change is complete until the following task list is satisfied:
+
+- [ ] Tenant Docs: Update user-facing features, guides, and "Live Cook Mode" instructions.
+- [ ] Dev Docs: Document technical implementations in apps/docs.
+- [ ] Internal Docs: Update codebase context in .agents/ or llm-context.md.
+
+8. Anti-Patterns & Refactoring Guardrails
+
+Eradicate legacy logic and "hacky" workarounds systematically.
+
+Anti-Patterns Checklist
+
+- [ ] API Bypassing: Direct Supabase calls from the frontend instead of the NestJS API.
+- [ ] Inline Styles: Local CSS/Tailwind instead of @soustools/ui components.
+- [ ] Fragmented Migrations: Messy migration chains instead of flattened schemas.
+- [ ] Hacky Types: Usage of any or imprecise types across workspace boundaries.
+
+UI Salvage Workflow
+
+1. Extract UI logic from apps/app to @soustools/ui.
+2. Mandate: Refactored components must be presentation-only.
+3. Mandate: Strip all internal useEffect or useState hooks handling data fetching. Data must be passed via props from server-side renders.

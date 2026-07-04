@@ -1,93 +1,118 @@
-sous.tools: The Definitive North Star Vision
+sous.tools: The Glacier Philosophy North Star Vision
 
-1. Mission Statement & Foundational Philosophy
+1. The Glacier Philosophy: 97% Engine, 3% Interface
 
-sous.tools is a multi-tenant SaaS Restaurant Operating System architected to fill the critical operational voids that fragmented, industry-standard legacy systems ignore. We are building a single, unified environment that consolidates the scattered tools currently plaguing the industry into a coherent, high-performance engine.
-
-The "Dogfooding" Mandate
-
-The system is being battle-tested in a live, high-pressure environment. Conar Welsh (conar@dtown.cafe) serves as the primary superadmin and the first active tenant at Dtown Cafe. The mandate is clear: get the core modules running live at the cafe ASAP. We do not build in a vacuum; every feature must survive the Saturday morning rush before it is deemed stable.
+The Glacier Mandate The sous.tools architecture is defined by a 97/3 ratio: 97% of the system is a hyper-complex, AI-driven backend (the "submerged" mass) designed to absorb the chaotic physics of culinary operations. The remaining 3% is the "tip"—an ultra-simple, "Zero-Ambiguity" interface. This philosophy acknowledges that software built for a "sanitized desk" fails in a "high-heat kitchen." We suffer the complexity in the engine so the tech-illiterate chef, dealing with "Dirty Hands" and a Saturday morning rush, never has to.
 
 Engineering & Operational Laws
 
-- Zero-Ambiguity Interface: In a high-heat kitchen, there is no time for interpretation. Information must be binary and clear.
-- Ground-Truth Data Integrity: From the FDA database to the local wastage ledger, data must be accurate and synchronized across all nodes.
-- Unified Void-Filling: We do not replicate existing features for the sake of it; we solve the specific gaps where other systems fail to communicate.
-- High-Pressure Resilience: The system is built for the "Dirty Hands" reality of a chef, not the sanitized desk of a software engineer.
+- Zero-Ambiguity Interface: In a high-heat service, interpretation is a liability. Information must be binary, high-contrast, and clear.
+- Ground-Truth Data Integrity: Accuracy is mandatory from the FDA database down to the local wastage ledger, synchronized across all nodes.
+- Unified Void-Filling: We do not replicate existing features for vanity; we bridge the specific gaps where legacy systems like Square or Toast fail to communicate.
+- High-Pressure Resilience: Architecture is "Offline-First." If the internet fails during a rush, the kitchen mesh must keep tickets printing and data flowing.
 
-2. The Neon-Glass Design System & Visual Identity
+2. The Omni-Bar: Contextual Navigation & UI Feedback
 
-The platform utilizes the "Neon-Glass" design system—a high-contrast Dark UI with Cyan accents designed for visibility in harsh kitchen lighting.
+The Omni-bar is the system's central nervous system, providing flicker-free navigation and non-intrusive feedback in loud, stressful environments.
 
-Legacy Feature Extraction
+Technical Specifications
 
-Our visual editor is being built through "Legacy Feature Extraction." This involves reverse-engineering our existing standalone SPA codebases to achieve pixel-perfect parity with [SOURCE_IMAGE_1] and [SOURCE_IMAGE_2]. These screenshots represent the benchmark for our signage output; the editor must be powerful enough to recreate these exact layouts visually without manual code intervention.
+- Framer Motion: Powers the high-performance "Neon-Glass" UI transitions, ensuring visual fluidity that doesn't distract the eye during service.
+- Next.js (ReAct Loops): Utilizes ReAct loops for efficient state management and context-aware routing to eliminate UI lag, a critical requirement for staff who only have seconds to interact with a screen.
+- Web Audio API: Generates reactive visual borders and auditory cues. In a noisy kitchen, the Omni-bar provides a "visual shout" to alert staff to ticket changes or inventory alerts.
 
-Brand Identity
+3. Multi-Flavor POS: Unified Commerce Flow
 
-The logo—a synthesis of a cloud (SaaS architecture) and a chef’s hat (culinary craft)—is already realized and integrated within the @soustools/ui package. This represents the current implementation state, moving the brand from concept to an active architectural component.
+sous.tools utilizes Next.js intercepting routes to serve role-specific "flavors" of the interface while maintaining a single, unified backend state. This allows for specialized views (Host vs. Bar) without duplicating logic. Under the Shadow POS strategy, sous.tools replaces the Square KDS interface while retaining Square as the transactional and financial backend during the transition period.
 
-3. Pillar 1: Culinary Physics & Intelligent Recipe Engine
+Role Interface Flavor Core Objective
+Host Reservation & Floor View Manage guest flow and table status via "Neon-Glass" floor maps.
+Cashier High-Velocity Transactional Rapid order entry with minimal taps to survive the peak rush.
+Bar Beverage & Tab Management High-contrast drink queue and state-aware open tab tracking.
 
-We are digitizing the culinary dataset to move away from physical paper sheets. This engine treats cooking as "Culinary Physics" rather than just text.
+4. WearOS & The "Dirty Hands" Protocol
 
-- Knowledge Ingestion: The engine has ingested an 800-page culinary textbook via Ollama, providing a baseline for professional preparation techniques.
-- 3-Tier Governance: Data is enforced through a strict hierarchy: Global/FDA (standardized data), Organization (tenant-wide standards), and Local (site-specific adjustments).
-- Live Cook Mode: A full-screen, hands-free interface featuring integrated timers and step-by-step walkthroughs.
-- The Bread Encyclopedia: A specialized module for bread production, including shaping and proofing logic for burger buns, pullman loaves, and hot dog rolls.
-- Intelligent Substitutions: The logic engine handles complex culinary math, such as recalculating ratios and preparation steps when substituting fresh yeast for instant yeast.
+Designed for environments where screens are inaccessible or hands are covered in flour, the WearOS integration enables "Invisible Ingestion" via voice.
 
-4. Pillar 2: The Omni-Editor (Signage to Web)
+Voice Wastage Workflow
 
-The Omni-Editor is a universal drag-and-drop builder with resize handles that mimics the power of industry-leading website builders. It is a single tool for all visual outputs.
+1. Voice Input: Staff triggers a command via a custom complication (e.g., "Dropped two Pullman loaves").
+2. NLP Processing: The system uses Natural Language Processing to identify the ingredient, quantity, and wastage reason.
+3. Ledger Update: The data feeds the Predictive Inventory engine, instantly updating the wastage ledger and recalculating margins based on physical loss.
 
-- Universal Design: Capable of generating digital signage, A4 marketing materials, and custom receipt labels (e.g., "Expires-At" stickers or takeout box cooking instructions).
-- Hardware Breadth: Seamlessly pairs with Raspberry Pi 5, Smart TVs, and low-cost entry points like Chromecast, Roku, and Firesticks.
-- Instant Parity: Powered by webhooks, the editor ensures immediate updates. If an item is marked "Sold Out" on the POS, the signage must reflect that status instantly without a page refresh, ensuring customers never order unavailable stock.
+Real-Time Complications
 
-5. Pillar 3: Shadow POS & KDS Bridge
+- Live Sales: Glanceable metrics to track performance against daily targets.
+- Ticket Times: Visual indicators of active prep times to monitor kitchen speed and bottlenecks.
 
-The "Shadow POS" is our "Live Development" strategy. Industry POS systems often suck because they are built by "tech nerds" who have never worked a line. Our strategy allows us to innovate while keeping the tenant's money safe.
+5. Bento Box Recipe UI: Culinary Physics in Action
 
-- Migration in Confidence: The system runs on top of Square initially. A cafe can use the sous.tools KDS (Kitchen Display System) to replace the Square KDS while Square continues to handle the financial backend.
-- BYOP Transition: Once the interface is proven, the tenant can switch to our "Bring-Your-Own-Processor" (BYOP) model and terminate their legacy provider.
-- Integration Hooks: Includes full hooks for 3rd-party delivery (UberEats, DoorDash) and financial synchronization with QuickBooks.
+The Bento Box UI moves beyond static text, treating recipes as dynamic data. The engine has already ingested an 800-page culinary textbook via Ollama to provide a baseline of professional intelligence for every dish.
 
-6. Pillar 4: Predictive Inventory & Margin Analytics
+Culinary Physics
 
-We utilize a "Dual-Engine" inventory system: Deterministic (real-time counts) and Heuristic (usage modeling).
+- Square POS Cross-Referencing: Live inventory checks against the Square backend to verify ingredient availability before a cook starts.
+- Weight-Based Scaling: Specialized logic for Pullman loaves, calculating ratios by weight to ensure bread consistency regardless of batch size.
+- Unit-Based Scaling: Discrete logic for items like burger buns and hot dog rolls where unit counts override volumetric data.
+- Yeast Conversion Ratios: Intelligent math for substitution logic, specifically handling the complex conversion ratios between fresh yeast and instant yeast.
+- Live Cook Mode: A full-screen interface featuring step-by-step walkthroughs and timers derived from the Ollama-ingested culinary dataset.
 
-- Dynamic Margin Adjustment: The system tracks costs based on transaction context. A "To-Go" order automatically triggers a margin adjustment to account for the cost of the specific container, a metric overlooked by most systems.
-- Vendor Wars: By comparing ingredient costs against multiple vendors and the FDA database, the system provides real-time notifications. If a vendor price spikes, the system intelligently notifies the chef to switch to a more cost-effective purchasing path.
+6. BYOD Team App & FOH Digital Sommelier
 
-7. Pillar 5: The Kitchen Mesh (Hardware & Infrastructure)
+The Bring Your Own Device (BYOD) app empowers staff while maintaining strict security via geofencing and state machines.
 
-Professional kitchens require "Offline-First" resilience. If the internet fails, the tickets must still print.
+- Timeclock vs. Geofence: Staff can only clock in or out when their device is within the verified physical bounds of the restaurant.
+- Shift Swap vs. State Machine: Governance of the swap flow ensures that a trade isn't finalized until both parties and management satisfy the state requirements.
+- Digital Sommelier vs. Encyclopedia API: Provides FOH staff with instant access to tasting notes and allergens, pulling from the "Bread Encyclopedia" and culinary textbook data.
 
-- RPi 5 Local Nodes: Raspberry Pi 5 units serve as the local backbone for the Kitchen Mesh.
-- Auto-Discovery: The system automatically discovers receipt and kitchen printers on the local network.
-- Automated Deployment: Utilizing GitHub workflows (deploy-signage-os.yml), we maintain an automated pipeline for RPi OS updates, ensuring hardware fleet stability.
+7. GM Command Center: Heuristic Management
 
-8. Pillar 6: WearOS Smartwatch Integration (Voice Wastage)
+The GM Command Center focuses on "Heuristic Scheduling" and deep cost-analytics to protect restaurant margins.
 
-To solve the "Dirty Hands" problem, staff utilize WearOS integration for hands-free operations.
+Business Intelligence Objectives
 
-- NLP Voice Commands: Staff record wastage (e.g., "I dropped a dozen eggs") via voice.
-- Real-Time Ledger: This data feeds directly into the Predictive Inventory engine, allowing the system to recalculate margins in real-time based on actual physical loss, not just theoretical usage.
+- Vendor Wars: Real-time price comparison between multiple vendors and the FDA database to identify cost-saving opportunities and nutritional transparency.
+- Price Volatility Alerts: Automatic notifications when an ingredient price spikes, prompting the chef to adjust the menu or switch vendors.
+- Dynamic Margin Tracking: Accounting for "hidden" costs, such as specific "To-Go" packaging, which the system triggers based on the order's transaction context.
 
-9. Architecture & Engineering Standards
+8. The 3-Tier 'Rosetta Stone' DB: AI Invoice Ingestion
 
-Our engineering standards are designed to eliminate technical debt and ensure multi-tenant security.
+The ingestion pipeline uses AI/OCR logic to map chaotic vendor data into a standardized format, reducing manual entry for busy chefs.
 
-- Server-First Rendering: We are migrating away from client-side fetching. All Next.js apps must function as routing and data-fetching skeletons, with all UI components centralized in the @soustools/ui package.
-- Strict Code-Splitting: Mandatory Next.js code-splitting for Admin and Superadmin routes to optimize performance and security.
-- Strict RLS Enforcement: Row Level Security (RLS) is non-negotiable at the schema level. We must prevent production migration failures by ensuring all tables have properly scoped permissions for organization members.
-- Migration Flattening: All database migrations are to be flattened into a single, properly ordered file to ensure a clean state for real data ingestion.
+- 3-Tier Data Governance
+  - Global/FDA: Master dataset for nutritional and standardized ingredient info.
+  - Organization: Tenant-wide standards for Dtown Cafe (e.g., preferred brands).
+  - Local: Site-specific inventory counts and wastage.
+- The OCR Learning Loop
+  - Ingestion: High-accuracy scanning of messy physical or digital invoices.
+  - Standardization: The "Rosetta Stone" mapping logic learns vendor-specific naming over time.
+    - Example: Mapping "XL Grade A Egg" from Vendor A and "Egg, Large" from Vendor B to a single internal ingredient ID.
 
-10. Development Roadmap & Implementation Phases
+9. Engineering Standards & "Antigravity 2.0"
 
-1. Phase 1 (Priority 1): Signage & RPi 5 Deployment. Achieving pixel-perfect HTML parity with legacy designs and securing the automated hardware update pipeline.
-1. Phase 2: Recipe Management & Live Cook Mode. Digitizing the culinary dataset and moving the kitchen from paper to digital logic.
-1. Phase 3: Ingestion & Metrics. Implementing AI-driven OCR for invoices and real-time margin alerts.
-1. Phase 4: KDS Transition. Replacing the Square KDS interface while maintaining the Square POS backend.
-1. Phase 5: Full POS & Financial Integration. Full payment processing, BYOP, and total financial synchronization.
+To maintain the "Glacier" vision, we enforce strict constraints to prevent technical debt and security leaks.
+
+Developer's Guardrails
+
+Hard Prohibitions
+
+- [ ] No Client-Side Supabase Calls: All fetching must occur via Server Components or the NestJS API.
+- [ ] No GEMINI.md or Management Mode: Absolute prohibition of meta-cognitive agent loops.
+- [ ] No Local UI Hacks: All components must reside in @soustools/ui.
+
+Mandated Patterns
+
+- [ ] Skeleton App Pattern: Next.js functions strictly as a routing and data orchestration layer.
+- [ ] Triple-Environment Truncation: All migrations must be verified across local, staging, and prod to resolve "works in dev, fails in prod" discrepancies.
+- [ ] Parallel Rule: For every feature, Tenant Docs, Dev Docs, and Internal Docs must be updated simultaneously.
+- [ ] Halt-on-Error: Immediate cessation of operations upon any TypeScript, Migration, or E2E failure.
+
+10. The Roadmap: From Dtown Cafe to Industry Standard
+
+Every feature must survive the "Saturday morning rush" at Dtown Cafe before wider release.
+
+1. Phase 1: Signage & Infrastructure: Deploy Raspberry Pi 5 hardware with Wayland/LabWC for dual-head 1080p output at Dtown Cafe.
+2. Phase 2: Recipe Ingestion: Digitizing the "Bread Encyclopedia" and textbook data with OCR-assisted entry.
+3. Phase 3: Metrics & Vendor Wars: Implementing AI-driven invoice reconciliation against the FDA database.
+4. Phase 4: KDS Transition: Replacing the Square KDS interface with the sous.tools "Neon-Glass" UI while maintaining the Square backend.
+5. Phase 5: Full POS & BYOP: Final transition to independent payment processing and the "Bring-Your-Own-Processor" model.
