@@ -106,9 +106,9 @@ export default function TVSignageEditorClient({ deckId, initialDeck, initialItem
 
   if (!deck) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-900 dark:text-slate-100">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-900 dark:text-zinc-100">
         <h2 className="text-xl font-bold text-red-400">Deck Not Found</h2>
-        <p className="text-sm text-slate-400 mt-2">The requested slide deck could not be loaded.</p>
+        <p className="text-sm text-zinc-400 mt-2">The requested slide deck could not be loaded.</p>
       </div>
     );
   }

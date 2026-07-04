@@ -99,7 +99,7 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
           <h1 className="text-2xl font-bold text-white font-brand">
             My Slide Decks
           </h1>
-          <p className="text-sm text-slate-400 font-sans mt-1">
+          <p className="text-sm text-zinc-400 font-sans mt-1">
             Manage and assign layout decks for digital signage screens.
           </p>
         </div>
@@ -119,7 +119,7 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
 
       {initialDecks.length === 0 ? (
         <div className="flex flex-col items-center justify-center border-2 border-dashed border-black/5 dark:border-white/5 rounded-2xl p-16 text-center">
-          <p className="text-slate-400 font-sans mb-4">
+          <p className="text-zinc-400 font-sans mb-4">
             No slide decks created yet.
           </p>
           <button
@@ -147,14 +147,14 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-2">Delete Deck</h3>
-            <p className="text-sm text-slate-400 mb-6">
+            <p className="text-sm text-zinc-400 mb-6">
               Are you sure you want to delete this deck? This cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeckToDelete(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>

@@ -277,7 +277,7 @@ export default function KDSPage() {
   );
 
   return (
-    <div className="min-h-[calc(100vh-100px)] flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-slate-100 p-6 space-y-6 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-100px)] flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6 space-y-6 relative overflow-hidden">
       {/* Header Panel */}
       <header className="glass-panel flex flex-col md:flex-row justify-between items-start md:items-center p-5 rounded-2xl shrink-0 gap-4">
         <div>
@@ -443,7 +443,7 @@ export default function KDSPage() {
       {/* KDS Settings Dialog overlay modal */}
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl text-zinc-900 dark:text-slate-100 flex flex-col max-h-[85vh] overflow-hidden">
+          <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-black/5 dark:border-white/5">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -451,7 +451,7 @@ export default function KDSPage() {
               </h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="p-1 hover:bg-black/5 dark:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1 hover:bg-black/5 dark:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-pointer"
               >
                 Close
               </button>

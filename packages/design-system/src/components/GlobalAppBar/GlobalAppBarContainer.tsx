@@ -1,18 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GlobalAppBarPresentation } from "./GlobalAppBarPresentation";
+import { GlobalAppBarPresentation, AppBarNotification } from "./GlobalAppBarPresentation";
+import { createBrowserClient } from "@soustools/supabase";
 
 export interface GlobalAppBarContainerProps {
   onLogoutAction?: () => void | Promise<void>;
 }
-
-// Scaffold dummy notifications matching legacy
-const initialNotifications = [
-  { id: "1", title: "Inventory due", message: "Counts for Walk-in 1 are due in 10 mins." },
-  { id: "2", title: "Low Stock", message: "Low stock alert: Butter, Unsalted." },
-  { id: "3", title: "Order received", message: "US Foods order delivered." }
-];
 
 export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerProps = {}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -20,7 +14,39 @@ export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerP
   const [isWaffleOpen, setIsWaffleOpen] = useState(false);
   
   // Real notifications state
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState<AppBarNotification[]>([]);
+  const supabase = createBrowserClient();
+
+  // Fetch initial notifications and subscribe to realtime
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("is_read", false)
+        .order("created_at", { ascending: false });
+      if (data) {
+        setNotifications(data as any as AppBarNotification[]);
+      }
+    };
+    fetchNotifs();
+
+    const channel = supabase
+      .channel("realtime_notifications")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
+        (payload: { new: Record<string, unknown> }) => {
+          const newNotif = payload.new as unknown as AppBarNotification;
+          setNotifications((prev) => [newNotif, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleToggleProfile = () => {
     setIsProfileOpen((prev) => !prev);
@@ -54,8 +80,12 @@ export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerP
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications([]);
+  const handleMarkAllAsRead = async () => {
+    const ids = notifications.map((n) => n.id);
+    if (ids.length > 0) {
+      await supabase.from("notifications").update({ is_read: true }).in("id", ids);
+      setNotifications([]);
+    }
   };
 
   // Close menus on escape

@@ -363,7 +363,7 @@ export default function POSRegisterPage() {
     : "0.00";
 
   return (
-    <div className="min-h-[calc(100vh-100px)] flex bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-slate-100 overflow-hidden relative">
+    <div className="min-h-[calc(100vh-100px)] flex bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 overflow-hidden relative">
       {/* Left pane: POS item catalog (Fluid Grid) */}
       <div className="flex-1 flex flex-col p-6 overflow-y-auto min-w-0 pr-4">
         {/* Search & Sync Header */}
@@ -565,7 +565,7 @@ export default function POSRegisterPage() {
       {/* Modifier Dialog Overlay */}
       {selectedItemForModifiers && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-slate-100 flex flex-col max-h-[85vh] overflow-hidden">
+          <div className="relative w-full max-w-lg bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
             <h3 className="text-lg font-extrabold mb-1 text-white">Customize {selectedItemForModifiers.name}</h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4 border-b border-black/5 dark:border-white/5 pb-2">Select required modifiers before adding to order.</p>
 
@@ -638,7 +638,7 @@ export default function POSRegisterPage() {
       {/* Tender Selection Drawer Overlay */}
       {showTenderModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-md bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-slate-100 flex flex-col">
+          <div className="relative w-full max-w-md bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col">
             <h3 className="text-lg font-extrabold mb-1 text-white">Tender / Complete Sale</h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4 pb-2 border-b border-black/5 dark:border-white/5">Select payment method for this checkout transaction.</p>
 

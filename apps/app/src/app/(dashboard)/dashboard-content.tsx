@@ -17,7 +17,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen p-6 bg-[oklch(0.1_0.01_180)] text-zinc-900 dark:text-slate-100">
+    <main className="min-h-screen p-6 bg-[oklch(0.1_0.01_180)] text-zinc-900 dark:text-zinc-100">
       <header className="flex justify-between items-center mb-8 pb-4 border-b border-[oklch(0.2_0.02_180)]">
         <div>
           <h1 className="text-2xl font-bold text-[oklch(0.85_0.08_140)]">
@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <span className="text-sm font-semibold text-[oklch(0.75_0.05_180)]">
               Ticket #105
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-300 font-bold">
               Normal
             </span>
           </div>

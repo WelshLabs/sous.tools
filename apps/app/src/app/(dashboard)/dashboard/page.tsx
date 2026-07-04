@@ -105,7 +105,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">
             BOH Command Center
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
@@ -188,7 +188,7 @@ export default function DashboardPage() {
           {/* Price Spikes & Low Pars */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="glass-panel p-6 rounded-2xl border border-black/5 dark:border-white/5">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-4 h-4 text-amber-400" /> Critical
                 Price Spikes
               </h3>
@@ -215,7 +215,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="glass-panel p-6 rounded-2xl border border-black/5 dark:border-white/5">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-4 h-4 text-rose-500" /> Low Par
                 Alert
               </h3>
@@ -290,7 +290,7 @@ export default function DashboardPage() {
 
         {/* Digital Signage Connection Statuses */}
         <div className="glass-panel p-6 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col">
-          <h3 className="text-sm font-bold text-zinc-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-4">
             <Tv className="w-4 h-4 text-sky-400" /> Digital Signage Telemetry
           </h3>
           <div className="flex-1 space-y-3 overflow-y-auto">
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                   className="flex justify-between items-center bg-zinc-950/40 border border-black/5 dark:border-white/5 rounded-xl p-3.5"
                 >
                   <div>
-                    <span className="text-xs font-bold text-slate-200 block">
+                    <span className="text-xs font-bold text-zinc-200 block">
                       {display.name}
                     </span>
                     <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block mt-0.5">

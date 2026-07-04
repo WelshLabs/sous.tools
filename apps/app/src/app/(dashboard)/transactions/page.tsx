@@ -104,7 +104,7 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-slate-100">Transactions & Orders</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">Transactions & Orders</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Audit synced Square sales logs and volume metrics.</p>
       </div>
 
@@ -186,7 +186,7 @@ export default function TransactionsPage() {
                 transactions.map((txn) => (
                   <tr key={txn.id} className="border-b border-black/5 dark:border-white/5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:bg-white/5 transition-all">
                     <td className="p-4 font-mono text-zinc-500 dark:text-zinc-400 select-all">{txn.external_transaction_id}</td>
-                    <td className="p-4 font-bold text-slate-200">{txn.pos_items?.name || "Unnamed POS Item"}</td>
+                    <td className="p-4 font-bold text-zinc-200">{txn.pos_items?.name || "Unnamed POS Item"}</td>
                     <td className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">{txn.quantity_sold}</td>
                     <td className="p-4 font-bold text-emerald-400">${txn.gross_revenue.toFixed(2)}</td>
                     <td className="p-4 text-zinc-400 dark:text-zinc-500">${txn.discount_amount.toFixed(2)}</td>

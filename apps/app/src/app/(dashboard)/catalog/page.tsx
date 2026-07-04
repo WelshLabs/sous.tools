@@ -95,7 +95,7 @@ export default function CatalogEditorPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn relative">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-slate-100">
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
           POS Catalog Editor
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
@@ -142,7 +142,7 @@ export default function CatalogEditorPage() {
                   <Image className="w-8 h-8" />
                 </div>
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-slate-200 text-sm truncate pr-2">
+                  <h3 className="font-bold text-zinc-200 text-sm truncate pr-2">
                     {item.name}
                   </h3>
                   <span className="text-xs font-bold text-sky-400 font-mono shrink-0">
@@ -245,7 +245,7 @@ export default function CatalogEditorPage() {
 
               <div className="flex items-center justify-between border-t border-black/5 dark:border-white/5 pt-6">
                 <div>
-                  <span className="text-xs font-bold text-slate-200 block">
+                  <span className="text-xs font-bold text-zinc-200 block">
                     Inventory Status
                   </span>
                   <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 block">

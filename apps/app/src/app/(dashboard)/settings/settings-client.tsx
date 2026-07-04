@@ -79,13 +79,13 @@ export function SettingsClient({
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-slate-100 animate-in fade-in">
+    <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100 animate-in fade-in">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-slate-100">
+        <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
           <Settings className="w-6 h-6 text-sky-500 animate-pulse" />
           Settings Panel
         </h1>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-zinc-400">
           Configure global kitchen parameters, system integration profiles, and
           tenant design tokens.
         </p>
@@ -123,7 +123,7 @@ export function SettingsClient({
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
                   activeTab === tab
                     ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
-                    : "border-transparent text-zinc-500 dark:text-slate-400 hover:text-zinc-700 dark:hover:text-slate-200 hover:bg-black/5 dark:hover:bg-card/40"
+                    : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/5 dark:hover:bg-card/40"
                 }`}
               >
                 <Icon className="w-4 h-4" />
