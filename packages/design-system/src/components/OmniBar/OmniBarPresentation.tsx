@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic } from "lucide-react";
+import { Mic, X } from "lucide-react";
 
 export interface OmniBarPresentationProps {
   isExpanded: boolean;
@@ -11,6 +11,7 @@ export interface OmniBarPresentationProps {
   volume: number; // 0 to 1
   onToggle: () => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
 export function OmniBarPresentation({
@@ -20,14 +21,20 @@ export function OmniBarPresentation({
   volume,
   onToggle,
   onChange,
+  onKeyDown,
 }: OmniBarPresentationProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isMultiLine, setIsMultiLine] = useState(false);
 
-  // Auto-grow textarea
+  // Auto-grow textarea and detect multiline
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${scrollHeight}px`;
+      
+      // If height is greater than roughly a single line (e.g. > 48px depending on padding/font-size), it's multiline
+      setIsMultiLine(scrollHeight > 50);
     }
   }, [inputText, isExpanded]);
 
@@ -40,7 +47,7 @@ export function OmniBarPresentation({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[100] backdrop-blur-md bg-black/60 pointer-events-auto"
+            className="fixed inset-0 z-40 backdrop-blur-md bg-black/60 pointer-events-auto"
             onClick={onToggle}
           />
         )}
@@ -48,16 +55,16 @@ export function OmniBarPresentation({
 
       <motion.div
         layout
-        className={`fixed z-[101] overflow-hidden cursor-pointer flex flex-col
+        className={`fixed z-50 overflow-hidden cursor-pointer flex items-center
           ${isExpanded 
-            ? "top-[20%] left-[5%] right-[5%] md:left-[15%] md:right-[15%] lg:left-[25%] lg:right-[25%] min-h-[200px] rounded-[32px] bg-[var(--color-card)] border shadow-2xl" 
-            : "top-2 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-[var(--color-card)] border"
+            ? `top-1/4 left-[10%] right-[10%] md:left-[20%] md:right-[20%] lg:left-[25%] lg:right-[25%] bg-[var(--color-card)] border shadow-2xl transition-all duration-300 ${isMultiLine ? 'rounded-[32px] p-6' : 'rounded-full p-4 px-6'}`
+            : "top-2 right-4 md:right-1/2 md:translate-x-1/2 w-12 h-12 rounded-full bg-[var(--color-card)] border"
           }
         `}
         style={{
           boxShadow: isListening ? `0 0 ${20 + volume * 60}px var(--color-primary)` : undefined,
           borderColor: isListening ? "var(--color-primary)" : "var(--color-border)",
-          transition: "border-color 0.2s ease-out, box-shadow 0.1s linear"
+          transition: "border-color 0.2s ease-out, box-shadow 0.1s linear, border-radius 0.2s ease-in-out"
         }}
         onClick={!isExpanded ? onToggle : undefined}
       >
@@ -80,33 +87,26 @@ export function OmniBarPresentation({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="w-full h-full p-6 md:p-8 flex flex-col pointer-events-auto cursor-default"
+              className="w-full flex items-center gap-4 pointer-events-auto cursor-default"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-sm font-medium text-muted-foreground tracking-wide">AI OMNI-BAR</span>
-                <button 
-                  onClick={onToggle}
-                  className="text-muted-foreground hover:text-white text-xs px-2 py-1 bg-white/5 rounded"
-                >
-                  ESC
-                </button>
-              </div>
+              <Mic className={`w-6 h-6 flex-shrink-0 ${isListening ? 'text-[var(--color-primary)]' : 'text-muted-foreground'}`} />
               <textarea
                 ref={textareaRef}
                 value={inputText}
                 onChange={onChange}
-                placeholder="What do you need done?"
-                className="w-full bg-transparent border-none text-white text-2xl md:text-3xl lg:text-4xl outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light"
+                onKeyDown={onKeyDown}
+                placeholder="ask your sous chef"
+                className="w-full bg-transparent border-none text-white text-xl md:text-2xl outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light flex-1"
                 rows={1}
                 autoFocus
               />
-              <div className="mt-auto pt-6 flex justify-between items-center">
-                <div className={`w-3 h-3 rounded-full ${isListening ? "bg-[var(--color-primary)] animate-pulse" : "bg-white/20"}`} />
-                <button className="bg-[var(--color-primary)] text-black font-semibold px-6 py-2 rounded-full text-sm">
-                  Execute
-                </button>
-              </div>
+              <button 
+                onClick={onToggle}
+                className="text-muted-foreground hover:text-white flex-shrink-0 p-2 hover:bg-white/5 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

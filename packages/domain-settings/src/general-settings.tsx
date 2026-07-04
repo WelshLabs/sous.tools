@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@soustools/ui";
 import { User, Mail, Shield, Save, Loader2, Key, Check, X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -44,7 +44,7 @@ export function GeneralSettings({ initialData, onSave }: GeneralSettingsProps) {
     watch,
     formState: { errors },
   } = useForm<SettingsFormValues>({
-    resolver: zodResolver(SettingsSchema),
+    resolver: zodResolver(SettingsSchema as any),
     defaultValues: {
       name: initialData.name,
       email: initialData.email,

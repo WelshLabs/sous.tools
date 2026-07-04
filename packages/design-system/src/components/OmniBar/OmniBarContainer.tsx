@@ -68,6 +68,32 @@ export function OmniBarContainer() {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (inputText.trim()) {
+        console.log("Submitting:", inputText);
+        setInputText("");
+        setIsListening(false);
+        if (!isFocusPage) setIsExpanded(false);
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      if (!isFocusPage) setIsExpanded(false);
+    }
+  };
+
+  // Global escape listener for when textarea is not focused
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isExpanded && !isFocusPage) {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [isExpanded, isFocusPage]);
+
   return (
     <OmniBarPresentation
       isExpanded={isExpanded}
@@ -76,6 +102,7 @@ export function OmniBarContainer() {
       volume={volume}
       onToggle={handleToggle}
       onChange={handleChange}
+      onKeyDown={handleKeyDown}
     />
   );
 }
