@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, X } from "lucide-react";
 
@@ -9,6 +10,7 @@ export interface OmniBarPresentationProps {
   isListening: boolean;
   inputText: string;
   volume: number; // 0 to 1
+  isFocusPage?: boolean;
   onToggle: () => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -19,12 +21,18 @@ export function OmniBarPresentation({
   isListening,
   inputText,
   volume,
+  isFocusPage = false,
   onToggle,
   onChange,
   onKeyDown,
 }: OmniBarPresentationProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMultiLine, setIsMultiLine] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Auto-grow textarea and detect multiline
   useEffect(() => {
@@ -40,18 +48,21 @@ export function OmniBarPresentation({
 
   return (
     <>
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 backdrop-blur-md bg-black/60 pointer-events-auto"
-            onClick={onToggle}
-          />
-        )}
-      </AnimatePresence>
+      {mounted && !isFocusPage && createPortal(
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-40 backdrop-blur-md bg-black/60 pointer-events-auto"
+              onClick={onToggle}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <motion.div
         layout
@@ -101,12 +112,14 @@ export function OmniBarPresentation({
                 rows={1}
                 autoFocus
               />
-              <button 
-                onClick={onToggle}
-                className="text-muted-foreground hover:text-white flex-shrink-0 p-2 hover:bg-white/5 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              {!isFocusPage && (
+                <button 
+                  onClick={onToggle}
+                  className="text-muted-foreground hover:text-white flex-shrink-0 p-2 hover:bg-white/5 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

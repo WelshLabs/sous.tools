@@ -29,35 +29,28 @@ export function GlobalAppBarContainer() {
     setIsNotificationsOpen(false);
   };
 
+  const handleCloseMenus = () => {
+    setIsProfileOpen(false);
+    setIsNotificationsOpen(false);
+    setIsWaffleOpen(false);
+  };
+
   const handleLogout = () => {
     // Scaffold logic - Supabase auth sign-out would go in the controller layer
     // but the actual invocation triggers here.
     console.log("Logging out...");
   };
 
-  // Close menus on outside click or escape
+  // Close menus on escape
   useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest("header")) {
-        setIsProfileOpen(false);
-        setIsNotificationsOpen(false);
-        setIsWaffleOpen(false);
-      }
-    };
-    
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setIsProfileOpen(false);
-        setIsNotificationsOpen(false);
-        setIsWaffleOpen(false);
+        handleCloseMenus();
       }
     };
 
-    window.addEventListener("click", handleGlobalClick);
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => {
-      window.removeEventListener("click", handleGlobalClick);
       window.removeEventListener("keydown", handleGlobalKeyDown);
     };
   }, []);
@@ -71,6 +64,7 @@ export function GlobalAppBarContainer() {
       onToggleProfile={handleToggleProfile}
       onToggleNotifications={handleToggleNotifications}
       onToggleWaffle={handleToggleWaffle}
+      onCloseMenus={handleCloseMenus}
       onLogout={handleLogout}
     />
   );

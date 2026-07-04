@@ -6,7 +6,7 @@ import { OmniBarPresentation } from "./OmniBarPresentation";
 
 export function OmniBarContainer() {
   const pathname = usePathname();
-  const isFocusPage = pathname === "/os";
+  const isFocusPage = pathname === "/home";
 
   // If we are on the OS focus page, it should always be expanded.
   // Otherwise, it can be toggled via the circular button in the app bar.
@@ -100,6 +100,7 @@ export function OmniBarContainer() {
       isListening={isListening}
       inputText={inputText}
       volume={volume}
+      isFocusPage={isFocusPage}
       onToggle={handleToggle}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
