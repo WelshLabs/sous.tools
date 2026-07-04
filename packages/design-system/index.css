@@ -7,9 +7,9 @@
  *  + packages/ui/src/styles.css + .gemini/docs/brand-identity.md)
  *
  *  Neon-Glass Design Language:
- *    Dark Background   → #0f172a  (slate-900, from sous-theme.kdl `bg`)
- *    Card Surfaces     → #1e293b  (slate-800, from sous-theme.kdl `black`)
- *    Foreground/White  → #f8fafc  (slate-50,  from sous-theme.kdl `white`)
+ *    Dark Background   → #09090b  (midnight slate, migrated from slate-900)
+ *    Card Surfaces     → #121212  (elevated midnight, migrated from slate-800)
+ *    Foreground/White  → #f8fafc  (slate-50)
  *    Primary Cyan      → #4cc9f0  (from sous-theme.kdl `fg` / `cyan`)
  *    Neon Pink Accent  → #f72585  (from sous-theme.kdl `magenta`)
  *    Destructive/Red   → #f43f5e  (from sous-theme.kdl `red`)
@@ -171,12 +171,12 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: #334155; /* slate-700 */
+    background-color: #27272a; /* zinc-800 */
     border-radius: 9999px;
     transition: background-color 150ms ease;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: #475569; /* slate-600 */
+    background-color: #3f3f46; /* zinc-700 */
   }
 }
 
@@ -212,7 +212,7 @@
 
   /* Glass panel — primary frosted-glass surface for KDS/POS kiosk UIs */
   .glass-panel {
-    background-color: rgb(15 23 42 / 0.40);  /* #0f172a slate-900 @ 40% */
+    background-color: rgb(9 9 11 / 0.40);  /* #09090b midnight slate @ 40% */
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgb(248 250 252 / 0.05);
@@ -231,7 +231,7 @@
 
   /* Named aliases — @soustools/design-system canonical tokens */
   .st-glass-panel {
-    background-color: rgb(15 23 42 / 0.40);
+    background-color: rgb(9 9 11 / 0.40);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgb(248 250 252 / 0.05);
@@ -239,7 +239,7 @@
   }
 
   .st-glass-pill {
-    background-color: rgb(15 23 42 / 0.60);
+    background-color: rgb(9 9 11 / 0.60);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgb(248 250 252 / 0.10);

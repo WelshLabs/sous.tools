@@ -7,13 +7,20 @@ export interface GlobalAppBarContainerProps {
   onLogoutAction?: () => void | Promise<void>;
 }
 
+// Scaffold dummy notifications matching legacy
+const initialNotifications = [
+  { id: "1", title: "Inventory due", message: "Counts for Walk-in 1 are due in 10 mins." },
+  { id: "2", title: "Low Stock", message: "Low stock alert: Butter, Unsalted." },
+  { id: "3", title: "Order received", message: "US Foods order delivered." }
+];
+
 export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerProps = {}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isWaffleOpen, setIsWaffleOpen] = useState(false);
   
-  // Scaffold: Hardcoded notification count for now
-  const [unreadCount, setUnreadCount] = useState(3);
+  // Real notifications state
+  const [notifications, setNotifications] = useState(initialNotifications);
 
   const handleToggleProfile = () => {
     setIsProfileOpen((prev) => !prev);
@@ -48,7 +55,7 @@ export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerP
   };
 
   const handleMarkAllAsRead = () => {
-    setUnreadCount(0);
+    setNotifications([]);
   };
 
   // Close menus on escape
@@ -67,7 +74,7 @@ export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerP
 
   return (
     <GlobalAppBarPresentation
-      notificationCount={unreadCount}
+      notifications={notifications}
       isProfileOpen={isProfileOpen}
       isNotificationsOpen={isNotificationsOpen}
       isWaffleOpen={isWaffleOpen}

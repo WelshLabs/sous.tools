@@ -29,7 +29,7 @@ export default function LoginPage() {
       } else {
         const urlParams = new URLSearchParams(window.location.search);
         const returnTo = urlParams.get("returnTo");
-        router.push(returnTo ? returnTo : "/dashboard");
+        router.push(returnTo ? returnTo : "/home");
       }
     } catch (err: unknown) {
       setError("An unexpected error occurred during login.");

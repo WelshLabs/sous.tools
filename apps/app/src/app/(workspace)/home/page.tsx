@@ -3,12 +3,13 @@ import { OmniBar } from "@soustools/design-system";
 
 export default function OmniBarFocusPage() {
   return (
-    <div className="flex-1 w-full bg-[var(--color-background)] flex flex-col h-[calc(100vh-64px)] items-center justify-center">
+    <div className="flex-1 w-full bg-[var(--color-background)] relative">
       {/* 
-        This is an intentionally blank canvas.
-        The expanded OmniBar will render over this via Framer Motion. 
+        Absolute center wrapper for OmniBar 
       */}
-      <OmniBar />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <OmniBar />
+      </div>
     </div>
   );
 }
