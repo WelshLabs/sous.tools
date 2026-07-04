@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Bell, LayoutGrid, LogOut, Settings, MonitorPlay, BarChart, ChefHat } from "lucide-react";
 import { PrimaryLogo } from "../logos/PrimaryLogo";
 import { OmniBar } from "../OmniBar";
@@ -16,6 +17,7 @@ export interface GlobalAppBarPresentationProps {
   onToggleWaffle: () => void;
   onCloseMenus: () => void;
   onLogout: () => void;
+  onMarkAllAsRead: () => void;
 }
 
 export function GlobalAppBarPresentation({
@@ -28,18 +30,21 @@ export function GlobalAppBarPresentation({
   onToggleWaffle,
   onCloseMenus,
   onLogout,
+  onMarkAllAsRead,
 }: GlobalAppBarPresentationProps) {
   const isAnyMenuOpen = isProfileOpen || isNotificationsOpen || isWaffleOpen;
+  const pathname = usePathname();
+  const isFocusPage = pathname === "/home";
 
   return (
     <>
       {isAnyMenuOpen && (
         <div 
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-[var(--z-overlay)]" 
           onClick={onCloseMenus} 
         />
       )}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-zinc-950/80 border-b border-white/5 h-16 px-4 md:px-6 flex items-center justify-between">
+      <header className="sticky top-0 z-[var(--z-appbar)] w-full backdrop-blur-md bg-zinc-950/80 border-b border-white/5 h-16 px-4 md:px-6 flex items-center justify-between">
         {/* Left: Brand Logo */}
         <Link href="/home" className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity">
           <PrimaryLogo className="h-12 w-auto text-[var(--color-primary)]" />
@@ -47,7 +52,7 @@ export function GlobalAppBarPresentation({
 
         {/* Center/Right-Align: OmniBar (Mounts here, handles its own positioning via Framer Motion) */}
         <div className="flex-1 flex justify-end mr-4">
-          <OmniBar />
+          {!isFocusPage && <OmniBar />}
         </div>
 
         {/* Right: Action Group */}
@@ -67,11 +72,11 @@ export function GlobalAppBarPresentation({
             </button>
             
             {isNotificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-50">
+              <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)]">
                 <div className="px-4 py-2 border-b border-border flex justify-between items-center">
                   <span className="text-sm font-semibold text-white">Notifications</span>
                   {notificationCount > 0 && (
-                    <span className="text-xs text-[var(--color-primary)] cursor-pointer hover:underline">Mark all as read</span>
+                    <button onClick={onMarkAllAsRead} className="text-xs text-[var(--color-primary)] cursor-pointer hover:underline focus:outline-none">Mark all as read</button>
                   )}
                 </div>
                 <div className="max-h-64 overflow-y-auto">

@@ -3,13 +3,17 @@
 import { useState, useEffect } from "react";
 import { GlobalAppBarPresentation } from "./GlobalAppBarPresentation";
 
-export function GlobalAppBarContainer() {
+export interface GlobalAppBarContainerProps {
+  onLogoutAction?: () => void | Promise<void>;
+}
+
+export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerProps = {}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isWaffleOpen, setIsWaffleOpen] = useState(false);
   
   // Scaffold: Hardcoded notification count for now
-  const notificationCount = 3;
+  const [unreadCount, setUnreadCount] = useState(3);
 
   const handleToggleProfile = () => {
     setIsProfileOpen((prev) => !prev);
@@ -35,10 +39,16 @@ export function GlobalAppBarContainer() {
     setIsWaffleOpen(false);
   };
 
-  const handleLogout = () => {
-    // Scaffold logic - Supabase auth sign-out would go in the controller layer
-    // but the actual invocation triggers here.
-    console.log("Logging out...");
+  const handleLogout = async () => {
+    if (onLogoutAction) {
+      await onLogoutAction();
+    } else {
+      console.log("Logging out...");
+    }
+  };
+
+  const handleMarkAllAsRead = () => {
+    setUnreadCount(0);
   };
 
   // Close menus on escape
@@ -57,7 +67,7 @@ export function GlobalAppBarContainer() {
 
   return (
     <GlobalAppBarPresentation
-      notificationCount={notificationCount}
+      notificationCount={unreadCount}
       isProfileOpen={isProfileOpen}
       isNotificationsOpen={isNotificationsOpen}
       isWaffleOpen={isWaffleOpen}
@@ -66,6 +76,7 @@ export function GlobalAppBarContainer() {
       onToggleWaffle={handleToggleWaffle}
       onCloseMenus={handleCloseMenus}
       onLogout={handleLogout}
+      onMarkAllAsRead={handleMarkAllAsRead}
     />
   );
 }

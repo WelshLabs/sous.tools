@@ -56,7 +56,7 @@ export function OmniBarPresentation({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-40 backdrop-blur-md bg-black/60 pointer-events-auto"
+              className="fixed inset-0 z-[var(--z-overlay)] backdrop-blur-md bg-black/60 pointer-events-auto"
               onClick={onToggle}
             />
           )}
@@ -66,7 +66,7 @@ export function OmniBarPresentation({
 
       <motion.div
         layout
-        className={`fixed z-50 overflow-hidden cursor-pointer flex items-center
+        className={`fixed z-[var(--z-omnibar)] overflow-hidden cursor-pointer flex items-center
           ${isExpanded 
             ? `top-1/4 left-[10%] right-[10%] md:left-[20%] md:right-[20%] lg:left-[25%] lg:right-[25%] bg-[var(--color-card)] border shadow-2xl transition-all duration-300 ${isMultiLine ? 'rounded-[32px] p-6' : 'rounded-full p-4 px-6'}`
             : "top-2 right-4 md:right-1/2 md:translate-x-1/2 w-12 h-12 rounded-full bg-[var(--color-card)] border"

@@ -26,118 +26,116 @@
   /* ── Colors — Semantic Token Dictionary ─────────────────────────────────── */
 
   /* Base surfaces */
-  --color-background:          #0f172a;   /* slate-900  — page backdrop        */
-  --color-foreground:          #f8fafc;   /* slate-50   — primary text          */
+  --color-background:          #09090b;   /* midnight slate */
+  --color-foreground:          #f8fafc;   /* slate-50 */
 
   /* Card / Elevated surfaces */
-  --color-card:                #1e293b;   /* slate-800  — glass card base       */
-  --color-card-foreground:     #f8fafc;   /* slate-50                           */
+  --color-card:                #121212;   /* elevated midnight */
+  --color-card-foreground:     #f8fafc;   /* slate-50 */
 
   /* Popover / Overlay surfaces */
-  --color-popover:             #1e293b;   /* slate-800                          */
-  --color-popover-foreground:  #f8fafc;   /* slate-50                           */
+  --color-popover:             #121212;   /* elevated midnight */
+  --color-popover-foreground:  #f8fafc;   /* slate-50 */
 
   /* Primary — Neon-Glass Cyan #4cc9f0 */
   --color-primary:             #4cc9f0;
-  --color-primary-foreground:  #0f172a;   /* dark bg for contrast on cyan btn   */
+  --color-primary-foreground:  #09090b;   /* dark bg for contrast on cyan btn */
 
   /* Secondary — Muted slate surface */
-  --color-secondary:           #334155;   /* slate-700                          */
+  --color-secondary:           #27272a;   /* zinc-800 */
   --color-secondary-foreground:#f8fafc;
 
   /* Muted — de-emphasized surfaces and text */
-  --color-muted:               #1e293b;   /* slate-800                          */
-  --color-muted-foreground:    #94a3b8;   /* slate-400                          */
+  --color-muted:               #121212;   
+  --color-muted-foreground:    #a1a1aa;   /* zinc-400 */
 
   /* Accent — Neon Pink (neon-glass secondary accent) */
-  --color-accent:              #f72585;   /* magenta neon from sous-theme.kdl   */
+  --color-accent:              #f72585;   
   --color-accent-foreground:   #f8fafc;
 
   /* Destructive — Rose/Red */
-  --color-destructive:         #f43f5e;   /* rose-500  from sous-theme.kdl `red`*/
+  --color-destructive:         #f43f5e;   
   --color-destructive-foreground: #f8fafc;
 
   /* Borders & Inputs */
-  --color-border:              #334155;   /* slate-700 — structural borders      */
-  --color-input:               #1e293b;   /* slate-800 — form field background  */
-  --color-ring:                #4cc9f0;   /* cyan — focus ring matches primary  */
+  --color-border:              #27272a;   /* zinc-800 */
+  --color-input:               #121212;   
+  --color-ring:                #4cc9f0;   
 
   /* ── Supporting Palette (for utility classes & components) ─────────────── */
   --color-neon-cyan:           #4cc9f0;
   --color-neon-pink:           #f72585;
-  --color-success:             #10b981;   /* emerald-500                        */
-  --color-warning:             #f59e0b;   /* amber-500                          */
-  --color-info:                #2563eb;   /* blue-600                           */
-  --color-orange:              #f97316;   /* orange-500                         */
+  --color-success:             #10b981;   
+  --color-warning:             #f59e0b;   
+  --color-info:                #2563eb;   
+  --color-orange:              #f97316;   
 
   /* ── Z-Index Scale ──────────────────────────────────────────────────────── */
+  --z-overlay:                 40;
   --z-bottom-nav:              40;
   --z-sidebar:                 50;
+  --z-appbar:                  50;
+  --z-omnibar:                 60;
   --z-modal:                   100;
   --z-toast:                   150;
 
   /* ── Typography ─────────────────────────────────────────────────────────── */
-  /* font-sans maps to the --font-primary CSS variable injected by Next.js    */
   --font-sans:                 var(--font-primary, "Inter", system-ui, sans-serif);
   --font-brand:                var(--font-brand, "Outfit", sans-serif);
   --font-mono:                 var(--font-mono, "Geist Mono", monospace);
 
   /* ── Radii ──────────────────────────────────────────────────────────────── */
-  --radius:                    0.8rem;    /* from brand-identity.md §5          */
+  --radius:                    0.8rem;    
   --radius-lg:                 var(--radius);
   --radius-md:                 calc(var(--radius) - 2px);
   --radius-sm:                 calc(var(--radius) - 4px);
 }
 
-/* ─── Base Theme — Light Fallback ────────────────────────────────────────────
- *  Light mode uses CSS custom properties so the consumer can swap themes
- *  via a class strategy (ThemeProvider adds `.dark` to <html>).
- *  All values traced to the v2 sous-theme.kdl colour palette.
- * ─────────────────────────────────────────────────────────────────────────── */
+/* ─── Base Theme — Light Fallback ──────────────────────────────────────────── */
 @layer base {
   :root {
-    --color-background:          #f8fafc;  /* slate-50  — inverted for light    */
-    --color-foreground:          #0f172a;  /* slate-900                         */
+    --color-background:          #f8fafc;  
+    --color-foreground:          #09090b;  
     --color-card:                #ffffff;
-    --color-card-foreground:     #0f172a;
+    --color-card-foreground:     #09090b;
     --color-popover:             #ffffff;
-    --color-popover-foreground:  #0f172a;
-    --color-primary:             #0891b2;  /* cyan-600 — legible on white        */
+    --color-popover-foreground:  #09090b;
+    --color-primary:             #0891b2;  
     --color-primary-foreground:  #ffffff;
-    --color-secondary:           #e2e8f0;  /* slate-200                         */
-    --color-secondary-foreground:#0f172a;
-    --color-muted:               #f1f5f9;  /* slate-100                         */
-    --color-muted-foreground:    #64748b;  /* slate-500                         */
-    --color-accent:              #e2e8f0;
-    --color-accent-foreground:   #0f172a;
+    --color-secondary:           #e4e4e7;  
+    --color-secondary-foreground:#09090b;
+    --color-muted:               #f4f4f5;  
+    --color-muted-foreground:    #71717a;  
+    --color-accent:              #e4e4e7;
+    --color-accent-foreground:   #09090b;
     --color-destructive:         #f43f5e;
     --color-destructive-foreground: #ffffff;
-    --color-border:              #e2e8f0;  /* slate-200                         */
-    --color-input:               #f1f5f9;  /* slate-100                         */
+    --color-border:              #e4e4e7;  
+    --color-input:               #f4f4f5;  
     --color-ring:                #0891b2;
   }
 
   /* Dark — canonical Neon-Glass aesthetic */
   .dark {
-    --color-background:          #0f172a;  /* slate-900                         */
-    --color-foreground:          #f8fafc;  /* slate-50                          */
-    --color-card:                #1e293b;  /* slate-800                         */
+    --color-background:          #09090b;  
+    --color-foreground:          #f8fafc;  
+    --color-card:                #121212;  
     --color-card-foreground:     #f8fafc;
-    --color-popover:             #1e293b;
+    --color-popover:             #121212;
     --color-popover-foreground:  #f8fafc;
-    --color-primary:             #4cc9f0;  /* Neon cyan — sous-theme.kdl `fg`   */
-    --color-primary-foreground:  #0f172a;
-    --color-secondary:           #334155;  /* slate-700                         */
+    --color-primary:             #4cc9f0;  
+    --color-primary-foreground:  #09090b;
+    --color-secondary:           #27272a;  
     --color-secondary-foreground:#f8fafc;
-    --color-muted:               #1e293b;  /* slate-800                         */
-    --color-muted-foreground:    #94a3b8;  /* slate-400                         */
-    --color-accent:              #f72585;  /* Neon pink — sous-theme.kdl `magenta` */
+    --color-muted:               #121212;  
+    --color-muted-foreground:    #a1a1aa;  
+    --color-accent:              #f72585;  
     --color-accent-foreground:   #f8fafc;
-    --color-destructive:         #f43f5e;  /* rose-500 — sous-theme.kdl `red`   */
+    --color-destructive:         #f43f5e;  
     --color-destructive-foreground: #f8fafc;
-    --color-border:              #334155;  /* slate-700                         */
-    --color-input:               #1e293b;  /* slate-800                         */
-    --color-ring:                #4cc9f0;  /* cyan ring                         */
+    --color-border:              #27272a;  
+    --color-input:               #121212;  
+    --color-ring:                #4cc9f0;  
   }
 }
 
