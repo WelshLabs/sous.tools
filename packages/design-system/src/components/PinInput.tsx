@@ -13,7 +13,7 @@ export function PinInput({ length = 6, value, onChange }: PinInputProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const val = e.target.value;
-    if (!/^[0-9]*$/.test(val)) return;
+    if (!/^[a-zA-Z0-9]*$/.test(val)) return;
 
     const newValue = value.split('');
     newValue[index] = val.slice(-1);
@@ -43,7 +43,7 @@ export function PinInput({ length = 6, value, onChange }: PinInputProps) {
 
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, length);
+    const pastedData = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').slice(0, length);
     if (pastedData) {
       onChange(pastedData);
       const nextIndex = Math.min(pastedData.length, length - 1);
@@ -60,15 +60,15 @@ export function PinInput({ length = 6, value, onChange }: PinInputProps) {
             inputRefs.current[index] = el;
           }}
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
+          inputMode="text"
+          pattern="[a-zA-Z0-9]*"
           maxLength={1}
           value={value[index] || ''}
           onChange={(e) => handleChange(e, index)}
           onKeyDown={(e) => handleKeyDown(e, index)}
           onPaste={handlePaste}
           className="w-12 h-14 sm:w-16 sm:h-20 text-center text-3xl sm:text-4xl font-semibold bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 transition-all placeholder:text-zinc-700 shadow-inner"
-          placeholder="0"
+          placeholder="-"
         />
       ))}
     </div>
