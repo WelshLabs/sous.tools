@@ -22,9 +22,16 @@ android {
     }
 
     buildTypes {
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(FileInputStream(localPropertiesFile))
+        }
+        val localApiUrl = properties.getProperty("API_URL") ?: "\"http://10.0.2.2:6001\""
+
         debug {
             applicationIdSuffix = ".debug"
-            buildConfigField("String", "API_URL", "\"http://10.0.2.2:6001\"")
+            buildConfigField("String", "API_URL", localApiUrl)
         }
         release {
             isMinifyEnabled = false
