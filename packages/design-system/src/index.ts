@@ -6,8 +6,8 @@
  *
  * Visual identity sourced from v2-snapshot.md (sous-theme.kdl):
  *   Primary cyan:  #4cc9f0
- *   Background:    #0f172a (slate-900)
- *   Card surface:  #1e293b (slate-800)
+ *   Background:    #0f172a (zinc-950)
+ *   Card surface:  #1e293b (zinc-900)
  *   Neon pink:     #f72585
  *   Destructive:   #f43f5e
  *
@@ -20,6 +20,9 @@ export type { TwoToneHeaderProps } from "./components/TwoToneHeader";
 
 export { Button } from "./components/Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./components/Button";
+
+export { PinInput } from "./components/PinInput";
+export type { PinInputProps } from "./components/PinInput";
 
 export {
   Card,
@@ -60,11 +63,23 @@ export type { AppBarProps, AppBarNotification } from "./components/AppBar";
 export { Sidebar } from "./components/Sidebar";
 export type { SidebarProps, SidebarNavItem } from "./components/Sidebar";
 
-export { OmniBar, OmniBarPresentation } from "./components/OmniBar";
+export { SidebarLayout } from "./components/SidebarLayout";
+export type { SidebarLayoutProps } from "./components/SidebarLayout";
+
+export { OmniBar, OmniBarPresentation, FloatingOmniTrigger } from "./components/OmniBar";
 export type { OmniBarPresentationProps } from "./components/OmniBar";
 
 export { GlobalAppBar, GlobalAppBarPresentation } from "./components/GlobalAppBar";
 export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";
+
+export { InsightsSidebar } from "./components/InsightsSidebar";
+export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar";
+export type { QuickAddSuggestion } from "./components/QuickAddBar";
+export { SupplierOrderGroup, EmptyOrderList } from "./components/SupplierOrderGroup";
+export type { OrderLineItem, OrderSupplier } from "./components/SupplierOrderGroup";
+
+export { calculateRecipeScale } from "./utils/scaling";
+export type { ScaledIngredientResult } from "./utils/scaling";
 
 export { PrimaryLogo } from "./components/logos/PrimaryLogo";
 export { MicroIcon } from "./components/logos/MicroIcon";

@@ -2,51 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { GlobalAppBarPresentation, AppBarNotification } from "./GlobalAppBarPresentation";
-import { createBrowserClient } from "@soustools/supabase";
-
 export interface GlobalAppBarContainerProps {
+  notifications?: AppBarNotification[];
   onLogoutAction?: () => void | Promise<void>;
+  onMarkAllAsReadAction?: () => void | Promise<void>;
+  isAdmin?: boolean;
 }
 
-export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerProps = {}) {
+export function GlobalAppBarContainer({ 
+  notifications = [],
+  onLogoutAction,
+  onMarkAllAsReadAction,
+  isAdmin,
+}: GlobalAppBarContainerProps = {}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isWaffleOpen, setIsWaffleOpen] = useState(false);
-  
-  // Real notifications state
-  const [notifications, setNotifications] = useState<AppBarNotification[]>([]);
-  const supabase = createBrowserClient();
-
-  // Fetch initial notifications and subscribe to realtime
-  useEffect(() => {
-    const fetchNotifs = async () => {
-      const { data } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("is_read", false)
-        .order("created_at", { ascending: false });
-      if (data) {
-        setNotifications(data as any as AppBarNotification[]);
-      }
-    };
-    fetchNotifs();
-
-    const channel = supabase
-      .channel("realtime_notifications")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications" },
-        (payload: { new: Record<string, unknown> }) => {
-          const newNotif = payload.new as unknown as AppBarNotification;
-          setNotifications((prev) => [newNotif, ...prev]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const handleToggleProfile = () => {
     setIsProfileOpen((prev) => !prev);
@@ -81,10 +52,8 @@ export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerP
   };
 
   const handleMarkAllAsRead = async () => {
-    const ids = notifications.map((n) => n.id);
-    if (ids.length > 0) {
-      await supabase.from("notifications").update({ is_read: true }).in("id", ids);
-      setNotifications([]);
+    if (onMarkAllAsReadAction) {
+      await onMarkAllAsReadAction();
     }
   };
 
@@ -114,6 +83,7 @@ export function GlobalAppBarContainer({ onLogoutAction }: GlobalAppBarContainerP
       onCloseMenus={handleCloseMenus}
       onLogout={handleLogout}
       onMarkAllAsRead={handleMarkAllAsRead}
+      isAdmin={isAdmin}
     />
   );
 }

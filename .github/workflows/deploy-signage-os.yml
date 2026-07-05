@@ -13,47 +13,15 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install libguestfs-tools
+      - name: Build OS Image with pi-gen
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libguestfs-tools xz-utils linux-image-generic
-          sudo chmod 0644 /boot/vmlinuz-*
-          if [ -e /dev/kvm ]; then sudo chmod 0666 /dev/kvm; fi
-
-      - name: Download Stock Raspberry Pi OS Lite
-        run: |
-          wget -qO pi-os.img.xz "https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz"
-          unxz pi-os.img.xz
-          mv pi-os.img sous-signage-os.img
-
-      - name: Inject Cloud-Init and Ansible Playbook
-        run: |
-          export LIBGUESTFS_BACKEND=direct
-
-          # Create an empty ssh file to force-enable the SSH daemon on boot
-          touch ssh
-
-          # Create a default userconf.txt (Username: 'pi', Password: 'raspberry')
-          # The Ansible playbook will change this later, but it bypasses the initial prompt
-          echo 'pi:$6$zBvY7nO6$2e.4rM4p8xV.xJ.L.5.S.b.V.z.Y.w.T.x.Z.u.r.C.Q.N.H.F.v.K.O.J.I.U.y.E.M.g.D.c.A.1' > userconf.txt
-
-          # Use guestfish to inject files into the FAT32 boot partition (sda1)
-          guestfish --rw -a sous-signage-os.img -m /dev/sda1 << 'EOF'
-          copy-in ssh /
-          copy-in userconf.txt /
-          copy-in deploy/pi/cloud-init/user-data /
-          mkdir /ansible
-          copy-in deploy/ansible /
-          EOF
-
-      - name: Compress Custom OS Image
-        run: |
-          xz -T0 -9 sous-signage-os.img
+          cd deploy/pi/pi-gen
+          sudo ./build.sh
 
       - name: Fetch Secrets from Infisical
         uses: infisical/secrets-action@v1.0.7
@@ -73,5 +41,5 @@ jobs:
           token: ${{ env.SIGNAGE_GITHUB_PAT }}
           tag_name: v${{ github.run_number }}
           name: Signage OS v${{ github.run_number }}
-          files: sous-signage-os.img.xz
+          files: deploy/pi/pi-gen/deploy/*.zip
           make_latest: true

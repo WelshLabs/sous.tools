@@ -189,7 +189,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
   const activeBlock = getSelectedBlock();
 
   return (
-    <div className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-slate-100">
+    <div className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
       <EditorTopBar
         isPlaying={isPlaying} onTogglePlay={() => setIsPlaying(!isPlaying)}
         activeSlideIndex={activeSlideIndex} totalSlides={config.slides.length}

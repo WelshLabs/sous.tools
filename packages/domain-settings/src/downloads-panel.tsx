@@ -5,11 +5,11 @@ export const DownloadsPanel: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="space-y-2">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-zinc-900 dark:text-slate-100">
+        <h2 className="text-xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
           <Download className="w-5 h-5 text-sky-400" />
           OS Downloads
         </h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-zinc-400">
           Download the latest Signage OS images for your hardware and view
           instructions for flashing them to an SD card.
         </p>
@@ -25,17 +25,17 @@ export const DownloadsPanel: React.FC = () => {
                   <Monitor className="w-6 h-6 text-sky-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-200 text-lg">
+                  <h3 className="font-semibold text-zinc-200 text-lg">
                     Raspberry Pi 4 / 5 (ARM64)
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-zinc-500">
                     Latest Stable Release
                   </p>
                 </div>
               </div>
             </div>
 
-            <p className="text-sm text-slate-400 mb-6">
+            <p className="text-sm text-zinc-400 mb-6">
               This is a custom-built, lightweight OS image based on Raspberry Pi
               OS Lite (Bookworm). It includes all necessary dependencies,
               hardware acceleration, and the kiosk daemon pre-configured.
@@ -61,7 +61,7 @@ export const DownloadsPanel: React.FC = () => {
 
           <a
             href="https://github.com/conarwelsh/signage-os/releases/latest/download/sous-signage-os.img.xz"
-            className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold rounded-xl transition-all shadow-lg shadow-sky-500/20 hover:shadow-sky-400/40"
+            className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-sky-500 hover:bg-sky-400 text-zinc-950 font-semibold rounded-xl transition-all shadow-lg shadow-sky-500/20 hover:shadow-sky-400/40"
           >
             <Download className="w-4 h-4" />
             Download Latest Image
@@ -75,10 +75,10 @@ export const DownloadsPanel: React.FC = () => {
               <HardDrive className="w-6 h-6 text-amber-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-200 text-lg">
+              <h3 className="font-semibold text-zinc-200 text-lg">
                 Flashing Instructions
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-zinc-500">
                 How to write the OS to your SD card
               </p>
             </div>
@@ -86,13 +86,13 @@ export const DownloadsPanel: React.FC = () => {
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-zinc-300 flex items-center gap-2">
                 <span className="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-800 text-[10px] text-zinc-500 dark:text-zinc-400">
                   1
                 </span>
                 Option A: Raspberry Pi Imager (Recommended)
               </h4>
-              <p className="text-xs text-slate-400 ml-7">
+              <p className="text-xs text-zinc-400 ml-7">
                 Using{" "}
                 <a
                   href="https://www.raspberrypi.com/software/"
@@ -108,13 +108,13 @@ export const DownloadsPanel: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-zinc-300 flex items-center gap-2">
                 <span className="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-800 text-[10px] text-zinc-500 dark:text-zinc-400">
                   2
                 </span>
                 Option B: Balena Etcher
               </h4>
-              <p className="text-xs text-slate-400 ml-7">
+              <p className="text-xs text-zinc-400 ml-7">
                 Download and install{" "}
                 <a
                   href="https://etcher.balena.io/"

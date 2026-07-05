@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export interface VesselProfile {
   id: string;
   organizationId: string;
@@ -128,3 +130,51 @@ export interface KitchenTimerState {
   elapsedSeconds: number;
   isActive: boolean;
 }
+
+export const IngredientSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional(),
+  macros: z.object({
+    calories: z.number().nullable(),
+    proteinG: z.number().nullable(),
+    carbsG: z.number().nullable(),
+    fatG: z.number().nullable(),
+  }).optional(),
+  allergens: z.array(z.string()).optional(),
+  vendorMappings: z.array(z.object({
+    vendorId: z.string(),
+    vendorItemCode: z.string(),
+    vendorItemName: z.string().optional(),
+  })).optional(),
+});
+
+export const RecipeIngredientSchema = z.object({
+  ingredientId: z.string(),
+  amount: z.number(),
+  unit: z.string(),
+  preparationNote: z.string().optional().nullable(),
+});
+
+export const RecipeVariantSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  ingredients: z.array(RecipeIngredientSchema).optional(),
+});
+
+export const RecipeSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional(),
+  yield_amount: z.number(),
+  yield_unit: z.string(),
+  tags: z.array(z.string()).optional(),
+  categories: z.array(z.string()).optional(),
+  dietary_restrictions: z.array(z.string()).optional(),
+  ingredients: z.array(RecipeIngredientSchema),
+  variants: z.array(RecipeVariantSchema).optional(),
+});
+
+export type ZodIngredient = z.infer<typeof IngredientSchema>;
+export type ZodRecipe = z.infer<typeof RecipeSchema>;
+

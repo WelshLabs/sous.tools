@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@soustools/ui";
+import { Button, PinInput } from "@soustools/design-system";
 import { X } from "lucide-react";
 
 export interface PairDisplayDialogProps {
@@ -77,14 +77,10 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
           <label className="block text-xs text-muted-foreground">
             6-Character Pairing Code
           </label>
-          <input
-            type="text"
-            maxLength={6}
-            required
+          <PinInput
+            length={6}
             value={pairingCode}
-            onChange={(e) => setPairingCode(e.target.value.toUpperCase())}
-            placeholder="E.g. 847291"
-            className="w-full bg-background border border-input rounded-lg px-3 py-2 text-center text-lg font-mono tracking-widest text-foreground uppercase focus:ring-ring focus:border-ring"
+            onChange={(val) => setPairingCode(val.toUpperCase())}
           />
         </div>
         <div className="space-y-1">

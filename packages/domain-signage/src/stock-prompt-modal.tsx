@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@soustools/ui";
+import { Button } from "@soustools/design-system";
 import { X } from "lucide-react";
 
 interface StockPromptModalProps {
@@ -31,20 +31,20 @@ export const StockPromptModal: React.FC<StockPromptModalProps> = ({
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-zinc-100 dark:bg-card border border-zinc-850 p-6 rounded-2xl shadow-2xl relative space-y-4 text-zinc-900 dark:text-slate-100"
+        className="w-full max-w-sm bg-zinc-100 dark:bg-card border border-zinc-850 p-6 rounded-2xl shadow-2xl relative space-y-4 text-zinc-900 dark:text-zinc-100"
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 cursor-pointer"
+          className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
         <div>
-          <h3 className="text-md font-bold text-zinc-900 dark:text-slate-100">
+          <h3 className="text-md font-bold text-zinc-900 dark:text-zinc-100">
             Adjust Stock
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             Set stock options for {itemName}
           </p>
         </div>
@@ -59,7 +59,7 @@ export const StockPromptModal: React.FC<StockPromptModalProps> = ({
           />
           <label
             htmlFor="unlimited"
-            className="text-xs text-slate-300 cursor-pointer select-none"
+            className="text-xs text-zinc-300 cursor-pointer select-none"
           >
             Unlimited Stock (Untracked on Square)
           </label>
@@ -67,7 +67,7 @@ export const StockPromptModal: React.FC<StockPromptModalProps> = ({
 
         {!unlimited && (
           <div className="space-y-1">
-            <label className="block text-xs text-slate-400">
+            <label className="block text-xs text-zinc-400">
               Stock Count Quantity
             </label>
             <input
@@ -79,7 +79,7 @@ export const StockPromptModal: React.FC<StockPromptModalProps> = ({
                 setQuantity(Math.max(0, parseInt(e.target.value) || 0))
               }
               placeholder="e.g. 50, 100"
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none"
             />
           </div>
         )}

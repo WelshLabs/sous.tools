@@ -26,7 +26,7 @@ export class ImportCommand extends CommandRunner {
           this.logger.error('Book import requires a target URL or file path');
           return;
         }
-        await this.ingestionService.importBook(target);
+        await this.ingestionService.importBook('default-book', target);
         break;
       case 'status':
         await this.ingestionService.getStatus();

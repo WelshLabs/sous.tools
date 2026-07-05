@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS organizations (
   created_at   TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE organizations FORCE ROW LEVEL SECURITY;
+
+
 -- NOTE: organizations RLS policy is defined AFTER org_members table (section 3)
 -- because the policy body references org_members which must exist first.
 
@@ -54,8 +54,7 @@ CREATE TABLE IF NOT EXISTS org_members (
   CONSTRAINT uq_org_members UNIQUE (organization_id, user_id)
 );
 
-ALTER TABLE org_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE org_members FORCE ROW LEVEL SECURITY;
+
 
 -- Non-recursive policies using JWT claims
 DROP POLICY IF EXISTS "Members can view own org memberships non-recursive" ON org_members;
@@ -78,8 +77,6 @@ CREATE POLICY "Admins can manage org memberships non-recursive"
     AND (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
   );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON org_members TO authenticated;
-GRANT ALL ON org_members TO service_role;
 
 -- Helper functions (set row_security = off so they bypass RLS in subqueries)
 CREATE OR REPLACE FUNCTION is_org_member(org_id UUID)
@@ -108,8 +105,6 @@ AS $$
   );
 $$;
 
-GRANT EXECUTE ON FUNCTION is_org_member(UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION is_org_admin(UUID) TO authenticated;
 
 CREATE INDEX IF NOT EXISTS idx_org_members_user_id ON org_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_org_members_org_role ON org_members(organization_id, role);
@@ -140,8 +135,7 @@ CREATE TABLE IF NOT EXISTS integrations (
   CONSTRAINT unique_org_provider UNIQUE (organization_id, provider)
 );
 
-ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE integrations FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_integrations" ON integrations
   FOR ALL USING (is_org_member(organization_id))
@@ -163,8 +157,7 @@ CREATE TABLE IF NOT EXISTS signage_devices (
   created_at       TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE signage_devices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE signage_devices FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_signage_devices" ON signage_devices
   FOR ALL USING (is_org_member(organization_id))
@@ -184,8 +177,7 @@ CREATE TABLE IF NOT EXISTS signage_decks (
   CONSTRAINT uq_signage_decks_org_slug UNIQUE (organization_id, slug)
 );
 
-ALTER TABLE signage_decks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE signage_decks FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_signage_decks" ON signage_decks
   FOR ALL USING (is_org_member(organization_id))
@@ -206,8 +198,7 @@ CREATE TABLE IF NOT EXISTS signage_layouts (
   updated_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE signage_layouts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE signage_layouts FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_signage_layouts" ON signage_layouts
   FOR ALL USING (is_org_member(organization_id))
@@ -227,8 +218,7 @@ CREATE TABLE IF NOT EXISTS signage_displays (
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE signage_displays ENABLE ROW LEVEL SECURITY;
-ALTER TABLE signage_displays FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_signage_displays" ON signage_displays
   FOR ALL USING (is_org_member(organization_id))
@@ -253,8 +243,7 @@ CREATE TABLE IF NOT EXISTS vessel_profiles (
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE vessel_profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE vessel_profiles FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_vessel_profiles" ON vessel_profiles
   FOR ALL USING (is_org_member(organization_id))
@@ -288,8 +277,7 @@ CREATE TABLE IF NOT EXISTS master_ingredients (
   updated_at            TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE master_ingredients ENABLE ROW LEVEL SECURITY;
-ALTER TABLE master_ingredients FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_master_ingredients" ON master_ingredients
   FOR ALL USING (is_org_member(organization_id))
@@ -307,8 +295,7 @@ CREATE TABLE IF NOT EXISTS recipe_categories (
   CONSTRAINT uq_recipe_categories_org_name UNIQUE (organization_id, name)
 );
 
-ALTER TABLE recipe_categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recipe_categories FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_recipe_categories" ON recipe_categories
   FOR ALL USING (is_org_member(organization_id))
@@ -325,8 +312,7 @@ CREATE TABLE IF NOT EXISTS recipe_tags (
   CONSTRAINT uq_recipe_tags_org_name UNIQUE (organization_id, name)
 );
 
-ALTER TABLE recipe_tags ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recipe_tags FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_recipe_tags" ON recipe_tags
   FOR ALL USING (is_org_member(organization_id))
@@ -358,8 +344,7 @@ CREATE TABLE IF NOT EXISTS recipes (
 
 COMMENT ON COLUMN recipes.pos_item_id IS 'Links recipe to a synced POS item catalog entry';
 
-ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recipes FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_recipes" ON recipes
   FOR ALL USING (is_org_member(organization_id))
@@ -383,8 +368,7 @@ CREATE TABLE IF NOT EXISTS recipe_ingredients (
   created_at            TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE recipe_ingredients ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recipe_ingredients FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_recipe_ingredients" ON recipe_ingredients
   FOR ALL USING (
@@ -411,8 +395,7 @@ CREATE TABLE IF NOT EXISTS recipe_tag_assignments (
   PRIMARY KEY (recipe_id, tag_id)
 );
 
-ALTER TABLE recipe_tag_assignments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recipe_tag_assignments FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_recipe_tag_assignments" ON recipe_tag_assignments
   FOR ALL USING (
@@ -446,8 +429,7 @@ CREATE TABLE IF NOT EXISTS formula_versions (
   created_at     TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE formula_versions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE formula_versions FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_formula_versions" ON formula_versions
   FOR ALL USING (
@@ -477,8 +459,7 @@ CREATE TABLE IF NOT EXISTS recipe_nutrition_cache (
   computed_at          TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-ALTER TABLE recipe_nutrition_cache ENABLE ROW LEVEL SECURITY;
-ALTER TABLE recipe_nutrition_cache FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_recipe_nutrition_cache" ON recipe_nutrition_cache
   FOR ALL USING (
@@ -507,12 +488,15 @@ CREATE TABLE IF NOT EXISTS vendors (
   order_days      JSONB DEFAULT '[]'::jsonb,
   email           TEXT,
   phone           TEXT,
+  customer_account_number TEXT,
+  terms TEXT,
+  route TEXT,
+  sales_rep TEXT,
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
   updated_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE vendors FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_vendors" ON vendors
   FOR ALL USING (is_org_member(organization_id))
@@ -529,8 +513,7 @@ CREATE TABLE IF NOT EXISTS whiteboard_items (
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE whiteboard_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE whiteboard_items FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_whiteboard_items" ON whiteboard_items
   FOR ALL USING (is_org_member(organization_id))
@@ -548,8 +531,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE purchase_orders FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_purchase_orders" ON purchase_orders
   FOR ALL USING (is_org_member(organization_id))
@@ -567,8 +549,7 @@ CREATE TABLE IF NOT EXISTS purchase_order_items (
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE purchase_order_items FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_purchase_order_items" ON purchase_order_items
   FOR ALL USING (
@@ -604,8 +585,7 @@ CREATE TABLE IF NOT EXISTS pos_items (
   CONSTRAINT unique_org_pos_item UNIQUE (organization_id, pos_provider, external_id)
 );
 
-ALTER TABLE pos_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pos_items FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_pos_items" ON pos_items
   FOR ALL USING (is_org_member(organization_id))
@@ -629,8 +609,7 @@ CREATE TABLE IF NOT EXISTS pos_modifier_groups (
   CONSTRAINT unique_org_pos_modifier_group UNIQUE (organization_id, pos_provider, external_id)
 );
 
-ALTER TABLE pos_modifier_groups ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pos_modifier_groups FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_pos_modifier_groups" ON pos_modifier_groups
   FOR ALL USING (is_org_member(organization_id))
@@ -655,8 +634,7 @@ CREATE TABLE IF NOT EXISTS pos_modifier_options (
   CONSTRAINT unique_org_pos_modifier_option UNIQUE (organization_id, pos_provider, external_id)
 );
 
-ALTER TABLE pos_modifier_options ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pos_modifier_options FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_pos_modifier_options" ON pos_modifier_options
   FOR ALL USING (is_org_member(organization_id))
@@ -673,8 +651,7 @@ CREATE TABLE IF NOT EXISTS pos_item_modifier_groups (
   PRIMARY KEY (pos_item_id, modifier_group_id)
 );
 
-ALTER TABLE pos_item_modifier_groups ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pos_item_modifier_groups FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_pos_item_modifier_groups" ON pos_item_modifier_groups
   FOR ALL USING (
@@ -707,8 +684,7 @@ CREATE TABLE IF NOT EXISTS pos_item_local_overlays (
   updated_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE pos_item_local_overlays ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pos_item_local_overlays FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_pos_item_local_overlays" ON pos_item_local_overlays
   FOR ALL USING (is_org_member(organization_id))
@@ -733,8 +709,7 @@ CREATE TABLE IF NOT EXISTS pos_transactions (
   CONSTRAINT uq_pos_ext_txn UNIQUE (external_transaction_id)
 );
 
-ALTER TABLE pos_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pos_transactions FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_pos_transactions" ON pos_transactions
   FOR ALL USING (is_org_member(organization_id))
@@ -756,8 +731,7 @@ CREATE TABLE IF NOT EXISTS pos_item_recipe_links (
   CONSTRAINT uq_pos_item_recipe UNIQUE (pos_item_id, recipe_id)
 );
 
-ALTER TABLE pos_item_recipe_links ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pos_item_recipe_links FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_pos_links" ON pos_item_recipe_links
   FOR ALL USING (is_org_member(organization_id))
@@ -793,8 +767,7 @@ CREATE TABLE IF NOT EXISTS items (
   updated_at        TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE items FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_items" ON items
   FOR ALL USING (is_org_member(organization_id))
@@ -825,8 +798,7 @@ CREATE TABLE IF NOT EXISTS price_history (
   created_at        TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE price_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE price_history FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_price_history" ON price_history
   FOR ALL USING (is_org_member(organization_id))
@@ -847,8 +819,7 @@ CREATE TABLE IF NOT EXISTS wastage_ledger (
   recorded_by     UUID REFERENCES auth.users(id) ON DELETE SET NULL
 );
 
-ALTER TABLE wastage_ledger ENABLE ROW LEVEL SECURITY;
-ALTER TABLE wastage_ledger FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_wastage_ledger" ON wastage_ledger
   FOR ALL USING (is_org_member(organization_id))
@@ -872,8 +843,7 @@ CREATE TABLE IF NOT EXISTS inventory_on_hand (
   CONSTRAINT uq_inventory_item_lot UNIQUE (organization_id, item_id, lot_number)
 );
 
-ALTER TABLE inventory_on_hand ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory_on_hand FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_inventory" ON inventory_on_hand
   FOR ALL USING (is_org_member(organization_id))
@@ -894,8 +864,7 @@ CREATE TABLE IF NOT EXISTS container_mapping (
   CONSTRAINT uq_container_mapping UNIQUE (recipe_id, vessel_id)
 );
 
-ALTER TABLE container_mapping ENABLE ROW LEVEL SECURITY;
-ALTER TABLE container_mapping FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_container_mapping" ON container_mapping
   FOR ALL USING (
@@ -933,8 +902,7 @@ CREATE TABLE IF NOT EXISTS par_level_suggestions (
   reviewed_by      UUID REFERENCES auth.users(id) ON DELETE SET NULL
 );
 
-ALTER TABLE par_level_suggestions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE par_level_suggestions FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_par_level_suggestions" ON par_level_suggestions
   FOR ALL USING (is_org_member(organization_id))
@@ -960,8 +928,7 @@ CREATE TABLE IF NOT EXISTS ingestion_reviews (
   updated_at          TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE ingestion_reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ingestion_reviews FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_ingestion_reviews" ON ingestion_reviews
   FOR ALL USING (is_org_member(organization_id))
@@ -979,8 +946,7 @@ CREATE TABLE IF NOT EXISTS vendor_item_aliases (
   created_at       TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE vendor_item_aliases ENABLE ROW LEVEL SECURITY;
-ALTER TABLE vendor_item_aliases FORCE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "org_members_full_crud_vendor_item_aliases" ON vendor_item_aliases
   FOR ALL USING (is_org_member(organization_id))
@@ -1002,8 +968,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   updated_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications FORCE ROW LEVEL SECURITY;
+
 
 -- Notifications are user-scoped (not org-scoped via helper functions)
 CREATE POLICY "user_read_own_notifications" ON notifications
@@ -1027,8 +992,7 @@ CREATE TABLE IF NOT EXISTS processed_webhook_events (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE processed_webhook_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE processed_webhook_events FORCE ROW LEVEL SECURITY;
+
 
 -- Admin exception: service_role only
 CREATE POLICY "service_role_manage_webhook_events" ON processed_webhook_events
@@ -1047,8 +1011,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_profiles FORCE ROW LEVEL SECURITY;
+
 
 DROP POLICY IF EXISTS "user_profiles_self_or_org_admin" ON user_profiles;
 CREATE POLICY "user_profiles_self_or_org_admin" ON user_profiles
@@ -1190,39 +1153,122 @@ CREATE POLICY "Service role can manage ingestion sources"
   USING (bucket_id = 'ingestion-sources');
 
 -- ---------------------------------------------------------------------------
--- 43. GRANT block (all at bottom — migrations skill mandate)
 -- ---------------------------------------------------------------------------
+
+
+
+-- Views
+
+
+-- Explicit grants for tables that need special treatment
+
+
+
+-- processed_webhook_events: service_role only (admin exception)
+
+-- Helper functions
+
+
+
+-- ---------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------
+
+-- =============================================================================
+-- ROW LEVEL SECURITY & GRANTS (MIGRATION FLATTENING)
+-- =============================================================================
+ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organizations FORCE ROW LEVEL SECURITY;
+ALTER TABLE org_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_members FORCE ROW LEVEL SECURITY;
+ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE integrations FORCE ROW LEVEL SECURITY;
+ALTER TABLE signage_devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE signage_devices FORCE ROW LEVEL SECURITY;
+ALTER TABLE signage_decks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE signage_decks FORCE ROW LEVEL SECURITY;
+ALTER TABLE signage_layouts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE signage_layouts FORCE ROW LEVEL SECURITY;
+ALTER TABLE signage_displays ENABLE ROW LEVEL SECURITY;
+ALTER TABLE signage_displays FORCE ROW LEVEL SECURITY;
+ALTER TABLE vessel_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vessel_profiles FORCE ROW LEVEL SECURITY;
+ALTER TABLE master_ingredients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE master_ingredients FORCE ROW LEVEL SECURITY;
+ALTER TABLE recipe_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recipe_categories FORCE ROW LEVEL SECURITY;
+ALTER TABLE recipe_tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recipe_tags FORCE ROW LEVEL SECURITY;
+ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recipes FORCE ROW LEVEL SECURITY;
+ALTER TABLE recipe_ingredients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recipe_ingredients FORCE ROW LEVEL SECURITY;
+ALTER TABLE recipe_tag_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recipe_tag_assignments FORCE ROW LEVEL SECURITY;
+ALTER TABLE formula_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE formula_versions FORCE ROW LEVEL SECURITY;
+ALTER TABLE recipe_nutrition_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recipe_nutrition_cache FORCE ROW LEVEL SECURITY;
+ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vendors FORCE ROW LEVEL SECURITY;
+ALTER TABLE whiteboard_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE whiteboard_items FORCE ROW LEVEL SECURITY;
+ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchase_orders FORCE ROW LEVEL SECURITY;
+ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchase_order_items FORCE ROW LEVEL SECURITY;
+ALTER TABLE pos_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pos_items FORCE ROW LEVEL SECURITY;
+ALTER TABLE pos_modifier_groups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pos_modifier_groups FORCE ROW LEVEL SECURITY;
+ALTER TABLE pos_modifier_options ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pos_modifier_options FORCE ROW LEVEL SECURITY;
+ALTER TABLE pos_item_modifier_groups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pos_item_modifier_groups FORCE ROW LEVEL SECURITY;
+ALTER TABLE pos_item_local_overlays ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pos_item_local_overlays FORCE ROW LEVEL SECURITY;
+ALTER TABLE pos_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pos_transactions FORCE ROW LEVEL SECURITY;
+ALTER TABLE pos_item_recipe_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pos_item_recipe_links FORCE ROW LEVEL SECURITY;
+ALTER TABLE items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE items FORCE ROW LEVEL SECURITY;
+ALTER TABLE price_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE price_history FORCE ROW LEVEL SECURITY;
+ALTER TABLE wastage_ledger ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wastage_ledger FORCE ROW LEVEL SECURITY;
+ALTER TABLE inventory_on_hand ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_on_hand FORCE ROW LEVEL SECURITY;
+ALTER TABLE container_mapping ENABLE ROW LEVEL SECURITY;
+ALTER TABLE container_mapping FORCE ROW LEVEL SECURITY;
+ALTER TABLE par_level_suggestions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE par_level_suggestions FORCE ROW LEVEL SECURITY;
+ALTER TABLE ingestion_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ingestion_reviews FORCE ROW LEVEL SECURITY;
+ALTER TABLE vendor_item_aliases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vendor_item_aliases FORCE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications FORCE ROW LEVEL SECURITY;
+ALTER TABLE processed_webhook_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE processed_webhook_events FORCE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles FORCE ROW LEVEL SECURITY;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON org_members TO authenticated;
+GRANT ALL ON org_members TO service_role;
+GRANT EXECUTE ON FUNCTION is_org_member(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION is_org_admin(UUID) TO authenticated;
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 
+-- These are the correct schema-wide grants:
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;
 
--- Views
 GRANT SELECT ON sales_velocity_7d  TO anon, authenticated, service_role;
 GRANT SELECT ON sales_velocity_30d TO anon, authenticated, service_role;
-
--- Explicit grants for tables that need special treatment
 GRANT SELECT, INSERT, UPDATE, DELETE ON user_profiles TO authenticated;
 GRANT ALL ON user_profiles TO service_role;
-
 GRANT SELECT, INSERT, UPDATE, DELETE ON notifications TO authenticated;
 GRANT ALL ON notifications TO service_role;
-
--- processed_webhook_events: service_role only (admin exception)
 GRANT ALL ON processed_webhook_events TO service_role;
-
--- Helper functions
-GRANT EXECUTE ON FUNCTION is_org_member(UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION is_org_admin(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION update_item_current_cost() TO service_role;
-
--- ---------------------------------------------------------------------------
--- 44. ALTER DEFAULT PRIVILEGES (future tables get same grants automatically)
--- ---------------------------------------------------------------------------
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT ALL ON TABLES TO service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT ALL ON SEQUENCES TO authenticated, service_role;

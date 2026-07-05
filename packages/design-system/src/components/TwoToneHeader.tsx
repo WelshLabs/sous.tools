@@ -6,7 +6,7 @@ import * as React from "react";
 export interface TwoToneHeaderProps {
   /**
    * The full heading string. The first word is rendered in `text-foreground`
-   * (slate-50); all remaining words are rendered in `text-primary`
+   * (zinc-50); all remaining words are rendered in `text-primary`
    * (Neon-Glass cyan #4cc9f0).
    *
    * @example "Order Manager" → "Order" (white) + " Manager" (cyan)

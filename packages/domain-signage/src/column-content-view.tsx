@@ -55,7 +55,7 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
     return (
       <div className="w-full h-full overflow-y-auto flex flex-col gap-1.5 py-1">
         {selectedItems.length === 0 ? (
-          <span className="text-[10px] text-slate-500 italic block text-center">
+          <span className="text-[10px] text-zinc-500 italic block text-center">
             No items selected
           </span>
         ) : (
@@ -123,7 +123,7 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
         {column.imageUrl ? (
           <img src={column.imageUrl} alt="Column visual" className={`w-full h-full object-${column.fit || "cover"}`} />
         ) : (
-          <div className="flex flex-col items-center text-slate-600 text-[10px]">
+          <div className="flex flex-col items-center text-zinc-600 text-[10px]">
             <ImageIcon className="w-6 h-6 mb-1" />
             <span>No Image URL</span>
           </div>
@@ -136,7 +136,7 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
     return (
       <div className="text-center space-y-1">
         <h4 className="text-xs font-bold text-white">{column.title || "Untitled"}</h4>
-        <p className="text-[10px] text-slate-400 leading-normal">{column.content || "Empty content"}</p>
+        <p className="text-[10px] text-zinc-400 leading-normal">{column.content || "Empty content"}</p>
       </div>
     );
   }

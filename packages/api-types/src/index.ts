@@ -6,3 +6,4 @@ export * from "./recipes.js";
 export * from "./ingestion.js";
 export * from "./purchasing.js";
 export * from "./auth.js";
+export * from "./omnibar.js";

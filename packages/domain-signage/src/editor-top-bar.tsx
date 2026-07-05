@@ -115,7 +115,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           {deckSlug && (
             <div className="flex items-center gap-1.5 pl-1 text-[10px] font-mono">
               <span
-                className="cursor-pointer text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-0.5"
+                className="cursor-pointer text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-0.5"
                 onClick={handleCopySlug}
                 title="Copy live URL"
               >
@@ -135,7 +135,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
                 }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-500 hover:text-slate-300 transition-colors"
+                className="text-zinc-500 hover:text-zinc-300 transition-colors"
                 title="Open live view in new tab"
               >
                 <ExternalLink className="w-2.5 h-2.5" />
@@ -156,7 +156,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           ) : (
             <Play className="w-3.5 h-3.5 text-green-400 fill-green-400" />
           )}
-          <span className="text-slate-300 font-mono tracking-tight">
+          <span className="text-zinc-300 font-mono tracking-tight">
             {totalSlides > 0
               ? `${activeSlideIndex + 1} / ${totalSlides}`
               : "0 / 0"}
@@ -170,7 +170,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             disabled={noSlides}
             className="p-1 hover:bg-black/10 dark:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer"
           >
-            <ChevronLeft className="w-4 h-4 text-slate-400" />
+            <ChevronLeft className="w-4 h-4 text-zinc-400" />
           </button>
           <button
             id="editor-top-bar-next"
@@ -178,7 +178,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             disabled={noSlides}
             className="p-1 hover:bg-black/10 dark:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer"
           >
-            <ChevronRight className="w-4 h-4 text-slate-400" />
+            <ChevronRight className="w-4 h-4 text-zinc-400" />
           </button>
         </div>
       </div>
@@ -196,7 +196,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             {onDiscard && (
               <button
                 onClick={onDiscard}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-400 hover:text-white bg-transparent border border-black/10 dark:border-white/10 hover:border-white/20 rounded-md cursor-pointer transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-zinc-400 hover:text-white bg-transparent border border-black/10 dark:border-white/10 hover:border-white/20 rounded-md cursor-pointer transition-colors"
                 title="Discard unsaved changes"
               >
                 <RefreshCcw className="w-3 h-3" /> Discard
@@ -210,7 +210,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
             isStylesOpen
               ? "bg-black/10 dark:bg-white/10 border-white/20 text-white"
-              : "bg-transparent border-black/10 dark:border-white/10 text-slate-400 hover:text-white"
+              : "bg-transparent border-black/10 dark:border-white/10 text-zinc-400 hover:text-white"
           }`}
         >
           <Palette className="w-3.5 h-3.5" /> Slide Workspace
@@ -221,7 +221,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
             isPreviewing
               ? "bg-black/10 dark:bg-white/10 border-white/20 text-white"
-              : "bg-transparent border-black/10 dark:border-white/10 text-slate-400 hover:text-white"
+              : "bg-transparent border-black/10 dark:border-white/10 text-zinc-400 hover:text-white"
           }`}
         >
           <Eye className="w-3.5 h-3.5" /> Preview
@@ -233,7 +233,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-all disabled:opacity-60 ${
             saveState === "saved"
               ? "border-green-500/40 bg-green-500/10 text-green-400"
-              : "border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-card hover:bg-zinc-800 text-slate-300"
+              : "border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-card hover:bg-zinc-800 text-zinc-300"
           }`}
         >
           {SaveIcon}{" "}

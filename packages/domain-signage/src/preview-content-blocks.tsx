@@ -68,7 +68,7 @@ const PreviewMediaCarousel = ({ block }: { block: any }) => {
           );
         })
       ) : (
-        <span className="text-slate-500 italic relative z-20">
+        <span className="text-zinc-500 italic relative z-20">
           Media Carousel Preview
         </span>
       )}
@@ -122,7 +122,7 @@ const PreviewModifierGroup = ({ block, onFetchModifierOptions }: { block: any; o
 
   return (
     <div className={classes} data-unique-id={block.uniqueSelector}>
-      <div className="px-3 py-2 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 font-semibold text-[10px] text-slate-300 uppercase tracking-wider">
+      <div className="px-3 py-2 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 font-semibold text-[10px] text-zinc-300 uppercase tracking-wider">
         Options
       </div>
       <div className="flex flex-col divide-y divide-white/5">
@@ -131,8 +131,8 @@ const PreviewModifierGroup = ({ block, onFetchModifierOptions }: { block: any; o
             key={opt.id}
             className="flex justify-between items-center px-3 py-2 text-[10px]"
           >
-            <span className="text-slate-200">{opt.name}</span>
-            <span className="text-slate-400 font-mono">
+            <span className="text-zinc-200">{opt.name}</span>
+            <span className="text-zinc-400 font-mono">
               {opt.price > 0 ? `+$${Number(opt.price).toFixed(2)}` : "Free"}
             </span>
           </div>
@@ -206,7 +206,7 @@ export function PreviewContentBlocks({
       );
       if (!item) {
         return (
-          <div className="text-[8px] text-slate-500 italic">
+          <div className="text-[8px] text-zinc-500 italic">
             Item not found ({block.posItemId})
           </div>
         );
@@ -345,7 +345,7 @@ export function PreviewContentBlocks({
             className="flex flex-col items-center justify-center w-full min-h-[60px] p-4 border border-dashed border-black/10 dark:border-white/10 rounded-xl bg-black/5 dark:bg-white/5 opacity-80"
             data-unique-id={block.uniqueSelector}
           >
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">
               Select POS items from Block Settings to populate this space.
             </span>
           </div>
@@ -438,7 +438,7 @@ export function PreviewContentBlocks({
                       {Object.entries((block as any).priceDisplay).map(
                         ([key, value]) => (
                           <div key={key} className="flex gap-2 items-center">
-                            <span className="text-slate-400 capitalize text-[8px]">
+                            <span className="text-zinc-400 capitalize text-[8px]">
                               {key}
                             </span>
                             <span className="font-mono st-price-tag text-[9px]">
@@ -490,7 +490,7 @@ export function PreviewContentBlocks({
               className={`w-full h-full ${objectFitClass}`}
             />
           ) : (
-            <span className="text-[10px] text-slate-500 italic">
+            <span className="text-[10px] text-zinc-500 italic">
               Static Image
             </span>
           )}
@@ -521,7 +521,7 @@ export function PreviewContentBlocks({
           />
           {!b.videoUrl && (
             <div className="absolute inset-0 bg-black/5 dark:bg-black/40 flex items-center justify-center pointer-events-none z-10">
-              <span className="text-[10px] text-slate-300 italic px-3 py-1 bg-white/50 dark:bg-black/60 rounded">
+              <span className="text-[10px] text-zinc-300 italic px-3 py-1 bg-white/50 dark:bg-black/60 rounded">
                 Placeholder Video
               </span>
             </div>
@@ -543,7 +543,7 @@ export function PreviewContentBlocks({
         <div className={classes} data-unique-id={block.uniqueSelector}>
           <div className="absolute left-[15px] top-4 bottom-4 w-px bg-white/20 z-0"></div>
           {steps.length === 0 ? (
-            <span className="text-[10px] text-slate-500 italic relative z-10 bg-zinc-50 dark:bg-zinc-950 pl-2">
+            <span className="text-[10px] text-zinc-500 italic relative z-10 bg-zinc-50 dark:bg-zinc-950 pl-2">
               No timeline steps configured.
             </span>
           ) : (
@@ -574,7 +574,7 @@ export function PreviewContentBlocks({
     default:
       return (
         <div className="flex flex-col items-center justify-center w-full h-full min-h-[60px] opacity-40">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">
             Unconfigured Content
           </span>
         </div>

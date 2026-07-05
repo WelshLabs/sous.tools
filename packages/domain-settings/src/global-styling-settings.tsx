@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@soustools/ui";
+import { Button } from "@soustools/design-system";
 import { Type, Code, Save, Loader2, Palette } from "lucide-react";
 import { GlobalDesignTokens } from "@soustools/api-types";
 
@@ -51,7 +51,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">
+              <label className="text-xs font-semibold text-zinc-400">
                 Primary Color (OKLCH, HEX, RGB)
               </label>
               <div className="flex items-center gap-3">
@@ -87,12 +87,12 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                       primaryColor: e.target.value,
                     }))
                   }
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all"
                 />
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">
+              <label className="text-xs font-semibold text-zinc-400">
                 Accent Color
               </label>
               <div className="flex items-center gap-3">
@@ -128,7 +128,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                       accentColor: e.target.value,
                     }))
                   }
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                 />
               </div>
             </div>
@@ -160,7 +160,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                         headingFont: e.target.value,
                       }))
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default Font</option>
                     <option value="Inter">Inter</option>
@@ -208,7 +208,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                           headingColor: e.target.value,
                         }))
                       }
-                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                         headingWeight: e.target.value,
                       }))
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default</option>
                     <option value="normal">Normal</option>
@@ -257,7 +257,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                         subtitleFont: e.target.value,
                       }))
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default Font</option>
                     <option value="Inter">Inter</option>
@@ -305,7 +305,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                           subtitleColor: e.target.value,
                         }))
                       }
-                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                         subtitleWeight: e.target.value,
                       }))
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default</option>
                     <option value="normal">Normal</option>
@@ -354,7 +354,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                         bodyFont: e.target.value,
                       }))
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default Font</option>
                     <option value="Inter">Inter</option>
@@ -402,7 +402,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                           bodyColor: e.target.value,
                         }))
                       }
-                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export function GlobalStylingSettings({ initialTokens, onSave }: GlobalStylingSe
                         bodyWeight: e.target.value,
                       }))
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-slate-100 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
                   >
                     <option value="">Default</option>
                     <option value="normal">Normal</option>

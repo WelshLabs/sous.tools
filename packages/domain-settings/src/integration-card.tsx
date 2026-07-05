@@ -2,7 +2,7 @@
 
 import React from "react";
 import { IntegrationStatus } from "@soustools/api-types";
-import { Button } from "@soustools/ui";
+import { Button } from "@soustools/design-system";
 import {
   CheckCircle,
   AlertCircle,
@@ -48,10 +48,10 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {displayName}
             </h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-md">{desc}</p>
+            <p className="text-xs text-zinc-400 mt-1 max-w-md">{desc}</p>
           </div>
           {status.connected ? (
             <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-900/50">
@@ -110,7 +110,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
               </Button>
             )}
             <Button
-              variant="destructive"
+              variant="secondary"
               size="sm"
               onClick={onDisconnect}
               disabled={isActionLoading}
@@ -120,7 +120,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
           </>
         ) : (
           <Button
-            variant="primary"
+            variant="default"
             size="sm"
             onClick={onConnect}
             disabled={isActionLoading}

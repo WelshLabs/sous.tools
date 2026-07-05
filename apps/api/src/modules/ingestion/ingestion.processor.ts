@@ -3,12 +3,15 @@ import { Job } from "bullmq";
 import { IngestionPayload } from "@soustools/api-types";
 import { GoogleDriveService } from "../integrations/google-drive.service";
 import { supabase } from "../../lib/supabase";
-import { GoogleGenAI, Type } from "@google/genai";
-import { config } from "@soustools/config";
+import { Inject } from "@nestjs/common";
+import { IVisionService } from "./IVisionService";
 
 @Processor("ingestion")
 export class IngestionProcessor extends WorkerHost {
-  constructor(private readonly driveService: GoogleDriveService) {
+  constructor(
+    private readonly driveService: GoogleDriveService,
+    @Inject("IVisionService") private readonly visionService: IVisionService
+  ) {
     super();
   }
 
@@ -33,102 +36,10 @@ export class IngestionProcessor extends WorkerHost {
         }
       }
 
-      const ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
-      
-      const recipeSchema = {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          yieldCount: { type: Type.NUMBER },
-          yieldUnit: { type: Type.STRING },
-          sourceBook: { type: Type.STRING, description: "Book or publication title if visible" },
-          sourceAuthor: { type: Type.STRING, description: "Author of the recipe if visible" },
-          sourcePageStart: { type: Type.NUMBER },
-          sourcePageEnd: { type: Type.NUMBER },
-          vessel: {
-            type: Type.OBJECT,
-            properties: {
-              name: { type: Type.STRING },
-              shape: { type: Type.STRING, enum: ["ROUND", "RECTANGULAR"] },
-              length: { type: Type.NUMBER },
-              width: { type: Type.NUMBER },
-              height: { type: Type.NUMBER },
-              diameter: { type: Type.NUMBER },
-              volumeMl: { type: Type.NUMBER }
-            },
-            required: ["name", "shape", "volumeMl"]
-          },
-          ingredients: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                name: { type: Type.STRING },
-                amount: { type: Type.NUMBER },
-                unit: { type: Type.STRING },
-                component: { type: Type.STRING, description: "The component or section this ingredient belongs to, e.g., 'Dough', 'Glaze', 'Filling', 'Caramelized apples'. Leave null if the recipe has no sections." },
-                calculationType: { type: Type.STRING, enum: ["WEIGHT", "VOLUME", "COUNT"] },
-                prepNotes: { type: Type.STRING, description: "e.g., diced, melted, room temp" }
-              },
-              required: ["name", "amount", "unit"]
-            }
-          },
-          instructions: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                text: { type: Type.STRING, description: "The instruction text" },
-                stepNumber: { type: Type.NUMBER },
-                timerDurationSeconds: { type: Type.NUMBER, description: "If a duration is mentioned in this step, convert it to seconds" }
-              },
-              required: ["text", "stepNumber"]
-            }
-          },
-          prepTimeMinutes: { type: Type.NUMBER, description: "Preparation time in minutes" },
-          cookTimeMinutes: { type: Type.NUMBER, description: "Cooking/baking/proofing time in minutes" }
-        },
-        required: ["title", "ingredients", "instructions"]
-      };
-
-      const recipeResponseSchema = {
-        type: Type.OBJECT,
-        properties: {
-          recipes: {
-            type: Type.ARRAY,
-            items: recipeSchema
-          }
-        },
-        required: ["recipes"]
-      };
-
-      const invoiceSchema = {
-        type: Type.OBJECT,
-        properties: {
-          vendorName: { type: Type.STRING },
-          invoiceNumber: { type: Type.STRING },
-          date: { type: Type.STRING },
-          totalAmount: { type: Type.NUMBER },
-          items: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                rawName: { type: Type.STRING },
-                quantity: { type: Type.NUMBER },
-                pricePerUnit: { type: Type.NUMBER },
-                totalPrice: { type: Type.NUMBER }
-              },
-              required: ["rawName", "quantity", "pricePerUnit"]
-            }
-          }
-        },
-        required: ["vendorName", "items"]
-      };
-
       let parsedData: any = {};
       const actualSourceDocumentUrl = job.data.sourceDocumentUrl || sourceDocumentUrl;
-      const inlineDataParts: any[] = [];
+      let buffer: Buffer | undefined = undefined;
+      let mimeType: string | undefined = undefined;
 
       if (actualSourceDocumentUrl) {
         try {
@@ -141,15 +52,11 @@ export class IngestionProcessor extends WorkerHost {
             if (downloadErr) throw downloadErr;
             if (fileData) {
               const arrayBuffer = await fileData.arrayBuffer();
-              const buffer = Buffer.from(arrayBuffer);
-              let mimeType = fileData.type || "image/jpeg";
-              if (actualSourceDocumentUrl.toLowerCase().endsWith(".pdf")) mimeType = "application/pdf";
-              inlineDataParts.push({
-                inlineData: {
-                  mimeType,
-                  data: buffer.toString("base64")
-                }
-              });
+              buffer = Buffer.from(arrayBuffer);
+              mimeType = fileData.type || "image/jpeg";
+              if (actualSourceDocumentUrl.toLowerCase().endsWith(".pdf")) {
+                mimeType = "application/pdf";
+              }
             }
           }
         } catch (fetchErr) {
@@ -157,35 +64,12 @@ export class IngestionProcessor extends WorkerHost {
         }
       }
 
-      // 2. Run Gemini Extraction
-      const genConfig = {
-        responseMimeType: "application/json",
-        responseSchema: documentType === "recipe" ? recipeResponseSchema : (documentType === "invoice" ? invoiceSchema : undefined),
-        systemInstruction: `You are an expert culinary and back-office AI. Extract structured data from the provided document. For recipes, extract an array of ALL recipes found in the document under the 'recipes' key. 
-- You MUST aggressively search for all distinct recipes and group them into the 'recipes' array. DO NOT return an empty array if you see any culinary content.
-- For vessels/pans, if dimensions are mentioned (e.g., 9x13 pan), automatically calculate the volumeMl (e.g., 9 * 13 * 2 (height) * 16.387 = ~3800ml) and set shape to RECTANGULAR.
-- Extract any cooking/prep times into timerDurationSeconds accurately.
-The requested document type is: ${documentType}`
-      };
-
-      if (inlineDataParts.length > 0) {
-        const contents: any[] = [...inlineDataParts];
-        if (rawText) contents.push({ text: rawText });
-        contents.push({ text: `Extract the ${documentType} data from this document.` });
-        
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents,
-          config: genConfig
-        });
-        parsedData = JSON.parse(response.text || "{}");
-      } else if (rawText) {
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: rawText,
-          config: genConfig
-        });
-        parsedData = JSON.parse(response.text || "{}");
+      if (documentType === "recipe") {
+        parsedData = await this.visionService.processRecipe(buffer, rawText, mimeType);
+      } else if (documentType === "invoice") {
+        parsedData = await this.visionService.processInvoice(buffer, rawText, mimeType);
+      } else {
+        throw new Error(`Unsupported document type: ${documentType}`);
       }
 
       // 3. Save Ingestion Review

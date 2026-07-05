@@ -8,7 +8,6 @@ import { logger, patchConsole } from "@soustools/logger";
 
 patchConsole();
 
-
 import * as express from "express";
 
 /**
@@ -21,7 +20,7 @@ import * as express from "express";
  */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { rawBody: true });
-  
+
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
@@ -32,8 +31,8 @@ async function bootstrap(): Promise<void> {
   app.enableCors();
 
   const port = config.PORT;
-  await app.listen(port);
-  logger.info(`Application is running on: http://localhost:${port}`);
+  await app.listen(config.PORT, "0.0.0.0");
+  logger.info(`Application is running on: http://0.0.0.0:${port}`);
 }
 
 bootstrap().catch((err: unknown) => {

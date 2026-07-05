@@ -18,7 +18,7 @@ export interface LabelProps
  * Renders a `<label>` with consistent typography:
  * - `text-sm font-medium` — compact, professional weight
  * - `leading-none` — tight vertical alignment with adjacent form fields
- * - Color: `--color-foreground` (slate-50 in dark)
+ * - Color: `--color-foreground` (zinc-50 in dark)
  * - Disabled peer state: `opacity-70 cursor-not-allowed`
  *
  * Pair with an `Input`, `Select`, or other form element using the `htmlFor`

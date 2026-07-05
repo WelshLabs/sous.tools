@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@soustools/design-system": "workspace:*",
-    "@soustools/ui": "workspace:*",
+
     "@soustools/api-types": "workspace:*",
     "lucide-react": "^1.17.0",
     "@hello-pangea/dnd": "^18.0.1"

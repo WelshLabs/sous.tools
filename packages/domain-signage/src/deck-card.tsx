@@ -64,14 +64,14 @@ export const DeckCard: React.FC<DeckCardProps> = ({
               autoFocus
             />
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-slate-500 font-mono">/s/</span>
+              <span className="text-[10px] text-zinc-500 font-mono">/s/</span>
               <input
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 onBlur={handleSaveRename}
                 onKeyDown={(e) => e.key === "Enter" && handleSaveRename()}
-                className="flex-1 px-2 py-0.5 text-xs bg-zinc-50 dark:bg-zinc-950 border border-white/15 rounded text-slate-300 font-mono focus:outline-none focus:border-primary"
+                className="flex-1 px-2 py-0.5 text-xs bg-zinc-50 dark:bg-zinc-950 border border-white/15 rounded text-zinc-300 font-mono focus:outline-none focus:border-primary"
                 placeholder="slug"
               />
             </div>
@@ -84,19 +84,19 @@ export const DeckCard: React.FC<DeckCardProps> = ({
               </h3>
               <button
                 onClick={() => setIsEditing(true)}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-black/10 dark:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-black/10 dark:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer"
               >
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
             </div>
-            <p className="text-xs text-slate-400 font-mono truncate mt-1">
+            <p className="text-xs text-zinc-400 font-mono truncate mt-1">
               /s/{deck.slug}
             </p>
           </div>
         )}
 
         <div className="flex items-center gap-2 mb-4">
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-zinc-800 text-slate-300 font-medium">
+          <span className="px-2 py-0.5 rounded-full text-[10px] bg-zinc-800 text-zinc-300 font-medium">
             {slideCount} {slideCount === 1 ? "slide" : "slides"}
           </span>
         </div>
@@ -111,7 +111,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({
         </button>
         <Link
           href={`/signage/${deck.id}/preview`}
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-primary/40 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-primary/40 hover:bg-primary/10 text-zinc-400 hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
           title="Preview Deck"
         >
           <Eye className="w-4 h-4" />
@@ -120,14 +120,14 @@ export const DeckCard: React.FC<DeckCardProps> = ({
           href={getLiveUrl(deck.slug)}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center"
           title="Open Live View in New Tab"
         >
           <ExternalLink className="w-4 h-4" />
         </a>
         <button
           onClick={handleCopyUrl}
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer"
           title="Copy Deck URL"
         >
           {copied ? (
@@ -138,7 +138,7 @@ export const DeckCard: React.FC<DeckCardProps> = ({
         </button>
         <button
           onClick={() => onDelete(deck.id)}
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-red-500/30 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg transition-all cursor-pointer"
+          className="p-2 border border-black/10 dark:border-white/10 hover:border-red-500/30 hover:bg-red-500/10 text-zinc-400 hover:text-red-400 rounded-lg transition-all cursor-pointer"
           title="Delete Deck"
         >
           <Trash2 className="w-4 h-4" />

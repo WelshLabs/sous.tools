@@ -14,7 +14,7 @@ export interface ButtonProps
   /**
    * Visual variant controlling background, border, and text treatment.
    * - `default`   — Neon-Glass cyan (#4cc9f0) filled primary action.
-   * - `secondary` — Muted slate-700 surface for secondary actions.
+   * - `secondary` — Muted zinc-800 surface for secondary actions.
    * - `outline`   — Transparent with cyan border; hover fills glass-card.
    * - `ghost`     — Fully transparent; hover reveals subtle surface.
    * @default "default"

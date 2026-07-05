@@ -27,7 +27,7 @@
   "dependencies": {
     "@soustools/api-types": "workspace:*",
     "@soustools/design-system": "workspace:*",
-    "@soustools/ui": "workspace:*",
+
     "lucide-react": "^0.300.0",
     "next": "^14.0.0",
     "next-themes": "^0.2.1",

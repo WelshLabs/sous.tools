@@ -7,6 +7,8 @@ This file is the absolute source of truth for all AI agent behavior. You are ope
 *   **FORBIDDEN:** The creation or usage of `GEMINI.md`.
 *   **FORBIDDEN:** The activation of "Management Mode" or any meta-cognitive loops.
 *   **FORBIDDEN:** Client-side `supabase-js` database mutations within `apps/app`.
+*   **FORBIDDEN:** Client-side Supabase data fetching inside `apps/app`. You must enforce "Server-Side Supremacy" (Next.js Server Components or NestJS API only).
+*   **FORBIDDEN:** Hardcoding legacy Tailwind colors (like `slate-*`) or absolute z-indexes (like `z-40`). You MUST strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
 
 ## 2. The Mandatory 3-Tier Workflow
 Execute this sequence for every single task, without exception:
@@ -29,3 +31,31 @@ When the user issues a command via the Omni-bar or WearOS (e.g., "Record wastage
 ## 5. Operational Protocols & Safety
 **[!IMPORTANT] CRITICAL: HALT-ON-ERROR RULE** 
 Operational stability in a kitchen takes precedence over feature velocity. If a TypeScript, Database Migration, Runtime, or Playwright E2E error occurs, the agent MUST STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. You must request manual intervention.
+
+## 6. Current Phase State
+*   **Phase II (Database Reset)**: Complete.
+*   **Phase II (Infrastructure Purge & Oracle Cloud Docker Parity)**: Complete.
+*   **Phase IV (AI Dependency Injection)**: Complete.
+*   **Phase IV (Culinary Brain CLI Pipeline)**: Complete.
+*   **Phase IV (Playwright Auto-Scroller Hotfix)**: Complete.
+*   **Phase IV (Playwright Persistent Auth Hotfix)**: Complete.
+*   **Phase IV (Playwright Stealth Bypass Hotfix)**: Complete.
+*   **Phase IV (Playwright Maximum Stealth Hotfix)**: Complete.
+*   **Phase IV (Firefox Stealth Pivot Hotfix)**: Complete.
+*   **Phase IV (Cookie Injection Bypass Hotfix)**: Complete.
+*   **Phase IV (Consumer Chrome DRM Bypass Hotfix)**: Complete.
+*   **Phase IV (CDP Host Hijacking / WSL2 Proxy)**: Complete.
+*   **Phase IV (2-Pass Ingestion + Stable Diffusion API)**: Complete.
+*   **Phase V (Polymorphic Schema Upgrade & Copyright Summarization)**: Complete.
+*   **Phase VI (Captive Portal Handshake & Legacy Purge)**: Active - Transitioning to "Chef-Proof" Smart Device Setup Protocol, deprecating manual cloud-init provisioning.
+*   **Phase VI (OAuth Device Authorization)**: Active - Scaffolding backend logic for pairing codes for WearOS and RPi devices.
+*   **Phase VI (WearOS Dirty Hands Voice Trigger)**: Active - Implementing Jetpack Compose voice UI, SpeechRecognizer intent, and API Handshake. Configured BuildConfig for dynamic API_URL.
+*   **Phase VI (Unified AI Triggers)**: Active - Unifying WearOS and Omni-bar AI triggers into a single context-aware POST /command NestJS endpoint in apps/api.
+*   **Phase VI (Interactive Omni-bar Integration)**: Active - Wiring OmniBar and GlobalAppBar to be fully interactive and context-aware, including voice dictation and floating FAB triggers.
+*   **Phase VI (WearOS Complications & Tiles)**: Active - Scaffolded MainComplicationService and KitchenCommandTileService/Activity.
+*   **Phase VI (WearOS Metrics Mocking)**: Active - Scaffolding real API endpoints returning mock data for WearOS complications.
+*   **Phase VI (WearOS Device Pairing)**: Active - Implementing production-ready OAuth Device Flow (Pairing Codes) using DataStore for secure JWT persistence.
+*   **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
+*   **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
+*   **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
+*   **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.

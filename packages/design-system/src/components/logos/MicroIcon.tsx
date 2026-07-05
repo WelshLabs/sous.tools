@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const MicroIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" {...props}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" {...props} className={`shrink-0 ${props.className || ''}`}>
     <path d="M 25,72 
              C 5,72 5,45 25,35 
              C 20,10 50,5 50,25 

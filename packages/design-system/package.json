@@ -25,13 +25,15 @@
     "next": "^14.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
-    "@soustools/supabase": "workspace:*",
+    "@soustools/api-types": "workspace:*",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.17.0",
-    "next-themes": "^0.4.6"
+    "next-themes": "^0.4.6",
+    "zustand": "^5.0.14"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

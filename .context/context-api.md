@@ -54,10 +54,21 @@ lib/
   supabase-auth.guard.ts
   supabase.ts
 modules/
+  commands/
+    commands.controller.ts
+    commands.module.ts
+    commands.service.ts
+  devices/
+    devices.controller.ts
+    devices.module.ts
+    devices.service.ts
   ingestion/
+    CloudVisionService.ts
     ingestion.controller.ts
     ingestion.module.ts
     ingestion.processor.ts
+    IVisionService.ts
+    OllamaVisionService.ts
   integrations/
     drivers/
       base.driver.ts
@@ -88,6 +99,9 @@ modules/
     wastage.service.ts
     whiteboard.controller.ts
     whiteboard.service.ts
+  metrics/
+    metrics.controller.ts
+    metrics.module.ts
   nutrition/
     dietary-classifier.service.ts
     label-renderer.service.ts
@@ -118,8 +132,6 @@ modules/
     vessels.controller.ts
     vessels.service.ts
   signage/
-    devices.controller.ts
-    devices.service.ts
     displays.controller.ts
     displays.helpers.ts
     displays.service.ts
@@ -349,18 +361,623 @@ export class SupabaseClientWrapper {
 }
 ```
 
+## File: modules/commands/commands.controller.ts
+```typescript
+import { Controller, Post, Body, UseGuards, UsePipes } from '@nestjs/common';
+import { SupabaseAuthGuard } from '../../lib/supabase-auth.guard';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
+import { OmnibarCommandPayload, OmnibarCommandPayloadSchema, ApiResponse } from '@soustools/api-types';
+import { CommandsService } from './commands.service';
+import { runControllerAction } from '../signage/response.helper';
+
+@Controller('commands')
+export class CommandsController {
+  constructor(private readonly commandsService: CommandsService) {}
+
+  @Post('/')
+  @UseGuards(SupabaseAuthGuard)
+  @UsePipes(new ZodValidationPipe(OmnibarCommandPayloadSchema))
+  async handleCommand(@Body() payload: OmnibarCommandPayload): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      return this.commandsService.handleCommand(payload);
+    });
+  }
+}
+```
+
+## File: modules/commands/commands.module.ts
+```typescript
+import { Module } from '@nestjs/common';
+import { CommandsController } from './commands.controller';
+import { CommandsService } from './commands.service';
+
+@Module({
+  controllers: [CommandsController],
+  providers: [CommandsService],
+  exports: [CommandsService],
+})
+export class CommandsModule {}
+```
+
+## File: modules/commands/commands.service.ts
+```typescript
+import { Injectable, Logger } from '@nestjs/common';
+import { OmnibarCommandPayload } from '@soustools/api-types';
+
+@Injectable()
+export class CommandsService {
+  private readonly logger = new Logger(CommandsService.name);
+
+  async handleCommand(payload: OmnibarCommandPayload) {
+    this.logger.log(`\n🤖 AI COMMAND RECEIVED [${payload.source}]: ${payload.command}`);
+    if (payload.context) {
+      this.logger.log(`Context: ${JSON.stringify(payload.context)}`);
+    }
+
+    return {
+      action: 'ACKNOWLEDGED',
+      message: 'Yes Chef.',
+    };
+  }
+}
+```
+
+## File: modules/devices/devices.controller.ts
+```typescript
+import {
+  Controller,
+  Get,
+  Put,
+  Post,
+  Body,
+  Param,
+  BadRequestException,
+  UseGuards,
+  Req,
+} from "@nestjs/common";
+import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
+import { AdminGuard } from "../../common/guards/admin.guard";
+import { DevicesService } from "./devices.service";
+import { ApiResponse, SignageDevice } from "@soustools/api-types";
+import { runControllerAction } from "../signage/response.helper";
+import { z } from "zod";
+
+const PairSchema = z.object({
+  hardwareMac: z.string().optional().default("00:00:00:00:00:00"),
+  tenantAdminToken: z.string().optional().default("dummy-token"),
+  requestedName: z.string().optional().default("Dummy Device"),
+});
+
+/**
+ * Controller managing signage hardware device settings.
+ *
+ * @tenant-docs-export
+ * Manages settings for paired hardware displays such as timezone and maintenance window settings.
+ */
+@Controller("devices")
+export class DevicesController {
+  constructor(private readonly devicesService: DevicesService) {}
+
+  /**
+   * Registers a new physical device, returning its assigned ID and 6-digit pairing code.
+   * This is called by the Pi on first boot when it has no tenant config.
+   */
+  @Post("register")
+  async register(): Promise<ApiResponse<{ deviceId: string; pairingCode: string }>> {
+    return runControllerAction(() => this.devicesService.register());
+  }
+
+  /**
+   * Poll endpoint for the Pi to check if a user has entered its pairing code.
+   */
+  @Get(":deviceId/status")
+  async getStatus(@Param("deviceId") deviceId: string): Promise<ApiResponse<{ paired: boolean; supabaseUrl?: string; supabaseAnonKey?: string }>> {
+    return runControllerAction(() => this.devicesService.getStatus(deviceId));
+  }
+
+  /**
+   * Loads the paired device's current settings.
+   */
+  @Get(":deviceId")
+  async findOne(@Param("deviceId") deviceId: string): Promise<ApiResponse<SignageDevice>> {
+    return runControllerAction(() => this.devicesService.findOne(deviceId));
+  }
+
+  /**
+   * Saves the updated device configuration.
+   */
+  @Put(":deviceId")
+  async update(
+    @Param("deviceId") deviceId: string,
+    @Body("name") name?: string,
+    @Body("timezone") timezone?: string,
+    @Body("maintenanceWindow") maintenanceWindow?: {
+      hour: number;
+      minute: number;
+      dayOfWeek: number | null;
+    },
+  ): Promise<ApiResponse<SignageDevice>> {
+    return runControllerAction(() =>
+      this.devicesService.update(deviceId, name, timezone, maintenanceWindow),
+    );
+  }
+
+  /**
+   * Captive Portal Handshake - Pairs a device via MAC address and Tenant Token.
+   */
+  @Post("pair")
+  async pair(@Body() body: any): Promise<ApiResponse<{ device_pairing_token: string }>> {
+    const result = PairSchema.safeParse(body);
+    if (!result.success) {
+      throw new BadRequestException(result.error);
+    }
+    
+    return runControllerAction(() => 
+      this.devicesService.pair(result.data.hardwareMac, result.data.tenantAdminToken, result.data.requestedName)
+    );
+  }
+
+  @Post("pair/init")
+  async initPairing(@Body("deviceType") deviceType: "wearos" | "rpi"): Promise<ApiResponse<{ code: string }>> {
+    return runControllerAction(() => this.devicesService.initPairing(deviceType));
+  }
+
+  @Post("pair/confirm")
+  @UseGuards(SupabaseAuthGuard)
+  async confirmPairing(
+    @Body("code") code: string,
+    @Body("deviceType") deviceType: "wearos" | "rpi",
+    @Req() req: any
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    return runControllerAction(() => this.devicesService.confirmPairing(code, deviceType, req.user));
+  }
+
+  @Get("pair/status/:code")
+  async getPairingStatus(@Param("code") code: string): Promise<ApiResponse<{ status: string; token?: string }>> {
+    return runControllerAction(() => this.devicesService.getPairingStatus(code));
+  }
+
+  @Post(":id/revoke")
+  @UseGuards(AdminGuard)
+  async revokeDevice(@Param("id") id: string): Promise<ApiResponse<{ success: boolean }>> {
+    return runControllerAction(() => this.devicesService.revokeDevice(id));
+  }
+}
+```
+
+## File: modules/devices/devices.module.ts
+```typescript
+import { Module } from '@nestjs/common';
+import { DevicesController } from './devices.controller';
+import { DevicesService } from './devices.service';
+
+@Module({
+  controllers: [DevicesController],
+  providers: [DevicesService],
+  exports: [DevicesService],
+})
+export class DevicesModule {}
+```
+
+## File: modules/devices/devices.service.ts
+```typescript
+import { Injectable } from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
+import { SignageDevice } from "@soustools/api-types";
+import { config } from "@soustools/config";
+import Redis from "ioredis";
+import * as jwt from "jsonwebtoken";
+
+interface DbDeviceRow {
+  id: string;
+  organization_id: string;
+  name: string;
+  pairing_code: string;
+  is_paired: boolean;
+  last_seen_at: string | null;
+  timezone: string;
+  maintenance_window: {
+    hour: number;
+    minute: number;
+    day_of_week: string | number;
+  };
+  created_at: string;
+}
+
+interface MaintenanceWindowInput {
+  hour: number;
+  minute: number;
+  dayOfWeek: number | null;
+}
+
+/**
+ * Service managing hardware signage devices.
+ * Handles loading and updating device-specific configurations
+ * like timezones and maintenance windows.
+ *
+ * @tenant-docs-export
+ * Timezones and maintenance windows can be configured per paired hardware device
+ * to ensure updates and restarts occur during off-hours.
+ */
+@Injectable()
+export class DevicesService {
+  private readonly redis = new Redis({ host: config.REDIS_HOST, port: config.REDIS_PORT });
+
+  /**
+   * Registers a new device natively from the Pi, returning a pairing code.
+   */
+  async register(): Promise<{ deviceId: string; pairingCode: string }> {
+    const pairingCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const { data, error } = await supabase
+      .from("signage_devices")
+      .insert([{
+        name: "Unpaired Device",
+        pairing_code: pairingCode,
+        is_paired: false,
+        timezone: "UTC",
+        maintenance_window: { hour: 3, minute: 0, day_of_week: null },
+      }])
+      .select("id, pairing_code")
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return { deviceId: data.id, pairingCode: data.pairing_code };
+  }
+
+  /**
+   * Pairs a device using a Captive Portal Handshake.
+   * Returns a mock device_pairing_token locked to the organization.
+   */
+  async pair(_hardwareMac: string, _tenantAdminToken: string, _requestedName: string): Promise<{ device_pairing_token: string }> {
+    // In a real implementation, we would decode tenantAdminToken to get the org ID,
+    // and store the hardwareMac and requestedName in the database.
+    // For this PoC, we blindly bypass real DB validation and return the dummy token.
+    
+    return { device_pairing_token: "mock_jwt_token_123" };
+  }
+
+  /**
+   * Checks pairing status. If paired, returns the auth config for the Pi.
+   */
+  async getStatus(id: string): Promise<{ paired: boolean; supabaseUrl?: string; supabaseAnonKey?: string }> {
+    const { data, error } = await supabase
+      .from("signage_devices")
+      .select("is_paired")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.is_paired) {
+      return {
+        paired: true,
+        supabaseUrl: config.SUPABASE_URL,
+        supabaseAnonKey: config.SUPABASE_ANON_KEY,
+      };
+    }
+    return { paired: false };
+  }
+
+  /**
+   * Fetches a single paired hardware device's settings by ID.
+   */
+  async findOne(id: string): Promise<SignageDevice> {
+    const { data, error } = await supabase
+      .from("signage_devices")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return this.mapRow(data as DbDeviceRow);
+  }
+
+  /**
+   * Updates a paired hardware device's settings.
+   */
+  async update(
+    id: string,
+    name?: string,
+    timezone?: string,
+    maintenanceWindow?: MaintenanceWindowInput,
+  ): Promise<SignageDevice> {
+    const updateData: Record<string, unknown> = {};
+    if (name !== undefined) updateData.name = name;
+    if (timezone !== undefined) updateData.timezone = timezone;
+    if (maintenanceWindow !== undefined) {
+      updateData.maintenance_window = {
+        hour: maintenanceWindow.hour,
+        minute: maintenanceWindow.minute,
+        day_of_week: maintenanceWindow.dayOfWeek,
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("signage_devices")
+      .update(updateData)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return this.mapRow(data as DbDeviceRow);
+  }
+
+  async initPairing(deviceType: "wearos" | "rpi"): Promise<{ code: string }> {
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    await this.redis.setex(`pairing:${code}`, 900, JSON.stringify({ deviceType, status: "pending" }));
+    return { code };
+  }
+
+  async confirmPairing(code: string, deviceType: "wearos" | "rpi", user: any): Promise<{ success: boolean }> {
+    const dataStr = await this.redis.get(`pairing:${code}`);
+    if (!dataStr) throw new Error("Invalid or expired pairing code");
+    const data = JSON.parse(dataStr);
+    
+    if (data.deviceType !== deviceType) throw new Error("Device type mismatch");
+
+    const orgId = user.user_metadata?.organization_id || "mock-org-id";
+
+    if (deviceType === "wearos") {
+      data.status = "confirmed";
+      data.userId = user.id;
+    } else {
+      data.status = "confirmed";
+      data.orgId = orgId;
+    }
+    
+    await this.redis.setex(`pairing:${code}`, 900, JSON.stringify(data));
+    return { success: true };
+  }
+
+  async getPairingStatus(code: string): Promise<{ status: string; token?: string }> {
+    const dataStr = await this.redis.get(`pairing:${code}`);
+    if (!dataStr) return { status: "expired" };
+    
+    const data = JSON.parse(dataStr);
+    if (data.status === "confirmed") {
+      const payload = data.deviceType === "wearos" ? { sub: data.userId, deviceType: "wearos" } : { orgId: data.orgId, deviceType: "rpi" };
+      const token = jwt.sign(payload, config.SUPABASE_ANON_KEY || "secret", { expiresIn: "1y" });
+      
+      await this.redis.del(`pairing:${code}`);
+      return { status: "confirmed", token };
+    }
+    
+    return { status: "pending" };
+  }
+
+  async revokeDevice(id: string): Promise<{ success: boolean }> {
+    await this.redis.del(`device_session:${id}`);
+    await supabase.from("signage_devices").update({ is_paired: false, pairing_code: null }).eq("id", id);
+    return { success: true };
+  }
+
+  private mapRow(row: DbDeviceRow): SignageDevice {
+    return {
+      id: row.id,
+      organizationId: row.organization_id,
+      name: row.name,
+      pairingCode: row.pairing_code,
+      isPaired: row.is_paired,
+      lastSeenAt: row.last_seen_at,
+      timezone: row.timezone,
+      maintenanceWindow: {
+        hour: row.maintenance_window?.hour ?? 3,
+        minute: row.maintenance_window?.minute ?? 0,
+        dayOfWeek: typeof row.maintenance_window?.day_of_week === "number"
+          ? row.maintenance_window.day_of_week
+          : null,
+      },
+      createdAt: row.created_at,
+    };
+  }
+}
+```
+
+## File: modules/ingestion/CloudVisionService.ts
+```typescript
+import { Injectable } from "@nestjs/common";
+import { IVisionService } from "./IVisionService";
+import { GoogleGenAI, Type } from "@google/genai";
+import { config } from "@soustools/config";
+
+const recipeSchema = {
+  type: Type.OBJECT,
+  properties: {
+    title: { type: Type.STRING },
+    yieldCount: { type: Type.NUMBER },
+    yieldUnit: { type: Type.STRING },
+    sourceBook: { type: Type.STRING, description: "Book or publication title if visible" },
+    sourceAuthor: { type: Type.STRING, description: "Author of the recipe if visible" },
+    sourcePageStart: { type: Type.NUMBER },
+    sourcePageEnd: { type: Type.NUMBER },
+    vessel: {
+      type: Type.OBJECT,
+      properties: {
+        name: { type: Type.STRING },
+        shape: { type: Type.STRING, enum: ["ROUND", "RECTANGULAR"] },
+        length: { type: Type.NUMBER },
+        width: { type: Type.NUMBER },
+        height: { type: Type.NUMBER },
+        diameter: { type: Type.NUMBER },
+        volumeMl: { type: Type.NUMBER }
+      },
+      required: ["name", "shape", "volumeMl"]
+    },
+    ingredients: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          name: { type: Type.STRING },
+          amount: { type: Type.NUMBER },
+          unit: { type: Type.STRING },
+          component: { type: Type.STRING, description: "The component or section this ingredient belongs to, e.g., 'Dough', 'Glaze', 'Filling', 'Caramelized apples'. Leave null if the recipe has no sections." },
+          calculationType: { type: Type.STRING, enum: ["WEIGHT", "VOLUME", "COUNT"] },
+          prepNotes: { type: Type.STRING, description: "e.g., diced, melted, room temp" }
+        },
+        required: ["name", "amount", "unit"]
+      }
+    },
+    instructions: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          text: { type: Type.STRING, description: "The instruction text" },
+          stepNumber: { type: Type.NUMBER },
+          timerDurationSeconds: { type: Type.NUMBER, description: "If a duration is mentioned in this step, convert it to seconds" }
+        },
+        required: ["text", "stepNumber"]
+      }
+    },
+    prepTimeMinutes: { type: Type.NUMBER, description: "Preparation time in minutes" },
+    cookTimeMinutes: { type: Type.NUMBER, description: "Cooking/baking/proofing time in minutes" }
+  },
+  required: ["title", "ingredients", "instructions"]
+};
+
+const recipeResponseSchema = {
+  type: Type.OBJECT,
+  properties: {
+    recipes: {
+      type: Type.ARRAY,
+      items: recipeSchema
+    }
+  },
+  required: ["recipes"]
+};
+
+const invoiceSchema = {
+  type: Type.OBJECT,
+  properties: {
+    vendorName: { type: Type.STRING },
+    invoiceNumber: { type: Type.STRING },
+    date: { type: Type.STRING },
+    totalAmount: { type: Type.NUMBER },
+    items: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          rawName: { type: Type.STRING },
+          quantity: { type: Type.NUMBER },
+          pricePerUnit: { type: Type.NUMBER },
+          totalPrice: { type: Type.NUMBER }
+        },
+        required: ["rawName", "quantity", "pricePerUnit"]
+      }
+    }
+  },
+  required: ["vendorName", "items"]
+};
+
+@Injectable()
+export class CloudVisionService implements IVisionService {
+  private readonly ai: GoogleGenAI;
+
+  constructor() {
+    this.ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
+  }
+
+  async processRecipe(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any> {
+    return this.processDocument("recipe", imageBuffer, rawText, mimeType);
+  }
+
+  async processInvoice(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any> {
+    return this.processDocument("invoice", imageBuffer, rawText, mimeType);
+  }
+
+  private async processDocument(
+    documentType: "recipe" | "invoice",
+    imageBuffer?: Buffer,
+    rawText?: string,
+    mimeType?: string
+  ): Promise<any> {
+    const inlineDataParts: any[] = [];
+
+    if (imageBuffer) {
+      inlineDataParts.push({
+        inlineData: {
+          mimeType: mimeType || "image/jpeg",
+          data: imageBuffer.toString("base64")
+        }
+      });
+    }
+
+    const genConfig = {
+      responseMimeType: "application/json",
+      responseSchema: documentType === "recipe" ? recipeResponseSchema : invoiceSchema,
+      systemInstruction: `You are an expert culinary and back-office AI. Extract structured data from the provided document. For recipes, extract an array of ALL recipes found in the document under the 'recipes' key. 
+- You MUST aggressively search for all distinct recipes and group them into the 'recipes' array. DO NOT return an empty array if you see any culinary content.
+- For vessels/pans, if dimensions are mentioned (e.g., 9x13 pan), automatically calculate the volumeMl (e.g., 9 * 13 * 2 (height) * 16.387 = ~3800ml) and set shape to RECTANGULAR.
+- Extract any cooking/prep times into timerDurationSeconds accurately.
+The requested document type is: ${documentType}`
+    };
+
+    let responseText = "";
+
+    if (inlineDataParts.length > 0) {
+      const contents: any[] = [...inlineDataParts];
+      if (rawText) contents.push({ text: rawText });
+      contents.push({ text: `Extract the ${documentType} data from this document.` });
+      
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents,
+        config: genConfig
+      });
+      responseText = response.text || "{}";
+    } else if (rawText) {
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: rawText,
+        config: genConfig
+      });
+      responseText = response.text || "{}";
+    } else {
+      return {};
+    }
+
+    return JSON.parse(responseText);
+  }
+}
+```
+
 ## File: modules/ingestion/ingestion.controller.ts
 ```typescript
-import { Controller, Post, Body, Param, Get, Delete, UsePipes } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Delete,
+  UsePipes,
+} from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { ApiResponse, IngestionPayload, OcrInvoiceIngestionPayloadSchema, OcrInvoiceIngestionPayload } from "@soustools/api-types";
+import {
+  ApiResponse,
+  IngestionPayload,
+  OcrInvoiceIngestionPayloadSchema,
+  OcrInvoiceIngestionPayload,
+} from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import { supabase } from "../../lib/supabase";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 
 @Controller("ingestion")
 export class IngestionController {
+
   constructor(
     @InjectQueue("ingestion") private readonly ingestionQueue: Queue,
   ) {}
@@ -632,7 +1249,7 @@ export class IngestionController {
     return runControllerAction(async () => {
       const orgId = "d0000000-0000-0000-0000-000000000000";
       const vendorName = payload.vendor.name;
-      
+
       const { data: vendor, error: findError } = await supabase
         .from("vendors")
         .select("*")
@@ -641,7 +1258,9 @@ export class IngestionController {
         .maybeSingle();
 
       if (findError) {
-        throw new Error(`Failed to check existing vendor: ${findError.message}`);
+        throw new Error(
+          `Failed to check existing vendor: ${findError.message}`,
+        );
       }
 
       const updateData = {
@@ -662,7 +1281,10 @@ export class IngestionController {
         if (updateError) {
           throw new Error(`Failed to update vendor: ${updateError.message}`);
         }
-        return { message: "Vendor updated successfully", vendor: updatedVendor };
+        return {
+          message: "Vendor updated successfully",
+          vendor: updatedVendor,
+        };
       } else {
         const { data: newVendor, error: insertError } = await supabase
           .from("vendors")
@@ -682,6 +1304,7 @@ export class IngestionController {
       }
     });
   }
+
 }
 ```
 
@@ -692,6 +1315,8 @@ import { BullModule } from "@nestjs/bullmq";
 import { IngestionController } from "./ingestion.controller";
 import { IngestionProcessor } from "./ingestion.processor";
 import { IntegrationsModule } from "../integrations/integrations.module";
+import { CloudVisionService } from "./CloudVisionService";
+import { OllamaVisionService } from "./OllamaVisionService";
 
 @Module({
   imports: [
@@ -701,7 +1326,19 @@ import { IntegrationsModule } from "../integrations/integrations.module";
     IntegrationsModule,
   ],
   controllers: [IngestionController],
-  providers: [IngestionProcessor],
+  providers: [
+    IngestionProcessor,
+    {
+      provide: "IVisionService",
+      useFactory: () => {
+        if (process.env.VISION_PROVIDER === "ollama") {
+          return new OllamaVisionService();
+        }
+        return new CloudVisionService();
+      },
+    },
+  ],
+  exports: ["IVisionService"],
 })
 export class IngestionModule {}
 ```
@@ -713,12 +1350,15 @@ import { Job } from "bullmq";
 import { IngestionPayload } from "@soustools/api-types";
 import { GoogleDriveService } from "../integrations/google-drive.service";
 import { supabase } from "../../lib/supabase";
-import { GoogleGenAI, Type } from "@google/genai";
-import { config } from "@soustools/config";
+import { Inject } from "@nestjs/common";
+import { IVisionService } from "./IVisionService";
 
 @Processor("ingestion")
 export class IngestionProcessor extends WorkerHost {
-  constructor(private readonly driveService: GoogleDriveService) {
+  constructor(
+    private readonly driveService: GoogleDriveService,
+    @Inject("IVisionService") private readonly visionService: IVisionService
+  ) {
     super();
   }
 
@@ -743,102 +1383,10 @@ export class IngestionProcessor extends WorkerHost {
         }
       }
 
-      const ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
-      
-      const recipeSchema = {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          yieldCount: { type: Type.NUMBER },
-          yieldUnit: { type: Type.STRING },
-          sourceBook: { type: Type.STRING, description: "Book or publication title if visible" },
-          sourceAuthor: { type: Type.STRING, description: "Author of the recipe if visible" },
-          sourcePageStart: { type: Type.NUMBER },
-          sourcePageEnd: { type: Type.NUMBER },
-          vessel: {
-            type: Type.OBJECT,
-            properties: {
-              name: { type: Type.STRING },
-              shape: { type: Type.STRING, enum: ["ROUND", "RECTANGULAR"] },
-              length: { type: Type.NUMBER },
-              width: { type: Type.NUMBER },
-              height: { type: Type.NUMBER },
-              diameter: { type: Type.NUMBER },
-              volumeMl: { type: Type.NUMBER }
-            },
-            required: ["name", "shape", "volumeMl"]
-          },
-          ingredients: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                name: { type: Type.STRING },
-                amount: { type: Type.NUMBER },
-                unit: { type: Type.STRING },
-                component: { type: Type.STRING, description: "The component or section this ingredient belongs to, e.g., 'Dough', 'Glaze', 'Filling', 'Caramelized apples'. Leave null if the recipe has no sections." },
-                calculationType: { type: Type.STRING, enum: ["WEIGHT", "VOLUME", "COUNT"] },
-                prepNotes: { type: Type.STRING, description: "e.g., diced, melted, room temp" }
-              },
-              required: ["name", "amount", "unit"]
-            }
-          },
-          instructions: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                text: { type: Type.STRING, description: "The instruction text" },
-                stepNumber: { type: Type.NUMBER },
-                timerDurationSeconds: { type: Type.NUMBER, description: "If a duration is mentioned in this step, convert it to seconds" }
-              },
-              required: ["text", "stepNumber"]
-            }
-          },
-          prepTimeMinutes: { type: Type.NUMBER, description: "Preparation time in minutes" },
-          cookTimeMinutes: { type: Type.NUMBER, description: "Cooking/baking/proofing time in minutes" }
-        },
-        required: ["title", "ingredients", "instructions"]
-      };
-
-      const recipeResponseSchema = {
-        type: Type.OBJECT,
-        properties: {
-          recipes: {
-            type: Type.ARRAY,
-            items: recipeSchema
-          }
-        },
-        required: ["recipes"]
-      };
-
-      const invoiceSchema = {
-        type: Type.OBJECT,
-        properties: {
-          vendorName: { type: Type.STRING },
-          invoiceNumber: { type: Type.STRING },
-          date: { type: Type.STRING },
-          totalAmount: { type: Type.NUMBER },
-          items: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                rawName: { type: Type.STRING },
-                quantity: { type: Type.NUMBER },
-                pricePerUnit: { type: Type.NUMBER },
-                totalPrice: { type: Type.NUMBER }
-              },
-              required: ["rawName", "quantity", "pricePerUnit"]
-            }
-          }
-        },
-        required: ["vendorName", "items"]
-      };
-
       let parsedData: any = {};
       const actualSourceDocumentUrl = job.data.sourceDocumentUrl || sourceDocumentUrl;
-      const inlineDataParts: any[] = [];
+      let buffer: Buffer | undefined = undefined;
+      let mimeType: string | undefined = undefined;
 
       if (actualSourceDocumentUrl) {
         try {
@@ -851,15 +1399,11 @@ export class IngestionProcessor extends WorkerHost {
             if (downloadErr) throw downloadErr;
             if (fileData) {
               const arrayBuffer = await fileData.arrayBuffer();
-              const buffer = Buffer.from(arrayBuffer);
-              let mimeType = fileData.type || "image/jpeg";
-              if (actualSourceDocumentUrl.toLowerCase().endsWith(".pdf")) mimeType = "application/pdf";
-              inlineDataParts.push({
-                inlineData: {
-                  mimeType,
-                  data: buffer.toString("base64")
-                }
-              });
+              buffer = Buffer.from(arrayBuffer);
+              mimeType = fileData.type || "image/jpeg";
+              if (actualSourceDocumentUrl.toLowerCase().endsWith(".pdf")) {
+                mimeType = "application/pdf";
+              }
             }
           }
         } catch (fetchErr) {
@@ -867,35 +1411,12 @@ export class IngestionProcessor extends WorkerHost {
         }
       }
 
-      // 2. Run Gemini Extraction
-      const genConfig = {
-        responseMimeType: "application/json",
-        responseSchema: documentType === "recipe" ? recipeResponseSchema : (documentType === "invoice" ? invoiceSchema : undefined),
-        systemInstruction: `You are an expert culinary and back-office AI. Extract structured data from the provided document. For recipes, extract an array of ALL recipes found in the document under the 'recipes' key. 
-- You MUST aggressively search for all distinct recipes and group them into the 'recipes' array. DO NOT return an empty array if you see any culinary content.
-- For vessels/pans, if dimensions are mentioned (e.g., 9x13 pan), automatically calculate the volumeMl (e.g., 9 * 13 * 2 (height) * 16.387 = ~3800ml) and set shape to RECTANGULAR.
-- Extract any cooking/prep times into timerDurationSeconds accurately.
-The requested document type is: ${documentType}`
-      };
-
-      if (inlineDataParts.length > 0) {
-        const contents: any[] = [...inlineDataParts];
-        if (rawText) contents.push({ text: rawText });
-        contents.push({ text: `Extract the ${documentType} data from this document.` });
-        
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents,
-          config: genConfig
-        });
-        parsedData = JSON.parse(response.text || "{}");
-      } else if (rawText) {
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: rawText,
-          config: genConfig
-        });
-        parsedData = JSON.parse(response.text || "{}");
+      if (documentType === "recipe") {
+        parsedData = await this.visionService.processRecipe(buffer, rawText, mimeType);
+      } else if (documentType === "invoice") {
+        parsedData = await this.visionService.processInvoice(buffer, rawText, mimeType);
+      } else {
+        throw new Error(`Unsupported document type: ${documentType}`);
       }
 
       // 3. Save Ingestion Review
@@ -948,6 +1469,124 @@ The requested document type is: ${documentType}`
     }
 
     return { success: true };
+  }
+}
+```
+
+## File: modules/ingestion/IVisionService.ts
+```typescript
+export interface IVisionService {
+  processRecipe(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any>;
+  processInvoice(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any>;
+}
+```
+
+## File: modules/ingestion/OllamaVisionService.ts
+```typescript
+import { Injectable } from "@nestjs/common";
+import { IVisionService } from "./IVisionService";
+
+@Injectable()
+export class OllamaVisionService implements IVisionService {
+  async processRecipe(imageBuffer?: Buffer, rawText?: string, _mimeType?: string): Promise<any> {
+    const prompt = `You are an expert culinary AI. Extract structured recipe data from the provided document.
+Return a JSON object containing a "recipes" array. Each recipe in the array must strictly follow this structure:
+{
+  "title": "string (name of the recipe)",
+  "yieldCount": 12, // number
+  "yieldUnit": "pieces/servings",
+  "sourceBook": "string",
+  "sourceAuthor": "string",
+  "sourcePageStart": 1,
+  "sourcePageEnd": 2,
+  "vessel": {
+    "name": "pan name",
+    "shape": "ROUND" or "RECTANGULAR",
+    "length": 9,
+    "width": 13,
+    "height": 2,
+    "diameter": 0,
+    "volumeMl": 3800
+  },
+  "ingredients": [
+    {
+      "name": "flour",
+      "amount": 500,
+      "unit": "g",
+      "component": "Dough",
+      "calculationType": "WEIGHT", // WEIGHT, VOLUME, or COUNT
+      "prepNotes": "sifted"
+    }
+  ],
+  "instructions": [
+    {
+      "text": "Mix ingredients.",
+      "stepNumber": 1,
+      "timerDurationSeconds": 300
+    }
+  ],
+  "prepTimeMinutes": 15,
+  "cookTimeMinutes": 30
+}
+${rawText ? `Additional extracted text context: ${rawText}` : ""}`;
+
+    return this.queryOllama(prompt, imageBuffer, _mimeType);
+  }
+
+  async processInvoice(imageBuffer?: Buffer, rawText?: string, _mimeType?: string): Promise<any> {
+    const prompt = `You are an expert back-office AI. Extract structured invoice data from the provided document.
+Return a JSON object following this structure:
+{
+  "vendorName": "string",
+  "invoiceNumber": "string",
+  "date": "string",
+  "totalAmount": 123.45,
+  "items": [
+    {
+      "rawName": "string",
+      "quantity": 2,
+      "pricePerUnit": 10.50,
+      "totalPrice": 21.00
+    }
+  ]
+}
+${rawText ? `Additional extracted text context: ${rawText}` : ""}`;
+
+    return this.queryOllama(prompt, imageBuffer, _mimeType);
+  }
+
+  private async queryOllama(prompt: string, imageBuffer?: Buffer, _mimeType?: string): Promise<any> {
+    let host = process.env.OLLAMA_HOST || "http://localhost:11434";
+    if (!host.endsWith("/api/generate")) {
+      host = host.replace(/\/$/, "") + "/api/generate";
+    }
+
+    const payload = {
+      model: process.env.OLLAMA_MODEL || "llama3.2-vision",
+      prompt,
+      images: imageBuffer ? [imageBuffer.toString("base64")] : [],
+      stream: false,
+      format: "json"
+    };
+
+    const response = await fetch(host, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama request failed with status ${response.status}`);
+    }
+
+    const data = await response.json() as { response?: string };
+    if (!data.response) {
+      throw new Error("Invalid response received from Ollama");
+    }
+
+    return JSON.parse(data.response);
   }
 }
 ```
@@ -3368,6 +4007,44 @@ export class WhiteboardService {
 }
 ```
 
+## File: modules/metrics/metrics.controller.ts
+```typescript
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { SupabaseAuthGuard } from '../../lib/supabase-auth.guard';
+
+@Controller('metrics')
+@UseGuards(SupabaseAuthGuard)
+export class MetricsController {
+  
+  @Get('sales')
+  getSales() {
+    return { value: "Sales: $1.2k" };
+  }
+
+  @Get('ticket-time')
+  getTicketTime() {
+    return { value: "Avg: 4m 12s" };
+  }
+
+  @Get('low-stock')
+  getLowStock() {
+    return { value: "3 Items Low" };
+  }
+}
+```
+
+## File: modules/metrics/metrics.module.ts
+```typescript
+import { Module } from '@nestjs/common';
+import { MetricsController } from './metrics.controller';
+
+@Module({
+  controllers: [MetricsController],
+  providers: [],
+})
+export class MetricsModule {}
+```
+
 ## File: modules/nutrition/dietary-classifier.service.ts
 ```typescript
 import { Injectable, Logger } from '@nestjs/common';
@@ -5441,234 +6118,6 @@ export class VesselsService {
 }
 ```
 
-## File: modules/signage/devices.controller.ts
-```typescript
-import {
-  Controller,
-  Get,
-  Put,
-  Post,
-  Body,
-  Param,
-} from "@nestjs/common";
-import { DevicesService } from "./devices.service";
-import { ApiResponse, SignageDevice } from "@soustools/api-types";
-import { runControllerAction } from "./response.helper";
-
-/**
- * Controller managing signage hardware device settings.
- *
- * @tenant-docs-export
- * Manages settings for paired hardware displays such as timezone and maintenance window settings.
- */
-@Controller("signage/devices")
-export class DevicesController {
-  constructor(private readonly devicesService: DevicesService) {}
-
-  /**
-   * Registers a new physical device, returning its assigned ID and 6-digit pairing code.
-   * This is called by the Pi on first boot when it has no tenant config.
-   */
-  @Post("register")
-  async register(): Promise<ApiResponse<{ deviceId: string; pairingCode: string }>> {
-    return runControllerAction(() => this.devicesService.register());
-  }
-
-  /**
-   * Poll endpoint for the Pi to check if a user has entered its pairing code.
-   */
-  @Get(":deviceId/status")
-  async getStatus(@Param("deviceId") deviceId: string): Promise<ApiResponse<{ paired: boolean; supabaseUrl?: string; supabaseAnonKey?: string }>> {
-    return runControllerAction(() => this.devicesService.getStatus(deviceId));
-  }
-
-  /**
-   * Loads the paired device's current settings.
-   */
-  @Get(":deviceId")
-  async findOne(@Param("deviceId") deviceId: string): Promise<ApiResponse<SignageDevice>> {
-    return runControllerAction(() => this.devicesService.findOne(deviceId));
-  }
-
-  /**
-   * Saves the updated device configuration.
-   */
-  @Put(":deviceId")
-  async update(
-    @Param("deviceId") deviceId: string,
-    @Body("name") name?: string,
-    @Body("timezone") timezone?: string,
-    @Body("maintenanceWindow") maintenanceWindow?: {
-      hour: number;
-      minute: number;
-      dayOfWeek: number | null;
-    },
-  ): Promise<ApiResponse<SignageDevice>> {
-    return runControllerAction(() =>
-      this.devicesService.update(deviceId, name, timezone, maintenanceWindow),
-    );
-  }
-}
-```
-
-## File: modules/signage/devices.service.ts
-```typescript
-import { Injectable } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
-import { SignageDevice } from "@soustools/api-types";
-import { config } from "@soustools/config";
-
-interface DbDeviceRow {
-  id: string;
-  organization_id: string;
-  name: string;
-  pairing_code: string;
-  is_paired: boolean;
-  last_seen_at: string | null;
-  timezone: string;
-  maintenance_window: {
-    hour: number;
-    minute: number;
-    day_of_week: string | number;
-  };
-  created_at: string;
-}
-
-interface MaintenanceWindowInput {
-  hour: number;
-  minute: number;
-  dayOfWeek: number | null;
-}
-
-/**
- * Service managing hardware signage devices.
- * Handles loading and updating device-specific configurations
- * like timezones and maintenance windows.
- *
- * @tenant-docs-export
- * Timezones and maintenance windows can be configured per paired hardware device
- * to ensure updates and restarts occur during off-hours.
- */
-@Injectable()
-export class DevicesService {
-  /**
-   * Registers a new device natively from the Pi, returning a pairing code.
-   */
-  async register(): Promise<{ deviceId: string; pairingCode: string }> {
-    const pairingCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const { data, error } = await supabase
-      .from("signage_devices")
-      .insert([{
-        name: "Unpaired Device",
-        pairing_code: pairingCode,
-        is_paired: false,
-        timezone: "UTC",
-        maintenance_window: { hour: 3, minute: 0, day_of_week: null },
-      }])
-      .select("id, pairing_code")
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-    return { deviceId: data.id, pairingCode: data.pairing_code };
-  }
-
-  /**
-   * Checks pairing status. If paired, returns the auth config for the Pi.
-   */
-  async getStatus(id: string): Promise<{ paired: boolean; supabaseUrl?: string; supabaseAnonKey?: string }> {
-    const { data, error } = await supabase
-      .from("signage_devices")
-      .select("is_paired")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    if (data.is_paired) {
-      return {
-        paired: true,
-        supabaseUrl: config.SUPABASE_URL,
-        supabaseAnonKey: config.SUPABASE_ANON_KEY,
-      };
-    }
-    return { paired: false };
-  }
-
-  /**
-   * Fetches a single paired hardware device's settings by ID.
-   */
-  async findOne(id: string): Promise<SignageDevice> {
-    const { data, error } = await supabase
-      .from("signage_devices")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-    return this.mapRow(data as DbDeviceRow);
-  }
-
-  /**
-   * Updates a paired hardware device's settings.
-   */
-  async update(
-    id: string,
-    name?: string,
-    timezone?: string,
-    maintenanceWindow?: MaintenanceWindowInput,
-  ): Promise<SignageDevice> {
-    const updateData: Record<string, unknown> = {};
-    if (name !== undefined) updateData.name = name;
-    if (timezone !== undefined) updateData.timezone = timezone;
-    if (maintenanceWindow !== undefined) {
-      updateData.maintenance_window = {
-        hour: maintenanceWindow.hour,
-        minute: maintenanceWindow.minute,
-        day_of_week: maintenanceWindow.dayOfWeek,
-      };
-    }
-
-    const { data, error } = await supabase
-      .from("signage_devices")
-      .update(updateData)
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-    return this.mapRow(data as DbDeviceRow);
-  }
-
-  private mapRow(row: DbDeviceRow): SignageDevice {
-    return {
-      id: row.id,
-      organizationId: row.organization_id,
-      name: row.name,
-      pairingCode: row.pairing_code,
-      isPaired: row.is_paired,
-      lastSeenAt: row.last_seen_at,
-      timezone: row.timezone,
-      maintenanceWindow: {
-        hour: row.maintenance_window?.hour ?? 3,
-        minute: row.maintenance_window?.minute ?? 0,
-        dayOfWeek: typeof row.maintenance_window?.day_of_week === "number"
-          ? row.maintenance_window.day_of_week
-          : null,
-      },
-      createdAt: row.created_at,
-    };
-  }
-}
-```
-
 ## File: modules/signage/displays.controller.ts
 ```typescript
 import {
@@ -6389,15 +6838,13 @@ import { Module } from "@nestjs/common";
 import { SignageGateway } from "./signage.gateway";
 import { LayoutsService } from "./layouts.service";
 import { DisplaysService } from "./displays.service";
-import { DevicesService } from "./devices.service";
 import { LayoutsController } from "./layouts.controller";
 import { DisplaysController } from "./displays.controller";
-import { DevicesController } from "./devices.controller";
 
 @Module({
-  controllers: [LayoutsController, DisplaysController, DevicesController],
-  providers: [SignageGateway, LayoutsService, DisplaysService, DevicesService],
-  exports: [SignageGateway, LayoutsService, DisplaysService, DevicesService],
+  controllers: [LayoutsController, DisplaysController],
+  providers: [SignageGateway, LayoutsService, DisplaysService],
+  exports: [SignageGateway, LayoutsService, DisplaysService],
 })
 export class SignageModule {}
 ```
@@ -6452,7 +6899,8 @@ export class UsersModule {}
 
 ## File: app.controller.ts
 ```typescript
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Res } from "@nestjs/common";
+import { Response } from "express";
 import { AppService } from "./app.service";
 import { ApiResponse, HelloResponse } from "@soustools/api-types";
 
@@ -6484,6 +6932,15 @@ export class AppController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  @Get('favicon.ico')
+  getFavicon(@Res() res: Response) {
+    const pixel = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+      'base64'
+    );
+    res.type('image/png').send(pixel);
+  }
 }
 ```
 
@@ -6503,6 +6960,9 @@ import { NutritionModule } from "./modules/nutrition/nutrition.module";
 import { ItemsModule } from "./modules/items/items.module";
 import { PosModule } from "./modules/pos/pos.module";
 import { UsersModule } from "./modules/users/users.module";
+import { CommandsModule } from "./modules/commands/commands.module";
+import { DevicesModule } from "./modules/devices/devices.module";
+import { MetricsModule } from "./modules/metrics/metrics.module";
 
 import { AppGraphQLModule } from "./graphql/graphql.module";
 import { HealthModule } from "./health/health.module";
@@ -6539,6 +6999,9 @@ import { HealthModule } from "./health/health.module";
     ItemsModule,
     PosModule,
     UsersModule,
+    CommandsModule,
+    DevicesModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -6583,7 +7046,6 @@ import { logger, patchConsole } from "@soustools/logger";
 
 patchConsole();
 
-
 import * as express from "express";
 
 /**
@@ -6596,7 +7058,7 @@ import * as express from "express";
  */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { rawBody: true });
-  
+
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
@@ -6607,8 +7069,8 @@ async function bootstrap(): Promise<void> {
   app.enableCors();
 
   const port = config.PORT;
-  await app.listen(port);
-  logger.info(`Application is running on: http://localhost:${port}`);
+  await app.listen(config.PORT, "0.0.0.0");
+  logger.info(`Application is running on: http://0.0.0.0:${port}`);
 }
 
 bootstrap().catch((err: unknown) => {

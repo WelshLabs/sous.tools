@@ -7,9 +7,9 @@
  *  + packages/ui/src/styles.css + .gemini/docs/brand-identity.md)
  *
  *  Neon-Glass Design Language:
- *    Dark Background   → #09090b  (midnight slate, migrated from slate-900)
- *    Card Surfaces     → #121212  (elevated midnight, migrated from slate-800)
- *    Foreground/White  → #f8fafc  (slate-50)
+ *    Dark Background   → #09090b  (midnight slate, migrated from zinc-950)
+ *    Card Surfaces     → #121212  (elevated midnight, migrated from zinc-900)
+ *    Foreground/White  → #f8fafc  (zinc-50)
  *    Primary Cyan      → #4cc9f0  (from sous-theme.kdl `fg` / `cyan`)
  *    Neon Pink Accent  → #f72585  (from sous-theme.kdl `magenta`)
  *    Destructive/Red   → #f43f5e  (from sous-theme.kdl `red`)
@@ -27,15 +27,15 @@
 
   /* Base surfaces */
   --color-background:          #09090b;   /* midnight slate */
-  --color-foreground:          #f8fafc;   /* slate-50 */
+  --color-foreground:          #f8fafc;   /* zinc-50 */
 
   /* Card / Elevated surfaces */
   --color-card:                #121212;   /* elevated midnight */
-  --color-card-foreground:     #f8fafc;   /* slate-50 */
+  --color-card-foreground:     #f8fafc;   /* zinc-50 */
 
   /* Popover / Overlay surfaces */
   --color-popover:             #121212;   /* elevated midnight */
-  --color-popover-foreground:  #f8fafc;   /* slate-50 */
+  --color-popover-foreground:  #f8fafc;   /* zinc-50 */
 
   /* Primary — Neon-Glass Cyan #4cc9f0 */
   --color-primary:             #4cc9f0;

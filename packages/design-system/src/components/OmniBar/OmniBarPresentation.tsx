@@ -14,6 +14,7 @@ export interface OmniBarPresentationProps {
   onToggle: () => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onMicClick: () => void;
 }
 
 export function OmniBarPresentation({
@@ -25,6 +26,7 @@ export function OmniBarPresentation({
   onToggle,
   onChange,
   onKeyDown,
+  onMicClick,
 }: OmniBarPresentationProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isMultiLine, setIsMultiLine] = useState(false);
@@ -58,8 +60,9 @@ export function OmniBarPresentation({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-[var(--z-overlay)] backdrop-blur-md bg-black/60 pointer-events-auto"
-              onClick={onToggle}
+              className="fixed inset-0 w-screen h-screen backdrop-blur-md bg-black/60 pointer-events-auto"
+              style={{ zIndex: 9999 }}
+              onClick={() => onToggle()}
             />
           )}
         </AnimatePresence>,
@@ -73,16 +76,19 @@ export function OmniBarPresentation({
             <motion.div
               key="expanded-omnibar"
               layoutId="omnibar-container"
-              className={`fixed z-[var(--z-modal)] overflow-hidden flex items-center
+              className={`fixed overflow-hidden flex items-center
                 top-1/4 left-[10%] right-[10%] md:left-[20%] md:right-[20%] lg:left-[25%] lg:right-[25%] bg-[var(--color-card)] border shadow-2xl transition-all duration-300 ${isMultiLine ? 'rounded-[32px] p-6' : 'rounded-full p-4 px-6'}`}
               style={{
+                zIndex: 10000,
                 boxShadow: isListening ? `0 0 ${20 + volume * 60}px var(--color-primary)` : undefined,
                 borderColor: isListening ? "var(--color-primary)" : "var(--color-border)",
                 transition: "border-color 0.2s ease-out, box-shadow 0.1s linear, border-radius 0.2s ease-in-out"
               }}
             >
               <div className="w-full flex items-center gap-4 pointer-events-auto cursor-default">
-                <Mic className={`w-6 h-6 flex-shrink-0 ${isListening ? 'text-[var(--color-primary)]' : 'text-muted-foreground'}`} />
+                <button onClick={onMicClick} type="button" className="focus:outline-none flex-shrink-0">
+                  <Mic className={`w-6 h-6 ${isListening ? 'text-[var(--color-primary)]' : 'text-muted-foreground'}`} />
+                </button>
                 <textarea
                   ref={textareaRef}
                   value={inputText}
@@ -145,7 +151,9 @@ export function OmniBarPresentation({
                 className="w-full flex items-center gap-4 pointer-events-auto cursor-default"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Mic className={`w-6 h-6 flex-shrink-0 ${isListening ? 'text-[var(--color-primary)]' : 'text-muted-foreground'}`} />
+                <button onClick={onMicClick} type="button" className="focus:outline-none flex-shrink-0">
+                  <Mic className={`w-6 h-6 ${isListening ? 'text-[var(--color-primary)]' : 'text-muted-foreground'}`} />
+                </button>
                 <textarea
                   ref={textareaRef}
                   value={inputText}

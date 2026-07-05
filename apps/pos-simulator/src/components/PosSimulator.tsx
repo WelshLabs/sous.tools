@@ -90,19 +90,19 @@ export const PosSimulator: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 bg-slate-950 p-6 rounded-2xl border border-slate-800 text-slate-100 max-w-4xl mx-auto">
-      <header className="flex justify-between items-center pb-3 border-b border-slate-800">
+    <div className="space-y-4 bg-zinc-950 p-6 rounded-2xl border border-zinc-900 text-zinc-100 max-w-4xl mx-auto">
+      <header className="flex justify-between items-center pb-3 border-b border-zinc-900">
         <div>
-          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-amber-500" /> POS Simulator Panel
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-zinc-400">
             Simulate Point of Sale menu webhook updates. Changes trigger instant socket push updates.
           </p>
         </div>
         <button
           onClick={fetchItems}
-          className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+          className="p-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 cursor-pointer"
         >
           <RotateCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>

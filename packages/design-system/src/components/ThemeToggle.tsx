@@ -13,9 +13,9 @@ import { useTheme } from "next-themes";
  * server/client divergence).
  *
  * Color intent maps to the Neon-Glass semantic tokens:
- * - Rest:  `--color-muted-foreground` (slate-400)
- * - Hover: `--color-foreground`       (slate-50)
- * - Hover background: `--color-card`  (slate-800) @ 50%
+ * - Rest:  `--color-muted-foreground` (zinc-400)
+ * - Hover: `--color-foreground`       (zinc-50)
+ * - Hover background: `--color-card`  (zinc-900) @ 50%
  *
  * @tenant-docs-export
  * # ThemeToggle

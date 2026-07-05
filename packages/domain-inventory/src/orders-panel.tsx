@@ -12,7 +12,7 @@ import {
   OrderLineItem,
   OrderSupplier,
   inferVendorForItem,
-} from "@soustools/ui";
+} from "@soustools/design-system";
 import type { Vendor, WhiteboardItem } from "@soustools/api-types";
 
 function toOrderSupplier(v: Vendor): OrderSupplier {

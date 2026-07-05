@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
+import { useOmnibarContext } from "./OmniBarContext";
 
 export function OmniBarContainer() {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
+  const { contextPayload } = useOmnibarContext();
 
   // If we are on the OS focus page, it should always be expanded.
   // Otherwise, it can be toggled via the circular button in the app bar.
@@ -68,11 +70,27 @@ export function OmniBarContainer() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (inputText.trim()) {
         console.log("Submitting:", inputText);
+        
+        try {
+          await fetch('/api/commands', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              command: inputText.trim(),
+              source: 'omnibar',
+              path: pathname,
+              context: contextPayload,
+            })
+          });
+        } catch (error) {
+          console.error("Failed to submit command:", error);
+        }
+
         setInputText("");
         setIsListening(false);
         if (!isFocusPage) setIsExpanded(false);
@@ -81,6 +99,38 @@ export function OmniBarContainer() {
       e.preventDefault();
       if (!isFocusPage) setIsExpanded(false);
     }
+  };
+
+  const handleMicClick = () => {
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser.");
+      return;
+    }
+    
+    setIsListening(true);
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0].transcript)
+        .join("");
+      setInputText(transcript);
+    };
+    
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    recognition.start();
   };
 
   // Global escape listener for when textarea is not focused
@@ -104,6 +154,7 @@ export function OmniBarContainer() {
       onToggle={handleToggle}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
+      onMicClick={handleMicClick}
     />
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@soustools/ui";
+import { Button } from "@soustools/design-system";
 import { X, Loader2 } from "lucide-react";
 import { DeviceSettingsForm } from "./device-settings-form";
 

@@ -12,6 +12,9 @@ import { NutritionModule } from "./modules/nutrition/nutrition.module";
 import { ItemsModule } from "./modules/items/items.module";
 import { PosModule } from "./modules/pos/pos.module";
 import { UsersModule } from "./modules/users/users.module";
+import { CommandsModule } from "./modules/commands/commands.module";
+import { DevicesModule } from "./modules/devices/devices.module";
+import { MetricsModule } from "./modules/metrics/metrics.module";
 
 import { AppGraphQLModule } from "./graphql/graphql.module";
 import { HealthModule } from "./health/health.module";
@@ -48,6 +51,9 @@ import { HealthModule } from "./health/health.module";
     ItemsModule,
     PosModule,
     UsersModule,
+    CommandsModule,
+    DevicesModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

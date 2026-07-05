@@ -17,26 +17,26 @@ sleep 3
 chromium-browser --new-window \
   --ozone-platform=wayland \
   --enable-features=UseOzonePlatform \
-  --title="SignageDisplay1" \
+  --class="SignageOne" \
   --kiosk \
   --no-first-run \
   --no-default-browser-check \
   --disable-infobars \
   --disable-session-crashed-bubble \
-  --user-data-dir=/home/soustools/.config/chromium-display1 \
+  --user-data-dir="/tmp/chromium-1" \
   "$TV_ONE_URL" &
 
 # Launch Right Screen instance (HDMI-A-2)
 chromium-browser --new-window \
   --ozone-platform=wayland \
   --enable-features=UseOzonePlatform \
-  --title="SignageDisplay2" \
+  --class="SignageTwo" \
   --kiosk \
   --no-first-run \
   --no-default-browser-check \
   --disable-infobars \
   --disable-session-crashed-bubble \
-  --user-data-dir=/home/soustools/.config/chromium-display2 \
+  --user-data-dir="/tmp/chromium-2" \
   "$TV_TWO_URL" &
 
 # Wait for background processes to exit

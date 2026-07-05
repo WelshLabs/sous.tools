@@ -1,13 +1,27 @@
-import { Controller, Post, Body, Param, Get, Delete, UsePipes } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Delete,
+  UsePipes,
+} from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { ApiResponse, IngestionPayload, OcrInvoiceIngestionPayloadSchema, OcrInvoiceIngestionPayload } from "@soustools/api-types";
+import {
+  ApiResponse,
+  IngestionPayload,
+  OcrInvoiceIngestionPayloadSchema,
+  OcrInvoiceIngestionPayload,
+} from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import { supabase } from "../../lib/supabase";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 
 @Controller("ingestion")
 export class IngestionController {
+
   constructor(
     @InjectQueue("ingestion") private readonly ingestionQueue: Queue,
   ) {}
@@ -279,7 +293,7 @@ export class IngestionController {
     return runControllerAction(async () => {
       const orgId = "d0000000-0000-0000-0000-000000000000";
       const vendorName = payload.vendor.name;
-      
+
       const { data: vendor, error: findError } = await supabase
         .from("vendors")
         .select("*")
@@ -288,7 +302,9 @@ export class IngestionController {
         .maybeSingle();
 
       if (findError) {
-        throw new Error(`Failed to check existing vendor: ${findError.message}`);
+        throw new Error(
+          `Failed to check existing vendor: ${findError.message}`,
+        );
       }
 
       const updateData = {
@@ -309,7 +325,10 @@ export class IngestionController {
         if (updateError) {
           throw new Error(`Failed to update vendor: ${updateError.message}`);
         }
-        return { message: "Vendor updated successfully", vendor: updatedVendor };
+        return {
+          message: "Vendor updated successfully",
+          vendor: updatedVendor,
+        };
       } else {
         const { data: newVendor, error: insertError } = await supabase
           .from("vendors")
@@ -329,4 +348,5 @@ export class IngestionController {
       }
     });
   }
+
 }

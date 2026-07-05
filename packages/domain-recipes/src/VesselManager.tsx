@@ -165,7 +165,7 @@ export function VesselManager({
                 className={`${toggleBtnClass} ${
                   unitSystem === "cm"
                     ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-slate-300"
+                    : "text-zinc-400 hover:text-zinc-300"
                 }`}
               >
                 CM
@@ -175,7 +175,7 @@ export function VesselManager({
                 className={`${toggleBtnClass} ${
                   unitSystem === "in"
                     ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-slate-300"
+                    : "text-zinc-400 hover:text-zinc-300"
                 }`}
               >
                 IN
@@ -202,7 +202,7 @@ export function VesselManager({
                 className={`${toggleBtnClass} ${
                   volumeUnit === "ml"
                     ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-slate-300"
+                    : "text-zinc-400 hover:text-zinc-300"
                 }`}
               >
                 ML
@@ -212,7 +212,7 @@ export function VesselManager({
                 className={`${toggleBtnClass} ${
                   volumeUnit === "g"
                     ? "bg-white/10 text-white"
-                    : "text-slate-400 hover:text-slate-300"
+                    : "text-zinc-400 hover:text-zinc-300"
                 }`}
               >
                 G

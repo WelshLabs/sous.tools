@@ -92,7 +92,7 @@ export function BlockEditorNode({
         <div className="p-3 bg-cyan-500/20 rounded-full group-hover:scale-110 transition-transform">
           <Icon className="w-6 h-6 text-cyan-400" />
         </div>
-        <span className="mt-3 text-xs font-bold text-slate-300 uppercase tracking-widest text-center">
+        <span className="mt-3 text-xs font-bold text-zinc-300 uppercase tracking-widest text-center">
           {text}
         </span>
       </div>
@@ -269,7 +269,7 @@ export function BlockEditorNode({
                 {!(block as any).hideDescription && explodedItem.description && <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{explodedItem.description}</span>}
               </>
             ) : (
-              <span className="text-[10px] font-bold text-slate-400 italic">Select a base POS item from Block Settings</span>
+              <span className="text-[10px] font-bold text-zinc-400 italic">Select a base POS item from Block Settings</span>
             )}
           </div>
           

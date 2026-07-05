@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { SignageDisplay } from "@soustools/api-types";
-import { Button } from "@soustools/ui";
+import { Button } from "@soustools/design-system";
 import { Monitor, Plus, RefreshCw } from "lucide-react";
 import { PairDisplayDialog } from "./pair-display-dialog";
 import { DisplayCard } from "./display-card";

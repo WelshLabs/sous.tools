@@ -48,3 +48,23 @@ deploy/ansible/group_vars/all/vault.yml
 deploy/ansible/inventory.ini
 
 mcp_config.bu.json
+
+ssh-key.key
+ssh-key.pub
+
+# Repomix Context Files (Massive Markdown files)
+.context/
+
+# Playwright Test Results & Error Traces
+apps/web/test-results/
+apps/web/playwright-report/
+
+# CLI Textbook Parsing Outputs
+apps/cli/output/
+apps/cli/queue/
+
+# Raspberry Pi OS Build Artifacts
+deploy/pi/pi-gen/deploy/
+deploy/pi/pi-gen/work/*.deb
+
+*.deb

@@ -16,8 +16,8 @@ export interface InputProps
  * Atomic Input component for the Neon-Glass design system.
  *
  * Renders a single-line text input with semantic token styling:
- * - Background: `--color-input` (slate-800 in dark)
- * - Border: `--color-border` (slate-700 in dark)
+ * - Background: `--color-input` (zinc-900 in dark)
+ * - Border: `--color-border` (zinc-800 in dark)
  * - Focus ring: `--color-ring` (cyan #4cc9f0)
  * - Error state: `--color-destructive` (rose-500 #f43f5e)
  *

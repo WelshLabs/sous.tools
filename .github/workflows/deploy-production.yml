@@ -1,0 +1,70 @@
+name: Deploy Production API to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/api/**'
+      - 'docker-compose.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          infisical-token: ${{ secrets.INFISICAL_TOKEN }}
+          export-env: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ env.SIGNAGE_GITHUB_PAT }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/soustools-api:latest
+
+      - name: Copy docker-compose to Oracle Cloud
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.ORACLE_HOST }}
+          username: ubuntu
+          key: ${{ env.ORACLE_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/home/ubuntu"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          SIGNAGE_GITHUB_PAT: ${{ env.SIGNAGE_GITHUB_PAT }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        with:
+          host: ${{ env.ORACLE_HOST }}
+          username: ubuntu
+          key: ${{ env.ORACLE_SSH_KEY }}
+          envs: SIGNAGE_GITHUB_PAT,GITHUB_REPOSITORY_OWNER
+          script: |
+            echo ${{ secrets.INFISICAL_GITHUB_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            docker-compose pull
+            docker-compose up -d
+            docker exec ollama ollama pull llama3.2-vision
+            docker exec ollama ollama pull nomic-embed-text
