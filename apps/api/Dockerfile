@@ -1,5 +1,7 @@
 # Base image explicitly targeting ARM64
 FROM node:24-alpine AS base
+ARG APP_VERSION
+ENV APP_VERSION=${APP_VERSION}
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable

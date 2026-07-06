@@ -24,7 +24,7 @@ jobs:
       - name: Build OS Image with pi-gen
         run: |
           cd deploy/pi/pi-gen
-          sudo ./build.sh
+          sudo ./build-docker.sh
 
       - name: Fetch Infisical Secrets
         uses: infisical/secrets-action@v1.0.8

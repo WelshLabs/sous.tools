@@ -14,7 +14,7 @@ export class AppService {
   getHelloData(): HelloResponse {
     return {
       message: "Hello World from Sous Tools API!",
-      version: "1.0.0",
+      version: process.env.APP_VERSION || "dev-local",
       status: "healthy",
     };
   }
