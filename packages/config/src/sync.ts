@@ -8,7 +8,7 @@ import * as dotenv from "dotenv";
 // Do not attempt to run this file-sync script in the cloud.
 if (process.env.VERCEL) {
   console.log("Vercel environment detected. Skipping local Infisical sync.");
-  return;
+  process.exit(0);
 }
 
 const __filename = fileURLToPath(import.meta.url);
