@@ -57,10 +57,8 @@ The content is organized as follows:
   AGENTS.md
 .github/
   workflows/
-    deploy-api.yml
     deploy-production.yml
     deploy-signage-os.yml
-    deploy.yml
     flatten-codebase.yml
 apps/
   api/
@@ -247,15 +245,6 @@ apps/
   wearos/
     app/
       src/
-        debug/
-          res/
-            drawable/
-              ic_launcher_background.xml
-              ic_launcher_foreground.xml
-            mipmap-anydpi/
-              ic_launcher.xml
-            mipmap-anydpi-v26/
-              ic_launcher.xml
         main/
           java/
             com/
@@ -283,7 +272,7 @@ apps/
               ic_launcher_foreground.xml
               ic_mic.xml
               splash_icon.xml
-            mipmap-anydpi/
+            mipmap-anydpi-v26/
               ic_launcher_round.xml
               ic_launcher.xml
             mipmap-hdpi/
@@ -302,6 +291,7 @@ apps/
               ic_launcher_round.webp
               ic_launcher.webp
             values/
+              ic_launcher_background.xml
               strings.xml
               styles.xml
             values-round/
@@ -916,7 +906,6 @@ bake_install.txt
 docker-compose.dev.yml
 docker-compose.yml
 flatten.py
-google-chrome-stable_current_amd64.deb
 ingestion.json
 package.json
 pnpm-workspace.yaml
@@ -974,133 +963,6 @@ To run migrations or check status using Supabase CLI:
 ```bash
 wsl bash -c "cd /home/conar/code/sous.tools && env PATH=/home/conar/.nvm/versions/node/v22.22.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin npx supabase status"
 ```
-````
-
-## File: .github/workflows/deploy-api.yml
-````yaml
-name: Deploy API to Oracle Cloud
-
-on:
-  push:
-    branches:
-      - main
-      - staging
-
-jobs:
-  build-and-push:
-    name: Build & Push NestJS API Docker Image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/api/Dockerfile
-          platforms: linux/arm64
-          push: true
-          tags: |
-            ghcr.io/soustools/api:${{ github.ref_name == 'main' && 'latest' || 'staging' }}
-            ghcr.io/soustools/api:${{ github.sha }}
-
-      - name: Deploy to Oracle Server
-        if: github.ref == 'refs/heads/main'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.ORACLE_HOST }}
-          username: ${{ secrets.ORACLE_USER }}
-          key: ${{ secrets.ORACLE_SSH_KEY }}
-          script: |
-            docker-compose pull api-prod && docker-compose up -d --no-deps api-prod
-````
-
-## File: .github/workflows/deploy-production.yml
-````yaml
-name: Deploy Production API to Oracle Cloud
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/api/**'
-      - 'docker-compose.yml'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          infisical-token: ${{ secrets.INFISICAL_TOKEN }}
-          export-env: true
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ env.SIGNAGE_GITHUB_PAT }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/api/Dockerfile
-          platforms: linux/arm64
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/soustools-api:latest
-
-      - name: Copy docker-compose to Oracle Cloud
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.ORACLE_HOST }}
-          username: ubuntu
-          key: ${{ env.ORACLE_SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "/home/ubuntu"
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          SIGNAGE_GITHUB_PAT: ${{ env.SIGNAGE_GITHUB_PAT }}
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-        with:
-          host: ${{ env.ORACLE_HOST }}
-          username: ubuntu
-          key: ${{ env.ORACLE_SSH_KEY }}
-          envs: SIGNAGE_GITHUB_PAT,GITHUB_REPOSITORY_OWNER
-          script: |
-            echo ${{ secrets.INFISICAL_GITHUB_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-            docker-compose pull
-            docker-compose up -d
-            docker exec ollama ollama pull llama3.2-vision
-            docker exec ollama ollama pull nomic-embed-text
 ````
 
 ## File: .github/workflows/flatten-codebase.yml
@@ -6365,62 +6227,6 @@ export default {
 }
 ````
 
-## File: apps/wearos/app/src/debug/res/drawable/ic_launcher_background.xml
-````xml
-<?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M0,0h108v108h-108z" />
-</vector>
-````
-
-## File: apps/wearos/app/src/debug/res/drawable/ic_launcher_foreground.xml
-````xml
-<?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <group
-        android:translateX="6"
-        android:translateY="6"
-        android:scaleX="0.5"
-        android:scaleY="0.5">
-        <path
-            android:fillColor="#22c55e"
-            android:pathData="M12,2C10.34,2 9,3.34 9,5H5C3.34,5 2,6.34 2,8V9C2,10.66 3.34,12 5,12H19C20.66,12 22,10.66 22,9V8C22,6.34 20.66,5 19,5H15C15,3.34 13.66,2 12,2ZM5,7H19V9H5V7Z" />
-    </group>
-</vector>
-````
-
-## File: apps/wearos/app/src/debug/res/mipmap-anydpi/ic_launcher.xml
-````xml
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#00FF00"
-        android:pathData="M54,54m-50,0a50,50 0,1,1 100,0a50,50 0,1,1 -100,0" />
-</vector>
-````
-
-## File: apps/wearos/app/src/debug/res/mipmap-anydpi-v26/ic_launcher.xml
-````xml
-<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-</adaptive-icon>
-````
-
 ## File: apps/wearos/app/src/main/java/com/sous/wearos/complication/DailySalesComplicationService.kt
 ````kotlin
 package com.sous.wearos.complication
@@ -6770,9 +6576,7 @@ fun MainAppRouter() {
     var isPaired by remember { mutableStateOf<Boolean?>(null) }
     
     LaunchedEffect(Unit) {
-        Log.d("SousAuth", "Checking pairing status...")
         val token = withContext(Dispatchers.IO) { TokenManager.getToken(context).firstOrNull() }
-        Log.d("SousAuth", "Token found: ${token != null}")
         isPaired = token != null
     }
 
@@ -6900,7 +6704,6 @@ fun PairingScreen(onPaired: () -> Unit) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        Log.d("SousNetwork", "PairingScreen launched. API_URL: ${com.sous.wearos.BuildConfig.API_URL}")
         while (isActive) {
             val currentCode = pairingCode
             if (currentCode == null) {
@@ -7195,26 +6998,6 @@ fun tilePreview(context: Context) = TilePreviewData(::resources) {
 </vector>
 ````
 
-## File: apps/wearos/app/src/main/res/drawable/ic_launcher_foreground.xml
-````xml
-<?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <group
-        android:translateX="6"
-        android:translateY="6"
-        android:scaleX="0.5"
-        android:scaleY="0.5">
-        <path
-            android:fillColor="#18181B"
-            android:pathData="M12,2C10.34,2 9,3.34 9,5H5C3.34,5 2,6.34 2,8V9C2,10.66 3.34,12 5,12H19C20.66,12 22,10.66 22,9V8C22,6.34 20.66,5 19,5H15C15,3.34 13.66,2 12,2ZM5,7H19V9H5V7Z" />
-    </group>
-</vector>
-````
-
 ## File: apps/wearos/app/src/main/res/drawable/ic_mic.xml
 ````xml
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -7262,24 +7045,32 @@ fun tilePreview(context: Context) = TilePreviewData(::resources) {
 </layer-list>
 ````
 
-## File: apps/wearos/app/src/main/res/mipmap-anydpi/ic_launcher_round.xml
+## File: apps/wearos/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 ````xml
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+    <monochrome android:drawable="@drawable/ic_launcher_foreground"/>
 </adaptive-icon>
 ````
 
-## File: apps/wearos/app/src/main/res/mipmap-anydpi/ic_launcher.xml
+## File: apps/wearos/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 ````xml
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+    <monochrome android:drawable="@drawable/ic_launcher_foreground"/>
 </adaptive-icon>
+````
+
+## File: apps/wearos/app/src/main/res/values/ic_launcher_background.xml
+````xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#09090B</color>
+</resources>
 ````
 
 ## File: apps/wearos/app/src/main/res/values/strings.xml
@@ -7315,202 +7106,9 @@ fun tilePreview(context: Context) = TilePreviewData(::resources) {
 </resources>
 ````
 
-## File: apps/wearos/app/src/main/AndroidManifest.xml
-````xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <uses-feature android:name="android.hardware.type.watch" />
-
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@android:style/Theme.DeviceDefault">
-
-        <service
-            android:name=".complication.DailySalesComplicationService"
-            android:exported="true"
-            android:label="Daily Sales"
-            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
-            <intent-filter>
-                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
-            <meta-data
-                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
-        </service>
-        <service
-            android:name=".complication.TicketTimeComplicationService"
-            android:exported="true"
-            android:label="Ticket Time"
-            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
-            <intent-filter>
-                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
-            <meta-data
-                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
-        </service>
-        <service
-            android:name=".complication.VoiceCommandComplicationService"
-            android:exported="true"
-            android:label="@string/complication_label"
-            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
-            <intent-filter>
-                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
-            <meta-data
-                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
-        </service>
-        <service
-            android:name=".tile.MainTileService"
-            android:exported="true"
-            android:label="@string/tile_label"
-            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
-            <intent-filter>
-                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
-            </intent-filter>
-
-            <meta-data
-                android:name="androidx.wear.tiles.PREVIEW"
-                android:resource="@drawable/tile_preview" />
-        </service>
-
-        <uses-library
-            android:name="com.google.android.wearable"
-            android:required="true" />
-        <uses-library
-            android:name="wear-sdk"
-            android:required="false" />
-        <!--
-               Set to true if your app is Standalone, that is, it does not require the handheld
-               app to run.
-        -->
-        <meta-data
-            android:name="com.google.android.wearable.standalone"
-            android:value="true" />
-
-        <activity
-            android:name=".presentation.MainActivity"
-            android:exported="true"
-            android:taskAffinity=""
-            android:theme="@style/MainActivityTheme.Starting">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".presentation.SettingsActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.DeviceDefault">
-        </activity>
-    </application>
-
-</manifest>
-````
-
 ## File: apps/wearos/app/.gitignore
 ````
 /build
-````
-
-## File: apps/wearos/app/build.gradle.kts
-````kotlin
-import java.util.Properties
-import java.io.FileInputStream
-
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
-}
-
-android {
-    namespace = "com.sous.wearos"
-    compileSdk {
-        version = release(36)
-    }
-
-    defaultConfig {
-        applicationId = "com.sous.wearos"
-        minSdk = 30
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
-
-    }
-
-    buildTypes {
-        debug {
-            applicationIdSuffix = ".debug"
-            buildConfigField("String", "API_URL", "\"http://10.0.2.2:6001\"")
-        }
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            buildConfigField("String", "API_URL", "\"https://api.sous.tools\"")
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    useLibrary("wear-sdk")
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-}
-
-dependencies {
-    implementation(libs.play.services.wearable)
-    implementation(platform(libs.compose.bom))
-    implementation(libs.ui)
-    implementation(libs.ui.graphics)
-    implementation(libs.ui.tooling.preview)
-    implementation(libs.compose.material)
-    implementation(libs.compose.foundation)
-    implementation(libs.wear.tooling.preview)
-    implementation(libs.activity.compose)
-    implementation(libs.core.splashscreen)
-    implementation(libs.tiles)
-    implementation(libs.tiles.material)
-    implementation(libs.tiles.tooling.preview)
-    implementation(libs.horologist.compose.tools)
-    implementation(libs.horologist.tiles)
-    implementation(libs.watchface.complications.data.source.ktx)
-    androidTestImplementation(platform(libs.compose.bom))
-    androidTestImplementation(libs.ui.test.junit4)
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.ui.test.manifest)
-    debugImplementation(libs.tiles.tooling)
-}
 ````
 
 ## File: apps/wearos/app/lint.xml
@@ -8342,1921 +7940,6 @@ test.describe('TV Signage System E2E', () => {
 This is generally NOT safe. Learn more at https://bit.ly/wb-precache`)}handleInstall(e){return this.registerRequestRules(e),y(e,async()=>{let t=new eo;this.precacheStrategy.plugins.push(t),await el(this._concurrentPrecaching,Array.from(this._urlsToCacheKeys.entries()),async([t,a])=>{let s=this._cacheKeysToIntegrities.get(a),r=this._urlsToCacheModes.get(t),n=new Request(t,{integrity:s,cache:r,credentials:"same-origin"});await Promise.all(this.precacheStrategy.handleAll({event:e,request:n,url:new URL(n.url),params:{cacheKey:a}}))});let{updatedURLs:a,notUpdatedURLs:s}=t;return{updatedURLs:a,notUpdatedURLs:s}})}async registerRequestRules(e){if(this._requestRules&&e?.addRoutes)try{await e.addRoutes(this._requestRules),this._requestRules=void 0}catch(e){throw e}}handleActivate(e){return y(e,async()=>{let e=await self.caches.open(this.precacheStrategy.cacheName),t=await e.keys(),a=new Set(this._urlsToCacheKeys.values()),s=[];for(let r of t)a.has(r.url)||(await e.delete(r),s.push(r.url));return{deletedCacheRequests:s}})}handleFetch(e){let{request:t}=e,a=this.handleRequest({request:t,event:e});a&&e.respondWith(a)}handleCache(e){if(e.data&&"CACHE_URLS"===e.data.type){let{payload:t}=e.data,a=Promise.all(t.urlsToCache.map(t=>{let a;return a="string"==typeof t?new Request(t):new Request(...t),this.handleRequest({request:a,event:e})}));e.waitUntil(a),e.ports?.[0]&&a.then(()=>e.ports[0].postMessage(!0))}}setDefaultHandler(e,t="GET"){this._defaultHandlerMap.set(t,ea(e))}setCatchHandler(e){this._catchHandler=ea(e)}registerCapture(e,t,a){let s=((e,t,a)=>{if("string"==typeof e){let s=new URL(e,location.href);return new es(({url:e})=>e.href===s.href,t,a)}if(e instanceof RegExp)return new ei(e,t,a);if("function"==typeof e)return new es(e,t,a);if(e instanceof es)return e;throw new l("unsupported-route-type",{moduleName:"serwist",funcName:"parseRoute",paramName:"capture"})})(e,t,a);return this.registerRoute(s),s}registerRoute(e){this._routes.has(e.method)||this._routes.set(e.method,[]),this._routes.get(e.method).push(e)}unregisterRoute(e){if(!this._routes.has(e.method))throw new l("unregister-route-but-not-found-with-method",{method:e.method});let t=this._routes.get(e.method).indexOf(e);if(t>-1)this._routes.get(e.method).splice(t,1);else throw new l("unregister-route-route-not-registered")}getUrlsToPrecacheKeys(){return this._urlsToCacheKeys}getPrecachedUrls(){return[...this._urlsToCacheKeys.keys()]}getPrecacheKeyForUrl(e){let t=new URL(e,location.href);return this._urlsToCacheKeys.get(t.href)}getIntegrityForPrecacheKey(e){return this._cacheKeysToIntegrities.get(e)}async matchPrecache(e){let t=e instanceof Request?e.url:e,a=this.getPrecacheKeyForUrl(t);if(a)return(await self.caches.open(this.precacheStrategy.cacheName)).match(a)}createHandlerBoundToUrl(e){let t=this.getPrecacheKeyForUrl(e);if(!t)throw new l("non-precached-url",{url:e});return a=>(a.request=new Request(e),a.params={cacheKey:t,...a.params},this.precacheStrategy.handle(a))}handleRequest({request:e,event:t}){let a,s=new URL(e.url,location.href);if(!s.protocol.startsWith("http"))return;let r=s.origin===location.origin,{params:n,route:i}=this.findMatchingRoute({event:t,request:e,sameOrigin:r,url:s}),c=i?.handler,o=e.method;if(!c&&this._defaultHandlerMap.has(o)&&(c=this._defaultHandlerMap.get(o)),!c)return;try{a=c.handle({url:s,request:e,event:t,params:n})}catch(e){a=Promise.reject(e)}let l=i?.catchHandler;return a instanceof Promise&&(this._catchHandler||l)&&(a=a.catch(async a=>{if(l)try{return await l.handle({url:s,request:e,event:t,params:n})}catch(e){e instanceof Error&&(a=e)}if(this._catchHandler)return this._catchHandler.handle({url:s,request:e,event:t});throw a})),a}findMatchingRoute({url:e,sameOrigin:t,request:a,event:s}){for(let r of this._routes.get(a.method)||[]){let n,i=r.match({url:e,sameOrigin:t,request:a,event:s});if(i)return Array.isArray(n=i)&&0===n.length||i.constructor===Object&&0===Object.keys(i).length?n=void 0:"boolean"==typeof i&&(n=void 0),{route:r,params:n}}return{}}};let eq=[{matcher:/^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,handler:new ex({cacheName:"google-fonts-webfonts",plugins:[new ef({maxEntries:4,maxAgeSeconds:31536e3,maxAgeFrom:"last-used"})]})},{matcher:/^https:\/\/fonts\.(?:googleapis)\.com\/.*/i,handler:new eb({cacheName:"google-fonts-stylesheets",plugins:[new ef({maxEntries:4,maxAgeSeconds:604800,maxAgeFrom:"last-used"})]})},{matcher:/\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,handler:new eb({cacheName:"static-font-assets",plugins:[new ef({maxEntries:4,maxAgeSeconds:604800,maxAgeFrom:"last-used"})]})},{matcher:/\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,handler:new eb({cacheName:"static-image-assets",plugins:[new ef({maxEntries:64,maxAgeSeconds:2592e3,maxAgeFrom:"last-used"})]})},{matcher:/\/_next\/static.+\.js$/i,handler:new ex({cacheName:"next-static-js-assets",plugins:[new ef({maxEntries:64,maxAgeSeconds:86400,maxAgeFrom:"last-used"})]})},{matcher:/\/_next\/image\?url=.+$/i,handler:new eb({cacheName:"next-image",plugins:[new ef({maxEntries:64,maxAgeSeconds:86400,maxAgeFrom:"last-used"})]})},{matcher:/\.(?:mp3|wav|ogg)$/i,handler:new ex({cacheName:"static-audio-assets",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400,maxAgeFrom:"last-used"}),new e_]})},{matcher:/\.(?:mp4|webm)$/i,handler:new ex({cacheName:"static-video-assets",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400,maxAgeFrom:"last-used"}),new e_]})},{matcher:/\.(?:js)$/i,handler:new eb({cacheName:"static-js-assets",plugins:[new ef({maxEntries:48,maxAgeSeconds:86400,maxAgeFrom:"last-used"})]})},{matcher:/\.(?:css|less)$/i,handler:new eb({cacheName:"static-style-assets",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400,maxAgeFrom:"last-used"})]})},{matcher:/\/_next\/data\/.+\/.+\.json$/i,handler:new ee({cacheName:"next-data",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400,maxAgeFrom:"last-used"})]})},{matcher:/\.(?:json|xml|csv)$/i,handler:new ee({cacheName:"static-data-assets",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400,maxAgeFrom:"last-used"})]})},{matcher:/\/api\/auth\/.*/,handler:new et({networkTimeoutSeconds:10})},{matcher:({sameOrigin:e,url:{pathname:t}})=>e&&t.startsWith("/api/"),method:"GET",handler:new ee({cacheName:"apis",plugins:[new ef({maxEntries:16,maxAgeSeconds:86400,maxAgeFrom:"last-used"})],networkTimeoutSeconds:10})},{matcher:({request:e,url:{pathname:t},sameOrigin:a})=>"1"===e.headers.get("RSC")&&"1"===e.headers.get("Next-Router-Prefetch")&&a&&!t.startsWith("/api/"),handler:new ee({cacheName:"pages-rsc-prefetch",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400})]})},{matcher:({request:e,url:{pathname:t},sameOrigin:a})=>"1"===e.headers.get("RSC")&&a&&!t.startsWith("/api/"),handler:new ee({cacheName:"pages-rsc",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400})]})},{matcher:({request:e,url:{pathname:t},sameOrigin:a})=>e.headers.get("Content-Type")?.includes("text/html")&&a&&!t.startsWith("/api/"),handler:new ee({cacheName:"pages",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400})]})},{matcher:({url:{pathname:e},sameOrigin:t})=>t&&!e.startsWith("/api/"),handler:new ee({cacheName:"others",plugins:[new ef({maxEntries:32,maxAgeSeconds:86400})]})},{matcher:({sameOrigin:e})=>!e,handler:new ee({cacheName:"cross-origin",plugins:[new ef({maxEntries:32,maxAgeSeconds:3600})],networkTimeoutSeconds:10})},{matcher:/.*/i,method:"GET",handler:new et}];new eR({precacheEntries:[{'revision':'007a2e3bd97aab556f1ee2224c40a025','url':'/_next/static/ak1SdwM6ABtIdPMsjsmWU/_buildManifest.js'},{'revision':'b6652df95db52feb4daf4eca35380933','url':'/_next/static/ak1SdwM6ABtIdPMsjsmWU/_ssgManifest.js'},{'revision':null,'url':'/_next/static/chunks/1662-0564e12aa3bc81ad.js'},{'revision':null,'url':'/_next/static/chunks/248912ca-39889e5136d9ecb2.js'},{'revision':null,'url':'/_next/static/chunks/3403-61249bd38515e95d.js'},{'revision':null,'url':'/_next/static/chunks/4213-bc71778f045f38a4.js'},{'revision':null,'url':'/_next/static/chunks/424bf126-5f4abacc436dca57.js'},{'revision':null,'url':'/_next/static/chunks/5204-c3bdf45f3a2f0129.js'},{'revision':null,'url':'/_next/static/chunks/5668-41a711e7e8ef15b7.js'},{'revision':null,'url':'/_next/static/chunks/6338-035c77d8cc9a2f7b.js'},{'revision':null,'url':'/_next/static/chunks/7466-0630acde00b3aa41.js'},{'revision':null,'url':'/_next/static/chunks/7715-92f8773ff14985aa.js'},{'revision':null,'url':'/_next/static/chunks/7903-6a7df7ce53886416.js'},{'revision':null,'url':'/_next/static/chunks/8854-27ac78a6c4e4cc37.js'},{'revision':null,'url':'/_next/static/chunks/8868-6d3778736858294f.js'},{'revision':null,'url':'/_next/static/chunks/9691-1a69c9e181a60e19.js'},{'revision':null,'url':'/_next/static/chunks/9b6ca276-d530a88bca24245e.js'},{'revision':null,'url':'/_next/static/chunks/app/(fullscreen)/kds/page-1bb692c9b7bd1792.js'},{'revision':null,'url':'/_next/static/chunks/app/(fullscreen)/layout-0bd53fa2e45df35c.js'},{'revision':null,'url':'/_next/static/chunks/app/(fullscreen)/pos/page-d9036475834f69e4.js'},{'revision':null,'url':'/_next/static/chunks/app/(fullscreen)/recipes/%5Bid%5D/kitchen/page-ad5d95eb09801f64.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/%40modal/(.)ingestion/review/%5Bid%5D/page-31ca19e9df4ff3f1.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/%40modal/default-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/%40modal/signage/%5BdeckId%5D/page-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/%40modal/signage/%5BdeckId%5D/preview/page-195406473292fa94.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/admin/devices/page-53b3476516a07ee1.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/admin/layout-db3cd93a8b0237f7.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/catalog/page-3405c3737e83f5db.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/home/page-31e3d862d1c2069b.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/ingestion/page-04eff63f43d71a58.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/ingestion/review/%5Bid%5D/page-7236b83fd68d3309.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/inventory/items-ledger/page-46450eb66c205a22.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/inventory/layout-db3cd93a8b0237f7.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/inventory/orders/%5Bid%5D/shop/page-78aa7b04a330c71a.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/inventory/orders/page-f87c389177be9934.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/inventory/page-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/inventory/vendors/page-2c752d8fb566081b.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/layout-31e3d862d1c2069b.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/recipes/%5Bid%5D/edit/page-44fcc4b1f1e146fe.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/recipes/%5Bid%5D/page-f4c82c53f72c31bd.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/recipes/new/page-44fcc4b1f1e146fe.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/recipes/page-0eb9592bb40c03e3.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/settings/page-aac6ba942e948466.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/signage/%5BdeckId%5D/page-a0db5d52c5f9b7ad.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/signage/%5BdeckId%5D/preview/page-545fcba4d10eed0a.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/signage/page-ee9fbebd1fad741d.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/team/page-50d964441917980d.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/transactions/page-905a3a32af6c801d.js'},{'revision':null,'url':'/_next/static/chunks/app/(workspace)/vendors/page-90a34a6c50bd6729.js'},{'revision':null,'url':'/_next/static/chunks/app/_global-error/page-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/app/_not-found/page-a303d67e5b15789b.js'},{'revision':null,'url':'/_next/static/chunks/app/apple-icon/route-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/app/display/%5Bid%5D/page-6cd1f11009231e3c.js'},{'revision':null,'url':'/_next/static/chunks/app/display/page-ce4ea34680d61905.js'},{'revision':null,'url':'/_next/static/chunks/app/error-eb78d45beb35d1cf.js'},{'revision':null,'url':'/_next/static/chunks/app/global-error-d988300eb8484844.js'},{'revision':null,'url':'/_next/static/chunks/app/icon/route-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/app/layout-7e016d7fbc1e1e83.js'},{'revision':null,'url':'/_next/static/chunks/app/login/page-620f262c27257f40.js'},{'revision':null,'url':'/_next/static/chunks/app/manifest.webmanifest/route-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/app/page-4c0e84a6a8ac017b.js'},{'revision':null,'url':'/_next/static/chunks/e3ab658a-c415afc06c10f4ad.js'},{'revision':null,'url':'/_next/static/chunks/framework-79250bdf2b2e142c.js'},{'revision':null,'url':'/_next/static/chunks/main-94987a2128dab4af.js'},{'revision':null,'url':'/_next/static/chunks/main-app-58c2064db70ff240.js'},{'revision':null,'url':'/_next/static/chunks/next/dist/client/components/builtin/app-error-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/next/dist/client/components/builtin/default-null-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/next/dist/client/components/builtin/forbidden-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/next/dist/client/components/builtin/not-found-7da7f430ec8f0938.js'},{'revision':null,'url':'/_next/static/chunks/next/dist/client/components/builtin/unauthorized-7da7f430ec8f0938.js'},{'revision':'846118c33b2c0e922d7b3a7676f81f6f','url':'/_next/static/chunks/polyfills-42372ed130431b0a.js'},{'revision':null,'url':'/_next/static/chunks/webpack-cc9464744da69763.js'},{'revision':null,'url':'/_next/static/css/6c4213ba817c7859.css'}],skipWaiting:!0,clientsClaim:!0,navigationPreload:!0,runtimeCaching:eq}).addEventListeners()})();
 ````
 
-## File: apps/web/src/app/(fullscreen)/kds/page.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { Button } from "@soustools/design-system";
-import { 
-  Tv, 
-  Settings, 
-  Volume2, 
-  VolumeX, 
-  CheckCircle, 
-  AlertTriangle,
-  Clock,
-  Eye,
-  EyeOff,
-  Search,
-  PackageX
-} from "lucide-react";
-import { toast } from "sonner";
-
-interface KDSTicketItem {
-  name: string;
-  qty: number;
-  notes?: string;
-}
-
-interface KDSTicket {
-  id: string;
-  ticketNumber: string;
-  tableNumber: string;
-  items: KDSTicketItem[];
-  createdAt: string;
-  isRush?: boolean;
-  status: "OPEN" | "CLOSED";
-}
-
-export default function KDSPage() {
-  const [tickets, setTickets] = useState<KDSTicket[]>([]);
-  const [posItems, setPosItems] = useState<any[]>([]);
-  const [orgId, setOrgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
-  const [loading, setLoading] = useState(true);
-  const [viewFilter, setViewFilter] = useState<"OPEN" | "CLOSED">("OPEN");
-
-  // Settings state
-  const [showSettings, setShowSettings] = useState(false);
-  const [textSize, setTextSize] = useState<"sm" | "md" | "lg">("md");
-  const [density, setDensity] = useState<"compact" | "standard" | "spacious">("standard");
-  const [soundsEnabled, setSoundsEnabled] = useState(true);
-  const [soundVolume, setSoundVolume] = useState(0.5);
-
-  // 86'd inventory search
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Programmatic synth chime using AudioContext
-  const playChime = (type: "new" | "complete") => {
-    if (typeof window === "undefined" || !soundsEnabled) return;
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      gain.gain.setValueAtTime(soundVolume, ctx.currentTime);
-
-      if (type === "new") {
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
-        osc.type = "triangle";
-        osc.start();
-        osc.stop(ctx.currentTime + 0.3);
-      } else {
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08); // E5
-        osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16); // G5
-        osc.type = "sine";
-        osc.start();
-        osc.stop(ctx.currentTime + 0.4);
-      }
-    } catch (e) {
-      console.warn("AudioContext chime failure:", e);
-    }
-  };
-
-  // Load configuration, mock tickets, database items
-  useEffect(() => {
-    // 1. Fetch organization ID
-    const fetchOrg = async () => {
-      const { data } = await supabase.from("organizations").select("id").limit(1);
-      if (data && data[0]) {
-        setOrgId(data[0].id);
-      }
-    };
-
-    // 2. Fetch POS items to enable 86'ing
-    const fetchItems = async () => {
-      const { data } = await supabase
-        .from("pos_items")
-        .select("*")
-        .order("name", { ascending: true });
-      if (data) setPosItems(data);
-    };
-
-    // 3. Setup settings from localStorage
-    if (typeof window !== "undefined") {
-      const savedText = localStorage.getItem("kds_text_size") as any;
-      const savedDensity = localStorage.getItem("kds_density") as any;
-      const savedSound = localStorage.getItem("kds_sounds_enabled");
-      const savedVol = localStorage.getItem("kds_sound_volume");
-      if (savedText) setTextSize(savedText);
-      if (savedDensity) setDensity(savedDensity);
-      if (savedSound) setSoundsEnabled(savedSound === "true");
-      if (savedVol) setSoundVolume(parseFloat(savedVol));
-    }
-
-    Promise.all([fetchOrg(), fetchItems()]).then(() => setLoading(false));
-
-    // Seed mock tickets
-    setTickets([
-      {
-        id: "t-1",
-        ticketNumber: "104",
-        tableNumber: "Cook Line - T4",
-        createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10m ago
-        isRush: true,
-        status: "OPEN",
-        items: [
-          { name: "Truffle Burger", qty: 2, notes: "Medium-Rare" },
-          { name: "Truffle Fries", qty: 1 }
-        ]
-      },
-      {
-        id: "t-2",
-        ticketNumber: "105",
-        tableNumber: "Main Room - T12",
-        createdAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(), // 4m ago
-        isRush: false,
-        status: "OPEN",
-        items: [
-          { name: "Caesar Salad", qty: 1, notes: "Dressing on side" },
-          { name: "Tomato Soup", qty: 1 }
-        ]
-      },
-      {
-        id: "t-3",
-        ticketNumber: "106",
-        tableNumber: "Patio - T2",
-        createdAt: new Date().toISOString(),
-        isRush: false,
-        status: "OPEN",
-        items: [
-          { name: "Truffle Burger", qty: 1 },
-          { name: "Caesar Salad", qty: 2 }
-        ]
-      }
-    ]);
-  }, []);
-
-  // Save settings helpers
-  const saveTextSize = (sz: "sm" | "md" | "lg") => {
-    setTextSize(sz);
-    localStorage.setItem("kds_text_size", sz);
-  };
-  const saveDensity = (den: "compact" | "standard" | "spacious") => {
-    setDensity(den);
-    localStorage.setItem("kds_density", den);
-  };
-  const saveSounds = (enabled: boolean) => {
-    setSoundsEnabled(enabled);
-    localStorage.setItem("kds_sounds_enabled", enabled ? "true" : "false");
-  };
-  const saveVolume = (vol: number) => {
-    setSoundVolume(vol);
-    localStorage.setItem("kds_sound_volume", vol.toString());
-  };
-
-  // Complete ticket & sync to shadow DB
-  const handleCompleteTicket = async (ticketId: string) => {
-    const t = tickets.find(ticket => ticket.id === ticketId);
-    if (!t) return;
-
-    try {
-      // Opt-in chime play
-      playChime("complete");
-
-      // Set ticket to CLOSED locally
-      setTickets(prev =>
-        prev.map(ticket => (ticket.id === ticketId ? { ...ticket, status: "CLOSED" } : ticket))
-      );
-
-      // Sync state to backend shadow DB (pos_transactions)
-      const transactionsToInsert = t.items.map(item => {
-        // Look up corresponding POS item in DB
-        const match = posItems.find(
-          dbItem => dbItem.name.toLowerCase() === item.name.toLowerCase()
-        );
-        return {
-          organization_id: orgId,
-          pos_item_id: match ? match.id : null,
-          quantity_sold: item.qty,
-          gross_revenue: match ? Number(match.price) * item.qty : 15.00 * item.qty, // fallback price
-          transaction_time: new Date().toISOString(),
-          source: "kds"
-        };
-      });
-
-      const { error } = await supabase.from("pos_transactions").insert(transactionsToInsert);
-      if (error) throw error;
-
-      toast.success(`Ticket #${t.ticketNumber} completed and synced to shadow DB.`);
-    } catch (err: any) {
-      console.error(err);
-      toast.error(`Completed locally, but failed database sync: ${err.message}`);
-    }
-  };
-
-  // 86 / Mark item Unavailable
-  const handleToggleSoldOut = async (itemId: string, currentStatus: boolean) => {
-    const nextStatus = !currentStatus;
-    try {
-      const { error } = await supabase
-        .from("pos_items")
-        .update({ is_sold_out: nextStatus })
-        .eq("id", itemId);
-
-      if (error) throw error;
-
-      setPosItems(prev =>
-        prev.map(item => (item.id === itemId ? { ...item, is_sold_out: nextStatus } : item))
-      );
-      toast.success(`Updated item availability.`);
-    } catch (err: any) {
-      toast.error(`Failed to update item availability: ${err.message}`);
-    }
-  };
-
-  // All Day Prep Aggregation
-  const getOpenTicketsItems = () => {
-    const counts: Record<string, number> = {};
-    tickets
-      .filter(t => t.status === "OPEN")
-      .forEach(t => {
-        t.items.forEach(item => {
-          counts[item.name] = (counts[item.name] || 0) + item.qty;
-        });
-      });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  };
-
-  const filteredTickets = tickets.filter(t => t.status === viewFilter);
-  const allDayPrep = getOpenTicketsItems();
-
-  // Grid classes mapping density
-  const gridClasses = {
-    compact: "grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3",
-    standard: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6",
-    spacious: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-  }[density];
-
-  // Font classes mapping text sizes
-  const fontClasses = {
-    sm: { title: "text-xs font-bold", body: "text-xs", notes: "text-[10px]" },
-    md: { title: "text-sm font-bold", body: "text-sm", notes: "text-xs" },
-    lg: { title: "text-base font-bold", body: "text-base", notes: "text-sm" }
-  }[textSize];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 text-white">
-        <div className="w-10 h-10 border-4 border-t-sky-500 border-black/10 dark:border-white/10 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const filteredPosItems = posItems.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  return (
-    <div className="min-h-[calc(100vh-100px)] flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6 space-y-6 relative overflow-hidden">
-      {/* Header Panel */}
-      <header className="glass-panel flex flex-col md:flex-row justify-between items-start md:items-center p-5 rounded-2xl shrink-0 gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
-            <Tv className="w-6 h-6 text-sky-500 dark:text-sky-400" /> Kitchen Display System (KDS)
-          </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Station: Hot Line & Main Preparation</p>
-        </div>
-
-        {/* Action Toggles */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          {/* Open vs Closed Toggles */}
-          <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-xl p-1 text-xs font-semibold">
-            <button
-              onClick={() => setViewFilter("OPEN")}
-              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                viewFilter === "OPEN" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              Open ({tickets.filter(t => t.status === "OPEN").length})
-            </button>
-            <button
-              onClick={() => setViewFilter("CLOSED")}
-              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                viewFilter === "CLOSED" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              Completed ({tickets.filter(t => t.status === "CLOSED").length})
-            </button>
-          </div>
-
-          {/* Settings Trigger */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-black/10 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-        </div>
-      </header>
-
-      {/* Main Layout Grid split into Preparation Rack and All Day Panel */}
-      <div className="flex-1 flex gap-6 overflow-hidden min-h-0 h-[calc(100vh-230px)]">
-        {/* Active Ticket Rack */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className={`flex-1 overflow-y-auto pr-1 grid ${gridClasses} pb-10`}>
-            {filteredTickets.length === 0 ? (
-              <div className="glass-panel col-span-full flex flex-col items-center justify-center p-12 text-zinc-400 dark:text-zinc-500 rounded-2xl h-64">
-                <CheckCircle className="w-12 h-12 text-zinc-400 dark:text-zinc-600 mb-3" />
-                <p className="font-bold text-lg text-zinc-600 dark:text-zinc-400">All tickets completed!</p>
-                <p className="text-sm mt-1">Ready for incoming transactions...</p>
-              </div>
-            ) : (
-              filteredTickets.map(ticket => {
-                const ageMinutes = Math.floor(
-                  (Date.now() - new Date(ticket.createdAt).getTime()) / (60 * 1000)
-                );
-                return (
-                  <div
-                    key={ticket.id}
-                    className={`glass-panel flex flex-col justify-between rounded-xl p-4 transition-all duration-300 max-h-[360px] overflow-hidden ${
-                      ticket.isRush
-                        ? "border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)] bg-amber-500/5 dark:bg-amber-950/5"
-                        : "shadow-lg hover:border-black/20 dark:hover:border-white/20"
-                    }`}
-                  >
-                    <div>
-                      {/* Ticket Header */}
-                      <div className="flex justify-between items-start pb-2 border-b border-black/5 dark:border-white/5 mb-3">
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`font-black tracking-tight ${fontClasses.title} ${
-                              ticket.isRush ? "text-amber-600 dark:text-amber-400" : "text-zinc-900 dark:text-white"
-                            }`}>
-                              Ticket #{ticket.ticketNumber}
-                            </span>
-                            {ticket.isRush && (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20 font-extrabold uppercase">
-                                RUSH
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{ticket.tableNumber}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center justify-end text-zinc-500 dark:text-zinc-400 text-xs gap-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>{ageMinutes}m</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Scrollable Ticket Items */}
-                      <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1">
-                        {ticket.items.map((item, idx) => (
-                          <div key={idx} className="flex flex-col">
-                            <div className="flex justify-between items-start">
-                              <span className={`font-bold text-zinc-900 dark:text-zinc-100 ${fontClasses.body}`}>
-                                {item.qty}x {item.name}
-                              </span>
-                            </div>
-                            {item.notes && (
-                              <span className={`text-orange-400 font-semibold italic mt-0.5 pl-3 border-l-2 border-orange-500/30 ${fontClasses.notes}`}>
-                                * {item.notes}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Completion Action */}
-                    {ticket.status === "OPEN" && (
-                      <div className="mt-4 pt-3 border-t border-black/5 dark:border-white/5">
-                        <Button
-                          onClick={() => handleCompleteTicket(ticket.id)}
-                          className="w-full justify-center bg-white text-black hover:bg-zinc-200 py-2.5 font-bold transition-all text-xs rounded-lg"
-                        >
-                          Complete
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* All Day Prep Panel Drawer */}
-        <aside className="glass-panel w-72 rounded-2xl flex flex-col overflow-hidden shrink-0">
-          <div className="p-4 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-sky-500 dark:text-sky-400" /> All-Day Summary
-            </h2>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 font-bold uppercase">
-              Prep
-            </span>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {allDayPrep.length === 0 ? (
-              <div className="text-center py-12 text-zinc-400 dark:text-zinc-500 text-xs">
-                No active items to prepare.
-              </div>
-            ) : (
-              allDayPrep.map(([name, count]) => (
-                <div
-                  key={name}
-                  className="flex justify-between items-center p-3 bg-white border border-black/5 dark:bg-black/20 dark:border-white/5 rounded-xl hover:border-black/10 dark:hover:border-black/10 dark:border-white/10 transition-colors"
-                >
-                  <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{name}</span>
-                  <span className="text-xs px-2.5 py-1 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-black">
-                    {count}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </aside>
-      </div>
-
-      {/* KDS Settings Dialog overlay modal */}
-      {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-black/5 dark:border-white/5">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Settings className="w-5 h-5 text-sky-400" /> KDS Display Settings
-              </h3>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="p-1 hover:bg-black/5 dark:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-
-            {/* Modal Body Scroll */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Sound & Notifications Settings */}
-              <div className="space-y-3">
-                <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider">
-                  Audio & Sound Controls
-                </h4>
-                <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    {soundsEnabled ? (
-                      <Volume2 className="w-5 h-5 text-green-400 animate-pulse" />
-                    ) : (
-                      <VolumeX className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
-                    )}
-                    <div>
-                      <p className="text-sm font-semibold">Chime Alerts</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Play chiming sounds on ticket updates</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => saveSounds(!soundsEnabled)}
-                    className={`text-xs px-4 py-2 font-bold rounded-lg border transition-all cursor-pointer ${
-                      soundsEnabled
-                        ? "bg-green-500/10 text-green-400 border-green-500/20"
-                        : "bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-700"
-                    }`}
-                  >
-                    {soundsEnabled ? "Enabled" : "Disabled"}
-                  </button>
-                </div>
-
-                {soundsEnabled && (
-                  <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                    <label className="text-xs font-semibold block text-zinc-700 dark:text-zinc-300">
-                      Chime Volume: {Math.round(soundVolume * 100)}%
-                    </label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="1"
-                      step="0.1"
-                      value={soundVolume}
-                      onChange={e => saveVolume(parseFloat(e.target.value))}
-                      className="w-full accent-sky-400"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Layout and Font controls */}
-              <div className="space-y-4">
-                <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider">
-                  Sizing & Density
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Text Size Toggle */}
-                  <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                    <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Text Size</p>
-                    <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
-                      {(["sm", "md", "lg"] as const).map(sz => (
-                        <button
-                          key={sz}
-                          onClick={() => saveTextSize(sz)}
-                          className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                            textSize === sz ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-zinc-400"
-                          }`}
-                        >
-                          {sz === "sm" ? "Small" : sz === "md" ? "Medium" : "Large"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Density Toggle */}
-                  <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                    <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Grid Layout Density</p>
-                    <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
-                      {(["compact", "standard", "spacious"] as const).map(den => (
-                        <button
-                          key={den}
-                          onClick={() => saveDensity(den)}
-                          className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                            density === den ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-zinc-400"
-                          }`}
-                        >
-                          {den === "compact" ? "Compact" : den === "standard" ? "Standard" : "Spacious"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 86'd / Inventory Availability Sub-Panel */}
-              <div className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider flex items-center gap-1.5">
-                    <PackageX className="w-4 h-4 text-sky-400" /> Manage Unavailable (86'd) Items
-                  </h4>
-                </div>
-
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search menu items to 86..."
-                    className="w-full bg-white/50 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white focus:outline-none focus:border-sky-500 transition-colors"
-                  />
-                  <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3.5" />
-                </div>
-
-                <div className="border border-black/5 dark:border-white/5 rounded-xl max-h-48 overflow-y-auto p-2 bg-black/20 divide-y divide-white/5">
-                  {filteredPosItems.length === 0 ? (
-                    <div className="text-center py-6 text-zinc-400 dark:text-zinc-500 text-xs">
-                      No matching POS items.
-                    </div>
-                  ) : (
-                    filteredPosItems.map(item => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between items-center py-2.5 px-2 hover:bg-black/5 dark:bg-white/5 transition-colors"
-                      >
-                        <span className={`text-sm font-semibold ${item.is_sold_out ? "text-zinc-400 dark:text-zinc-500 line-through" : "text-zinc-900 dark:text-zinc-100"}`}>
-                          {item.name}
-                        </span>
-                        <button
-                          onClick={() => handleToggleSoldOut(item.id, item.is_sold_out)}
-                          className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                            item.is_sold_out
-                              ? "bg-red-500/10 text-red-400 border-red-500/20"
-                              : "bg-black/5 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10"
-                          }`}
-                        >
-                          {item.is_sold_out ? (
-                            <>
-                              <EyeOff className="w-3.5 h-3.5" /> Sold Out (86'd)
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="w-3.5 h-3.5" /> Available
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(fullscreen)/pos/page.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { Button } from "@soustools/design-system";
-import { 
-  ShoppingBag, 
-  Search, 
-  Trash2, 
-  Plus, 
-  Minus, 
-  CreditCard, 
-  DollarSign, 
-  ChevronRight,
-  Info,
-  Loader2,
-  RefreshCw
-} from "lucide-react";
-import { toast } from "sonner";
-import { z } from "zod";
-
-// Zod schemas for POS Cart State
-const CartItemModifierSchema = z.object({
-  id: z.string(),
-  external_id: z.string().nullable(),
-  name: z.string(),
-  price: z.number()
-});
-
-const CartItemSchema = z.object({
-  id: z.string(),
-  external_id: z.string().nullable(),
-  name: z.string(),
-  price: z.number(),
-  quantity: z.number().min(1),
-  modifiers: z.array(CartItemModifierSchema)
-});
-
-const CartSchema = z.array(CartItemSchema);
-
-type CartItem = z.infer<typeof CartItemSchema>;
-type CartItemModifier = z.infer<typeof CartItemModifierSchema>;
-
-export default function POSRegisterPage() {
-  const [items, setItems] = useState<any[]>([]);
-  const [modifierGroups, setModifierGroups] = useState<any[]>([]);
-  const [modifierOptions, setModifierOptions] = useState<any[]>([]);
-  const [itemModifierLinks, setItemModifierLinks] = useState<any[]>([]);
-  const [orgId, setOrgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
-  const [loading, setLoading] = useState(true);
-  
-  // Search & Categories
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-
-  // Cart State
-  const [cart, setCart] = useState<CartItem[]>([]);
-
-  // Modifiers Selection Modal State
-  const [selectedItemForModifiers, setSelectedItemForModifiers] = useState<any | null>(null);
-  const [activeModGroupsForSelected, setActiveModGroupsForSelected] = useState<any[]>([]);
-  const [selectedModifiers, setSelectedModifiers] = useState<Record<string, CartItemModifier[]>>({});
-
-  // Tender Modal State
-  const [showTenderModal, setShowTenderModal] = useState(false);
-  const [tenderMethod, setTenderMethod] = useState<"CASH" | "CARD" | null>(null);
-  const [cashReceived, setCashReceived] = useState("");
-  const [submittingCheckout, setSubmittingCheckout] = useState(false);
-
-  // Load POS synced catalog data from Supabase
-  const loadPOSCatalog = async () => {
-    setLoading(true);
-    try {
-      // 1. Fetch organization
-      const { data: orgData } = await supabase.from("organizations").select("id").limit(1);
-      const targetOrgId = orgData?.[0]?.id || "d0000000-0000-0000-0000-000000000000";
-      setOrgId(targetOrgId);
-
-      // 2. Fetch POS items
-      const { data: posItems } = await supabase
-        .from("pos_items")
-        .select("*")
-        .eq("organization_id", targetOrgId);
-      
-      // 3. Fetch modifier groups
-      const { data: modGroups } = await supabase
-        .from("pos_modifier_groups")
-        .select("*")
-        .eq("organization_id", targetOrgId);
-
-      // 4. Fetch modifier options
-      const { data: modOptions } = await supabase
-        .from("pos_modifier_options")
-        .select("*")
-        .eq("organization_id", targetOrgId);
-
-      // 5. Fetch POS item modifier group links
-      const { data: links } = await supabase
-        .from("pos_item_modifier_groups")
-        .select("*");
-
-      if (posItems) setItems(posItems);
-      if (modGroups) setModifierGroups(modGroups);
-      if (modOptions) setModifierOptions(modOptions);
-      if (links) setItemModifierLinks(links);
-
-    } catch (e: any) {
-      toast.error(`Failed to load POS catalog: ${e.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadPOSCatalog();
-  }, []);
-
-  // Sync catalog from Square
-  const handleSyncSquare = async () => {
-    const toastId = toast.loading("Syncing catalog with Square...");
-    try {
-      const res = await fetch(`/api/integrations/square/sync?orgId=${orgId}`, {
-        method: "POST"
-      });
-      if (!res.ok) throw new Error(await res.text());
-      toast.success("POS Catalog synced successfully.", { id: toastId });
-      loadPOSCatalog();
-    } catch (e: any) {
-      toast.error(`Sync failed: ${e.message}`, { id: toastId });
-    }
-  };
-
-  // Assign items to mock UI categories dynamically based on names
-  const getCategory = (itemName: string) => {
-    const name = itemName.toLowerCase();
-    if (name.includes("burger") || name.includes("sandwich") || name.includes("steak") || name.includes("salmon")) {
-      return "Mains";
-    }
-    if (name.includes("salad") || name.includes("fries") || name.includes("soup") || name.includes("tater")) {
-      return "Sides/Salads";
-    }
-    if (name.includes("beer") || name.includes("ipa") || name.includes("drink") || name.includes("soda") || name.includes("water")) {
-      return "Beverages";
-    }
-    return "Other";
-  };
-
-  const categories = ["All", "Mains", "Sides/Salads", "Beverages", "Other"];
-
-  // Filtered items list
-  const filteredItems = items.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || getCategory(item.name) === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Tap Item: Check for required modifiers first
-  const handleItemTap = (item: any) => {
-    if (item.is_sold_out) {
-      toast.error(`${item.name} is currently sold out (86'd).`);
-      return;
-    }
-
-    // Find links for this item
-    const linkedGroupIds = itemModifierLinks
-      .filter(link => link.pos_item_id === item.id)
-      .map(link => link.modifier_group_id);
-
-    const linkedGroups = modifierGroups.filter(g => linkedGroupIds.includes(g.id));
-
-    // Check if any modifier group is required (min_required > 0)
-    // Or if the item simply has modifiers, we open the modal to allow customization
-    if (linkedGroups.length > 0) {
-      setSelectedItemForModifiers(item);
-      setActiveModGroupsForSelected(linkedGroups);
-      
-      // Initialize selected modifiers state
-      const initialMods: Record<string, CartItemModifier[]> = {};
-      linkedGroups.forEach(g => {
-        initialMods[g.id] = [];
-      });
-      setSelectedModifiers(initialMods);
-    } else {
-      // Add directly to cart if no modifiers
-      addToCartDirect(item, []);
-    }
-  };
-
-  const addToCartDirect = (item: any, selectedMods: CartItemModifier[]) => {
-    const cartItem: CartItem = {
-      id: `${item.id}-${selectedMods.map(m => m.id).sort().join("-")}`, // unique cart key based on item + chosen mods
-      external_id: item.external_id,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-      modifiers: selectedMods
-    };
-
-    setCart(prev => {
-      const existingIdx = prev.findIndex(ci => ci.id === cartItem.id);
-      if (existingIdx > -1) {
-        const updated = [...prev];
-        updated[existingIdx].quantity += 1;
-        // Validate with Zod
-        const result = CartSchema.safeParse(updated);
-        if (result.success) return result.data;
-        return prev;
-      }
-      const updated = [...prev, cartItem];
-      const result = CartSchema.safeParse(updated);
-      if (result.success) return result.data;
-      return prev;
-    });
-
-    toast.success(`Added ${item.name} to ticket.`);
-  };
-
-  // Modifiers Selection Handlers
-  const handleModifierToggle = (group: any, option: any) => {
-    const currentSelected = selectedModifiers[group.id] || [];
-    const isSelected = currentSelected.some(m => m.id === option.id);
-
-    let updated: CartItemModifier[] = [];
-    if (isSelected) {
-      updated = currentSelected.filter(m => m.id !== option.id);
-    } else {
-      // Validate max_allowed
-      if (group.max_allowed && currentSelected.length >= group.max_allowed) {
-        if (group.max_allowed === 1) {
-          // If single choice, replace it
-          updated = [{ id: option.id, external_id: option.external_id, name: option.name, price: Number(option.price) }];
-        } else {
-          toast.warning(`Maximum of ${group.max_allowed} selections allowed for ${group.name}.`);
-          return;
-        }
-      } else {
-        updated = [...currentSelected, { id: option.id, external_id: option.external_id, name: option.name, price: Number(option.price) }];
-      }
-    }
-
-    setSelectedModifiers(prev => ({
-      ...prev,
-      [group.id]: updated
-    }));
-  };
-
-  const handleAddWithModifiers = () => {
-    if (!selectedItemForModifiers) return;
-
-    // Validate min_required for all groups
-    for (const group of activeModGroupsForSelected) {
-      const selections = selectedModifiers[group.id] || [];
-      if (group.min_required && selections.length < group.min_required) {
-        toast.error(`Please select at least ${group.min_required} options for ${group.name}.`);
-        return;
-      }
-    }
-
-    // Flatten all selected modifiers
-    const allMods = Object.values(selectedModifiers).flat();
-    addToCartDirect(selectedItemForModifiers, allMods);
-    setSelectedItemForModifiers(null);
-  };
-
-  // Cart Adjustments
-  const updateCartQty = (itemId: string, delta: number) => {
-    setCart(prev => {
-      const updated = prev.map(item => {
-        if (item.id === itemId) {
-          const nextQty = item.quantity + delta;
-          return { ...item, quantity: Math.max(1, nextQty) };
-        }
-        return item;
-      });
-      const result = CartSchema.safeParse(updated);
-      if (result.success) return result.data;
-      return prev;
-    });
-  };
-
-  const removeFromCart = (itemId: string) => {
-    setCart(prev => prev.filter(item => item.id !== itemId));
-    toast.success("Item removed from ticket.");
-  };
-
-  // Math Calculations
-  const getSubtotal = () => {
-    return cart.reduce((total, item) => {
-      const modifiersCost = item.modifiers.reduce((sum, m) => sum + m.price, 0);
-      return total + (item.price + modifiersCost) * item.quantity;
-    }, 0);
-  };
-
-  const subtotal = getSubtotal();
-  const tax = subtotal * 0.0825; // 8.25% sales tax
-  const total = subtotal + tax;
-
-  // Checkout submission
-  const handleProcessCheckout = async () => {
-    if (cart.length === 0) return;
-    setSubmittingCheckout(true);
-
-    // Build driver order payload
-    const orderData = {
-      items: cart.map(item => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        modifiers: item.modifiers.map(m => ({
-          external_id: m.external_id,
-          name: m.name
-        }))
-      }))
-    };
-
-    try {
-      // 1. POST explicitly to integrations checkout (driver layer)
-      const res = await fetch("/api/integrations/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orgId,
-          orderData
-        })
-      });
-
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-
-      // 2. Play Audio success resolution chime
-      try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
-        osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
-        osc.type = "sine";
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.5);
-      } catch (e) {
-        console.warn(e);
-      }
-
-      toast.success("Order processed successfully. Synced to Square POS API.");
-      setCart([]);
-      setShowTenderModal(false);
-      setTenderMethod(null);
-      setCashReceived("");
-    } catch (e: any) {
-      toast.error(`Checkout failed: ${e.message}`);
-    } finally {
-      setSubmittingCheckout(false);
-    }
-  };
-
-  const cashChange = tenderMethod === "CASH" && parseFloat(cashReceived) >= total
-    ? (parseFloat(cashReceived) - total).toFixed(2)
-    : "0.00";
-
-  return (
-    <div className="min-h-[calc(100vh-100px)] flex bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 overflow-hidden relative">
-      {/* Left pane: POS item catalog (Fluid Grid) */}
-      <div className="flex-1 flex flex-col p-6 overflow-y-auto min-w-0 pr-4">
-        {/* Search & Sync Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
-          <div className="relative flex-1 max-w-md w-full">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search POS catalog..."
-              className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 pl-10 text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
-            />
-            <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3.5" />
-          </div>
-
-          <div className="flex gap-2">
-            <Button onClick={handleSyncSquare} className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 flex items-center gap-1.5 py-2">
-              <RefreshCw className="w-4 h-4" /> Sync Square Catalog
-            </Button>
-          </div>
-        </div>
-
-        {/* Categories Tab Bar */}
-        <div className="flex gap-2 pb-4 overflow-x-auto shrink-0 border-b border-black/5 dark:border-white/5 mb-6">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border whitespace-nowrap ${
-                selectedCategory === cat 
-                  ? "bg-white text-black border-white"
-                  : "bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 text-zinc-500 dark:text-zinc-400 border-black/5 dark:border-white/5"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Catalog Item Grid */}
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-sky-400" />
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 p-8">
-            <Info className="w-12 h-12 text-zinc-600 mb-2" />
-            <p className="font-semibold text-zinc-500 dark:text-zinc-400 text-lg">No items match search criteria.</p>
-            <p className="text-sm mt-0.5">Please check spelling or sync catalog again.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
-            {filteredItems.map((item) => {
-              const hasMods = itemModifierLinks.some(l => l.pos_item_id === item.id);
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleItemTap(item)}
-                  className={`glass-panel p-5 rounded-2xl border text-left flex flex-col justify-between h-36 transition-all cursor-pointer relative overflow-hidden group ${
-                    item.is_sold_out 
-                      ? "border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 opacity-55"
-                      : "border-black/10 dark:border-white/10 bg-black/5 dark:bg-black/40 hover:border-white/20 active:scale-98 shadow-md"
-                  }`}
-                >
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-start gap-1">
-                      <h3 className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100 leading-tight group-hover:text-sky-400 transition-colors">
-                        {item.name}
-                      </h3>
-                      {hasMods && !item.is_sold_out && (
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold shrink-0">MODS</span>
-                      )}
-                    </div>
-                    {item.description && (
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500 line-clamp-2 leading-relaxed">{item.description}</p>
-                    )}
-                  </div>
-
-                  <div className="flex justify-between items-end mt-2">
-                    <span className="text-sm font-black text-white">${Number(item.price).toFixed(2)}</span>
-                    {item.is_sold_out && (
-                      <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">86'd</span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Right pane: Sticky Cart/Ticket Pane */}
-      <aside className="glass-panel w-[360px] border-l border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-md flex flex-col overflow-hidden shrink-0">
-        <header className="px-5 py-4 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 flex items-center justify-between shrink-0">
-          <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-            <ShoppingBag className="w-4 h-4 text-sky-400" /> Current Ticket
-          </h2>
-          {cart.length > 0 && (
-            <button
-              onClick={() => setCart([])}
-              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Clear All
-            </button>
-          )}
-        </header>
-
-        {/* Cart Item List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 text-center py-20 px-4">
-              <ShoppingBag className="w-10 h-10 text-zinc-700 mb-2" />
-              <p className="font-bold text-zinc-500 dark:text-zinc-400">Cart is empty</p>
-              <p className="text-xs mt-0.5 text-zinc-400 dark:text-zinc-500">Tap items on the left to add them to this ticket.</p>
-            </div>
-          ) : (
-            cart.map((item) => {
-              const modsCost = item.modifiers.reduce((sum, m) => sum + m.price, 0);
-              const singleTotal = item.price + modsCost;
-
-              return (
-                <div
-                  key={item.id}
-                  className="p-3 bg-black/20 border border-black/5 dark:border-white/5 rounded-xl flex flex-col justify-between gap-2 relative group hover:border-white/15 transition-all"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{item.name}</p>
-                      {item.modifiers.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1 pl-2 border-l border-black/10 dark:border-white/10">
-                          {item.modifiers.map((m, idx) => (
-                            <span key={idx} className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                              + {m.name} {m.price > 0 && `(+$${m.price.toFixed(2)})`}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-sm font-black text-white">${(singleTotal * item.quantity).toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-1">
-                    <div className="flex items-center bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-0.5">
-                      <button
-                        onClick={() => updateCartQty(item.id, -1)}
-                        className="p-1 text-zinc-500 dark:text-zinc-400 hover:text-white hover:bg-black/5 dark:bg-white/5 rounded transition-colors cursor-pointer"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="px-3 text-xs font-bold text-white">{item.quantity}</span>
-                      <button
-                        onClick={() => updateCartQty(item.id, 1)}
-                        className="p-1 text-zinc-500 dark:text-zinc-400 hover:text-white hover:bg-black/5 dark:bg-white/5 rounded transition-colors cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-red-400 transition-colors cursor-pointer"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Pricing Summary & Checkout */}
-        <div className="p-4 bg-black/5 dark:bg-white/5 border-t border-black/5 dark:border-white/5 space-y-4 shrink-0">
-          <div className="space-y-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span className="text-zinc-800 dark:text-zinc-200 font-bold">${subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Tax (8.25%)</span>
-              <span className="text-zinc-800 dark:text-zinc-200 font-bold">${tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm font-black text-white pt-1.5 border-t border-black/5 dark:border-white/5">
-              <span>Total</span>
-              <span className="text-sky-400">${total.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <Button
-            onClick={() => setShowTenderModal(true)}
-            disabled={cart.length === 0}
-            className="w-full justify-center bg-sky-500 hover:bg-sky-400 text-white py-3 font-bold rounded-xl shadow-lg shadow-sky-500/10 cursor-pointer disabled:opacity-40"
-          >
-            Checkout & Tender
-          </Button>
-        </div>
-      </aside>
-
-      {/* Modifier Dialog Overlay */}
-      {selectedItemForModifiers && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
-            <h3 className="text-lg font-extrabold mb-1 text-white">Customize {selectedItemForModifiers.name}</h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4 border-b border-black/5 dark:border-white/5 pb-2">Select required modifiers before adding to order.</p>
-
-            {/* List Modifier Groups */}
-            <div className="flex-1 overflow-y-auto space-y-5 pr-1 py-1">
-              {activeModGroupsForSelected.map((group) => {
-                const selections = selectedModifiers[group.id] || [];
-                const options = modifierOptions.filter(opt => opt.modifier_group_id === group.id);
-
-                return (
-                  <div key={group.id} className="space-y-2 p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="text-sm font-bold text-white">{group.name}</h4>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                          {group.min_required ? `Requires min: ${group.min_required}` : "Optional"} 
-                          {group.max_allowed ? ` (Max: ${group.max_allowed})` : ""}
-                        </p>
-                      </div>
-                      {group.min_required > 0 && selections.length < group.min_required && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase animate-pulse">Required</span>
-                      )}
-                    </div>
-
-                    {/* Options list */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                      {options.map((opt) => {
-                        const isSelected = selections.some(m => m.id === opt.id);
-                        return (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => handleModifierToggle(group, opt)}
-                            className={`p-3 rounded-lg border text-left text-xs font-bold transition-all cursor-pointer flex justify-between items-center ${
-                              isSelected
-                                ? "bg-sky-500/10 border-sky-500 text-sky-400"
-                                : "bg-black/5 dark:bg-black/40 border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:bg-white/5"
-                            }`}
-                          >
-                            <span>{opt.name}</span>
-                            {Number(opt.price) > 0 && (
-                              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-extrabold">+${Number(opt.price).toFixed(2)}</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-2 pt-4 border-t border-black/5 dark:border-white/5 mt-5">
-              <button
-                type="button"
-                onClick={() => setSelectedItemForModifiers(null)}
-                className="px-4 py-2 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <Button onClick={handleAddWithModifiers} className="bg-white text-black hover:bg-zinc-200 text-xs font-bold py-2 rounded-lg">
-                Add to Ticket
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tender Selection Drawer Overlay */}
-      {showTenderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-md bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col">
-            <h3 className="text-lg font-extrabold mb-1 text-white">Tender / Complete Sale</h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4 pb-2 border-b border-black/5 dark:border-white/5">Select payment method for this checkout transaction.</p>
-
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 p-4 rounded-xl">
-                <span className="font-semibold text-zinc-500 dark:text-zinc-400">Total Tender Amount:</span>
-                <span className="font-black text-sky-400 text-base">${total.toFixed(2)}</span>
-              </div>
-
-              {/* Payment Methods */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => { setTenderMethod("CASH"); setCashReceived(""); }}
-                  className={`p-4 rounded-xl border text-center font-bold flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                    tenderMethod === "CASH"
-                      ? "bg-sky-500/10 border-sky-500 text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.1)]"
-                      : "bg-black/5 dark:bg-black/40 border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:bg-white/5"
-                  }`}
-                >
-                  <DollarSign className="w-6 h-6" />
-                  <span>Cash Payment</span>
-                </button>
-
-                <button
-                  onClick={() => { setTenderMethod("CARD"); setCashReceived(total.toString()); }}
-                  className={`p-4 rounded-xl border text-center font-bold flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                    tenderMethod === "CARD"
-                      ? "bg-sky-500/10 border-sky-500 text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.1)]"
-                      : "bg-black/5 dark:bg-black/40 border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:bg-white/5"
-                  }`}
-                >
-                  <CreditCard className="w-6 h-6" />
-                  <span>Card / Reader</span>
-                </button>
-              </div>
-
-              {/* Cash Input Details */}
-              {tenderMethod === "CASH" && (
-                <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl space-y-3 animate-fadeIn">
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Cash Received ($)</label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={cashReceived}
-                      onChange={(e) => setCashReceived(e.target.value)}
-                      placeholder="Enter amount received"
-                      className="w-full bg-white/50 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
-                    />
-                  </div>
-
-                  {/* Quick Cash Buttons */}
-                  <div className="flex gap-2">
-                    {[total, 10, 20, 50, 100].map((amt, idx) => {
-                      const displayAmt = amt === total ? "Exact" : `$${amt}`;
-                      const val = amt === total ? total : amt;
-                      if (val < total && amt !== total) return null;
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setCashReceived(val.toFixed(2))}
-                          className="flex-1 text-center py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded border border-black/5 dark:border-white/5 cursor-pointer"
-                        >
-                          {displayAmt}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex justify-between items-center text-xs pt-2 border-t border-black/5 dark:border-white/5 text-zinc-500 dark:text-zinc-400">
-                    <span>Change Due:</span>
-                    <span className="font-extrabold text-green-400 text-sm">${cashChange}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-2 pt-4 border-t border-black/5 dark:border-white/5 mt-6">
-              <button
-                onClick={() => { setShowTenderModal(false); setTenderMethod(null); }}
-                className="px-4 py-2 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <Button
-                onClick={handleProcessCheckout}
-                disabled={!tenderMethod || submittingCheckout || (tenderMethod === "CASH" && (parseFloat(cashReceived) || 0) < total)}
-                className="bg-white text-black hover:bg-zinc-200 text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-1 cursor-pointer disabled:opacity-40"
-              >
-                {submittingCheckout ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" /> Processing...
-                  </>
-                ) : (
-                  <>
-                    Complete Tender <ChevronRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(fullscreen)/recipes/[id]/kitchen/KitchenClientPage.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { ActiveKitchen } from "@soustools/domain-recipes";
-import { Recipe, KitchenTimerState } from "@soustools/api-types";
-
-export function KitchenClientPage({ recipe }: { recipe: Recipe }) {
-  const [timers, setTimers] = useState<KitchenTimerState[]>([]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(`timers_${recipe.id}`);
-    if (saved) {
-      try {
-        setTimers(JSON.parse(saved));
-      } catch (err) {
-        console.error("Failed to parse timers", err);
-      }
-    }
-  }, [recipe.id]);
-
-  const handleUpdateTimers = (newTimers: KitchenTimerState[]) => {
-    setTimers(newTimers);
-    localStorage.setItem(`timers_${recipe.id}`, JSON.stringify(newTimers));
-  };
-
-  return (
-    <ActiveKitchen
-      recipe={recipe}
-      activeTimers={timers}
-      onUpdateTimers={handleUpdateTimers}
-      backHref={`/recipes/${recipe.id}`}
-    />
-  );
-}
-````
-
-## File: apps/web/src/app/(fullscreen)/recipes/[id]/kitchen/page.tsx
-````typescript
-import { config } from "@soustools/config";
-import { KitchenClientPage } from "./KitchenClientPage";
-
-interface KitchenPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function KitchenPage({ params }: KitchenPageProps) {
-  const { id } = await params;
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
-  
-  let recipe = null;
-  try {
-    const res = await fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" });
-    if (res.ok) {
-      const payload = await res.json();
-      recipe = payload.data;
-    }
-  } catch (err) {
-    console.error("Failed to fetch recipe for kitchen mode:", err);
-  }
-
-  if (!recipe) {
-    return <div className="p-12 text-center text-zinc-400">Recipe not found.</div>;
-  }
-
-  return (
-    <div className="bg-zinc-950 min-h-screen">
-      <KitchenClientPage recipe={recipe} />
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(fullscreen)/layout.tsx
-````typescript
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "../../lib/supabase";
-import { AuthChangeEvent, Session } from "@supabase/supabase-js";
-import { FloatingOmniTrigger } from "@soustools/design-system";
-
-interface FullscreenLayoutProps {
-  children: React.ReactNode;
-}
-
-export default function FullscreenLayout({ children }: FullscreenLayoutProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    let mounted = true;
-
-    const checkSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) {
-          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-        } else if (mounted) {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("Failed to retrieve authentication session:", error);
-        router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-      }
-    };
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, session: Session | null) => {
-        if (!session) {
-          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-        } else if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    );
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-white dark:bg-black text-zinc-900 dark:text-zinc-100">
-      {children}
-      <FloatingOmniTrigger />
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/@modal/(.)ingestion/review/[id]/page.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import {
-  Loader2,
-  ArrowLeft,
-  CheckCircle,
-  BrainCircuit,
-  Trash2,
-} from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { IngestionReview } from "@soustools/api-types";
-import { toast } from "sonner";
-import Link from "next/link";
-import { ConfirmModal } from "../../../../../../components/ui/confirm-modal";
-import { VisualBuilder } from "../../../../ingestion/review/[id]/visual-builder";
-import { ModalShell } from "@soustools/domain-signage";
-
-export default function IngestionReviewPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params.id as string;
-
-  const [review, setReview] = useState<IngestionReview | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [editedData, setEditedData] = useState("");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
-
-  useEffect(() => {
-    const fetchReview = async () => {
-      const { data } = await supabase
-        .from("ingestion_reviews")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (data) {
-        // camelCase conversion
-        const parsed = {
-          id: data.id,
-          organizationId: data.organization_id,
-          userId: data.user_id,
-          source: data.source,
-          rawText: data.raw_text,
-          parsedData: data.parsed_data,
-          status: data.status,
-          sourceDocumentUrl: data.source_document_url,
-          sourceName: data.source_name,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-        } as IngestionReview;
-
-        setReview(parsed);
-        setEditedData(JSON.stringify(parsed.parsedData, null, 2));
-      } else {
-        toast.error("Review not found");
-      }
-      setLoading(false);
-    };
-
-    if (id) fetchReview();
-  }, [id]);
-
-  const handleApprove = async () => {
-    try {
-      const finalJson = JSON.parse(editedData);
-
-      // Update the DB record with latest JSON changes first
-      await supabase
-        .from("ingestion_reviews")
-        .update({ parsed_data: finalJson })
-        .eq("id", id);
-
-      // Trigger the real commit API synchronously
-      const res = await fetch(`/api/ingestion/review/${id}/commit`, {
-        method: "POST",
-      });
-
-      if (!res.ok) throw new Error("Failed to commit data");
-
-      toast.success("Ingestion Approved and mapped to Live Data!");
-      router.push("/recipes");
-    } catch (err) {
-      toast.error("Failed to commit changes. Ensure JSON is valid.");
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
-      toast.success("Review deleted successfully");
-      router.push("/ingestion");
-    } catch (err) {
-      toast.error("Failed to delete review");
-      setShowDeleteConfirm(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
-      </div>
-    );
-  }
-
-  if (!review) return null;
-
-  return (
-    <ModalShell title="Ingestion Review" maxWidth="max-w-7xl">
-      <div className="p-2 md:p-4 space-y-6">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/ingestion"
-              className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                <BrainCircuit className="w-6 h-6 text-sky-400" />
-                Human-in-the-Loop Review
-              </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Review AI extracted data from {review.source.replace("_", " ")}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 bg-black/5 dark:bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
-              title="Delete Review"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-
-            {review.status === "PENDING" ? (
-              <button
-                onClick={handleApprove}
-                className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20"
-              >
-                <CheckCircle className="w-5 h-5" /> Approve & Save
-              </button>
-            ) : (
-              <div
-                className={`px-4 py-2 rounded-lg font-bold border ${
-                  review.status === "REJECTED"
-                    ? "bg-red-500/20 text-red-400 border-red-500/30"
-                    : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                }`}
-              >
-                Already {review.status}
-              </div>
-            )}
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
-          {/* Left Pane: Raw Document text or Image */}
-          <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-            <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10">
-              <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-                Raw Source Document
-              </h2>
-            </div>
-            <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40">
-              {review.sourceDocumentUrl ? (
-                review.sourceDocumentUrl.endsWith(".pdf") ? (
-                  <iframe
-                    src={review.sourceDocumentUrl}
-                    className="w-full h-full border-none"
-                  />
-                ) : (
-                  <img
-                    src={review.sourceDocumentUrl}
-                    className="w-full h-auto object-contain"
-                    alt="Raw Document"
-                  />
-                )
-              ) : (
-                <pre className="text-sm text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap font-mono p-4">
-                  {review.rawText || "No raw text available."}
-                </pre>
-              )}
-            </div>
-          </div>
-
-          {/* Right Pane: AI Structured Data Editable */}
-          <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-            <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
-              <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-                AI Extracted Data
-              </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">
-                  Vendor Aliases Applied
-                </span>
-                <div className="flex bg-black/50 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode("visual")}
-                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
-                  >
-                    Visual
-                  </button>
-                  <button
-                    onClick={() => setViewMode("json")}
-                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
-                  >
-                    JSON
-                  </button>
-                </div>
-              </div>
-            </div>
-            {viewMode === "visual" ? (
-              <VisualBuilder
-                editedData={editedData}
-                onChange={setEditedData}
-                disabled={review.status !== "PENDING"}
-                organizationId={review.organizationId}
-              />
-            ) : (
-              <div className="flex-1">
-                <textarea
-                  value={editedData}
-                  onChange={(e) => setEditedData(e.target.value)}
-                  className={`w-full h-full bg-white/50 dark:bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
-                    editedData.includes('"error":')
-                      ? "text-red-400"
-                      : "text-emerald-400"
-                  }`}
-                  spellCheck={false}
-                  disabled={review.status !== "PENDING"}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        <ConfirmModal
-          isOpen={showDeleteConfirm}
-          title="Delete Ingestion Review"
-          message="Are you sure you want to delete this item? This action cannot be undone."
-          confirmText="Delete"
-          isDestructive={true}
-          onCancel={() => setShowDeleteConfirm(false)}
-          onConfirm={handleDelete}
-        />
-      </div>
-    </ModalShell>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/@modal/signage/[deckId]/preview/page.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
-import { ExternalLink, Edit, Monitor, Copy, Check } from "lucide-react";
-import { ModalShell } from "@soustools/domain-signage";
-
-interface Params {
-  deckId: string;
-}
-
-interface DeckData {
-  id: string;
-  name: string;
-  slug: string;
-  config?: { slides?: unknown[] };
-}
-
-/**
- * Deck Preview Modal — rendered in the @modal parallel slot when
- * the user navigates to /signage/[deckId]/preview from the deck list.
- * The editor route /signage/[deckId] remains untouched.
- */
-export default function DeckPreviewModal({
-  params,
-}: {
-  params: Promise<Params>;
-}) {
-  const { deckId } = use(params);
-  const router = useRouter();
-  const [deck, setDeck] = useState<DeckData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    fetch(`/api/signage/layouts/${deckId}`)
-      .then((r) => r.json())
-      .then((d: { success: boolean; data: DeckData }) => {
-        if (d.success) setDeck(d.data);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [deckId]);
-
-  const getLiveUrl = () => {
-    if (!deck) return "";
-    const base =
-      typeof window !== "undefined" && window.location.hostname === "localhost"
-        ? "http://localhost:5003"
-        : window.location.origin;
-    return `${base}/s/dtown-cafe/${deck.slug}`;
-  };
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(getLiveUrl());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const slideCount = deck?.config?.slides?.length ?? 0;
-
-  return (
-    <ModalShell
-      title={loading ? "Loading…" : (deck?.name ?? "Deck Preview")}
-      subtitle={
-        deck
-          ? `${slideCount} slide${slideCount !== 1 ? "s" : ""}  ·  /s/dtown-cafe/${deck.slug}`
-          : undefined
-      }
-      maxWidth="max-w-5xl"
-      footer={
-        <>
-          <button
-            onClick={() => router.back()}
-            className="px-4 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 border border-black/10 dark:border-white/10 hover:border-white/20 rounded-lg transition cursor-pointer"
-          >
-            Close
-          </button>
-          <button
-            onClick={() => router.push(`/signage/${deckId}`)}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-white rounded-lg transition cursor-pointer"
-          >
-            <Edit className="w-3.5 h-3.5" /> Open Editor
-          </button>
-        </>
-      }
-    >
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-t-transparent border-primary rounded-full animate-spin" />
-        </div>
-      ) : !deck ? (
-        <div className="flex items-center justify-center h-64 text-zinc-400 dark:text-zinc-500">
-          Deck not found.
-        </div>
-      ) : (
-        <div className="flex flex-col">
-          {/* 16:9 live preview iframe */}
-          <div className="relative w-full bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
-            <iframe
-              src={getLiveUrl()}
-              title={deck.name}
-              className="absolute inset-0 w-full h-full border-none"
-              allow="autoplay; encrypted-media"
-            />
-          </div>
-          {/* Action strip */}
-          <div className="flex items-center gap-3 px-5 py-4 border-t border-black/5 dark:border-white/5 bg-zinc-50 dark:bg-zinc-950">
-            <Monitor className="w-4 h-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 flex-1 font-mono truncate">{getLiveUrl()}</p>
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? "Copied!" : "Copy URL"}
-            </button>
-            <a
-              href={getLiveUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
-            >
-              <ExternalLink className="w-3.5 h-3.5" /> Open in Tab
-            </a>
-          </div>
-        </div>
-      )}
-    </ModalShell>
-  );
-}
-````
-
 ## File: apps/web/src/app/(workspace)/@modal/signage/[deckId]/page.tsx
 ````typescript
 /**
@@ -10273,243 +7956,6 @@ export default function DeckEditorModalSlot() {
 ````typescript
 export default function ModalDefault() {
   return null;
-}
-````
-
-## File: apps/web/src/app/(workspace)/admin/devices/devices-client-wrapper.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { useRouter } from "next/navigation";
-import { DisplayManager } from "@soustools/domain-signage";
-import { SignageDisplay } from "@soustools/api-types";
-
-interface DevicesClientWrapperProps {
-  displays: SignageDisplay[];
-  layouts: any[];
-  edgeDevices?: any[];
-}
-
-export function DevicesClientWrapper({
-  displays,
-  layouts,
-  edgeDevices,
-}: DevicesClientWrapperProps) {
-  const router = useRouter();
-
-  const handleAddBrowserDisplay = async (name: string) => {
-    await fetch("/api/signage/displays", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    router.refresh();
-  };
-
-  const handleDeleteDisplay = async (id: string) => {
-    await fetch(`/api/signage/displays/${id}`, { method: "DELETE" });
-    router.refresh();
-  };
-
-  const handleAssignDeck = async (displayId: string, deckId: string | null) => {
-    await fetch(`/api/signage/displays/${displayId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ deckId }),
-    });
-    router.refresh();
-  };
-
-  const handlePairDisplay = async (code: string) => {
-    await fetch("/api/signage/displays/pair/confirm", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pairingCode: code, name: "New TV Display" }),
-    });
-    router.refresh();
-  };
-
-  const handleSaveDevice = async (deviceId: string, payload: any) => {
-    await fetch(`/api/signage/devices/${deviceId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    router.refresh();
-  };
-
-  const handleFetchDevice = async (deviceId: string) => {
-    const res = await fetch(`/api/signage/devices/${deviceId}`);
-    const data = await res.json();
-    return data.data;
-  };
-
-  const handleRevokeDevice = async (id: string) => {
-    await fetch(`/api/devices/${id}/revoke`, { method: "POST" });
-    router.refresh();
-  };
-
-  const renderEdgeDevices = () => {
-    const devices = edgeDevices && edgeDevices.length > 0 ? edgeDevices : [
-      { id: "mock-1", name: "Kitchen WearOS", deviceType: "wearos", assignedUser: "Chef Gordon" },
-      { id: "mock-2", name: "Prep RPi", deviceType: "rpi", assignedUser: "Line Cook A" }
-    ];
-
-    return (
-      <div className="mt-12 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-        <h2 className="text-xl font-bold text-white tracking-wide mb-4">Edge Devices</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
-                <th className="pb-3 px-4 font-medium">Device Name</th>
-                <th className="pb-3 px-4 font-medium">Type</th>
-                <th className="pb-3 px-4 font-medium">Assigned User</th>
-                <th className="pb-3 px-4 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {devices.map((device: any) => (
-                <tr key={device.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
-                  <td className="py-4 px-4 text-zinc-300 font-medium">{device.name || "Unknown Device"}</td>
-                  <td className="py-4 px-4 text-zinc-400 uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
-                  <td className="py-4 px-4 text-zinc-400">{device.assignedUser || "Unassigned"}</td>
-                  <td className="py-4 px-4 text-right">
-                    <button 
-                      onClick={() => handleRevokeDevice(device.id)}
-                      className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-semibold transition-colors border border-red-500/20"
-                    >
-                      Revoke Access
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="flex flex-col gap-8 w-full h-full pb-20">
-      <DisplayManager
-        displays={displays}
-        layouts={layouts}
-        onAddBrowserDisplay={handleAddBrowserDisplay}
-        onDeleteDisplay={handleDeleteDisplay}
-        onAssignDeck={handleAssignDeck}
-        onPairDisplay={handlePairDisplay}
-        onSaveDevice={handleSaveDevice}
-        onFetchDevice={handleFetchDevice}
-        onRefreshData={() => router.refresh()}
-      />
-      {renderEdgeDevices()}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/admin/devices/page.tsx
-````typescript
-import React from "react";
-import { config } from "@soustools/config";
-import { DevicesClientWrapper } from "./devices-client-wrapper";
-
-/**
- * DevicesPage mounts the signage physical displays pairing and status manager.
- */
-export default async function DevicesPage() {
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
-
-  let displays = [];
-  let layouts = [];
-  let edgeDevices = [];
-
-  try {
-    const [dispRes, layRes, devRes] = await Promise.all([
-      fetch(`${baseUrl}/signage/displays`, { cache: "no-store" }),
-      fetch(`${baseUrl}/signage/layouts`, { cache: "no-store" }),
-      fetch(`${baseUrl}/devices`, { cache: "no-store" }),
-    ]);
-
-    if (dispRes.ok) {
-      const data = await dispRes.json();
-      displays = data.data || [];
-    }
-
-    if (layRes.ok) {
-      const data = await layRes.json();
-      layouts = data.data || [];
-    }
-
-    if (devRes.ok) {
-      const data = await devRes.json();
-      edgeDevices = data.data || [];
-    }
-  } catch (err) {
-    console.error("Failed to fetch signage displays/layouts/devices:", err);
-  }
-
-  return <DevicesClientWrapper displays={displays} layouts={layouts} edgeDevices={edgeDevices} />;
-}
-````
-
-## File: apps/web/src/app/(workspace)/admin/users/page.tsx
-````typescript
-import React from "react";
-
-export default function AdminUsersPage() {
-  return (
-    <div className="p-8 max-w-6xl mx-auto w-full h-full">
-      <div className="flex flex-col gap-2 mb-8">
-        <h1 className="text-3xl font-black text-white uppercase tracking-widest">Admin Users</h1>
-        <p className="text-zinc-400 font-medium">Manage user roles and permissions.</p>
-      </div>
-
-      <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
-                <th className="pb-3 px-4 font-medium">Name</th>
-                <th className="pb-3 px-4 font-medium">Email</th>
-                <th className="pb-3 px-4 font-medium">Role</th>
-                <th className="pb-3 px-4 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
-                <td className="py-4 px-4 text-zinc-300 font-medium">Conar Welsh</td>
-                <td className="py-4 px-4 text-zinc-400">conar@soustools.com</td>
-                <td className="py-4 px-4 text-zinc-400">
-                  <span className="px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-semibold uppercase tracking-wider">Superadmin</span>
-                </td>
-                <td className="py-4 px-4 text-right">
-                  <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-zinc-700">
-                    Edit
-                  </button>
-                </td>
-              </tr>
-              <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
-                <td className="py-4 px-4 text-zinc-300 font-medium">Demo Chef</td>
-                <td className="py-4 px-4 text-zinc-400">chef@demo.com</td>
-                <td className="py-4 px-4 text-zinc-400">
-                  <span className="px-2.5 py-1 rounded-md bg-zinc-800 text-zinc-400 text-xs font-semibold uppercase tracking-wider">User</span>
-                </td>
-                <td className="py-4 px-4 text-right">
-                  <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-zinc-700">
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
 }
 ````
 
@@ -10543,303 +7989,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 }
 ````
 
-## File: apps/web/src/app/(workspace)/catalog/page.tsx
-````typescript
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { supabase } from "../../../lib/supabase";
-import { Search, Edit3, X, Save, Image, DollarSign } from "lucide-react";
-import { Button } from "@soustools/design-system";
-import { toast } from "sonner";
-
-interface PosItem {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  is_sold_out: boolean;
-  external_id: string;
-}
-
-export default function CatalogEditorPage() {
-  const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<PosItem[]>([]);
-  const [search, setSearch] = useState("");
-
-  // Edit Modal State
-  const [editingItem, setEditingItem] = useState<PosItem | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editDesc, setEditDesc] = useState("");
-  const [editPrice, setEditPrice] = useState("");
-  const [editSoldOut, setEditSoldOut] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const fetchCatalog = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("pos_items")
-        .select("*")
-        .order("name", { ascending: true });
-      if (error) throw error;
-      setItems((data as PosItem[]) || []);
-    } catch (err: any) {
-      toast.error(`Failed to load catalog: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCatalog();
-  }, []);
-
-  const startEdit = (item: PosItem) => {
-    setEditingItem(item);
-    setEditName(item.name);
-    setEditDesc(item.description || "");
-    setEditPrice(item.price.toString());
-    setEditSoldOut(item.is_sold_out);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingItem || saving) return;
-
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from("pos_items")
-        .update({
-          name: editName,
-          description: editDesc || null,
-          price: parseFloat(editPrice) || 0,
-          is_sold_out: editSoldOut,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", editingItem.id);
-
-      if (error) throw error;
-
-      toast.success("Catalog item updated successfully!");
-      setEditingItem(null);
-      fetchCatalog();
-    } catch (err: any) {
-      toast.error(`Failed to save changes: ${err.message}`);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const filteredItems = items.filter(
-    (item) =>
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      (item.description &&
-        item.description.toLowerCase().includes(search.toLowerCase())),
-  );
-
-  return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn relative">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
-          POS Catalog Editor
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-          Audit and edit properties of POS-synchronized menu items.
-        </p>
-      </div>
-
-      {/* Toolbar */}
-      <div className="glass-panel p-4 rounded-2xl border border-black/5 dark:border-white/5 flex gap-4 items-center justify-between">
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 dark:text-zinc-500 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search catalog items..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 w-full text-xs text-white outline-none focus:border-sky-500 transition-all"
-          />
-        </div>
-      </div>
-
-      {/* Catalog Grid */}
-      {loading ? (
-        <div className="text-center text-zinc-400 dark:text-zinc-500 py-12 text-sm">
-          Downloading catalog metadata...
-        </div>
-      ) : filteredItems.length === 0 ? (
-        <div className="text-center text-zinc-400 dark:text-zinc-500 py-12 text-sm">
-          No items found matching the filter.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className={`glass-panel p-5 rounded-2xl border flex flex-col justify-between hover:border-white/15 transition-all relative ${
-                item.is_sold_out
-                  ? "border-rose-500/20 bg-rose-950/5"
-                  : "border-black/5 dark:border-white/5"
-              }`}
-            >
-              <div>
-                <div className="w-full aspect-video rounded-xl bg-zinc-100 dark:bg-card border border-black/5 dark:border-white/5 flex items-center justify-center mb-4 text-zinc-700">
-                  <Image className="w-8 h-8" />
-                </div>
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-zinc-200 text-sm truncate pr-2">
-                    {item.name}
-                  </h3>
-                  <span className="text-xs font-bold text-sky-400 font-mono shrink-0">
-                    ${item.price.toFixed(2)}
-                  </span>
-                </div>
-                <p className="text-zinc-400 dark:text-zinc-500 text-xs line-clamp-2 min-h-[32px]">
-                  {item.description || "No description provided."}
-                </p>
-              </div>
-
-              <div className="mt-6 flex justify-between items-center">
-                <span
-                  className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
-                    item.is_sold_out
-                      ? "text-rose-400 bg-rose-950/20 border-rose-500/20"
-                      : "text-emerald-400 bg-emerald-950/20 border-emerald-500/20"
-                  }`}
-                >
-                  {item.is_sold_out ? "Sold Out" : "Active"}
-                </span>
-
-                <button
-                  onClick={() => startEdit(item)}
-                  className="p-2 border border-zinc-800 rounded-xl hover:bg-black/5 dark:bg-white/5 hover:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-white transition-all"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Edit Slide-over Panel */}
-      {editingItem && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div
-            className="absolute inset-0 bg-white/50 dark:bg-black/60 backdrop-blur-sm"
-            onClick={() => setEditingItem(null)}
-          />
-          <div className="relative w-full max-w-md bg-zinc-50 dark:bg-zinc-950 border-l border-black/10 dark:border-white/10 shadow-2xl h-full flex flex-col animate-in slide-in-from-right duration-300">
-            <div className="p-6 border-b border-black/5 dark:border-white/5 flex justify-between items-center bg-card/40">
-              <h2 className="text-xl font-bold text-white">
-                Edit Catalog Item
-              </h2>
-              <button
-                onClick={() => setEditingItem(null)}
-                className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-white hover:bg-black/5 dark:bg-white/5 rounded-full transition-all"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form
-              onSubmit={handleSave}
-              className="flex-1 p-6 space-y-6 overflow-y-auto"
-            >
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  required
-                  className="w-full bg-zinc-100 dark:bg-card border border-zinc-850 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-500 outline-none"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                  Description
-                </label>
-                <textarea
-                  value={editDesc}
-                  onChange={(e) => setEditDesc(e.target.value)}
-                  rows={4}
-                  className="w-full bg-zinc-100 dark:bg-card border border-zinc-850 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-500 outline-none resize-none"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                  Price ($)
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-zinc-400 dark:text-zinc-500 w-4 h-4" />
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={editPrice}
-                    onChange={(e) => setEditPrice(e.target.value)}
-                    required
-                    className="w-full bg-zinc-100 dark:bg-card border border-zinc-850 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:border-sky-500 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-black/5 dark:border-white/5 pt-6">
-                <div>
-                  <span className="text-xs font-bold text-zinc-200 block">
-                    Inventory Status
-                  </span>
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 block">
-                    Mark this item sold out globally
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditSoldOut(!editSoldOut)}
-                  className={`w-12 h-6 rounded-full p-1 transition-all ${
-                    editSoldOut ? "bg-rose-500" : "bg-zinc-800"
-                  }`}
-                >
-                  <div
-                    className={`w-4 h-4 rounded-full bg-white transition-all ${
-                      editSoldOut ? "translate-x-6" : "translate-x-0"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              <div className="border-t border-black/5 dark:border-white/5 pt-6 flex justify-end gap-3 mt-auto">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEditingItem(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-1.5 bg-sky-500 text-white hover:bg-sky-600"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  {saving ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/(workspace)/home/page.tsx
 ````typescript
 import React from "react";
@@ -10856,1025 +8005,6 @@ export default function OmniBarFocusPage() {
           <OmniBar />
         </div>
       </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/ingestion/review/[id]/page.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import {
-  Loader2,
-  ArrowLeft,
-  CheckCircle,
-  BrainCircuit,
-  Trash2,
-} from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { IngestionReview } from "@soustools/api-types";
-import { toast } from "sonner";
-import Link from "next/link";
-import { ConfirmModal } from "../../../../../components/ui/confirm-modal";
-import { VisualBuilder } from "./visual-builder";
-
-export default function IngestionReviewPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params.id as string;
-
-  const [review, setReview] = useState<IngestionReview | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [editedData, setEditedData] = useState("");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
-
-  useEffect(() => {
-    const fetchReview = async () => {
-      const { data } = await supabase
-        .from("ingestion_reviews")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (data) {
-        // camelCase conversion
-        const parsed = {
-          id: data.id,
-          organizationId: data.organization_id,
-          userId: data.user_id,
-          source: data.source,
-          rawText: data.raw_text,
-          parsedData: data.parsed_data,
-          status: data.status,
-          sourceDocumentUrl: data.source_document_url,
-          sourceName: data.source_name,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-        } as IngestionReview;
-
-        setReview(parsed);
-        setEditedData(JSON.stringify(parsed.parsedData, null, 2));
-      } else {
-        toast.error("Review not found");
-      }
-      setLoading(false);
-    };
-
-    if (id) fetchReview();
-  }, [id]);
-
-  const handleApprove = async () => {
-    try {
-      const finalJson = JSON.parse(editedData);
-
-      // Update the DB record with latest JSON changes first
-      await supabase
-        .from("ingestion_reviews")
-        .update({ parsed_data: finalJson })
-        .eq("id", id);
-
-      // Trigger the real commit API synchronously
-      const res = await fetch(`/api/ingestion/review/${id}/commit`, {
-        method: "POST",
-      });
-
-      if (!res.ok) throw new Error("Failed to commit data");
-
-      toast.success("Ingestion Approved and mapped to Live Data!");
-      router.push("/recipes");
-    } catch (err) {
-      toast.error("Failed to commit changes. Ensure JSON is valid.");
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
-      toast.success("Review deleted successfully");
-      router.push("/ingestion");
-    } catch (err) {
-      toast.error("Failed to delete review");
-      setShowDeleteConfirm(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
-      </div>
-    );
-  }
-
-  if (!review) return null;
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/ingestion"
-            className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <BrainCircuit className="w-6 h-6 text-sky-400" />
-              Human-in-the-Loop Review
-            </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Review AI extracted data from {review.source.replace("_", " ")}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 bg-black/5 dark:bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
-            title="Delete Review"
-          >
-            <Trash2 className="w-5 h-5" />
-          </button>
-
-          {review.status === "PENDING" ? (
-            <button
-              onClick={handleApprove}
-              className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20"
-            >
-              <CheckCircle className="w-5 h-5" /> Approve & Save
-            </button>
-          ) : (
-            <div
-              className={`px-4 py-2 rounded-lg font-bold border ${
-                review.status === "REJECTED"
-                  ? "bg-red-500/20 text-red-400 border-red-500/30"
-                  : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-              }`}
-            >
-              Already {review.status}
-            </div>
-          )}
-        </div>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
-        {/* Left Pane: Raw Document text or Image */}
-        <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-          <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10">
-            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-              Raw Source Document
-            </h2>
-          </div>
-          <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40">
-            {review.sourceDocumentUrl ? (
-              review.sourceDocumentUrl.endsWith(".pdf") ? (
-                <iframe
-                  src={review.sourceDocumentUrl}
-                  className="w-full h-full border-none"
-                />
-              ) : (
-                <img
-                  src={review.sourceDocumentUrl}
-                  className="w-full h-auto object-contain"
-                  alt="Raw Document"
-                />
-              )
-            ) : (
-              <pre className="text-sm text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap font-mono p-4">
-                {review.rawText || "No raw text available."}
-              </pre>
-            )}
-          </div>
-        </div>
-
-        {/* Right Pane: AI Structured Data Editable */}
-        <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
-          <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-              AI Extracted Data
-            </h2>
-            <div className="flex items-center gap-2">
-              <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">
-                Vendor Aliases Applied
-              </span>
-              <div className="flex bg-black/50 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("visual")}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
-                >
-                  Visual
-                </button>
-                <button
-                  onClick={() => setViewMode("json")}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
-                >
-                  JSON
-                </button>
-              </div>
-            </div>
-          </div>
-          {viewMode === "visual" ? (
-            <VisualBuilder
-              editedData={editedData}
-              onChange={setEditedData}
-              disabled={review.status !== "PENDING"}
-              organizationId={review.organizationId}
-            />
-          ) : (
-            <div className="flex-1">
-              <textarea
-                value={editedData}
-                onChange={(e) => setEditedData(e.target.value)}
-                className={`w-full h-full bg-white/50 dark:bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
-                  editedData.includes('"error":')
-                    ? "text-red-400"
-                    : "text-emerald-400"
-                }`}
-                spellCheck={false}
-                disabled={review.status !== "PENDING"}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      <ConfirmModal
-        isOpen={showDeleteConfirm}
-        title="Delete Ingestion Review"
-        message="Are you sure you want to delete this item? This action cannot be undone."
-        confirmText="Delete"
-        isDestructive={true}
-        onCancel={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDelete}
-      />
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/ingestion/review/[id]/visual-builder.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { ChevronDown, ChevronRight } from "lucide-react";
-
-interface VisualBuilderProps {
-  editedData: string;
-  onChange: (newData: string) => void;
-  disabled: boolean;
-  organizationId: string;
-}
-
-export function VisualBuilder({
-  editedData,
-  onChange,
-  disabled,
-  organizationId,
-}: VisualBuilderProps) {
-  const [items, setItems] = useState<{ id: string; name: string }[]>([]);
-  const [expandedRecipes, setExpandedRecipes] = useState<
-    Record<number, boolean>
-  >({});
-
-  useEffect(() => {
-    const fetchItems = async () => {
-      const { data } = await supabase
-        .from("items")
-        .select("id, name")
-        .eq("organization_id", organizationId)
-        .order("name");
-      if (data) {
-        setItems(data.map((d: any) => ({ id: d.id, name: d.name })));
-      }
-    };
-    if (organizationId) fetchItems();
-  }, [organizationId]);
-
-  let parsed: any = {};
-  try {
-    parsed = JSON.parse(editedData);
-  } catch (e) {
-    return (
-      <div className="p-4 text-red-400">
-        Invalid JSON data. Use JSON Editor to fix.
-      </div>
-    );
-  }
-
-  // Auto-map ingredient itemIds based on raw names when items load
-  useEffect(() => {
-    if (items.length === 0 || disabled) return;
-    let modified = false;
-    const newData = { ...parsed };
-    const targetRecipes = newData.recipes
-      ? newData.recipes
-      : newData.title && newData.ingredients
-        ? [newData]
-        : [];
-
-    targetRecipes.forEach((recipe: any) => {
-      if (recipe.ingredients) {
-        recipe.ingredients.forEach((ing: any) => {
-          if (!ing.itemId && ing.name) {
-            const match = items.find(
-              (i) =>
-                i.name.toLowerCase() === String(ing.name).trim().toLowerCase(),
-            );
-            if (match) {
-              ing.itemId = match.id;
-              modified = true;
-            }
-          }
-        });
-      }
-    });
-
-    if (modified) {
-      onChange(JSON.stringify(newData, null, 2));
-    }
-  }, [items, parsed, disabled, onChange]);
-
-  const recipes = parsed.recipes
-    ? parsed.recipes
-    : parsed.title && parsed.ingredients
-      ? [parsed]
-      : [];
-
-  if (recipes.length === 0) {
-    return (
-      <div className="p-4 text-zinc-500 dark:text-zinc-400">
-        No recipes found in data.
-      </div>
-    );
-  }
-
-  const handleUpdate = (recipeIndex: number, field: string, value: any) => {
-    const newData = { ...parsed };
-    if (newData.recipes) {
-      newData.recipes[recipeIndex][field] = value;
-    } else {
-      newData[field] = value;
-    }
-    onChange(JSON.stringify(newData, null, 2));
-  };
-
-  const handleIngredientUpdate = (
-    recipeIndex: number,
-    ingIndex: number,
-    field: string,
-    value: any,
-  ) => {
-    const newData = { ...parsed };
-    const targetRecipe = newData.recipes
-      ? newData.recipes[recipeIndex]
-      : newData;
-    targetRecipe.ingredients[ingIndex][field] = value;
-    onChange(JSON.stringify(newData, null, 2));
-  };
-
-  const toggleExpand = (i: number) => {
-    setExpandedRecipes((prev) => ({ ...prev, [i]: !prev[i] }));
-  };
-
-  return (
-    <div className="flex-1 overflow-y-auto bg-black/5 dark:bg-black/40 p-4 space-y-4">
-      {recipes.map((recipe: any, rIdx: number) => {
-        const isExpanded = expandedRecipes[rIdx] !== false;
-
-        // Group ingredients by component
-        const components: Record<string, any[]> = {};
-
-        (recipe.ingredients || []).forEach((ing: any, i: number) => {
-          const comp = ing.component || "Base Recipe";
-          if (!components[comp]) components[comp] = [];
-          components[comp].push({ ...ing, originalIndex: i });
-        });
-
-        return (
-          <div
-            key={rIdx}
-            className="border border-black/10 dark:border-white/10 rounded-xl bg-card/50 overflow-hidden shadow-sm"
-          >
-            <div
-              className="p-3 bg-black/5 dark:bg-white/5 flex items-center gap-2 cursor-pointer hover:bg-black/10 dark:bg-white/10"
-              onClick={() => toggleExpand(rIdx)}
-            >
-              {isExpanded ? (
-                <ChevronDown size={18} />
-              ) : (
-                <ChevronRight size={18} />
-              )}
-              <span className="font-bold text-sky-400">
-                {recipe.title || "Untitled Recipe"}
-              </span>
-            </div>
-
-            {isExpanded && (
-              <div className="p-4 space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">
-                      Title
-                    </label>
-                    <input
-                      disabled={disabled}
-                      type="text"
-                      value={recipe.title || ""}
-                      onChange={(e) =>
-                        handleUpdate(rIdx, "title", e.target.value)
-                      }
-                      className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">
-                        Yield
-                      </label>
-                      <input
-                        disabled={disabled}
-                        type="number"
-                        value={recipe.yieldCount || 1}
-                        onChange={(e) =>
-                          handleUpdate(
-                            rIdx,
-                            "yieldCount",
-                            Number(e.target.value),
-                          )
-                        }
-                        className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">
-                        Unit
-                      </label>
-                      <input
-                        disabled={disabled}
-                        type="text"
-                        value={recipe.yieldUnit || "servings"}
-                        onChange={(e) =>
-                          handleUpdate(rIdx, "yieldUnit", e.target.value)
-                        }
-                        className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-2">
-                    <h4 className="text-sm font-semibold">Ingredients</h4>
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => {
-                        // Math logic: Calculate base weights per component
-                        const componentBaseWeights: Record<string, number> = {};
-                        const ings = recipe.ingredients || [];
-                        ings.forEach((ing: any) => {
-                          if (ing.baseCalculationGroup) {
-                            const comp = ing.component || "Base Recipe";
-                            componentBaseWeights[comp] =
-                              (componentBaseWeights[comp] || 0) +
-                              Number(ing.amount || 0);
-                          }
-                        });
-
-                        const hasAnyBase = Object.values(
-                          componentBaseWeights,
-                        ).some((w) => w > 0);
-                        if (!hasAnyBase) {
-                          alert(
-                            "Please select at least one Base ingredient (in any component) to convert!",
-                          );
-                          return;
-                        }
-
-                        // Convert ingredients to percentages relative to their component's base weight
-                        const newData = { ...parsed };
-                        const targetRecipe = newData.recipes
-                          ? newData.recipes[rIdx]
-                          : newData;
-
-                        targetRecipe.ingredients = targetRecipe.ingredients.map(
-                          (ing: any) => {
-                            const comp = ing.component || "Base Recipe";
-                            const compBaseWeight =
-                              componentBaseWeights[comp] || 0;
-
-                            if (compBaseWeight === 0) return ing; // Skip if no base for this component
-
-                            const originalAmount = Number(ing.amount || 0);
-                            const percentage =
-                              (originalAmount / compBaseWeight) * 100;
-                            return {
-                              ...ing,
-                              amount: Number(percentage.toFixed(2)),
-                              unit: "%",
-                              calculationType: "BAKERS_PERCENTAGE",
-                              // Keep baseCalculationGroup true for the base items
-                            };
-                          },
-                        );
-
-                        onChange(JSON.stringify(newData, null, 2));
-                      }}
-                      className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded hover:bg-amber-500/30 transition-colors"
-                    >
-                      Convert to Baker's %
-                    </button>
-                  </div>
-
-                  {Object.entries(components).map(([compName, ings]) => (
-                    <div key={compName} className="space-y-3">
-                      <h5 className="text-xs font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2 py-1 rounded inline-block">
-                        {compName}
-                      </h5>
-                      <div className="space-y-2">
-                        {ings.map((ing) => (
-                          <div
-                            key={ing.originalIndex}
-                            className="grid grid-cols-12 gap-3 items-center bg-black/30 p-3 rounded-lg border border-black/5 dark:border-white/5"
-                          >
-                            <div className="col-span-4 flex flex-col gap-1 relative">
-                              <input
-                                disabled={disabled}
-                                type="text"
-                                value={ing.name || ""}
-                                onChange={(e) =>
-                                  handleIngredientUpdate(
-                                    rIdx,
-                                    ing.originalIndex,
-                                    "name",
-                                    e.target.value,
-                                  )
-                                }
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none placeholder:text-white/20"
-                                placeholder="Raw Name (from text)"
-                              />
-                              <select
-                                disabled={disabled}
-                                value={ing.itemId || ""}
-                                onChange={(e) =>
-                                  handleIngredientUpdate(
-                                    rIdx,
-                                    ing.originalIndex,
-                                    "itemId",
-                                    e.target.value || null,
-                                  )
-                                }
-                                className={`w-full bg-black/5 dark:bg-black/40 border rounded px-2 py-1.5 text-sm outline-none transition-colors ${
-                                  !ing.itemId
-                                    ? "border-red-500/70 text-red-300 focus:border-red-400"
-                                    : "border-black/10 dark:border-white/10 text-emerald-400 focus:border-sky-500"
-                                }`}
-                              >
-                                <option value="">
-                                  ⚠️ Select Master Ingredient...
-                                </option>
-                                {items.map((it) => (
-                                  <option key={it.id} value={it.id}>
-                                    {it.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="col-span-3 flex gap-1">
-                              <input
-                                disabled={disabled}
-                                type="number"
-                                value={ing.amount || 0}
-                                onChange={(e) =>
-                                  handleIngredientUpdate(
-                                    rIdx,
-                                    ing.originalIndex,
-                                    "amount",
-                                    Number(e.target.value),
-                                  )
-                                }
-                                className="w-16 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
-                              />
-                              <input
-                                disabled={disabled}
-                                type="text"
-                                value={ing.unit || ""}
-                                onChange={(e) =>
-                                  handleIngredientUpdate(
-                                    rIdx,
-                                    ing.originalIndex,
-                                    "unit",
-                                    e.target.value,
-                                  )
-                                }
-                                className="w-16 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none placeholder:text-white/20"
-                                placeholder="Unit"
-                              />
-                            </div>
-                            <div className="col-span-5 flex flex-col gap-2">
-                              <div className="flex items-center gap-2">
-                                <select
-                                  disabled={disabled}
-                                  value={ing.calculationType || "WEIGHT"}
-                                  onChange={(e) =>
-                                    handleIngredientUpdate(
-                                      rIdx,
-                                      ing.originalIndex,
-                                      "calculationType",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="flex-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs focus:border-sky-500 outline-none"
-                                >
-                                  <option value="WEIGHT">Weight</option>
-                                  <option value="VOLUME">Volume</option>
-                                  <option value="COUNT">Count</option>
-                                  <option value="BAKERS_PERCENTAGE">
-                                    Baker's %
-                                  </option>
-                                </select>
-
-                                {ing.calculationType ===
-                                  "BAKERS_PERCENTAGE" && (
-                                  <label className="flex items-center gap-1.5 text-xs text-amber-400 cursor-pointer whitespace-nowrap bg-amber-400/10 px-2 py-1 rounded">
-                                    <input
-                                      disabled={disabled}
-                                      type="checkbox"
-                                      checked={
-                                        ing.baseCalculationGroup || false
-                                      }
-                                      onChange={(e) =>
-                                        handleIngredientUpdate(
-                                          rIdx,
-                                          ing.originalIndex,
-                                          "baseCalculationGroup",
-                                          e.target.checked,
-                                        )
-                                      }
-                                      className="accent-amber-500"
-                                    />
-                                    Base
-                                  </label>
-                                )}
-                              </div>
-                              <input
-                                disabled={disabled}
-                                type="text"
-                                value={ing.component || ""}
-                                onChange={(e) =>
-                                  handleIngredientUpdate(
-                                    rIdx,
-                                    ing.originalIndex,
-                                    "component",
-                                    e.target.value || null,
-                                  )
-                                }
-                                placeholder="Section (e.g. Glaze)"
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none text-zinc-500 dark:text-zinc-400"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/ingestion/page.tsx
-````typescript
-"use client";
-
-import { useEffect, useState } from "react";
-import { IngestionReview } from "@soustools/api-types";
-import Link from "next/link";
-import { BrainCircuit, Clock, CheckCircle, Trash2 } from "lucide-react";
-import { ConfirmModal } from "../../../components/ui/confirm-modal";
-
-export default function IngestionDashboardPage() {
-  const [reviews, setReviews] = useState<IngestionReview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const fetchReviews = async () => {
-    try {
-      const res = await fetch("/api/ingestion");
-      if (res.ok) {
-        const payload = await res.json();
-        const data = payload.data;
-        if (data) {
-          const parsed = data.map((d: any) => ({
-            id: d.id,
-            organizationId: d.organization_id,
-            userId: d.user_id,
-            source: d.source,
-            sourceName: d.source_name,
-            rawText: d.raw_text,
-            parsedData: d.parsed_data,
-            status: d.status,
-            createdAt: d.created_at,
-            updatedAt: d.updated_at
-          })) as (IngestionReview & { sourceName?: string | null })[];
-          setReviews(parsed);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to load ingestion reviews", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchReviews();
-  }, []);
-
-  const handleDelete = async (id: string) => {
-    try {
-      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
-      setReviews(prev => prev.filter(r => r.id !== id));
-      setDeleteId(null);
-    } catch (err) {
-      console.error("Failed to delete review", err);
-    }
-  };
-
-  return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">Processing Hub</h1>
-          <p className="text-gray-500 mt-2">Review AI-extracted documents and invoices.</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
-          <div className="col-span-full text-center text-white/50 py-12">Loading queue...</div>
-        ) : reviews.length === 0 ? (
-          <div className="col-span-full text-center text-white/50 py-12">No documents pending review.</div>
-        ) : (
-          reviews.map(review => (
-            <Link key={review.id} href={`/ingestion/review/${review.id}`} className="block">
-              <div className="glass-panel p-6 flex flex-col h-full group hover:border-sky-500/50 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-2">
-                    <BrainCircuit className="w-5 h-5 text-sky-400" />
-                    <h2 className="text-xl font-bold truncate max-w-[200px]" title={review.sourceName || review.source.replace("_", " ").toLowerCase()}>
-                      {review.sourceName || review.source.replace("_", " ").toLowerCase()}
-                    </h2>
-                  </div>
-                  <span className={`px-2 py-1 text-xs font-bold rounded uppercase tracking-wider ${
-                    review.status === "PENDING" ? "bg-amber-500/20 text-amber-300" :
-                    review.status === "REJECTED" ? "bg-red-500/20 text-red-300" :
-                    "bg-emerald-500/20 text-emerald-300"
-                  }`}>
-                    {review.status}
-                  </span>
-                </div>
-
-                <div className="flex-1 text-sm text-gray-400 mb-6">
-                  {review.status === "PENDING" ? (
-                    <span className="flex items-center gap-2"><Clock size={16}/> Needs Human Review</span>
-                  ) : review.status === "REJECTED" ? (
-                    <span className="flex items-center gap-2 text-red-400"><CheckCircle size={16}/> Rejected</span>
-                  ) : (
-                    <span className="flex items-center gap-2 text-emerald-400"><CheckCircle size={16}/> Approved</span>
-                  )}
-                  <div className="mt-4">
-                    Uploaded: {new Date(review.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-
-                <div className="w-full flex items-center gap-2">
-                  <div className="flex-1 flex items-center justify-center bg-black/5 dark:bg-white/5 text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
-                    Open Review
-                  </div>
-                  <button
-                    onClick={(e) => { e.preventDefault(); setDeleteId(review.id); }}
-                    className="p-2 bg-black/5 dark:bg-white/5 hover:bg-red-500/20 text-zinc-500 dark:text-zinc-400 hover:text-red-400 rounded-md transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </Link>
-          ))
-        )}
-      </div>
-
-      <ConfirmModal
-        isOpen={!!deleteId}
-        title="Delete Ingestion Review"
-        message="Are you sure you want to delete this item? This action cannot be undone."
-        confirmText="Delete"
-        isDestructive={true}
-        onCancel={() => setDeleteId(null)}
-        onConfirm={() => { if (deleteId) handleDelete(deleteId); }}
-      />
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/inventory/items-ledger/items-ledger-client.tsx
-````typescript
-"use client";
-
-import React, { useState, useRef } from "react";
-import { Plus, Download, Upload, Loader2 } from "lucide-react";
-import { ItemsLedgerTable, ItemEditorModal } from "@soustools/domain-inventory";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-
-export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
-  const router = useRouter();
-  const [loading] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleCreate = () => {
-    setSelectedItem(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (item: any) => {
-    setSelectedItem(item);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async (data: any) => {
-    try {
-      const url = selectedItem ? `/api/items/${selectedItem.id}` : "/api/items";
-      const method = selectedItem ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        setIsModalOpen(false);
-        router.refresh();
-      } else {
-        toast.error("Failed to save item");
-      }
-    } catch (err) {
-      toast.error("Network error saving item");
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
-    try {
-      const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        router.refresh();
-      } else {
-        toast.error("Failed to delete item");
-      }
-    } catch (err) {
-      toast.error("Network error deleting item");
-    }
-  };
-
-  const handleSearchUSDA = async (query: string) => {
-    const res = await fetch(`/api/recipes/usda/search?query=${encodeURIComponent(query)}`);
-    return await res.json();
-  };
-
-  const handleExportCSV = () => {
-    if (!initialItems.length) return;
-    const headers = ["name", "category", "purchase_unit", "density_g_ml", "allergens"];
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      headers.join(",") +
-      "\\n" +
-      initialItems
-        .map((e) => headers.map((h) => JSON.stringify(e[h] || "")).join(","))
-        .join("\\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "items_ledger.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImporting(true);
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const text = event.target?.result as string;
-        const lines = text.split("\\n").map((l) => l.trim()).filter(Boolean);
-        if (lines.length < 2) return;
-
-        const headers = lines[0].split(",");
-
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(",").map((v) => v.replace(/^"|"$/g, ""));
-          const payload: any = {};
-          headers.forEach((h, idx) => {
-            if (h === "density_g_ml") payload[h] = parseFloat(values[idx]) || 1.0;
-            else if (h === "allergens")
-              payload[h] = values[idx] ? values[idx].split(";").map((s) => s.trim()) : [];
-            else payload[h] = values[idx];
-          });
-
-          await fetch("/api/items", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-        }
-        router.refresh();
-      } catch (err) {
-        toast.error("Import failed");
-      } finally {
-        setImporting(false);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">Items Ledger</h1>
-          <p className="text-zinc-500 mt-2">Manage your master ingredients, density, and nutrition.</p>
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white font-medium rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <Download size={18} /> Export
-          </button>
-          <input
-            type="file"
-            accept=".csv"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleImportCSV}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className="px-4 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white font-medium rounded-lg flex items-center gap-2 transition-colors"
-          >
-            {importing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />} Import
-          </button>
-          <button
-            onClick={handleCreate}
-            className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white font-medium rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-sky-500/20"
-          >
-            <Plus size={18} /> New Item
-          </button>
-        </div>
-      </div>
-
-      <div className="st-glass-panel overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 shadow-xl">
-        <ItemsLedgerTable
-          items={initialItems}
-          loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      </div>
-
-      {isModalOpen && (
-        <ItemEditorModal
-          item={selectedItem}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSave}
-          onSearchUSDA={handleSearchUSDA}
-        />
-      )}
     </div>
   );
 }
@@ -12025,164 +8155,6 @@ export default function SelfShopPage() {
               </p>
             </div>
           )}
-        </div>
-      </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/inventory/orders/DraftPoModal.tsx
-````typescript
-"use client";
-
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { WhiteboardItem, Vendor } from "@soustools/api-types";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-
-/**
- * Props structure for the DraftPoModal component.
- */
-interface DraftPoModalProps {
-  /** Indicates if the modal is visible */
-  isOpen: boolean;
-  /** Callback function called to close the modal */
-  onClose: () => void;
-  /** Active whiteboard items available for purchase */
-  items: WhiteboardItem[];
-  /** Registered vendors list for vendor selection */
-  vendors: Vendor[];
-  /** Callback triggered after a PO is successfully created to refresh page state */
-  onSuccess: () => void;
-}
-
-/**
- * DraftPoModal enables the user to select specific whiteboard items and
- * compile them into a draft Purchase Order for a selected vendor.
- * 
- * @tenant-docs-export
- * # Creating a Purchase Order from Whiteboard
- * 1. Click "Draft Purchase Order" on the Whiteboard page.
- * 2. Select the vendor from the dropdown list.
- * 3. Check the items you want to include in this order.
- * 4. Click "Create PO". The selected items will be moved into a draft Purchase Order and cleared from the board.
- */
-export function DraftPoModal({ isOpen, onClose, items, vendors, onSuccess }: DraftPoModalProps) {
-  const router = useRouter();
-  const [selectedVendor, setSelectedVendor] = useState("");
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
-
-  /**
-   * Toggles the selection state of a specific whiteboard item.
-   * 
-   * @param id The UUID of the whiteboard item.
-   */
-  const toggleSelection = (id: string) => {
-    const next = new Set(selectedItems);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedItems(next);
-  };
-
-  /**
-   * Handles creating a draft Purchase Order and inserting selected items.
-   */
-  const createPO = async () => {
-    if (!selectedVendor || selectedItems.size === 0) return;
-    setIsSubmitting(true);
-
-    try {
-      const { data: orgData, error: orgErr } = await supabase
-        .from("organizations")
-        .select("id")
-        .limit(1)
-        .single();
-      
-      if (orgErr || !orgData) {
-        toast.error(`Could not locate organization details: ${orgErr?.message || "No data"}`);
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const { data: po, error: poErr } = await supabase.from("purchase_orders").insert({
-        organization_id: orgData.id,
-        vendor_id: selectedVendor,
-        status: "DRAFT"
-      }).select().single();
-
-      if (poErr || !po) {
-        toast.error(`Failed to create Purchase Order: ${poErr?.message || "Database insert error"}`);
-        setIsSubmitting(false);
-        return;
-      }
-
-      const itemsToInsert = Array.from(selectedItems).map(id => {
-        const wbi = items.find(i => i.id === id);
-        return { po_id: po.id, raw_name: wbi?.raw_name || "Unknown Item", ordered_qty: 1, price_per_unit: 0 };
-      });
-
-      const { error: itemsErr } = await supabase.from("purchase_order_items").insert(itemsToInsert);
-      if (itemsErr) {
-        toast.error(`Failed to attach items to Purchase Order: ${itemsErr.message}`);
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Mark whiteboard items as inactive
-      for (const id of Array.from(selectedItems)) {
-        await supabase.from("whiteboard_items").update({ is_active: false }).eq("id", id);
-      }
-
-      toast.success("Purchase Order created successfully!");
-      setSelectedItems(new Set());
-      onSuccess();
-      onClose();
-      router.push("/purchasing");
-    } catch (err: any) {
-      toast.error(`An unexpected error occurred: ${err.message || err}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-sm">
-      <div className="glass-panel p-8 max-w-2xl w-full">
-        <h2 className="text-3xl font-bold mb-6">Select Items for PO</h2>
-        
-        <div className="mb-6 space-y-2">
-          <label className="text-sm font-medium text-gray-400">Select Vendor</label>
-          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-white/50 dark:bg-black/60 border border-white/20 rounded-md p-3 text-white">
-            <option value="">-- Choose Vendor --</option>
-            {vendors.map(v => <option key={v.id} value={v.id}>{v.name} ({v.order_method})</option>)}
-          </select>
-        </div>
-
-        <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-white/10 p-4 rounded-md mb-6">
-          {items.map(item => (
-            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-white/5 rounded">
-              <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5" />
-              <span className="text-lg">{item.raw_name}</span>
-            </label>
-          ))}
-        </div>
-
-        <div className="flex justify-end gap-4">
-          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium hover:bg-black/10 dark:bg-white/10 transition-colors disabled:opacity-50">
-            Cancel
-          </button>
-          <button 
-            onClick={createPO}
-            disabled={!selectedVendor || selectedItems.size === 0 || isSubmitting} 
-            className="bg-white text-black px-6 py-2 rounded-md font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
-          >
-            {isSubmitting ? "Creating..." : "Create PO"}
-          </button>
         </div>
       </div>
     </div>
@@ -12410,161 +8382,6 @@ export default function InventoryLayout({ children }: { children: React.ReactNod
       sidebarContent={sidebarContent}
       mainContent={children}
     />
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/inventory/page.tsx
-````typescript
-export default function InventoryPage() {
-  return (
-    <div className="flex flex-col gap-8 p-8 h-full bg-zinc-950">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-white uppercase tracking-widest">Inventory</h1>
-        <p className="text-zinc-400 font-medium">Manage your inventory, suppliers, and purchase orders.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl hover:border-sky-500/50 transition-colors">
-          <h2 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">Items</h2>
-          <p className="text-zinc-400 text-sm">View and manage your master ingredient list.</p>
-        </div>
-        <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl hover:border-violet-500/50 transition-colors">
-          <h2 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">Orders</h2>
-          <p className="text-zinc-400 text-sm">Track and create purchase orders.</p>
-        </div>
-        <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl hover:border-emerald-500/50 transition-colors">
-          <h2 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">Vendors</h2>
-          <p className="text-zinc-400 text-sm">Manage your suppliers and vendor catalog.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/recipes/[id]/edit/page.tsx
-````typescript
-import { config } from "@soustools/config";
-import { RecipeBuilderClient } from "../../RecipeBuilderClient";
-
-interface EditRecipePageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function EditRecipePage({ params }: EditRecipePageProps) {
-  const { id } = await params;
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
-  
-  let recipe = null;
-  let vessels = [];
-  let masterIngredients = [];
-
-  try {
-    const [recipeRes, vesselsRes, ingRes] = await Promise.all([
-      fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/ingredients`, { cache: "no-store" })
-    ]);
-    
-    if (recipeRes.ok) {
-      const payload = await recipeRes.json();
-      recipe = payload.data;
-    }
-    if (vesselsRes.ok) {
-      const payload = await vesselsRes.json();
-      vessels = payload.data || [];
-    }
-    if (ingRes.ok) {
-      const payload = await ingRes.json();
-      masterIngredients = payload.data || [];
-    }
-  } catch (err) {
-    console.error("Failed to fetch initial builder data:", err);
-  }
-
-  if (!recipe) {
-    return <div className="p-12 text-center text-zinc-400">Recipe not found.</div>;
-  }
-
-  return (
-    <div className="py-6 px-4">
-      <RecipeBuilderClient 
-        initialData={recipe}
-        vessels={vessels} 
-        masterIngredients={masterIngredients} 
-      />
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/recipes/[id]/page.tsx
-````typescript
-import { config } from "@soustools/config";
-import { RecipeViewerClient } from "./RecipeViewerClient";
-
-interface RecipePageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function RecipePage({ params }: RecipePageProps) {
-  const { id } = await params;
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
-  
-  let recipe = null;
-  let vessels = [];
-  let costData = null;
-  let nutritionData = null;
-  let versionHistory = [];
-
-  try {
-    const [recipeRes, vesselsRes, costRes, nutritionRes, historyRes] = await Promise.all([
-      fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/${id}/cost`, { cache: "no-store" }).catch(() => null),
-      fetch(`${baseUrl}/recipes/${id}/nutrition`, { cache: "no-store" }).catch(() => null),
-      fetch(`${baseUrl}/recipes/${id}/versions`, { cache: "no-store" }).catch(() => null)
-    ]);
-    
-    if (recipeRes.ok) {
-      const payload = await recipeRes.json();
-      recipe = payload.data;
-    }
-    if (vesselsRes.ok) {
-      const payload = await vesselsRes.json();
-      vessels = payload.data || [];
-    }
-    if (costRes && costRes.ok) {
-      const payload = await costRes.json();
-      costData = payload.data || null;
-    }
-    if (nutritionRes && nutritionRes.ok) {
-      const payload = await nutritionRes.json();
-      nutritionData = payload.data || null;
-    }
-    if (historyRes && historyRes.ok) {
-      const payload = await historyRes.json();
-      versionHistory = payload.data || [];
-    }
-  } catch (err) {
-    console.error("Failed to fetch initial recipe viewer data:", err);
-  }
-
-  if (!recipe) {
-    return <div className="p-12 text-center text-zinc-400">Recipe not found.</div>;
-  }
-
-  return (
-    <div className="py-6 px-4">
-      <RecipeViewerClient 
-        recipe={recipe}
-        vessels={vessels}
-        costData={costData}
-        nutritionData={nutritionData}
-        versionHistory={versionHistory}
-      />
-    </div>
   );
 }
 ````
@@ -12890,274 +8707,6 @@ export default async function SettingsPage() {
 }
 ````
 
-## File: apps/web/src/app/(workspace)/settings/settings-client.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import {
-  IntegrationsPanel,
-  GlobalStylingSettings,
-  GeneralSettings,
-  DownloadsPanel,
-  SettingsFormValues,
-} from "@soustools/domain-settings";
-import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
-import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-
-export interface SettingsClientProps {
-  integrations: IntegrationStatus[];
-  isDev: boolean;
-  initialTokens: GlobalDesignTokens;
-  userProfile: {
-    name: string;
-    email: string;
-    role: string;
-  };
-}
-
-export function SettingsClient({
-  integrations,
-  isDev,
-  initialTokens,
-  userProfile,
-}: SettingsClientProps) {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<
-    "general" | "integrations" | "styling" | "downloads"
-  >("general");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get("tab");
-      if (tab === "integrations") {
-        setActiveTab("integrations");
-      } else if (tab === "styling") {
-        setActiveTab("styling");
-      } else if (tab === "downloads") {
-        setActiveTab("downloads");
-      }
-    }
-  }, []);
-
-  const handleSaveGeneral = async (_data: SettingsFormValues) => {
-    // Stub: send to API
-    toast.success("General settings saved!");
-  };
-
-  const handleSaveTokens = async (_tokens: GlobalDesignTokens) => {
-    // Stub: send to API
-    toast.success("Tokens saved!");
-  };
-
-  const handleConnectIntegration = (provider: string) => {
-    window.location.href = `/api/integrations/connect/${provider.toLowerCase()}?orgId=default`;
-  };
-
-  const handleDisconnectIntegration = async (provider: string) => {
-    const res = await fetch(`/api/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
-      method: "DELETE",
-    });
-    if (!res.ok) throw new Error("Failed to disconnect");
-    router.refresh();
-  };
-
-  const handleSquareAction = async (action: "sync" | "seed") => {
-    const res = await fetch(`/api/integrations/square/${action}?orgId=default`, {
-      method: "POST",
-    });
-    if (!res.ok) throw new Error(`Failed to ${action}`);
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100 animate-in fade-in">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-          <Settings className="w-6 h-6 text-sky-500 animate-pulse" />
-          Settings Panel
-        </h1>
-        <p className="text-xs text-zinc-400">
-          Configure global kitchen parameters, system integration profiles, and
-          tenant design tokens.
-        </p>
-      </header>
-
-      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1">
-        {(["general", "integrations", "styling", "downloads"] as const).map(
-          (tab) => {
-            const icons = {
-              general: Sliders,
-              integrations: Cable,
-              styling: Paintbrush,
-              downloads: () => (
-                <svg
-                  className="w-4 h-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" x2="12" y1="15" y2="3" />
-                </svg>
-              ),
-            };
-            const Icon = icons[tab];
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
-                  activeTab === tab
-                    ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
-                    : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/5 dark:hover:bg-card/40"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab === "styling" ? "Global Styling" : tab}
-              </button>
-            );
-          }
-        )}
-      </div>
-
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-950/40 border border-black/10 dark:border-zinc-900 shadow-2xl backdrop-blur-2xl">
-        {activeTab === "general" && (
-          <GeneralSettings initialData={userProfile} onSave={handleSaveGeneral} />
-        )}
-        {activeTab === "integrations" && (
-          <IntegrationsPanel
-            integrations={integrations}
-            isDev={isDev}
-            onConnect={handleConnectIntegration}
-            onDisconnect={handleDisconnectIntegration}
-            onSquareAction={handleSquareAction}
-          />
-        )}
-        {activeTab === "styling" && (
-          <GlobalStylingSettings initialTokens={initialTokens} onSave={handleSaveTokens} />
-        )}
-        {activeTab === "downloads" && <DownloadsPanel />}
-      </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/signage/[deckId]/preview/page.tsx
-````typescript
-import React from "react";
-import { use } from "react";
-import { ExternalLink } from "lucide-react";
-import Link from "next/link";
-import { config } from "@soustools/config";
-
-interface Params {
-  deckId: string;
-}
-
-interface DeckData {
-  id: string;
-  name: string;
-  slug: string;
-  config?: { slides?: unknown[] };
-}
-
-async function fetchDeck(deckId: string): Promise<DeckData | null> {
-  try {
-    const base = config.APP_BASE_URL;
-    const res = await fetch(`${base}/api/signage/layouts/${deckId}`, {
-      cache: "no-store",
-    });
-    const data = await res.json();
-    return data.success ? data.data : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Full-page fallback shown when navigating directly to /signage/[deckId]/preview (not intercepted). */
-export default async function DeckPreviewPage({
-  params,
-}: {
-  params: Promise<Params>;
-}) {
-  const { deckId } = await use(params);
-  const deck = await fetchDeck(deckId);
-
-  const liveBase = config.TV_BASE_URL;
-  const liveUrl = deck
-    ? `${liveBase}/s/dtown-cafe/${deck.slug}`
-    : null;
-
-  if (!deck) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-400 dark:text-zinc-500">
-        <p>Deck not found.</p>
-        <Link href="/signage" className="mt-4 text-xs text-primary hover:underline">
-          ← Back to Decks
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-4 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-white">{deck.name}</h1>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">
-            {deck.config?.slides?.length ?? 0} slides
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/signage"
-            className="px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 rounded-lg transition"
-          >
-            ← Decks
-          </Link>
-          <Link
-            href={`/signage/${deckId}`}
-            className="px-3 py-1.5 text-xs bg-primary hover:bg-primary/90 text-white rounded-lg transition font-semibold"
-          >
-            Open Editor
-          </Link>
-          {liveUrl && (
-            <a
-              href={liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 rounded-lg transition"
-            >
-              <ExternalLink className="w-3.5 h-3.5" /> Live View
-            </a>
-          )}
-        </div>
-      </div>
-
-      {liveUrl && (
-        <div className="relative w-full rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
-          <iframe
-            src={liveUrl}
-            title={deck.name}
-            className="absolute inset-0 w-full h-full border-none"
-            allow="autoplay; encrypted-media"
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/(workspace)/signage/[deckId]/page.tsx
 ````typescript
 import React from "react";
@@ -13209,319 +8758,6 @@ export default async function TVSignageEditorPage({ params }: PageProps) {
 }
 ````
 
-## File: apps/web/src/app/(workspace)/signage/[deckId]/tv-signage-editor-client.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
-import { SignageLayoutConfig, PosItem } from "@soustools/api-types";
-import { io } from "socket.io-client";
-import { mapDbItemToPosItem, RawDbPosItem } from "../../../display/[id]/helpers";
-import { config as appConfig } from "@soustools/config";
-import { useRouter } from "next/navigation";
-
-interface SignageDeck {
-  id: string;
-  organization_id: string;
-  name: string;
-  slug: string;
-  config: SignageLayoutConfig;
-}
-
-interface TVSignageEditorClientProps {
-  deckId: string;
-  initialDeck: SignageDeck | null;
-  initialItems: RawDbPosItem[];
-}
-
-export default function TVSignageEditorClient({ deckId, initialDeck, initialItems }: TVSignageEditorClientProps) {
-  const [deck, setDeck] = useState<SignageDeck | null>(initialDeck);
-  const [items, setItems] = useState<PosItem[]>(() => {
-    if (initialItems && initialItems.length > 0) {
-      return initialItems.map(mapDbItemToPosItem);
-    }
-    return MOCK_POS_ITEMS;
-  });
-  const [saving, setSaving] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    setDeck(initialDeck);
-  }, [initialDeck]);
-
-  useEffect(() => {
-    if (initialItems && initialItems.length > 0) {
-      setItems(initialItems.map(mapDbItemToPosItem));
-    } else {
-      setItems(MOCK_POS_ITEMS);
-    }
-  }, [initialItems]);
-
-  useEffect(() => {
-    const socketUrl = appConfig.API_BASE_URL || window.location.origin;
-    const socket = io(socketUrl, {
-      query: { deckId },
-    });
-
-    socket.on("connect", () => {
-      socket.emit("join", { deckId });
-    });
-
-    socket.on("items_updated", (payload: { deckId: string; items: RawDbPosItem[] }) => {
-      if (payload.deckId === deckId && payload.items) {
-        const parsedItems = payload.items.map(mapDbItemToPosItem);
-        setItems(parsedItems);
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [deckId]);
-
-  const handleSave = async (newConfig: SignageLayoutConfig) => {
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/signage/layouts/${deckId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ config: newConfig }),
-      });
-      const data = await res.json();
-      if (data.success && data.data) {
-        setDeck(data.data);
-        router.refresh();
-      }
-    } catch (err) {
-      console.error("Save failed:", err);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleRenameDeck = async (name: string, slug: string) => {
-    try {
-      const res = await fetch(`/api/signage/layouts/${deckId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, slug }),
-      });
-      const data = await res.json();
-      if (data.success && data.data) {
-        setDeck(data.data);
-        router.refresh();
-      }
-    } catch (err) {
-      console.error("Rename failed:", err);
-    }
-  };
-
-  if (!deck) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-900 dark:text-zinc-100">
-        <h2 className="text-xl font-bold text-red-400">Deck Not Found</h2>
-        <p className="text-sm text-zinc-400 mt-2">The requested slide deck could not be loaded.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="-m-6 h-[calc(100vh-4rem)] overflow-hidden">
-      <LayoutBuilder
-        deckId={deckId}
-        deckSlug={deck.slug}
-        layoutName={deck.name}
-        initialConfig={deck.config}
-        items={items}
-        onSave={handleSave}
-        onRenameDeck={handleRenameDeck}
-        saving={saving}
-      />
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/signage/decks-list-client.tsx
-````typescript
-"use client";
-
-import React, { useState } from "react";
-import { DeckCard } from "@soustools/domain-signage";
-import { Plus, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { SignageLayoutConfig } from "@soustools/api-types";
-
-interface SignageDeck {
-  id: string;
-  organization_id: string;
-  name: string;
-  slug: string;
-  config: SignageLayoutConfig;
-}
-
-interface DecksListClientProps {
-  initialDecks: SignageDeck[];
-}
-
-export function DecksListClient({ initialDecks }: DecksListClientProps) {
-  const [creating, setCreating] = useState(false);
-  const [deckToDelete, setDeckToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const router = useRouter();
-
-  const handleCreate = async () => {
-    setCreating(true);
-    try {
-      const name = `Deck ${initialDecks.length + 1}`;
-      const res = await fetch("/api/signage/layouts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      });
-      const data = await res.json();
-      if (data.success && data.data) {
-        router.push(`/signage/${data.data.id}`);
-      } else {
-        alert(data.error || "Failed to create deck");
-      }
-    } catch (err) {
-      console.error("Failed to create deck:", err);
-      alert("Network error: Failed to create deck");
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    setDeckToDelete(id);
-  };
-
-  const confirmDelete = async () => {
-    if (!deckToDelete) return;
-    setIsDeleting(true);
-    try {
-      const res = await fetch(`/api/signage/layouts/${deckToDelete}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (data.success) {
-        router.refresh();
-      } else {
-        alert(data.error || "Failed to delete deck");
-      }
-    } catch (err) {
-      console.error("Failed to delete deck:", err);
-      alert("Network error: Failed to delete deck");
-    } finally {
-      setIsDeleting(false);
-      setDeckToDelete(null);
-    }
-  };
-
-  const handleRename = async (id: string, name: string, slug: string) => {
-    try {
-      const res = await fetch(`/api/signage/layouts/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, slug }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        router.refresh();
-      } else {
-        alert(data.error || "Failed to rename deck");
-      }
-    } catch (err) {
-      console.error("Failed to rename deck:", err);
-      alert("Network error: Failed to rename deck");
-    }
-  };
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white font-brand">
-            My Slide Decks
-          </h1>
-          <p className="text-sm text-zinc-400 font-sans mt-1">
-            Manage and assign layout decks for digital signage screens.
-          </p>
-        </div>
-        <button
-          onClick={handleCreate}
-          disabled={creating}
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
-        >
-          {creating ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-          New Deck
-        </button>
-      </div>
-
-      {initialDecks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-black/5 dark:border-white/5 rounded-2xl p-16 text-center">
-          <p className="text-zinc-400 font-sans mb-4">
-            No slide decks created yet.
-          </p>
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
-          >
-            Create Your First Deck
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialDecks.map((deck) => (
-            <DeckCard
-              key={deck.id}
-              deck={deck}
-              onDelete={handleDelete}
-              onRename={handleRename}
-            />
-          ))}
-        </div>
-      )}
-
-      {deckToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-2">Delete Deck</h3>
-            <p className="text-sm text-zinc-400 mb-6">
-              Are you sure you want to delete this deck? This cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeckToDelete(null)}
-                disabled={isDeleting}
-                className="px-4 py-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={isDeleting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {isDeleting && <RefreshCw className="w-4 h-4 animate-spin" />}
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/(workspace)/signage/page.tsx
 ````typescript
 import { config } from "@soustools/config";
@@ -13542,340 +8778,6 @@ export default async function TVSignageListPage() {
   }
 
   return <DecksListClient initialDecks={decks} />;
-}
-````
-
-## File: apps/web/src/app/(workspace)/team/page.tsx
-````typescript
-"use client";
-
-import React, { useState } from "react";
-import { PinInput, Button } from "@soustools/design-system";
-import { Watch } from "lucide-react";
-
-export default function TeamPortalPage() {
-  const [pairingCode, setPairingCode] = useState("");
-  const [status, setStatus] = useState<"idle" | "pairing" | "success" | "error">("idle");
-  const [message, setMessage] = useState("");
-
-  const handlePairWatch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pairingCode.length !== 6) return;
-
-    setStatus("pairing");
-    setMessage("Pairing smartwatch...");
-
-    try {
-      const response = await fetch("/api/pair/confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: pairingCode.toUpperCase(),
-          deviceType: 'wearos'
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Pairing failed");
-      }
-      
-      setStatus("success");
-      setMessage("Smartwatch successfully paired!");
-      setPairingCode("");
-    } catch (err) {
-      setStatus("error");
-      setMessage("Failed to pair smartwatch. Please check the code and try again.");
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-8 p-8 max-w-4xl mx-auto w-full h-full">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-white uppercase tracking-widest">Team Portal</h1>
-        <p className="text-zinc-400 font-medium">Manage your devices and preferences.</p>
-      </div>
-
-      <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-2xl flex flex-col gap-6 w-full max-w-md">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
-            <Watch className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-wide">Pair Smartwatch</h2>
-            <p className="text-zinc-400 text-sm">Enter the 6-digit code shown on your WearOS device.</p>
-          </div>
-        </div>
-
-        <form onSubmit={handlePairWatch} className="flex flex-col gap-4">
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Pairing Code</label>
-            <PinInput
-              length={6}
-              value={pairingCode}
-              onChange={setPairingCode}
-            />
-          </div>
-          
-          <Button 
-            type="submit" 
-            disabled={status === "pairing" || pairingCode.length !== 6}
-            className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold"
-          >
-            {status === "pairing" ? "Pairing..." : "Pair Device"}
-          </Button>
-        </form>
-
-        {(message && status !== "idle") && (
-          <div className={`p-4 rounded-xl text-sm text-center border ${
-            status === "success" ? "bg-cyan-400/10 border-cyan-400/20 text-cyan-400" : 
-            status === "error" ? "bg-red-500/10 border-red-500/20 text-red-400" : 
-            "bg-zinc-800/50 border-zinc-700 text-zinc-400"
-          }`}>
-            {message}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/transactions/page.tsx
-````typescript
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { supabase } from "../../../lib/supabase";
-import { 
-  Search, 
-  ChevronLeft, 
-  ChevronRight, 
-  ArrowUpDown,
-  Filter,
-  DollarSign
-} from "lucide-react";
-import { toast } from "sonner";
-
-interface Transaction {
-  id: string;
-  quantity_sold: number;
-  gross_revenue: number;
-  discount_amount: number;
-  transaction_time: string;
-  source: string;
-  external_transaction_id: string;
-  pos_items: {
-    name: string;
-  } | null;
-}
-
-export default function TransactionsPage() {
-  const [loading, setLoading] = useState(true);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [search, setSearch] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("all");
-  const [minVolume, setMinVolume] = useState("");
-  const [sortBy, setSortBy] = useState<"transaction_time" | "gross_revenue">("transaction_time");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-
-  // Pagination
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 8;
-  const [totalCount, setTotalCount] = useState(0);
-
-  const fetchTransactions = async () => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from("pos_transactions")
-        .select("*, pos_items(name)", { count: "exact" });
-
-      if (sourceFilter !== "all") {
-        query = query.eq("source", sourceFilter);
-      }
-
-      if (minVolume) {
-        query = query.gte("gross_revenue", parseFloat(minVolume));
-      }
-
-      // We do the search in-memory or query based on external ID
-      if (search) {
-        query = query.ilike("external_transaction_id", `%${search}%`);
-      }
-
-      // Order
-      query = query.order(sortBy, { ascending: sortOrder === "asc" });
-
-      // Range
-      const from = (page - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-      query = query.range(from, to);
-
-      const { data, count, error } = await query;
-      if (error) throw error;
-
-      setTransactions((data as any[]) || []);
-      setTotalCount(count || 0);
-    } catch (err: any) {
-      toast.error(`Failed to load transactions: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [page, sourceFilter, sortBy, sortOrder]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    fetchTransactions();
-  };
-
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-  const toggleSort = (field: "transaction_time" | "gross_revenue") => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(field);
-      setSortOrder("desc");
-    }
-    setPage(1);
-  };
-
-  return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">Transactions & Orders</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Audit synced Square sales logs and volume metrics.</p>
-      </div>
-
-      {/* Filter Toolbar */}
-      <div className="glass-panel p-4 rounded-2xl border border-black/5 dark:border-white/5 flex flex-wrap gap-4 items-center justify-between">
-        <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 dark:text-zinc-500 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search Event/Txn ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 w-full text-xs text-white outline-none focus:border-sky-500 transition-all"
-            />
-          </div>
-          <button type="submit" className="bg-sky-500 hover:bg-sky-600 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all">
-            Find
-          </button>
-        </form>
-
-        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
-          <div className="flex items-center gap-2">
-            <Filter className="text-zinc-400 dark:text-zinc-500 w-3.5 h-3.5" />
-            <select
-              value={sourceFilter}
-              onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }}
-              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300 outline-none"
-            >
-              <option value="all">All Sources</option>
-              <option value="square">Square</option>
-              <option value="toast">Toast</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <DollarSign className="text-zinc-400 dark:text-zinc-500 w-3.5 h-3.5" />
-            <input
-              type="number"
-              placeholder="Min $ Vol"
-              value={minVolume}
-              onChange={(e) => setMinVolume(e.target.value)}
-              onBlur={() => { setPage(1); fetchTransactions(); }}
-              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white w-24 outline-none focus:border-sky-500 transition-all"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table */}
-      <div className="glass-panel rounded-2xl border border-black/5 dark:border-white/5 overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-black/5 dark:border-white/5 text-zinc-500 dark:text-zinc-400 text-xs font-bold bg-zinc-950/40">
-                <th className="p-4">Transaction ID</th>
-                <th className="p-4">POS Item</th>
-                <th className="p-4">Quantity</th>
-                <th className="p-4 cursor-pointer hover:text-white transition-all" onClick={() => toggleSort("gross_revenue")}>
-                  Gross Revenue <ArrowUpDown className="inline w-3 h-3 ml-1" />
-                </th>
-                <th className="p-4">Discount</th>
-                <th className="p-4 cursor-pointer hover:text-white transition-all" onClick={() => toggleSort("transaction_time")}>
-                  Transaction Time <ArrowUpDown className="inline w-3 h-3 ml-1" />
-                </th>
-                <th className="p-4">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="text-center p-8 text-xs text-zinc-400 dark:text-zinc-500">Auditing sales transactions...</td>
-                </tr>
-              ) : transactions.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center p-8 text-xs text-zinc-400 dark:text-zinc-500">No matching sales records found.</td>
-                </tr>
-              ) : (
-                transactions.map((txn) => (
-                  <tr key={txn.id} className="border-b border-black/5 dark:border-white/5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:bg-white/5 transition-all">
-                    <td className="p-4 font-mono text-zinc-500 dark:text-zinc-400 select-all">{txn.external_transaction_id}</td>
-                    <td className="p-4 font-bold text-zinc-200">{txn.pos_items?.name || "Unnamed POS Item"}</td>
-                    <td className="p-4 font-semibold text-zinc-500 dark:text-zinc-400">{txn.quantity_sold}</td>
-                    <td className="p-4 font-bold text-emerald-400">${txn.gross_revenue.toFixed(2)}</td>
-                    <td className="p-4 text-zinc-400 dark:text-zinc-500">${txn.discount_amount.toFixed(2)}</td>
-                    <td className="p-4 text-zinc-500 dark:text-zinc-400">{new Date(txn.transaction_time).toLocaleString()}</td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
-                        txn.source === "square" 
-                          ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
-                          : "bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-700"
-                      }`}>
-                        {txn.source}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-black/5 dark:border-white/5 flex justify-between items-center bg-zinc-950/20 text-xs">
-            <span className="text-zinc-400 dark:text-zinc-500">Showing page {page} of {totalPages}</span>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-                className="p-2 border border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-black/5 dark:bg-white/5 transition-all"
-              >
-                <ChevronLeft className="w-4 h-4 text-white" />
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
-                className="p-2 border border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-black/5 dark:bg-white/5 transition-all"
-              >
-                <ChevronRight className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 ````
 
@@ -14011,46 +8913,6 @@ export default function VendorsPage() {
 }
 ````
 
-## File: apps/web/src/app/(workspace)/layout.tsx
-````typescript
-import React from "react";
-import { cookies } from "next/headers";
-import { GlobalAppBar } from "@soustools/design-system";
-import { logoutAction } from "../actions/auth";
-import { createServerClient } from "@soustools/supabase";
-
-export default async function WorkspaceLayout({ 
-  children,
-  modal
-}: { 
-  children: React.ReactNode;
-  modal: React.ReactNode;
-}) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(cookieStore as any);
-
-  const { data: notifications } = await supabase
-    .from("notifications")
-    .select("*")
-    .eq("is_read", false)
-    .order("created_at", { ascending: false });
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      <GlobalAppBar 
-        notifications={notifications || []} 
-        onLogoutAction={logoutAction} 
-        isAdmin={true}
-      />
-      <main className="flex-1 flex flex-col relative">
-        {children}
-        {modal}
-      </main>
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/actions/auth.ts
 ````typescript
 "use server";
@@ -14069,762 +8931,6 @@ export async function logoutAction() {
 
   // Redirect to login regardless
   redirect("/login");
-}
-````
-
-## File: apps/web/src/app/display/[id]/blocks/callout-block.tsx
-````typescript
-import React from "react";
-
-interface CalloutBlockProps {
-  icon?: string;
-  text: string;
-  panelStyle?: "glass" | "none";
-  accentBorder?: boolean;
-  orientation?: "horizontal" | "vertical";
-  className?: string;
-  textColor?: string;
-  fontSize?: string;
-  backgroundOpacity?: number;
-  title?: string;
-  message?: string;
-}
-
-export function CalloutBlock({
-  icon,
-  text,
-  panelStyle,
-  accentBorder,
-  orientation = "horizontal",
-  className,
-  textColor,
-  fontSize,
-  backgroundOpacity,
-  title,
-  message,
-}: CalloutBlockProps) {
-  const isGlass = panelStyle === "glass";
-  const isVertical = orientation === "vertical";
-
-  const containerClasses = [
-    "p-5 rounded-2xl flex gap-4 text-zinc-200 my-2",
-    isVertical
-      ? "flex-col items-center justify-center text-center"
-      : "items-center",
-    isGlass
-      ? "st-glass-panel"
-      : panelStyle !== "none"
-        ? "bg-card border border-zinc-800"
-        : "",
-    accentBorder ? "border-l-4 border-l-[oklch(0.70_0.25_150)]" : "",
-    "st-callout",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const bgStyle =
-    backgroundOpacity !== undefined && !isGlass && panelStyle !== "none"
-      ? { backgroundColor: `rgba(24, 24, 27, ${backgroundOpacity})` }
-      : {};
-
-  return (
-    <div className={containerClasses} style={bgStyle}>
-      {icon && (
-        <span className="text-2xl flex-shrink-0 animate-bounce-slow">
-          {icon}
-        </span>
-      )}
-      <div
-        className="flex flex-col gap-1 items-center justify-center flex-grow"
-        style={{ color: textColor }}
-      >
-        {title && (
-          <span
-            className="font-bold tracking-wide text-lg"
-            style={{ fontSize }}
-          >
-            {title}
-          </span>
-        )}
-        {message && (
-          <span
-            className="leading-snug"
-            style={{
-              fontSize: fontSize ? `calc(${fontSize} * 0.75)` : undefined,
-            }}
-          >
-            {message}
-          </span>
-        )}
-        {!title && !message && text && (
-          <p
-            className={`leading-relaxed ${
-              isVertical
-                ? "text-[#f8fafc] text-[15px] font-black tracking-widest uppercase leading-snug"
-                : "text-sm font-semibold tracking-wide font-sans"
-            }`}
-            style={{ fontSize }}
-          >
-            {text}
-          </p>
-        )}
-      </div>
-      {!isVertical && icon && (
-        <span className="text-2xl flex-shrink-0 animate-bounce-slow">
-          {icon}
-        </span>
-      )}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/blocks/category-header-block.tsx
-````typescript
-import React from "react";
-
-interface CategoryHeaderBlockProps {
-  title: string;
-  subtitle?: string;
-  panelStyle?: string;
-  badge?: string;
-  className?: string;
-  color?: string;
-  fontSize?: string;
-}
-
-export function CategoryHeaderBlock({
-  title,
-  subtitle,
-  panelStyle,
-  badge,
-  className,
-  color,
-  fontSize,
-}: CategoryHeaderBlockProps) {
-  const isGlass = panelStyle === "glass";
-  const containerClasses = [
-    isGlass
-      ? "st-glass-panel p-6 rounded-2xl relative my-4 flex flex-col gap-1.5"
-      : "py-4 flex flex-col gap-1",
-    "st-category-header",
-    className
-  ].filter(Boolean).join(" ");
-
-  return (
-    <div className={containerClasses}>
-      <div className="flex justify-between items-start gap-4">
-        <h2 className="text-3xl font-extrabold tracking-tight uppercase text-white font-brand" style={{ color, fontSize }}>
-          {title}
-        </h2>
-        {badge && (
-          <span className="text-[10px] px-2.5 py-1 font-black bg-red-500 text-white rounded uppercase tracking-wider whitespace-nowrap">
-            {badge}
-          </span>
-        )}
-      </div>
-      {subtitle && (
-        <p className="text-sm font-semibold text-zinc-400 font-sans tracking-wide">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/blocks/exploded-item-block.tsx
-````typescript
-import React from "react";
-import { PosItem } from "@soustools/api-types";
-
-interface ExplodedItemBlockProps {
-  menuItemId?: string;
-  items: PosItem[];
-  panelStyle?: string;
-  className?: string;
-  children?: React.ReactNode;
-  hideTitle?: boolean;
-  hidePrice?: boolean;
-  hideDescription?: boolean;
-}
-
-export function ExplodedItemBlock({
-  menuItemId,
-  items,
-  panelStyle,
-  className,
-  children,
-  hideTitle,
-  hidePrice,
-  hideDescription,
-}: ExplodedItemBlockProps) {
-  const isGlass = panelStyle === "glass" || !panelStyle;
-  const containerClasses = [
-    isGlass ? "st-glass-panel" : "border-transparent bg-transparent",
-    "rounded-2xl p-6 flex flex-col gap-6 text-zinc-100 my-4",
-    "st-exploded-item",
-    className
-  ].filter(Boolean).join(" ");
-
-  const explodedItem = menuItemId ? items.find(i => i.id === menuItemId || i.externalId === menuItemId) : null;
-
-  return (
-    <div className={containerClasses}>
-      {/* Header */}
-      {explodedItem && (
-        <div className="flex flex-col gap-2 border-b border-white/10 pb-4">
-          {(!hideTitle || !hidePrice) && (
-            <div className="flex justify-between items-center flex-wrap gap-2">
-              {!hideTitle && (
-                <h3 className="text-3xl font-extrabold uppercase tracking-widest font-brand st-menu-glow-text">
-                  {explodedItem.name}
-                </h3>
-              )}
-              {!hidePrice && (
-                <div className="text-[14px] font-medium text-zinc-400 tracking-wider uppercase ml-auto">
-                  BASE <span className="font-extrabold text-[#00f0ff] ml-1 st-menu-glow-text">${Number(explodedItem.price).toFixed(2)}</span>
-                </div>
-              )}
-            </div>
-          )}
-          {!hideDescription && explodedItem.description && (
-            <p className="text-sm text-zinc-400 max-w-2xl">{explodedItem.description}</p>
-          )}
-        </div>
-      )}
-
-      {/* Children Drop Zone */}
-      <div className="flex flex-col gap-4">
-        {children}
-      </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/blocks/media-carousel-block.tsx
-````typescript
-import React, { useState, useEffect } from "react";
-import { MediaSlide } from "@soustools/api-types";
-
-interface MediaCarouselBlockProps {
-  slides: MediaSlide[];
-  style?: {
-    imageEffect?: string;
-  };
-}
-
-export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    if (!slides || slides.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [slides]);
-
-  if (!slides || slides.length === 0) {
-    return (
-      <div className="w-full h-64 bg-zinc-950 flex items-center justify-center rounded-2xl border border-zinc-800 text-zinc-600 italic">
-        Media Carousel: No Slides
-      </div>
-    );
-  }
-
-  const activeSlide = slides[currentIndex];
-  const isKenBurns = style?.imageEffect === "ken-burns";
-
-  return (
-    <div className="w-full h-72 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-zinc-950 my-3">
-      <style>{`
-        @keyframes st-ken-burns {
-          0% { transform: scale(1) translate(0, 0); }
-          50% { transform: scale(1.08) translate(1%, -1%); }
-          100% { transform: scale(1) translate(0, 0); }
-        }
-        .animate-ken-burns {
-          animation: st-ken-burns 16s ease-in-out infinite;
-        }
-      `}</style>
-
-      {activeSlide.videoUrl ? (
-        <video
-          src={activeSlide.videoUrl}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-        />
-      ) : activeSlide.imageUrl ? (
-        <div className="w-full h-full overflow-hidden relative">
-          <img
-            src={activeSlide.imageUrl}
-            alt="Carousel Slide"
-            className={`w-full h-full object-cover ${isKenBurns ? "animate-ken-burns" : ""}`}
-          />
-        </div>
-      ) : null}
-
-      {(activeSlide.captionTitle || activeSlide.description || activeSlide.captionSubtitle || activeSlide.captionPrice) && (
-        <div className="absolute bottom-4 left-4 p-4 st-glass-pill flex items-center justify-between gap-4 text-white max-w-[85%] z-10 rounded-xl">
-          <div className="flex flex-col">
-            {activeSlide.captionSubtitle && (
-              <span className="text-[#00f0ff] text-[11px] font-black tracking-widest uppercase mb-1 block">
-                {activeSlide.captionSubtitle}
-              </span>
-            )}
-            {activeSlide.captionTitle && (
-              <h4 className="text-[20px] font-bold text-white leading-tight font-brand">
-                {activeSlide.captionTitle}
-              </h4>
-            )}
-            {activeSlide.description && (
-              <p className="text-xs text-zinc-300 font-sans leading-relaxed mt-0.5">
-                {activeSlide.description}
-              </p>
-            )}
-          </div>
-          {activeSlide.captionPrice && (
-            <span className="bg-[#00f0ff] text-[#030712] px-3.5 py-1.5 rounded-lg font-black text-[16px] flex-shrink-0 shadow-md">
-              {activeSlide.captionPrice}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/blocks/menu-list-block.tsx
-````typescript
-import React from "react";
-import { PosItem, MenuItemStyles, SignageBlock } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle, buildDescriptionStyle } from "../menu-item-style-utils";
-
-type MenuListBlockProps = Extract<SignageBlock, { type: "MenuListBlock" }> & {
-  items: PosItem[];
-  menuItemStyles: MenuItemStyles;
-};
-
-export function MenuListBlock({
-  itemIds,
-  styles,
-  panelStyle,
-  className,
-  items,
-  menuItemStyles,
-  itemModifiers,
-  modifierLayout,
-  hideDescriptions,
-}: MenuListBlockProps) {
-  if (!itemIds || itemIds.length === 0) return null;
-
-  const isGlass = panelStyle === "glass";
-  const containerClasses = [
-    "flex flex-col gap-2 w-full st-menu-list",
-    isGlass ? "st-glass-panel p-2 border border-white/10 bg-white/5 rounded" : "",
-    className
-  ].filter(Boolean).join(" ");
-
-  return (
-    <div className={containerClasses}>
-      {itemIds.map((itemId) => {
-        const item = items.find((i) => i.id === itemId || i.externalId === itemId);
-        if (!item) return null;
-
-        const blockStyles = styles ?? menuItemStyles;
-        const optStyle = resolveItemState(item, false, blockStyles);
-        if (optStyle.hidden && item.isSoldOut) return null;
-
-        const isFlatItem = panelStyle === "none" || (
-          (!blockStyles.regular.backgroundColor || blockStyles.regular.backgroundColor === "transparent" || blockStyles.regular.backgroundColor.includes("0,0,0,0")) &&
-          (!blockStyles.regular.borderWidth || !blockStyles.regular.borderColor || blockStyles.regular.borderColor === "transparent")
-        );
-
-        let borderClass = "border";
-        let cardStyle = buildCardStyle(optStyle);
-        if (isFlatItem) {
-          borderClass = "border-transparent bg-transparent px-2 py-1.5";
-          delete cardStyle.backgroundColor;
-          delete cardStyle.borderColor;
-          delete cardStyle.borderWidth;
-          delete cardStyle.boxShadow;
-        }
-
-        const titleStyle = buildTitleStyle(optStyle);
-        const priceStyle = buildPriceStyle(optStyle);
-        const descStyle = buildDescriptionStyle(optStyle);
-
-        const overrides = itemModifiers?.[itemId] || [];
-        const isInlineMod = modifierLayout === "inline";
-
-        return (
-          <div
-            key={item.id}
-            className={`flex flex-col justify-between items-start gap-1 w-full rounded-xl ${borderClass} transition-all duration-300 relative st-menu-item`}
-            style={{
-              ...cardStyle,
-              opacity: item.isSoldOut ? (blockStyles.soldOut.dimOpacity ?? 0.5) : 1,
-            }}
-          >
-            <div className="flex justify-between items-start w-full">
-              <div className="flex flex-col">
-                <span className="font-bold tracking-tight st-item-title leading-snug" style={titleStyle}>
-                  {item.name}
-                </span>
-                {!hideDescriptions && item.description && (
-                  <span className="text-[0.8rem] leading-tight mt-0.5 st-item-description" style={descStyle}>
-                    {item.description}
-                  </span>
-                )}
-              </div>
-              {Number(item.price) > 0 && (
-                <span className="font-extrabold whitespace-nowrap st-price-tag shrink-0" style={priceStyle}>
-                  ${Number(item.price).toFixed(2)}
-                </span>
-              )}
-            </div>
-
-            {/* Modifiers List */}
-            {overrides.length > 0 && (
-              <div className={`w-full mt-1 ${isInlineMod ? "flex flex-row flex-wrap gap-x-3 gap-y-1" : "flex flex-col gap-1 pl-2 border-l border-white/10"}`}>
-                {overrides.map((override, idx) => {
-                  return (
-                    <div key={idx} className="flex items-center text-[0.85rem] text-zinc-300">
-                      <span className="st-item-modifier text-cyan-400 font-medium">
-                        {override.displayNameOverride || `Modifier Group (${override.modifierIds.length} items)`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {item.isSoldOut && optStyle.strikethrough && (
-              <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 transform -translate-y-1/2 opacity-75 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/blocks/modifier-group-block.tsx
-````typescript
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { MenuItemStyles, PosItem } from "@soustools/api-types";
-import { supabase } from "../../../../lib/supabase";
-import { resolveItemState, buildTitleStyle, buildPriceStyle } from "../menu-item-style-utils";
-
-interface ModifierOption {
-  id: string;
-  name: string;
-  price: number;
-  is_sold_out: boolean;
-}
-
-interface ModifierGroup {
-  id: string;
-  name: string;
-  min_selected_modifiers: number | null;
-  max_selected_modifiers: number | null;
-}
-
-interface ModifierGroupBlockProps {
-  modifierGroupId?: string;
-  menuItemStyles: MenuItemStyles;
-}
-
-export function ModifierGroupBlock({
-  modifierGroupId,
-  menuItemStyles,
-}: ModifierGroupBlockProps) {
-  const [group, setGroup] = useState<ModifierGroup | null>(null);
-  const [options, setOptions] = useState<ModifierOption[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      if (!modifierGroupId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Resolve group
-        const { data: grpData, error: grpError } = await supabase
-          .from("pos_modifier_groups")
-          .select("id, name, min_selected_modifiers, max_selected_modifiers")
-          .or(`id.eq.${modifierGroupId},external_id.eq.${modifierGroupId}`)
-          .single();
-
-        if (grpError || !grpData) {
-          setLoading(false);
-          return;
-        }
-
-        setGroup(grpData as ModifierGroup);
-
-        // Fetch options linked to this group
-        const { data: optsData, error: optsError } = await supabase
-          .from("pos_modifier_options")
-          .select("id, name, price, is_sold_out")
-          .eq("modifier_group_id", grpData.id);
-
-        if (!optsError && optsData) {
-          setOptions(optsData as ModifierOption[]);
-        }
-      } catch (err) {
-        console.error("Failed to load modifier group data", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, [modifierGroupId]);
-
-  if (loading) {
-    return (
-      <div className="p-4 border border-zinc-800 rounded-xl animate-pulse bg-white/5 flex flex-col gap-2">
-        <div className="h-4 bg-zinc-700 w-1/3 rounded" />
-        <div className="h-3 bg-zinc-800 w-1/2 rounded" />
-      </div>
-    );
-  }
-
-  if (!group) {
-    return (
-      <div className="p-4 border border-dashed border-zinc-800 text-zinc-600 text-xs rounded-xl italic font-mono">
-        Modifier Group not found ({modifierGroupId || "Unconfigured"})
-      </div>
-    );
-  }
-
-  return (
-    <div className="st-glass-panel rounded-2xl p-5 flex flex-col gap-3 my-3">
-      <div>
-        <h4 className="text-lg font-bold uppercase tracking-tight text-white font-brand">
-          {group.name}
-        </h4>
-        {(group.min_selected_modifiers !== null || group.max_selected_modifiers !== null) && (
-          <p className="text-xs text-zinc-500 font-sans italic mt-0.5">
-            {group.min_selected_modifiers !== null && `Min: ${group.min_selected_modifiers}`}
-            {group.min_selected_modifiers !== null && group.max_selected_modifiers !== null && " | "}
-            {group.max_selected_modifiers !== null && `Max: ${group.max_selected_modifiers}`}
-          </p>
-        )}
-      </div>
-
-      <ul className="flex flex-col gap-2 pt-2 border-t border-white/5">
-        {options.map((opt) => {
-          // Resolve state styling choice for modifier option
-          // (mimicking PosItem for state selection properties)
-          const dummyItem: PosItem = {
-            id: opt.id,
-            organizationId: "",
-            posProvider: "MANUAL",
-            externalId: null,
-            name: opt.name,
-            description: null,
-            price: opt.price,
-            imageUrl: null,
-            isSoldOut: opt.is_sold_out,
-            createdAt: "",
-            updatedAt: "",
-          };
-          const optStyle = resolveItemState(dummyItem, false, menuItemStyles);
-
-          if (optStyle.hidden && opt.is_sold_out) return null;
-
-          const textStyle = buildTitleStyle(optStyle);
-          const priceStyle = buildPriceStyle(optStyle);
-
-          return (
-            <li
-              key={opt.id}
-              className="flex justify-between items-center text-sm text-zinc-300 transition-opacity duration-300"
-              style={{
-                opacity: optStyle.dimOpacity !== undefined ? optStyle.dimOpacity : (opt.is_sold_out ? 0.5 : 1),
-                filter: optStyle.grayscale ? "grayscale(1)" : undefined,
-              }}
-            >
-              <span className="font-semibold" style={textStyle}>
-                + {opt.name}
-                {opt.is_sold_out && menuItemStyles.soldOut.badge && (
-                  <span className="ml-2 text-[8px] px-1 bg-red-500 text-white rounded font-bold uppercase">
-                    {menuItemStyles.soldOut.badge.text}
-                  </span>
-                )}
-              </span>
-              {Number(opt.price) > 0 && (
-                <span className="font-extrabold text-zinc-400" style={priceStyle}>
-                  +${Number(opt.price).toFixed(2)}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/blocks/nested-item-block.tsx
-````typescript
-import React from "react";
-import { PosItem, MenuItemStyles, UpgradeItem } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle } from "../menu-item-style-utils";
-
-interface NestedItemBlockProps {
-  basePosItemId?: string;
-  upgradeItems?: UpgradeItem[];
-  items: PosItem[];
-  menuItemStyles: MenuItemStyles;
-  panelStyle?: string;
-  className?: string;
-}
-
-export function NestedItemBlock({
-  basePosItemId,
-  upgradeItems = [],
-  items,
-  menuItemStyles,
-  panelStyle,
-  className,
-}: NestedItemBlockProps) {
-  const baseItem = items.find((i) => i.id === basePosItemId || i.externalId === basePosItemId);
-
-  // Fallback if base item is a seeded mock/dummy not in DB
-  const baseName = baseItem ? baseItem.name : (basePosItemId ? basePosItemId.replace("dummy-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Unknown Item");
-  const basePrice = baseItem ? Number(baseItem.price) : 0;
-  const isBaseSoldOut = baseItem ? baseItem.isSoldOut : false;
-
-  const baseStateStyle = baseItem
-    ? resolveItemState(baseItem, false, menuItemStyles)
-    : menuItemStyles.regular;
-
-  const cardStyle = buildCardStyle(baseStateStyle);
-  const titleStyle = buildTitleStyle(baseStateStyle);
-  const priceStyle = buildPriceStyle(baseStateStyle);
-
-  const isFlat =
-    panelStyle === "none" ||
-    baseStateStyle.backgroundColor === "transparent" ||
-    !baseStateStyle.backgroundColor;
-
-  let borderClass = "border";
-  if (isFlat) {
-    borderClass = "border-transparent bg-transparent";
-    delete cardStyle.backgroundColor;
-    delete cardStyle.borderColor;
-    delete cardStyle.borderWidth;
-    delete cardStyle.boxShadow;
-  }
-
-  const isGroupHeader = basePrice === 0;
-
-  const containerClasses = [
-    `p-6 rounded-2xl ${borderClass} flex flex-col gap-3 transition-all duration-300 relative`,
-    panelStyle === "glass" ? "" : "st-nested-item",
-    panelStyle === "glass" ? "" : className
-  ].filter(Boolean).join(" ");
-
-  const element = (
-    <div
-      className={containerClasses}
-      style={{
-        ...cardStyle,
-        opacity: isBaseSoldOut ? (menuItemStyles.soldOut.dimOpacity ?? 0.5) : 1,
-      }}
-    >
-      <div className="flex justify-between items-start gap-4">
-        <h3
-          className={
-            isGroupHeader
-              ? "text-[22px] font-extrabold uppercase tracking-widest text-[#00f0ff] font-brand st-menu-glow-text st-category-header"
-              : "text-xl font-bold tracking-tight"
-          }
-          style={titleStyle}
-        >
-          {baseName}
-        </h3>
-        {basePrice > 0 && (
-          <span className="text-lg font-extrabold whitespace-nowrap st-price-tag" style={priceStyle}>
-            ${basePrice.toFixed(2)}
-          </span>
-        )}
-      </div>
-
-      <ul className={`flex flex-col gap-2 ${isGroupHeader ? "" : "pl-4 border-l border-zinc-800"}`}>
-        {upgradeItems.map((upgrade, idx) => {
-          const upItem = items.find((i) => i.id === upgrade.posItemId || i.externalId === upgrade.posItemId);
-          const upName = upItem ? upItem.name : upgrade.posItemId.replace("dummy-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-          const upPrice = upItem ? Number(upItem.price) : null;
-          const isUpSoldOut = upItem ? upItem.isSoldOut : false;
-
-          const upStateStyle = upItem
-            ? resolveItemState(upItem, false, menuItemStyles)
-            : menuItemStyles.regular;
-
-          const upTitleStyle = buildTitleStyle(upStateStyle);
-          const upPriceStyle = buildPriceStyle(upStateStyle);
-
-          if (upStateStyle.hidden && isUpSoldOut) return null;
-
-          return (
-            <li
-              key={idx}
-              className="flex justify-between items-center text-sm transition-opacity duration-300"
-              style={{
-                opacity: isUpSoldOut ? (menuItemStyles.soldOut.dimOpacity ?? 0.5) : 1,
-              }}
-            >
-              <div className="flex flex-col">
-                <span className="font-semibold text-zinc-300" style={upTitleStyle}>
-                  {isGroupHeader ? upName : `• ${upName}`}
-                  {isUpSoldOut && menuItemStyles.soldOut.badge && (
-                    <span className="ml-2 text-[8px] px-1 bg-red-500 text-white rounded font-bold uppercase st-sold-out-badge">
-                      {menuItemStyles.soldOut.badge.text}
-                    </span>
-                  )}
-                </span>
-                {upgrade.modifierDescription && (
-                  <span className="text-xs text-zinc-500 font-sans italic pl-3">
-                    {upgrade.modifierDescription}
-                  </span>
-                )}
-              </div>
-              {upPrice !== null && upPrice > 0 && (
-                <span className="font-bold text-zinc-400 pl-4 st-price-tag" style={upPriceStyle}>
-                  {isGroupHeader ? `$${upPrice.toFixed(2)}` : `+$${upPrice.toFixed(2)}`}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-
-  if (panelStyle === "glass") {
-    return (
-      <div className={["st-glass-panel p-4 st-nested-item", className].filter(Boolean).join(" ")}>
-        {element}
-      </div>
-    );
-  }
-  return element;
 }
 ````
 
@@ -14859,202 +8965,6 @@ export function PosItemBlock({
       menuItemStyles={menuItemStyles}
     />
   );
-}
-````
-
-## File: apps/web/src/app/display/[id]/block-renderer.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { SignageBlock, PosItem, MenuItemStyles, BlockSizing } from "@soustools/api-types";
-import { CategoryHeaderBlock } from "./blocks/category-header-block";
-import { PosItemBlock } from "./blocks/pos-item-block";
-import { CalloutBlock } from "./blocks/callout-block";
-import { NestedItemBlock } from "./blocks/nested-item-block";
-import { MediaCarouselBlock } from "./blocks/media-carousel-block";
-import { ExplodedItemBlock } from "./blocks/exploded-item-block";
-import { ModifierGroupBlock } from "./blocks/modifier-group-block";
-import { MenuListBlock } from "./blocks/menu-list-block";
-
-interface BlockRendererProps {
-  block: SignageBlock;
-  items: PosItem[];
-  menuItemStyles: MenuItemStyles;
-  config?: any;
-}
-
-export function getSizingStyles(sizing?: BlockSizing): React.CSSProperties {
-  if (!sizing) return {};
-  const { width, height, flexBasis, flexGrow, flexShrink, gap, padding, margin } = sizing;
-  return {
-    ...(width && { width }),
-    ...(height && { height }),
-    ...(flexBasis && { flexBasis }),
-    ...(flexGrow !== undefined && { flexGrow }),
-    ...(flexShrink !== undefined && { flexShrink }),
-    ...(gap && { gap }),
-    ...(padding && { padding }),
-    ...(margin && { margin }),
-  };
-}
-
-export function getLayoutClass(direction: "column" | "row" | "grid", panelStyle?: string, className?: string) {
-  return [
-    direction === "grid"
-      ? "grid gap-4 w-full h-full st-layout-grid"
-      : `flex flex-${direction === "column" ? "col" : "row"} gap-4 w-full h-full st-layout-${direction}`,
-    panelStyle === "glass" ? "st-glass-panel p-4 rounded-2xl" : "",
-    className
-  ].filter(Boolean).join(" ");
-}
-
-export function BlockRenderer({ block, items, menuItemStyles, config }: BlockRendererProps): React.JSX.Element {
-  const sizingStyles = getSizingStyles(block.sizing);
-
-  switch (block.type) {
-    case "ColumnBlock":
-      return (
-        <div className={getLayoutClass("column", block.panelStyle, block.className)} style={sizingStyles}>
-          {block.blocks.map((subBlock) => (
-            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
-          ))}
-        </div>
-      );
-    case "RowBlock":
-      return (
-        <div className={getLayoutClass("row", block.panelStyle, block.className)} style={sizingStyles}>
-          {block.blocks.map((subBlock) => (
-            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
-          ))}
-        </div>
-      );
-    case "GridBlock": {
-      const colTemplate = `repeat(${block.columns}, minmax(0, 1fr))`;
-      const rowTemplate = `repeat(${block.rows}, minmax(0, 1fr))`;
-      return (
-        <div
-          className={getLayoutClass("grid", block.panelStyle, block.className)}
-          style={{ ...sizingStyles, gridTemplateColumns: colTemplate, gridTemplateRows: rowTemplate }}
-        >
-          {block.cells.map((subBlock) => (
-            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
-          ))}
-        </div>
-      );
-    }
-    case "CategoryHeaderBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <CategoryHeaderBlock {...block} color={block.color || config?.designTokens?.primaryColor} />
-        </div>
-      );
-    case "MenuListBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <MenuListBlock {...block as any} items={items} menuItemStyles={menuItemStyles} />
-        </div>
-      );
-    case "PosItemBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <PosItemBlock
-            {...block}
-            items={items}
-            menuItemStyles={menuItemStyles}
-          />
-        </div>
-      );
-    case "CalloutBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <CalloutBlock
-            {...block}
-            panelStyle={
-              block.panelStyle === "glass" || block.panelStyle === "none"
-                ? block.panelStyle
-                : undefined
-            }
-          />
-        </div>
-      );
-    case "NestedItemBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <NestedItemBlock {...block} items={items} menuItemStyles={menuItemStyles} />
-        </div>
-      );
-    case "MediaCarouselBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <MediaCarouselBlock slides={block.slides} style={block.style} />
-        </div>
-      );
-    case "ExplodedItemBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <ExplodedItemBlock 
-            menuItemId={block.menuItemId} 
-            items={items} 
-            panelStyle={block.panelStyle} 
-            className={block.className}
-            hideTitle={(block as any).hideTitle}
-            hidePrice={(block as any).hidePrice}
-            hideDescription={(block as any).hideDescription}
-          >
-             {block.blocks?.map((subBlock) => (
-               <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
-             ))}
-          </ExplodedItemBlock>
-        </div>
-      );
-    case "ModifierGroupBlock":
-      return (
-        <div style={sizingStyles} className="w-full h-full">
-          <ModifierGroupBlock modifierGroupId={block.modifierGroupId} menuItemStyles={menuItemStyles} />
-        </div>
-      );
-    case "ImageBlock": {
-      const b = block as any;
-      return (
-        <div style={sizingStyles} className="w-full h-full flex items-center justify-center overflow-hidden">
-          {b.imageUrl && <img src={b.imageUrl} alt="" className="max-w-full max-h-full object-contain" />}
-        </div>
-      );
-    }
-    case "VideoBlock": {
-      const b = block as any;
-      return (
-        <div style={sizingStyles} className="w-full h-full overflow-hidden">
-          {b.videoUrl && (
-            <video src={b.videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-          )}
-        </div>
-      );
-    }
-    case "TimelineBlock": {
-      const b = block as any;
-      const steps = b.steps || [];
-      return (
-        <div style={sizingStyles} className="w-full h-full flex flex-col gap-6 p-4">
-          {steps.map((step: any, idx: number) => (
-            <div key={step.id} className="flex gap-4 items-start">
-              <div className="w-8 h-8 rounded-full bg-cyan-500/20 border-2 border-cyan-500 flex items-center justify-center text-sm font-bold text-cyan-400 shrink-0">
-                {idx + 1}
-              </div>
-              <div className="text-xl text-zinc-100 mt-0.5">{step.text}</div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    default:
-      return (
-        <div style={sizingStyles} className="p-4 bg-red-950/20 border border-red-900 text-red-500 rounded-xl text-xs font-mono">
-          Unknown block type: {(block as any).type}
-        </div>
-      );
-  }
 }
 ````
 
@@ -15110,122 +9020,6 @@ export function ColumnLayoutRenderer({
         );
       })}
     </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/display-player.tsx
-````typescript
-"use client";
-
-import React, { useEffect } from "react";
-import { useDisplayPlayer } from "./use-display-player";
-import { PairingScreen } from "./pairing-screen";
-import { SlideCarousel } from "./slide-carousel";
-import { buildAllAnimationCss } from "@soustools/domain-signage";
-import { SignageDisplay } from "@soustools/api-types";
-import { RawDbPosItem } from "./helpers";
-
-interface DisplayPlayerProps {
-  displayId: string;
-  initialDisplay?: SignageDisplay | null;
-  initialLayout?: any | null;
-  initialItems?: RawDbPosItem[];
-  initialErrorState?: string | null;
-}
-
-export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initialItems, initialErrorState }: DisplayPlayerProps) {
-  const { display, layout, items, loading, errorState } =
-    useDisplayPlayer(displayId, initialDisplay, initialLayout, initialItems, initialErrorState);
-
-  useEffect(() => {
-    const config = layout?.config;
-    if (!config) return;
-
-    // Aggregate all unique Google Fonts to load
-    const fontsToLoad = new Set<string>();
-    if (config.googleFont) fontsToLoad.add(config.googleFont);
-
-    // Clean up existing dynamic font links
-    document.querySelectorAll("[id^='signage-dynamic-font']").forEach((el) => el.remove());
-    Array.from(fontsToLoad).forEach((font, idx) => {
-      const link = document.createElement("link");
-      link.id = `signage-dynamic-font-${idx}`;
-      link.rel = "stylesheet";
-      link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`;
-      document.head.appendChild(link);
-    });
-
-    // Inject custom CSS
-    document.getElementById("signage-custom-css")?.remove();
-    if (config.customCss) {
-      const style = document.createElement("style");
-      style.id = "signage-custom-css";
-      style.textContent = config.customCss;
-      document.head.appendChild(style);
-    }
-
-    // Inject animation keyframes from menuItemStyles
-    document.getElementById("signage-item-animations")?.remove();
-    if (config.menuItemStyles) {
-      const animCss = buildAllAnimationCss(config.menuItemStyles);
-      if (animCss) {
-        const style = document.createElement("style");
-        style.id = "signage-item-animations";
-        style.textContent = animCss;
-        document.head.appendChild(style);
-      }
-    }
-  }, [layout]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white">
-        <div className="w-8 h-8 border-4 border-t-transparent border-[oklch(0.60_0.25_250)] rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (errorState && !display) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
-        <h2 className="text-2xl font-bold text-[oklch(0.60_0.25_25)] mb-2 font-brand">
-          Display Load Failed
-        </h2>
-        <p className="text-zinc-500 dark:text-zinc-400 font-sans">{errorState}</p>
-      </div>
-    );
-  }
-
-  if (display && !display.deckId) {
-    return <PairingScreen code={display.id.slice(0, 8).toUpperCase()} />;
-  }
-
-  const slides = layout?.config?.slides || [];
-  const menuItemStyles = layout?.config?.menuItemStyles;
-
-  return (
-    <main
-      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white"
-      style={{
-        fontFamily: layout?.config?.googleFont || "inherit",
-        // CSS variables for typography overrides
-        ["--menu-title-font" as any]: layout?.config?.typography?.menuItemTitle || "inherit",
-        ["--menu-price-font" as any]: layout?.config?.typography?.menuItemPrice || "inherit",
-        ["--menu-description-font" as any]: layout?.config?.typography?.menuItemDescription || "inherit",
-        ["--marketing-text-font" as any]: layout?.config?.typography?.marketingText || "inherit",
-        ["--menu-title-color" as any]: layout?.config?.typography?.menuItemTitleColor || "inherit",
-        ["--menu-price-color" as any]: layout?.config?.typography?.menuItemPriceColor || "inherit",
-        ["--menu-desc-color" as any]: layout?.config?.typography?.menuItemDescriptionColor || "inherit",
-        ["--marketing-text-color" as any]: layout?.config?.typography?.marketingTextColor || "inherit",
-      }}
-    >
-      <SlideCarousel
-        slides={slides}
-        items={items}
-        menuItemStyles={menuItemStyles}
-      />
-    </main>
   );
 }
 ````
@@ -15607,58 +9401,6 @@ export default async function DisplayPage({ params }: DisplayPageProps) {
 }
 ````
 
-## File: apps/web/src/app/display/[id]/pairing-screen.tsx
-````typescript
-"use client";
-
-import React from "react";
-
-interface PairingScreenProps {
-  code: string;
-}
-
-export function PairingScreen({ code }: PairingScreenProps) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
-      <div className="glass-panel p-12 rounded-3xl max-w-lg w-full text-center space-y-8 border-black/10 dark:border-white/10 shadow-2xl relative overflow-hidden">
-        <div className="absolute -top-12 -left-12 w-24 h-24 bg-[oklch(0.60_0.25_250)] rounded-full blur-3xl opacity-20" />
-        <div className="absolute -bottom-12 -right-12 w-24 h-24 bg-[oklch(0.60_0.25_250)] rounded-full blur-3xl opacity-20" />
-
-        <div className="space-y-3">
-          <div className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-[oklch(0.60_0.25_250)]/10 text-[oklch(0.60_0.25_250)]">
-            Setup Mode
-          </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white font-brand">
-            Pair Your Display
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Enter the code below in your dashboard to connect this screen.
-          </p>
-        </div>
-
-        <div className="flex justify-center items-center py-4">
-          <div className="flex gap-3">
-            {code.split("").map((char, index) => (
-              <div
-                key={index}
-                className="w-16 h-20 flex items-center justify-center text-4xl font-black rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[oklch(0.60_0.25_250)] shadow-lg shadow-black/30 font-brand"
-              >
-                {char}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-3 text-zinc-400 dark:text-zinc-500 text-xs">
-          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.70_0.25_150)] animate-pulse" />
-          <span>Waiting for connection...</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/display/[id]/scale-wrapper.tsx
 ````typescript
 "use client";
@@ -15691,256 +9433,6 @@ export function ScaleWrapper({ children }: ScaleWrapperProps) {
       >
         {children}
       </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/display/[id]/single-column.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
-import { MenuItemCard } from "./menu-item-card";
-import { DEFAULT_MENU_ITEM_STYLES } from "@soustools/domain-signage";
-
-interface SingleColumnProps {
-  column: ColumnConfig;
-  index: number;
-  style: React.CSSProperties;
-  items: PosItem[];
-  menuItemStyles?: MenuItemStyles;
-}
-
-export function SingleColumn({
-  column,
-  index,
-  style,
-  items,
-  menuItemStyles = DEFAULT_MENU_ITEM_STYLES,
-}: SingleColumnProps) {
-  switch (column.type) {
-    case "MENU": {
-      let columnItems = items;
-      if (column.itemIds && column.itemIds.length > 0) {
-        columnItems = column.itemIds
-          .map((id) => items.find((item) => item.id === id || item.externalId === id))
-          .filter((item): item is PosItem => !!item);
-      }
-      columnItems = columnItems.filter(
-        (item) => !(item.isSoldOut && (menuItemStyles.soldOut.hidden ?? false))
-      );
-      return (
-        <div
-          key={index}
-          style={style}
-          className="flex flex-col gap-4 overflow-y-auto overflow-x-hidden w-full h-full p-6"
-        >
-          {columnItems.length > 0 ? (
-            columnItems.map((item) => (
-              <MenuItemCard
-                key={item.id}
-                item={item}
-                highlightItems={column.highlightItems}
-                menuItemStyles={menuItemStyles}
-              />
-            ))
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm">
-              No Menu Items Selected
-            </div>
-          )}
-        </div>
-      );
-    }
-    case "IMAGE":
-      return (
-        <div
-          key={index}
-          style={style}
-          className="w-full h-full overflow-hidden relative bg-transparent flex items-center justify-center"
-        >
-          {column.imageUrl ? (
-            <img
-              src={column.imageUrl}
-              alt="Column Media"
-              className={`w-full h-full object-${column.fit || "cover"}`}
-            />
-          ) : (
-            <div className="text-zinc-400 dark:text-zinc-500 text-sm">No Image Selected</div>
-          )}
-        </div>
-      );
-    case "VIDEO":
-      return (
-        <div
-          key={index}
-          style={style}
-          className="w-full h-full overflow-hidden relative bg-transparent"
-        >
-          {column.videoUrl ? (
-            <video
-              src={column.videoUrl}
-              autoPlay
-              loop={column.loop !== false}
-              muted={column.mute !== false}
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-zinc-400 dark:text-zinc-500 text-sm">
-              No Video Selected
-            </div>
-          )}
-        </div>
-      );
-    case "IFRAME":
-      return (
-        <div
-          key={index}
-          style={style}
-          className="w-full h-full overflow-hidden relative bg-transparent"
-        >
-          {column.iframeUrl ? (
-            <iframe
-              src={column.iframeUrl}
-              title="Embedded Content"
-              className="w-full h-full border-none"
-              allow="autoplay; encrypted-media"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-zinc-400 dark:text-zinc-500 text-sm">
-              No URL Configured
-            </div>
-          )}
-        </div>
-      );
-    case "TEXT":
-      return (
-        <div
-          key={index}
-          style={style}
-          className="w-full h-full flex flex-col justify-center items-center text-center p-8"
-        >
-          {column.title && (
-            <h2
-              className="text-3xl font-extrabold tracking-tight mb-4 text-white"
-              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
-            >
-              {column.title}
-            </h2>
-          )}
-          {column.content && (
-            <p
-              className="text-lg text-zinc-700 dark:text-zinc-300 whitespace-pre-line"
-              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
-            >
-              {column.content}
-            </p>
-          )}
-          {!column.title && !column.content && (
-            <div className="text-zinc-400 dark:text-zinc-500 text-sm">No Text Configured</div>
-          )}
-        </div>
-      );
-    case "EMPTY":
-    default:
-      return (
-        <div
-          key={index}
-          style={style}
-          className="w-full h-full bg-transparent"
-        />
-      );
-  }
-}
-````
-
-## File: apps/web/src/app/display/[id]/slide-carousel.tsx
-````typescript
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { SignageSlide, PosItem, ColumnLayoutSlide, MenuItemStyles } from "@soustools/api-types";
-import { SlideRenderer } from "./slide-renderer";
-
-interface SlideCarouselProps {
-  slides: SignageSlide[];
-  items: PosItem[];
-  menuItemStyles?: MenuItemStyles;
-}
-
-export function SlideCarousel({
-  slides,
-  items,
-  menuItemStyles,
-}: SlideCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [visibleIndex, setVisibleIndex] = useState(0);
-  const [opacity, setOpacity] = useState(1);
-
-  useEffect(() => {
-    if (!slides || slides.length <= 1) {
-      setVisibleIndex(0);
-      setOpacity(1);
-      return;
-    }
-
-    const currentSlide = slides[currentIndex];
-    const durationMs = (currentSlide.durationSeconds || 5) * 1000;
-
-    const transitionStartMs = Math.max(durationMs - 500, 100);
-    const fadeOutTimer = setTimeout(() => {
-      setOpacity(0);
-    }, transitionStartMs);
-
-    const slideChangeTimer = setTimeout(() => {
-      const nextIndex = (currentIndex + 1) % slides.length;
-      setCurrentIndex(nextIndex);
-      setVisibleIndex(nextIndex);
-      setOpacity(1);
-    }, durationMs);
-
-    return () => {
-      clearTimeout(fadeOutTimer);
-      clearTimeout(slideChangeTimer);
-    };
-  }, [currentIndex, slides]);
-
-  if (!slides || slides.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white font-sans">
-        <p className="text-xl text-zinc-500 dark:text-zinc-400">
-          No slides configured for this display.
-        </p>
-      </div>
-    );
-  }
-
-  const activeSlide = slides[visibleIndex];
-  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? (activeSlide as ColumnLayoutSlide) : null;
-
-  const bgStyle: React.CSSProperties = {
-    opacity,
-    backgroundColor: columnSlide?.backgroundColor || "oklch(0.08 0.01 260)",
-  };
-  if (columnSlide?.backgroundImageUrl) {
-    bgStyle.backgroundImage = `url(${columnSlide.backgroundImageUrl})`;
-    bgStyle.backgroundSize = "cover";
-    bgStyle.backgroundPosition = "center";
-  }
-
-  return (
-    <div
-      className="w-full h-full min-h-screen transition-opacity duration-500 ease-in-out"
-      style={bgStyle}
-    >
-      <SlideRenderer
-        slide={activeSlide}
-        items={items}
-        menuItemStyles={menuItemStyles}
-      />
     </div>
   );
 }
@@ -16224,214 +9716,6 @@ export default function HomePage() {
 }
 ````
 
-## File: apps/web/src/app/login/page.tsx
-````typescript
-"use client";
-
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@soustools/design-system";
-import { supabase } from "../../lib/supabase";
-import { KeyRound, Mail, Sparkles } from "lucide-react";
-
-export default function LoginPage() {
-  const [email, setEmail] = useState("conar@dtown.cafe");
-  const [password, setPassword] = useState("password");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const handleLogin = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        setError(authError.message);
-      } else {
-        const urlParams = new URLSearchParams(window.location.search);
-        const returnTo = urlParams.get("returnTo");
-        router.push(returnTo ? returnTo : "/home");
-      }
-    } catch (err: unknown) {
-      setError("An unexpected error occurred during login.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-zinc-50 dark:bg-zinc-950">
-      {/* Background Neon Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/20 blur-[120px] rounded-full animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: "6s" }} />
-
-      <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl relative z-10">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 flex items-center justify-center border border-sky-500/30 mb-4 shadow-lg shadow-sky-500/10">
-            <Sparkles className="w-6 h-6 text-sky-400" />
-          </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight text-center">
-            Kitchen Portal
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 text-center">
-            Standardize your culinary operations in real-time.
-          </p>
-        </div>
-
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm text-center font-medium animate-fadeIn">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5" /> Email Address
-            </label>
-            <input
-              type="email"
-              placeholder="name@dtown.cafe"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5" /> Password
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
-            />
-          </div>
-
-          <div className="pt-2">
-            <Button disabled={loading} className="w-full justify-center py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-sky-500/20">
-              {loading ? "Signing In..." : "Access Control"}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </main>
-  );
-}
-````
-
-## File: apps/web/src/app/error.tsx
-````typescript
-"use client";
-
-import { useEffect } from "react";
-import { logger } from "@soustools/logger/browser";
-
-/**
- * Props for the Root ErrorBoundary component.
- */
-export interface ErrorBoundaryProps {
-  /**
-   * The error object caught by Next.js.
-   */
-  error: Error & { digest?: string };
-  /**
-   * Function to reset/retry rendering the boundary.
-   */
-  reset: () => void;
-}
-
-/**
- * ErrorBoundary is caught at the dashboard layout level.
- * It logs errors to the browser logger (New Relic) and displays an error message with kitchen mode theme.
- */
-export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
-  useEffect(() => {
-    logger.error({ err: error, digest: error.digest }, "Global kitchen app layout error caught by boundary");
-  }, [error]);
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-50 p-4">
-      <div className="glass-panel p-8 rounded-lg max-w-md border border-zinc-900 text-center">
-        <h2 className="text-xl font-semibold text-rose-500 mb-4">Something went wrong!</h2>
-        <p className="text-sm text-zinc-400 mb-6">
-          An unexpected error has occurred. The system logs have been updated automatically.
-        </p>
-        <button
-          onClick={() => reset()}
-          className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium transition-colors cursor-pointer"
-        >
-          Try Again
-        </button>
-      </div>
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/global-error.tsx
-````typescript
-"use client";
-
-import { useEffect } from "react";
-import { logger } from "@soustools/logger/browser";
-
-/**
- * Props for the Root GlobalError component.
- */
-export interface GlobalErrorProps {
-  /**
-   * The error object caught by Next.js at root level.
-   */
-  error: Error & { digest?: string };
-  /**
-   * Function to reset/retry rendering the root layout.
-   */
-  reset: () => void;
-}
-
-/**
- * GlobalError catches errors at the very root level (including layout.tsx).
- * Renders fallback HTML and body tags.
- */
-export default function GlobalError({ error, reset }: GlobalErrorProps) {
-  useEffect(() => {
-    logger.error({ err: error, digest: error.digest }, "Root kitchen app global layout error caught");
-  }, [error]);
-
-  return (
-    <html lang="en">
-      <body className="antialiased min-h-screen bg-zinc-950 text-zinc-50 font-sans flex items-center justify-center p-4">
-        <div className="glass-panel p-8 rounded-lg max-w-md border border-zinc-900 text-center">
-          <h2 className="text-xl font-semibold text-rose-500 mb-4">Critical System Error</h2>
-          <p className="text-sm text-zinc-400 mb-6">
-            A critical system error occurred. The technical team has been notified.
-          </p>
-          <button
-            onClick={() => reset()}
-            className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium transition-colors cursor-pointer"
-          >
-            Refresh Application
-          </button>
-        </div>
-      </body>
-    </html>
-  );
-}
-````
-
 ## File: apps/web/src/app/globals.css
 ````css
 @import "@soustools/design-system/index.css";
@@ -16444,68 +9728,6 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 @source "../../../../packages/domain-settings/src/**/*.tsx";
 @source "../../../../packages/domain-recipes/src/**/*.tsx";
 @source "../../../../apps/app/src/**/*.tsx";
-````
-
-## File: apps/web/src/app/layout.tsx
-````typescript
-import React from "react";
-import "./globals.css";
-import { Toaster } from "sonner";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "../components/theme-provider";
-import { InstrumentationClient } from "../instrumentation-client";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const env = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
-  let iconPath = "/favicon-prod.svg";
-  
-  if (env === "development") {
-    iconPath = "/favicon-dev.svg";
-  } else if (env === "staging") {
-    iconPath = "/favicon-staging.svg";
-  }
-
-  return {
-    title: "sous.tools",
-    description: "Interactive kitchen display system and dashboard",
-    manifest: "/manifest.webmanifest",
-    icons: {
-      icon: iconPath,
-      apple: iconPath,
-    }
-  };
-}
-
-export const viewport: Viewport = {
-  themeColor: "#020617",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
-
-export interface RootLayoutProps {
-  children: React.ReactNode;
-}
-
-export default function RootLayout({ children }: RootLayoutProps) {
-  return (
-    <html lang="en" className="overflow-x-hidden" suppressHydrationWarning>
-      <body className="antialiased min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 font-sans overflow-x-hidden transition-colors duration-300 relative">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-
-          {children}
-          <Toaster theme="system" position="bottom-right" richColors />
-          <Analytics />
-          <SpeedInsights />
-          <InstrumentationClient />
-        </ThemeProvider>
-      </body>
-    </html>
-  );
-}
 ````
 
 ## File: apps/web/src/app/manifest.ts
@@ -16545,168 +9767,6 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
   };
-}
-````
-
-## File: apps/web/src/app/page.tsx
-````typescript
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { Button } from "@soustools/design-system";
-import { useRouter } from "next/navigation";
-import { Session } from "@supabase/supabase-js";
-import { ShieldCheck, CloudLightning, Download } from "lucide-react";
-import { PrimaryLogo } from "@soustools/design-system";
-
-export default function HomePage() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setLoading(false);
-    };
-    fetchSession();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-white selection:bg-sky-500/30">
-      {/* Header / Nav */}
-      <header className="border-b border-black/5 dark:border-white/5 py-4 px-6 md:px-12 flex justify-between items-center backdrop-blur-md sticky top-0 z-55 bg-zinc-950/80">
-        <div className="flex items-center gap-2">
-          <PrimaryLogo className="text-sky-400 h-12 w-auto" />
-        </div>
-        <div className="flex items-center gap-4">
-          {session ? (
-            <Button onClick={() => router.push("/home")} variant="default">
-              Go to Dashboard
-            </Button>
-          ) : (
-            <Button onClick={() => router.push("/login")} variant="outline">
-              Sign In
-            </Button>
-          )}
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="py-20 text-center px-6 max-w-4xl mx-auto space-y-6">
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 via-sky-200 to-violet-400 bg-clip-text text-transparent">
-          Professional Kitchen Operations, Automated
-        </h1>
-        <p className="text-zinc-500 dark:text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
-          Scale your menus, manage vendor inventory ledger, sync Square catalog instantly, and deploy real-time digital display signage.
-        </p>
-        <div className="flex justify-center gap-4 pt-4">
-          <Button onClick={() => router.push(session ? "/home" : "/login")} variant="default" className="px-8 py-3 text-lg mt-4 shadow-[0_0_20px_rgba(76,201,240,0.3)] hover:shadow-[0_0_30px_rgba(76,201,240,0.5)]">
-            Get Started Natively
-          </Button>
-        </div>
-      </section>
-
-      {/* 3-Tiered Pricing Plans */}
-      <section className="py-16 px-6 max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">Flexible Pricing for Growing Kitchens</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Starter Plan */}
-          <div className="glass-panel p-8 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-sky-400">Starter</h3>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">For single-station cafes.</p>
-              <div className="text-4xl font-extrabold mt-6">$49<span className="text-base font-normal text-zinc-400 dark:text-zinc-500">/mo</span></div>
-              <ul className="mt-8 space-y-4 text-sm text-zinc-700 dark:text-zinc-300">
-                <li className="flex items-center gap-2">✔ 1 Active Signage Display</li>
-                <li className="flex items-center gap-2">✔ Square Catalog Integration</li>
-                <li className="flex items-center gap-2">✔ Basic Recipe Manager</li>
-              </ul>
-            </div>
-            <Button onClick={() => router.push("/login")} className="mt-8 w-full justify-center" variant="outline">Choose Starter</Button>
-          </div>
-
-          {/* Pro Plan */}
-          <div className="glass-panel p-8 rounded-3xl border border-sky-500/30 relative flex flex-col justify-between shadow-[0_0_30px_rgba(56,189,248,0.1)]">
-            <span className="absolute top-0 right-8 transform -translate-y-1/2 bg-sky-500 text-zinc-950 text-xs font-extrabold uppercase px-3 py-1 rounded-full">Popular</span>
-            <div>
-              <h3 className="text-xl font-bold text-sky-300">Pro</h3>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">For busy full-service restaurants.</p>
-              <div className="text-4xl font-extrabold mt-6">$149<span className="text-base font-normal text-zinc-400 dark:text-zinc-500">/mo</span></div>
-              <ul className="mt-8 space-y-4 text-sm text-zinc-700 dark:text-zinc-300">
-                <li className="flex items-center gap-2">✔ Unlimited Signage Displays</li>
-                <li className="flex items-center gap-2">✔ Real-time Inventory Ledger</li>
-                <li className="flex items-center gap-2">✔ Dynamic Baker's Math Sync</li>
-                <li className="flex items-center gap-2">✔ Automated PO Dispatch</li>
-              </ul>
-            </div>
-            <Button onClick={() => router.push("/login")} className="mt-8 w-full justify-center bg-sky-500 hover:bg-sky-600 text-white" variant="default">Upgrade to Pro</Button>
-          </div>
-
-          {/* Enterprise Plan */}
-          <div className="glass-panel p-8 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-violet-400">Enterprise</h3>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Multi-location hospitality groups.</p>
-              <div className="text-4xl font-extrabold mt-6">Custom</div>
-              <ul className="mt-8 space-y-4 text-sm text-zinc-700 dark:text-zinc-300">
-                <li className="flex items-center gap-2">✔ Custom API / Webhook Access</li>
-                <li className="flex items-center gap-2">✔ Dedicated Integration Drivers</li>
-                <li className="flex items-center gap-2">✔ 99.9% Uptime Kiosk SLA</li>
-                <li className="flex items-center gap-2">✔ Tenant Isolation Control</li>
-              </ul>
-            </div>
-            <Button onClick={() => router.push("/login")} className="mt-8 w-full justify-center" variant="outline">Contact Sales</Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Downloads Section */}
-      <section className="py-16 border-t border-black/5 dark:border-white/5 bg-zinc-900/30">
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
-          <h2 className="text-3xl font-bold">Deploy Anywhere Natively</h2>
-          <p className="text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">Install our persistent BOH app on tablets, kiosks, and display controllers for continuous 24/7 cookline status.</p>
-          <div className="flex flex-wrap justify-center gap-6">
-            <a href="#" className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 px-6 py-4 rounded-2xl transition-all">
-              <Download className="w-5 h-5 text-sky-400" />
-              <div className="text-left">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">Download for Desktop</div>
-                <div className="font-bold text-sm">Windows & Mac App</div>
-              </div>
-            </a>
-            <a href="#" className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 px-6 py-4 rounded-2xl transition-all">
-              <CloudLightning className="w-5 h-5 text-sky-400" />
-              <div className="text-left">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">Instant Progressive Web App</div>
-                <div className="font-bold text-sm">Install PWA</div>
-              </div>
-            </a>
-            <a href="#" className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 px-6 py-4 rounded-2xl transition-all">
-              <ShieldCheck className="w-5 h-5 text-violet-400" />
-              <div className="text-left">
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">Download Controller App</div>
-                <div className="font-bold text-sm">Android CLI Bundle</div>
-              </div>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <footer className="border-t border-black/5 dark:border-white/5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-xs">
-        &copy; 2026 SOUS.TOOLS. Designed for modern back-of-house operations. All rights reserved.
-      </footer>
-    </div>
-  );
 }
 ````
 
@@ -22038,318 +15098,6 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
 }));
 ````
 
-## File: packages/design-system/src/components/BottomNav.tsx
-````typescript
-"use client";
-
-import React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, ChefHat, ShoppingBag, Menu } from "lucide-react";
-
-/**
- * A single navigation destination in the bottom navigation bar.
- */
-export interface BottomNavItem {
-  /** Visible label rendered below the icon. */
-  label: string;
-  /** Route href passed to Next.js `<Link>`. */
-  href: string;
-  /** Lucide icon component to render. */
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-/**
- * Props for the BottomNav component.
- */
-export interface BottomNavProps {
-  /** Callback to open the "More" mobile drawer. */
-  onToggleMobile: () => void;
-  /**
-   * The center logo/icon element rendered as the brand home button.
-   * Pass the `<MicroIcon>` (or equivalent) from your logo package.
-   */
-  centerIcon?: React.ReactNode;
-  /**
-   * Navigation items to render on either side of the center icon.
-   * Defaults to Dashboard, Recipes, Orders if omitted.
-   */
-  items?: BottomNavItem[];
-}
-
-const DEFAULT_ITEMS: BottomNavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Recipes",   href: "/recipes",   icon: ChefHat },
-  { label: "Orders",    href: "/inventory/orders", icon: ShoppingBag },
-];
-
-/**
- * BottomNav — the mobile-only fixed bottom navigation bar.
- *
- * Sits at `--z-bottom-nav: 40` and uses the `.st-glass-panel` glassmorphism
- * utility for the Neon-Glass aesthetic. Active route items are highlighted
- * with `--color-primary` (cyan #4cc9f0).
- *
- * Render this as a `"use client"` component inside `apps/app/layout.tsx`. Pass
- * `onToggleMobile` to wire the "More" button to your mobile sidebar toggle.
- *
- * @tenant-docs-export
- * # BottomNav
- * ```tsx
- * import { BottomNav } from "@soustools/design-system";
- *
- * <BottomNav
- *   onToggleMobile={toggleMobile}
- *   centerIcon={<MicroIcon className="w-12 h-12" style={{ color: "var(--color-primary)" }} />}
- * />
- * ```
- */
-export function BottomNav({
-  onToggleMobile,
-  centerIcon,
-  items = DEFAULT_ITEMS,
-}: BottomNavProps) {
-  const pathname = usePathname();
-
-  // Split items around the center brand button
-  const midpoint = Math.floor(items.length / 2);
-  const leftItems = items.slice(0, midpoint);
-  const rightItems = items.slice(midpoint);
-
-  const navItemClass = (href: string) => {
-    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
-    return [
-      "flex flex-col items-center justify-center min-w-[64px] min-h-[64px]",
-      "transition-transform active:scale-90 touch-manipulation",
-      "text-xs font-medium gap-1",
-    ].join(" ") + " " + (isActive
-      ? ""
-      : "");
-  };
-
-  const navItemStyle = (href: string): React.CSSProperties => {
-    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
-    return {
-      color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
-    };
-  };
-
-  return (
-    <nav
-      className="md:hidden st-glass-panel fixed bottom-0 left-0 right-0 h-20
-        flex items-center justify-around px-2 pb-safe
-        overflow-x-auto flex-nowrap min-w-0 select-none scrollbar-none"
-      style={{
-        zIndex: "var(--z-bottom-nav)",
-        borderTop: "1px solid var(--color-border)",
-      }}
-    >
-      {/* Left items */}
-      {leftItems.map((item) => {
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={navItemClass(item.href)}
-            style={navItemStyle(item.href)}
-          >
-            <Icon className="w-6 h-6" />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
-
-      {/* Center brand button */}
-      {centerIcon && (
-        <Link
-          href="/"
-          className="flex flex-col items-center justify-center p-2 rounded-full
-            active:scale-95 transition-transform touch-manipulation flex-shrink-0"
-          style={{
-            backgroundColor: "var(--color-card)",
-            border: "1px solid var(--color-border)",
-            boxShadow: "0 4px 15px -3px rgb(76 201 240 / 0.20)", // neon-cyan shadow
-          }}
-        >
-          {centerIcon}
-        </Link>
-      )}
-
-      {/* Right items */}
-      {rightItems.map((item) => {
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={navItemClass(item.href)}
-            style={navItemStyle(item.href)}
-          >
-            <Icon className="w-6 h-6" />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
-
-      {/* More button */}
-      <button
-        onClick={onToggleMobile}
-        className="flex flex-col items-center justify-center min-w-[64px] min-h-[64px]
-          transition-transform active:scale-90 touch-manipulation gap-1 text-xs font-medium"
-        style={{ color: "var(--color-muted-foreground)" }}
-        aria-label="Open navigation menu"
-      >
-        <Menu className="w-6 h-6" />
-        <span>More</span>
-      </button>
-    </nav>
-  );
-}
-````
-
-## File: packages/design-system/src/components/Card.tsx
-````typescript
-import * as React from "react";
-
-/* ─── Card ─────────────────────────────────────────────────────────────────── */
-
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-/**
- * Root container for the Neon-Glass Card component.
- *
- * Renders a `glass-card` surface — `bg-white/5 backdrop-blur-md border
- * border-white/10` — consistent with the v2 glassmorphism aesthetic.
- * Compose with `CardHeader`, `CardTitle`, `CardContent`, and `CardFooter`.
- *
- * @tenant-docs-export
- * # Card
- * ```tsx
- * import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@soustools/design-system";
- *
- * <Card>
- *   <CardHeader>
- *     <CardTitle>Daily Revenue</CardTitle>
- *   </CardHeader>
- *   <CardContent>$4,320.00</CardContent>
- *   <CardFooter>Updated 2 min ago</CardFooter>
- * </Card>
- * ```
- */
-export function Card({ className = "", children, ...props }: CardProps) {
-  return (
-    <div
-      className={`rounded-[var(--radius)] ${className}`}
-      style={{
-        backgroundColor: "var(--color-card)",
-        color: "var(--color-card-foreground)",
-        border: "1px solid var(--color-border)",
-        boxShadow:
-          "0 20px 25px -5px rgb(0 0 0 / 0.10), 0 8px 10px -6px rgb(0 0 0 / 0.10)",
-      }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* ─── CardHeader ───────────────────────────────────────────────────────────── */
-
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-/**
- * Header region of a Card. Provides consistent padding and a bottom border
- * separator to visually anchor the card title.
- */
-export function CardHeader({
-  className = "",
-  children,
-  ...props
-}: CardHeaderProps) {
-  return (
-    <div
-      className={`flex flex-col gap-1.5 px-6 py-5 ${className}`}
-      style={{ borderBottom: "1px solid var(--color-border)" }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* ─── CardTitle ────────────────────────────────────────────────────────────── */
-
-export interface CardTitleProps
-  extends React.HTMLAttributes<HTMLHeadingElement> {}
-
-/**
- * Title element within a CardHeader. Renders as `<h3>` with bold tight
- * tracking — consistent with the Industrial Minimal brand voice.
- */
-export function CardTitle({
-  className = "",
-  children,
-  ...props
-}: CardTitleProps) {
-  return (
-    <h3
-      className={`text-lg font-bold tracking-tight leading-none ${className}`}
-      style={{ color: "var(--color-card-foreground)" }}
-      {...props}
-    >
-      {children}
-    </h3>
-  );
-}
-
-/* ─── CardContent ──────────────────────────────────────────────────────────── */
-
-export interface CardContentProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
-
-/**
- * Main content area of a Card. Provides standard padding and removes top
- * padding when immediately following a `CardHeader`.
- */
-export function CardContent({
-  className = "",
-  children,
-  ...props
-}: CardContentProps) {
-  return (
-    <div className={`px-6 py-5 ${className}`} {...props}>
-      {children}
-    </div>
-  );
-}
-
-/* ─── CardFooter ───────────────────────────────────────────────────────────── */
-
-export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-/**
- * Footer region of a Card. Flex-row layout for action buttons or metadata.
- * Provides a top border separator.
- */
-export function CardFooter({
-  className = "",
-  children,
-  ...props
-}: CardFooterProps) {
-  return (
-    <div
-      className={`flex items-center gap-3 px-6 py-4 ${className}`}
-      style={{ borderTop: "1px solid var(--color-border)" }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-````
-
 ## File: packages/design-system/src/components/InsightsSidebar.tsx
 ````typescript
 import { Clock, Zap, Plus } from "lucide-react";
@@ -22466,86 +15214,6 @@ export function InsightsSidebar({
           Add Vendor
         </button>
       </div>
-    </div>
-  );
-}
-````
-
-## File: packages/design-system/src/components/PinInput.tsx
-````typescript
-"use client";
-
-import React, { useRef, KeyboardEvent, ClipboardEvent } from 'react';
-
-export interface PinInputProps {
-  length?: number;
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export function PinInput({ length = 6, value, onChange }: PinInputProps) {
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const val = e.target.value;
-    if (!/^[0-9]*$/.test(val)) return;
-
-    const newValue = value.split('');
-    newValue[index] = val.slice(-1);
-    const finalValue = newValue.join('').slice(0, length);
-    onChange(finalValue);
-
-    if (val && index < length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace') {
-      if (!value[index] && index > 0) {
-        inputRefs.current[index - 1]?.focus();
-      } else {
-        const newValue = value.split('');
-        newValue[index] = '';
-        onChange(newValue.join(''));
-      }
-    } else if (e.key === 'ArrowLeft' && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && index < length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, length);
-    if (pastedData) {
-      onChange(pastedData);
-      const nextIndex = Math.min(pastedData.length, length - 1);
-      inputRefs.current[nextIndex]?.focus();
-    }
-  };
-
-  return (
-    <div className="flex space-x-2 justify-center">
-      {Array.from({ length }).map((_, index) => (
-        <input
-          key={index}
-          ref={(el) => {
-            inputRefs.current[index] = el;
-          }}
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={1}
-          value={value[index] || ''}
-          onChange={(e) => handleChange(e, index)}
-          onKeyDown={(e) => handleKeyDown(e, index)}
-          onPaste={handlePaste}
-          className="w-12 h-14 sm:w-16 sm:h-20 text-center text-3xl sm:text-4xl font-semibold bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 transition-all placeholder:text-zinc-700 shadow-inner"
-          placeholder="0"
-        />
-      ))}
     </div>
   );
 }
@@ -22977,38 +15645,6 @@ export function Sidebar({
         </nav>
       </aside>
     </>
-  );
-}
-````
-
-## File: packages/design-system/src/components/SidebarLayout.tsx
-````typescript
-import React from "react";
-
-export interface SidebarLayoutProps {
-  /** The content of the sidebar (e.g., InsightsSidebar or standard navigation) */
-  sidebarContent: React.ReactNode;
-  /** The main content area */
-  mainContent: React.ReactNode;
-}
-
-/**
- * A standard layout template for routes that need a secondary side-panel layout
- * (e.g., Inventory, Recipes, Settings). Uses Midnight Slate theme variables.
- */
-export function SidebarLayout({ sidebarContent, mainContent }: SidebarLayoutProps) {
-  return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden w-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-      {/* Sidebar Panel */}
-      <aside className="w-64 flex-shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto">
-        {sidebarContent}
-      </aside>
-
-      {/* Main Content Panel */}
-      <main className="flex-1 overflow-y-auto relative">
-        {mainContent}
-      </main>
-    </div>
   );
 }
 ````
@@ -23781,111 +16417,6 @@ export function calculateRecipeScale(
 }
 ````
 
-## File: packages/domain-inventory/src/draft-po-modal.tsx
-````typescript
-"use client";
-
-import React, { useState } from "react";
-import { WhiteboardItem, Vendor } from "@soustools/api-types";
-import { toast } from "sonner";
-
-/**
- * Props structure for the DraftPoModal component.
- */
-export interface DraftPoModalProps {
-  /** Indicates if the modal is visible */
-  isOpen: boolean;
-  /** Callback function called to close the modal */
-  onClose: () => void;
-  /** Active whiteboard items available for purchase */
-  items: WhiteboardItem[];
-  /** Registered vendors list for vendor selection */
-  vendors: Vendor[];
-  /** Callback triggered to execute the PO creation */
-  onCreatePO: (vendorId: string, selectedItemIds: string[]) => Promise<void>;
-}
-
-/**
- * DraftPoModal enables the user to select specific whiteboard items and
- * compile them into a draft Purchase Order for a selected vendor.
- */
-export function DraftPoModal({ isOpen, onClose, items, vendors, onCreatePO }: DraftPoModalProps) {
-  const [selectedVendor, setSelectedVendor] = useState("");
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
-
-  /**
-   * Toggles the selection state of a specific whiteboard item.
-   * 
-   * @param id The UUID of the whiteboard item.
-   */
-  const toggleSelection = (id: string) => {
-    const next = new Set(selectedItems);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedItems(next);
-  };
-
-  /**
-   * Handles creating a draft Purchase Order and inserting selected items.
-   */
-  const createPO = async () => {
-    if (!selectedVendor || selectedItems.size === 0) return;
-    setIsSubmitting(true);
-
-    try {
-      await onCreatePO(selectedVendor, Array.from(selectedItems));
-      setSelectedItems(new Set());
-      onClose();
-    } catch (err: any) {
-      toast.error(`An unexpected error occurred: ${err.message || err}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-black/60 backdrop-blur-sm">
-      <div className="st-glass-panel border border-black/10 dark:border-white/10 p-8 max-w-2xl w-full rounded-xl">
-        <h2 className="text-3xl font-bold mb-6 text-zinc-900 dark:text-white">Select Items for PO</h2>
-        
-        <div className="mb-6 space-y-2">
-          <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Select Vendor</label>
-          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-md p-3 text-zinc-900 dark:text-white">
-            <option value="">-- Choose Vendor --</option>
-            {vendors.map(v => <option key={v.id} value={v.id}>{v.name} ({v.order_method})</option>)}
-          </select>
-        </div>
-
-        <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-white/10 p-4 rounded-md mb-6">
-          {items.map(item => (
-            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-white/5 rounded">
-              <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5 border-black/20 dark:border-white/20" />
-              <span className="text-lg text-zinc-900 dark:text-white">{item.raw_name}</span>
-            </label>
-          ))}
-        </div>
-
-        <div className="flex justify-end gap-4">
-          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium text-zinc-700 dark:text-zinc-300 hover:bg-black/10 dark:bg-white/10 transition-colors disabled:opacity-50">
-            Cancel
-          </button>
-          <button 
-            onClick={createPO}
-            disabled={!selectedVendor || selectedItems.size === 0 || isSubmitting} 
-            className="bg-zinc-900 dark:bg-white text-white dark:text-black px-6 py-2 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
-          >
-            {isSubmitting ? "Creating..." : "Create PO"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-````
-
 ## File: packages/domain-inventory/src/index.ts
 ````typescript
 export * from "./item-editor-modal";
@@ -24322,275 +16853,6 @@ export function ItemsLedgerTable({
           ))}
         </tbody>
       </table>
-    </div>
-  );
-}
-````
-
-## File: packages/domain-inventory/src/vendors-panel.tsx
-````typescript
-"use client";
-
-import React, { useState } from "react";
-import { Plus, Trash, Edit2, Save, X } from "lucide-react";
-import type { Vendor } from "@soustools/api-types";
-
-const DAYS_OF_WEEK = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-
-export interface VendorsPanelProps {
-  vendors: Vendor[];
-  onSave: (id: string, payload: Partial<Vendor>) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
-}
-
-export function VendorsPanel({ vendors, onSave, onDelete }: VendorsPanelProps) {
-  const [isEditing, setIsEditing] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Vendor>>({});
-
-  const handleSave = async (id: string) => {
-    if (!editForm.name) {
-      alert("Vendor name is required");
-      return;
-    }
-    
-    await onSave(id, editForm);
-    setIsEditing(null);
-    setEditForm({});
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this vendor?")) {
-      await onDelete(id);
-    }
-  };
-
-  return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Vendor Management
-          </h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-1">
-            Manage suppliers, ordering schedules, and contact methods.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setIsEditing("new");
-            setEditForm({ order_days: [], order_method: "MANUAL" });
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg font-medium transition-colors cursor-pointer"
-        >
-          <Plus className="w-5 h-5" />
-          Add Vendor
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {isEditing === "new" && (
-          <VendorCardForm
-            form={editForm}
-            setForm={setEditForm}
-            onSave={() => handleSave("new")}
-            onCancel={() => setIsEditing(null)}
-          />
-        )}
-
-        {vendors.map((vendor) =>
-          isEditing === vendor.id ? (
-            <VendorCardForm
-              key={vendor.id}
-              form={editForm}
-              setForm={setEditForm}
-              onSave={() => handleSave(vendor.id)}
-              onCancel={() => setIsEditing(null)}
-            />
-          ) : (
-            <div
-              key={vendor.id}
-              className="st-glass-panel p-5 rounded-xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-card shadow-sm flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-lg text-zinc-900 dark:text-white">
-                    {vendor.name}
-                  </h3>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        setIsEditing(vendor.id);
-                        setEditForm(vendor);
-                      }}
-                      className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 rounded-md hover:bg-zinc-100 dark:hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(vendor.id)}
-                      className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-red-500 rounded-md hover:bg-zinc-100 dark:hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-zinc-400 dark:text-zinc-500">
-                      Method:
-                    </span>
-                    <span className="capitalize">
-                      {vendor.order_method?.toLowerCase() || "None set"}
-                    </span>
-                  </div>
-                  {vendor.email && (
-                    <div className="flex justify-between">
-                      <span className="font-medium text-zinc-400 dark:text-zinc-500">
-                        Email:
-                      </span>
-                      <span className="truncate ml-2">{vendor.email}</span>
-                    </div>
-                  )}
-                  {vendor.phone && (
-                    <div className="flex justify-between">
-                      <span className="font-medium text-zinc-400 dark:text-zinc-500">
-                        Phone:
-                      </span>
-                      <span>{vendor.phone}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
-                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
-                  Order Days
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {vendor.order_days && vendor.order_days.length > 0 ? (
-                    vendor.order_days.map((day) => (
-                      <span
-                        key={day}
-                        className="px-2 py-0.5 text-xs rounded bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400"
-                      >
-                        {day.slice(0, 3)}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      No days scheduled
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        )}
-      </div>
-    </div>
-  );
-}
-
-function VendorCardForm({ form, setForm, onSave, onCancel }: any) {
-  return (
-    <div className="st-glass-panel p-5 rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-500/5 shadow-md flex flex-col gap-3">
-      <input
-        autoFocus
-        type="text"
-        placeholder="Vendor Name"
-        value={form.name || ""}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-      />
-
-      <select
-        value={form.order_method || "MANUAL"}
-        onChange={(e) => setForm({ ...form, order_method: e.target.value })}
-        className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-      >
-        <option value="" disabled>
-          Select Order Method
-        </option>
-        <option value="EMAIL">Email</option>
-        <option value="SMS">Text Message</option>
-        <option value="MANUAL">Manual</option>
-      </select>
-
-      {form.order_method === "EMAIL" && (
-        <input
-          type="email"
-          placeholder="vendor@example.com"
-          value={form.email || ""}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-        />
-      )}
-
-      {form.order_method === "SMS" && (
-        <input
-          type="tel"
-          placeholder="+1 555-555-5555"
-          value={form.phone || ""}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-        />
-      )}
-
-      <div className="mt-2">
-        <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
-          Select Order Days
-        </span>
-        <div className="flex flex-wrap gap-1.5">
-          {DAYS_OF_WEEK.map((day) => {
-            const isSelected = form.order_days?.includes(day);
-            return (
-              <button
-                key={day}
-                onClick={() => {
-                  const current = form.order_days || [];
-                  setForm({
-                    ...form,
-                    order_days: isSelected
-                      ? current.filter((d: string) => d !== day)
-                      : [...current, day],
-                  });
-                }}
-                className={`px-2 py-1 text-xs rounded transition-colors border cursor-pointer ${
-                  isSelected
-                    ? "bg-sky-500 border-sky-500 text-white"
-                    : "bg-white dark:bg-card border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:border-sky-500"
-                }`}
-              >
-                {day.slice(0, 3)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex gap-2 mt-2 pt-3 border-t border-zinc-200 dark:border-white/10">
-        <button
-          onClick={onSave}
-          className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded font-medium transition-colors text-sm cursor-pointer"
-        >
-          <Save className="w-4 h-4" /> Save
-        </button>
-        <button
-          onClick={onCancel}
-          className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-zinc-200 dark:bg-white/10 hover:bg-zinc-300 dark:hover:bg-white/20 text-zinc-900 dark:text-white rounded font-medium transition-colors text-sm cursor-pointer"
-        >
-          <X className="w-4 h-4" /> Cancel
-        </button>
-      </div>
     </div>
   );
 }
@@ -37561,13 +29823,6 @@ bootstrap();
 }
 ````
 
-## File: apps/pos-simulator/src/app/globals.css
-````css
-@import "@soustools/design-system/index.css";
-
-@source "../../../../packages/design-system/src/**/*.tsx";
-````
-
 ## File: apps/pos-simulator/src/app/layout.tsx
 ````typescript
 import React from "react";
@@ -37591,65 +29846,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
     </html>
   );
 }
-````
-
-## File: apps/pos-simulator/src/components/PosItemCard.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { PosItem } from "@soustools/api-types";
-import { RotateCw, CheckSquare, Square } from "lucide-react";
-
-export interface PosItemCardProps {
-  item: PosItem;
-  isUpdating: boolean;
-  onToggle: () => void;
-}
-
-export const PosItemCard: React.FC<PosItemCardProps> = ({
-  item,
-  isUpdating,
-  onToggle,
-}) => {
-  return (
-    <div
-      onClick={onToggle}
-      className={`p-4 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
-        item.isSoldOut
-          ? "bg-red-950/10 border-red-900/40 opacity-60 hover:opacity-80"
-          : "bg-zinc-950 border-zinc-900 hover:border-zinc-600"
-      }`}
-    >
-      <div className="min-w-0 pr-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-zinc-200 truncate">
-            {item.name}
-          </span>
-          <span className="text-xs text-emerald-400 font-mono font-medium">
-            ${item.price.toFixed(2)}
-          </span>
-        </div>
-        <p className="text-xs text-zinc-400 mt-1 truncate">
-          {item.description}
-        </p>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        {isUpdating ? (
-          <RotateCw className="w-5 h-5 text-zinc-500 animate-spin" />
-        ) : item.isSoldOut ? (
-          <div className="flex items-center gap-1.5 text-xs text-red-400 font-bold bg-red-950/40 px-2.5 py-1 rounded-full border border-red-900/50">
-            <CheckSquare className="w-4 h-4" /> SOLD OUT
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded-full border border-zinc-800">
-            <Square className="w-4 h-4" /> IN STOCK
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 ````
 
 ## File: apps/pos-simulator/src/components/PosSimulator.tsx
@@ -37877,6 +30073,6777 @@ export const StockPromptModal: React.FC<StockPromptModalProps> = ({
     </div>
   );
 };
+````
+
+## File: apps/wearos/app/src/main/res/drawable/ic_launcher_foreground.xml
+````xml
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+  <group android:scaleX="0.6"
+      android:scaleY="0.6"
+      android:translateX="20"
+      android:translateY="20">
+    <path
+        android:pathData="M25,72C5,72 5,45 25,35C20,10 50,5 50,25C50,5 80,10 75,35C95,45 95,72 75,72Z"
+        android:strokeLineJoin="round"
+        android:strokeWidth="8"
+        android:fillColor="#00000000"
+        android:strokeColor="#06b6d4"/>
+    <path
+        android:pathData="M28,78L72,78A3,3 0,0 1,75 81L75,85A3,3 0,0 1,72 88L28,88A3,3 0,0 1,25 85L25,81A3,3 0,0 1,28 78z"
+        android:fillColor="#06b6d4"/>
+  </group>
+</vector>
+````
+
+## File: apps/wearos/app/src/main/AndroidManifest.xml
+````xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@android:style/Theme.DeviceDefault">
+
+        <service
+            android:name=".complication.DailySalesComplicationService"
+            android:exported="true"
+            android:label="Daily Sales"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
+        <service
+            android:name=".complication.TicketTimeComplicationService"
+            android:exported="true"
+            android:label="Ticket Time"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
+        <service
+            android:name=".complication.VoiceCommandComplicationService"
+            android:exported="true"
+            android:label="@string/complication_label"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
+        <service
+            android:name=".tile.MainTileService"
+            android:exported="true"
+            android:label="@string/tile_label"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview" />
+        </service>
+
+        <uses-library
+            android:name="com.google.android.wearable"
+            android:required="true" />
+        <uses-library
+            android:name="wear-sdk"
+            android:required="false" />
+        <!--
+               Set to true if your app is Standalone, that is, it does not require the handheld
+               app to run.
+        -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
+        <activity
+            android:name=".presentation.MainActivity"
+            android:exported="true"
+            android:taskAffinity=""
+            android:theme="@style/MainActivityTheme.Starting">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".presentation.SettingsActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault">
+        </activity>
+    </application>
+
+</manifest>
+````
+
+## File: apps/wearos/app/build.gradle.kts
+````kotlin
+import java.util.Properties
+import java.io.FileInputStream
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+}
+
+android {
+    namespace = "com.sous.wearos"
+    compileSdk {
+        version = release(36)
+    }
+
+    defaultConfig {
+        applicationId = "com.sous.wearos"
+        minSdk = 30
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+    }
+
+    buildTypes {
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(FileInputStream(localPropertiesFile))
+        }
+        val localApiUrl = properties.getProperty("API_URL") ?: "\"http://10.0.2.2:6001\""
+
+        debug {
+            applicationIdSuffix = ".debug"
+            buildConfigField("String", "API_URL", localApiUrl)
+        }
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            buildConfigField("String", "API_URL", "\"https://api.sous.tools\"")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    useLibrary("wear-sdk")
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+}
+
+dependencies {
+    implementation(libs.play.services.wearable)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.ui)
+    implementation(libs.ui.graphics)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.compose.material)
+    implementation(libs.compose.foundation)
+    implementation(libs.wear.tooling.preview)
+    implementation(libs.activity.compose)
+    implementation(libs.core.splashscreen)
+    implementation(libs.tiles)
+    implementation(libs.tiles.material)
+    implementation(libs.tiles.tooling.preview)
+    implementation(libs.horologist.compose.tools)
+    implementation(libs.horologist.tiles)
+    implementation(libs.watchface.complications.data.source.ktx)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.ui.test.junit4)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    debugImplementation(libs.ui.tooling)
+    debugImplementation(libs.ui.test.manifest)
+    debugImplementation(libs.tiles.tooling)
+}
+````
+
+## File: apps/web/src/app/(fullscreen)/kds/page.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@soustools/design-system";
+import { 
+  Tv, 
+  Settings, 
+  Volume2, 
+  VolumeX, 
+  CheckCircle, 
+  AlertTriangle,
+  Clock,
+  Eye,
+  EyeOff,
+  Search,
+  PackageX
+} from "lucide-react";
+import { toast } from "sonner";
+
+interface KDSTicketItem {
+  name: string;
+  qty: number;
+  notes?: string;
+}
+
+interface KDSTicket {
+  id: string;
+  ticketNumber: string;
+  tableNumber: string;
+  items: KDSTicketItem[];
+  createdAt: string;
+  isRush?: boolean;
+  status: "OPEN" | "CLOSED";
+}
+
+export default function KDSPage() {
+  const [tickets, setTickets] = useState<KDSTicket[]>([]);
+  const [posItems, setPosItems] = useState<any[]>([]);
+  const [orgId, setOrgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
+  const [loading, setLoading] = useState(true);
+  const [viewFilter, setViewFilter] = useState<"OPEN" | "CLOSED">("OPEN");
+
+  // Settings state
+  const [showSettings, setShowSettings] = useState(false);
+  const [textSize, setTextSize] = useState<"sm" | "md" | "lg">("md");
+  const [density, setDensity] = useState<"compact" | "standard" | "spacious">("standard");
+  const [soundsEnabled, setSoundsEnabled] = useState(true);
+  const [soundVolume, setSoundVolume] = useState(0.5);
+
+  // 86'd inventory search
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Programmatic synth chime using AudioContext
+  const playChime = (type: "new" | "complete") => {
+    if (typeof window === "undefined" || !soundsEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      gain.gain.setValueAtTime(soundVolume, ctx.currentTime);
+
+      if (type === "new") {
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
+        osc.type = "triangle";
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } else {
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08); // E5
+        osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16); // G5
+        osc.type = "sine";
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      }
+    } catch (e) {
+      console.warn("AudioContext chime failure:", e);
+    }
+  };
+
+  // Load configuration, mock tickets, database items
+  useEffect(() => {
+    // 1. Fetch organization ID
+    const fetchOrg = async () => {
+      const { data } = await supabase.from("organizations").select("id").limit(1);
+      if (data && data[0]) {
+        setOrgId(data[0].id);
+      }
+    };
+
+    // 2. Fetch POS items to enable 86'ing
+    const fetchItems = async () => {
+      const { data } = await supabase
+        .from("pos_items")
+        .select("*")
+        .order("name", { ascending: true });
+      if (data) setPosItems(data);
+    };
+
+    // 3. Setup settings from localStorage
+    if (typeof window !== "undefined") {
+      const savedText = localStorage.getItem("kds_text_size") as any;
+      const savedDensity = localStorage.getItem("kds_density") as any;
+      const savedSound = localStorage.getItem("kds_sounds_enabled");
+      const savedVol = localStorage.getItem("kds_sound_volume");
+      if (savedText) setTextSize(savedText);
+      if (savedDensity) setDensity(savedDensity);
+      if (savedSound) setSoundsEnabled(savedSound === "true");
+      if (savedVol) setSoundVolume(parseFloat(savedVol));
+    }
+
+    Promise.all([fetchOrg(), fetchItems()]).then(() => setLoading(false));
+
+    // Seed mock tickets
+    setTickets([
+      {
+        id: "t-1",
+        ticketNumber: "104",
+        tableNumber: "Cook Line - T4",
+        createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10m ago
+        isRush: true,
+        status: "OPEN",
+        items: [
+          { name: "Truffle Burger", qty: 2, notes: "Medium-Rare" },
+          { name: "Truffle Fries", qty: 1 }
+        ]
+      },
+      {
+        id: "t-2",
+        ticketNumber: "105",
+        tableNumber: "Main Room - T12",
+        createdAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(), // 4m ago
+        isRush: false,
+        status: "OPEN",
+        items: [
+          { name: "Caesar Salad", qty: 1, notes: "Dressing on side" },
+          { name: "Tomato Soup", qty: 1 }
+        ]
+      },
+      {
+        id: "t-3",
+        ticketNumber: "106",
+        tableNumber: "Patio - T2",
+        createdAt: new Date().toISOString(),
+        isRush: false,
+        status: "OPEN",
+        items: [
+          { name: "Truffle Burger", qty: 1 },
+          { name: "Caesar Salad", qty: 2 }
+        ]
+      }
+    ]);
+  }, []);
+
+  // Save settings helpers
+  const saveTextSize = (sz: "sm" | "md" | "lg") => {
+    setTextSize(sz);
+    localStorage.setItem("kds_text_size", sz);
+  };
+  const saveDensity = (den: "compact" | "standard" | "spacious") => {
+    setDensity(den);
+    localStorage.setItem("kds_density", den);
+  };
+  const saveSounds = (enabled: boolean) => {
+    setSoundsEnabled(enabled);
+    localStorage.setItem("kds_sounds_enabled", enabled ? "true" : "false");
+  };
+  const saveVolume = (vol: number) => {
+    setSoundVolume(vol);
+    localStorage.setItem("kds_sound_volume", vol.toString());
+  };
+
+  // Complete ticket & sync to shadow DB
+  const handleCompleteTicket = async (ticketId: string) => {
+    const t = tickets.find(ticket => ticket.id === ticketId);
+    if (!t) return;
+
+    try {
+      // Opt-in chime play
+      playChime("complete");
+
+      // Set ticket to CLOSED locally
+      setTickets(prev =>
+        prev.map(ticket => (ticket.id === ticketId ? { ...ticket, status: "CLOSED" } : ticket))
+      );
+
+      // Sync state to backend shadow DB (pos_transactions)
+      const transactionsToInsert = t.items.map(item => {
+        // Look up corresponding POS item in DB
+        const match = posItems.find(
+          dbItem => dbItem.name.toLowerCase() === item.name.toLowerCase()
+        );
+        return {
+          organization_id: orgId,
+          pos_item_id: match ? match.id : null,
+          quantity_sold: item.qty,
+          gross_revenue: match ? Number(match.price) * item.qty : 15.00 * item.qty, // fallback price
+          transaction_time: new Date().toISOString(),
+          source: "kds"
+        };
+      });
+
+      const { error } = await supabase.from("pos_transactions").insert(transactionsToInsert);
+      if (error) throw error;
+
+      toast.success(`Ticket #${t.ticketNumber} completed and synced to shadow DB.`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Completed locally, but failed database sync: ${err.message}`);
+    }
+  };
+
+  // 86 / Mark item Unavailable
+  const handleToggleSoldOut = async (itemId: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus;
+    try {
+      const { error } = await supabase
+        .from("pos_items")
+        .update({ is_sold_out: nextStatus })
+        .eq("id", itemId);
+
+      if (error) throw error;
+
+      setPosItems(prev =>
+        prev.map(item => (item.id === itemId ? { ...item, is_sold_out: nextStatus } : item))
+      );
+      toast.success(`Updated item availability.`);
+    } catch (err: any) {
+      toast.error(`Failed to update item availability: ${err.message}`);
+    }
+  };
+
+  // All Day Prep Aggregation
+  const getOpenTicketsItems = () => {
+    const counts: Record<string, number> = {};
+    tickets
+      .filter(t => t.status === "OPEN")
+      .forEach(t => {
+        t.items.forEach(item => {
+          counts[item.name] = (counts[item.name] || 0) + item.qty;
+        });
+      });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  };
+
+  const filteredTickets = tickets.filter(t => t.status === viewFilter);
+  const allDayPrep = getOpenTicketsItems();
+
+  // Grid classes mapping density
+  const gridClasses = {
+    compact: "grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3",
+    standard: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    spacious: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+  }[density];
+
+  // Font classes mapping text sizes
+  const fontClasses = {
+    sm: { title: "text-xs font-bold", body: "text-xs", notes: "text-[10px]" },
+    md: { title: "text-sm font-bold", body: "text-sm", notes: "text-xs" },
+    lg: { title: "text-base font-bold", body: "text-base", notes: "text-sm" }
+  }[textSize];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-card text-white">
+        <div className="w-10 h-10 border-4 border-t-sky-500 border-black/10 dark:border-white/10 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const filteredPosItems = posItems.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-[calc(100vh-100px)] flex flex-col bg-zinc-50 dark:bg-card text-zinc-900 dark:text-zinc-100 p-6 space-y-6 relative overflow-hidden">
+      {/* Header Panel */}
+      <header className="glass-panel flex flex-col md:flex-row justify-between items-start md:items-center p-5 rounded-2xl shrink-0 gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
+            <Tv className="w-6 h-6 text-sky-500 dark:text-sky-400" /> Kitchen Display System (KDS)
+          </h1>
+          <p className="text-xs text-zinc-500 dark:text-muted-foreground mt-1">Station: Hot Line & Main Preparation</p>
+        </div>
+
+        {/* Action Toggles */}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          {/* Open vs Closed Toggles */}
+          <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-xl p-1 text-xs font-semibold">
+            <button
+              onClick={() => setViewFilter("OPEN")}
+              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
+                viewFilter === "OPEN" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-muted-foreground hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              Open ({tickets.filter(t => t.status === "OPEN").length})
+            </button>
+            <button
+              onClick={() => setViewFilter("CLOSED")}
+              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
+                viewFilter === "CLOSED" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-muted-foreground hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              Completed ({tickets.filter(t => t.status === "CLOSED").length})
+            </button>
+          </div>
+
+          {/* Settings Trigger */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 bg-card hover:bg-black/10 dark:hover:bg-black/10 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Layout Grid split into Preparation Rack and All Day Panel */}
+      <div className="flex-1 flex gap-6 overflow-hidden min-h-0 h-[calc(100vh-230px)]">
+        {/* Active Ticket Rack */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className={`flex-1 overflow-y-auto pr-1 grid ${gridClasses} pb-10`}>
+            {filteredTickets.length === 0 ? (
+              <div className="glass-panel col-span-full flex flex-col items-center justify-center p-12 text-muted-foreground dark:text-zinc-500 rounded-2xl h-64">
+                <CheckCircle className="w-12 h-12 text-muted-foreground dark:text-zinc-600 mb-3" />
+                <p className="font-bold text-lg text-zinc-600 dark:text-muted-foreground">All tickets completed!</p>
+                <p className="text-sm mt-1">Ready for incoming transactions...</p>
+              </div>
+            ) : (
+              filteredTickets.map(ticket => {
+                const ageMinutes = Math.floor(
+                  (Date.now() - new Date(ticket.createdAt).getTime()) / (60 * 1000)
+                );
+                return (
+                  <div
+                    key={ticket.id}
+                    className={`glass-panel flex flex-col justify-between rounded-xl p-4 transition-all duration-300 max-h-[360px] overflow-hidden ${
+                      ticket.isRush
+                        ? "border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)] bg-amber-500/5 dark:bg-amber-950/5"
+                        : "shadow-lg hover:border-black/20 dark:hover:border-white/20"
+                    }`}
+                  >
+                    <div>
+                      {/* Ticket Header */}
+                      <div className="flex justify-between items-start pb-2 border-b border-black/5 dark:border-white/5 mb-3">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`font-black tracking-tight ${fontClasses.title} ${
+                              ticket.isRush ? "text-amber-600 dark:text-amber-400" : "text-zinc-900 dark:text-white"
+                            }`}>
+                              Ticket #{ticket.ticketNumber}
+                            </span>
+                            {ticket.isRush && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20 font-extrabold uppercase">
+                                RUSH
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-zinc-500 dark:text-muted-foreground">{ticket.tableNumber}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center justify-end text-zinc-500 dark:text-muted-foreground text-xs gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{ageMinutes}m</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Scrollable Ticket Items */}
+                      <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1">
+                        {ticket.items.map((item, idx) => (
+                          <div key={idx} className="flex flex-col">
+                            <div className="flex justify-between items-start">
+                              <span className={`font-bold text-zinc-900 dark:text-zinc-100 ${fontClasses.body}`}>
+                                {item.qty}x {item.name}
+                              </span>
+                            </div>
+                            {item.notes && (
+                              <span className={`text-orange-400 font-semibold italic mt-0.5 pl-3 border-l-2 border-orange-500/30 ${fontClasses.notes}`}>
+                                * {item.notes}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Completion Action */}
+                    {ticket.status === "OPEN" && (
+                      <div className="mt-4 pt-3 border-t border-black/5 dark:border-white/5">
+                        <Button
+                          onClick={() => handleCompleteTicket(ticket.id)}
+                          className="w-full justify-center bg-white text-black hover:bg-zinc-200 py-2.5 font-bold transition-all text-xs rounded-lg"
+                        >
+                          Complete
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* All Day Prep Panel Drawer */}
+        <aside className="glass-panel w-72 rounded-2xl flex flex-col overflow-hidden shrink-0">
+          <div className="p-4 bg-black/5 bg-card border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-sky-500 dark:text-sky-400" /> All-Day Summary
+            </h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 font-bold uppercase">
+              Prep
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {allDayPrep.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground dark:text-zinc-500 text-xs">
+                No active items to prepare.
+              </div>
+            ) : (
+              allDayPrep.map(([name, count]) => (
+                <div
+                  key={name}
+                  className="flex justify-between items-center p-3 bg-white border border-black/5 dark:bg-black/20 dark:border-white/5 rounded-xl hover:border-black/10 dark:hover:border-black/10 dark:border-white/10 transition-colors"
+                >
+                  <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{name}</span>
+                  <span className="text-xs px-2.5 py-1 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-black">
+                    {count}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </aside>
+      </div>
+
+      {/* KDS Settings Dialog overlay modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+          <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-black/5 dark:border-white/5">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-sky-400" /> KDS Display Settings
+              </h3>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="p-1 hover:bg-black/5 bg-card rounded-lg text-muted-foreground hover:text-white transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Modal Body Scroll */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Sound & Notifications Settings */}
+              <div className="space-y-3">
+                <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider">
+                  Audio & Sound Controls
+                </h4>
+                <div className="flex items-center justify-between p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    {soundsEnabled ? (
+                      <Volume2 className="w-5 h-5 text-green-400 animate-pulse" />
+                    ) : (
+                      <VolumeX className="w-5 h-5 text-muted-foreground dark:text-zinc-500" />
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold">Chime Alerts</p>
+                      <p className="text-xs text-zinc-500 dark:text-muted-foreground">Play chiming sounds on ticket updates</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveSounds(!soundsEnabled)}
+                    className={`text-xs px-4 py-2 font-bold rounded-lg border transition-all cursor-pointer ${
+                      soundsEnabled
+                        ? "bg-green-500/10 text-green-400 border-green-500/20"
+                        : "bg-zinc-800 text-zinc-500 dark:text-muted-foreground border-zinc-700"
+                    }`}
+                  >
+                    {soundsEnabled ? "Enabled" : "Disabled"}
+                  </button>
+                </div>
+
+                {soundsEnabled && (
+                  <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
+                    <label className="text-xs font-semibold block text-zinc-700 dark:text-zinc-300">
+                      Chime Volume: {Math.round(soundVolume * 100)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1"
+                      step="0.1"
+                      value={soundVolume}
+                      onChange={e => saveVolume(parseFloat(e.target.value))}
+                      className="w-full accent-sky-400"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Layout and Font controls */}
+              <div className="space-y-4">
+                <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider">
+                  Sizing & Density
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Text Size Toggle */}
+                  <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
+                    <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Text Size</p>
+                    <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
+                      {(["sm", "md", "lg"] as const).map(sz => (
+                        <button
+                          key={sz}
+                          onClick={() => saveTextSize(sz)}
+                          className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
+                            textSize === sz ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-muted-foreground"
+                          }`}
+                        >
+                          {sz === "sm" ? "Small" : sz === "md" ? "Medium" : "Large"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Density Toggle */}
+                  <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
+                    <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Grid Layout Density</p>
+                    <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
+                      {(["compact", "standard", "spacious"] as const).map(den => (
+                        <button
+                          key={den}
+                          onClick={() => saveDensity(den)}
+                          className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
+                            density === den ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-muted-foreground"
+                          }`}
+                        >
+                          {den === "compact" ? "Compact" : den === "standard" ? "Standard" : "Spacious"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 86'd / Inventory Availability Sub-Panel */}
+              <div className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider flex items-center gap-1.5">
+                    <PackageX className="w-4 h-4 text-sky-400" /> Manage Unavailable (86'd) Items
+                  </h4>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search menu items to 86..."
+                    className="w-full bg-white/50 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white focus:outline-none focus:border-sky-500 transition-colors"
+                  />
+                  <Search className="w-4 h-4 text-muted-foreground dark:text-zinc-500 absolute left-3.5 top-3.5" />
+                </div>
+
+                <div className="border border-black/5 dark:border-white/5 rounded-xl max-h-48 overflow-y-auto p-2 bg-black/20 divide-y divide-white/5">
+                  {filteredPosItems.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground dark:text-zinc-500 text-xs">
+                      No matching POS items.
+                    </div>
+                  ) : (
+                    filteredPosItems.map(item => (
+                      <div
+                        key={item.id}
+                        className="flex justify-between items-center py-2.5 px-2 hover:bg-black/5 bg-card transition-colors"
+                      >
+                        <span className={`text-sm font-semibold ${item.is_sold_out ? "text-muted-foreground dark:text-zinc-500 line-through" : "text-zinc-900 dark:text-zinc-100"}`}>
+                          {item.name}
+                        </span>
+                        <button
+                          onClick={() => handleToggleSoldOut(item.id, item.is_sold_out)}
+                          className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                            item.is_sold_out
+                              ? "bg-red-500/10 text-red-400 border-red-500/20"
+                              : "bg-black/5 bg-card text-zinc-700 dark:text-zinc-300 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10"
+                          }`}
+                        >
+                          {item.is_sold_out ? (
+                            <>
+                              <EyeOff className="w-3.5 h-3.5" /> Sold Out (86'd)
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="w-3.5 h-3.5" /> Available
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(fullscreen)/pos/page.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@soustools/design-system";
+import { 
+  ShoppingBag, 
+  Search, 
+  Trash2, 
+  Plus, 
+  Minus, 
+  CreditCard, 
+  DollarSign, 
+  ChevronRight,
+  Info,
+  Loader2,
+  RefreshCw
+} from "lucide-react";
+import { toast } from "sonner";
+import { z } from "zod";
+
+// Zod schemas for POS Cart State
+const CartItemModifierSchema = z.object({
+  id: z.string(),
+  external_id: z.string().nullable(),
+  name: z.string(),
+  price: z.number()
+});
+
+const CartItemSchema = z.object({
+  id: z.string(),
+  external_id: z.string().nullable(),
+  name: z.string(),
+  price: z.number(),
+  quantity: z.number().min(1),
+  modifiers: z.array(CartItemModifierSchema)
+});
+
+const CartSchema = z.array(CartItemSchema);
+
+type CartItem = z.infer<typeof CartItemSchema>;
+type CartItemModifier = z.infer<typeof CartItemModifierSchema>;
+
+export default function POSRegisterPage() {
+  const [items, setItems] = useState<any[]>([]);
+  const [modifierGroups, setModifierGroups] = useState<any[]>([]);
+  const [modifierOptions, setModifierOptions] = useState<any[]>([]);
+  const [itemModifierLinks, setItemModifierLinks] = useState<any[]>([]);
+  const [orgId, setOrgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
+  const [loading, setLoading] = useState(true);
+  
+  // Search & Categories
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Cart State
+  const [cart, setCart] = useState<CartItem[]>([]);
+
+  // Modifiers Selection Modal State
+  const [selectedItemForModifiers, setSelectedItemForModifiers] = useState<any | null>(null);
+  const [activeModGroupsForSelected, setActiveModGroupsForSelected] = useState<any[]>([]);
+  const [selectedModifiers, setSelectedModifiers] = useState<Record<string, CartItemModifier[]>>({});
+
+  // Tender Modal State
+  const [showTenderModal, setShowTenderModal] = useState(false);
+  const [tenderMethod, setTenderMethod] = useState<"CASH" | "CARD" | null>(null);
+  const [cashReceived, setCashReceived] = useState("");
+  const [submittingCheckout, setSubmittingCheckout] = useState(false);
+
+  // Load POS synced catalog data from Supabase
+  const loadPOSCatalog = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch organization
+      const { data: orgData } = await supabase.from("organizations").select("id").limit(1);
+      const targetOrgId = orgData?.[0]?.id || "d0000000-0000-0000-0000-000000000000";
+      setOrgId(targetOrgId);
+
+      // 2. Fetch POS items
+      const { data: posItems } = await supabase
+        .from("pos_items")
+        .select("*")
+        .eq("organization_id", targetOrgId);
+      
+      // 3. Fetch modifier groups
+      const { data: modGroups } = await supabase
+        .from("pos_modifier_groups")
+        .select("*")
+        .eq("organization_id", targetOrgId);
+
+      // 4. Fetch modifier options
+      const { data: modOptions } = await supabase
+        .from("pos_modifier_options")
+        .select("*")
+        .eq("organization_id", targetOrgId);
+
+      // 5. Fetch POS item modifier group links
+      const { data: links } = await supabase
+        .from("pos_item_modifier_groups")
+        .select("*");
+
+      if (posItems) setItems(posItems);
+      if (modGroups) setModifierGroups(modGroups);
+      if (modOptions) setModifierOptions(modOptions);
+      if (links) setItemModifierLinks(links);
+
+    } catch (e: any) {
+      toast.error(`Failed to load POS catalog: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPOSCatalog();
+  }, []);
+
+  // Sync catalog from Square
+  const handleSyncSquare = async () => {
+    const toastId = toast.loading("Syncing catalog with Square...");
+    try {
+      const res = await fetch(`/api/integrations/square/sync?orgId=${orgId}`, {
+        method: "POST"
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success("POS Catalog synced successfully.", { id: toastId });
+      loadPOSCatalog();
+    } catch (e: any) {
+      toast.error(`Sync failed: ${e.message}`, { id: toastId });
+    }
+  };
+
+  // Assign items to mock UI categories dynamically based on names
+  const getCategory = (itemName: string) => {
+    const name = itemName.toLowerCase();
+    if (name.includes("burger") || name.includes("sandwich") || name.includes("steak") || name.includes("salmon")) {
+      return "Mains";
+    }
+    if (name.includes("salad") || name.includes("fries") || name.includes("soup") || name.includes("tater")) {
+      return "Sides/Salads";
+    }
+    if (name.includes("beer") || name.includes("ipa") || name.includes("drink") || name.includes("soda") || name.includes("water")) {
+      return "Beverages";
+    }
+    return "Other";
+  };
+
+  const categories = ["All", "Mains", "Sides/Salads", "Beverages", "Other"];
+
+  // Filtered items list
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "All" || getCategory(item.name) === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Tap Item: Check for required modifiers first
+  const handleItemTap = (item: any) => {
+    if (item.is_sold_out) {
+      toast.error(`${item.name} is currently sold out (86'd).`);
+      return;
+    }
+
+    // Find links for this item
+    const linkedGroupIds = itemModifierLinks
+      .filter(link => link.pos_item_id === item.id)
+      .map(link => link.modifier_group_id);
+
+    const linkedGroups = modifierGroups.filter(g => linkedGroupIds.includes(g.id));
+
+    // Check if any modifier group is required (min_required > 0)
+    // Or if the item simply has modifiers, we open the modal to allow customization
+    if (linkedGroups.length > 0) {
+      setSelectedItemForModifiers(item);
+      setActiveModGroupsForSelected(linkedGroups);
+      
+      // Initialize selected modifiers state
+      const initialMods: Record<string, CartItemModifier[]> = {};
+      linkedGroups.forEach(g => {
+        initialMods[g.id] = [];
+      });
+      setSelectedModifiers(initialMods);
+    } else {
+      // Add directly to cart if no modifiers
+      addToCartDirect(item, []);
+    }
+  };
+
+  const addToCartDirect = (item: any, selectedMods: CartItemModifier[]) => {
+    const cartItem: CartItem = {
+      id: `${item.id}-${selectedMods.map(m => m.id).sort().join("-")}`, // unique cart key based on item + chosen mods
+      external_id: item.external_id,
+      name: item.name,
+      price: item.price,
+      quantity: 1,
+      modifiers: selectedMods
+    };
+
+    setCart(prev => {
+      const existingIdx = prev.findIndex(ci => ci.id === cartItem.id);
+      if (existingIdx > -1) {
+        const updated = [...prev];
+        updated[existingIdx].quantity += 1;
+        // Validate with Zod
+        const result = CartSchema.safeParse(updated);
+        if (result.success) return result.data;
+        return prev;
+      }
+      const updated = [...prev, cartItem];
+      const result = CartSchema.safeParse(updated);
+      if (result.success) return result.data;
+      return prev;
+    });
+
+    toast.success(`Added ${item.name} to ticket.`);
+  };
+
+  // Modifiers Selection Handlers
+  const handleModifierToggle = (group: any, option: any) => {
+    const currentSelected = selectedModifiers[group.id] || [];
+    const isSelected = currentSelected.some(m => m.id === option.id);
+
+    let updated: CartItemModifier[] = [];
+    if (isSelected) {
+      updated = currentSelected.filter(m => m.id !== option.id);
+    } else {
+      // Validate max_allowed
+      if (group.max_allowed && currentSelected.length >= group.max_allowed) {
+        if (group.max_allowed === 1) {
+          // If single choice, replace it
+          updated = [{ id: option.id, external_id: option.external_id, name: option.name, price: Number(option.price) }];
+        } else {
+          toast.warning(`Maximum of ${group.max_allowed} selections allowed for ${group.name}.`);
+          return;
+        }
+      } else {
+        updated = [...currentSelected, { id: option.id, external_id: option.external_id, name: option.name, price: Number(option.price) }];
+      }
+    }
+
+    setSelectedModifiers(prev => ({
+      ...prev,
+      [group.id]: updated
+    }));
+  };
+
+  const handleAddWithModifiers = () => {
+    if (!selectedItemForModifiers) return;
+
+    // Validate min_required for all groups
+    for (const group of activeModGroupsForSelected) {
+      const selections = selectedModifiers[group.id] || [];
+      if (group.min_required && selections.length < group.min_required) {
+        toast.error(`Please select at least ${group.min_required} options for ${group.name}.`);
+        return;
+      }
+    }
+
+    // Flatten all selected modifiers
+    const allMods = Object.values(selectedModifiers).flat();
+    addToCartDirect(selectedItemForModifiers, allMods);
+    setSelectedItemForModifiers(null);
+  };
+
+  // Cart Adjustments
+  const updateCartQty = (itemId: string, delta: number) => {
+    setCart(prev => {
+      const updated = prev.map(item => {
+        if (item.id === itemId) {
+          const nextQty = item.quantity + delta;
+          return { ...item, quantity: Math.max(1, nextQty) };
+        }
+        return item;
+      });
+      const result = CartSchema.safeParse(updated);
+      if (result.success) return result.data;
+      return prev;
+    });
+  };
+
+  const removeFromCart = (itemId: string) => {
+    setCart(prev => prev.filter(item => item.id !== itemId));
+    toast.success("Item removed from ticket.");
+  };
+
+  // Math Calculations
+  const getSubtotal = () => {
+    return cart.reduce((total, item) => {
+      const modifiersCost = item.modifiers.reduce((sum, m) => sum + m.price, 0);
+      return total + (item.price + modifiersCost) * item.quantity;
+    }, 0);
+  };
+
+  const subtotal = getSubtotal();
+  const tax = subtotal * 0.0825; // 8.25% sales tax
+  const total = subtotal + tax;
+
+  // Checkout submission
+  const handleProcessCheckout = async () => {
+    if (cart.length === 0) return;
+    setSubmittingCheckout(true);
+
+    // Build driver order payload
+    const orderData = {
+      items: cart.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        modifiers: item.modifiers.map(m => ({
+          external_id: m.external_id,
+          name: m.name
+        }))
+      }))
+    };
+
+    try {
+      // 1. POST explicitly to integrations checkout (driver layer)
+      const res = await fetch("/api/integrations/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orgId,
+          orderData
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      // 2. Play Audio success resolution chime
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+        osc.type = "sine";
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+      } catch (e) {
+        console.warn(e);
+      }
+
+      toast.success("Order processed successfully. Synced to Square POS API.");
+      setCart([]);
+      setShowTenderModal(false);
+      setTenderMethod(null);
+      setCashReceived("");
+    } catch (e: any) {
+      toast.error(`Checkout failed: ${e.message}`);
+    } finally {
+      setSubmittingCheckout(false);
+    }
+  };
+
+  const cashChange = tenderMethod === "CASH" && parseFloat(cashReceived) >= total
+    ? (parseFloat(cashReceived) - total).toFixed(2)
+    : "0.00";
+
+  return (
+    <div className="min-h-[calc(100vh-100px)] flex bg-zinc-50 dark:bg-card text-zinc-900 dark:text-zinc-100 overflow-hidden relative">
+      {/* Left pane: POS item catalog (Fluid Grid) */}
+      <div className="flex-1 flex flex-col p-6 overflow-y-auto min-w-0 pr-4">
+        {/* Search & Sync Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
+          <div className="relative flex-1 max-w-md w-full">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search POS catalog..."
+              className="w-full bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 pl-10 text-sm focus:outline-none focus:border-sky-500/50 transition-colors"
+            />
+            <Search className="w-4 h-4 text-muted-foreground dark:text-zinc-500 absolute left-3.5 top-3.5" />
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={handleSyncSquare} className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 flex items-center gap-1.5 py-2">
+              <RefreshCw className="w-4 h-4" /> Sync Square Catalog
+            </Button>
+          </div>
+        </div>
+
+        {/* Categories Tab Bar */}
+        <div className="flex gap-2 pb-4 overflow-x-auto shrink-0 border-b border-black/5 dark:border-white/5 mb-6">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border whitespace-nowrap ${
+                selectedCategory === cat 
+                  ? "bg-white text-black border-white"
+                  : "bg-black/5 bg-card hover:bg-black/10 dark:bg-white/10 text-zinc-500 dark:text-muted-foreground border-black/5 dark:border-white/5"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Catalog Item Grid */}
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-sky-400" />
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground dark:text-zinc-500 p-8">
+            <Info className="w-12 h-12 text-zinc-600 mb-2" />
+            <p className="font-semibold text-zinc-500 dark:text-muted-foreground text-lg">No items match search criteria.</p>
+            <p className="text-sm mt-0.5">Please check spelling or sync catalog again.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
+            {filteredItems.map((item) => {
+              const hasMods = itemModifierLinks.some(l => l.pos_item_id === item.id);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleItemTap(item)}
+                  className={`glass-panel p-5 rounded-2xl border text-left flex flex-col justify-between h-36 transition-all cursor-pointer relative overflow-hidden group ${
+                    item.is_sold_out 
+                      ? "border-black/5 dark:border-white/5 bg-black/5 bg-card opacity-55"
+                      : "border-black/10 dark:border-white/10 bg-black/5 dark:bg-black/40 hover:border-white/20 active:scale-98 shadow-md"
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-start gap-1">
+                      <h3 className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100 leading-tight group-hover:text-sky-400 transition-colors">
+                        {item.name}
+                      </h3>
+                      {hasMods && !item.is_sold_out && (
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-bold shrink-0">MODS</span>
+                      )}
+                    </div>
+                    {item.description && (
+                      <p className="text-xs text-muted-foreground dark:text-zinc-500 line-clamp-2 leading-relaxed">{item.description}</p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-end mt-2">
+                    <span className="text-sm font-black text-white">${Number(item.price).toFixed(2)}</span>
+                    {item.is_sold_out && (
+                      <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">86'd</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Right pane: Sticky Cart/Ticket Pane */}
+      <aside className="glass-panel w-[360px] border-l border-black/10 dark:border-white/10 bg-black/5 bg-card backdrop-blur-md flex flex-col overflow-hidden shrink-0">
+        <header className="px-5 py-4 bg-black/5 bg-card border-b border-black/5 dark:border-white/5 flex items-center justify-between shrink-0">
+          <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+            <ShoppingBag className="w-4 h-4 text-sky-400" /> Current Ticket
+          </h2>
+          {cart.length > 0 && (
+            <button
+              onClick={() => setCart([])}
+              className="text-xs text-zinc-500 dark:text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Clear All
+            </button>
+          )}
+        </header>
+
+        {/* Cart Item List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {cart.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-muted-foreground dark:text-zinc-500 text-center py-20 px-4">
+              <ShoppingBag className="w-10 h-10 text-zinc-700 mb-2" />
+              <p className="font-bold text-zinc-500 dark:text-muted-foreground">Cart is empty</p>
+              <p className="text-xs mt-0.5 text-muted-foreground dark:text-zinc-500">Tap items on the left to add them to this ticket.</p>
+            </div>
+          ) : (
+            cart.map((item) => {
+              const modsCost = item.modifiers.reduce((sum, m) => sum + m.price, 0);
+              const singleTotal = item.price + modsCost;
+
+              return (
+                <div
+                  key={item.id}
+                  className="p-3 bg-black/20 border border-black/5 dark:border-white/5 rounded-xl flex flex-col justify-between gap-2 relative group hover:border-white/15 transition-all"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{item.name}</p>
+                      {item.modifiers.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1 pl-2 border-l border-black/10 dark:border-white/10">
+                          {item.modifiers.map((m, idx) => (
+                            <span key={idx} className="text-[10px] text-zinc-500 dark:text-muted-foreground">
+                              + {m.name} {m.price > 0 && `(+$${m.price.toFixed(2)})`}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-sm font-black text-white">${(singleTotal * item.quantity).toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center mt-1">
+                    <div className="flex items-center bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-0.5">
+                      <button
+                        onClick={() => updateCartQty(item.id, -1)}
+                        className="p-1 text-zinc-500 dark:text-muted-foreground hover:text-white hover:bg-black/5 bg-card rounded transition-colors cursor-pointer"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="px-3 text-xs font-bold text-white">{item.quantity}</span>
+                      <button
+                        onClick={() => updateCartQty(item.id, 1)}
+                        className="p-1 text-zinc-500 dark:text-muted-foreground hover:text-white hover:bg-black/5 bg-card rounded transition-colors cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="text-xs text-muted-foreground dark:text-zinc-500 hover:text-red-400 transition-colors cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Pricing Summary & Checkout */}
+        <div className="p-4 bg-black/5 bg-card border-t border-black/5 dark:border-white/5 space-y-4 shrink-0">
+          <div className="space-y-1.5 text-xs text-zinc-500 dark:text-muted-foreground">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span className="text-zinc-800 dark:text-zinc-200 font-bold">${subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax (8.25%)</span>
+              <span className="text-zinc-800 dark:text-zinc-200 font-bold">${tax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm font-black text-white pt-1.5 border-t border-black/5 dark:border-white/5">
+              <span>Total</span>
+              <span className="text-sky-400">${total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setShowTenderModal(true)}
+            disabled={cart.length === 0}
+            className="w-full justify-center bg-sky-500 hover:bg-sky-400 text-white py-3 font-bold rounded-xl shadow-lg shadow-sky-500/10 cursor-pointer disabled:opacity-40"
+          >
+            Checkout & Tender
+          </Button>
+        </div>
+      </aside>
+
+      {/* Modifier Dialog Overlay */}
+      {selectedItemForModifiers && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg bg-zinc-50 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
+            <h3 className="text-lg font-extrabold mb-1 text-white">Customize {selectedItemForModifiers.name}</h3>
+            <p className="text-xs text-zinc-500 dark:text-muted-foreground mb-4 border-b border-black/5 dark:border-white/5 pb-2">Select required modifiers before adding to order.</p>
+
+            {/* List Modifier Groups */}
+            <div className="flex-1 overflow-y-auto space-y-5 pr-1 py-1">
+              {activeModGroupsForSelected.map((group) => {
+                const selections = selectedModifiers[group.id] || [];
+                const options = modifierOptions.filter(opt => opt.modifier_group_id === group.id);
+
+                return (
+                  <div key={group.id} className="space-y-2 p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">{group.name}</h4>
+                        <p className="text-[10px] text-zinc-500 dark:text-muted-foreground">
+                          {group.min_required ? `Requires min: ${group.min_required}` : "Optional"} 
+                          {group.max_allowed ? ` (Max: ${group.max_allowed})` : ""}
+                        </p>
+                      </div>
+                      {group.min_required > 0 && selections.length < group.min_required && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase animate-pulse">Required</span>
+                      )}
+                    </div>
+
+                    {/* Options list */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                      {options.map((opt) => {
+                        const isSelected = selections.some(m => m.id === opt.id);
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => handleModifierToggle(group, opt)}
+                            className={`p-3 rounded-lg border text-left text-xs font-bold transition-all cursor-pointer flex justify-between items-center ${
+                              isSelected
+                                ? "bg-sky-500/10 border-sky-500 text-sky-400"
+                                : "bg-black/5 dark:bg-black/40 border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 bg-card"
+                            }`}
+                          >
+                            <span>{opt.name}</span>
+                            {Number(opt.price) > 0 && (
+                              <span className="text-[10px] text-zinc-500 dark:text-muted-foreground font-extrabold">+${Number(opt.price).toFixed(2)}</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-4 border-t border-black/5 dark:border-white/5 mt-5">
+              <button
+                type="button"
+                onClick={() => setSelectedItemForModifiers(null)}
+                className="px-4 py-2 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <Button onClick={handleAddWithModifiers} className="bg-white text-black hover:bg-zinc-200 text-xs font-bold py-2 rounded-lg">
+                Add to Ticket
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tender Selection Drawer Overlay */}
+      {showTenderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-zinc-50 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col">
+            <h3 className="text-lg font-extrabold mb-1 text-white">Tender / Complete Sale</h3>
+            <p className="text-xs text-zinc-500 dark:text-muted-foreground mb-4 pb-2 border-b border-black/5 dark:border-white/5">Select payment method for this checkout transaction.</p>
+
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 p-4 rounded-xl">
+                <span className="font-semibold text-zinc-500 dark:text-muted-foreground">Total Tender Amount:</span>
+                <span className="font-black text-sky-400 text-base">${total.toFixed(2)}</span>
+              </div>
+
+              {/* Payment Methods */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => { setTenderMethod("CASH"); setCashReceived(""); }}
+                  className={`p-4 rounded-xl border text-center font-bold flex flex-col items-center gap-2 cursor-pointer transition-all ${
+                    tenderMethod === "CASH"
+                      ? "bg-sky-500/10 border-sky-500 text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.1)]"
+                      : "bg-black/5 dark:bg-black/40 border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 bg-card"
+                  }`}
+                >
+                  <DollarSign className="w-6 h-6" />
+                  <span>Cash Payment</span>
+                </button>
+
+                <button
+                  onClick={() => { setTenderMethod("CARD"); setCashReceived(total.toString()); }}
+                  className={`p-4 rounded-xl border text-center font-bold flex flex-col items-center gap-2 cursor-pointer transition-all ${
+                    tenderMethod === "CARD"
+                      ? "bg-sky-500/10 border-sky-500 text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.1)]"
+                      : "bg-black/5 dark:bg-black/40 border-black/5 dark:border-white/5 text-zinc-700 dark:text-zinc-300 hover:bg-black/5 bg-card"
+                  }`}
+                >
+                  <CreditCard className="w-6 h-6" />
+                  <span>Card / Reader</span>
+                </button>
+              </div>
+
+              {/* Cash Input Details */}
+              {tenderMethod === "CASH" && (
+                <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-3 animate-fadeIn">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-500 dark:text-muted-foreground mb-1">Cash Received ($)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={cashReceived}
+                      onChange={(e) => setCashReceived(e.target.value)}
+                      placeholder="Enter amount received"
+                      className="w-full bg-white/50 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+
+                  {/* Quick Cash Buttons */}
+                  <div className="flex gap-2">
+                    {[total, 10, 20, 50, 100].map((amt, idx) => {
+                      const displayAmt = amt === total ? "Exact" : `$${amt}`;
+                      const val = amt === total ? total : amt;
+                      if (val < total && amt !== total) return null;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setCashReceived(val.toFixed(2))}
+                          className="flex-1 text-center py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded border border-black/5 dark:border-white/5 cursor-pointer"
+                        >
+                          {displayAmt}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-2 border-t border-black/5 dark:border-white/5 text-zinc-500 dark:text-muted-foreground">
+                    <span>Change Due:</span>
+                    <span className="font-extrabold text-green-400 text-sm">${cashChange}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-4 border-t border-black/5 dark:border-white/5 mt-6">
+              <button
+                onClick={() => { setShowTenderModal(false); setTenderMethod(null); }}
+                className="px-4 py-2 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <Button
+                onClick={handleProcessCheckout}
+                disabled={!tenderMethod || submittingCheckout || (tenderMethod === "CASH" && (parseFloat(cashReceived) || 0) < total)}
+                className="bg-white text-black hover:bg-zinc-200 text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-1 cursor-pointer disabled:opacity-40"
+              >
+                {submittingCheckout ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" /> Processing...
+                  </>
+                ) : (
+                  <>
+                    Complete Tender <ChevronRight className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(fullscreen)/recipes/[id]/kitchen/KitchenClientPage.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { ActiveKitchen } from "@soustools/domain-recipes";
+import { Recipe, KitchenTimerState } from "@soustools/api-types";
+
+export function KitchenClientPage({ recipe }: { recipe: Recipe }) {
+  const [timers, setTimers] = useState<KitchenTimerState[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`timers_${recipe.id}`);
+    if (saved) {
+      try {
+        setTimers(JSON.parse(saved));
+      } catch (err) {
+        console.error("Failed to parse timers", err);
+      }
+    }
+  }, [recipe.id]);
+
+  const handleUpdateTimers = (newTimers: KitchenTimerState[]) => {
+    setTimers(newTimers);
+    localStorage.setItem(`timers_${recipe.id}`, JSON.stringify(newTimers));
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <ActiveKitchen
+        recipe={recipe}
+        activeTimers={timers}
+        onUpdateTimers={handleUpdateTimers}
+        backHref={`/recipes/${recipe.id}`}
+      />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(fullscreen)/recipes/[id]/kitchen/page.tsx
+````typescript
+import { config } from "@soustools/config";
+import { KitchenClientPage } from "./KitchenClientPage";
+
+interface KitchenPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function KitchenPage({ params }: KitchenPageProps) {
+  const { id } = await params;
+  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  
+  let recipe = null;
+  try {
+    const res = await fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" });
+    if (res.ok) {
+      const payload = await res.json();
+      recipe = payload.data;
+    }
+  } catch (err) {
+    console.error("Failed to fetch recipe for kitchen mode:", err);
+  }
+
+  if (!recipe) {
+    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
+  }
+
+  return (
+    <div className="bg-card min-h-screen">
+      <KitchenClientPage recipe={recipe} />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(fullscreen)/layout.tsx
+````typescript
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabase";
+import { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { FloatingOmniTrigger } from "@soustools/design-system";
+
+interface FullscreenLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function FullscreenLayout({ children }: FullscreenLayoutProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        } else if (mounted) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Failed to retrieve authentication session:", error);
+        router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      }
+    };
+
+    checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        if (!session) {
+          router.push(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        } else if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-card flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-white dark:bg-black text-zinc-900 dark:text-zinc-100">
+      {children}
+      <FloatingOmniTrigger />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/@modal/(.)ingestion/review/[id]/page.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  Loader2,
+  ArrowLeft,
+  CheckCircle,
+  BrainCircuit,
+  Trash2,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { IngestionReview } from "@soustools/api-types";
+import { toast } from "sonner";
+import Link from "next/link";
+import { ConfirmModal } from "../../../../../../components/ui/confirm-modal";
+import { VisualBuilder } from "../../../../ingestion/review/[id]/visual-builder";
+import { ModalShell } from "@soustools/domain-signage";
+
+export default function IngestionReviewPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id as string;
+
+  const [review, setReview] = useState<IngestionReview | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editedData, setEditedData] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
+
+  useEffect(() => {
+    const fetchReview = async () => {
+      const { data } = await supabase
+        .from("ingestion_reviews")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (data) {
+        // camelCase conversion
+        const parsed = {
+          id: data.id,
+          organizationId: data.organization_id,
+          userId: data.user_id,
+          source: data.source,
+          rawText: data.raw_text,
+          parsedData: data.parsed_data,
+          status: data.status,
+          sourceDocumentUrl: data.source_document_url,
+          sourceName: data.source_name,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        } as IngestionReview;
+
+        setReview(parsed);
+        setEditedData(JSON.stringify(parsed.parsedData, null, 2));
+      } else {
+        toast.error("Review not found");
+      }
+      setLoading(false);
+    };
+
+    if (id) fetchReview();
+  }, [id]);
+
+  const handleApprove = async () => {
+    try {
+      const finalJson = JSON.parse(editedData);
+
+      // Update the DB record with latest JSON changes first
+      await supabase
+        .from("ingestion_reviews")
+        .update({ parsed_data: finalJson })
+        .eq("id", id);
+
+      // Trigger the real commit API synchronously
+      const res = await fetch(`/api/ingestion/review/${id}/commit`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("Failed to commit data");
+
+      toast.success("Ingestion Approved and mapped to Live Data!");
+      router.push("/recipes");
+    } catch (err) {
+      toast.error("Failed to commit changes. Ensure JSON is valid.");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      toast.success("Review deleted successfully");
+      router.push("/ingestion");
+    } catch (err) {
+      toast.error("Failed to delete review");
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+      </div>
+    );
+  }
+
+  if (!review) return null;
+
+  return (
+    <ModalShell title="Ingestion Review" maxWidth="max-w-7xl">
+      <div className="p-2 md:p-4 space-y-6">
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/ingestion"
+              className="p-2 bg-black/5 bg-card rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-bold text-white flex items-center gap-2">
+                <BrainCircuit className="w-6 h-6 text-sky-400" />
+                Human-in-the-Loop Review
+              </h1>
+              <p className="text-sm text-zinc-500 dark:text-muted-foreground">
+                Review AI extracted data from {review.source.replace("_", " ")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="p-2 text-zinc-500 dark:text-muted-foreground hover:text-red-500 bg-black/5 bg-card hover:bg-red-500/10 rounded-lg transition-colors"
+              title="Delete Review"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+
+            {review.status === "PENDING" ? (
+              <button
+                onClick={handleApprove}
+                className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20"
+              >
+                <CheckCircle className="w-5 h-5" /> Approve & Save
+              </button>
+            ) : (
+              <div
+                className={`px-4 py-2 rounded-lg font-bold border ${
+                  review.status === "REJECTED"
+                    ? "bg-red-500/20 text-red-400 border-red-500/30"
+                    : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                }`}
+              >
+                Already {review.status}
+              </div>
+            )}
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
+          {/* Left Pane: Raw Document text or Image */}
+          <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+            <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10">
+              <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                Raw Source Document
+              </h2>
+            </div>
+            <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40">
+              {review.sourceDocumentUrl ? (
+                review.sourceDocumentUrl.endsWith(".pdf") ? (
+                  <iframe
+                    src={review.sourceDocumentUrl}
+                    className="w-full h-full border-none"
+                  />
+                ) : (
+                  <img
+                    src={review.sourceDocumentUrl}
+                    className="w-full h-auto object-contain"
+                    alt="Raw Document"
+                  />
+                )
+              ) : (
+                <pre className="text-sm text-zinc-500 dark:text-muted-foreground whitespace-pre-wrap font-mono p-4">
+                  {review.rawText || "No raw text available."}
+                </pre>
+              )}
+            </div>
+          </div>
+
+          {/* Right Pane: AI Structured Data Editable */}
+          <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+            <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
+              <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                AI Extracted Data
+              </h2>
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">
+                  Vendor Aliases Applied
+                </span>
+                <div className="flex bg-card rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode("visual")}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-muted-foreground dark:text-zinc-500 hover:text-white"}`}
+                  >
+                    Visual
+                  </button>
+                  <button
+                    onClick={() => setViewMode("json")}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-muted-foreground dark:text-zinc-500 hover:text-white"}`}
+                  >
+                    JSON
+                  </button>
+                </div>
+              </div>
+            </div>
+            {viewMode === "visual" ? (
+              <VisualBuilder
+                editedData={editedData}
+                onChange={setEditedData}
+                disabled={review.status !== "PENDING"}
+                organizationId={review.organizationId}
+              />
+            ) : (
+              <div className="flex-1">
+                <textarea
+                  value={editedData}
+                  onChange={(e) => setEditedData(e.target.value)}
+                  className={`w-full h-full bg-white/50 dark:bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
+                    editedData.includes('"error":')
+                      ? "text-red-400"
+                      : "text-emerald-400"
+                  }`}
+                  spellCheck={false}
+                  disabled={review.status !== "PENDING"}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <ConfirmModal
+          isOpen={showDeleteConfirm}
+          title="Delete Ingestion Review"
+          message="Are you sure you want to delete this item? This action cannot be undone."
+          confirmText="Delete"
+          isDestructive={true}
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDelete}
+        />
+      </div>
+    </ModalShell>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/@modal/signage/[deckId]/preview/page.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
+import { ExternalLink, Edit, Monitor, Copy, Check } from "lucide-react";
+import { ModalShell } from "@soustools/domain-signage";
+
+interface Params {
+  deckId: string;
+}
+
+interface DeckData {
+  id: string;
+  name: string;
+  slug: string;
+  config?: { slides?: unknown[] };
+}
+
+/**
+ * Deck Preview Modal — rendered in the @modal parallel slot when
+ * the user navigates to /signage/[deckId]/preview from the deck list.
+ * The editor route /signage/[deckId] remains untouched.
+ */
+export default function DeckPreviewModal({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { deckId } = use(params);
+  const router = useRouter();
+  const [deck, setDeck] = useState<DeckData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/signage/layouts/${deckId}`)
+      .then((r) => r.json())
+      .then((d: { success: boolean; data: DeckData }) => {
+        if (d.success) setDeck(d.data);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [deckId]);
+
+  const getLiveUrl = () => {
+    if (!deck) return "";
+    const base =
+      typeof window !== "undefined" && window.location.hostname === "localhost"
+        ? "http://localhost:5003"
+        : window.location.origin;
+    return `${base}/s/dtown-cafe/${deck.slug}`;
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(getLiveUrl());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const slideCount = deck?.config?.slides?.length ?? 0;
+
+  return (
+    <ModalShell
+      title={loading ? "Loading…" : (deck?.name ?? "Deck Preview")}
+      subtitle={
+        deck
+          ? `${slideCount} slide${slideCount !== 1 ? "s" : ""}  ·  /s/dtown-cafe/${deck.slug}`
+          : undefined
+      }
+      maxWidth="max-w-5xl"
+      footer={
+        <>
+          <button
+            onClick={() => router.back()}
+            className="px-4 py-1.5 text-xs text-zinc-500 dark:text-muted-foreground hover:text-zinc-800 dark:text-zinc-200 border border-black/10 dark:border-white/10 hover:border-white/20 rounded-lg transition cursor-pointer"
+          >
+            Close
+          </button>
+          <button
+            onClick={() => router.push(`/signage/${deckId}`)}
+            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-white rounded-lg transition cursor-pointer"
+          >
+            <Edit className="w-3.5 h-3.5" /> Open Editor
+          </button>
+        </>
+      }
+    >
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-4 border-t-transparent border-primary rounded-full animate-spin" />
+        </div>
+      ) : !deck ? (
+        <div className="flex items-center justify-center h-64 text-muted-foreground dark:text-zinc-500">
+          Deck not found.
+        </div>
+      ) : (
+        <div className="flex flex-col">
+          {/* 16:9 live preview iframe */}
+          <div className="relative w-full bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
+            <iframe
+              src={getLiveUrl()}
+              title={deck.name}
+              className="absolute inset-0 w-full h-full border-none"
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+          {/* Action strip */}
+          <div className="flex items-center gap-3 px-5 py-4 border-t border-black/5 dark:border-white/5 bg-zinc-50 dark:bg-card">
+            <Monitor className="w-4 h-4 text-muted-foreground dark:text-zinc-500 shrink-0" />
+            <p className="text-xs text-zinc-500 dark:text-muted-foreground flex-1 font-mono truncate">{getLiveUrl()}</p>
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? "Copied!" : "Copy URL"}
+            </button>
+            <a
+              href={getLiveUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Open in Tab
+            </a>
+          </div>
+        </div>
+      )}
+    </ModalShell>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/admin/devices/devices-client-wrapper.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { useRouter } from "next/navigation";
+import { DisplayManager } from "@soustools/domain-signage";
+import { SignageDisplay } from "@soustools/api-types";
+
+interface DevicesClientWrapperProps {
+  displays: SignageDisplay[];
+  layouts: any[];
+  edgeDevices?: any[];
+}
+
+export function DevicesClientWrapper({
+  displays,
+  layouts,
+  edgeDevices,
+}: DevicesClientWrapperProps) {
+  const router = useRouter();
+
+  const handleAddBrowserDisplay = async (name: string) => {
+    await fetch("/api/signage/displays", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    router.refresh();
+  };
+
+  const handleDeleteDisplay = async (id: string) => {
+    await fetch(`/api/signage/displays/${id}`, { method: "DELETE" });
+    router.refresh();
+  };
+
+  const handleAssignDeck = async (displayId: string, deckId: string | null) => {
+    await fetch(`/api/signage/displays/${displayId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ deckId }),
+    });
+    router.refresh();
+  };
+
+  const handlePairDisplay = async (code: string) => {
+    await fetch("/api/signage/displays/pair/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pairingCode: code, name: "New TV Display" }),
+    });
+    router.refresh();
+  };
+
+  const handleSaveDevice = async (deviceId: string, payload: any) => {
+    await fetch(`/api/signage/devices/${deviceId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    router.refresh();
+  };
+
+  const handleFetchDevice = async (deviceId: string) => {
+    const res = await fetch(`/api/signage/devices/${deviceId}`);
+    const data = await res.json();
+    return data.data;
+  };
+
+  const handleRevokeDevice = async (id: string) => {
+    await fetch(`/api/devices/${id}/revoke`, { method: "POST" });
+    router.refresh();
+  };
+
+  const renderEdgeDevices = () => {
+    const devices = edgeDevices && edgeDevices.length > 0 ? edgeDevices : [
+      { id: "mock-1", name: "Kitchen WearOS", deviceType: "wearos", assignedUser: "Chef Gordon" },
+      { id: "mock-2", name: "Prep RPi", deviceType: "rpi", assignedUser: "Line Cook A" }
+    ];
+
+    return (
+      <div className="mt-12 bg-card text-card-foreground border border-black/5 dark:border-white/10 shadow-sm rounded-2xl p-6">
+        <h2 className="text-xl font-bold tracking-wide mb-4">Edge Devices</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground text-sm">
+                <th className="pb-3 px-4 font-medium">Device Name</th>
+                <th className="pb-3 px-4 font-medium">Type</th>
+                <th className="pb-3 px-4 font-medium">Assigned User</th>
+                <th className="pb-3 px-4 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {devices.map((device: any) => (
+                <tr key={device.id} className="border-b border-border hover:bg-muted/50">
+                  <td className="py-4 px-4 font-medium">{device.name || "Unknown Device"}</td>
+                  <td className="py-4 px-4 text-muted-foreground uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
+                  <td className="py-4 px-4 text-muted-foreground">{device.assignedUser || "Unassigned"}</td>
+                  <td className="py-4 px-4 text-right">
+                    <button 
+                      onClick={() => handleRevokeDevice(device.id)}
+                      className="px-3 py-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-sm font-semibold transition-colors"
+                    >
+                      Revoke Access
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-8 w-full h-full pb-20">
+      <DisplayManager
+        displays={displays}
+        layouts={layouts}
+        onAddBrowserDisplay={handleAddBrowserDisplay}
+        onDeleteDisplay={handleDeleteDisplay}
+        onAssignDeck={handleAssignDeck}
+        onPairDisplay={handlePairDisplay}
+        onSaveDevice={handleSaveDevice}
+        onFetchDevice={handleFetchDevice}
+        onRefreshData={() => router.refresh()}
+      />
+      {renderEdgeDevices()}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/admin/devices/page.tsx
+````typescript
+import React from "react";
+import { config } from "@soustools/config";
+import { DevicesClientWrapper } from "./devices-client-wrapper";
+
+/**
+ * DevicesPage mounts the signage physical displays pairing and status manager.
+ */
+export default async function DevicesPage() {
+  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+
+  let displays = [];
+  let layouts = [];
+  let edgeDevices = [];
+
+  try {
+    const [dispRes, layRes, devRes] = await Promise.all([
+      fetch(`${baseUrl}/signage/displays`, { cache: "no-store" }),
+      fetch(`${baseUrl}/signage/layouts`, { cache: "no-store" }),
+      fetch(`${baseUrl}/api/devices`, { cache: "no-store" }),
+    ]);
+
+    if (dispRes.ok) {
+      const data = await dispRes.json();
+      displays = data.data || [];
+    }
+
+    if (layRes.ok) {
+      const data = await layRes.json();
+      layouts = data.data || [];
+    }
+
+    if (devRes.ok) {
+      const data = await devRes.json();
+      edgeDevices = data.data || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch signage displays/layouts/devices:", err);
+  }
+
+  return <DevicesClientWrapper displays={displays} layouts={layouts} edgeDevices={edgeDevices} />;
+}
+````
+
+## File: apps/web/src/app/(workspace)/admin/users/page.tsx
+````typescript
+import React from "react";
+import { TwoToneHeader } from "@soustools/design-system";
+
+export default function AdminUsersPage() {
+  return (
+    <div className="p-8 max-w-6xl mx-auto w-full h-full">
+      <div className="mb-8">
+        <TwoToneHeader title="Admin Users" breadcrumb="Manage user roles and permissions." />
+      </div>
+
+      <div className="bg-card border border-zinc-800 rounded-2xl p-6">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-zinc-800 text-muted-foreground text-sm">
+                <th className="pb-3 px-4 font-medium">Name</th>
+                <th className="pb-3 px-4 font-medium">Email</th>
+                <th className="pb-3 px-4 font-medium">Role</th>
+                <th className="pb-3 px-4 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+                <td className="py-4 px-4 text-zinc-300 font-medium">Conar Welsh</td>
+                <td className="py-4 px-4 text-muted-foreground">conar@soustools.com</td>
+                <td className="py-4 px-4 text-muted-foreground">
+                  <span className="px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-semibold uppercase tracking-wider">Superadmin</span>
+                </td>
+                <td className="py-4 px-4 text-right">
+                  <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-zinc-700">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+                <td className="py-4 px-4 text-zinc-300 font-medium">Demo Chef</td>
+                <td className="py-4 px-4 text-muted-foreground">chef@demo.com</td>
+                <td className="py-4 px-4 text-muted-foreground">
+                  <span className="px-2.5 py-1 rounded-md bg-zinc-800 text-muted-foreground text-xs font-semibold uppercase tracking-wider">User</span>
+                </td>
+                <td className="py-4 px-4 text-right">
+                  <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-zinc-700">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/catalog/page.tsx
+````typescript
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../../lib/supabase";
+import { Search, Edit3, X, Save, Image, DollarSign } from "lucide-react";
+import { Button } from "@soustools/design-system";
+import { toast } from "sonner";
+
+interface PosItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  is_sold_out: boolean;
+  external_id: string;
+}
+
+export default function CatalogEditorPage() {
+  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<PosItem[]>([]);
+  const [search, setSearch] = useState("");
+
+  // Edit Modal State
+  const [editingItem, setEditingItem] = useState<PosItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editSoldOut, setEditSoldOut] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const fetchCatalog = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("pos_items")
+        .select("*")
+        .order("name", { ascending: true });
+      if (error) throw error;
+      setItems((data as PosItem[]) || []);
+    } catch (err: any) {
+      toast.error(`Failed to load catalog: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCatalog();
+  }, []);
+
+  const startEdit = (item: PosItem) => {
+    setEditingItem(item);
+    setEditName(item.name);
+    setEditDesc(item.description || "");
+    setEditPrice(item.price.toString());
+    setEditSoldOut(item.is_sold_out);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem || saving) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("pos_items")
+        .update({
+          name: editName,
+          description: editDesc || null,
+          price: parseFloat(editPrice) || 0,
+          is_sold_out: editSoldOut,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      toast.success("Catalog item updated successfully!");
+      setEditingItem(null);
+      fetchCatalog();
+    } catch (err: any) {
+      toast.error(`Failed to save changes: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const filteredItems = items.filter(
+    (item) =>
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      (item.description &&
+        item.description.toLowerCase().includes(search.toLowerCase())),
+  );
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn relative">
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+          POS Catalog Editor
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-muted-foreground mt-1">
+          Audit and edit properties of POS-synchronized menu items.
+        </p>
+      </div>
+
+      {/* Toolbar */}
+      <div className="glass-panel p-4 rounded-2xl border border-black/5 dark:border-white/5 flex gap-4 items-center justify-between">
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground dark:text-zinc-500 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search catalog items..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-zinc-50 dark:bg-card border border-zinc-800 rounded-xl pl-9 pr-4 py-2 w-full text-xs text-white outline-none focus:border-sky-500 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Catalog Grid */}
+      {loading ? (
+        <div className="text-center text-muted-foreground dark:text-zinc-500 py-12 text-sm">
+          Downloading catalog metadata...
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="text-center text-muted-foreground dark:text-zinc-500 py-12 text-sm">
+          No items found matching the filter.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredItems.map((item) => (
+            <div
+              key={item.id}
+              className={`glass-panel p-5 rounded-2xl border flex flex-col justify-between hover:border-white/15 transition-all relative ${
+                item.is_sold_out
+                  ? "border-rose-500/20 bg-rose-950/5"
+                  : "border-black/5 dark:border-white/5"
+              }`}
+            >
+              <div>
+                <div className="w-full aspect-video rounded-xl bg-zinc-100 dark:bg-card border border-black/5 dark:border-white/5 flex items-center justify-center mb-4 text-zinc-700">
+                  <Image className="w-8 h-8" />
+                </div>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-zinc-200 text-sm truncate pr-2">
+                    {item.name}
+                  </h3>
+                  <span className="text-xs font-bold text-sky-400 font-mono shrink-0">
+                    ${item.price.toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-muted-foreground dark:text-zinc-500 text-xs line-clamp-2 min-h-[32px]">
+                  {item.description || "No description provided."}
+                </p>
+              </div>
+
+              <div className="mt-6 flex justify-between items-center">
+                <span
+                  className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                    item.is_sold_out
+                      ? "text-rose-400 bg-rose-950/20 border-rose-500/20"
+                      : "text-emerald-400 bg-emerald-950/20 border-emerald-500/20"
+                  }`}
+                >
+                  {item.is_sold_out ? "Sold Out" : "Active"}
+                </span>
+
+                <button
+                  onClick={() => startEdit(item)}
+                  className="p-2 border border-zinc-800 rounded-xl hover:bg-black/5 bg-card hover:border-zinc-700 text-zinc-500 dark:text-muted-foreground hover:text-white transition-all"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Slide-over Panel */}
+      {editingItem && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div
+            className="absolute inset-0 bg-white/50 dark:bg-black/60 backdrop-blur-sm"
+            onClick={() => setEditingItem(null)}
+          />
+          <div className="relative w-full max-w-md bg-zinc-50 dark:bg-card border-l border-black/10 dark:border-white/10 shadow-2xl h-full flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="p-6 border-b border-black/5 dark:border-white/5 flex justify-between items-center bg-card/40">
+              <h2 className="text-xl font-bold text-white">
+                Edit Catalog Item
+              </h2>
+              <button
+                onClick={() => setEditingItem(null)}
+                className="p-2 text-zinc-500 dark:text-muted-foreground hover:text-white hover:bg-black/5 bg-card rounded-full transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleSave}
+              className="flex-1 p-6 space-y-6 overflow-y-auto"
+            >
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-500 dark:text-muted-foreground">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  required
+                  className="w-full bg-zinc-100 dark:bg-card border border-zinc-850 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-500 dark:text-muted-foreground">
+                  Description
+                </label>
+                <textarea
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  rows={4}
+                  className="w-full bg-zinc-100 dark:bg-card border border-zinc-850 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-500 outline-none resize-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-500 dark:text-muted-foreground">
+                  Price ($)
+                </label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground dark:text-zinc-500 w-4 h-4" />
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    required
+                    className="w-full bg-zinc-100 dark:bg-card border border-zinc-850 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:border-sky-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-black/5 dark:border-white/5 pt-6">
+                <div>
+                  <span className="text-xs font-bold text-zinc-200 block">
+                    Inventory Status
+                  </span>
+                  <span className="text-[10px] text-muted-foreground dark:text-zinc-500 mt-0.5 block">
+                    Mark this item sold out globally
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditSoldOut(!editSoldOut)}
+                  className={`w-12 h-6 rounded-full p-1 transition-all ${
+                    editSoldOut ? "bg-rose-500" : "bg-zinc-800"
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white transition-all ${
+                      editSoldOut ? "translate-x-6" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="border-t border-black/5 dark:border-white/5 pt-6 flex justify-end gap-3 mt-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditingItem(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="flex items-center gap-1.5 bg-sky-500 text-white hover:bg-sky-600"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/ingestion/review/[id]/page.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  Loader2,
+  ArrowLeft,
+  CheckCircle,
+  BrainCircuit,
+  Trash2,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { IngestionReview } from "@soustools/api-types";
+import { toast } from "sonner";
+import Link from "next/link";
+import { ConfirmModal } from "../../../../../components/ui/confirm-modal";
+import { VisualBuilder } from "./visual-builder";
+
+export default function IngestionReviewPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id as string;
+
+  const [review, setReview] = useState<IngestionReview | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editedData, setEditedData] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
+
+  useEffect(() => {
+    const fetchReview = async () => {
+      const { data } = await supabase
+        .from("ingestion_reviews")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (data) {
+        // camelCase conversion
+        const parsed = {
+          id: data.id,
+          organizationId: data.organization_id,
+          userId: data.user_id,
+          source: data.source,
+          rawText: data.raw_text,
+          parsedData: data.parsed_data,
+          status: data.status,
+          sourceDocumentUrl: data.source_document_url,
+          sourceName: data.source_name,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        } as IngestionReview;
+
+        setReview(parsed);
+        setEditedData(JSON.stringify(parsed.parsedData, null, 2));
+      } else {
+        toast.error("Review not found");
+      }
+      setLoading(false);
+    };
+
+    if (id) fetchReview();
+  }, [id]);
+
+  const handleApprove = async () => {
+    try {
+      const finalJson = JSON.parse(editedData);
+
+      // Update the DB record with latest JSON changes first
+      await supabase
+        .from("ingestion_reviews")
+        .update({ parsed_data: finalJson })
+        .eq("id", id);
+
+      // Trigger the real commit API synchronously
+      const res = await fetch(`/api/ingestion/review/${id}/commit`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("Failed to commit data");
+
+      toast.success("Ingestion Approved and mapped to Live Data!");
+      router.push("/recipes");
+    } catch (err) {
+      toast.error("Failed to commit changes. Ensure JSON is valid.");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      toast.success("Review deleted successfully");
+      router.push("/ingestion");
+    } catch (err) {
+      toast.error("Failed to delete review");
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+      </div>
+    );
+  }
+
+  if (!review) return null;
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <header className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/ingestion"
+            className="p-2 bg-black/5 bg-card rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              <BrainCircuit className="w-6 h-6 text-sky-400" />
+              Human-in-the-Loop Review
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-muted-foreground">
+              Review AI extracted data from {review.source.replace("_", " ")}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-2 text-zinc-500 dark:text-muted-foreground hover:text-red-500 bg-black/5 bg-card hover:bg-red-500/10 rounded-lg transition-colors"
+            title="Delete Review"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+
+          {review.status === "PENDING" ? (
+            <button
+              onClick={handleApprove}
+              className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-sky-500/20"
+            >
+              <CheckCircle className="w-5 h-5" /> Approve & Save
+            </button>
+          ) : (
+            <div
+              className={`px-4 py-2 rounded-lg font-bold border ${
+                review.status === "REJECTED"
+                  ? "bg-red-500/20 text-red-400 border-red-500/30"
+                  : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+              }`}
+            >
+              Already {review.status}
+            </div>
+          )}
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
+        {/* Left Pane: Raw Document text or Image */}
+        <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+          <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10">
+            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              Raw Source Document
+            </h2>
+          </div>
+          <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40">
+            {review.sourceDocumentUrl ? (
+              review.sourceDocumentUrl.endsWith(".pdf") ? (
+                <iframe
+                  src={review.sourceDocumentUrl}
+                  className="w-full h-full border-none"
+                />
+              ) : (
+                <img
+                  src={review.sourceDocumentUrl}
+                  className="w-full h-auto object-contain"
+                  alt="Raw Document"
+                />
+              )
+            ) : (
+              <pre className="text-sm text-zinc-500 dark:text-muted-foreground whitespace-pre-wrap font-mono p-4">
+                {review.rawText || "No raw text available."}
+              </pre>
+            )}
+          </div>
+        </div>
+
+        {/* Right Pane: AI Structured Data Editable */}
+        <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-xl">
+          <div className="p-4 bg-card/80 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
+            <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+              AI Extracted Data
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">
+                Vendor Aliases Applied
+              </span>
+              <div className="flex bg-card rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("visual")}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-muted-foreground dark:text-zinc-500 hover:text-white"}`}
+                >
+                  Visual
+                </button>
+                <button
+                  onClick={() => setViewMode("json")}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-muted-foreground dark:text-zinc-500 hover:text-white"}`}
+                >
+                  JSON
+                </button>
+              </div>
+            </div>
+          </div>
+          {viewMode === "visual" ? (
+            <VisualBuilder
+              editedData={editedData}
+              onChange={setEditedData}
+              disabled={review.status !== "PENDING"}
+              organizationId={review.organizationId}
+            />
+          ) : (
+            <div className="flex-1">
+              <textarea
+                value={editedData}
+                onChange={(e) => setEditedData(e.target.value)}
+                className={`w-full h-full bg-white/50 dark:bg-black/60 font-mono text-sm p-4 resize-none focus:outline-none focus:border focus:border-sky-500/50 ${
+                  editedData.includes('"error":')
+                    ? "text-red-400"
+                    : "text-emerald-400"
+                }`}
+                spellCheck={false}
+                disabled={review.status !== "PENDING"}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Delete Ingestion Review"
+        message="Are you sure you want to delete this item? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+      />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/ingestion/review/[id]/visual-builder.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { ChevronDown, ChevronRight } from "lucide-react";
+
+interface VisualBuilderProps {
+  editedData: string;
+  onChange: (newData: string) => void;
+  disabled: boolean;
+  organizationId: string;
+}
+
+export function VisualBuilder({
+  editedData,
+  onChange,
+  disabled,
+  organizationId,
+}: VisualBuilderProps) {
+  const [items, setItems] = useState<{ id: string; name: string }[]>([]);
+  const [expandedRecipes, setExpandedRecipes] = useState<
+    Record<number, boolean>
+  >({});
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      const { data } = await supabase
+        .from("items")
+        .select("id, name")
+        .eq("organization_id", organizationId)
+        .order("name");
+      if (data) {
+        setItems(data.map((d: any) => ({ id: d.id, name: d.name })));
+      }
+    };
+    if (organizationId) fetchItems();
+  }, [organizationId]);
+
+  let parsed: any = {};
+  try {
+    parsed = JSON.parse(editedData);
+  } catch (e) {
+    return (
+      <div className="p-4 text-red-400">
+        Invalid JSON data. Use JSON Editor to fix.
+      </div>
+    );
+  }
+
+  // Auto-map ingredient itemIds based on raw names when items load
+  useEffect(() => {
+    if (items.length === 0 || disabled) return;
+    let modified = false;
+    const newData = { ...parsed };
+    const targetRecipes = newData.recipes
+      ? newData.recipes
+      : newData.title && newData.ingredients
+        ? [newData]
+        : [];
+
+    targetRecipes.forEach((recipe: any) => {
+      if (recipe.ingredients) {
+        recipe.ingredients.forEach((ing: any) => {
+          if (!ing.itemId && ing.name) {
+            const match = items.find(
+              (i) =>
+                i.name.toLowerCase() === String(ing.name).trim().toLowerCase(),
+            );
+            if (match) {
+              ing.itemId = match.id;
+              modified = true;
+            }
+          }
+        });
+      }
+    });
+
+    if (modified) {
+      onChange(JSON.stringify(newData, null, 2));
+    }
+  }, [items, parsed, disabled, onChange]);
+
+  const recipes = parsed.recipes
+    ? parsed.recipes
+    : parsed.title && parsed.ingredients
+      ? [parsed]
+      : [];
+
+  if (recipes.length === 0) {
+    return (
+      <div className="p-4 text-zinc-500 dark:text-muted-foreground">
+        No recipes found in data.
+      </div>
+    );
+  }
+
+  const handleUpdate = (recipeIndex: number, field: string, value: any) => {
+    const newData = { ...parsed };
+    if (newData.recipes) {
+      newData.recipes[recipeIndex][field] = value;
+    } else {
+      newData[field] = value;
+    }
+    onChange(JSON.stringify(newData, null, 2));
+  };
+
+  const handleIngredientUpdate = (
+    recipeIndex: number,
+    ingIndex: number,
+    field: string,
+    value: any,
+  ) => {
+    const newData = { ...parsed };
+    const targetRecipe = newData.recipes
+      ? newData.recipes[recipeIndex]
+      : newData;
+    targetRecipe.ingredients[ingIndex][field] = value;
+    onChange(JSON.stringify(newData, null, 2));
+  };
+
+  const toggleExpand = (i: number) => {
+    setExpandedRecipes((prev) => ({ ...prev, [i]: !prev[i] }));
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-black/5 dark:bg-black/40 p-4 space-y-4">
+      {recipes.map((recipe: any, rIdx: number) => {
+        const isExpanded = expandedRecipes[rIdx] !== false;
+
+        // Group ingredients by component
+        const components: Record<string, any[]> = {};
+
+        (recipe.ingredients || []).forEach((ing: any, i: number) => {
+          const comp = ing.component || "Base Recipe";
+          if (!components[comp]) components[comp] = [];
+          components[comp].push({ ...ing, originalIndex: i });
+        });
+
+        return (
+          <div
+            key={rIdx}
+            className="border border-black/10 dark:border-white/10 rounded-xl bg-card/50 overflow-hidden shadow-sm"
+          >
+            <div
+              className="p-3 bg-black/5 bg-card flex items-center gap-2 cursor-pointer hover:bg-black/10 dark:bg-white/10"
+              onClick={() => toggleExpand(rIdx)}
+            >
+              {isExpanded ? (
+                <ChevronDown size={18} />
+              ) : (
+                <ChevronRight size={18} />
+              )}
+              <span className="font-bold text-sky-400">
+                {recipe.title || "Untitled Recipe"}
+              </span>
+            </div>
+
+            {isExpanded && (
+              <div className="p-4 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-zinc-500 dark:text-muted-foreground font-bold uppercase tracking-wide">
+                      Title
+                    </label>
+                    <input
+                      disabled={disabled}
+                      type="text"
+                      value={recipe.title || ""}
+                      onChange={(e) =>
+                        handleUpdate(rIdx, "title", e.target.value)
+                      }
+                      className="w-full bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="text-xs text-zinc-500 dark:text-muted-foreground font-bold uppercase tracking-wide">
+                        Yield
+                      </label>
+                      <input
+                        disabled={disabled}
+                        type="number"
+                        value={recipe.yieldCount || 1}
+                        onChange={(e) =>
+                          handleUpdate(
+                            rIdx,
+                            "yieldCount",
+                            Number(e.target.value),
+                          )
+                        }
+                        className="w-full bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-zinc-500 dark:text-muted-foreground font-bold uppercase tracking-wide">
+                        Unit
+                      </label>
+                      <input
+                        disabled={disabled}
+                        type="text"
+                        value={recipe.yieldUnit || "servings"}
+                        onChange={(e) =>
+                          handleUpdate(rIdx, "yieldUnit", e.target.value)
+                        }
+                        className="w-full bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-2">
+                    <h4 className="text-sm font-semibold">Ingredients</h4>
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => {
+                        // Math logic: Calculate base weights per component
+                        const componentBaseWeights: Record<string, number> = {};
+                        const ings = recipe.ingredients || [];
+                        ings.forEach((ing: any) => {
+                          if (ing.baseCalculationGroup) {
+                            const comp = ing.component || "Base Recipe";
+                            componentBaseWeights[comp] =
+                              (componentBaseWeights[comp] || 0) +
+                              Number(ing.amount || 0);
+                          }
+                        });
+
+                        const hasAnyBase = Object.values(
+                          componentBaseWeights,
+                        ).some((w) => w > 0);
+                        if (!hasAnyBase) {
+                          alert(
+                            "Please select at least one Base ingredient (in any component) to convert!",
+                          );
+                          return;
+                        }
+
+                        // Convert ingredients to percentages relative to their component's base weight
+                        const newData = { ...parsed };
+                        const targetRecipe = newData.recipes
+                          ? newData.recipes[rIdx]
+                          : newData;
+
+                        targetRecipe.ingredients = targetRecipe.ingredients.map(
+                          (ing: any) => {
+                            const comp = ing.component || "Base Recipe";
+                            const compBaseWeight =
+                              componentBaseWeights[comp] || 0;
+
+                            if (compBaseWeight === 0) return ing; // Skip if no base for this component
+
+                            const originalAmount = Number(ing.amount || 0);
+                            const percentage =
+                              (originalAmount / compBaseWeight) * 100;
+                            return {
+                              ...ing,
+                              amount: Number(percentage.toFixed(2)),
+                              unit: "%",
+                              calculationType: "BAKERS_PERCENTAGE",
+                              // Keep baseCalculationGroup true for the base items
+                            };
+                          },
+                        );
+
+                        onChange(JSON.stringify(newData, null, 2));
+                      }}
+                      className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1 rounded hover:bg-amber-500/30 transition-colors"
+                    >
+                      Convert to Baker's %
+                    </button>
+                  </div>
+
+                  {Object.entries(components).map(([compName, ings]) => (
+                    <div key={compName} className="space-y-3">
+                      <h5 className="text-xs font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2 py-1 rounded inline-block">
+                        {compName}
+                      </h5>
+                      <div className="space-y-2">
+                        {ings.map((ing) => (
+                          <div
+                            key={ing.originalIndex}
+                            className="grid grid-cols-12 gap-3 items-center bg-black/30 p-3 rounded-lg border border-black/5 dark:border-white/5"
+                          >
+                            <div className="col-span-4 flex flex-col gap-1 relative">
+                              <input
+                                disabled={disabled}
+                                type="text"
+                                value={ing.name || ""}
+                                onChange={(e) =>
+                                  handleIngredientUpdate(
+                                    rIdx,
+                                    ing.originalIndex,
+                                    "name",
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-full bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none placeholder:text-white/20"
+                                placeholder="Raw Name (from text)"
+                              />
+                              <select
+                                disabled={disabled}
+                                value={ing.itemId || ""}
+                                onChange={(e) =>
+                                  handleIngredientUpdate(
+                                    rIdx,
+                                    ing.originalIndex,
+                                    "itemId",
+                                    e.target.value || null,
+                                  )
+                                }
+                                className={`w-full bg-black/5 dark:bg-black/40 border rounded px-2 py-1.5 text-sm outline-none transition-colors ${
+                                  !ing.itemId
+                                    ? "border-red-500/70 text-red-300 focus:border-red-400"
+                                    : "border-black/10 dark:border-white/10 text-emerald-400 focus:border-sky-500"
+                                }`}
+                              >
+                                <option value="">
+                                  ⚠️ Select Master Ingredient...
+                                </option>
+                                {items.map((it) => (
+                                  <option key={it.id} value={it.id}>
+                                    {it.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="col-span-3 flex gap-1">
+                              <input
+                                disabled={disabled}
+                                type="number"
+                                value={ing.amount || 0}
+                                onChange={(e) =>
+                                  handleIngredientUpdate(
+                                    rIdx,
+                                    ing.originalIndex,
+                                    "amount",
+                                    Number(e.target.value),
+                                  )
+                                }
+                                className="w-16 bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
+                              />
+                              <input
+                                disabled={disabled}
+                                type="text"
+                                value={ing.unit || ""}
+                                onChange={(e) =>
+                                  handleIngredientUpdate(
+                                    rIdx,
+                                    ing.originalIndex,
+                                    "unit",
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-16 bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none placeholder:text-white/20"
+                                placeholder="Unit"
+                              />
+                            </div>
+                            <div className="col-span-5 flex flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                <select
+                                  disabled={disabled}
+                                  value={ing.calculationType || "WEIGHT"}
+                                  onChange={(e) =>
+                                    handleIngredientUpdate(
+                                      rIdx,
+                                      ing.originalIndex,
+                                      "calculationType",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="flex-1 bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs focus:border-sky-500 outline-none"
+                                >
+                                  <option value="WEIGHT">Weight</option>
+                                  <option value="VOLUME">Volume</option>
+                                  <option value="COUNT">Count</option>
+                                  <option value="BAKERS_PERCENTAGE">
+                                    Baker's %
+                                  </option>
+                                </select>
+
+                                {ing.calculationType ===
+                                  "BAKERS_PERCENTAGE" && (
+                                  <label className="flex items-center gap-1.5 text-xs text-amber-400 cursor-pointer whitespace-nowrap bg-amber-400/10 px-2 py-1 rounded">
+                                    <input
+                                      disabled={disabled}
+                                      type="checkbox"
+                                      checked={
+                                        ing.baseCalculationGroup || false
+                                      }
+                                      onChange={(e) =>
+                                        handleIngredientUpdate(
+                                          rIdx,
+                                          ing.originalIndex,
+                                          "baseCalculationGroup",
+                                          e.target.checked,
+                                        )
+                                      }
+                                      className="accent-amber-500"
+                                    />
+                                    Base
+                                  </label>
+                                )}
+                              </div>
+                              <input
+                                disabled={disabled}
+                                type="text"
+                                value={ing.component || ""}
+                                onChange={(e) =>
+                                  handleIngredientUpdate(
+                                    rIdx,
+                                    ing.originalIndex,
+                                    "component",
+                                    e.target.value || null,
+                                  )
+                                }
+                                placeholder="Section (e.g. Glaze)"
+                                className="w-full bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none text-zinc-500 dark:text-muted-foreground"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/ingestion/page.tsx
+````typescript
+"use client";
+
+import { useEffect, useState } from "react";
+import { IngestionReview } from "@soustools/api-types";
+import Link from "next/link";
+import { BrainCircuit, Clock, CheckCircle, Trash2 } from "lucide-react";
+import { ConfirmModal } from "../../../components/ui/confirm-modal";
+
+export default function IngestionDashboardPage() {
+  const [reviews, setReviews] = useState<IngestionReview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch("/api/ingestion");
+      if (res.ok) {
+        const payload = await res.json();
+        const data = payload.data;
+        if (data) {
+          const parsed = data.map((d: any) => ({
+            id: d.id,
+            organizationId: d.organization_id,
+            userId: d.user_id,
+            source: d.source,
+            sourceName: d.source_name,
+            rawText: d.raw_text,
+            parsedData: d.parsed_data,
+            status: d.status,
+            createdAt: d.created_at,
+            updatedAt: d.updated_at
+          })) as (IngestionReview & { sourceName?: string | null })[];
+          setReviews(parsed);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load ingestion reviews", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/ingestion/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      setReviews(prev => prev.filter(r => r.id !== id));
+      setDeleteId(null);
+    } catch (err) {
+      console.error("Failed to delete review", err);
+    }
+  };
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">Processing Hub</h1>
+          <p className="text-gray-500 mt-2">Review AI-extracted documents and invoices.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          <div className="col-span-full text-center text-white/50 py-12">Loading queue...</div>
+        ) : reviews.length === 0 ? (
+          <div className="col-span-full text-center text-white/50 py-12">No documents pending review.</div>
+        ) : (
+          reviews.map(review => (
+            <Link key={review.id} href={`/ingestion/review/${review.id}`} className="block">
+              <div className="glass-panel p-6 flex flex-col h-full group hover:border-sky-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-2">
+                    <BrainCircuit className="w-5 h-5 text-sky-400" />
+                    <h2 className="text-xl font-bold truncate max-w-[200px]" title={review.sourceName || review.source.replace("_", " ").toLowerCase()}>
+                      {review.sourceName || review.source.replace("_", " ").toLowerCase()}
+                    </h2>
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-bold rounded uppercase tracking-wider ${
+                    review.status === "PENDING" ? "bg-amber-500/20 text-amber-300" :
+                    review.status === "REJECTED" ? "bg-red-500/20 text-red-300" :
+                    "bg-emerald-500/20 text-emerald-300"
+                  }`}>
+                    {review.status}
+                  </span>
+                </div>
+
+                <div className="flex-1 text-sm text-gray-400 mb-6">
+                  {review.status === "PENDING" ? (
+                    <span className="flex items-center gap-2"><Clock size={16}/> Needs Human Review</span>
+                  ) : review.status === "REJECTED" ? (
+                    <span className="flex items-center gap-2 text-red-400"><CheckCircle size={16}/> Rejected</span>
+                  ) : (
+                    <span className="flex items-center gap-2 text-emerald-400"><CheckCircle size={16}/> Approved</span>
+                  )}
+                  <div className="mt-4">
+                    Uploaded: {new Date(review.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+
+                <div className="w-full flex items-center gap-2">
+                  <div className="flex-1 flex items-center justify-center bg-black/5 bg-card text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
+                    Open Review
+                  </div>
+                  <button
+                    onClick={(e) => { e.preventDefault(); setDeleteId(review.id); }}
+                    className="p-2 bg-black/5 bg-card hover:bg-red-500/20 text-zinc-500 dark:text-muted-foreground hover:text-red-400 rounded-md transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </Link>
+          ))
+        )}
+      </div>
+
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Delete Ingestion Review"
+        message="Are you sure you want to delete this item? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        onCancel={() => setDeleteId(null)}
+        onConfirm={() => { if (deleteId) handleDelete(deleteId); }}
+      />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/inventory/items-ledger/items-ledger-client.tsx
+````typescript
+"use client";
+
+import React, { useState, useRef } from "react";
+import { Plus, Download, Upload, Loader2 } from "lucide-react";
+import { ItemsLedgerTable, ItemEditorModal } from "@soustools/domain-inventory";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
+  const router = useRouter();
+  const [loading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCreate = () => {
+    setSelectedItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (item: any) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (data: any) => {
+    try {
+      const url = selectedItem ? `/api/items/${selectedItem.id}` : "/api/items";
+      const method = selectedItem ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        setIsModalOpen(false);
+        router.refresh();
+      } else {
+        toast.error("Failed to save item");
+      }
+    } catch (err) {
+      toast.error("Network error saving item");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this item?")) return;
+    try {
+      const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        router.refresh();
+      } else {
+        toast.error("Failed to delete item");
+      }
+    } catch (err) {
+      toast.error("Network error deleting item");
+    }
+  };
+
+  const handleSearchUSDA = async (query: string) => {
+    const res = await fetch(`/api/recipes/usda/search?query=${encodeURIComponent(query)}`);
+    return await res.json();
+  };
+
+  const handleExportCSV = () => {
+    if (!initialItems.length) return;
+    const headers = ["name", "category", "purchase_unit", "density_g_ml", "allergens"];
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.join(",") +
+      "\\n" +
+      initialItems
+        .map((e) => headers.map((h) => JSON.stringify(e[h] || "")).join(","))
+        .join("\\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "items_ledger.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split("\\n").map((l) => l.trim()).filter(Boolean);
+        if (lines.length < 2) return;
+
+        const headers = lines[0].split(",");
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(",").map((v) => v.replace(/^"|"$/g, ""));
+          const payload: any = {};
+          headers.forEach((h, idx) => {
+            if (h === "density_g_ml") payload[h] = parseFloat(values[idx]) || 1.0;
+            else if (h === "allergens")
+              payload[h] = values[idx] ? values[idx].split(";").map((s) => s.trim()) : [];
+            else payload[h] = values[idx];
+          });
+
+          await fetch("/api/items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        }
+        router.refresh();
+      } catch (err) {
+        toast.error("Import failed");
+      } finally {
+        setImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Items Ledger</h1>
+          <p className="text-muted-foreground mt-2">Manage your master ingredients, density, and nutrition.</p>
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium rounded-lg flex items-center gap-2 transition-colors"
+          >
+            <Download size={18} /> Export
+          </button>
+          <input
+            type="file"
+            accept=".csv"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleImportCSV}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium rounded-lg flex items-center gap-2 transition-colors"
+          >
+            {importing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />} Import
+          </button>
+          <button
+            onClick={handleCreate}
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg flex items-center gap-2 transition-colors shadow-lg"
+          >
+            <Plus size={18} /> New Item
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-card text-card-foreground overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+        <ItemsLedgerTable
+          items={initialItems}
+          loading={loading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
+
+      {isModalOpen && (
+        <ItemEditorModal
+          item={selectedItem}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSave}
+          onSearchUSDA={handleSearchUSDA}
+        />
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/inventory/orders/DraftPoModal.tsx
+````typescript
+"use client";
+
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { WhiteboardItem, Vendor } from "@soustools/api-types";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+/**
+ * Props structure for the DraftPoModal component.
+ */
+interface DraftPoModalProps {
+  /** Indicates if the modal is visible */
+  isOpen: boolean;
+  /** Callback function called to close the modal */
+  onClose: () => void;
+  /** Active whiteboard items available for purchase */
+  items: WhiteboardItem[];
+  /** Registered vendors list for vendor selection */
+  vendors: Vendor[];
+  /** Callback triggered after a PO is successfully created to refresh page state */
+  onSuccess: () => void;
+}
+
+/**
+ * DraftPoModal enables the user to select specific whiteboard items and
+ * compile them into a draft Purchase Order for a selected vendor.
+ * 
+ * @tenant-docs-export
+ * # Creating a Purchase Order from Whiteboard
+ * 1. Click "Draft Purchase Order" on the Whiteboard page.
+ * 2. Select the vendor from the dropdown list.
+ * 3. Check the items you want to include in this order.
+ * 4. Click "Create PO". The selected items will be moved into a draft Purchase Order and cleared from the board.
+ */
+export function DraftPoModal({ isOpen, onClose, items, vendors, onSuccess }: DraftPoModalProps) {
+  const router = useRouter();
+  const [selectedVendor, setSelectedVendor] = useState("");
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  /**
+   * Toggles the selection state of a specific whiteboard item.
+   * 
+   * @param id The UUID of the whiteboard item.
+   */
+  const toggleSelection = (id: string) => {
+    const next = new Set(selectedItems);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedItems(next);
+  };
+
+  /**
+   * Handles creating a draft Purchase Order and inserting selected items.
+   */
+  const createPO = async () => {
+    if (!selectedVendor || selectedItems.size === 0) return;
+    setIsSubmitting(true);
+
+    try {
+      const { data: orgData, error: orgErr } = await supabase
+        .from("organizations")
+        .select("id")
+        .limit(1)
+        .single();
+      
+      if (orgErr || !orgData) {
+        toast.error(`Could not locate organization details: ${orgErr?.message || "No data"}`);
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const { data: po, error: poErr } = await supabase.from("purchase_orders").insert({
+        organization_id: orgData.id,
+        vendor_id: selectedVendor,
+        status: "DRAFT"
+      }).select().single();
+
+      if (poErr || !po) {
+        toast.error(`Failed to create Purchase Order: ${poErr?.message || "Database insert error"}`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const itemsToInsert = Array.from(selectedItems).map(id => {
+        const wbi = items.find(i => i.id === id);
+        return { po_id: po.id, raw_name: wbi?.raw_name || "Unknown Item", ordered_qty: 1, price_per_unit: 0 };
+      });
+
+      const { error: itemsErr } = await supabase.from("purchase_order_items").insert(itemsToInsert);
+      if (itemsErr) {
+        toast.error(`Failed to attach items to Purchase Order: ${itemsErr.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Mark whiteboard items as inactive
+      for (const id of Array.from(selectedItems)) {
+        await supabase.from("whiteboard_items").update({ is_active: false }).eq("id", id);
+      }
+
+      toast.success("Purchase Order created successfully!");
+      setSelectedItems(new Set());
+      onSuccess();
+      onClose();
+      router.push("/purchasing");
+    } catch (err: any) {
+      toast.error(`An unexpected error occurred: ${err.message || err}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-black/80 backdrop-blur-sm">
+      <div className="glass-panel p-8 max-w-2xl w-full">
+        <h2 className="text-3xl font-bold mb-6">Select Items for PO</h2>
+        
+        <div className="mb-6 space-y-2">
+          <label className="text-sm font-medium text-gray-400">Select Vendor</label>
+          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-white/50 dark:bg-black/60 border border-white/20 rounded-md p-3 text-white">
+            <option value="">-- Choose Vendor --</option>
+            {vendors.map(v => <option key={v.id} value={v.id}>{v.name} ({v.order_method})</option>)}
+          </select>
+        </div>
+
+        <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-white/10 p-4 rounded-md mb-6">
+          {items.map(item => (
+            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 bg-card rounded">
+              <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5" />
+              <span className="text-lg">{item.raw_name}</span>
+            </label>
+          ))}
+        </div>
+
+        <div className="flex justify-end gap-4">
+          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium hover:bg-black/10 dark:bg-white/10 transition-colors disabled:opacity-50">
+            Cancel
+          </button>
+          <button 
+            onClick={createPO}
+            disabled={!selectedVendor || selectedItems.size === 0 || isSubmitting} 
+            className="bg-white text-black px-6 py-2 rounded-md font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+          >
+            {isSubmitting ? "Creating..." : "Create PO"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/inventory/page.tsx
+````typescript
+export default function InventoryPage() {
+  return (
+    <div className="flex flex-col gap-8 p-8 h-full bg-background text-foreground">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-black uppercase tracking-widest">Inventory</h1>
+        <p className="text-muted-foreground font-medium">Manage your inventory, suppliers, and purchase orders.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-card text-card-foreground border border-black/5 dark:border-white/10 p-6 rounded-2xl hover:border-primary/50 transition-colors shadow-sm">
+          <h2 className="text-xl font-bold mb-2 uppercase tracking-wide">Items</h2>
+          <p className="text-muted-foreground text-sm">View and manage your master ingredient list.</p>
+        </div>
+        <div className="bg-card text-card-foreground border border-black/5 dark:border-white/10 p-6 rounded-2xl hover:border-primary/50 transition-colors shadow-sm">
+          <h2 className="text-xl font-bold mb-2 uppercase tracking-wide">Orders</h2>
+          <p className="text-muted-foreground text-sm">Track and create purchase orders.</p>
+        </div>
+        <div className="bg-card text-card-foreground border border-black/5 dark:border-white/10 p-6 rounded-2xl hover:border-primary/50 transition-colors shadow-sm">
+          <h2 className="text-xl font-bold mb-2 uppercase tracking-wide">Vendors</h2>
+          <p className="text-muted-foreground text-sm">Manage your suppliers and vendor catalog.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/recipes/[id]/edit/page.tsx
+````typescript
+import { config } from "@soustools/config";
+import { RecipeBuilderClient } from "../../RecipeBuilderClient";
+
+interface EditRecipePageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function EditRecipePage({ params }: EditRecipePageProps) {
+  const { id } = await params;
+  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  
+  let recipe = null;
+  let vessels = [];
+  let masterIngredients = [];
+
+  try {
+    const [recipeRes, vesselsRes, ingRes] = await Promise.all([
+      fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" }),
+      fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
+      fetch(`${baseUrl}/recipes/ingredients`, { cache: "no-store" })
+    ]);
+    
+    if (recipeRes.ok) {
+      const payload = await recipeRes.json();
+      recipe = payload.data;
+    }
+    if (vesselsRes.ok) {
+      const payload = await vesselsRes.json();
+      vessels = payload.data || [];
+    }
+    if (ingRes.ok) {
+      const payload = await ingRes.json();
+      masterIngredients = payload.data || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch initial builder data:", err);
+  }
+
+  if (!recipe) {
+    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
+  }
+
+  return (
+    <div className="py-6 px-4">
+      <RecipeBuilderClient 
+        initialData={recipe}
+        vessels={vessels} 
+        masterIngredients={masterIngredients} 
+      />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/recipes/[id]/page.tsx
+````typescript
+import { config } from "@soustools/config";
+import { RecipeViewerClient } from "./RecipeViewerClient";
+
+interface RecipePageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function RecipePage({ params }: RecipePageProps) {
+  const { id } = await params;
+  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  
+  let recipe = null;
+  let vessels = [];
+  let costData = null;
+  let nutritionData = null;
+  let versionHistory = [];
+
+  try {
+    const [recipeRes, vesselsRes, costRes, nutritionRes, historyRes] = await Promise.all([
+      fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" }),
+      fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
+      fetch(`${baseUrl}/recipes/${id}/cost`, { cache: "no-store" }).catch(() => null),
+      fetch(`${baseUrl}/recipes/${id}/nutrition`, { cache: "no-store" }).catch(() => null),
+      fetch(`${baseUrl}/recipes/${id}/versions`, { cache: "no-store" }).catch(() => null)
+    ]);
+    
+    if (recipeRes.ok) {
+      const payload = await recipeRes.json();
+      recipe = payload.data;
+    }
+    if (vesselsRes.ok) {
+      const payload = await vesselsRes.json();
+      vessels = payload.data || [];
+    }
+    if (costRes && costRes.ok) {
+      const payload = await costRes.json();
+      costData = payload.data || null;
+    }
+    if (nutritionRes && nutritionRes.ok) {
+      const payload = await nutritionRes.json();
+      nutritionData = payload.data || null;
+    }
+    if (historyRes && historyRes.ok) {
+      const payload = await historyRes.json();
+      versionHistory = payload.data || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch initial recipe viewer data:", err);
+  }
+
+  if (!recipe) {
+    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
+  }
+
+  return (
+    <div className="py-6 px-4">
+      <RecipeViewerClient 
+        recipe={recipe}
+        vessels={vessels}
+        costData={costData}
+        nutritionData={nutritionData}
+        versionHistory={versionHistory}
+      />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/settings/settings-client.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  IntegrationsPanel,
+  GlobalStylingSettings,
+  GeneralSettings,
+  DownloadsPanel,
+  SettingsFormValues,
+} from "@soustools/domain-settings";
+import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
+import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+export interface SettingsClientProps {
+  integrations: IntegrationStatus[];
+  isDev: boolean;
+  initialTokens: GlobalDesignTokens;
+  userProfile: {
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+export function SettingsClient({
+  integrations,
+  isDev,
+  initialTokens,
+  userProfile,
+}: SettingsClientProps) {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<
+    "general" | "integrations" | "styling" | "downloads"
+  >("general");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "integrations") {
+        setActiveTab("integrations");
+      } else if (tab === "styling") {
+        setActiveTab("styling");
+      } else if (tab === "downloads") {
+        setActiveTab("downloads");
+      }
+    }
+  }, []);
+
+  const handleSaveGeneral = async (_data: SettingsFormValues) => {
+    // Stub: send to API
+    toast.success("General settings saved!");
+  };
+
+  const handleSaveTokens = async (_tokens: GlobalDesignTokens) => {
+    // Stub: send to API
+    toast.success("Tokens saved!");
+  };
+
+  const handleConnectIntegration = (provider: string) => {
+    window.location.href = `/api/integrations/connect/${provider.toLowerCase()}?orgId=default`;
+  };
+
+  const handleDisconnectIntegration = async (provider: string) => {
+    const res = await fetch(`/api/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to disconnect");
+    router.refresh();
+  };
+
+  const handleSquareAction = async (action: "sync" | "seed") => {
+    const res = await fetch(`/api/integrations/square/${action}?orgId=default`, {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error(`Failed to ${action}`);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100 animate-in fade-in">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+          <Settings className="w-6 h-6 text-sky-500 animate-pulse" />
+          Settings Panel
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Configure global kitchen parameters, system integration profiles, and
+          tenant design tokens.
+        </p>
+      </header>
+
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1">
+        {(["general", "integrations", "styling", "downloads"] as const).map(
+          (tab) => {
+            const icons = {
+              general: Sliders,
+              integrations: Cable,
+              styling: Paintbrush,
+              downloads: () => (
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
+              ),
+            };
+            const Icon = icons[tab];
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
+                  activeTab === tab
+                    ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
+                    : "border-transparent text-zinc-500 dark:text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/5 dark:hover:bg-card/40"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab === "styling" ? "Global Styling" : tab}
+              </button>
+            );
+          }
+        )}
+      </div>
+
+      <div className="p-6 rounded-2xl bg-white dark:bg-card/40 border border-black/10 dark:border-zinc-900 shadow-2xl backdrop-blur-2xl">
+        {activeTab === "general" && (
+          <GeneralSettings initialData={userProfile} onSave={handleSaveGeneral} />
+        )}
+        {activeTab === "integrations" && (
+          <IntegrationsPanel
+            integrations={integrations}
+            isDev={isDev}
+            onConnect={handleConnectIntegration}
+            onDisconnect={handleDisconnectIntegration}
+            onSquareAction={handleSquareAction}
+          />
+        )}
+        {activeTab === "styling" && (
+          <GlobalStylingSettings initialTokens={initialTokens} onSave={handleSaveTokens} />
+        )}
+        {activeTab === "downloads" && <DownloadsPanel />}
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/signage/[deckId]/preview/page.tsx
+````typescript
+import React from "react";
+import { use } from "react";
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { config } from "@soustools/config";
+
+interface Params {
+  deckId: string;
+}
+
+interface DeckData {
+  id: string;
+  name: string;
+  slug: string;
+  config?: { slides?: unknown[] };
+}
+
+async function fetchDeck(deckId: string): Promise<DeckData | null> {
+  try {
+    const base = config.APP_BASE_URL;
+    const res = await fetch(`${base}/api/signage/layouts/${deckId}`, {
+      cache: "no-store",
+    });
+    const data = await res.json();
+    return data.success ? data.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Full-page fallback shown when navigating directly to /signage/[deckId]/preview (not intercepted). */
+export default async function DeckPreviewPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { deckId } = await use(params);
+  const deck = await fetchDeck(deckId);
+
+  const liveBase = config.TV_BASE_URL;
+  const liveUrl = deck
+    ? `${liveBase}/s/dtown-cafe/${deck.slug}`
+    : null;
+
+  if (!deck) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-muted-foreground dark:text-zinc-500">
+        <p>Deck not found.</p>
+        <Link href="/signage" className="mt-4 text-xs text-primary hover:underline">
+          ← Back to Decks
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">{deck.name}</h1>
+          <p className="text-xs text-muted-foreground dark:text-zinc-500 font-mono mt-0.5">
+            {deck.config?.slides?.length ?? 0} slides
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/signage"
+            className="px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 rounded-lg transition"
+          >
+            ← Decks
+          </Link>
+          <Link
+            href={`/signage/${deckId}`}
+            className="px-3 py-1.5 text-xs bg-primary hover:bg-primary/90 text-white rounded-lg transition font-semibold"
+          >
+            Open Editor
+          </Link>
+          {liveUrl && (
+            <a
+              href={liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 rounded-lg transition"
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Live View
+            </a>
+          )}
+        </div>
+      </div>
+
+      {liveUrl && (
+        <div className="relative w-full rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
+          <iframe
+            src={liveUrl}
+            title={deck.name}
+            className="absolute inset-0 w-full h-full border-none"
+            allow="autoplay; encrypted-media"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/signage/[deckId]/tv-signage-editor-client.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
+import { SignageLayoutConfig, PosItem } from "@soustools/api-types";
+import { io } from "socket.io-client";
+import { mapDbItemToPosItem, RawDbPosItem } from "../../../display/[id]/helpers";
+import { config as appConfig } from "@soustools/config";
+import { useRouter } from "next/navigation";
+
+interface SignageDeck {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  config: SignageLayoutConfig;
+}
+
+interface TVSignageEditorClientProps {
+  deckId: string;
+  initialDeck: SignageDeck | null;
+  initialItems: RawDbPosItem[];
+}
+
+export default function TVSignageEditorClient({ deckId, initialDeck, initialItems }: TVSignageEditorClientProps) {
+  const [deck, setDeck] = useState<SignageDeck | null>(initialDeck);
+  const [items, setItems] = useState<PosItem[]>(() => {
+    if (initialItems && initialItems.length > 0) {
+      return initialItems.map(mapDbItemToPosItem);
+    }
+    return MOCK_POS_ITEMS;
+  });
+  const [saving, setSaving] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setDeck(initialDeck);
+  }, [initialDeck]);
+
+  useEffect(() => {
+    if (initialItems && initialItems.length > 0) {
+      setItems(initialItems.map(mapDbItemToPosItem));
+    } else {
+      setItems(MOCK_POS_ITEMS);
+    }
+  }, [initialItems]);
+
+  useEffect(() => {
+    const socketUrl = appConfig.API_BASE_URL || window.location.origin;
+    const socket = io(socketUrl, {
+      query: { deckId },
+    });
+
+    socket.on("connect", () => {
+      socket.emit("join", { deckId });
+    });
+
+    socket.on("items_updated", (payload: { deckId: string; items: RawDbPosItem[] }) => {
+      if (payload.deckId === deckId && payload.items) {
+        const parsedItems = payload.items.map(mapDbItemToPosItem);
+        setItems(parsedItems);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [deckId]);
+
+  const handleSave = async (newConfig: SignageLayoutConfig) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/signage/layouts/${deckId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config: newConfig }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setDeck(data.data);
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Save failed:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRenameDeck = async (name: string, slug: string) => {
+    try {
+      const res = await fetch(`/api/signage/layouts/${deckId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, slug }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setDeck(data.data);
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Rename failed:", err);
+    }
+  };
+
+  if (!deck) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-xl font-bold text-red-400">Deck Not Found</h2>
+        <p className="text-sm text-muted-foreground mt-2">The requested slide deck could not be loaded.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="-m-6 h-[calc(100vh-4rem)] overflow-hidden">
+      <LayoutBuilder
+        deckId={deckId}
+        deckSlug={deck.slug}
+        layoutName={deck.name}
+        initialConfig={deck.config}
+        items={items}
+        onSave={handleSave}
+        onRenameDeck={handleRenameDeck}
+        saving={saving}
+      />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/signage/decks-list-client.tsx
+````typescript
+"use client";
+
+import React, { useState } from "react";
+import { DeckCard } from "@soustools/domain-signage";
+import { Plus, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { SignageLayoutConfig } from "@soustools/api-types";
+
+interface SignageDeck {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  config: SignageLayoutConfig;
+}
+
+interface DecksListClientProps {
+  initialDecks: SignageDeck[];
+}
+
+export function DecksListClient({ initialDecks }: DecksListClientProps) {
+  const [creating, setCreating] = useState(false);
+  const [deckToDelete, setDeckToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+
+  const handleCreate = async () => {
+    setCreating(true);
+    try {
+      const name = `Deck ${initialDecks.length + 1}`;
+      const res = await fetch("/api/signage/layouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        router.push(`/signage/${data.data.id}`);
+      } else {
+        alert(data.error || "Failed to create deck");
+      }
+    } catch (err) {
+      console.error("Failed to create deck:", err);
+      alert("Network error: Failed to create deck");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setDeckToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deckToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/signage/layouts/${deckToDelete}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        router.refresh();
+      } else {
+        alert(data.error || "Failed to delete deck");
+      }
+    } catch (err) {
+      console.error("Failed to delete deck:", err);
+      alert("Network error: Failed to delete deck");
+    } finally {
+      setIsDeleting(false);
+      setDeckToDelete(null);
+    }
+  };
+
+  const handleRename = async (id: string, name: string, slug: string) => {
+    try {
+      const res = await fetch(`/api/signage/layouts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, slug }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        router.refresh();
+      } else {
+        alert(data.error || "Failed to rename deck");
+      }
+    } catch (err) {
+      console.error("Failed to rename deck:", err);
+      alert("Network error: Failed to rename deck");
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white font-brand">
+            My Slide Decks
+          </h1>
+          <p className="text-sm text-muted-foreground font-sans mt-1">
+            Manage and assign layout decks for digital signage screens.
+          </p>
+        </div>
+        <button
+          onClick={handleCreate}
+          disabled={creating}
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
+        >
+          {creating ? (
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          New Deck
+        </button>
+      </div>
+
+      {initialDecks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-black/5 dark:border-white/5 rounded-2xl p-16 text-center">
+          <p className="text-muted-foreground font-sans mb-4">
+            No slide decks created yet.
+          </p>
+          <button
+            onClick={handleCreate}
+            disabled={creating}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
+          >
+            Create Your First Deck
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {initialDecks.map((deck) => (
+            <DeckCard
+              key={deck.id}
+              deck={deck}
+              onDelete={handleDelete}
+              onRename={handleRename}
+            />
+          ))}
+        </div>
+      )}
+
+      {deckToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-card backdrop-blur-sm p-4">
+          <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-2">Delete Deck</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Are you sure you want to delete this deck? This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeckToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting && <RefreshCw className="w-4 h-4 animate-spin" />}
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/team/page.tsx
+````typescript
+"use client";
+
+import React, { useState } from "react";
+import { PinInput, Button } from "@soustools/design-system";
+import { Watch } from "lucide-react";
+import { supabase } from "../../../lib/supabase";
+
+export default function TeamPortalPage() {
+  const [pairingCode, setPairingCode] = useState("");
+  const [status, setStatus] = useState<"idle" | "pairing" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  const handlePairWatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pairingCode.length !== 6) return;
+
+    setStatus("pairing");
+    setMessage("Pairing smartwatch...");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch("/api/devices/pair/confirm", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          code: pairingCode.toUpperCase(),
+          deviceType: 'wearos'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Pairing failed");
+      }
+      
+      setStatus("success");
+      setMessage("Smartwatch successfully paired!");
+      setPairingCode("");
+    } catch (err) {
+      setStatus("error");
+      setMessage("Failed to pair smartwatch. Please check the code and try again.");
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-8 p-8 max-w-4xl mx-auto w-full h-full">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-black text-white uppercase tracking-widest">Team Portal</h1>
+        <p className="text-muted-foreground font-medium">Manage your devices and preferences.</p>
+      </div>
+
+      <div className="bg-card border border-zinc-800 p-6 rounded-2xl flex flex-col gap-6 w-full max-w-md">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
+            <Watch className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white tracking-wide">Pair Smartwatch</h2>
+            <p className="text-muted-foreground text-sm">Enter the 6-digit code shown on your WearOS device.</p>
+          </div>
+        </div>
+
+        <form onSubmit={handlePairWatch} className="flex flex-col gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Pairing Code</label>
+            <PinInput
+              length={6}
+              value={pairingCode}
+              onChange={setPairingCode}
+            />
+          </div>
+          
+          <Button 
+            type="submit" 
+            disabled={status === "pairing" || pairingCode.length !== 6}
+            className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold"
+          >
+            {status === "pairing" ? "Pairing..." : "Pair Device"}
+          </Button>
+        </form>
+
+        {(message && status !== "idle") && (
+          <div className={`p-4 rounded-xl text-sm text-center border ${
+            status === "success" ? "bg-cyan-400/10 border-cyan-400/20 text-cyan-400" : 
+            status === "error" ? "bg-red-500/10 border-red-500/20 text-red-400" : 
+            "bg-zinc-800/50 border-zinc-700 text-muted-foreground"
+          }`}>
+            {message}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/transactions/page.tsx
+````typescript
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../../lib/supabase";
+import { 
+  Search, 
+  ChevronLeft, 
+  ChevronRight, 
+  ArrowUpDown,
+  Filter,
+  DollarSign
+} from "lucide-react";
+import { toast } from "sonner";
+
+interface Transaction {
+  id: string;
+  quantity_sold: number;
+  gross_revenue: number;
+  discount_amount: number;
+  transaction_time: string;
+  source: string;
+  external_transaction_id: string;
+  pos_items: {
+    name: string;
+  } | null;
+}
+
+export default function TransactionsPage() {
+  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [minVolume, setMinVolume] = useState("");
+  const [sortBy, setSortBy] = useState<"transaction_time" | "gross_revenue">("transaction_time");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 8;
+  const [totalCount, setTotalCount] = useState(0);
+
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from("pos_transactions")
+        .select("*, pos_items(name)", { count: "exact" });
+
+      if (sourceFilter !== "all") {
+        query = query.eq("source", sourceFilter);
+      }
+
+      if (minVolume) {
+        query = query.gte("gross_revenue", parseFloat(minVolume));
+      }
+
+      // We do the search in-memory or query based on external ID
+      if (search) {
+        query = query.ilike("external_transaction_id", `%${search}%`);
+      }
+
+      // Order
+      query = query.order(sortBy, { ascending: sortOrder === "asc" });
+
+      // Range
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, count, error } = await query;
+      if (error) throw error;
+
+      setTransactions((data as any[]) || []);
+      setTotalCount(count || 0);
+    } catch (err: any) {
+      toast.error(`Failed to load transactions: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [page, sourceFilter, sortBy, sortOrder]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    fetchTransactions();
+  };
+
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+  const toggleSort = (field: "transaction_time" | "gross_revenue") => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("desc");
+    }
+    setPage(1);
+  };
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn">
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">Transactions & Orders</h1>
+        <p className="text-sm text-zinc-500 dark:text-muted-foreground mt-1">Audit synced Square sales logs and volume metrics.</p>
+      </div>
+
+      {/* Filter Toolbar */}
+      <div className="glass-panel p-4 rounded-2xl border border-black/5 dark:border-white/5 flex flex-wrap gap-4 items-center justify-between">
+        <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground dark:text-zinc-500 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search Event/Txn ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-zinc-50 dark:bg-card border border-zinc-800 rounded-xl pl-9 pr-4 py-2 w-full text-xs text-white outline-none focus:border-sky-500 transition-all"
+            />
+          </div>
+          <button type="submit" className="bg-sky-500 hover:bg-sky-600 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all">
+            Find
+          </button>
+        </form>
+
+        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
+          <div className="flex items-center gap-2">
+            <Filter className="text-muted-foreground dark:text-zinc-500 w-3.5 h-3.5" />
+            <select
+              value={sourceFilter}
+              onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }}
+              className="bg-zinc-50 dark:bg-card border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300 outline-none"
+            >
+              <option value="all">All Sources</option>
+              <option value="square">Square</option>
+              <option value="toast">Toast</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <DollarSign className="text-muted-foreground dark:text-zinc-500 w-3.5 h-3.5" />
+            <input
+              type="number"
+              placeholder="Min $ Vol"
+              value={minVolume}
+              onChange={(e) => setMinVolume(e.target.value)}
+              onBlur={() => { setPage(1); fetchTransactions(); }}
+              className="bg-zinc-50 dark:bg-card border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white w-24 outline-none focus:border-sky-500 transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Table */}
+      <div className="glass-panel rounded-2xl border border-black/5 dark:border-white/5 overflow-hidden shadow-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-black/5 dark:border-white/5 text-zinc-500 dark:text-muted-foreground text-xs font-bold bg-card/40">
+                <th className="p-4">Transaction ID</th>
+                <th className="p-4">POS Item</th>
+                <th className="p-4">Quantity</th>
+                <th className="p-4 cursor-pointer hover:text-white transition-all" onClick={() => toggleSort("gross_revenue")}>
+                  Gross Revenue <ArrowUpDown className="inline w-3 h-3 ml-1" />
+                </th>
+                <th className="p-4">Discount</th>
+                <th className="p-4 cursor-pointer hover:text-white transition-all" onClick={() => toggleSort("transaction_time")}>
+                  Transaction Time <ArrowUpDown className="inline w-3 h-3 ml-1" />
+                </th>
+                <th className="p-4">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="text-center p-8 text-xs text-muted-foreground dark:text-zinc-500">Auditing sales transactions...</td>
+                </tr>
+              ) : transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center p-8 text-xs text-muted-foreground dark:text-zinc-500">No matching sales records found.</td>
+                </tr>
+              ) : (
+                transactions.map((txn) => (
+                  <tr key={txn.id} className="border-b border-black/5 dark:border-white/5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-black/5 bg-card transition-all">
+                    <td className="p-4 font-mono text-zinc-500 dark:text-muted-foreground select-all">{txn.external_transaction_id}</td>
+                    <td className="p-4 font-bold text-zinc-200">{txn.pos_items?.name || "Unnamed POS Item"}</td>
+                    <td className="p-4 font-semibold text-zinc-500 dark:text-muted-foreground">{txn.quantity_sold}</td>
+                    <td className="p-4 font-bold text-emerald-400">${txn.gross_revenue.toFixed(2)}</td>
+                    <td className="p-4 text-muted-foreground dark:text-zinc-500">${txn.discount_amount.toFixed(2)}</td>
+                    <td className="p-4 text-zinc-500 dark:text-muted-foreground">{new Date(txn.transaction_time).toLocaleString()}</td>
+                    <td className="p-4">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
+                        txn.source === "square" 
+                          ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                          : "bg-zinc-800 text-zinc-500 dark:text-muted-foreground border-zinc-700"
+                      }`}>
+                        {txn.source}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Footer */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-black/5 dark:border-white/5 flex justify-between items-center bg-card/20 text-xs">
+            <span className="text-muted-foreground dark:text-zinc-500">Showing page {page} of {totalPages}</span>
+            <div className="flex gap-2">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+                className="p-2 border border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-black/5 bg-card transition-all"
+              >
+                <ChevronLeft className="w-4 h-4 text-white" />
+              </button>
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage(page + 1)}
+                className="p-2 border border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-black/5 bg-card transition-all"
+              >
+                <ChevronRight className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/layout.tsx
+````typescript
+import React from "react";
+import { cookies } from "next/headers";
+import { GlobalAppBar } from "@soustools/design-system";
+import { logoutAction } from "../actions/auth";
+import { createServerClient } from "@soustools/supabase";
+
+export default async function WorkspaceLayout({ 
+  children,
+  modal
+}: { 
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(cookieStore as any);
+
+  const { data: notifications } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("is_read", false)
+    .order("created_at", { ascending: false });
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <GlobalAppBar 
+        notifications={notifications || []} 
+        onLogoutAction={logoutAction} 
+        isAdmin={true}
+      />
+      <main className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-y-auto min-w-0">
+        {children}
+        {modal}
+      </main>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/blocks/callout-block.tsx
+````typescript
+import React from "react";
+
+interface CalloutBlockProps {
+  icon?: string;
+  text: string;
+  panelStyle?: "glass" | "none";
+  accentBorder?: boolean;
+  orientation?: "horizontal" | "vertical";
+  className?: string;
+  textColor?: string;
+  fontSize?: string;
+  backgroundOpacity?: number;
+  title?: string;
+  message?: string;
+}
+
+export function CalloutBlock({
+  icon,
+  text,
+  panelStyle,
+  accentBorder,
+  orientation = "horizontal",
+  className,
+  textColor,
+  fontSize,
+  backgroundOpacity,
+  title,
+  message,
+}: CalloutBlockProps) {
+  const isGlass = panelStyle === "glass";
+  const isVertical = orientation === "vertical";
+
+  const containerClasses = [
+    "p-5 rounded-2xl flex gap-4 text-zinc-200 my-2",
+    isVertical
+      ? "flex-col items-center justify-center text-center"
+      : "items-center",
+    isGlass
+      ? ""
+      : panelStyle !== "none"
+        ? "bg-card border border-zinc-800"
+        : "",
+    accentBorder ? "border-l-4 border-l-[oklch(0.70_0.25_150)]" : "",
+    "st-callout",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const bgStyle =
+    backgroundOpacity !== undefined && !isGlass && panelStyle !== "none"
+      ? { backgroundColor: `rgba(24, 24, 27, ${backgroundOpacity})` }
+      : {};
+
+  return (
+    <div className={containerClasses} style={bgStyle}>
+      {icon && (
+        <span className="text-2xl flex-shrink-0 animate-bounce-slow">
+          {icon}
+        </span>
+      )}
+      <div
+        className="flex flex-col gap-1 items-center justify-center flex-grow"
+        style={{ color: textColor }}
+      >
+        {title && (
+          <span
+            className="font-bold tracking-wide text-lg"
+            style={{ fontSize }}
+          >
+            {title}
+          </span>
+        )}
+        {message && (
+          <span
+            className="leading-snug"
+            style={{
+              fontSize: fontSize ? `calc(${fontSize} * 0.75)` : undefined,
+            }}
+          >
+            {message}
+          </span>
+        )}
+        {!title && !message && text && (
+          <p
+            className={`leading-relaxed ${
+              isVertical
+                ? "text-[#f8fafc] text-[15px] font-black tracking-widest uppercase leading-snug"
+                : "text-sm font-semibold tracking-wide font-sans"
+            }`}
+            style={{ fontSize }}
+          >
+            {text}
+          </p>
+        )}
+      </div>
+      {!isVertical && icon && (
+        <span className="text-2xl flex-shrink-0 animate-bounce-slow">
+          {icon}
+        </span>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/blocks/category-header-block.tsx
+````typescript
+import React from "react";
+
+interface CategoryHeaderBlockProps {
+  title: string;
+  subtitle?: string;
+  panelStyle?: string;
+  badge?: string;
+  className?: string;
+  color?: string;
+  fontSize?: string;
+}
+
+export function CategoryHeaderBlock({
+  title,
+  subtitle,
+  panelStyle,
+  badge,
+  className,
+  color,
+  fontSize,
+}: CategoryHeaderBlockProps) {
+  const isGlass = panelStyle === "glass";
+  const containerClasses = [
+    isGlass
+      ? " p-6 rounded-2xl relative my-4 flex flex-col gap-1.5"
+      : "py-4 flex flex-col gap-1",
+    "st-category-header",
+    className
+  ].filter(Boolean).join(" ");
+
+  return (
+    <div className={containerClasses}>
+      <div className="flex justify-between items-start gap-4">
+        <h2 className="text-3xl font-extrabold tracking-tight uppercase text-white font-brand" style={{ color, fontSize }}>
+          {title}
+        </h2>
+        {badge && (
+          <span className="text-[10px] px-2.5 py-1 font-black bg-red-500 text-white rounded uppercase tracking-wider whitespace-nowrap">
+            {badge}
+          </span>
+        )}
+      </div>
+      {subtitle && (
+        <p className="text-sm font-semibold text-muted-foreground font-sans tracking-wide">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/blocks/exploded-item-block.tsx
+````typescript
+import React from "react";
+import { PosItem } from "@soustools/api-types";
+
+interface ExplodedItemBlockProps {
+  menuItemId?: string;
+  items: PosItem[];
+  panelStyle?: string;
+  className?: string;
+  children?: React.ReactNode;
+  hideTitle?: boolean;
+  hidePrice?: boolean;
+  hideDescription?: boolean;
+}
+
+export function ExplodedItemBlock({
+  menuItemId,
+  items,
+  panelStyle,
+  className,
+  children,
+  hideTitle,
+  hidePrice,
+  hideDescription,
+}: ExplodedItemBlockProps) {
+  const isGlass = panelStyle === "glass" || !panelStyle;
+  const containerClasses = [
+    isGlass ? "" : "border-transparent bg-transparent",
+    "rounded-2xl p-6 flex flex-col gap-6 text-zinc-100 my-4",
+    "st-exploded-item",
+    className
+  ].filter(Boolean).join(" ");
+
+  const explodedItem = menuItemId ? items.find(i => i.id === menuItemId || i.externalId === menuItemId) : null;
+
+  return (
+    <div className={containerClasses}>
+      {/* Header */}
+      {explodedItem && (
+        <div className="flex flex-col gap-2 border-b border-white/10 pb-4">
+          {(!hideTitle || !hidePrice) && (
+            <div className="flex justify-between items-center flex-wrap gap-2">
+              {!hideTitle && (
+                <h3 className="text-3xl font-extrabold uppercase tracking-widest font-brand st-menu-glow-text">
+                  {explodedItem.name}
+                </h3>
+              )}
+              {!hidePrice && (
+                <div className="text-[14px] font-medium text-muted-foreground tracking-wider uppercase ml-auto">
+                  BASE <span className="font-extrabold text-[#00f0ff] ml-1 st-menu-glow-text">${Number(explodedItem.price).toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+          )}
+          {!hideDescription && explodedItem.description && (
+            <p className="text-sm text-muted-foreground max-w-2xl">{explodedItem.description}</p>
+          )}
+        </div>
+      )}
+
+      {/* Children Drop Zone */}
+      <div className="flex flex-col gap-4">
+        {children}
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/blocks/media-carousel-block.tsx
+````typescript
+import React, { useState, useEffect } from "react";
+import { MediaSlide } from "@soustools/api-types";
+
+interface MediaCarouselBlockProps {
+  slides: MediaSlide[];
+  style?: {
+    imageEffect?: string;
+  };
+}
+
+export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!slides || slides.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [slides]);
+
+  if (!slides || slides.length === 0) {
+    return (
+      <div className="w-full h-64 bg-card flex items-center justify-center rounded-2xl border border-zinc-800 text-zinc-600 italic">
+        Media Carousel: No Slides
+      </div>
+    );
+  }
+
+  const activeSlide = slides[currentIndex];
+  const isKenBurns = style?.imageEffect === "ken-burns";
+
+  return (
+    <div className="w-full h-72 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-card my-3">
+      <style>{`
+        @keyframes st-ken-burns {
+          0% { transform: scale(1) translate(0, 0); }
+          50% { transform: scale(1.08) translate(1%, -1%); }
+          100% { transform: scale(1) translate(0, 0); }
+        }
+        .animate-ken-burns {
+          animation: st-ken-burns 16s ease-in-out infinite;
+        }
+      `}</style>
+
+      {activeSlide.videoUrl ? (
+        <video
+          src={activeSlide.videoUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        />
+      ) : activeSlide.imageUrl ? (
+        <div className="w-full h-full overflow-hidden relative">
+          <img
+            src={activeSlide.imageUrl}
+            alt="Carousel Slide"
+            className={`w-full h-full object-cover ${isKenBurns ? "animate-ken-burns" : ""}`}
+          />
+        </div>
+      ) : null}
+
+      {(activeSlide.captionTitle || activeSlide.description || activeSlide.captionSubtitle || activeSlide.captionPrice) && (
+        <div className="absolute bottom-4 left-4 p-4 st-glass-pill flex items-center justify-between gap-4 text-white max-w-[85%] z-10 rounded-xl">
+          <div className="flex flex-col">
+            {activeSlide.captionSubtitle && (
+              <span className="text-[#00f0ff] text-[11px] font-black tracking-widest uppercase mb-1 block">
+                {activeSlide.captionSubtitle}
+              </span>
+            )}
+            {activeSlide.captionTitle && (
+              <h4 className="text-[20px] font-bold text-white leading-tight font-brand">
+                {activeSlide.captionTitle}
+              </h4>
+            )}
+            {activeSlide.description && (
+              <p className="text-xs text-zinc-300 font-sans leading-relaxed mt-0.5">
+                {activeSlide.description}
+              </p>
+            )}
+          </div>
+          {activeSlide.captionPrice && (
+            <span className="bg-[#00f0ff] text-[#030712] px-3.5 py-1.5 rounded-lg font-black text-[16px] flex-shrink-0 shadow-md">
+              {activeSlide.captionPrice}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/blocks/menu-list-block.tsx
+````typescript
+import React from "react";
+import { PosItem, MenuItemStyles, SignageBlock } from "@soustools/api-types";
+import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle, buildDescriptionStyle } from "../menu-item-style-utils";
+
+type MenuListBlockProps = Extract<SignageBlock, { type: "MenuListBlock" }> & {
+  items: PosItem[];
+  menuItemStyles: MenuItemStyles;
+};
+
+export function MenuListBlock({
+  itemIds,
+  styles,
+  panelStyle,
+  className,
+  items,
+  menuItemStyles,
+  itemModifiers,
+  modifierLayout,
+  hideDescriptions,
+}: MenuListBlockProps) {
+  if (!itemIds || itemIds.length === 0) return null;
+
+  const isGlass = panelStyle === "glass";
+  const containerClasses = [
+    "flex flex-col gap-2 w-full st-menu-list",
+    isGlass ? " p-2 border border-white/10 bg-white/5 rounded" : "",
+    className
+  ].filter(Boolean).join(" ");
+
+  return (
+    <div className={containerClasses}>
+      {itemIds.map((itemId) => {
+        const item = items.find((i) => i.id === itemId || i.externalId === itemId);
+        if (!item) return null;
+
+        const blockStyles = styles ?? menuItemStyles;
+        const optStyle = resolveItemState(item, false, blockStyles);
+        if (optStyle.hidden && item.isSoldOut) return null;
+
+        const isFlatItem = panelStyle === "none" || (
+          (!blockStyles.regular.backgroundColor || blockStyles.regular.backgroundColor === "transparent" || blockStyles.regular.backgroundColor.includes("0,0,0,0")) &&
+          (!blockStyles.regular.borderWidth || !blockStyles.regular.borderColor || blockStyles.regular.borderColor === "transparent")
+        );
+
+        let borderClass = "border";
+        let cardStyle = buildCardStyle(optStyle);
+        if (isFlatItem) {
+          borderClass = "border-transparent bg-transparent px-2 py-1.5";
+          delete cardStyle.backgroundColor;
+          delete cardStyle.borderColor;
+          delete cardStyle.borderWidth;
+          delete cardStyle.boxShadow;
+        }
+
+        const titleStyle = buildTitleStyle(optStyle);
+        const priceStyle = buildPriceStyle(optStyle);
+        const descStyle = buildDescriptionStyle(optStyle);
+
+        const overrides = itemModifiers?.[itemId] || [];
+        const isInlineMod = modifierLayout === "inline";
+
+        return (
+          <div
+            key={item.id}
+            className={`flex flex-col justify-between items-start gap-1 w-full rounded-xl ${borderClass} transition-all duration-300 relative st-menu-item`}
+            style={{
+              ...cardStyle,
+              opacity: item.isSoldOut ? (blockStyles.soldOut.dimOpacity ?? 0.5) : 1,
+            }}
+          >
+            <div className="flex justify-between items-start w-full">
+              <div className="flex flex-col">
+                <span className="font-bold tracking-tight st-item-title leading-snug" style={titleStyle}>
+                  {item.name}
+                </span>
+                {!hideDescriptions && item.description && (
+                  <span className="text-[0.8rem] leading-tight mt-0.5 st-item-description" style={descStyle}>
+                    {item.description}
+                  </span>
+                )}
+              </div>
+              {Number(item.price) > 0 && (
+                <span className="font-extrabold whitespace-nowrap st-price-tag shrink-0" style={priceStyle}>
+                  ${Number(item.price).toFixed(2)}
+                </span>
+              )}
+            </div>
+
+            {/* Modifiers List */}
+            {overrides.length > 0 && (
+              <div className={`w-full mt-1 ${isInlineMod ? "flex flex-row flex-wrap gap-x-3 gap-y-1" : "flex flex-col gap-1 pl-2 border-l border-white/10"}`}>
+                {overrides.map((override, idx) => {
+                  return (
+                    <div key={idx} className="flex items-center text-[0.85rem] text-zinc-300">
+                      <span className="st-item-modifier text-cyan-400 font-medium">
+                        {override.displayNameOverride || `Modifier Group (${override.modifierIds.length} items)`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {item.isSoldOut && optStyle.strikethrough && (
+              <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 transform -translate-y-1/2 opacity-75 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/blocks/modifier-group-block.tsx
+````typescript
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { MenuItemStyles, PosItem } from "@soustools/api-types";
+import { supabase } from "../../../../lib/supabase";
+import { resolveItemState, buildTitleStyle, buildPriceStyle } from "../menu-item-style-utils";
+
+interface ModifierOption {
+  id: string;
+  name: string;
+  price: number;
+  is_sold_out: boolean;
+}
+
+interface ModifierGroup {
+  id: string;
+  name: string;
+  min_selected_modifiers: number | null;
+  max_selected_modifiers: number | null;
+}
+
+interface ModifierGroupBlockProps {
+  modifierGroupId?: string;
+  menuItemStyles: MenuItemStyles;
+}
+
+export function ModifierGroupBlock({
+  modifierGroupId,
+  menuItemStyles,
+}: ModifierGroupBlockProps) {
+  const [group, setGroup] = useState<ModifierGroup | null>(null);
+  const [options, setOptions] = useState<ModifierOption[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      if (!modifierGroupId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Resolve group
+        const { data: grpData, error: grpError } = await supabase
+          .from("pos_modifier_groups")
+          .select("id, name, min_selected_modifiers, max_selected_modifiers")
+          .or(`id.eq.${modifierGroupId},external_id.eq.${modifierGroupId}`)
+          .single();
+
+        if (grpError || !grpData) {
+          setLoading(false);
+          return;
+        }
+
+        setGroup(grpData as ModifierGroup);
+
+        // Fetch options linked to this group
+        const { data: optsData, error: optsError } = await supabase
+          .from("pos_modifier_options")
+          .select("id, name, price, is_sold_out")
+          .eq("modifier_group_id", grpData.id);
+
+        if (!optsError && optsData) {
+          setOptions(optsData as ModifierOption[]);
+        }
+      } catch (err) {
+        console.error("Failed to load modifier group data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [modifierGroupId]);
+
+  if (loading) {
+    return (
+      <div className="p-4 border border-zinc-800 rounded-xl animate-pulse bg-white/5 flex flex-col gap-2">
+        <div className="h-4 bg-zinc-700 w-1/3 rounded" />
+        <div className="h-3 bg-zinc-800 w-1/2 rounded" />
+      </div>
+    );
+  }
+
+  if (!group) {
+    return (
+      <div className="p-4 border border-dashed border-zinc-800 text-zinc-600 text-xs rounded-xl italic font-mono">
+        Modifier Group not found ({modifierGroupId || "Unconfigured"})
+      </div>
+    );
+  }
+
+  return (
+    <div className=" rounded-2xl p-5 flex flex-col gap-3 my-3">
+      <div>
+        <h4 className="text-lg font-bold uppercase tracking-tight text-white font-brand">
+          {group.name}
+        </h4>
+        {(group.min_selected_modifiers !== null || group.max_selected_modifiers !== null) && (
+          <p className="text-xs text-zinc-500 font-sans italic mt-0.5">
+            {group.min_selected_modifiers !== null && `Min: ${group.min_selected_modifiers}`}
+            {group.min_selected_modifiers !== null && group.max_selected_modifiers !== null && " | "}
+            {group.max_selected_modifiers !== null && `Max: ${group.max_selected_modifiers}`}
+          </p>
+        )}
+      </div>
+
+      <ul className="flex flex-col gap-2 pt-2 border-t border-white/5">
+        {options.map((opt) => {
+          // Resolve state styling choice for modifier option
+          // (mimicking PosItem for state selection properties)
+          const dummyItem: PosItem = {
+            id: opt.id,
+            organizationId: "",
+            posProvider: "MANUAL",
+            externalId: null,
+            name: opt.name,
+            description: null,
+            price: opt.price,
+            imageUrl: null,
+            isSoldOut: opt.is_sold_out,
+            createdAt: "",
+            updatedAt: "",
+          };
+          const optStyle = resolveItemState(dummyItem, false, menuItemStyles);
+
+          if (optStyle.hidden && opt.is_sold_out) return null;
+
+          const textStyle = buildTitleStyle(optStyle);
+          const priceStyle = buildPriceStyle(optStyle);
+
+          return (
+            <li
+              key={opt.id}
+              className="flex justify-between items-center text-sm text-zinc-300 transition-opacity duration-300"
+              style={{
+                opacity: optStyle.dimOpacity !== undefined ? optStyle.dimOpacity : (opt.is_sold_out ? 0.5 : 1),
+                filter: optStyle.grayscale ? "grayscale(1)" : undefined,
+              }}
+            >
+              <span className="font-semibold" style={textStyle}>
+                + {opt.name}
+                {opt.is_sold_out && menuItemStyles.soldOut.badge && (
+                  <span className="ml-2 text-[8px] px-1 bg-red-500 text-white rounded font-bold uppercase">
+                    {menuItemStyles.soldOut.badge.text}
+                  </span>
+                )}
+              </span>
+              {Number(opt.price) > 0 && (
+                <span className="font-extrabold text-muted-foreground" style={priceStyle}>
+                  +${Number(opt.price).toFixed(2)}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/blocks/nested-item-block.tsx
+````typescript
+import React from "react";
+import { PosItem, MenuItemStyles, UpgradeItem } from "@soustools/api-types";
+import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle } from "../menu-item-style-utils";
+
+interface NestedItemBlockProps {
+  basePosItemId?: string;
+  upgradeItems?: UpgradeItem[];
+  items: PosItem[];
+  menuItemStyles: MenuItemStyles;
+  panelStyle?: string;
+  className?: string;
+}
+
+export function NestedItemBlock({
+  basePosItemId,
+  upgradeItems = [],
+  items,
+  menuItemStyles,
+  panelStyle,
+  className,
+}: NestedItemBlockProps) {
+  const baseItem = items.find((i) => i.id === basePosItemId || i.externalId === basePosItemId);
+
+  // Fallback if base item is a seeded mock/dummy not in DB
+  const baseName = baseItem ? baseItem.name : (basePosItemId ? basePosItemId.replace("dummy-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Unknown Item");
+  const basePrice = baseItem ? Number(baseItem.price) : 0;
+  const isBaseSoldOut = baseItem ? baseItem.isSoldOut : false;
+
+  const baseStateStyle = baseItem
+    ? resolveItemState(baseItem, false, menuItemStyles)
+    : menuItemStyles.regular;
+
+  const cardStyle = buildCardStyle(baseStateStyle);
+  const titleStyle = buildTitleStyle(baseStateStyle);
+  const priceStyle = buildPriceStyle(baseStateStyle);
+
+  const isFlat =
+    panelStyle === "none" ||
+    baseStateStyle.backgroundColor === "transparent" ||
+    !baseStateStyle.backgroundColor;
+
+  let borderClass = "border";
+  if (isFlat) {
+    borderClass = "border-transparent bg-transparent";
+    delete cardStyle.backgroundColor;
+    delete cardStyle.borderColor;
+    delete cardStyle.borderWidth;
+    delete cardStyle.boxShadow;
+  }
+
+  const isGroupHeader = basePrice === 0;
+
+  const containerClasses = [
+    `p-6 rounded-2xl ${borderClass} flex flex-col gap-3 transition-all duration-300 relative`,
+    panelStyle === "glass" ? "" : "st-nested-item",
+    panelStyle === "glass" ? "" : className
+  ].filter(Boolean).join(" ");
+
+  const element = (
+    <div
+      className={containerClasses}
+      style={{
+        ...cardStyle,
+        opacity: isBaseSoldOut ? (menuItemStyles.soldOut.dimOpacity ?? 0.5) : 1,
+      }}
+    >
+      <div className="flex justify-between items-start gap-4">
+        <h3
+          className={
+            isGroupHeader
+              ? "text-[22px] font-extrabold uppercase tracking-widest text-[#00f0ff] font-brand st-menu-glow-text st-category-header"
+              : "text-xl font-bold tracking-tight"
+          }
+          style={titleStyle}
+        >
+          {baseName}
+        </h3>
+        {basePrice > 0 && (
+          <span className="text-lg font-extrabold whitespace-nowrap st-price-tag" style={priceStyle}>
+            ${basePrice.toFixed(2)}
+          </span>
+        )}
+      </div>
+
+      <ul className={`flex flex-col gap-2 ${isGroupHeader ? "" : "pl-4 border-l border-zinc-800"}`}>
+        {upgradeItems.map((upgrade, idx) => {
+          const upItem = items.find((i) => i.id === upgrade.posItemId || i.externalId === upgrade.posItemId);
+          const upName = upItem ? upItem.name : upgrade.posItemId.replace("dummy-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          const upPrice = upItem ? Number(upItem.price) : null;
+          const isUpSoldOut = upItem ? upItem.isSoldOut : false;
+
+          const upStateStyle = upItem
+            ? resolveItemState(upItem, false, menuItemStyles)
+            : menuItemStyles.regular;
+
+          const upTitleStyle = buildTitleStyle(upStateStyle);
+          const upPriceStyle = buildPriceStyle(upStateStyle);
+
+          if (upStateStyle.hidden && isUpSoldOut) return null;
+
+          return (
+            <li
+              key={idx}
+              className="flex justify-between items-center text-sm transition-opacity duration-300"
+              style={{
+                opacity: isUpSoldOut ? (menuItemStyles.soldOut.dimOpacity ?? 0.5) : 1,
+              }}
+            >
+              <div className="flex flex-col">
+                <span className="font-semibold text-zinc-300" style={upTitleStyle}>
+                  {isGroupHeader ? upName : `• ${upName}`}
+                  {isUpSoldOut && menuItemStyles.soldOut.badge && (
+                    <span className="ml-2 text-[8px] px-1 bg-red-500 text-white rounded font-bold uppercase st-sold-out-badge">
+                      {menuItemStyles.soldOut.badge.text}
+                    </span>
+                  )}
+                </span>
+                {upgrade.modifierDescription && (
+                  <span className="text-xs text-zinc-500 font-sans italic pl-3">
+                    {upgrade.modifierDescription}
+                  </span>
+                )}
+              </div>
+              {upPrice !== null && upPrice > 0 && (
+                <span className="font-bold text-muted-foreground pl-4 st-price-tag" style={upPriceStyle}>
+                  {isGroupHeader ? `$${upPrice.toFixed(2)}` : `+$${upPrice.toFixed(2)}`}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+
+  if (panelStyle === "glass") {
+    return (
+      <div className={[" p-4 st-nested-item", className].filter(Boolean).join(" ")}>
+        {element}
+      </div>
+    );
+  }
+  return element;
+}
+````
+
+## File: apps/web/src/app/display/[id]/block-renderer.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { SignageBlock, PosItem, MenuItemStyles, BlockSizing } from "@soustools/api-types";
+import { CategoryHeaderBlock } from "./blocks/category-header-block";
+import { PosItemBlock } from "./blocks/pos-item-block";
+import { CalloutBlock } from "./blocks/callout-block";
+import { NestedItemBlock } from "./blocks/nested-item-block";
+import { MediaCarouselBlock } from "./blocks/media-carousel-block";
+import { ExplodedItemBlock } from "./blocks/exploded-item-block";
+import { ModifierGroupBlock } from "./blocks/modifier-group-block";
+import { MenuListBlock } from "./blocks/menu-list-block";
+
+interface BlockRendererProps {
+  block: SignageBlock;
+  items: PosItem[];
+  menuItemStyles: MenuItemStyles;
+  config?: any;
+}
+
+export function getSizingStyles(sizing?: BlockSizing): React.CSSProperties {
+  if (!sizing) return {};
+  const { width, height, flexBasis, flexGrow, flexShrink, gap, padding, margin } = sizing;
+  return {
+    ...(width && { width }),
+    ...(height && { height }),
+    ...(flexBasis && { flexBasis }),
+    ...(flexGrow !== undefined && { flexGrow }),
+    ...(flexShrink !== undefined && { flexShrink }),
+    ...(gap && { gap }),
+    ...(padding && { padding }),
+    ...(margin && { margin }),
+  };
+}
+
+export function getLayoutClass(direction: "column" | "row" | "grid", panelStyle?: string, className?: string) {
+  return [
+    direction === "grid"
+      ? "grid gap-4 w-full h-full st-layout-grid"
+      : `flex flex-${direction === "column" ? "col" : "row"} gap-4 w-full h-full st-layout-${direction}`,
+    panelStyle === "glass" ? " p-4 rounded-2xl" : "",
+    className
+  ].filter(Boolean).join(" ");
+}
+
+export function BlockRenderer({ block, items, menuItemStyles, config }: BlockRendererProps): React.JSX.Element {
+  const sizingStyles = getSizingStyles(block.sizing);
+
+  switch (block.type) {
+    case "ColumnBlock":
+      return (
+        <div className={getLayoutClass("column", block.panelStyle, block.className)} style={sizingStyles}>
+          {block.blocks.map((subBlock) => (
+            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
+          ))}
+        </div>
+      );
+    case "RowBlock":
+      return (
+        <div className={getLayoutClass("row", block.panelStyle, block.className)} style={sizingStyles}>
+          {block.blocks.map((subBlock) => (
+            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
+          ))}
+        </div>
+      );
+    case "GridBlock": {
+      const colTemplate = `repeat(${block.columns}, minmax(0, 1fr))`;
+      const rowTemplate = `repeat(${block.rows}, minmax(0, 1fr))`;
+      return (
+        <div
+          className={getLayoutClass("grid", block.panelStyle, block.className)}
+          style={{ ...sizingStyles, gridTemplateColumns: colTemplate, gridTemplateRows: rowTemplate }}
+        >
+          {block.cells.map((subBlock) => (
+            <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
+          ))}
+        </div>
+      );
+    }
+    case "CategoryHeaderBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <CategoryHeaderBlock {...block} color={block.color || config?.designTokens?.primaryColor} />
+        </div>
+      );
+    case "MenuListBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <MenuListBlock {...block as any} items={items} menuItemStyles={menuItemStyles} />
+        </div>
+      );
+    case "PosItemBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <PosItemBlock
+            {...block}
+            items={items}
+            menuItemStyles={menuItemStyles}
+          />
+        </div>
+      );
+    case "CalloutBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <CalloutBlock
+            {...block}
+            panelStyle={
+              block.panelStyle === "glass" || block.panelStyle === "none"
+                ? block.panelStyle
+                : undefined
+            }
+          />
+        </div>
+      );
+    case "NestedItemBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <NestedItemBlock {...block} items={items} menuItemStyles={menuItemStyles} />
+        </div>
+      );
+    case "MediaCarouselBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <MediaCarouselBlock slides={block.slides} style={block.style} />
+        </div>
+      );
+    case "ExplodedItemBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <ExplodedItemBlock 
+            menuItemId={block.menuItemId} 
+            items={items} 
+            panelStyle={block.panelStyle} 
+            className={block.className}
+            hideTitle={(block as any).hideTitle}
+            hidePrice={(block as any).hidePrice}
+            hideDescription={(block as any).hideDescription}
+          >
+             {block.blocks?.map((subBlock) => (
+               <BlockRenderer key={subBlock.id || Math.random().toString()} block={subBlock} items={items} menuItemStyles={menuItemStyles} config={config} />
+             ))}
+          </ExplodedItemBlock>
+        </div>
+      );
+    case "ModifierGroupBlock":
+      return (
+        <div style={sizingStyles} className="w-full h-full">
+          <ModifierGroupBlock modifierGroupId={block.modifierGroupId} menuItemStyles={menuItemStyles} />
+        </div>
+      );
+    case "ImageBlock": {
+      const b = block as any;
+      return (
+        <div style={sizingStyles} className="w-full h-full flex items-center justify-center overflow-hidden">
+          {b.imageUrl && <img src={b.imageUrl} alt="" className="max-w-full max-h-full object-contain" />}
+        </div>
+      );
+    }
+    case "VideoBlock": {
+      const b = block as any;
+      return (
+        <div style={sizingStyles} className="w-full h-full overflow-hidden">
+          {b.videoUrl && (
+            <video src={b.videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+          )}
+        </div>
+      );
+    }
+    case "TimelineBlock": {
+      const b = block as any;
+      const steps = b.steps || [];
+      return (
+        <div style={sizingStyles} className="w-full h-full flex flex-col gap-6 p-4">
+          {steps.map((step: any, idx: number) => (
+            <div key={step.id} className="flex gap-4 items-start">
+              <div className="w-8 h-8 rounded-full bg-cyan-500/20 border-2 border-cyan-500 flex items-center justify-center text-sm font-bold text-cyan-400 shrink-0">
+                {idx + 1}
+              </div>
+              <div className="text-xl text-zinc-100 mt-0.5">{step.text}</div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    default:
+      return (
+        <div style={sizingStyles} className="p-4 bg-red-950/20 border border-red-900 text-red-500 rounded-xl text-xs font-mono">
+          Unknown block type: {(block as any).type}
+        </div>
+      );
+  }
+}
+````
+
+## File: apps/web/src/app/display/[id]/display-player.tsx
+````typescript
+"use client";
+
+import React, { useEffect } from "react";
+import { useDisplayPlayer } from "./use-display-player";
+import { PairingScreen } from "./pairing-screen";
+import { SlideCarousel } from "./slide-carousel";
+import { buildAllAnimationCss } from "@soustools/domain-signage";
+import { SignageDisplay } from "@soustools/api-types";
+import { RawDbPosItem } from "./helpers";
+
+interface DisplayPlayerProps {
+  displayId: string;
+  initialDisplay?: SignageDisplay | null;
+  initialLayout?: any | null;
+  initialItems?: RawDbPosItem[];
+  initialErrorState?: string | null;
+}
+
+export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initialItems, initialErrorState }: DisplayPlayerProps) {
+  const { display, layout, items, loading, errorState } =
+    useDisplayPlayer(displayId, initialDisplay, initialLayout, initialItems, initialErrorState);
+
+  useEffect(() => {
+    const config = layout?.config;
+    if (!config) return;
+
+    // Aggregate all unique Google Fonts to load
+    const fontsToLoad = new Set<string>();
+    if (config.googleFont) fontsToLoad.add(config.googleFont);
+
+    // Clean up existing dynamic font links
+    document.querySelectorAll("[id^='signage-dynamic-font']").forEach((el) => el.remove());
+    Array.from(fontsToLoad).forEach((font, idx) => {
+      const link = document.createElement("link");
+      link.id = `signage-dynamic-font-${idx}`;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/\s+/g, "+")}&display=swap`;
+      document.head.appendChild(link);
+    });
+
+    // Inject custom CSS
+    document.getElementById("signage-custom-css")?.remove();
+    if (config.customCss) {
+      const style = document.createElement("style");
+      style.id = "signage-custom-css";
+      style.textContent = config.customCss;
+      document.head.appendChild(style);
+    }
+
+    // Inject animation keyframes from menuItemStyles
+    document.getElementById("signage-item-animations")?.remove();
+    if (config.menuItemStyles) {
+      const animCss = buildAllAnimationCss(config.menuItemStyles);
+      if (animCss) {
+        const style = document.createElement("style");
+        style.id = "signage-item-animations";
+        style.textContent = animCss;
+        document.head.appendChild(style);
+      }
+    }
+  }, [layout]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white">
+        <div className="w-8 h-8 border-4 border-t-transparent border-[oklch(0.60_0.25_250)] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (errorState && !display) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
+        <h2 className="text-2xl font-bold text-[oklch(0.60_0.25_25)] mb-2 font-brand">
+          Display Load Failed
+        </h2>
+        <p className="text-zinc-500 dark:text-muted-foreground font-sans">{errorState}</p>
+      </div>
+    );
+  }
+
+  if (display && !display.deckId) {
+    return <PairingScreen code={display.id.slice(0, 8).toUpperCase()} />;
+  }
+
+  const slides = layout?.config?.slides || [];
+  const menuItemStyles = layout?.config?.menuItemStyles;
+
+  return (
+    <main
+      className="min-h-screen bg-[oklch(0.08_0.01_260)] text-white"
+      style={{
+        fontFamily: layout?.config?.googleFont || "inherit",
+        // CSS variables for typography overrides
+        ["--menu-title-font" as any]: layout?.config?.typography?.menuItemTitle || "inherit",
+        ["--menu-price-font" as any]: layout?.config?.typography?.menuItemPrice || "inherit",
+        ["--menu-description-font" as any]: layout?.config?.typography?.menuItemDescription || "inherit",
+        ["--marketing-text-font" as any]: layout?.config?.typography?.marketingText || "inherit",
+        ["--menu-title-color" as any]: layout?.config?.typography?.menuItemTitleColor || "inherit",
+        ["--menu-price-color" as any]: layout?.config?.typography?.menuItemPriceColor || "inherit",
+        ["--menu-desc-color" as any]: layout?.config?.typography?.menuItemDescriptionColor || "inherit",
+        ["--marketing-text-color" as any]: layout?.config?.typography?.marketingTextColor || "inherit",
+      }}
+    >
+      <SlideCarousel
+        slides={slides}
+        items={items}
+        menuItemStyles={menuItemStyles}
+      />
+    </main>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/pairing-screen.tsx
+````typescript
+"use client";
+
+import React from "react";
+
+interface PairingScreenProps {
+  code: string;
+}
+
+export function PairingScreen({ code }: PairingScreenProps) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
+      <div className="glass-panel p-12 rounded-3xl max-w-lg w-full text-center space-y-8 border-black/10 dark:border-white/10 shadow-2xl relative overflow-hidden">
+        <div className="absolute -top-12 -left-12 w-24 h-24 bg-[oklch(0.60_0.25_250)] rounded-full blur-3xl opacity-20" />
+        <div className="absolute -bottom-12 -right-12 w-24 h-24 bg-[oklch(0.60_0.25_250)] rounded-full blur-3xl opacity-20" />
+
+        <div className="space-y-3">
+          <div className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-[oklch(0.60_0.25_250)]/10 text-[oklch(0.60_0.25_250)]">
+            Setup Mode
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white font-brand">
+            Pair Your Display
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-muted-foreground">
+            Enter the code below in your dashboard to connect this screen.
+          </p>
+        </div>
+
+        <div className="flex justify-center items-center py-4">
+          <div className="flex gap-3">
+            {code.split("").map((char, index) => (
+              <div
+                key={index}
+                className="w-16 h-20 flex items-center justify-center text-4xl font-black rounded-2xl bg-black/5 bg-card border border-black/10 dark:border-white/10 text-[oklch(0.60_0.25_250)] shadow-lg shadow-black/30 font-brand"
+              >
+                {char}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-3 text-muted-foreground dark:text-zinc-500 text-xs">
+          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.70_0.25_150)] animate-pulse" />
+          <span>Waiting for connection...</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/display/[id]/single-column.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
+import { MenuItemCard } from "./menu-item-card";
+import { DEFAULT_MENU_ITEM_STYLES } from "@soustools/domain-signage";
+
+interface SingleColumnProps {
+  column: ColumnConfig;
+  index: number;
+  style: React.CSSProperties;
+  items: PosItem[];
+  menuItemStyles?: MenuItemStyles;
+}
+
+export function SingleColumn({
+  column,
+  index,
+  style,
+  items,
+  menuItemStyles = DEFAULT_MENU_ITEM_STYLES,
+}: SingleColumnProps) {
+  switch (column.type) {
+    case "MENU": {
+      let columnItems = items;
+      if (column.itemIds && column.itemIds.length > 0) {
+        columnItems = column.itemIds
+          .map((id) => items.find((item) => item.id === id || item.externalId === id))
+          .filter((item): item is PosItem => !!item);
+      }
+      columnItems = columnItems.filter(
+        (item) => !(item.isSoldOut && (menuItemStyles.soldOut.hidden ?? false))
+      );
+      return (
+        <div
+          key={index}
+          style={style}
+          className="flex flex-col gap-4 overflow-y-auto overflow-x-hidden w-full h-full p-6"
+        >
+          {columnItems.length > 0 ? (
+            columnItems.map((item) => (
+              <MenuItemCard
+                key={item.id}
+                item={item}
+                highlightItems={column.highlightItems}
+                menuItemStyles={menuItemStyles}
+              />
+            ))
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground dark:text-zinc-500 text-sm">
+              No Menu Items Selected
+            </div>
+          )}
+        </div>
+      );
+    }
+    case "IMAGE":
+      return (
+        <div
+          key={index}
+          style={style}
+          className="w-full h-full overflow-hidden relative bg-transparent flex items-center justify-center"
+        >
+          {column.imageUrl ? (
+            <img
+              src={column.imageUrl}
+              alt="Column Media"
+              className={`w-full h-full object-${column.fit || "cover"}`}
+            />
+          ) : (
+            <div className="text-muted-foreground dark:text-zinc-500 text-sm">No Image Selected</div>
+          )}
+        </div>
+      );
+    case "VIDEO":
+      return (
+        <div
+          key={index}
+          style={style}
+          className="w-full h-full overflow-hidden relative bg-transparent"
+        >
+          {column.videoUrl ? (
+            <video
+              src={column.videoUrl}
+              autoPlay
+              loop={column.loop !== false}
+              muted={column.mute !== false}
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground dark:text-zinc-500 text-sm">
+              No Video Selected
+            </div>
+          )}
+        </div>
+      );
+    case "IFRAME":
+      return (
+        <div
+          key={index}
+          style={style}
+          className="w-full h-full overflow-hidden relative bg-transparent"
+        >
+          {column.iframeUrl ? (
+            <iframe
+              src={column.iframeUrl}
+              title="Embedded Content"
+              className="w-full h-full border-none"
+              allow="autoplay; encrypted-media"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground dark:text-zinc-500 text-sm">
+              No URL Configured
+            </div>
+          )}
+        </div>
+      );
+    case "TEXT":
+      return (
+        <div
+          key={index}
+          style={style}
+          className="w-full h-full flex flex-col justify-center items-center text-center p-8"
+        >
+          {column.title && (
+            <h2
+              className="text-3xl font-extrabold tracking-tight mb-4 text-white"
+              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+            >
+              {column.title}
+            </h2>
+          )}
+          {column.content && (
+            <p
+              className="text-lg text-zinc-700 dark:text-zinc-300 whitespace-pre-line"
+              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+            >
+              {column.content}
+            </p>
+          )}
+          {!column.title && !column.content && (
+            <div className="text-muted-foreground dark:text-zinc-500 text-sm">No Text Configured</div>
+          )}
+        </div>
+      );
+    case "EMPTY":
+    default:
+      return (
+        <div
+          key={index}
+          style={style}
+          className="w-full h-full bg-transparent"
+        />
+      );
+  }
+}
+````
+
+## File: apps/web/src/app/display/[id]/slide-carousel.tsx
+````typescript
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { SignageSlide, PosItem, ColumnLayoutSlide, MenuItemStyles } from "@soustools/api-types";
+import { SlideRenderer } from "./slide-renderer";
+
+interface SlideCarouselProps {
+  slides: SignageSlide[];
+  items: PosItem[];
+  menuItemStyles?: MenuItemStyles;
+}
+
+export function SlideCarousel({
+  slides,
+  items,
+  menuItemStyles,
+}: SlideCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleIndex, setVisibleIndex] = useState(0);
+  const [opacity, setOpacity] = useState(1);
+
+  useEffect(() => {
+    if (!slides || slides.length <= 1) {
+      setVisibleIndex(0);
+      setOpacity(1);
+      return;
+    }
+
+    const currentSlide = slides[currentIndex];
+    const durationMs = (currentSlide.durationSeconds || 5) * 1000;
+
+    const transitionStartMs = Math.max(durationMs - 500, 100);
+    const fadeOutTimer = setTimeout(() => {
+      setOpacity(0);
+    }, transitionStartMs);
+
+    const slideChangeTimer = setTimeout(() => {
+      const nextIndex = (currentIndex + 1) % slides.length;
+      setCurrentIndex(nextIndex);
+      setVisibleIndex(nextIndex);
+      setOpacity(1);
+    }, durationMs);
+
+    return () => {
+      clearTimeout(fadeOutTimer);
+      clearTimeout(slideChangeTimer);
+    };
+  }, [currentIndex, slides]);
+
+  if (!slides || slides.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white font-sans">
+        <p className="text-xl text-zinc-500 dark:text-muted-foreground">
+          No slides configured for this display.
+        </p>
+      </div>
+    );
+  }
+
+  const activeSlide = slides[visibleIndex];
+  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? (activeSlide as ColumnLayoutSlide) : null;
+
+  const bgStyle: React.CSSProperties = {
+    opacity,
+    backgroundColor: columnSlide?.backgroundColor || "oklch(0.08 0.01 260)",
+  };
+  if (columnSlide?.backgroundImageUrl) {
+    bgStyle.backgroundImage = `url(${columnSlide.backgroundImageUrl})`;
+    bgStyle.backgroundSize = "cover";
+    bgStyle.backgroundPosition = "center";
+  }
+
+  return (
+    <div
+      className="w-full h-full min-h-screen transition-opacity duration-500 ease-in-out"
+      style={bgStyle}
+    >
+      <SlideRenderer
+        slide={activeSlide}
+        items={items}
+        menuItemStyles={menuItemStyles}
+      />
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/login/page.tsx
+````typescript
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@soustools/design-system";
+import { supabase } from "../../lib/supabase";
+import { KeyRound, Mail, Sparkles } from "lucide-react";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("conar@dtown.cafe");
+  const [password, setPassword] = useState("password");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        setError(authError.message);
+      } else {
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnTo = urlParams.get("returnTo");
+        router.push(returnTo ? returnTo : "/home");
+      }
+    } catch (err: unknown) {
+      setError("An unexpected error occurred during login.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-zinc-50 dark:bg-card">
+      {/* Background Neon Orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/20 blur-[120px] rounded-full animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: "6s" }} />
+
+      <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-black/10 dark:border-white/10 shadow-2xl relative z-10">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 flex items-center justify-center border border-sky-500/30 mb-4 shadow-lg shadow-sky-500/10">
+            <Sparkles className="w-6 h-6 text-sky-400" />
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight text-center">
+            Kitchen Portal
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-muted-foreground mt-2 text-center">
+            Standardize your culinary operations in real-time.
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm text-center font-medium animate-fadeIn">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-muted-foreground flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5" /> Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="name@dtown.cafe"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full bg-card/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-muted-foreground flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5" /> Password
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full bg-card/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
+            />
+          </div>
+
+          <div className="pt-2">
+            <Button disabled={loading} className="w-full justify-center py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-sky-500/20">
+              {loading ? "Signing In..." : "Access Control"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </main>
+  );
+}
+````
+
+## File: apps/web/src/app/error.tsx
+````typescript
+"use client";
+
+import { useEffect } from "react";
+import { logger } from "@soustools/logger/browser";
+
+/**
+ * Props for the Root ErrorBoundary component.
+ */
+export interface ErrorBoundaryProps {
+  /**
+   * The error object caught by Next.js.
+   */
+  error: Error & { digest?: string };
+  /**
+   * Function to reset/retry rendering the boundary.
+   */
+  reset: () => void;
+}
+
+/**
+ * ErrorBoundary is caught at the dashboard layout level.
+ * It logs errors to the browser logger (New Relic) and displays an error message with kitchen mode theme.
+ */
+export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
+  useEffect(() => {
+    logger.error({ err: error, digest: error.digest }, "Global kitchen app layout error caught by boundary");
+  }, [error]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-card text-zinc-50 p-4">
+      <div className="glass-panel p-8 rounded-lg max-w-md border border-zinc-900 text-center">
+        <h2 className="text-xl font-semibold text-rose-500 mb-4">Something went wrong!</h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          An unexpected error has occurred. The system logs have been updated automatically.
+        </p>
+        <button
+          onClick={() => reset()}
+          className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium transition-colors cursor-pointer"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/global-error.tsx
+````typescript
+"use client";
+
+import { useEffect } from "react";
+import { logger } from "@soustools/logger/browser";
+
+/**
+ * Props for the Root GlobalError component.
+ */
+export interface GlobalErrorProps {
+  /**
+   * The error object caught by Next.js at root level.
+   */
+  error: Error & { digest?: string };
+  /**
+   * Function to reset/retry rendering the root layout.
+   */
+  reset: () => void;
+}
+
+/**
+ * GlobalError catches errors at the very root level (including layout.tsx).
+ * Renders fallback HTML and body tags.
+ */
+export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  useEffect(() => {
+    logger.error({ err: error, digest: error.digest }, "Root kitchen app global layout error caught");
+  }, [error]);
+
+  return (
+    <html lang="en">
+      <body className="antialiased min-h-screen bg-card text-zinc-50 font-sans flex items-center justify-center p-4">
+        <div className="glass-panel p-8 rounded-lg max-w-md border border-zinc-900 text-center">
+          <h2 className="text-xl font-semibold text-rose-500 mb-4">Critical System Error</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            A critical system error occurred. The technical team has been notified.
+          </p>
+          <button
+            onClick={() => reset()}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium transition-colors cursor-pointer"
+          >
+            Refresh Application
+          </button>
+        </div>
+      </body>
+    </html>
+  );
+}
+````
+
+## File: apps/web/src/app/layout.tsx
+````typescript
+import React from "react";
+import "./globals.css";
+import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata, Viewport } from "next";
+import { ThemeProvider } from "../components/theme-provider";
+import { InstrumentationClient } from "../instrumentation-client";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const env = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
+  let iconPath = "/favicon-prod.svg";
+  
+  if (env === "development") {
+    iconPath = "/favicon-dev.svg";
+  } else if (env === "staging") {
+    iconPath = "/favicon-staging.svg";
+  }
+
+  return {
+    title: "sous.tools",
+    description: "Interactive kitchen display system and dashboard",
+    manifest: "/manifest.webmanifest",
+    icons: {
+      icon: iconPath,
+      apple: iconPath,
+    }
+  };
+}
+
+export const viewport: Viewport = {
+  themeColor: "#020617",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
+export interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
+  return (
+    <html lang="en" className="overflow-x-hidden" suppressHydrationWarning>
+      <body className="antialiased min-h-screen bg-white text-zinc-900 dark:bg-card dark:text-zinc-50 font-sans overflow-x-hidden transition-colors duration-300 relative" suppressHydrationWarning>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+
+          {children}
+          <Toaster theme="system" position="bottom-right" richColors />
+          <Analytics />
+          <SpeedInsights />
+          <InstrumentationClient />
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+````
+
+## File: apps/web/src/app/page.tsx
+````typescript
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { Button } from "@soustools/design-system";
+import { useRouter } from "next/navigation";
+import { Session } from "@supabase/supabase-js";
+import { ShieldCheck, CloudLightning, Download } from "lucide-react";
+import { PrimaryLogo } from "@soustools/design-system";
+
+export default function HomePage() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setLoading(false);
+    };
+    fetchSession();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-card flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-card text-white selection:bg-sky-500/30">
+      {/* Header / Nav */}
+      <header className="border-b border-black/5 dark:border-white/5 py-4 px-6 md:px-12 flex justify-between items-center backdrop-blur-md sticky top-0 z-55 bg-card/80">
+        <div className="flex items-center gap-2">
+          <PrimaryLogo className="text-sky-400 h-12 w-auto" />
+        </div>
+        <div className="flex items-center gap-4">
+          {session ? (
+            <Button onClick={() => router.push("/home")} variant="default">
+              Go to Dashboard
+            </Button>
+          ) : (
+            <Button onClick={() => router.push("/login")} variant="outline">
+              Sign In
+            </Button>
+          )}
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="py-20 text-center px-6 max-w-4xl mx-auto space-y-6">
+        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 via-sky-200 to-violet-400 bg-clip-text text-transparent">
+          Professional Kitchen Operations, Automated
+        </h1>
+        <p className="text-zinc-500 dark:text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
+          Scale your menus, manage vendor inventory ledger, sync Square catalog instantly, and deploy real-time digital display signage.
+        </p>
+        <div className="flex justify-center gap-4 pt-4">
+          <Button onClick={() => router.push(session ? "/home" : "/login")} variant="default" className="px-8 py-3 text-lg mt-4 shadow-[0_0_20px_rgba(76,201,240,0.3)] hover:shadow-[0_0_30px_rgba(76,201,240,0.5)]">
+            Get Started Natively
+          </Button>
+        </div>
+      </section>
+
+      {/* 3-Tiered Pricing Plans */}
+      <section className="py-16 px-6 max-w-6xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-12">Flexible Pricing for Growing Kitchens</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Starter Plan */}
+          <div className="glass-panel p-8 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-sky-400">Starter</h3>
+              <p className="text-zinc-500 dark:text-muted-foreground text-sm mt-1">For single-station cafes.</p>
+              <div className="text-4xl font-extrabold mt-6">$49<span className="text-base font-normal text-muted-foreground dark:text-zinc-500">/mo</span></div>
+              <ul className="mt-8 space-y-4 text-sm text-zinc-700 dark:text-zinc-300">
+                <li className="flex items-center gap-2">✔ 1 Active Signage Display</li>
+                <li className="flex items-center gap-2">✔ Square Catalog Integration</li>
+                <li className="flex items-center gap-2">✔ Basic Recipe Manager</li>
+              </ul>
+            </div>
+            <Button onClick={() => router.push("/login")} className="mt-8 w-full justify-center" variant="outline">Choose Starter</Button>
+          </div>
+
+          {/* Pro Plan */}
+          <div className="glass-panel p-8 rounded-3xl border border-sky-500/30 relative flex flex-col justify-between shadow-[0_0_30px_rgba(56,189,248,0.1)]">
+            <span className="absolute top-0 right-8 transform -translate-y-1/2 bg-sky-500 text-zinc-950 text-xs font-extrabold uppercase px-3 py-1 rounded-full">Popular</span>
+            <div>
+              <h3 className="text-xl font-bold text-sky-300">Pro</h3>
+              <p className="text-zinc-500 dark:text-muted-foreground text-sm mt-1">For busy full-service restaurants.</p>
+              <div className="text-4xl font-extrabold mt-6">$149<span className="text-base font-normal text-muted-foreground dark:text-zinc-500">/mo</span></div>
+              <ul className="mt-8 space-y-4 text-sm text-zinc-700 dark:text-zinc-300">
+                <li className="flex items-center gap-2">✔ Unlimited Signage Displays</li>
+                <li className="flex items-center gap-2">✔ Real-time Inventory Ledger</li>
+                <li className="flex items-center gap-2">✔ Dynamic Baker's Math Sync</li>
+                <li className="flex items-center gap-2">✔ Automated PO Dispatch</li>
+              </ul>
+            </div>
+            <Button onClick={() => router.push("/login")} className="mt-8 w-full justify-center bg-sky-500 hover:bg-sky-600 text-white" variant="default">Upgrade to Pro</Button>
+          </div>
+
+          {/* Enterprise Plan */}
+          <div className="glass-panel p-8 rounded-3xl border border-black/5 dark:border-white/5 flex flex-col justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-violet-400">Enterprise</h3>
+              <p className="text-zinc-500 dark:text-muted-foreground text-sm mt-1">Multi-location hospitality groups.</p>
+              <div className="text-4xl font-extrabold mt-6">Custom</div>
+              <ul className="mt-8 space-y-4 text-sm text-zinc-700 dark:text-zinc-300">
+                <li className="flex items-center gap-2">✔ Custom API / Webhook Access</li>
+                <li className="flex items-center gap-2">✔ Dedicated Integration Drivers</li>
+                <li className="flex items-center gap-2">✔ 99.9% Uptime Kiosk SLA</li>
+                <li className="flex items-center gap-2">✔ Tenant Isolation Control</li>
+              </ul>
+            </div>
+            <Button onClick={() => router.push("/login")} className="mt-8 w-full justify-center" variant="outline">Contact Sales</Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Downloads Section */}
+      <section className="py-16 border-t border-black/5 dark:border-white/5 bg-zinc-900/30">
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
+          <h2 className="text-3xl font-bold">Deploy Anywhere Natively</h2>
+          <p className="text-zinc-500 dark:text-muted-foreground max-w-md mx-auto">Install our persistent BOH app on tablets, kiosks, and display controllers for continuous 24/7 cookline status.</p>
+          <div className="flex flex-wrap justify-center gap-6">
+            <a href="#" className="flex items-center gap-3 bg-zinc-50 dark:bg-card hover:bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 px-6 py-4 rounded-2xl transition-all">
+              <Download className="w-5 h-5 text-sky-400" />
+              <div className="text-left">
+                <div className="text-xs text-zinc-500 dark:text-muted-foreground">Download for Desktop</div>
+                <div className="font-bold text-sm">Windows & Mac App</div>
+              </div>
+            </a>
+            <a href="#" className="flex items-center gap-3 bg-zinc-50 dark:bg-card hover:bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 px-6 py-4 rounded-2xl transition-all">
+              <CloudLightning className="w-5 h-5 text-sky-400" />
+              <div className="text-left">
+                <div className="text-xs text-zinc-500 dark:text-muted-foreground">Instant Progressive Web App</div>
+                <div className="font-bold text-sm">Install PWA</div>
+              </div>
+            </a>
+            <a href="#" className="flex items-center gap-3 bg-zinc-50 dark:bg-card hover:bg-zinc-100 dark:bg-zinc-900 border border-black/5 dark:border-white/5 px-6 py-4 rounded-2xl transition-all">
+              <ShieldCheck className="w-5 h-5 text-violet-400" />
+              <div className="text-left">
+                <div className="text-xs text-zinc-500 dark:text-muted-foreground">Download Controller App</div>
+                <div className="font-bold text-sm">Android CLI Bundle</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-black/5 dark:border-white/5 py-8 text-center text-muted-foreground dark:text-zinc-500 text-xs">
+        &copy; 2026 SOUS.TOOLS. Designed for modern back-of-house operations. All rights reserved.
+      </footer>
+    </div>
+  );
+}
 ````
 
 ## File: deploy/ansible/roles/config/files/kiosk.sh
@@ -38530,142 +37497,174 @@ export function AppBar({
 }
 ````
 
-## File: packages/design-system/src/components/Button.tsx
+## File: packages/design-system/src/components/BottomNav.tsx
 ````typescript
-import * as React from "react";
+"use client";
 
-/** Visual variant styles for the Button component. */
-export type ButtonVariant = "default" | "secondary" | "outline" | "ghost";
-
-/** Size scale for the Button component. */
-export type ButtonSize = "sm" | "md" | "lg";
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, ChefHat, ShoppingBag, Menu } from "lucide-react";
 
 /**
- * Props for the Button component.
+ * A single navigation destination in the bottom navigation bar.
  */
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /**
-   * Visual variant controlling background, border, and text treatment.
-   * - `default`   — Neon-Glass cyan (#4cc9f0) filled primary action.
-   * - `secondary` — Muted zinc-800 surface for secondary actions.
-   * - `outline`   — Transparent with cyan border; hover fills glass-card.
-   * - `ghost`     — Fully transparent; hover reveals subtle surface.
-   * @default "default"
-   */
-  variant?: ButtonVariant;
-  /**
-   * Scale size of the button. `lg` enforces a minimum 48 px touch target
-   * for Kitchen Mode / gloved-hand usability.
-   * @default "md"
-   */
-  size?: ButtonSize;
+export interface BottomNavItem {
+  /** Visible label rendered below the icon. */
+  label: string;
+  /** Route href passed to Next.js `<Link>`. */
+  href: string;
+  /** Lucide icon component to render. */
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 /**
- * Atomic Button component for the Neon-Glass design system.
+ * Props for the BottomNav component.
+ */
+export interface BottomNavProps {
+  /** Callback to open the "More" mobile drawer. */
+  onToggleMobile: () => void;
+  /**
+   * The center logo/icon element rendered as the brand home button.
+   * Pass the `<MicroIcon>` (or equivalent) from your logo package.
+   */
+  centerIcon?: React.ReactNode;
+  /**
+   * Navigation items to render on either side of the center icon.
+   * Defaults to Dashboard, Recipes, Orders if omitted.
+   */
+  items?: BottomNavItem[];
+}
+
+const DEFAULT_ITEMS: BottomNavItem[] = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Recipes",   href: "/recipes",   icon: ChefHat },
+  { label: "Orders",    href: "/inventory/orders", icon: ShoppingBag },
+];
+
+/**
+ * BottomNav — the mobile-only fixed bottom navigation bar.
  *
- * Provides tactile `active:scale-95` press feedback and a `focus-visible`
- * ring in the brand cyan. The `lg` size enforces Kitchen Mode touch targets.
+ * Sits at `--z-bottom-nav: 40` and uses the `.` glassmorphism
+ * utility for the Neon-Glass aesthetic. Active route items are highlighted
+ * with `--color-primary` (cyan #4cc9f0).
+ *
+ * Render this as a `"use client"` component inside `apps/app/layout.tsx`. Pass
+ * `onToggleMobile` to wire the "More" button to your mobile sidebar toggle.
  *
  * @tenant-docs-export
- * # Button
+ * # BottomNav
  * ```tsx
- * import { Button } from "@soustools/design-system";
+ * import { BottomNav } from "@soustools/design-system";
  *
- * <Button variant="default" size="lg" onClick={handleSubmit}>
- *   Submit Order
- * </Button>
+ * <BottomNav
+ *   onToggleMobile={toggleMobile}
+ *   centerIcon={<MicroIcon className="w-12 h-12" style={{ color: "var(--color-primary)" }} />}
+ * />
  * ```
  */
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className = "",
-      variant = "default",
-      size = "md",
-      children,
-      disabled,
-      ...props
-    },
-    ref,
-  ) => {
-    const base = [
-      "inline-flex items-center justify-center gap-2",
-      "font-sans font-semibold rounded-lg",
-      "transition-all duration-150 ease-in-out",
-      "active:scale-95",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-      "disabled:opacity-50 disabled:pointer-events-none select-none",
-    ].join(" ");
+export function BottomNav({
+  onToggleMobile,
+  centerIcon,
+  items = DEFAULT_ITEMS,
+}: BottomNavProps) {
+  const pathname = usePathname();
 
-    const variantStyles: Record<ButtonVariant, string> = {
-      default: [
-        "text-[#0f172a]",           // --color-primary-foreground
-        "shadow-md",
-      ].join(" "),
-      secondary: [
-        "text-[#f8fafc]",           // --color-secondary-foreground
-      ].join(" "),
-      outline: [
-        "bg-transparent",
-        "text-[#4cc9f0]",           // primary cyan text when outlined
-        "border border-[#4cc9f0]",
-      ].join(" "),
-      ghost: [
-        "bg-transparent",
-        "text-[#f8fafc]",
-      ].join(" "),
+  // Split items around the center brand button
+  const midpoint = Math.floor(items.length / 2);
+  const leftItems = items.slice(0, midpoint);
+  const rightItems = items.slice(midpoint);
+
+  const navItemClass = (href: string) => {
+    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+    return [
+      "flex flex-col items-center justify-center min-w-[64px] min-h-[64px]",
+      "transition-transform active:scale-90 touch-manipulation",
+      "text-xs font-medium gap-1",
+    ].join(" ") + " " + (isActive
+      ? ""
+      : "");
+  };
+
+  const navItemStyle = (href: string): React.CSSProperties => {
+    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+    return {
+      color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
     };
+  };
 
-    const sizeStyles: Record<ButtonSize, string> = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-4 py-2 text-base",
-      lg: "px-6 py-3 text-lg min-h-[48px]",  // Kitchen Mode touch target
-    };
+  return (
+    <nav
+      className="md:hidden  fixed bottom-0 left-0 right-0 h-20
+        flex items-center justify-around px-2 pb-safe
+        overflow-x-auto flex-nowrap min-w-0 select-none scrollbar-none"
+      style={{
+        zIndex: "var(--z-bottom-nav)",
+        borderTop: "1px solid var(--color-border)",
+      }}
+    >
+      {/* Left items */}
+      {leftItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={navItemClass(item.href)}
+            style={navItemStyle(item.href)}
+          >
+            <Icon className="w-6 h-6" />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
 
-    // Inline styles for semantic token values (avoids Tailwind purge issues
-    // with dynamic CSS variable references in a library context)
-    const variantInlineStyle: Record<ButtonVariant, React.CSSProperties> = {
-      default: {
-        backgroundColor: "var(--color-primary)",
-        color: "var(--color-primary-foreground)",
-      },
-      secondary: {
-        backgroundColor: "var(--color-secondary)",
-        color: "var(--color-secondary-foreground)",
-      },
-      outline: {
-        backgroundColor: "transparent",
-        borderColor: "var(--color-primary)",
-        color: "var(--color-primary)",
-      },
-      ghost: {
-        backgroundColor: "transparent",
-        color: "var(--color-foreground)",
-      },
-    };
+      {/* Center brand button */}
+      {centerIcon && (
+        <Link
+          href="/"
+          className="flex flex-col items-center justify-center p-2 rounded-full
+            active:scale-95 transition-transform touch-manipulation flex-shrink-0"
+          style={{
+            backgroundColor: "var(--color-card)",
+            border: "1px solid var(--color-border)",
+            boxShadow: "0 4px 15px -3px rgb(76 201 240 / 0.20)", // neon-cyan shadow
+          }}
+        >
+          {centerIcon}
+        </Link>
+      )}
 
-    const focusRingStyle: React.CSSProperties = {
-      // --tw-ring-color maps to --color-ring in the @theme
-      outlineColor: "var(--color-ring)",
-    };
+      {/* Right items */}
+      {rightItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={navItemClass(item.href)}
+            style={navItemStyle(item.href)}
+          >
+            <Icon className="w-6 h-6" />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
 
-    return (
+      {/* More button */}
       <button
-        ref={ref}
-        disabled={disabled}
-        className={`${base} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-        style={{ ...variantInlineStyle[variant], ...focusRingStyle }}
-        {...props}
+        onClick={onToggleMobile}
+        className="flex flex-col items-center justify-center min-w-[64px] min-h-[64px]
+          transition-transform active:scale-90 touch-manipulation gap-1 text-xs font-medium"
+        style={{ color: "var(--color-muted-foreground)" }}
+        aria-label="Open navigation menu"
       >
-        {children}
+        <Menu className="w-6 h-6" />
+        <span>More</span>
       </button>
-    );
-  },
-);
-
-Button.displayName = "Button";
+    </nav>
+  );
+}
 ````
 
 ## File: packages/design-system/src/components/ConfirmModal.tsx
@@ -39092,6 +38091,38 @@ export function Label({
 }
 ````
 
+## File: packages/design-system/src/components/SidebarLayout.tsx
+````typescript
+import React from "react";
+
+export interface SidebarLayoutProps {
+  /** The content of the sidebar (e.g., InsightsSidebar or standard navigation) */
+  sidebarContent: React.ReactNode;
+  /** The main content area */
+  mainContent: React.ReactNode;
+}
+
+/**
+ * A standard layout template for routes that need a secondary side-panel layout
+ * (e.g., Inventory, Recipes, Settings). Uses Midnight Slate theme variables.
+ */
+export function SidebarLayout({ sidebarContent, mainContent }: SidebarLayoutProps) {
+  return (
+    <div className="flex h-full w-full overflow-hidden bg-background text-foreground">
+      {/* Sidebar Panel */}
+      <aside className="w-64 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
+        {sidebarContent}
+      </aside>
+
+      {/* Main Content Panel */}
+      <main className="flex-1 min-w-0 overflow-y-auto relative">
+        {mainContent}
+      </main>
+    </div>
+  );
+}
+````
+
 ## File: packages/design-system/src/components/ThemeToggle.tsx
 ````typescript
 "use client";
@@ -39265,225 +38296,106 @@ export function TwoToneHeader({
 }
 ````
 
-## File: packages/domain-inventory/src/orders-panel.tsx
+## File: packages/domain-inventory/src/draft-po-modal.tsx
 ````typescript
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { ShoppingBag } from "lucide-react";
-import {
-  TwoToneHeader,
-  QuickAddBar,
-  QuickAddSuggestion,
-  SupplierOrderGroup,
-  EmptyOrderList,
-  InsightsSidebar,
-  OrderLineItem,
-  OrderSupplier,
-  inferVendorForItem,
-} from "@soustools/design-system";
-import type { Vendor, WhiteboardItem } from "@soustools/api-types";
+import { useState } from "react";
+import { WhiteboardItem, Vendor } from "@soustools/api-types";
+import { toast } from "sonner";
 
-function toOrderSupplier(v: Vendor): OrderSupplier {
-  return {
-    id: v.id,
-    name: v.name,
-    deliveryDays: [],
-    cutoffTime: "—",
-  };
-}
-
-function toOrderLineItem(item: WhiteboardItem): OrderLineItem {
-  return {
-    id: item.id,
-    rawName: item.raw_name,
-    quantity: 1,
-    unit: "ea",
-    isSystemSuggestion: false,
-    supplier: null,
-  };
-}
-
-export interface OrdersPanelProps {
+/**
+ * Props structure for the DraftPoModal component.
+ */
+export interface DraftPoModalProps {
+  /** Indicates if the modal is visible */
+  isOpen: boolean;
+  /** Callback function called to close the modal */
+  onClose: () => void;
+  /** Active whiteboard items available for purchase */
+  items: WhiteboardItem[];
+  /** Registered vendors list for vendor selection */
   vendors: Vendor[];
-  whiteboardItems: WhiteboardItem[];
-  onAddFreeText: (rawName: string) => Promise<string | null>;
-  onRemoveItem: (id: string) => Promise<void>;
-  onPlaceOrder: (supplierId: string) => Promise<void>;
+  /** Callback triggered to execute the PO creation */
+  onCreatePO: (vendorId: string, selectedItemIds: string[]) => Promise<void>;
 }
 
-export function OrdersPanel({
-  vendors,
-  whiteboardItems,
-  onAddFreeText,
-  onRemoveItem,
-  onPlaceOrder,
-}: OrdersPanelProps) {
-  const [activeTab, setActiveTab] = useState<"list" | "history">("list");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [items, setItems] = useState<OrderLineItem[]>(
-    whiteboardItems.map(toOrderLineItem),
-  );
-  const [placingOrderId, setPlacingOrderId] = useState<string | null>(null);
+/**
+ * DraftPoModal enables the user to select specific whiteboard items and
+ * compile them into a draft Purchase Order for a selected vendor.
+ */
+export function DraftPoModal({ isOpen, onClose, items, vendors, onCreatePO }: DraftPoModalProps) {
+  const [selectedVendor, setSelectedVendor] = useState("");
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const suppliers = vendors.map(toOrderSupplier);
+  if (!isOpen) return null;
 
-  const groupedItems = useMemo(() => {
-    const groups: Record<string, OrderLineItem[]> = {};
-    items.forEach((item) => {
-      const key = item.supplier?.id ?? "unassigned";
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(item);
-    });
-    return groups;
-  }, [items]);
+  /**
+   * Toggles the selection state of a specific whiteboard item.
+   * 
+   * @param id The UUID of the whiteboard item.
+   */
+  const toggleSelection = (id: string) => {
+    const next = new Set(selectedItems);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedItems(next);
+  };
 
-  const suggestions: QuickAddSuggestion[] = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    return items
-      .filter((i) =>
-        i.rawName.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      .slice(0, 5)
-      .map((i) => ({ id: i.id, name: i.rawName, baseUnit: i.unit }));
-  }, [searchQuery, items]);
+  /**
+   * Handles creating a draft Purchase Order and inserting selected items.
+   */
+  const createPO = async () => {
+    if (!selectedVendor || selectedItems.size === 0) return;
+    setIsSubmitting(true);
 
-  const handleAddFreeTextLocal = async (rawName: string) => {
-    const inferredVendorId = inferVendorForItem(rawName);
-    const assignedSupplier = suppliers.find((s) => s.id === inferredVendorId) ?? null;
-
-    const tempId = `temp_${Date.now()}`;
-    const newItem: OrderLineItem = {
-      id: tempId,
-      rawName,
-      quantity: 1,
-      unit: "ea",
-      isSystemSuggestion: false,
-      supplier: assignedSupplier,
-    };
-
-    setItems((prev) => [...prev, newItem]);
-    setSearchQuery("");
-
-    const realId = await onAddFreeText(rawName);
-    if (realId) {
-      setItems((prev) =>
-        prev.map((i) => (i.id === tempId ? { ...i, id: realId } : i)),
-      );
-    } else {
-      setItems((prev) => prev.filter((i) => i.id !== tempId));
+    try {
+      await onCreatePO(selectedVendor, Array.from(selectedItems));
+      setSelectedItems(new Set());
+      onClose();
+    } catch (err: any) {
+      toast.error(`An unexpected error occurred: ${err.message || err}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleSelectSuggestion = (_s: QuickAddSuggestion) => {
-    setSearchQuery("");
-  };
-
-  const handleRemoveLocal = async (id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-    await onRemoveItem(id);
-  };
-
-  const handleChangeQty = (id: string, qty: number) => {
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
-    );
-  };
-
-  const handleChangeSupplier = (id: string, supplierId: string | null) => {
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === id
-          ? {
-              ...i,
-              supplier: suppliers.find((s) => s.id === supplierId) ?? null,
-            }
-          : i,
-      ),
-    );
-  };
-
-  const handlePlaceOrderLocal = async (supplierId: string) => {
-    setPlacingOrderId(supplierId);
-    await onPlaceOrder(supplierId);
-    setItems((prev) => prev.filter((i) => i.supplier?.id !== supplierId));
-    setPlacingOrderId(null);
-  };
-
   return (
-    <div className="flex-1 bg-background p-8 min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
-        <TwoToneHeader
-          breadcrumb="Procurement / Living Order List"
-          title="Order Manager"
-        />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-black/60 backdrop-blur-sm">
+      <div className="st-glass-panel border border-black/10 dark:border-white/10 p-8 max-w-2xl w-full rounded-xl">
+        <h2 className="text-3xl font-bold mb-6 text-zinc-900 dark:text-white">Select Items for PO</h2>
+        
+        <div className="mb-6 space-y-2">
+          <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Select Vendor</label>
+          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-md p-3 text-zinc-900 dark:text-white">
+            <option value="">-- Choose Vendor --</option>
+            {vendors.map(v => <option key={v.id} value={v.id}>{v.name} ({v.order_method})</option>)}
+          </select>
+        </div>
 
-        <div className="flex bg-muted/50 dark:bg-card/70 rounded-2xl p-1 border border-border dark:border-zinc-800">
-          {(["list", "history"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={[
-                "h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                activeTab === tab
-                  ? "bg-background dark:bg-zinc-800 shadow-sm text-primary"
-                  : "text-muted-foreground hover:text-foreground",
-              ].join(" ")}
-            >
-              {tab === "list" ? "Living List" : "Order History"}
-            </button>
+        <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-white/10 p-4 rounded-md mb-6">
+          {items.map(item => (
+            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-white/5 rounded">
+              <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5 border-black/20 dark:border-white/20" />
+              <span className="text-lg text-zinc-900 dark:text-white">{item.raw_name}</span>
+            </label>
           ))}
         </div>
+
+        <div className="flex justify-end gap-4">
+          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium text-zinc-700 dark:text-zinc-300 hover:bg-black/10 dark:bg-white/10 transition-colors disabled:opacity-50">
+            Cancel
+          </button>
+          <button 
+            onClick={createPO}
+            disabled={!selectedVendor || selectedItems.size === 0 || isSubmitting} 
+            className="bg-zinc-900 dark:bg-white text-white dark:text-black px-6 py-2 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          >
+            {isSubmitting ? "Creating..." : "Create PO"}
+          </button>
+        </div>
       </div>
-
-      {activeTab === "history" ? (
-        <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
-          <ShoppingBag size={64} className="mb-4 opacity-20" />
-          <p className="text-sm font-black uppercase tracking-[0.2em]">
-            Order History Coming Soon
-          </p>
-        </div>
-      ) : (
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <div className="flex-[3] flex flex-col gap-8 min-w-0">
-            <QuickAddBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              suggestions={suggestions}
-              onSelectSuggestion={handleSelectSuggestion}
-              onAddFreeText={handleAddFreeTextLocal}
-            />
-
-            {items.length === 0 ? (
-              <EmptyOrderList />
-            ) : (
-              <div className="flex flex-col gap-12">
-                {Object.entries(groupedItems).map(
-                  ([supplierId, groupItems]) => (
-                    <SupplierOrderGroup
-                      key={supplierId}
-                      supplier={
-                        suppliers.find((s) => s.id === supplierId) ?? null
-                      }
-                      items={groupItems}
-                      allSuppliers={suppliers}
-                      isPlacingOrder={placingOrderId === supplierId}
-                      onPlaceOrder={() => handlePlaceOrderLocal(supplierId)}
-                      onRemoveItem={handleRemoveLocal}
-                      onChangeQty={handleChangeQty}
-                      onChangeSupplier={handleChangeSupplier}
-                    />
-                  ),
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="w-full lg:flex-1 lg:min-w-[240px] lg:max-w-[320px] sticky top-8">
-            <InsightsSidebar suppliers={suppliers} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -46509,6 +45421,82 @@ Before adding `"use client"` to any file, verify:
 - **FORBIDDEN**: Importing from `@soustools/ui` in new code — it is deprecated.
 ````
 
+## File: .github/workflows/deploy-production.yml
+````yaml
+name: Deploy Production API to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/api/**'
+      - 'docker-compose.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch Infisical Secrets
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools-1cd-a"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/soustools-api:latest
+
+      - name: Copy docker-compose to Oracle Cloud
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.ORACLE_HOST }}
+          username: ubuntu
+          key: ${{ env.ORACLE_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/home/ubuntu"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          SIGNAGE_GITHUB_PAT: ${{ env.SIGNAGE_GITHUB_PAT }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        with:
+          host: ${{ env.ORACLE_HOST }}
+          username: ubuntu
+          key: ${{ env.ORACLE_SSH_KEY }}
+          envs: SIGNAGE_GITHUB_PAT,GITHUB_REPOSITORY_OWNER
+          script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker-compose pull
+            docker-compose up -d
+            docker exec ollama ollama pull llama3.2-vision
+            docker exec ollama ollama pull nomic-embed-text
+````
+
 ## File: apps/api/src/modules/integrations/square-sync.helper.ts
 ````typescript
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -47609,6 +46597,44 @@ import { DisplaysController } from "./displays.controller";
 export class SignageModule {}
 ````
 
+## File: apps/pos-simulator/src/app/globals.css
+````css
+@import "@soustools/design-system/index.css";
+
+@source "../../../../packages/design-system/src/**/*.tsx";
+
+@layer base {
+  :root {
+    --color-background: hsl(210, 24%, 96%);
+    --background: hsl(210, 24%, 96%);
+    
+    --color-foreground: hsl(215, 16%, 22%);
+    --foreground: hsl(215, 16%, 22%);
+    
+    --color-card: hsl(0, 0%, 100%);
+    --card: hsl(0, 0%, 100%);
+    
+    --color-card-foreground: hsl(215, 16%, 22%);
+    --card-foreground: hsl(215, 16%, 22%);
+    
+    --color-popover: hsl(0, 0%, 100%);
+    --popover: hsl(0, 0%, 100%);
+    
+    --color-popover-foreground: hsl(215, 16%, 22%);
+    --popover-foreground: hsl(215, 16%, 22%);
+
+    --color-muted-foreground: hsl(215, 16%, 40%);
+    --muted-foreground: hsl(215, 16%, 40%);
+
+    --color-primary: hsl(185, 80%, 30%);
+    --primary: hsl(185, 80%, 30%);
+
+    --color-border: hsl(214, 32%, 91%);
+    --border: hsl(214, 32%, 91%);
+  }
+}
+````
+
 ## File: apps/pos-simulator/src/app/page.tsx
 ````typescript
 import React from "react";
@@ -47637,6 +46663,63 @@ export default function PosSimulatorPage() {
   );
 }
 // Force rebuild 1
+````
+
+## File: apps/pos-simulator/src/components/PosItemCard.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { PosItem } from "@soustools/api-types";
+import { RotateCw, CheckSquare, Square } from "lucide-react";
+
+export interface PosItemCardProps {
+  item: PosItem;
+  isUpdating: boolean;
+  onToggle: () => void;
+}
+
+export const PosItemCard: React.FC<PosItemCardProps> = ({
+  item,
+  isUpdating,
+  onToggle,
+}) => {
+  return (
+    <div
+      onClick={onToggle}
+      className={`p-4 flex items-center justify-between cursor-pointer select-none bg-white/90 dark:bg-card backdrop-blur-2xl rounded-3xl border border-black/5 dark:border-white/10 shadow-sm transition-transform active:scale-[0.98] ${
+        item.isSoldOut ? "opacity-60" : ""
+      }`}
+    >
+      <div className="min-w-0 pr-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-foreground truncate">
+            {item.name}
+          </span>
+          <span className="text-xs text-success font-mono font-medium">
+            ${item.price.toFixed(2)}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1 truncate">
+          {item.description}
+        </p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {isUpdating ? (
+          <RotateCw className="w-5 h-5 text-muted-foreground animate-spin" />
+        ) : item.isSoldOut ? (
+          <div className="flex items-center gap-1.5 text-xs text-destructive font-bold bg-destructive/20 px-2.5 py-1 rounded-full border border-destructive/50">
+            <CheckSquare className="w-4 h-4" /> SOLD OUT
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary px-2.5 py-1 rounded-full border border-border">
+            <Square className="w-4 h-4" /> IN STOCK
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 ````
 
 ## File: apps/pos-simulator/next.config.mjs
@@ -47915,6 +46998,360 @@ export interface SignageDeck {
 }
 ````
 
+## File: packages/design-system/src/components/Button.tsx
+````typescript
+import * as React from "react";
+
+/** Visual variant styles for the Button component. */
+export type ButtonVariant = "default" | "secondary" | "outline" | "ghost";
+
+/** Size scale for the Button component. */
+export type ButtonSize = "sm" | "md" | "lg";
+
+/**
+ * Props for the Button component.
+ */
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /**
+   * Visual variant controlling background, border, and text treatment.
+   * - `default`   — Neon-Glass cyan (#4cc9f0) filled primary action.
+   * - `secondary` — Muted zinc-800 surface for secondary actions.
+   * - `outline`   — Transparent with cyan border; hover fills glass-card.
+   * - `ghost`     — Fully transparent; hover reveals subtle surface.
+   * @default "default"
+   */
+  variant?: ButtonVariant;
+  /**
+   * Scale size of the button. `lg` enforces a minimum 48 px touch target
+   * for Kitchen Mode / gloved-hand usability.
+   * @default "md"
+   */
+  size?: ButtonSize;
+}
+
+/**
+ * Atomic Button component for the Neon-Glass design system.
+ *
+ * Provides tactile `active:scale-95` press feedback and a `focus-visible`
+ * ring in the brand cyan. The `lg` size enforces Kitchen Mode touch targets.
+ *
+ * @tenant-docs-export
+ * # Button
+ * ```tsx
+ * import { Button } from "@soustools/design-system";
+ *
+ * <Button variant="default" size="lg" onClick={handleSubmit}>
+ *   Submit Order
+ * </Button>
+ * ```
+ */
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className = "",
+      variant = "default",
+      size = "md",
+      children,
+      disabled,
+      ...props
+    },
+    ref,
+  ) => {
+    const base = [
+      "inline-flex items-center justify-center gap-2",
+      "font-sans font-semibold rounded-lg",
+      "transition-all duration-150 ease-in-out",
+      "active:scale-95",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      "disabled:opacity-50 disabled:pointer-events-none select-none",
+    ].join(" ");
+
+    const variantStyles: Record<ButtonVariant, string> = {
+      default: [
+        "bg-primary",
+        "text-primary-foreground",
+        "shadow-md",
+      ].join(" "),
+      secondary: [
+        "text-secondary-foreground",
+      ].join(" "),
+      outline: [
+        "bg-transparent",
+        "text-primary",
+        "border border-primary",
+      ].join(" "),
+      ghost: [
+        "bg-transparent",
+        "text-foreground",
+      ].join(" "),
+    };
+
+    const sizeStyles: Record<ButtonSize, string> = {
+      sm: "px-3 py-1.5 text-sm",
+      md: "px-4 py-2 text-base",
+      lg: "px-6 py-3 text-lg min-h-[48px]",  // Kitchen Mode touch target
+    };
+
+    // Inline styles for semantic token values (avoids Tailwind purge issues
+    // with dynamic CSS variable references in a library context)
+    const variantInlineStyle: Record<ButtonVariant, React.CSSProperties> = {
+      default: {
+        backgroundColor: "var(--color-primary)",
+        color: "var(--color-primary-foreground)",
+      },
+      secondary: {
+        backgroundColor: "var(--color-secondary)",
+        color: "var(--color-secondary-foreground)",
+      },
+      outline: {
+        backgroundColor: "transparent",
+        borderColor: "var(--color-primary)",
+        color: "var(--color-primary)",
+      },
+      ghost: {
+        backgroundColor: "transparent",
+        color: "var(--color-foreground)",
+      },
+    };
+
+    const focusRingStyle: React.CSSProperties = {
+      // --tw-ring-color maps to --color-ring in the @theme
+      outlineColor: "var(--color-ring)",
+    };
+
+    return (
+      <button
+        ref={ref}
+        disabled={disabled}
+        className={`${base} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+        style={{ ...variantInlineStyle[variant], ...focusRingStyle }}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  },
+);
+
+Button.displayName = "Button";
+````
+
+## File: packages/design-system/src/components/Card.tsx
+````typescript
+import * as React from "react";
+
+/* ─── Card ─────────────────────────────────────────────────────────────────── */
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+/**
+ * Root container for the Neon-Glass Card component.
+ *
+ * Renders a `glass-card` surface — `bg-white/5 backdrop-blur-md border
+ * border-white/10` — consistent with the v2 glassmorphism aesthetic.
+ * Compose with `CardHeader`, `CardTitle`, `CardContent`, and `CardFooter`.
+ *
+ * @tenant-docs-export
+ * # Card
+ * ```tsx
+ * import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@soustools/design-system";
+ *
+ * <Card>
+ *   <CardHeader>
+ *     <CardTitle>Daily Revenue</CardTitle>
+ *   </CardHeader>
+ *   <CardContent>$4,320.00</CardContent>
+ *   <CardFooter>Updated 2 min ago</CardFooter>
+ * </Card>
+ * ```
+ */
+export function Card({ className = "", children, ...props }: CardProps) {
+  return (
+    <div
+      className={`bg-card/90 backdrop-blur-2xl border border-border text-card-foreground rounded-3xl shadow-sm ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ─── CardHeader ───────────────────────────────────────────────────────────── */
+
+export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+/**
+ * Header region of a Card. Provides consistent padding and a bottom border
+ * separator to visually anchor the card title.
+ */
+export function CardHeader({
+  className = "",
+  children,
+  ...props
+}: CardHeaderProps) {
+  return (
+    <div
+      className={`flex flex-col gap-1.5 px-6 py-5 ${className}`}
+      style={{ borderBottom: "1px solid var(--color-border)" }}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ─── CardTitle ────────────────────────────────────────────────────────────── */
+
+export interface CardTitleProps
+  extends React.HTMLAttributes<HTMLHeadingElement> {}
+
+/**
+ * Title element within a CardHeader. Renders as `<h3>` with bold tight
+ * tracking — consistent with the Industrial Minimal brand voice.
+ */
+export function CardTitle({
+  className = "",
+  children,
+  ...props
+}: CardTitleProps) {
+  return (
+    <h3
+      className={`text-lg font-bold tracking-tight leading-none ${className}`}
+      style={{ color: "var(--color-card-foreground)" }}
+      {...props}
+    >
+      {children}
+    </h3>
+  );
+}
+
+/* ─── CardContent ──────────────────────────────────────────────────────────── */
+
+export interface CardContentProps
+  extends React.HTMLAttributes<HTMLDivElement> {}
+
+/**
+ * Main content area of a Card. Provides standard padding and removes top
+ * padding when immediately following a `CardHeader`.
+ */
+export function CardContent({
+  className = "",
+  children,
+  ...props
+}: CardContentProps) {
+  return (
+    <div className={`px-6 py-5 ${className}`} {...props}>
+      {children}
+    </div>
+  );
+}
+
+/* ─── CardFooter ───────────────────────────────────────────────────────────── */
+
+export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+/**
+ * Footer region of a Card. Flex-row layout for action buttons or metadata.
+ * Provides a top border separator.
+ */
+export function CardFooter({
+  className = "",
+  children,
+  ...props
+}: CardFooterProps) {
+  return (
+    <div
+      className={`flex items-center gap-3 px-6 py-4 ${className}`}
+      style={{ borderTop: "1px solid var(--color-border)" }}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+````
+
+## File: packages/design-system/src/components/PinInput.tsx
+````typescript
+"use client";
+
+import React, { useRef, KeyboardEvent, ClipboardEvent } from 'react';
+
+export interface PinInputProps {
+  length?: number;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export function PinInput({ length = 6, value, onChange }: PinInputProps) {
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const val = e.target.value;
+    if (!/^[a-zA-Z0-9]*$/.test(val)) return;
+
+    const newValue = value.split('');
+    newValue[index] = val.slice(-1);
+    const finalValue = newValue.join('').slice(0, length);
+    onChange(finalValue);
+
+    if (val && index < length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace') {
+      if (!value[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      } else {
+        const newValue = value.split('');
+        newValue[index] = '';
+        onChange(newValue.join(''));
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && index < length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').slice(0, length);
+    if (pastedData) {
+      onChange(pastedData);
+      const nextIndex = Math.min(pastedData.length, length - 1);
+      inputRefs.current[nextIndex]?.focus();
+    }
+  };
+
+  return (
+    <div className="flex space-x-2 justify-center">
+      {Array.from({ length }).map((_, index) => (
+        <input
+          key={index}
+          ref={(el) => {
+            inputRefs.current[index] = el;
+          }}
+          type="text"
+          inputMode="text"
+          pattern="[a-zA-Z0-9]*"
+          maxLength={1}
+          value={value[index] || ''}
+          onChange={(e) => handleChange(e, index)}
+          onKeyDown={(e) => handleKeyDown(e, index)}
+          onPaste={handlePaste}
+          className="w-12 h-14 sm:w-16 sm:h-20 text-center text-3xl sm:text-4xl font-semibold bg-card backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 transition-all placeholder:text-zinc-700 shadow-inner"
+          placeholder="-"
+        />
+      ))}
+    </div>
+  );
+}
+````
+
 ## File: packages/design-system/src/index.ts
 ````typescript
 /**
@@ -48003,6 +47440,496 @@ export type { ScaledIngredientResult } from "./utils/scaling";
 export { PrimaryLogo } from "./components/logos/PrimaryLogo";
 export { MicroIcon } from "./components/logos/MicroIcon";
 export { Lettermark } from "./components/logos/Lettermark";
+````
+
+## File: packages/domain-inventory/src/orders-panel.tsx
+````typescript
+"use client";
+
+import { useState, useMemo } from "react";
+import { ShoppingBag } from "lucide-react";
+import {
+  TwoToneHeader,
+  QuickAddBar,
+  QuickAddSuggestion,
+  SupplierOrderGroup,
+  EmptyOrderList,
+  InsightsSidebar,
+  OrderLineItem,
+  OrderSupplier,
+  inferVendorForItem,
+} from "@soustools/design-system";
+import type { Vendor, WhiteboardItem } from "@soustools/api-types";
+
+function toOrderSupplier(v: Vendor): OrderSupplier {
+  return {
+    id: v.id,
+    name: v.name,
+    deliveryDays: [],
+    cutoffTime: "—",
+  };
+}
+
+function toOrderLineItem(item: WhiteboardItem): OrderLineItem {
+  return {
+    id: item.id,
+    rawName: item.raw_name,
+    quantity: 1,
+    unit: "ea",
+    isSystemSuggestion: false,
+    supplier: null,
+  };
+}
+
+export interface OrdersPanelProps {
+  vendors: Vendor[];
+  whiteboardItems: WhiteboardItem[];
+  onAddFreeText: (rawName: string) => Promise<string | null>;
+  onRemoveItem: (id: string) => Promise<void>;
+  onPlaceOrder: (supplierId: string) => Promise<void>;
+}
+
+export function OrdersPanel({
+  vendors,
+  whiteboardItems,
+  onAddFreeText,
+  onRemoveItem,
+  onPlaceOrder,
+}: OrdersPanelProps) {
+  const [activeTab, setActiveTab] = useState<"list" | "history">("list");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [items, setItems] = useState<OrderLineItem[]>(
+    whiteboardItems.map(toOrderLineItem),
+  );
+  const [placingOrderId, setPlacingOrderId] = useState<string | null>(null);
+
+  const suppliers = vendors.map(toOrderSupplier);
+
+  const groupedItems = useMemo(() => {
+    const groups: Record<string, OrderLineItem[]> = {};
+    items.forEach((item) => {
+      const key = item.supplier?.id ?? "unassigned";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    });
+    return groups;
+  }, [items]);
+
+  const suggestions: QuickAddSuggestion[] = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return items
+      .filter((i) =>
+        i.rawName.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      .slice(0, 5)
+      .map((i) => ({ id: i.id, name: i.rawName, baseUnit: i.unit }));
+  }, [searchQuery, items]);
+
+  const handleAddFreeTextLocal = async (rawName: string) => {
+    const inferredVendorId = inferVendorForItem(rawName);
+    const assignedSupplier = suppliers.find((s) => s.id === inferredVendorId) ?? null;
+
+    const tempId = `temp_${Date.now()}`;
+    const newItem: OrderLineItem = {
+      id: tempId,
+      rawName,
+      quantity: 1,
+      unit: "ea",
+      isSystemSuggestion: false,
+      supplier: assignedSupplier,
+    };
+
+    setItems((prev) => [...prev, newItem]);
+    setSearchQuery("");
+
+    const realId = await onAddFreeText(rawName);
+    if (realId) {
+      setItems((prev) =>
+        prev.map((i) => (i.id === tempId ? { ...i, id: realId } : i)),
+      );
+    } else {
+      setItems((prev) => prev.filter((i) => i.id !== tempId));
+    }
+  };
+
+  const handleSelectSuggestion = (_s: QuickAddSuggestion) => {
+    setSearchQuery("");
+  };
+
+  const handleRemoveLocal = async (id: string) => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    await onRemoveItem(id);
+  };
+
+  const handleChangeQty = (id: string, qty: number) => {
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
+    );
+  };
+
+  const handleChangeSupplier = (id: string, supplierId: string | null) => {
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? {
+              ...i,
+              supplier: suppliers.find((s) => s.id === supplierId) ?? null,
+            }
+          : i,
+      ),
+    );
+  };
+
+  const handlePlaceOrderLocal = async (supplierId: string) => {
+    setPlacingOrderId(supplierId);
+    await onPlaceOrder(supplierId);
+    setItems((prev) => prev.filter((i) => i.supplier?.id !== supplierId));
+    setPlacingOrderId(null);
+  };
+
+  return (
+    <div className="flex-1 bg-background p-8 min-h-screen">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+        <TwoToneHeader
+          breadcrumb="Procurement / Living Order List"
+          title="Order Manager"
+        />
+
+        <div className="flex bg-muted/50 dark:bg-card/70 rounded-2xl p-1 border border-border dark:border-zinc-800">
+          {(["list", "history"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={[
+                "h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                activeTab === tab
+                  ? "bg-background dark:bg-zinc-800 shadow-sm text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              {tab === "list" ? "Living List" : "Order History"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeTab === "history" ? (
+        <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
+          <ShoppingBag size={64} className="mb-4 opacity-20" />
+          <p className="text-sm font-black uppercase tracking-[0.2em]">
+            Order History Coming Soon
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          <div className="flex-[3] flex flex-col gap-8 min-w-0">
+            <QuickAddBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              suggestions={suggestions}
+              onSelectSuggestion={handleSelectSuggestion}
+              onAddFreeText={handleAddFreeTextLocal}
+            />
+
+            {items.length === 0 ? (
+              <EmptyOrderList />
+            ) : (
+              <div className="flex flex-col gap-12">
+                {Object.entries(groupedItems).map(
+                  ([supplierId, groupItems]) => (
+                    <SupplierOrderGroup
+                      key={supplierId}
+                      supplier={
+                        suppliers.find((s) => s.id === supplierId) ?? null
+                      }
+                      items={groupItems}
+                      allSuppliers={suppliers}
+                      isPlacingOrder={placingOrderId === supplierId}
+                      onPlaceOrder={() => handlePlaceOrderLocal(supplierId)}
+                      onRemoveItem={handleRemoveLocal}
+                      onChangeQty={handleChangeQty}
+                      onChangeSupplier={handleChangeSupplier}
+                    />
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="w-full lg:flex-1 lg:min-w-[240px] lg:max-w-[320px] sticky top-8">
+            <InsightsSidebar suppliers={suppliers} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+````
+
+## File: packages/domain-inventory/src/vendors-panel.tsx
+````typescript
+"use client";
+
+import { useState } from "react";
+import { Plus, Trash, Edit2, Save, X } from "lucide-react";
+import type { Vendor } from "@soustools/api-types";
+import { TwoToneHeader } from "@soustools/design-system";
+
+const DAYS_OF_WEEK = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+export interface VendorsPanelProps {
+  vendors: Vendor[];
+  onSave: (id: string, payload: Partial<Vendor>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}
+
+export function VendorsPanel({ vendors, onSave, onDelete }: VendorsPanelProps) {
+  const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Vendor>>({});
+
+  const handleSave = async (id: string) => {
+    if (!editForm.name) {
+      alert("Vendor name is required");
+      return;
+    }
+    
+    await onSave(id, editForm);
+    setIsEditing(null);
+    setEditForm({});
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this vendor?")) {
+      await onDelete(id);
+    }
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in">
+      <div className="flex items-center justify-between">
+        <TwoToneHeader
+          title="Vendor Management"
+          breadcrumb="Manage suppliers, ordering schedules, and contact methods."
+        />
+        <button
+          onClick={() => {
+            setIsEditing("new");
+            setEditForm({ order_days: [], order_method: "MANUAL" });
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg font-medium transition-colors cursor-pointer"
+        >
+          <Plus className="w-5 h-5" />
+          Add Vendor
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {isEditing === "new" && (
+          <VendorCardForm
+            form={editForm}
+            setForm={setEditForm}
+            onSave={() => handleSave("new")}
+            onCancel={() => setIsEditing(null)}
+          />
+        )}
+
+        {vendors.map((vendor) =>
+          isEditing === vendor.id ? (
+            <VendorCardForm
+              key={vendor.id}
+              form={editForm}
+              setForm={setEditForm}
+              onSave={() => handleSave(vendor.id)}
+              onCancel={() => setIsEditing(null)}
+            />
+          ) : (
+            <div
+              key={vendor.id}
+              className="st-glass-panel p-5 rounded-xl border border-zinc-200 dark:border-white/5 bg-white dark:bg-card shadow-sm flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-semibold text-lg text-zinc-900 dark:text-white">
+                    {vendor.name}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        setIsEditing(vendor.id);
+                        setEditForm(vendor);
+                      }}
+                      className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 rounded-md hover:bg-zinc-100 dark:hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(vendor.id)}
+                      className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-red-500 rounded-md hover:bg-zinc-100 dark:hover:bg-black/5 dark:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <Trash className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="flex justify-between">
+                    <span className="font-medium text-zinc-400 dark:text-zinc-500">
+                      Method:
+                    </span>
+                    <span className="capitalize">
+                      {vendor.order_method?.toLowerCase() || "None set"}
+                    </span>
+                  </div>
+                  {vendor.email && (
+                    <div className="flex justify-between">
+                      <span className="font-medium text-zinc-400 dark:text-zinc-500">
+                        Email:
+                      </span>
+                      <span className="truncate ml-2">{vendor.email}</span>
+                    </div>
+                  )}
+                  {vendor.phone && (
+                    <div className="flex justify-between">
+                      <span className="font-medium text-zinc-400 dark:text-zinc-500">
+                        Phone:
+                      </span>
+                      <span>{vendor.phone}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-white/5">
+                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
+                  Order Days
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {vendor.order_days && vendor.order_days.length > 0 ? (
+                    vendor.order_days.map((day) => (
+                      <span
+                        key={day}
+                        className="px-2 py-0.5 text-xs rounded bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400"
+                      >
+                        {day.slice(0, 3)}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      No days scheduled
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VendorCardForm({ form, setForm, onSave, onCancel }: any) {
+  return (
+    <div className="st-glass-panel p-5 rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-500/5 shadow-md flex flex-col gap-3">
+      <input
+        autoFocus
+        type="text"
+        placeholder="Vendor Name"
+        value={form.name || ""}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+      />
+
+      <select
+        value={form.order_method || "MANUAL"}
+        onChange={(e) => setForm({ ...form, order_method: e.target.value })}
+        className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+      >
+        <option value="" disabled>
+          Select Order Method
+        </option>
+        <option value="EMAIL">Email</option>
+        <option value="SMS">Text Message</option>
+        <option value="MANUAL">Manual</option>
+      </select>
+
+      {form.order_method === "EMAIL" && (
+        <input
+          type="email"
+          placeholder="vendor@example.com"
+          value={form.email || ""}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+        />
+      )}
+
+      {form.order_method === "SMS" && (
+        <input
+          type="tel"
+          placeholder="+1 555-555-5555"
+          value={form.phone || ""}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+        />
+      )}
+
+      <div className="mt-2">
+        <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
+          Select Order Days
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {DAYS_OF_WEEK.map((day) => {
+            const isSelected = form.order_days?.includes(day);
+            return (
+              <button
+                key={day}
+                onClick={() => {
+                  const current = form.order_days || [];
+                  setForm({
+                    ...form,
+                    order_days: isSelected
+                      ? current.filter((d: string) => d !== day)
+                      : [...current, day],
+                  });
+                }}
+                className={`px-2 py-1 text-xs rounded transition-colors border cursor-pointer ${
+                  isSelected
+                    ? "bg-sky-500 border-sky-500 text-white"
+                    : "bg-white dark:bg-card border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:border-sky-500"
+                }`}
+              >
+                {day.slice(0, 3)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex gap-2 mt-2 pt-3 border-t border-zinc-200 dark:border-white/10">
+        <button
+          onClick={onSave}
+          className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded font-medium transition-colors text-sm cursor-pointer"
+        >
+          <Save className="w-4 h-4" /> Save
+        </button>
+        <button
+          onClick={onCancel}
+          className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-zinc-200 dark:bg-white/10 hover:bg-zinc-300 dark:hover:bg-white/20 text-zinc-900 dark:text-white rounded font-medium transition-colors text-sm cursor-pointer"
+        >
+          <X className="w-4 h-4" /> Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
 ````
 
 ## File: packages/domain-settings/src/general-settings.tsx
@@ -49529,276 +49456,6 @@ export function OmniBarContainer() {
 }
 ````
 
-## File: packages/design-system/index.css
-````css
-@import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* ─── @soustools/design-system — Neon-Glass Token Dictionary ─────────────────
- *
- *  Visual Mood Board Source: v2-snapshot.md (apps/cli/templates/sous-theme.kdl
- *  + packages/ui/src/styles.css + .gemini/docs/brand-identity.md)
- *
- *  Neon-Glass Design Language:
- *    Dark Background   → #09090b  (midnight slate, migrated from zinc-950)
- *    Card Surfaces     → #121212  (elevated midnight, migrated from zinc-900)
- *    Foreground/White  → #f8fafc  (zinc-50)
- *    Primary Cyan      → #4cc9f0  (from sous-theme.kdl `fg` / `cyan`)
- *    Neon Pink Accent  → #f72585  (from sous-theme.kdl `magenta`)
- *    Destructive/Red   → #f43f5e  (from sous-theme.kdl `red`)
- *    Success/Green     → #10b981  (from sous-theme.kdl `green`)
- *    Warning/Amber     → #f59e0b  (from sous-theme.kdl `yellow`)
- *    Orange Accent     → #f97316  (from sous-theme.kdl `orange`)
- *    Blue              → #2563eb  (from sous-theme.kdl `blue`)
- *
- *  All @theme tokens are hardcoded — no hsl(var(--*)) indirection.
- *  CSS custom props in @layer base provide runtime theming for light mode.
- * ─────────────────────────────────────────────────────────────────────────── */
-
-@theme {
-  /* ── Colors — Semantic Token Dictionary ─────────────────────────────────── */
-
-  /* Base surfaces */
-  --color-background:          #09090b;   /* midnight slate */
-  --color-foreground:          #f8fafc;   /* zinc-50 */
-
-  /* Card / Elevated surfaces */
-  --color-card:                #121212;   /* elevated midnight */
-  --color-card-foreground:     #f8fafc;   /* zinc-50 */
-
-  /* Popover / Overlay surfaces */
-  --color-popover:             #121212;   /* elevated midnight */
-  --color-popover-foreground:  #f8fafc;   /* zinc-50 */
-
-  /* Primary — Neon-Glass Cyan #4cc9f0 */
-  --color-primary:             #4cc9f0;
-  --color-primary-foreground:  #09090b;   /* dark bg for contrast on cyan btn */
-
-  /* Secondary — Muted slate surface */
-  --color-secondary:           #27272a;   /* zinc-800 */
-  --color-secondary-foreground:#f8fafc;
-
-  /* Muted — de-emphasized surfaces and text */
-  --color-muted:               #121212;   
-  --color-muted-foreground:    #a1a1aa;   /* zinc-400 */
-
-  /* Accent — Neon Pink (neon-glass secondary accent) */
-  --color-accent:              #f72585;   
-  --color-accent-foreground:   #f8fafc;
-
-  /* Destructive — Rose/Red */
-  --color-destructive:         #f43f5e;   
-  --color-destructive-foreground: #f8fafc;
-
-  /* Borders & Inputs */
-  --color-border:              #27272a;   /* zinc-800 */
-  --color-input:               #121212;   
-  --color-ring:                #4cc9f0;   
-
-  /* ── Supporting Palette (for utility classes & components) ─────────────── */
-  --color-neon-cyan:           #4cc9f0;
-  --color-neon-pink:           #f72585;
-  --color-success:             #10b981;   
-  --color-warning:             #f59e0b;   
-  --color-info:                #2563eb;   
-  --color-orange:              #f97316;   
-
-  /* ── Z-Index Scale ──────────────────────────────────────────────────────── */
-  --z-overlay:                 40;
-  --z-bottom-nav:              40;
-  --z-sidebar:                 50;
-  --z-appbar:                  50;
-  --z-omnibar:                 60;
-  --z-modal:                   100;
-  --z-toast:                   150;
-
-  /* ── Typography ─────────────────────────────────────────────────────────── */
-  --font-sans:                 var(--font-primary, "Inter", system-ui, sans-serif);
-  --font-brand:                var(--font-brand, "Outfit", sans-serif);
-  --font-mono:                 var(--font-mono, "Geist Mono", monospace);
-
-  /* ── Radii ──────────────────────────────────────────────────────────────── */
-  --radius:                    0.8rem;    
-  --radius-lg:                 var(--radius);
-  --radius-md:                 calc(var(--radius) - 2px);
-  --radius-sm:                 calc(var(--radius) - 4px);
-}
-
-/* ─── Base Theme — Light Fallback ──────────────────────────────────────────── */
-@layer base {
-  :root {
-    --color-background:          #f8fafc;  
-    --color-foreground:          #09090b;  
-    --color-card:                #ffffff;
-    --color-card-foreground:     #09090b;
-    --color-popover:             #ffffff;
-    --color-popover-foreground:  #09090b;
-    --color-primary:             #0891b2;  
-    --color-primary-foreground:  #ffffff;
-    --color-secondary:           #e4e4e7;  
-    --color-secondary-foreground:#09090b;
-    --color-muted:               #f4f4f5;  
-    --color-muted-foreground:    #71717a;  
-    --color-accent:              #e4e4e7;
-    --color-accent-foreground:   #09090b;
-    --color-destructive:         #f43f5e;
-    --color-destructive-foreground: #ffffff;
-    --color-border:              #e4e4e7;  
-    --color-input:               #f4f4f5;  
-    --color-ring:                #0891b2;
-  }
-
-  /* Dark — canonical Neon-Glass aesthetic */
-  .dark {
-    --color-background:          #09090b;  
-    --color-foreground:          #f8fafc;  
-    --color-card:                #121212;  
-    --color-card-foreground:     #f8fafc;
-    --color-popover:             #121212;
-    --color-popover-foreground:  #f8fafc;
-    --color-primary:             #4cc9f0;  
-    --color-primary-foreground:  #09090b;
-    --color-secondary:           #27272a;  
-    --color-secondary-foreground:#f8fafc;
-    --color-muted:               #121212;  
-    --color-muted-foreground:    #a1a1aa;  
-    --color-accent:              #f72585;  
-    --color-accent-foreground:   #f8fafc;
-    --color-destructive:         #f43f5e;  
-    --color-destructive-foreground: #f8fafc;
-    --color-border:              #27272a;  
-    --color-input:               #121212;  
-    --color-ring:                #4cc9f0;  
-  }
-}
-
-/* ─── Base Resets ─────────────────────────────────────────────────────────── */
-@layer base {
-  *,
-  *::before,
-  *::after {
-    border-color: var(--color-border);
-    box-sizing: border-box;
-  }
-
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    font-feature-settings: "rlig" 1, "calt" 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  a,
-  button {
-    cursor: pointer;
-  }
-
-  /* Slim scrollbar — Neon-Glass surface optimised */
-  ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: #27272a; /* zinc-800 */
-    border-radius: 9999px;
-    transition: background-color 150ms ease;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #3f3f46; /* zinc-700 */
-  }
-}
-
-/* ─── Utility Layer — Neon-Glass Effects ─────────────────────────────────── */
-@layer utilities {
-  /* Neon cyan glow — primary accent glow */
-  .neon-glow {
-    box-shadow:
-      0 0 15px -3px rgb(76 201 240 / 0.70),
-      0 0 6px -2px  rgb(76 201 240 / 0.50);
-  }
-
-  .neon-glow-lg {
-    box-shadow:
-      0 0 35px -5px rgb(76 201 240 / 0.60),
-      0 0 15px -3px rgb(76 201 240 / 0.40);
-  }
-
-  /* Neon pink glow — accent/alert glow */
-  .neon-glow-pink {
-    box-shadow:
-      0 0 15px -3px rgb(247 37 133 / 0.70),
-      0 0 6px -2px  rgb(247 37 133 / 0.50);
-  }
-
-  /* Neon border — inset + outset cyan glow on border */
-  .neon-border {
-    border-color: rgb(76 201 240 / 0.60);
-    box-shadow:
-      inset 0 0 12px rgb(76 201 240 / 0.15),
-      0 0 12px rgb(76 201 240 / 0.25);
-  }
-
-  /* Glass panel — primary frosted-glass surface for KDS/POS kiosk UIs */
-  .glass-panel {
-    background-color: rgb(9 9 11 / 0.40);  /* #09090b midnight slate @ 40% */
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgb(248 250 252 / 0.05);
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  }
-
-  /* Glass card — secondary surface with subtle inner glow */
-  .glass-card {
-    background-color: rgb(248 250 252 / 0.05);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgb(248 250 252 / 0.10);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.10),
-                0 8px 10px -6px rgb(0 0 0 / 0.10);
-  }
-
-  /* Named aliases — @soustools/design-system canonical tokens */
-  .st-glass-panel {
-    background-color: rgb(9 9 11 / 0.40);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgb(248 250 252 / 0.05);
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  }
-
-  .st-glass-pill {
-    background-color: rgb(9 9 11 / 0.60);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgb(248 250 252 / 0.10);
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-    border-radius: 1rem;
-  }
-
-  /* Shimmer — skeleton loader animation */
-  .animate-shimmer {
-    animation: shimmer 2s infinite linear;
-  }
-
-  @keyframes shimmer {
-    from { transform: translateX(-100%); }
-    to   { transform: translateX(100%); }
-  }
-
-  /* Kitchen Mode — thick borders + large touch targets for gloved hands */
-  .kitchen-touch {
-    min-height: 56px;
-    min-width: 56px;
-    border-width: 2px;
-  }
-}
-````
-
 ## File: packages/design-system/package.json
 ````json
 {
@@ -50164,6 +49821,80 @@ export type OcrInvoiceIngestionPayload = z.infer<
 >;
 ````
 
+## File: .gitignore
+````
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+.nuxt/
+.output/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs and databases
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.db
+*.sqlite
+
+# Testing coverage
+coverage/
+.nyc_output/
+.vercel
+
+# Ansible secrets — never commit real vault or inventory
+deploy/ansible/group_vars/all/vault.yml
+deploy/ansible/inventory.ini
+
+mcp_config.bu.json
+
+ssh-key.key
+ssh-key.pub
+
+# Repomix Context Files (Massive Markdown files)
+.context/
+
+# Playwright Test Results & Error Traces
+apps/web/test-results/
+apps/web/playwright-report/
+
+# CLI Textbook Parsing Outputs
+apps/cli/output/
+apps/cli/queue/
+
+# Raspberry Pi OS Build Artifacts
+deploy/pi/pi-gen/deploy/
+deploy/pi/pi-gen/work/*.deb
+
+*.deb
+````
+
 ## File: turbo.json
 ````json
 {
@@ -50477,218 +50208,6 @@ export class IntegrationsService {
 }
 ````
 
-## File: packages/design-system/src/components/GlobalAppBar/GlobalAppBarPresentation.tsx
-````typescript
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, LayoutGrid, LogOut, Settings, MonitorPlay, ChefHat, Check, Home, Users, ClipboardList, Package, Tv, ShieldCheck } from "lucide-react";
-import { PrimaryLogo } from "../logos/PrimaryLogo";
-import { OmniBar } from "../OmniBar";
-import { ThemeToggle } from "../ThemeToggle";
-
-export interface AppBarNotification {
-  id: string;
-  title: string;
-  message: string;
-  link?: string | null;
-}
-
-export interface GlobalAppBarPresentationProps {
-  notifications: AppBarNotification[];
-  isProfileOpen: boolean;
-  isNotificationsOpen: boolean;
-  isWaffleOpen: boolean;
-  onToggleProfile: () => void;
-  onToggleNotifications: () => void;
-  onToggleWaffle: () => void;
-  onCloseMenus: () => void;
-  onLogout: () => void;
-  onMarkAllAsRead: () => void;
-  isAdmin?: boolean;
-}
-
-export function GlobalAppBarPresentation({
-  notifications,
-  isProfileOpen,
-  isNotificationsOpen,
-  isWaffleOpen,
-  onToggleProfile,
-  onToggleNotifications,
-  onToggleWaffle,
-  onCloseMenus,
-  onLogout,
-  onMarkAllAsRead,
-  isAdmin,
-}: GlobalAppBarPresentationProps) {
-  const isAnyMenuOpen = isProfileOpen || isNotificationsOpen || isWaffleOpen;
-  const pathname = usePathname();
-  const isFocusPage = pathname === "/home";
-
-  return (
-    <header className="sticky top-0 z-[var(--z-appbar)] w-full backdrop-blur-md bg-zinc-950/80 border-b border-white/5 h-16 px-4 md:px-6 flex items-center justify-between">
-      {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself (z-auto or 0) but sits under z-modal */}
-      {isAnyMenuOpen && (
-        <div 
-          className="fixed inset-0 z-[var(--z-overlay)]" 
-          onClick={onCloseMenus} 
-        />
-      )}
-
-      {/* Left: Brand Logo */}
-      <Link href="/home" className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity relative z-10">
-        <PrimaryLogo className="h-12 w-auto text-[var(--color-primary)]" />
-      </Link>
-
-      {/* Center/Right-Align: OmniBar (Mounts here, handles its own positioning via Framer Motion) */}
-      <div className="flex-1 flex justify-end mr-4 relative z-10">
-        {!isFocusPage && <OmniBar />}
-      </div>
-
-      {/* Right: Action Group - Elevated above the overlay */}
-      <div className="flex items-center gap-2 md:gap-4 relative z-[var(--z-modal)]">
-        <ThemeToggle />
-
-        {/* Notifications */}
-        <div className="relative">
-          <button 
-            onClick={onToggleNotifications}
-            className={`relative p-2 transition-colors rounded-full focus:outline-none outline-none ${isNotificationsOpen ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
-          >
-            <Bell className="w-5 h-5" />
-            {notifications.length > 0 && (
-              <span className="absolute top-1 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-destructive)] px-1 text-[10px] font-bold text-white">
-                {notifications.length}
-              </span>
-            )}
-          </button>
-          
-          {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)]">
-              <div className="px-4 py-2 border-b border-border flex justify-between items-center">
-                <span className="text-sm font-semibold text-white">Notifications</span>
-                {notifications.length > 0 && (
-                  <button onClick={onMarkAllAsRead} className="text-xs text-[var(--color-primary)] flex items-center gap-1 cursor-pointer hover:underline focus:outline-none transition-colors">
-                    <Check className="w-3 h-3" />
-                    Mark all read
-                  </button>
-                )}
-              </div>
-              <div className="max-h-64 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-[var(--color-muted-foreground)]">
-                    No new notifications
-                  </div>
-                ) : (
-                  notifications.map((n) => (
-                    <div key={n.id} className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer text-left">
-                      <p className="text-sm font-medium text-white">{n.title}</p>
-                      <p className="text-xs text-[var(--color-muted-foreground)] mt-1 line-clamp-2">{n.message}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Waffle Menu */}
-        <div className="relative">
-          <button 
-            onClick={onToggleWaffle}
-            className={`p-2 transition-colors rounded-full focus:outline-none outline-none ${isWaffleOpen ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
-          >
-            <LayoutGrid className="w-5 h-5" />
-          </button>
-          
-          {isWaffleOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)] grid grid-cols-3 gap-2 p-4">
-              <Link href="/home" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                <div className="w-10 h-10 bg-sky-500/10 rounded-full flex items-center justify-center mb-2">
-                  <Home className="w-5 h-5 text-sky-400" />
-                </div>
-                <span className="text-xs font-medium">Home</span>
-              </Link>
-              <Link href="/pos" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                <div className="w-10 h-10 bg-violet-500/10 rounded-full flex items-center justify-center mb-2">
-                  <MonitorPlay className="w-5 h-5 text-violet-400" />
-                </div>
-                <span className="text-xs font-medium">POS</span>
-              </Link>
-              <Link href="/kds" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center mb-2">
-                  <ChefHat className="w-5 h-5 text-orange-400" />
-                </div>
-                <span className="text-xs font-medium">KDS</span>
-              </Link>
-              <Link href="/team" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                <div className="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center mb-2">
-                  <Users className="w-5 h-5 text-green-400" />
-                </div>
-                <span className="text-xs font-medium">Team</span>
-              </Link>
-              <Link href="/recipes" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                <div className="w-10 h-10 bg-yellow-500/10 rounded-full flex items-center justify-center mb-2">
-                  <ClipboardList className="w-5 h-5 text-yellow-400" />
-                </div>
-                <span className="text-xs font-medium">Recipes</span>
-              </Link>
-              <Link href="/inventory" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center mb-2">
-                  <Package className="w-5 h-5 text-blue-400" />
-                </div>
-                <span className="text-xs font-medium">Inventory</span>
-              </Link>
-              <Link href="/signage" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                <div className="w-10 h-10 bg-pink-500/10 rounded-full flex items-center justify-center mb-2">
-                  <Tv className="w-5 h-5 text-pink-400" />
-                </div>
-                <span className="text-xs font-medium">Signage</span>
-              </Link>
-              {isAdmin && (
-                <Link href="/admin/devices" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
-                  <div className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center mb-2">
-                    <ShieldCheck className="w-5 h-5 text-red-400" />
-                  </div>
-                  <span className="text-xs font-medium">Admin</span>
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* User Profile Avatar / Dropdown */}
-        <div className="relative">
-          <button 
-            onClick={onToggleProfile}
-            className={`w-8 h-8 rounded-full bg-[var(--color-primary)] text-zinc-950 font-bold flex items-center justify-center ml-2 transition-transform focus:outline-none outline-none ${isProfileOpen ? 'scale-110 ring-2 ring-[var(--color-primary)] ring-offset-2 ring-offset-zinc-950' : 'hover:scale-105'}`}
-          >
-            CW
-          </button>
-
-          {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-1 z-[var(--z-modal)]">
-              <Link href="/settings" onClick={onCloseMenus} className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-zinc-300 hover:bg-white/5 transition-colors">
-                <Settings className="w-4 h-4" />
-                Settings
-              </Link>
-              <button 
-                onClick={() => { onCloseMenus(); onLogout(); }}
-                className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-[var(--color-destructive)] hover:bg-[var(--color-destructive)]/10 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-}
-````
-
 ## File: packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx
 ````typescript
 "use client";
@@ -50867,78 +50386,274 @@ export function OmniBarPresentation({
 }
 ````
 
-## File: .gitignore
-````
-# Dependency directories
-node_modules/
-jspm_packages/
-web_modules/
+## File: packages/design-system/index.css
+````css
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-# Build outputs
-dist/
-build/
-.next/
-out/
-.turbo/
-.nuxt/
-.output/
+/* ─── @soustools/design-system — Neon-Glass Token Dictionary ─────────────────
+ *
+ *  Visual Mood Board Source: v2-snapshot.md (apps/cli/templates/sous-theme.kdl
+ *  + packages/ui/src/styles.css + .gemini/docs/brand-identity.md)
+ *
+ *  Neon-Glass Design Language:
+ *    Dark Background   → #09090b  (midnight slate, migrated from zinc-950)
+ *    Card Surfaces     → #121212  (elevated midnight, migrated from zinc-900)
+ *    Foreground/White  → #f8fafc  (zinc-50)
+ *    Primary Cyan      → #4cc9f0  (from sous-theme.kdl `fg` / `cyan`)
+ *    Neon Pink Accent  → #f72585  (from sous-theme.kdl `magenta`)
+ *    Destructive/Red   → #f43f5e  (from sous-theme.kdl `red`)
+ *    Success/Green     → #10b981  (from sous-theme.kdl `green`)
+ *    Warning/Amber     → #f59e0b  (from sous-theme.kdl `yellow`)
+ *    Orange Accent     → #f97316  (from sous-theme.kdl `orange`)
+ *    Blue              → #2563eb  (from sous-theme.kdl `blue`)
+ *
+ *  All @theme tokens are hardcoded — no hsl(var(--*)) indirection.
+ *  CSS custom props in @layer base provide runtime theming for light mode.
+ * ─────────────────────────────────────────────────────────────────────────── */
 
-# IDE files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+@theme {
+  /* ── Colors — Semantic Token Dictionary ─────────────────────────────────── */
 
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env*.local
+  /* Base surfaces */
+  --color-background:          #09090b;   /* midnight slate */
+  --color-foreground:          #f8fafc;   /* zinc-50 */
 
-# Logs and databases
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-*.db
-*.sqlite
+  /* Card / Elevated surfaces */
+  --color-card:                #121212;   /* elevated midnight */
+  --color-card-foreground:     #f8fafc;   /* zinc-50 */
 
-# Testing coverage
-coverage/
-.nyc_output/
-.vercel
+  /* Popover / Overlay surfaces */
+  --color-popover:             #121212;   /* elevated midnight */
+  --color-popover-foreground:  #f8fafc;   /* zinc-50 */
 
-# Ansible secrets — never commit real vault or inventory
-deploy/ansible/group_vars/all/vault.yml
-deploy/ansible/inventory.ini
+  /* Primary — Neon-Glass Cyan #4cc9f0 */
+  --color-primary:             #4cc9f0;
+  --color-primary-foreground:  #09090b;   /* dark bg for contrast on cyan btn */
 
-mcp_config.bu.json
+  /* Secondary — Muted slate surface */
+  --color-secondary:           #27272a;   /* zinc-800 */
+  --color-secondary-foreground:#f8fafc;
 
-ssh-key.key
-ssh-key.pub
+  /* Muted — de-emphasized surfaces and text */
+  --color-muted:               #121212;   
+  --color-muted-foreground:    #a1a1aa;   /* zinc-400 */
 
-# Repomix Context Files (Massive Markdown files)
-.context/
+  /* Accent — Neon Pink (neon-glass secondary accent) */
+  --color-accent:              #f72585;   
+  --color-accent-foreground:   #f8fafc;
 
-# Playwright Test Results & Error Traces
-apps/web/test-results/
-apps/web/playwright-report/
+  /* Destructive — Rose/Red */
+  --color-destructive:         #f43f5e;   
+  --color-destructive-foreground: #f8fafc;
 
-# CLI Textbook Parsing Outputs
-apps/cli/output/
-apps/cli/queue/
+  /* Borders & Inputs */
+  --color-border:              #27272a;   /* zinc-800 */
+  --color-input:               #121212;   
+  --color-ring:                #4cc9f0;   
 
-# Raspberry Pi OS Build Artifacts
-deploy/pi/pi-gen/deploy/
-deploy/pi/pi-gen/work/*.deb
+  /* ── Supporting Palette (for utility classes & components) ─────────────── */
+  --color-neon-cyan:           #4cc9f0;
+  --color-neon-pink:           #f72585;
+  --color-success:             #10b981;   
+  --color-warning:             #f59e0b;   
+  --color-info:                #2563eb;   
+  --color-orange:              #f97316;   
 
-.deb
+  /* ── Z-Index Scale ──────────────────────────────────────────────────────── */
+  --z-overlay:                 40;
+  --z-bottom-nav:              40;
+  --z-sidebar:                 50;
+  --z-appbar:                  50;
+  --z-omnibar:                 60;
+  --z-modal:                   100;
+  --z-toast:                   150;
+
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --font-sans:                 var(--font-primary, "Inter", system-ui, sans-serif);
+  --font-brand:                var(--font-brand, "Outfit", sans-serif);
+  --font-mono:                 var(--font-mono, "Geist Mono", monospace);
+
+  /* ── Radii ──────────────────────────────────────────────────────────────── */
+  --radius:                    0.8rem;    
+  --radius-lg:                 var(--radius);
+  --radius-md:                 calc(var(--radius) - 2px);
+  --radius-sm:                 calc(var(--radius) - 4px);
+}
+
+/* ─── Base Theme — Light Fallback ──────────────────────────────────────────── */
+@layer base {
+  :root {
+    --color-background:          210 24% 96%;  
+    --color-foreground:          215 16% 22%;  
+    --color-card:                0 0% 100%;
+    --color-card-foreground:     215 16% 22%;
+    --color-popover:             0 0% 100%;
+    --color-popover-foreground:  215 16% 22%;
+    --color-primary:             180 100% 50%;  
+    --color-primary-foreground:  0 0% 0%;
+    --color-secondary:           #e4e4e7;  
+    --color-secondary-foreground:#18181b;
+    --color-muted:               #f4f4f5;  
+    --color-muted-foreground:    #71717a;  
+    --color-accent:              #e4e4e7;
+    --color-accent-foreground:   #18181b;
+    --color-destructive:         #f43f5e;
+    --color-destructive-foreground: #ffffff;
+    --color-border:              #e4e4e7;  
+    --color-input:               #f4f4f5;  
+    --color-ring:                #2563eb;
+  }
+
+  /* Dark — canonical Neon-Glass aesthetic */
+  .dark {
+    --color-background:          240 10% 4%;  
+    --color-foreground:          210 40% 98%;  
+    --color-card:                240 5% 10%;  
+    --color-card-foreground:     210 40% 98%;
+    --color-popover:             240 5% 10%;
+    --color-popover-foreground:  210 40% 98%;
+    --color-primary:             180 100% 50%;  
+    --color-primary-foreground:  0 0% 0%;
+    --color-secondary:           #27272a;  
+    --color-secondary-foreground:#f8fafc;
+    --color-muted:               #121212;  
+    --color-muted-foreground:    #a1a1aa;  
+    --color-accent:              #f72585;  
+    --color-accent-foreground:   #f8fafc;
+    --color-destructive:         #f43f5e;  
+    --color-destructive-foreground: #f8fafc;
+    --color-border:              #27272a;  
+    --color-input:               #121212;  
+    --color-ring:                #4cc9f0;  
+  }
+}
+
+/* ─── Base Resets ─────────────────────────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a,
+  button {
+    cursor: pointer;
+  }
+
+  /* Slim scrollbar — Neon-Glass surface optimised */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #27272a; /* zinc-800 */
+    border-radius: 9999px;
+    transition: background-color 150ms ease;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #3f3f46; /* zinc-700 */
+  }
+}
+
+/* ─── Utility Layer — Neon-Glass Effects ─────────────────────────────────── */
+@layer utilities {
+  /* Neon cyan glow — primary accent glow */
+  .neon-glow {
+    box-shadow:
+      0 0 15px -3px rgb(76 201 240 / 0.70),
+      0 0 6px -2px  rgb(76 201 240 / 0.50);
+  }
+
+  .neon-glow-lg {
+    box-shadow:
+      0 0 35px -5px rgb(76 201 240 / 0.60),
+      0 0 15px -3px rgb(76 201 240 / 0.40);
+  }
+
+  /* Neon pink glow — accent/alert glow */
+  .neon-glow-pink {
+    box-shadow:
+      0 0 15px -3px rgb(247 37 133 / 0.70),
+      0 0 6px -2px  rgb(247 37 133 / 0.50);
+  }
+
+  /* Neon border — inset + outset cyan glow on border */
+  .neon-border {
+    border-color: rgb(76 201 240 / 0.60);
+    box-shadow:
+      inset 0 0 12px rgb(76 201 240 / 0.15),
+      0 0 12px rgb(76 201 240 / 0.25);
+  }
+
+  /* Glass panel — primary frosted-glass surface for KDS/POS kiosk UIs */
+  .glass-panel {
+    background-color: rgb(9 9 11 / 0.40);  /* #09090b midnight slate @ 40% */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgb(248 250 252 / 0.05);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  }
+
+  /* Glass card — secondary surface with subtle inner glow */
+  .glass-card {
+    background-color: rgb(248 250 252 / 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgb(248 250 252 / 0.10);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.10),
+                0 8px 10px -6px rgb(0 0 0 / 0.10);
+  }
+
+  /* Named aliases — @soustools/design-system canonical tokens */
+  .st-glass-panel {
+    background-color: rgb(9 9 11 / 0.40);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgb(248 250 252 / 0.05);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  }
+
+  .st-glass-pill {
+    background-color: rgb(9 9 11 / 0.60);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgb(248 250 252 / 0.10);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    border-radius: 1rem;
+  }
+
+  /* Shimmer — skeleton loader animation */
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+  }
+
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+  }
+
+  /* Kitchen Mode — thick borders + large touch targets for gloved hands */
+  .kitchen-touch {
+    min-height: 56px;
+    min-width: 56px;
+    border-width: 2px;
+  }
+}
 ````
 
 ## File: pnpm-workspace.yaml
@@ -51885,6 +51600,218 @@ export function GlobalAppBarContainer({
 }
 ````
 
+## File: packages/design-system/src/components/GlobalAppBar/GlobalAppBarPresentation.tsx
+````typescript
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Bell, LayoutGrid, LogOut, Settings, MonitorPlay, ChefHat, Check, Home, Users, ClipboardList, Package, Tv, ShieldCheck } from "lucide-react";
+import { PrimaryLogo } from "../logos/PrimaryLogo";
+import { OmniBar } from "../OmniBar";
+import { ThemeToggle } from "../ThemeToggle";
+
+export interface AppBarNotification {
+  id: string;
+  title: string;
+  message: string;
+  link?: string | null;
+}
+
+export interface GlobalAppBarPresentationProps {
+  notifications: AppBarNotification[];
+  isProfileOpen: boolean;
+  isNotificationsOpen: boolean;
+  isWaffleOpen: boolean;
+  onToggleProfile: () => void;
+  onToggleNotifications: () => void;
+  onToggleWaffle: () => void;
+  onCloseMenus: () => void;
+  onLogout: () => void;
+  onMarkAllAsRead: () => void;
+  isAdmin?: boolean;
+}
+
+export function GlobalAppBarPresentation({
+  notifications,
+  isProfileOpen,
+  isNotificationsOpen,
+  isWaffleOpen,
+  onToggleProfile,
+  onToggleNotifications,
+  onToggleWaffle,
+  onCloseMenus,
+  onLogout,
+  onMarkAllAsRead,
+  isAdmin,
+}: GlobalAppBarPresentationProps) {
+  const isAnyMenuOpen = isProfileOpen || isNotificationsOpen || isWaffleOpen;
+  const pathname = usePathname();
+  const isFocusPage = pathname === "/home";
+
+  return (
+    <header className="sticky top-0 z-[var(--z-appbar)] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">
+      {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself (z-auto or 0) but sits under z-modal */}
+      {isAnyMenuOpen && (
+        <div 
+          className="fixed inset-0 z-[var(--z-overlay)]" 
+          onClick={onCloseMenus} 
+        />
+      )}
+
+      {/* Left: Brand Logo */}
+      <Link href="/home" className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity relative z-10">
+        <PrimaryLogo className="h-12 w-auto text-[var(--color-primary)]" />
+      </Link>
+
+      {/* Center/Right-Align: OmniBar (Mounts here, handles its own positioning via Framer Motion) */}
+      <div className="flex-1 flex justify-end mr-4 relative z-10">
+        {!isFocusPage && <OmniBar />}
+      </div>
+
+      {/* Right: Action Group - Elevated above the overlay */}
+      <div className="flex items-center gap-2 md:gap-4 relative z-[var(--z-modal)]">
+        <ThemeToggle />
+
+        {/* Notifications */}
+        <div className="relative">
+          <button 
+            onClick={onToggleNotifications}
+            className={`relative p-2 transition-colors rounded-full focus:outline-none outline-none ${isNotificationsOpen ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
+          >
+            <Bell className="w-5 h-5" />
+            {notifications.length > 0 && (
+              <span className="absolute top-1 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-destructive)] px-1 text-[10px] font-bold text-white">
+                {notifications.length}
+              </span>
+            )}
+          </button>
+          
+          {isNotificationsOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)]">
+              <div className="px-4 py-2 border-b border-border flex justify-between items-center">
+                <span className="text-sm font-semibold text-white">Notifications</span>
+                {notifications.length > 0 && (
+                  <button onClick={onMarkAllAsRead} className="text-xs text-[var(--color-primary)] flex items-center gap-1 cursor-pointer hover:underline focus:outline-none transition-colors">
+                    <Check className="w-3 h-3" />
+                    Mark all read
+                  </button>
+                )}
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-[var(--color-muted-foreground)]">
+                    No new notifications
+                  </div>
+                ) : (
+                  notifications.map((n) => (
+                    <div key={n.id} className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer text-left">
+                      <p className="text-sm font-medium text-white">{n.title}</p>
+                      <p className="text-xs text-[var(--color-muted-foreground)] mt-1 line-clamp-2">{n.message}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Waffle Menu */}
+        <div className="relative">
+          <button 
+            onClick={onToggleWaffle}
+            className={`p-2 transition-colors rounded-full focus:outline-none outline-none ${isWaffleOpen ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
+          >
+            <LayoutGrid className="w-5 h-5" />
+          </button>
+          
+          {isWaffleOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)] grid grid-cols-3 gap-2 p-4">
+              <Link href="/home" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                <div className="w-10 h-10 bg-sky-500/10 rounded-full flex items-center justify-center mb-2">
+                  <Home className="w-5 h-5 text-sky-400" />
+                </div>
+                <span className="text-xs font-medium">Home</span>
+              </Link>
+              <Link href="/pos" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                <div className="w-10 h-10 bg-violet-500/10 rounded-full flex items-center justify-center mb-2">
+                  <MonitorPlay className="w-5 h-5 text-violet-400" />
+                </div>
+                <span className="text-xs font-medium">POS</span>
+              </Link>
+              <Link href="/kds" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center mb-2">
+                  <ChefHat className="w-5 h-5 text-orange-400" />
+                </div>
+                <span className="text-xs font-medium">KDS</span>
+              </Link>
+              <Link href="/team" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                <div className="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center mb-2">
+                  <Users className="w-5 h-5 text-green-400" />
+                </div>
+                <span className="text-xs font-medium">Team</span>
+              </Link>
+              <Link href="/recipes" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                <div className="w-10 h-10 bg-yellow-500/10 rounded-full flex items-center justify-center mb-2">
+                  <ClipboardList className="w-5 h-5 text-yellow-400" />
+                </div>
+                <span className="text-xs font-medium">Recipes</span>
+              </Link>
+              <Link href="/inventory" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center mb-2">
+                  <Package className="w-5 h-5 text-blue-400" />
+                </div>
+                <span className="text-xs font-medium">Inventory</span>
+              </Link>
+              <Link href="/signage" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                <div className="w-10 h-10 bg-pink-500/10 rounded-full flex items-center justify-center mb-2">
+                  <Tv className="w-5 h-5 text-pink-400" />
+                </div>
+                <span className="text-xs font-medium">Signage</span>
+              </Link>
+              {isAdmin && (
+                <Link href="/admin/devices" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors text-zinc-300 hover:text-white">
+                  <div className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center mb-2">
+                    <ShieldCheck className="w-5 h-5 text-red-400" />
+                  </div>
+                  <span className="text-xs font-medium">Admin</span>
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* User Profile Avatar / Dropdown */}
+        <div className="relative">
+          <button 
+            onClick={onToggleProfile}
+            className={`w-8 h-8 rounded-full bg-[var(--color-primary)] text-zinc-950 font-bold flex items-center justify-center ml-2 transition-transform focus:outline-none outline-none ${isProfileOpen ? 'scale-110 ring-2 ring-[var(--color-primary)] ring-offset-2 ring-offset-zinc-950' : 'hover:scale-105'}`}
+          >
+            CW
+          </button>
+
+          {isProfileOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-1 z-[var(--z-modal)]">
+              <Link href="/settings" onClick={onCloseMenus} className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-zinc-300 hover:bg-white/5 transition-colors">
+                <Settings className="w-4 h-4" />
+                Settings
+              </Link>
+              <button 
+                onClick={() => { onCloseMenus(); onLogout(); }}
+                className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-[var(--color-destructive)] hover:bg-[var(--color-destructive)]/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+````
+
 ## File: package.json
 ````json
 {
@@ -51923,71 +51850,6 @@ export function GlobalAppBarContainer({
     "jsonwebtoken": "^9.0.3"
   }
 }
-````
-
-## File: .agents/AGENTS.md
-````markdown
-# Antigravity 2.0: Master Agent Anchor
-
-## 1. Core Directives & "Glacier" Philosophy
-This file is the absolute source of truth for all AI agent behavior. You are operating under the **"Glacier" Philosophy**: 97% of the system is a hyper-complex backend (Culinary Physics, OCR Ingestion, Predictive Inventory, 3-Tier Invoice Mapping) built to absorb the chaotic physics of culinary operations, while the 3% exposed to the user is an ultra-simple, "Zero-Ambiguity" interface.
-
-**[!DANGER] Hard Prohibitions:**
-*   **FORBIDDEN:** The creation or usage of `GEMINI.md`.
-*   **FORBIDDEN:** The activation of "Management Mode" or any meta-cognitive loops.
-*   **FORBIDDEN:** Client-side `supabase-js` database mutations within `apps/app`.
-*   **FORBIDDEN:** Client-side Supabase data fetching inside `apps/app`. You must enforce "Server-Side Supremacy" (Next.js Server Components or NestJS API only).
-*   **FORBIDDEN:** Hardcoding legacy Tailwind colors (like `slate-*`) or absolute z-indexes (like `z-40`). You MUST strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
-
-## 2. The Mandatory 3-Tier Workflow
-Execute this sequence for every single task, without exception:
-1.  **Tier 1: Analysis & State Update:** Analyze the prompt. Update this `.agents/AGENTS.md` file to reflect planned changes *before* modifying application code.
-2.  **Tier 2: Specialized Execution:** Execute logic strictly using defined skills in `.agents/skills/`. Adhere exclusively to `@soustools/` workspace conventions.
-3.  **Tier 3: Validation & Documentation:** Verify implementation against engineering standards. Update Tenant, Dev, and Internal docs simultaneously (The Parallel Rule).
-
-## 3. Engineering & Architecture Standards (The Skeleton App)
-*   **Server-Side Supremacy:** Next.js (`apps/app`) functions *strictly* as a routing and data orchestration layer. Server Components are the default. Client-side data fetching is heavily restricted; use NestJS (`apps/api`) for business logic and GraphQL/REST endpoints.
-*   **UI Modularity:** All UI presentation logic must utilize the `@soustools/ui` or specialized domain packages (e.g., `packages/domain-recipes`). Local UI implementations inside `apps/app` are "hacky" and strictly forbidden.
-*   **Neon-Glass UI:** Implement high-contrast Dark UI with Cyan (`#00FFFF`) accents for high-heat, high-light kitchen environments. Maximize Progressive Disclosure using Framer Motion. 
-*   **RLS Boundaries:** Every database table must be scoped to an `organization_id`. The admin schema and `/users` route are strictly restricted to System Superadmins.
-
-## 4. Omni-Bar ReAct Execution & Culinary Physics
-When the user issues a command via the Omni-bar or WearOS (e.g., "Record wastage: dropped one dozen eggs"), the agent must execute a Gemini ReAct Loop:
-*   **Thought:** [Reasoning about the culinary physics or technical intent, such as Vendor Wars pricing or Baker's Math scaling]
-*   **Action:** [Specific NestJS API tool invocation or data mutation]
-*   **Observation:** [Result of the action, continuing until final response]
-
-## 5. Operational Protocols & Safety
-**[!IMPORTANT] CRITICAL: HALT-ON-ERROR RULE** 
-Operational stability in a kitchen takes precedence over feature velocity. If a TypeScript, Database Migration, Runtime, or Playwright E2E error occurs, the agent MUST STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. You must request manual intervention.
-
-## 6. Current Phase State
-*   **Phase II (Database Reset)**: Complete.
-*   **Phase II (Infrastructure Purge & Oracle Cloud Docker Parity)**: Complete.
-*   **Phase IV (AI Dependency Injection)**: Complete.
-*   **Phase IV (Culinary Brain CLI Pipeline)**: Complete.
-*   **Phase IV (Playwright Auto-Scroller Hotfix)**: Complete.
-*   **Phase IV (Playwright Persistent Auth Hotfix)**: Complete.
-*   **Phase IV (Playwright Stealth Bypass Hotfix)**: Complete.
-*   **Phase IV (Playwright Maximum Stealth Hotfix)**: Complete.
-*   **Phase IV (Firefox Stealth Pivot Hotfix)**: Complete.
-*   **Phase IV (Cookie Injection Bypass Hotfix)**: Complete.
-*   **Phase IV (Consumer Chrome DRM Bypass Hotfix)**: Complete.
-*   **Phase IV (CDP Host Hijacking / WSL2 Proxy)**: Complete.
-*   **Phase IV (2-Pass Ingestion + Stable Diffusion API)**: Complete.
-*   **Phase V (Polymorphic Schema Upgrade & Copyright Summarization)**: Complete.
-*   **Phase VI (Captive Portal Handshake & Legacy Purge)**: Active - Transitioning to "Chef-Proof" Smart Device Setup Protocol, deprecating manual cloud-init provisioning.
-*   **Phase VI (OAuth Device Authorization)**: Active - Scaffolding backend logic for pairing codes for WearOS and RPi devices.
-*   **Phase VI (WearOS Dirty Hands Voice Trigger)**: Active - Implementing Jetpack Compose voice UI, SpeechRecognizer intent, and API Handshake. Configured BuildConfig for dynamic API_URL.
-*   **Phase VI (Unified AI Triggers)**: Active - Unifying WearOS and Omni-bar AI triggers into a single context-aware POST /command NestJS endpoint in apps/api.
-*   **Phase VI (Interactive Omni-bar Integration)**: Active - Wiring OmniBar and GlobalAppBar to be fully interactive and context-aware, including voice dictation and floating FAB triggers.
-*   **Phase VI (WearOS Complications & Tiles)**: Active - Scaffolded MainComplicationService and KitchenCommandTileService/Activity.
-*   **Phase VI (WearOS Metrics Mocking)**: Active - Scaffolding real API endpoints returning mock data for WearOS complications.
-*   **Phase VI (WearOS Device Pairing)**: Active - Implementing production-ready OAuth Device Flow (Pairing Codes) using DataStore for secure JWT persistence.
-*   **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
-*   **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
-*   **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
-*   **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
 ````
 
 ## File: apps/api/src/main.ts
@@ -52376,86 +52238,78 @@ ON CONFLICT (id) DO NOTHING;
 }
 ````
 
-## File: .github/workflows/deploy.yml
-````yaml
-name: Sous Tools CI/CD Pipeline
+## File: .agents/AGENTS.md
+````markdown
+# Antigravity 2.0: Master Agent Anchor
 
-on:
-  push:
-    branches:
-      - main
-      - staging
+## 1. Core Directives & "Glacier" Philosophy
+This file is the absolute source of truth for all AI agent behavior. You are operating under the **"Glacier" Philosophy**: 97% of the system is a hyper-complex backend (Culinary Physics, OCR Ingestion, Predictive Inventory, 3-Tier Invoice Mapping) built to absorb the chaotic physics of culinary operations, while the 3% exposed to the user is an ultra-simple, "Zero-Ambiguity" interface.
 
-jobs:
-  migrate:
-    name: Database Migrations
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+**[!DANGER] Hard Prohibitions:**
+*   **FORBIDDEN:** The creation or usage of `GEMINI.md`.
+*   **FORBIDDEN:** The activation of "Management Mode" or any meta-cognitive loops.
+*   **FORBIDDEN:** Client-side `supabase-js` database mutations within `apps/app`.
+*   **FORBIDDEN:** Client-side Supabase data fetching inside `apps/app`. You must enforce "Server-Side Supremacy" (Next.js Server Components or NestJS API only).
+*   **FORBIDDEN:** Hardcoding legacy Tailwind colors (like `slate-*`) or absolute z-indexes (like `z-40`). You MUST strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+## 2. The Mandatory 3-Tier Workflow
+Execute this sequence for every single task, without exception:
+1.  **Tier 1: Analysis & State Update:** Analyze the prompt. Update this `.agents/AGENTS.md` file to reflect planned changes *before* modifying application code.
+2.  **Tier 2: Specialized Execution:** Execute logic strictly using defined skills in `.agents/skills/`. Adhere exclusively to `@soustools/` workspace conventions.
+3.  **Tier 3: Validation & Documentation:** Verify implementation against engineering standards. Update Tenant, Dev, and Internal docs simultaneously (The Parallel Rule).
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 11.5.2
+## 3. Engineering & Architecture Standards (The Skeleton App)
+*   **Server-Side Supremacy:** Next.js (`apps/app`) functions *strictly* as a routing and data orchestration layer. Server Components are the default. Client-side data fetching is heavily restricted; use NestJS (`apps/api`) for business logic and GraphQL/REST endpoints.
+*   **UI Modularity:** All UI presentation logic must utilize the `@soustools/ui` or specialized domain packages (e.g., `packages/domain-recipes`). Local UI implementations inside `apps/app` are "hacky" and strictly forbidden.
+*   **Neon-Glass UI:** Implement high-contrast Dark UI with Cyan (`#00FFFF`) accents for high-heat, high-light kitchen environments. Maximize Progressive Disclosure using Framer Motion. 
+*   **RLS Boundaries:** Every database table must be scoped to an `organization_id`. The admin schema and `/users` route are strictly restricted to System Superadmins.
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+## 4. Omni-Bar ReAct Execution & Culinary Physics
+When the user issues a command via the Omni-bar or WearOS (e.g., "Record wastage: dropped one dozen eggs"), the agent must execute a Gemini ReAct Loop:
+*   **Thought:** [Reasoning about the culinary physics or technical intent, such as Vendor Wars pricing or Baker's Math scaling]
+*   **Action:** [Specific NestJS API tool invocation or data mutation]
+*   **Observation:** [Result of the action, continuing until final response]
 
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.7
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
-          export-env: true
+## 5. Operational Protocols & Safety
+**[!IMPORTANT] CRITICAL: HALT-ON-ERROR RULE** 
+Operational stability in a kitchen takes precedence over feature velocity. If a TypeScript, Database Migration, Runtime, or Playwright E2E error occurs, the agent MUST STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. You must request manual intervention.
 
-      - name: Run Supabase Migrations
-        env:
-          SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
-        run: |
-          if [ -z "$SUPABASE_POOLER_URL" ]; then
-            echo "Error: SUPABASE_POOLER_URL is not defined."
-            exit 1
-          fi
-          npx supabase db push --db-url "${SUPABASE_POOLER_URL}?statement_cache_mode=describe"
-
-  docker-build:
-    name: Build & Push Signage Docker Image
-    runs-on: ubuntu-latest
-    needs: migrate
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/signage/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            conarwelsh/sous-signage:${{ github.ref_name == 'main' && 'production' || 'staging' }}
-            conarwelsh/sous-signage:${{ github.sha }}
+## 6. Current Phase State
+*   **Phase II (Database Reset)**: Complete.
+*   **Phase II (Infrastructure Purge & Oracle Cloud Docker Parity)**: Complete.
+*   **Phase IV (AI Dependency Injection)**: Complete.
+*   **Phase IV (Culinary Brain CLI Pipeline)**: Complete.
+*   **Phase IV (Playwright Auto-Scroller Hotfix)**: Complete.
+*   **Phase IV (Playwright Persistent Auth Hotfix)**: Complete.
+*   **Phase IV (Playwright Stealth Bypass Hotfix)**: Complete.
+*   **Phase IV (Playwright Maximum Stealth Hotfix)**: Complete.
+*   **Phase IV (Firefox Stealth Pivot Hotfix)**: Complete.
+*   **Phase IV (Cookie Injection Bypass Hotfix)**: Complete.
+*   **Phase IV (Consumer Chrome DRM Bypass Hotfix)**: Complete.
+*   **Phase IV (CDP Host Hijacking / WSL2 Proxy)**: Complete.
+*   **Phase IV (2-Pass Ingestion + Stable Diffusion API)**: Complete.
+*   **Phase V (Polymorphic Schema Upgrade & Copyright Summarization)**: Complete.
+*   **Phase VI (Captive Portal Handshake & Legacy Purge)**: Active - Transitioning to "Chef-Proof" Smart Device Setup Protocol, deprecating manual cloud-init provisioning.
+*   **Phase VI (OAuth Device Authorization)**: Active - Scaffolding backend logic for pairing codes for WearOS and RPi devices.
+*   **Phase VI (WearOS Dirty Hands Voice Trigger)**: Active - Implementing Jetpack Compose voice UI, SpeechRecognizer intent, and API Handshake. Configured BuildConfig for dynamic API_URL.
+*   **Phase VI (Unified AI Triggers)**: Active - Unifying WearOS and Omni-bar AI triggers into a single context-aware POST /command NestJS endpoint in apps/api.
+*   **Phase VI (Interactive Omni-bar Integration)**: Active - Wiring OmniBar and GlobalAppBar to be fully interactive and context-aware, including voice dictation and floating FAB triggers.
+*   **Phase VI (WearOS Complications & Tiles)**: Active - Scaffolded MainComplicationService and KitchenCommandTileService/Activity.
+*   **Phase VI (WearOS Metrics Mocking)**: Active - Scaffolding real API endpoints returning mock data for WearOS complications.
+*   **Phase VI (WearOS Device Pairing)**: Active - Implementing production-ready OAuth Device Flow (Pairing Codes) using DataStore for secure JWT persistence.
+*   **Phase VI (Device Pairing 404 Routing Hotfix)**: Complete - Resolved 404 NotFoundException for `/pair/confirm` by correctly prefixing the route to `/api/devices/pair/confirm` in frontend clients.
+*   **Phase VI (Auth Header Hotfix)**: Complete - Resolved 401 UnauthorizedException by injecting the Supabase JWT token into the fetch request for `/api/devices/pair/confirm`.
+*   **Phase VI (Light Mode Zero-Tolerance Hotfix)**: Complete - Enforced Frosted Glass variables in pos-simulator globals.css and aggressively purged hardcoded classes from item cards.
+*   **Phase VI (Light Mode Prep Table Re-Architecture)**: Complete - Re-architected Light Mode variables to HSL values ("The Prep Table") and updated PosItemCard.tsx wrapper classes.
+*   **Phase VI (Global Theme Re-Architecture & Overflow Hotfix)**: Complete - Rewrote design system Light Mode CSS variables to pure white/stainless steel, reverted Primary Blue, and fixed base layout overflow in SidebarLayout.
+*   **Phase VI (Targeted UI Salvage)**: Complete - Aggressively purged hardcoded grey backgrounds, transparent blacks, and light text from apps/web inventory and admin route groups.
+*   **Phase VI (Mass Extinction & Architectural Salvage)**: Complete - Executed global programmatic purge of legacy utility classes, fixed Next.js hydration errors in root layout, and resolved flexbox overflow bounds.
+*   **Phase VI (Strict Semantic Theme Restoration)**: Complete - Restored HSL CSS variables, fixed true Neon Cyan brand color, and upgraded Card primitive to dynamic opacity glassmorphism.
+*   **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
+*   **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
+*   **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
+*   **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
+*   **Phase X (Infisical Universal Auth Migration)**: Active - Replacing deprecated Service Token with Universal Auth (Client ID/Secret) in GitHub Actions workflows.
 ````
 
 ## File: apps/api/src/app.module.ts
@@ -52644,55 +52498,6 @@ export interface RawSignageLayoutConfig extends Omit<SignageLayoutConfig, "slide
 }
 ````
 
-## File: .github/workflows/deploy-signage-os.yml
-````yaml
-name: Build and Release Signage OS Image
-
-on:
-  push:
-    branches: ["main"]
-    paths:
-      - "deploy/pi/**"
-      - "deploy/ansible/**"
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: [self-hosted, linux, arm64]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Build OS Image with pi-gen
-        run: |
-          cd deploy/pi/pi-gen
-          sudo ./build.sh
-
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.7
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
-          export-env: true
-
-      - name: Release to GitHub
-        uses: softprops/action-gh-release@v2
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-        with:
-          repository: conarwelsh/signage-os
-          token: ${{ env.SIGNAGE_GITHUB_PAT }}
-          tag_name: v${{ github.run_number }}
-          name: Signage OS v${{ github.run_number }}
-          files: deploy/pi/pi-gen/deploy/*.zip
-          make_latest: true
-````
-
 ## File: packages/config/src/sync.ts
 ````typescript
 import * as fs from "fs";
@@ -52839,6 +52644,60 @@ sync().catch((err: unknown) => {
   console.error("[@soustools/config] Unhandled sync exception:", err);
   process.exit(1);
 });
+````
+
+## File: .github/workflows/deploy-signage-os.yml
+````yaml
+name: Build and Release Signage OS Image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "deploy/pi/**"
+      - "deploy/ansible/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, arm64]
+    steps:
+      - name: Purge root-owned workspace files
+        run: sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build OS Image with pi-gen
+        run: |
+          cd deploy/pi/pi-gen
+          sudo ./build.sh
+
+      - name: Fetch Infisical Secrets
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools-1cd-a"
+
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v2
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        with:
+          repository: conarwelsh/signage-os
+          token: ${{ env.SIGNAGE_GITHUB_PAT }}
+          tag_name: v${{ github.run_number }}
+          name: Signage OS v${{ github.run_number }}
+          files: deploy/pi/pi-gen/deploy/*.zip
+          make_latest: true
+
+      - name: Purge root-owned workspace files
+        run: sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
 ````
 
 ## File: packages/config/src/index.ts

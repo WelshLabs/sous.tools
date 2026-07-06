@@ -1,0 +1,17 @@
+[Unit]
+Description=Sous Tools Digital Signage Kiosk Launcher
+After=network-online.target network.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+ExecStart=/usr/bin/labwc -s /usr/local/bin/kiosk.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

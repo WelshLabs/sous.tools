@@ -1,23 +1,43 @@
+version: '3.8'
+
 services:
+  api:
+    build: 
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/app/Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://api:3000
+    depends_on:
+      - api
+
   redis:
     image: redis:alpine
-    container_name: sous-redis-dev
     command: redis-server --appendonly yes
     ports:
       - "6379:6379"
     volumes:
-      - redis_data_dev:/data
-    restart: unless-stopped
+      - redis_data:/data
 
   ollama:
     image: ollama/ollama:latest
-    container_name: sous-ollama-dev
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    restart: unless-stopped
 
 volumes:
-  redis_data_dev:
+  redis_data:
   ollama_data:

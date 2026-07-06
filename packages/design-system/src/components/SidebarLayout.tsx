@@ -13,9 +13,9 @@ export interface SidebarLayoutProps {
  */
 export function SidebarLayout({ sidebarContent, mainContent }: SidebarLayoutProps) {
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background text-foreground">
+    <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-background text-foreground">
       {/* Sidebar Panel */}
-      <aside className="w-64 flex-shrink-0 border-r border-border bg-card overflow-y-auto">
+      <aside className="w-64 flex-shrink-0 border-r border-border bg-card overflow-y-auto min-h-full">
         {sidebarContent}
       </aside>
 

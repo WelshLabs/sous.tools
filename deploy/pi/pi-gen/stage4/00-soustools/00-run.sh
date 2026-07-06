@@ -11,6 +11,8 @@ install -m 755 files/kiosk.sh "${ROOTFS_DIR}/usr/local/bin/kiosk.sh"
 mkdir -p "${ROOTFS_DIR}/etc/labwc"
 install -m 644 files/labwc-rc.xml "${ROOTFS_DIR}/etc/labwc/rc.xml"
 
+install -m 644 files/signage-kiosk.service "${ROOTFS_DIR}/etc/systemd/system/"
+
 on_chroot << EOF
 systemctl enable signage-kiosk.service
 systemctl set-default graphical.target

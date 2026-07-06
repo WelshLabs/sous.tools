@@ -9,6 +9,7 @@ This file is the absolute source of truth for all AI agent behavior. You are ope
 *   **FORBIDDEN:** Client-side `supabase-js` database mutations within `apps/app`.
 *   **FORBIDDEN:** Client-side Supabase data fetching inside `apps/app`. You must enforce "Server-Side Supremacy" (Next.js Server Components or NestJS API only).
 *   **FORBIDDEN:** Hardcoding legacy Tailwind colors (like `slate-*`) or absolute z-indexes (like `z-40`). You MUST strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
+*   **DEPLOYMENT TARGET:** Oracle Cloud (ARM64) is our sole production deployment target, entirely replacing Render.com and Vercel.
 
 ## 2. The Mandatory 3-Tier Workflow
 Execute this sequence for every single task, without exception:

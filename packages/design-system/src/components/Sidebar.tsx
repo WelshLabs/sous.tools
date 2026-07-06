@@ -117,15 +117,12 @@ export function Sidebar({
 
       {/* Sidebar shell */}
       <aside
-        className={`fixed inset-y-0 left-0 flex flex-col
+        className={`fixed left-0 top-16 flex flex-col h-[calc(100vh-64px)]
+          border-r border-border bg-card
           transition-all duration-300 ease-in-out w-64 md:w-16
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
           ${isDesktopCollapsed ? "md:w-16" : "md:w-16 lg:w-16 xl:w-64"}`}
-        style={{
-          zIndex: "var(--z-sidebar)",
-          backgroundColor: "var(--color-card)",
-          borderRight: "1px solid var(--color-border)",
-        }}
+        style={{ zIndex: "var(--z-sidebar)" }}
       >
         {/* Header — logo + hamburger */}
         <div

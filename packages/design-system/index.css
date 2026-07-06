@@ -102,6 +102,7 @@
     --color-popover-foreground:  215 16% 22%;
     --color-primary:             180 100% 50%;  
     --color-primary-foreground:  0 0% 0%;
+    --color-border:              214 32% 91%;
     --color-secondary:           #e4e4e7;  
     --color-secondary-foreground:#18181b;
     --color-muted:               #f4f4f5;  
@@ -110,21 +111,21 @@
     --color-accent-foreground:   #18181b;
     --color-destructive:         #f43f5e;
     --color-destructive-foreground: #ffffff;
-    --color-border:              #e4e4e7;  
     --color-input:               #f4f4f5;  
     --color-ring:                #2563eb;
   }
 
   /* Dark — canonical Neon-Glass aesthetic */
   .dark {
-    --color-background:          240 10% 4%;  
-    --color-foreground:          210 40% 98%;  
+    --color-background:          240 5% 4%;  
+    --color-foreground:          0 0% 100%;  
     --color-card:                240 5% 10%;  
-    --color-card-foreground:     210 40% 98%;
+    --color-card-foreground:     0 0% 100%;
     --color-popover:             240 5% 10%;
-    --color-popover-foreground:  210 40% 98%;
+    --color-popover-foreground:  0 0% 100%;
     --color-primary:             180 100% 50%;  
     --color-primary-foreground:  0 0% 0%;
+    --color-border:              240 5% 15%;
     --color-secondary:           #27272a;  
     --color-secondary-foreground:#f8fafc;
     --color-muted:               #121212;  
@@ -133,7 +134,6 @@
     --color-accent-foreground:   #f8fafc;
     --color-destructive:         #f43f5e;  
     --color-destructive-foreground: #f8fafc;
-    --color-border:              #27272a;  
     --color-input:               #121212;  
     --color-ring:                #4cc9f0;  
   }
