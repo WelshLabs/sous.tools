@@ -160,7 +160,7 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
         </div>
       </div>
 
-      <div className="bg-card text-card-foreground overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+      <div className="bg-card text-card-foreground overflow-hidden rounded-2xl border border-border dark:border-border shadow-sm">
         <ItemsLedgerTable
           items={initialItems}
           loading={loading}

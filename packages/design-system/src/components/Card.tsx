@@ -7,8 +7,8 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 /**
  * Root container for the Neon-Glass Card component.
  *
- * Renders a `glass-card` surface — `bg-white/5 backdrop-blur-md border
- * border-white/10` — consistent with the v2 glassmorphism aesthetic.
+ * Renders a `glass-card` surface — `bg-card backdrop-blur-md border
+ * border-border` — consistent with the v2 glassmorphism aesthetic.
  * Compose with `CardHeader`, `CardTitle`, `CardContent`, and `CardFooter`.
  *
  * @tenant-docs-export

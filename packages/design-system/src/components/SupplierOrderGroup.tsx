@@ -82,7 +82,7 @@ export function OrderItemRow({
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-zinc-900/60 border border-border dark:border-zinc-800 hover:border-primary/30 transition-all flex flex-row items-center justify-between rounded-2xl group/item">
+    <div className="p-4 bg-white dark:bg-card/60 border border-border dark:border-border hover:border-primary/30 transition-all flex flex-row items-center justify-between rounded-2xl group/item">
       {/* Left: icon + name */}
       <div className="flex flex-row items-center gap-4 flex-1 min-w-0">
         <div className="w-10 h-10 rounded-xl bg-muted dark:bg-zinc-800/60 flex items-center justify-center border border-border dark:border-zinc-700 group-hover/item:bg-primary/5 transition-colors shrink-0">
@@ -281,7 +281,7 @@ export function SupplierOrderGroup({
 /** Shown when there are no items in the living list. */
 export function EmptyOrderList() {
   return (
-    <div className="p-20 bg-muted/40 dark:bg-zinc-900/40 border border-border dark:border-zinc-800 border-dashed flex flex-col items-center justify-center rounded-[2.5rem]">
+    <div className="p-20 bg-muted/40 dark:bg-card/40 border border-border dark:border-border border-dashed flex flex-col items-center justify-center rounded-[2.5rem]">
       <div className="w-24 h-24 rounded-full bg-muted dark:bg-zinc-800/40 flex items-center justify-center mb-6">
         <ShoppingBag
           size={48}

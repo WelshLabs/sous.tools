@@ -44,7 +44,7 @@ export function InsightsSidebar({
   return (
     <div className="flex flex-col gap-8">
       {/* ── Insights Card ─────────────────────────────────────────────── */}
-      <div className="p-6 bg-card dark:bg-zinc-900/60 border border-border dark:border-zinc-800 rounded-3xl shadow-2xl">
+      <div className="p-6 bg-card dark:bg-card/60 border border-border dark:border-border rounded-3xl shadow-2xl">
         <p className="text-foreground font-black uppercase text-xs tracking-[0.2em] mb-6 flex flex-row items-center gap-2">
           <Zap size={13} className="text-amber-500" fill="currentColor" />
           Insights
@@ -97,18 +97,18 @@ export function InsightsSidebar({
       <div className="p-6 bg-primary border border-primary/80 rounded-3xl shadow-2xl shadow-primary/20">
         <div className="flex flex-row items-center gap-3 mb-4">
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-            <Plus size={15} className="text-white" />
+            <Plus size={15} className="text-foreground" />
           </div>
-          <span className="text-white font-black uppercase text-[10px] tracking-widest">
+          <span className="text-foreground font-black uppercase text-[10px] tracking-widest">
             New Supplier
           </span>
         </div>
-        <p className="text-white/80 text-xs mb-6 font-medium leading-relaxed">
+        <p className="text-foreground/80 text-xs mb-6 font-medium leading-relaxed">
           Expand your network to optimize pricing and availability.
         </p>
         <button
           onClick={onAddVendor}
-          className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl h-10 font-black uppercase text-[10px] tracking-widest transition-colors"
+          className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-foreground rounded-xl h-10 font-black uppercase text-[10px] tracking-widest transition-colors"
         >
           Add Vendor
         </button>

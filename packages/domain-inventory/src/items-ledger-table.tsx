@@ -33,8 +33,8 @@ export function ItemsLedgerTable({
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full text-left text-sm text-zinc-700 dark:text-zinc-300">
-        <thead className="bg-card/80 text-zinc-500 dark:text-zinc-400 uppercase font-semibold text-xs border-b border-black/5 dark:border-white/5">
+      <table className="w-full text-left text-sm text-zinc-700 dark:text-muted-foreground">
+        <thead className="bg-card/80 text-zinc-500 dark:text-zinc-400 uppercase font-semibold text-xs border-b border-border dark:border-white/5">
           <tr>
             <th className="px-6 py-4">Name</th>
             <th className="px-6 py-4">Category</th>
@@ -48,9 +48,9 @@ export function ItemsLedgerTable({
           {items.map((item) => (
             <tr
               key={item.id}
-              className="hover:bg-black/5 dark:bg-white/5 transition-colors group"
+              className="hover:bg-black/5 dark:bg-card transition-colors group"
             >
-              <td className="px-6 py-4 font-medium text-zinc-900 dark:text-white">{item.name}</td>
+              <td className="px-6 py-4 font-medium text-zinc-900 dark:text-foreground">{item.name}</td>
               <td className="px-6 py-4">
                 <span className="px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded-md text-xs">
                   {item.category}
@@ -79,13 +79,13 @@ export function ItemsLedgerTable({
                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => onEdit(item)}
-                    className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 dark:hover:text-sky-400 bg-black/5 dark:bg-white/5 hover:bg-sky-500/10 rounded-lg transition-colors"
+                    className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 dark:hover:text-sky-400 bg-black/5 dark:bg-card hover:bg-sky-500/10 rounded-lg transition-colors"
                   >
                     <Edit size={16} />
                   </button>
                   <button
                     onClick={() => onDelete(item.id)}
-                    className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 bg-black/5 dark:bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
+                    className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 bg-black/5 dark:bg-card hover:bg-red-500/10 rounded-lg transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>

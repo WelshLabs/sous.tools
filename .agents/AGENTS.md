@@ -70,3 +70,4 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 *   **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
 *   **Phase X (Infisical Universal Auth Migration)**: Active - Replacing deprecated Service Token with Universal Auth (Client ID/Secret) in GitHub Actions workflows.
 *   **Phase X (Docker Engine Upgrade & CSS Reversion)**: Active - Upgrading Node to 24 in apps/api/Dockerfile, removing static platform flags, and reverting packages/design-system/index.css to its original HSL palette.
+*   **Phase X (The Semantic Purge)**: Active - Purging all hardcoded utility classes (Tailwind colors/borders) globally in UI components and replacing them with semantic tokens.

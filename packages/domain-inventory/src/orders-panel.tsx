@@ -149,7 +149,7 @@ export function OrdersPanel({
           title="Order Manager"
         />
 
-        <div className="flex bg-muted/50 dark:bg-card/70 rounded-2xl p-1 border border-border dark:border-zinc-800">
+        <div className="flex bg-muted/50 dark:bg-card/70 rounded-2xl p-1 border border-border dark:border-border">
           {(["list", "history"] as const).map((tab) => (
             <button
               key={tab}

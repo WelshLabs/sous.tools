@@ -46,14 +46,14 @@ export default function SelfShopPage() {
     localStorage.setItem(`shop-checked-${id}`, JSON.stringify(Array.from(next)));
   };
 
-  if (loading) return <div className="p-8 text-center text-white/50">Loading Self-Shop Mode...</div>;
+  if (loading) return <div className="p-8 text-center text-foreground/50">Loading Self-Shop Mode...</div>;
   if (!po) return <div className="p-8 text-center text-red-400">Order not found.</div>;
 
   const allChecked = po.purchase_order_items.length > 0 && checkedItems.size === po.purchase_order_items.length;
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-screen flex flex-col animate-in slide-in-from-bottom-4">
-      <Link href="/purchasing" className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors w-fit">
+      <Link href="/purchasing" className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors w-fit">
         <ArrowLeft size={16} /> Back to Purchasing
       </Link>
 
@@ -64,7 +64,7 @@ export default function SelfShopPage() {
             Self-Shop Mode
           </span>
         </h1>
-        <p className="text-gray-400">
+        <p className="text-muted-foreground">
           Check off items as you place them in your basket. 
           Your progress is saved locally if you lose connection.
         </p>
@@ -80,20 +80,20 @@ export default function SelfShopPage() {
               className={`p-4 md:p-6 rounded-xl border flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] ${
                 isChecked 
                   ? "bg-green-500/10 border-green-500/30 text-gray-300" 
-                  : "glass-panel border-black/10 dark:border-white/10 hover:border-white/20 text-white"
+                  : "glass-panel border-black/10 dark:border-border hover:border-white/20 text-foreground"
               }`}
             >
               <div className="flex items-center gap-4">
                 {isChecked ? (
                   <CheckCircle2 className="text-green-500 w-8 h-8 flex-shrink-0" />
                 ) : (
-                  <Circle className="text-white/30 w-8 h-8 flex-shrink-0" />
+                  <Circle className="text-foreground/30 w-8 h-8 flex-shrink-0" />
                 )}
                 <span className={`text-xl md:text-2xl font-medium ${isChecked ? "line-through decoration-green-500/50" : ""}`}>
                   {item.raw_name}
                 </span>
               </div>
-              <span className={`text-2xl font-bold ${isChecked ? "text-green-500/50" : "text-white"}`}>
+              <span className={`text-2xl font-bold ${isChecked ? "text-green-500/50" : "text-foreground"}`}>
                 x{item.ordered_qty}
               </span>
             </div>
@@ -103,7 +103,7 @@ export default function SelfShopPage() {
 
       <div className="mt-8 sticky bottom-8">
         <div className={`p-6 rounded-xl border backdrop-blur-xl transition-all ${
-          allChecked ? "bg-green-600/20 border-green-500/50" : "bg-white/50 dark:bg-black/60 border-black/10 dark:border-white/10"
+          allChecked ? "bg-green-600/20 border-green-500/50" : "bg-white/50 dark:bg-black/60 border-black/10 dark:border-border"
         }`}>
           <div className="flex items-center justify-between mb-4">
             <span className="text-lg font-medium">Progress</span>
@@ -113,7 +113,7 @@ export default function SelfShopPage() {
           {allChecked && (
             <div className="text-center animate-in zoom-in">
               <p className="text-green-400 font-bold text-xl mb-2">Shopping Complete!</p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 To reconcile pricing, please scan the physical receipt using the Ingestion importer.
               </p>
             </div>

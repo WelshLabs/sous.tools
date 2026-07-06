@@ -95,13 +95,13 @@ export function OmniBarPresentation({
                   onChange={onChange}
                   onKeyDown={onKeyDown}
                   placeholder="ask your sous chef"
-                  className="w-full bg-transparent border-none text-white text-xl md:text-2xl outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light flex-1"
+                  className="w-full bg-transparent border-none text-foreground text-xl md:text-2xl outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light flex-1"
                   rows={1}
                   autoFocus
                 />
                 <button 
                   onClick={onToggle}
-                  className="text-muted-foreground hover:text-white flex-shrink-0 p-2 hover:bg-white/5 rounded-full transition-colors"
+                  className="text-muted-foreground hover:text-foreground flex-shrink-0 p-2 hover:bg-card rounded-full transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -137,7 +137,7 @@ export function OmniBarPresentation({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center justify-center w-full h-full text-muted-foreground hover:text-white transition-colors"
+                className="flex items-center justify-center w-full h-full text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Mic className="w-5 h-5" />
               </motion.div>
@@ -160,7 +160,7 @@ export function OmniBarPresentation({
                   onChange={onChange}
                   onKeyDown={onKeyDown}
                   placeholder="ask your sous chef"
-                  className="w-full bg-transparent border-none text-white text-xl md:text-2xl outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light flex-1"
+                  className="w-full bg-transparent border-none text-foreground text-xl md:text-2xl outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light flex-1"
                   rows={1}
                   autoFocus
                 />

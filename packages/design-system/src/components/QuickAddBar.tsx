@@ -98,7 +98,7 @@ export function QuickAddBar({
             "font-bold text-lg uppercase tracking-tight",
             "text-foreground placeholder:text-muted-foreground",
             "outline-none focus:border-primary/50 transition-all",
-            "dark:bg-zinc-900 dark:border-zinc-800",
+            "dark:bg-card dark:border-border",
             "dark:focus:border-primary/50",
           ].join(" ")}
         />
@@ -118,7 +118,7 @@ export function QuickAddBar({
           className={[
             "absolute top-[4.5rem] left-0 right-0 p-2",
             "bg-card border border-border shadow-2xl rounded-2xl overflow-hidden",
-            "dark:bg-zinc-900 dark:border-zinc-800",
+            "dark:bg-card dark:border-border",
           ].join(" ")}
         >
           {suggestions.map((s) => (

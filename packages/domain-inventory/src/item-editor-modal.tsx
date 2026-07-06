@@ -110,14 +110,14 @@ export function ItemEditorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="st-glass-panel border border-black/10 dark:border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="p-6 border-b border-black/10 dark:border-white/10 flex justify-between items-center sticky top-0 bg-card/90 backdrop-blur z-10">
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
+      <div className="st-glass-panel border border-black/10 dark:border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="p-6 border-b border-black/10 dark:border-border flex justify-between items-center sticky top-0 bg-card/90 backdrop-blur z-10">
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-foreground">
             {item ? "Edit Ledger Item" : "New Ledger Item"}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
+            className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-foreground rounded-full hover:bg-card dark:bg-white/10 transition-colors"
           >
             <X size={20} />
           </button>
@@ -133,7 +133,7 @@ export function ItemEditorModal({
               <input
                 type="text"
                 placeholder="Search USDA (e.g. 'All Purpose Flour')"
-                className="flex-1 bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-sky-500"
+                className="flex-1 bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-foreground focus:outline-none focus:border-sky-500"
                 value={usdaQuery}
                 onChange={(e) => setUsdaQuery(e.target.value)}
                 onKeyDown={(e) =>
@@ -171,7 +171,7 @@ export function ItemEditorModal({
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-3 py-2 text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
               />
             </div>
             <div className="space-y-1">
@@ -182,7 +182,7 @@ export function ItemEditorModal({
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-3 py-2 text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
               >
                 <option value="INGREDIENT">INGREDIENT</option>
                 <option value="PACKAGING">PACKAGING</option>
@@ -202,7 +202,7 @@ export function ItemEditorModal({
                 name="purchase_unit"
                 value={formData.purchase_unit}
                 onChange={handleChange}
-                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-3 py-2 text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
               >
                 <option value="LB">LB</option>
                 <option value="KG">KG</option>
@@ -222,7 +222,7 @@ export function ItemEditorModal({
                 name="density_g_ml"
                 value={formData.density_g_ml}
                 onChange={handleChange}
-                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-3 py-2 text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
               />
             </div>
           </div>
@@ -236,12 +236,12 @@ export function ItemEditorModal({
               value={formData.allergens.join(", ")}
               onChange={handleAllergensChange}
               placeholder="Dairy, Nuts, Wheat"
-              className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+              className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-3 py-2 text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
             />
           </div>
 
-          <div className="pt-4 border-t border-black/5 dark:border-white/5">
-            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-4">
+          <div className="pt-4 border-t border-border dark:border-white/5">
+            <h3 className="text-sm font-semibold text-zinc-700 dark:text-muted-foreground mb-4">
               Nutritional Macros (per 100g)
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -255,7 +255,7 @@ export function ItemEditorModal({
                   name="calories"
                   value={formData.nutrition_macros.calories || ""}
                   onChange={handleMacroChange}
-                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -268,7 +268,7 @@ export function ItemEditorModal({
                   name="protein_g"
                   value={formData.nutrition_macros.protein_g || ""}
                   onChange={handleMacroChange}
-                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -281,7 +281,7 @@ export function ItemEditorModal({
                   name="total_carbohydrate_g"
                   value={formData.nutrition_macros.total_carbohydrate_g || ""}
                   onChange={handleMacroChange}
-                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -294,7 +294,7 @@ export function ItemEditorModal({
                   name="total_fat_g"
                   value={formData.nutrition_macros.total_fat_g || ""}
                   onChange={handleMacroChange}
-                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-white focus:border-sky-500 outline-none"
+                  className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-border rounded-lg px-2 py-1 text-sm text-zinc-900 dark:text-foreground focus:border-sky-500 outline-none"
                 />
               </div>
             </div>
@@ -304,14 +304,14 @@ export function ItemEditorModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-foreground transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-colors shadow-lg shadow-sky-500/20 flex items-center gap-2"
+              className="px-6 py-2 bg-sky-500 hover:bg-sky-400 text-foreground font-bold rounded-lg transition-colors shadow-lg shadow-sky-500/20 flex items-center gap-2"
             >
               {loading && <Loader2 size={16} className="animate-spin" />}
               Save Item

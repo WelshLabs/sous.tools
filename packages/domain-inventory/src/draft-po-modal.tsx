@@ -63,34 +63,34 @@ export function DraftPoModal({ isOpen, onClose, items, vendors, onCreatePO }: Dr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-black/60 backdrop-blur-sm">
-      <div className="st-glass-panel border border-black/10 dark:border-white/10 p-8 max-w-2xl w-full rounded-xl">
-        <h2 className="text-3xl font-bold mb-6 text-zinc-900 dark:text-white">Select Items for PO</h2>
+      <div className="st-glass-panel border border-black/10 dark:border-border p-8 max-w-2xl w-full rounded-xl">
+        <h2 className="text-3xl font-bold mb-6 text-zinc-900 dark:text-foreground">Select Items for PO</h2>
         
         <div className="mb-6 space-y-2">
           <label className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Select Vendor</label>
-          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-white dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-md p-3 text-zinc-900 dark:text-white">
+          <select value={selectedVendor} onChange={e => setSelectedVendor(e.target.value)} className="w-full bg-white dark:bg-black/40 border border-black/10 dark:border-border rounded-md p-3 text-zinc-900 dark:text-foreground">
             <option value="">-- Choose Vendor --</option>
             {vendors.map(v => <option key={v.id} value={v.id}>{v.name} ({v.order_method})</option>)}
           </select>
         </div>
 
-        <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-white/10 p-4 rounded-md mb-6">
+        <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-border p-4 rounded-md mb-6">
           {items.map(item => (
-            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-white/5 rounded">
+            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-card rounded">
               <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5 border-black/20 dark:border-white/20" />
-              <span className="text-lg text-zinc-900 dark:text-white">{item.raw_name}</span>
+              <span className="text-lg text-zinc-900 dark:text-foreground">{item.raw_name}</span>
             </label>
           ))}
         </div>
 
         <div className="flex justify-end gap-4">
-          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium text-zinc-700 dark:text-zinc-300 hover:bg-black/10 dark:bg-white/10 transition-colors disabled:opacity-50">
+          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium text-zinc-700 dark:text-muted-foreground hover:bg-card dark:bg-white/10 transition-colors disabled:opacity-50">
             Cancel
           </button>
           <button 
             onClick={createPO}
             disabled={!selectedVendor || selectedItems.size === 0 || isSubmitting} 
-            className="bg-zinc-900 dark:bg-white text-white dark:text-black px-6 py-2 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+            className="bg-card dark:bg-white text-foreground dark:text-foreground px-6 py-2 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
           >
             {isSubmitting ? "Creating..." : "Create PO"}
           </button>
