@@ -15,8 +15,10 @@ jobs:
   build:
     runs-on: [self-hosted, linux, arm64]
     steps:
-      - name: Purge root-owned workspace files
-        run: sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
+      - name: Purge root-owned workspace files (Pre-checkout)
+        run: |
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy || true
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,5 +48,9 @@ jobs:
           files: deploy/pi/pi-gen/deploy/*.zip
           make_latest: true
 
-      - name: Purge root-owned workspace files
-        run: sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
+      - name: Cleanup Root-Owned Docker Files
+        if: always()
+        run: |
+          echo "Wiping pi-gen directories to prevent root permission locks..."
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy || true
