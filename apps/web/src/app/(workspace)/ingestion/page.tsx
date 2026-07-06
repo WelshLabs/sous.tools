@@ -103,12 +103,12 @@ export default function IngestionDashboardPage() {
                 </div>
 
                 <div className="w-full flex items-center gap-2">
-                  <div className="flex-1 flex items-center justify-center bg-black/5 dark:bg-white/5 text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
+                  <div className="flex-1 flex items-center justify-center bg-black/5 bg-card text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
                     Open Review
                   </div>
                   <button
                     onClick={(e) => { e.preventDefault(); setDeleteId(review.id); }}
-                    className="p-2 bg-black/5 dark:bg-white/5 hover:bg-red-500/20 text-zinc-500 dark:text-zinc-400 hover:text-red-400 rounded-md transition-colors"
+                    className="p-2 bg-black/5 bg-card hover:bg-red-500/20 text-zinc-500 dark:text-muted-foreground hover:text-red-400 rounded-md transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>

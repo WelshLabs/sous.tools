@@ -38,7 +38,7 @@ export function getLayoutClass(direction: "column" | "row" | "grid", panelStyle?
     direction === "grid"
       ? "grid gap-4 w-full h-full st-layout-grid"
       : `flex flex-${direction === "column" ? "col" : "row"} gap-4 w-full h-full st-layout-${direction}`,
-    panelStyle === "glass" ? "st-glass-panel p-4 rounded-2xl" : "",
+    panelStyle === "glass" ? " p-4 rounded-2xl" : "",
     className
   ].filter(Boolean).join(" ");
 }

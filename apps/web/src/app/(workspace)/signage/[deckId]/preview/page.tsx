@@ -44,7 +44,7 @@ export default async function DeckPreviewPage({
 
   if (!deck) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-400 dark:text-zinc-500">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-muted-foreground dark:text-zinc-500">
         <p>Deck not found.</p>
         <Link href="/signage" className="mt-4 text-xs text-primary hover:underline">
           ← Back to Decks
@@ -58,7 +58,7 @@ export default async function DeckPreviewPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">{deck.name}</h1>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">
+          <p className="text-xs text-muted-foreground dark:text-zinc-500 font-mono mt-0.5">
             {deck.config?.slides?.length ?? 0} slides
           </p>
         </div>

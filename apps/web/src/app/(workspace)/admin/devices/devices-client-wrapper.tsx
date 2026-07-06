@@ -77,12 +77,12 @@ export function DevicesClientWrapper({
     ];
 
     return (
-      <div className="mt-12 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-        <h2 className="text-xl font-bold text-white tracking-wide mb-4">Edge Devices</h2>
+      <div className="mt-12 bg-card text-card-foreground border border-black/5 dark:border-white/10 shadow-sm rounded-2xl p-6">
+        <h2 className="text-xl font-bold tracking-wide mb-4">Edge Devices</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-zinc-800 text-zinc-400 text-sm">
+              <tr className="border-b border-border text-muted-foreground text-sm">
                 <th className="pb-3 px-4 font-medium">Device Name</th>
                 <th className="pb-3 px-4 font-medium">Type</th>
                 <th className="pb-3 px-4 font-medium">Assigned User</th>
@@ -91,14 +91,14 @@ export function DevicesClientWrapper({
             </thead>
             <tbody>
               {devices.map((device: any) => (
-                <tr key={device.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
-                  <td className="py-4 px-4 text-zinc-300 font-medium">{device.name || "Unknown Device"}</td>
-                  <td className="py-4 px-4 text-zinc-400 uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
-                  <td className="py-4 px-4 text-zinc-400">{device.assignedUser || "Unassigned"}</td>
+                <tr key={device.id} className="border-b border-border hover:bg-muted/50">
+                  <td className="py-4 px-4 font-medium">{device.name || "Unknown Device"}</td>
+                  <td className="py-4 px-4 text-muted-foreground uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
+                  <td className="py-4 px-4 text-muted-foreground">{device.assignedUser || "Unassigned"}</td>
                   <td className="py-4 px-4 text-right">
                     <button 
                       onClick={() => handleRevokeDevice(device.id)}
-                      className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-semibold transition-colors border border-red-500/20"
+                      className="px-3 py-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-sm font-semibold transition-colors"
                     >
                       Revoke Access
                     </button>

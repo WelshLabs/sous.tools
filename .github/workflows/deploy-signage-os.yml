@@ -23,14 +23,13 @@ jobs:
           cd deploy/pi/pi-gen
           sudo ./build.sh
 
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.7
+      - name: Fetch Infisical Secrets
+        uses: infisical/secrets-action@v1.0.8
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
           project-slug: "sous-tools-1cd-a"
-          env-slug: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
-          export-env: true
 
       - name: Release to GitHub
         uses: softprops/action-gh-release@v2

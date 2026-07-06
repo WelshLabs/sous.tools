@@ -129,7 +129,7 @@ export function DraftPoModal({ isOpen, onClose, items, vendors, onSuccess }: Dra
 
         <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-white/10 p-4 rounded-md mb-6">
           {items.map(item => (
-            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-white/5 rounded">
+            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 bg-card rounded">
               <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5" />
               <span className="text-lg">{item.raw_name}</span>
             </label>

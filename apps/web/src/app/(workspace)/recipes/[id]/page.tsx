@@ -49,7 +49,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
   }
 
   if (!recipe) {
-    return <div className="p-12 text-center text-zinc-400">Recipe not found.</div>;
+    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
   }
 
   return (

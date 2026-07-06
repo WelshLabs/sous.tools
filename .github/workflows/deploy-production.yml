@@ -15,11 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fetch Secrets from Infisical
+      - name: Fetch Infisical Secrets
         uses: infisical/secrets-action@v1.0.8
         with:
-          infisical-token: ${{ secrets.INFISICAL_TOKEN }}
-          export-env: true
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools-1cd-a"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

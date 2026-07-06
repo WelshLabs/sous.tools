@@ -24,7 +24,7 @@ export function ExplodedItemBlock({
 }: ExplodedItemBlockProps) {
   const isGlass = panelStyle === "glass" || !panelStyle;
   const containerClasses = [
-    isGlass ? "st-glass-panel" : "border-transparent bg-transparent",
+    isGlass ? "" : "border-transparent bg-transparent",
     "rounded-2xl p-6 flex flex-col gap-6 text-zinc-100 my-4",
     "st-exploded-item",
     className
@@ -45,14 +45,14 @@ export function ExplodedItemBlock({
                 </h3>
               )}
               {!hidePrice && (
-                <div className="text-[14px] font-medium text-zinc-400 tracking-wider uppercase ml-auto">
+                <div className="text-[14px] font-medium text-muted-foreground tracking-wider uppercase ml-auto">
                   BASE <span className="font-extrabold text-[#00f0ff] ml-1 st-menu-glow-text">${Number(explodedItem.price).toFixed(2)}</span>
                 </div>
               )}
             </div>
           )}
           {!hideDescription && explodedItem.description && (
-            <p className="text-sm text-zinc-400 max-w-2xl">{explodedItem.description}</p>
+            <p className="text-sm text-muted-foreground max-w-2xl">{explodedItem.description}</p>
           )}
         </div>
       )}

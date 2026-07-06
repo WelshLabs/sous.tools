@@ -44,7 +44,7 @@ const DEFAULT_ITEMS: BottomNavItem[] = [
 /**
  * BottomNav — the mobile-only fixed bottom navigation bar.
  *
- * Sits at `--z-bottom-nav: 40` and uses the `.st-glass-panel` glassmorphism
+ * Sits at `--z-bottom-nav: 40` and uses the `.` glassmorphism
  * utility for the Neon-Glass aesthetic. Active route items are highlighted
  * with `--color-primary` (cyan #4cc9f0).
  *
@@ -94,7 +94,7 @@ export function BottomNav({
 
   return (
     <nav
-      className="md:hidden st-glass-panel fixed bottom-0 left-0 right-0 h-20
+      className="md:hidden  fixed bottom-0 left-0 right-0 h-20
         flex items-center justify-around px-2 pb-safe
         overflow-x-auto flex-nowrap min-w-0 select-none scrollbar-none"
       style={{

@@ -67,7 +67,7 @@ export function PinInput({ length = 6, value, onChange }: PinInputProps) {
           onChange={(e) => handleChange(e, index)}
           onKeyDown={(e) => handleKeyDown(e, index)}
           onPaste={handlePaste}
-          className="w-12 h-14 sm:w-16 sm:h-20 text-center text-3xl sm:text-4xl font-semibold bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 transition-all placeholder:text-zinc-700 shadow-inner"
+          className="w-12 h-14 sm:w-16 sm:h-20 text-center text-3xl sm:text-4xl font-semibold bg-card backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 transition-all placeholder:text-zinc-700 shadow-inner"
           placeholder="-"
         />
       ))}

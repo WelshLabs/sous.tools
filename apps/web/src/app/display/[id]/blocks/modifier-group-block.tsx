@@ -90,7 +90,7 @@ export function ModifierGroupBlock({
   }
 
   return (
-    <div className="st-glass-panel rounded-2xl p-5 flex flex-col gap-3 my-3">
+    <div className=" rounded-2xl p-5 flex flex-col gap-3 my-3">
       <div>
         <h4 className="text-lg font-bold uppercase tracking-tight text-white font-brand">
           {group.name}
@@ -146,7 +146,7 @@ export function ModifierGroupBlock({
                 )}
               </span>
               {Number(opt.price) > 0 && (
-                <span className="font-extrabold text-zinc-400" style={priceStyle}>
+                <span className="font-extrabold text-muted-foreground" style={priceStyle}>
                   +${Number(opt.price).toFixed(2)}
                 </span>
               )}

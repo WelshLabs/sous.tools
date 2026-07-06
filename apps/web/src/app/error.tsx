@@ -27,10 +27,10 @@ export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950 text-zinc-50 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-card text-zinc-50 p-4">
       <div className="glass-panel p-8 rounded-lg max-w-md border border-zinc-900 text-center">
         <h2 className="text-xl font-semibold text-rose-500 mb-4">Something went wrong!</h2>
-        <p className="text-sm text-zinc-400 mb-6">
+        <p className="text-sm text-muted-foreground mb-6">
           An unexpected error has occurred. The system logs have been updated automatically.
         </p>
         <button

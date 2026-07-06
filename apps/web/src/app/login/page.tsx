@@ -39,7 +39,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+    <main className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-zinc-50 dark:bg-card">
       {/* Background Neon Orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/20 blur-[120px] rounded-full animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/20 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: "6s" }} />
@@ -52,7 +52,7 @@ export default function LoginPage() {
           <h1 className="text-3xl font-extrabold text-white tracking-tight text-center">
             Kitchen Portal
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 text-center">
+          <p className="text-sm text-zinc-500 dark:text-muted-foreground mt-2 text-center">
             Standardize your culinary operations in real-time.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-muted-foreground flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5" /> Email Address
             </label>
             <input
@@ -74,12 +74,12 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
+              className="w-full bg-card/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-zinc-500 dark:text-muted-foreground flex items-center gap-1.5">
               <KeyRound className="w-3.5 h-3.5" /> Password
             </label>
             <input
@@ -88,7 +88,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
+              className="w-full bg-card/80 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all"
             />
           </div>
 

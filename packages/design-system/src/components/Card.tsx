@@ -28,14 +28,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 export function Card({ className = "", children, ...props }: CardProps) {
   return (
     <div
-      className={`rounded-[var(--radius)] ${className}`}
-      style={{
-        backgroundColor: "var(--color-card)",
-        color: "var(--color-card-foreground)",
-        border: "1px solid var(--color-border)",
-        boxShadow:
-          "0 20px 25px -5px rgb(0 0 0 / 0.10), 0 8px 10px -6px rgb(0 0 0 / 0.10)",
-      }}
+      className={`bg-card text-card-foreground rounded-3xl border border-black/5 dark:border-white/10 shadow-sm ${className}`}
       {...props}
     >
       {children}

@@ -46,7 +46,7 @@ export function GlobalAppBarPresentation({
   const isFocusPage = pathname === "/home";
 
   return (
-    <header className="sticky top-0 z-[var(--z-appbar)] w-full backdrop-blur-md bg-zinc-950/80 border-b border-white/5 h-16 px-4 md:px-6 flex items-center justify-between">
+    <header className="sticky top-0 z-[var(--z-appbar)] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">
       {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself (z-auto or 0) but sits under z-modal */}
       {isAnyMenuOpen && (
         <div 
@@ -73,7 +73,7 @@ export function GlobalAppBarPresentation({
         <div className="relative">
           <button 
             onClick={onToggleNotifications}
-            className={`relative p-2 transition-colors rounded-full focus:outline-none outline-none ${isNotificationsOpen ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+            className={`relative p-2 transition-colors rounded-full focus:outline-none outline-none ${isNotificationsOpen ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
           >
             <Bell className="w-5 h-5" />
             {notifications.length > 0 && (
@@ -116,7 +116,7 @@ export function GlobalAppBarPresentation({
         <div className="relative">
           <button 
             onClick={onToggleWaffle}
-            className={`p-2 transition-colors rounded-full focus:outline-none outline-none ${isWaffleOpen ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+            className={`p-2 transition-colors rounded-full focus:outline-none outline-none ${isWaffleOpen ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
           >
             <LayoutGrid className="w-5 h-5" />
           </button>

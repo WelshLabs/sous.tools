@@ -24,11 +24,13 @@ export function KitchenClientPage({ recipe }: { recipe: Recipe }) {
   };
 
   return (
-    <ActiveKitchen
-      recipe={recipe}
-      activeTimers={timers}
-      onUpdateTimers={handleUpdateTimers}
-      backHref={`/recipes/${recipe.id}`}
-    />
+    <div className="min-h-screen bg-background flex flex-col">
+      <ActiveKitchen
+        recipe={recipe}
+        activeTimers={timers}
+        onUpdateTimers={handleUpdateTimers}
+        backHref={`/recipes/${recipe.id}`}
+      />
+    </div>
   );
 }

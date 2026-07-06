@@ -67,20 +67,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles: Record<ButtonVariant, string> = {
       default: [
-        "text-[#0f172a]",           // --color-primary-foreground
+        "bg-primary",
+        "text-primary-foreground",
         "shadow-md",
       ].join(" "),
       secondary: [
-        "text-[#f8fafc]",           // --color-secondary-foreground
+        "text-secondary-foreground",
       ].join(" "),
       outline: [
         "bg-transparent",
-        "text-[#4cc9f0]",           // primary cyan text when outlined
-        "border border-[#4cc9f0]",
+        "text-primary",
+        "border border-primary",
       ].join(" "),
       ghost: [
         "bg-transparent",
-        "text-[#f8fafc]",
+        "text-foreground",
       ].join(" "),
     };
 

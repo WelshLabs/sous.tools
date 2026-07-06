@@ -122,7 +122,7 @@ export function NestedItemBlock({
                 )}
               </div>
               {upPrice !== null && upPrice > 0 && (
-                <span className="font-bold text-zinc-400 pl-4 st-price-tag" style={upPriceStyle}>
+                <span className="font-bold text-muted-foreground pl-4 st-price-tag" style={upPriceStyle}>
                   {isGroupHeader ? `$${upPrice.toFixed(2)}` : `+$${upPrice.toFixed(2)}`}
                 </span>
               )}
@@ -135,7 +135,7 @@ export function NestedItemBlock({
 
   if (panelStyle === "glass") {
     return (
-      <div className={["st-glass-panel p-4 st-nested-item", className].filter(Boolean).join(" ")}>
+      <div className={[" p-4 st-nested-item", className].filter(Boolean).join(" ")}>
         {element}
       </div>
     );

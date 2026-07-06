@@ -88,7 +88,7 @@ export function VisualBuilder({
 
   if (recipes.length === 0) {
     return (
-      <div className="p-4 text-zinc-500 dark:text-zinc-400">
+      <div className="p-4 text-zinc-500 dark:text-muted-foreground">
         No recipes found in data.
       </div>
     );
@@ -142,7 +142,7 @@ export function VisualBuilder({
             className="border border-black/10 dark:border-white/10 rounded-xl bg-card/50 overflow-hidden shadow-sm"
           >
             <div
-              className="p-3 bg-black/5 dark:bg-white/5 flex items-center gap-2 cursor-pointer hover:bg-black/10 dark:bg-white/10"
+              className="p-3 bg-black/5 bg-card flex items-center gap-2 cursor-pointer hover:bg-black/10 dark:bg-white/10"
               onClick={() => toggleExpand(rIdx)}
             >
               {isExpanded ? (
@@ -159,7 +159,7 @@ export function VisualBuilder({
               <div className="p-4 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">
+                    <label className="text-xs text-zinc-500 dark:text-muted-foreground font-bold uppercase tracking-wide">
                       Title
                     </label>
                     <input
@@ -169,12 +169,12 @@ export function VisualBuilder({
                       onChange={(e) =>
                         handleUpdate(rIdx, "title", e.target.value)
                       }
-                      className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                      className="w-full bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
                     />
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">
+                      <label className="text-xs text-zinc-500 dark:text-muted-foreground font-bold uppercase tracking-wide">
                         Yield
                       </label>
                       <input
@@ -188,11 +188,11 @@ export function VisualBuilder({
                             Number(e.target.value),
                           )
                         }
-                        className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                        className="w-full bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wide">
+                      <label className="text-xs text-zinc-500 dark:text-muted-foreground font-bold uppercase tracking-wide">
                         Unit
                       </label>
                       <input
@@ -202,7 +202,7 @@ export function VisualBuilder({
                         onChange={(e) =>
                           handleUpdate(rIdx, "yieldUnit", e.target.value)
                         }
-                        className="w-full bg-black/50 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
+                        className="w-full bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm mt-1 focus:border-sky-500 outline-none"
                       />
                     </div>
                   </div>
@@ -296,7 +296,7 @@ export function VisualBuilder({
                                     e.target.value,
                                   )
                                 }
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none placeholder:text-white/20"
+                                className="w-full bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none placeholder:text-white/20"
                                 placeholder="Raw Name (from text)"
                               />
                               <select
@@ -339,7 +339,7 @@ export function VisualBuilder({
                                     Number(e.target.value),
                                   )
                                 }
-                                className="w-16 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
+                                className="w-16 bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
                               />
                               <input
                                 disabled={disabled}
@@ -353,7 +353,7 @@ export function VisualBuilder({
                                     e.target.value,
                                   )
                                 }
-                                className="w-16 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none placeholder:text-white/20"
+                                className="w-16 bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none placeholder:text-white/20"
                                 placeholder="Unit"
                               />
                             </div>
@@ -370,7 +370,7 @@ export function VisualBuilder({
                                       e.target.value,
                                     )
                                   }
-                                  className="flex-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs focus:border-sky-500 outline-none"
+                                  className="flex-1 bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs focus:border-sky-500 outline-none"
                                 >
                                   <option value="WEIGHT">Weight</option>
                                   <option value="VOLUME">Volume</option>
@@ -416,7 +416,7 @@ export function VisualBuilder({
                                   )
                                 }
                                 placeholder="Section (e.g. Glaze)"
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none text-zinc-500 dark:text-zinc-400"
+                                className="w-full bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs focus:border-sky-500 outline-none text-zinc-500 dark:text-muted-foreground"
                               />
                             </div>
                           </div>

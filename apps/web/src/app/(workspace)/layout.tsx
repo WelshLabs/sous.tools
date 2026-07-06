@@ -27,7 +27,7 @@ export default async function WorkspaceLayout({
         onLogoutAction={logoutAction} 
         isAdmin={true}
       />
-      <main className="flex-1 flex flex-col relative">
+      <main className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-y-auto min-w-0">
         {children}
         {modal}
       </main>

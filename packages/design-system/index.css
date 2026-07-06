@@ -94,25 +94,25 @@
 /* ─── Base Theme — Light Fallback ──────────────────────────────────────────── */
 @layer base {
   :root {
-    --color-background:          #f8fafc;  
-    --color-foreground:          #09090b;  
+    --color-background:          #f8f9fa;  
+    --color-foreground:          #18181b;  
     --color-card:                #ffffff;
-    --color-card-foreground:     #09090b;
+    --color-card-foreground:     #18181b;
     --color-popover:             #ffffff;
-    --color-popover-foreground:  #09090b;
-    --color-primary:             #0891b2;  
+    --color-popover-foreground:  #18181b;
+    --color-primary:             #2563eb;  
     --color-primary-foreground:  #ffffff;
     --color-secondary:           #e4e4e7;  
-    --color-secondary-foreground:#09090b;
+    --color-secondary-foreground:#18181b;
     --color-muted:               #f4f4f5;  
     --color-muted-foreground:    #71717a;  
     --color-accent:              #e4e4e7;
-    --color-accent-foreground:   #09090b;
+    --color-accent-foreground:   #18181b;
     --color-destructive:         #f43f5e;
     --color-destructive-foreground: #ffffff;
     --color-border:              #e4e4e7;  
     --color-input:               #f4f4f5;  
-    --color-ring:                #0891b2;
+    --color-ring:                #2563eb;
   }
 
   /* Dark — canonical Neon-Glass aesthetic */

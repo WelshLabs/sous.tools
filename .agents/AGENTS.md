@@ -55,7 +55,15 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 *   **Phase VI (WearOS Complications & Tiles)**: Active - Scaffolded MainComplicationService and KitchenCommandTileService/Activity.
 *   **Phase VI (WearOS Metrics Mocking)**: Active - Scaffolding real API endpoints returning mock data for WearOS complications.
 *   **Phase VI (WearOS Device Pairing)**: Active - Implementing production-ready OAuth Device Flow (Pairing Codes) using DataStore for secure JWT persistence.
+*   **Phase VI (Device Pairing 404 Routing Hotfix)**: Complete - Resolved 404 NotFoundException for `/pair/confirm` by correctly prefixing the route to `/api/devices/pair/confirm` in frontend clients.
+*   **Phase VI (Auth Header Hotfix)**: Complete - Resolved 401 UnauthorizedException by injecting the Supabase JWT token into the fetch request for `/api/devices/pair/confirm`.
+*   **Phase VI (Light Mode Zero-Tolerance Hotfix)**: Complete - Enforced Frosted Glass variables in pos-simulator globals.css and aggressively purged hardcoded classes from item cards.
+*   **Phase VI (Light Mode Prep Table Re-Architecture)**: Complete - Re-architected Light Mode variables to HSL values ("The Prep Table") and updated PosItemCard.tsx wrapper classes.
+*   **Phase VI (Global Theme Re-Architecture & Overflow Hotfix)**: Complete - Rewrote design system Light Mode CSS variables to pure white/stainless steel, reverted Primary Blue, and fixed base layout overflow in SidebarLayout.
+*   **Phase VI (Targeted UI Salvage)**: Complete - Aggressively purged hardcoded grey backgrounds, transparent blacks, and light text from apps/web inventory and admin route groups.
+*   **Phase VI (Mass Extinction & Architectural Salvage)**: Complete - Executed global programmatic purge of legacy utility classes, fixed Next.js hydration errors in root layout, and resolved flexbox overflow bounds.
 *   **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
 *   **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
 *   **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
 *   **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
+*   **Phase X (Infisical Universal Auth Migration)**: Active - Replacing deprecated Service Token with Universal Auth (Client ID/Secret) in GitHub Actions workflows.

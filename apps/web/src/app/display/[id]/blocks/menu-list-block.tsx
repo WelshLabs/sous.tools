@@ -23,7 +23,7 @@ export function MenuListBlock({
   const isGlass = panelStyle === "glass";
   const containerClasses = [
     "flex flex-col gap-2 w-full st-menu-list",
-    isGlass ? "st-glass-panel p-2 border border-white/10 bg-white/5 rounded" : "",
+    isGlass ? " p-2 border border-white/10 bg-white/5 rounded" : "",
     className
   ].filter(Boolean).join(" ");
 

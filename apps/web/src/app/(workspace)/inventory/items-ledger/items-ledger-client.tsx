@@ -127,13 +127,13 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">Items Ledger</h1>
-          <p className="text-zinc-500 mt-2">Manage your master ingredients, density, and nutrition.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Items Ledger</h1>
+          <p className="text-muted-foreground mt-2">Manage your master ingredients, density, and nutrition.</p>
         </div>
         <div className="flex gap-4">
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white font-medium rounded-lg flex items-center gap-2 transition-colors"
+            className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium rounded-lg flex items-center gap-2 transition-colors"
           >
             <Download size={18} /> Export
           </button>
@@ -147,20 +147,20 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="px-4 py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white font-medium rounded-lg flex items-center gap-2 transition-colors"
+            className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium rounded-lg flex items-center gap-2 transition-colors"
           >
             {importing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />} Import
           </button>
           <button
             onClick={handleCreate}
-            className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white font-medium rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-sky-500/20"
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg flex items-center gap-2 transition-colors shadow-lg"
           >
             <Plus size={18} /> New Item
           </button>
         </div>
       </div>
 
-      <div className="st-glass-panel overflow-hidden rounded-2xl border border-black/10 dark:border-white/10 shadow-xl">
+      <div className="bg-card text-card-foreground overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
         <ItemsLedgerTable
           items={initialItems}
           loading={loading}

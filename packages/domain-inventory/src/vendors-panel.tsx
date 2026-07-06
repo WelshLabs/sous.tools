@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Plus, Trash, Edit2, Save, X } from "lucide-react";
 import type { Vendor } from "@soustools/api-types";
+import { TwoToneHeader } from "@soustools/design-system";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -44,14 +45,10 @@ export function VendorsPanel({ vendors, onSave, onDelete }: VendorsPanelProps) {
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Vendor Management
-          </h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-1">
-            Manage suppliers, ordering schedules, and contact methods.
-          </p>
-        </div>
+        <TwoToneHeader
+          title="Vendor Management"
+          breadcrumb="Manage suppliers, ordering schedules, and contact methods."
+        />
         <button
           onClick={() => {
             setIsEditing("new");

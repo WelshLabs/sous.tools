@@ -21,7 +21,7 @@ export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
 
   if (!slides || slides.length === 0) {
     return (
-      <div className="w-full h-64 bg-zinc-950 flex items-center justify-center rounded-2xl border border-zinc-800 text-zinc-600 italic">
+      <div className="w-full h-64 bg-card flex items-center justify-center rounded-2xl border border-zinc-800 text-zinc-600 italic">
         Media Carousel: No Slides
       </div>
     );
@@ -31,7 +31,7 @@ export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
   const isKenBurns = style?.imageEffect === "ken-burns";
 
   return (
-    <div className="w-full h-72 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-zinc-950 my-3">
+    <div className="w-full h-72 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-card my-3">
       <style>{`
         @keyframes st-ken-burns {
           0% { transform: scale(1) translate(0, 0); }

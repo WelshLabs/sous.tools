@@ -1,3 +1,34 @@
 @import "@soustools/design-system/index.css";
 
 @source "../../../../packages/design-system/src/**/*.tsx";
+
+@layer base {
+  :root {
+    --color-background: hsl(210, 24%, 96%);
+    --background: hsl(210, 24%, 96%);
+    
+    --color-foreground: hsl(215, 16%, 22%);
+    --foreground: hsl(215, 16%, 22%);
+    
+    --color-card: hsl(0, 0%, 100%);
+    --card: hsl(0, 0%, 100%);
+    
+    --color-card-foreground: hsl(215, 16%, 22%);
+    --card-foreground: hsl(215, 16%, 22%);
+    
+    --color-popover: hsl(0, 0%, 100%);
+    --popover: hsl(0, 0%, 100%);
+    
+    --color-popover-foreground: hsl(215, 16%, 22%);
+    --popover-foreground: hsl(215, 16%, 22%);
+
+    --color-muted-foreground: hsl(215, 16%, 40%);
+    --muted-foreground: hsl(215, 16%, 40%);
+
+    --color-primary: hsl(185, 80%, 30%);
+    --primary: hsl(185, 80%, 30%);
+
+    --color-border: hsl(214, 32%, 91%);
+    --border: hsl(214, 32%, 91%);
+  }
+}

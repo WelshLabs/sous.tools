@@ -266,7 +266,7 @@ export default function KDSPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 text-white">
+      <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-card text-white">
         <div className="w-10 h-10 border-4 border-t-sky-500 border-black/10 dark:border-white/10 rounded-full animate-spin" />
       </div>
     );
@@ -277,14 +277,14 @@ export default function KDSPage() {
   );
 
   return (
-    <div className="min-h-[calc(100vh-100px)] flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6 space-y-6 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-100px)] flex flex-col bg-zinc-50 dark:bg-card text-zinc-900 dark:text-zinc-100 p-6 space-y-6 relative overflow-hidden">
       {/* Header Panel */}
       <header className="glass-panel flex flex-col md:flex-row justify-between items-start md:items-center p-5 rounded-2xl shrink-0 gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
             <Tv className="w-6 h-6 text-sky-500 dark:text-sky-400" /> Kitchen Display System (KDS)
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Station: Hot Line & Main Preparation</p>
+          <p className="text-xs text-zinc-500 dark:text-muted-foreground mt-1">Station: Hot Line & Main Preparation</p>
         </div>
 
         {/* Action Toggles */}
@@ -294,7 +294,7 @@ export default function KDSPage() {
             <button
               onClick={() => setViewFilter("OPEN")}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                viewFilter === "OPEN" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                viewFilter === "OPEN" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-muted-foreground hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               Open ({tickets.filter(t => t.status === "OPEN").length})
@@ -302,7 +302,7 @@ export default function KDSPage() {
             <button
               onClick={() => setViewFilter("CLOSED")}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                viewFilter === "CLOSED" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                viewFilter === "CLOSED" ? "bg-black/10 dark:bg-white/10 text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-muted-foreground hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               Completed ({tickets.filter(t => t.status === "CLOSED").length})
@@ -312,7 +312,7 @@ export default function KDSPage() {
           {/* Settings Trigger */}
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-black/10 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 bg-card hover:bg-black/10 dark:hover:bg-black/10 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             <Settings className="w-5 h-5" />
           </button>
@@ -325,9 +325,9 @@ export default function KDSPage() {
         <div className="flex-1 flex flex-col min-w-0">
           <div className={`flex-1 overflow-y-auto pr-1 grid ${gridClasses} pb-10`}>
             {filteredTickets.length === 0 ? (
-              <div className="glass-panel col-span-full flex flex-col items-center justify-center p-12 text-zinc-400 dark:text-zinc-500 rounded-2xl h-64">
-                <CheckCircle className="w-12 h-12 text-zinc-400 dark:text-zinc-600 mb-3" />
-                <p className="font-bold text-lg text-zinc-600 dark:text-zinc-400">All tickets completed!</p>
+              <div className="glass-panel col-span-full flex flex-col items-center justify-center p-12 text-muted-foreground dark:text-zinc-500 rounded-2xl h-64">
+                <CheckCircle className="w-12 h-12 text-muted-foreground dark:text-zinc-600 mb-3" />
+                <p className="font-bold text-lg text-zinc-600 dark:text-muted-foreground">All tickets completed!</p>
                 <p className="text-sm mt-1">Ready for incoming transactions...</p>
               </div>
             ) : (
@@ -360,10 +360,10 @@ export default function KDSPage() {
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{ticket.tableNumber}</span>
+                          <span className="text-[10px] text-zinc-500 dark:text-muted-foreground">{ticket.tableNumber}</span>
                         </div>
                         <div className="text-right">
-                          <div className="flex items-center justify-end text-zinc-500 dark:text-zinc-400 text-xs gap-1">
+                          <div className="flex items-center justify-end text-zinc-500 dark:text-muted-foreground text-xs gap-1">
                             <Clock className="w-3.5 h-3.5" />
                             <span>{ageMinutes}m</span>
                           </div>
@@ -409,7 +409,7 @@ export default function KDSPage() {
 
         {/* All Day Prep Panel Drawer */}
         <aside className="glass-panel w-72 rounded-2xl flex flex-col overflow-hidden shrink-0">
-          <div className="p-4 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+          <div className="p-4 bg-black/5 bg-card border-b border-black/5 dark:border-white/5 flex items-center justify-between">
             <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-sky-500 dark:text-sky-400" /> All-Day Summary
             </h2>
@@ -420,7 +420,7 @@ export default function KDSPage() {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {allDayPrep.length === 0 ? (
-              <div className="text-center py-12 text-zinc-400 dark:text-zinc-500 text-xs">
+              <div className="text-center py-12 text-muted-foreground dark:text-zinc-500 text-xs">
                 No active items to prepare.
               </div>
             ) : (
@@ -443,7 +443,7 @@ export default function KDSPage() {
       {/* KDS Settings Dialog overlay modal */}
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
+          <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-black/5 dark:border-white/5">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -451,7 +451,7 @@ export default function KDSPage() {
               </h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="p-1 hover:bg-black/5 dark:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1 hover:bg-black/5 bg-card rounded-lg text-muted-foreground hover:text-white transition-colors cursor-pointer"
               >
                 Close
               </button>
@@ -464,16 +464,16 @@ export default function KDSPage() {
                 <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider">
                   Audio & Sound Controls
                 </h4>
-                <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl">
                   <div className="flex items-center gap-3">
                     {soundsEnabled ? (
                       <Volume2 className="w-5 h-5 text-green-400 animate-pulse" />
                     ) : (
-                      <VolumeX className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
+                      <VolumeX className="w-5 h-5 text-muted-foreground dark:text-zinc-500" />
                     )}
                     <div>
                       <p className="text-sm font-semibold">Chime Alerts</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Play chiming sounds on ticket updates</p>
+                      <p className="text-xs text-zinc-500 dark:text-muted-foreground">Play chiming sounds on ticket updates</p>
                     </div>
                   </div>
                   <button
@@ -481,7 +481,7 @@ export default function KDSPage() {
                     className={`text-xs px-4 py-2 font-bold rounded-lg border transition-all cursor-pointer ${
                       soundsEnabled
                         ? "bg-green-500/10 text-green-400 border-green-500/20"
-                        : "bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-700"
+                        : "bg-zinc-800 text-zinc-500 dark:text-muted-foreground border-zinc-700"
                     }`}
                   >
                     {soundsEnabled ? "Enabled" : "Disabled"}
@@ -489,7 +489,7 @@ export default function KDSPage() {
                 </div>
 
                 {soundsEnabled && (
-                  <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl space-y-2">
+                  <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
                     <label className="text-xs font-semibold block text-zinc-700 dark:text-zinc-300">
                       Chime Volume: {Math.round(soundVolume * 100)}%
                     </label>
@@ -513,7 +513,7 @@ export default function KDSPage() {
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Text Size Toggle */}
-                  <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl space-y-2">
+                  <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
                     <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Text Size</p>
                     <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
                       {(["sm", "md", "lg"] as const).map(sz => (
@@ -521,7 +521,7 @@ export default function KDSPage() {
                           key={sz}
                           onClick={() => saveTextSize(sz)}
                           className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                            textSize === sz ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-zinc-400"
+                            textSize === sz ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-muted-foreground"
                           }`}
                         >
                           {sz === "sm" ? "Small" : sz === "md" ? "Medium" : "Large"}
@@ -531,7 +531,7 @@ export default function KDSPage() {
                   </div>
 
                   {/* Density Toggle */}
-                  <div className="p-4 bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl space-y-2">
+                  <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
                     <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Grid Layout Density</p>
                     <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
                       {(["compact", "standard", "spacious"] as const).map(den => (
@@ -539,7 +539,7 @@ export default function KDSPage() {
                           key={den}
                           onClick={() => saveDensity(den)}
                           className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                            density === den ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-zinc-400"
+                            density === den ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-500 dark:text-muted-foreground"
                           }`}
                         >
                           {den === "compact" ? "Compact" : den === "standard" ? "Standard" : "Spacious"}
@@ -566,21 +566,21 @@ export default function KDSPage() {
                     placeholder="Search menu items to 86..."
                     className="w-full bg-white/50 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-white focus:outline-none focus:border-sky-500 transition-colors"
                   />
-                  <Search className="w-4 h-4 text-zinc-400 dark:text-zinc-500 absolute left-3.5 top-3.5" />
+                  <Search className="w-4 h-4 text-muted-foreground dark:text-zinc-500 absolute left-3.5 top-3.5" />
                 </div>
 
                 <div className="border border-black/5 dark:border-white/5 rounded-xl max-h-48 overflow-y-auto p-2 bg-black/20 divide-y divide-white/5">
                   {filteredPosItems.length === 0 ? (
-                    <div className="text-center py-6 text-zinc-400 dark:text-zinc-500 text-xs">
+                    <div className="text-center py-6 text-muted-foreground dark:text-zinc-500 text-xs">
                       No matching POS items.
                     </div>
                   ) : (
                     filteredPosItems.map(item => (
                       <div
                         key={item.id}
-                        className="flex justify-between items-center py-2.5 px-2 hover:bg-black/5 dark:bg-white/5 transition-colors"
+                        className="flex justify-between items-center py-2.5 px-2 hover:bg-black/5 bg-card transition-colors"
                       >
-                        <span className={`text-sm font-semibold ${item.is_sold_out ? "text-zinc-400 dark:text-zinc-500 line-through" : "text-zinc-900 dark:text-zinc-100"}`}>
+                        <span className={`text-sm font-semibold ${item.is_sold_out ? "text-muted-foreground dark:text-zinc-500 line-through" : "text-zinc-900 dark:text-zinc-100"}`}>
                           {item.name}
                         </span>
                         <button
@@ -588,7 +588,7 @@ export default function KDSPage() {
                           className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all flex items-center gap-1 cursor-pointer ${
                             item.is_sold_out
                               ? "bg-red-500/10 text-red-400 border-red-500/20"
-                              : "bg-black/5 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10"
+                              : "bg-black/5 bg-card text-zinc-700 dark:text-zinc-300 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10"
                           }`}
                         >
                           {item.is_sold_out ? (

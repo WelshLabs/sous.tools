@@ -21,11 +21,11 @@ export default async function KitchenPage({ params }: KitchenPageProps) {
   }
 
   if (!recipe) {
-    return <div className="p-12 text-center text-zinc-400">Recipe not found.</div>;
+    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
   }
 
   return (
-    <div className="bg-zinc-950 min-h-screen">
+    <div className="bg-card min-h-screen">
       <KitchenClientPage recipe={recipe} />
     </div>
   );

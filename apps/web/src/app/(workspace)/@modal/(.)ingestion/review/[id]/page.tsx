@@ -116,7 +116,7 @@ export default function IngestionReviewPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/ingestion"
-              className="p-2 bg-black/5 dark:bg-white/5 rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
+              className="p-2 bg-black/5 bg-card rounded-full hover:bg-black/10 dark:bg-white/10 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
             </Link>
@@ -125,7 +125,7 @@ export default function IngestionReviewPage() {
                 <BrainCircuit className="w-6 h-6 text-sky-400" />
                 Human-in-the-Loop Review
               </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-zinc-500 dark:text-muted-foreground">
                 Review AI extracted data from {review.source.replace("_", " ")}
               </p>
             </div>
@@ -133,7 +133,7 @@ export default function IngestionReviewPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 bg-black/5 dark:bg-white/5 hover:bg-red-500/10 rounded-lg transition-colors"
+              className="p-2 text-zinc-500 dark:text-muted-foreground hover:text-red-500 bg-black/5 bg-card hover:bg-red-500/10 rounded-lg transition-colors"
               title="Delete Review"
             >
               <Trash2 className="w-5 h-5" />
@@ -183,7 +183,7 @@ export default function IngestionReviewPage() {
                   />
                 )
               ) : (
-                <pre className="text-sm text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap font-mono p-4">
+                <pre className="text-sm text-zinc-500 dark:text-muted-foreground whitespace-pre-wrap font-mono p-4">
                   {review.rawText || "No raw text available."}
                 </pre>
               )}
@@ -200,16 +200,16 @@ export default function IngestionReviewPage() {
                 <span className="text-xs bg-sky-500/20 text-sky-400 px-2 py-1 rounded-full">
                   Vendor Aliases Applied
                 </span>
-                <div className="flex bg-black/50 rounded-lg p-1">
+                <div className="flex bg-card rounded-lg p-1">
                   <button
                     onClick={() => setViewMode("visual")}
-                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "visual" ? "bg-black/10 dark:bg-white/10 text-white" : "text-muted-foreground dark:text-zinc-500 hover:text-white"}`}
                   >
                     Visual
                   </button>
                   <button
                     onClick={() => setViewMode("json")}
-                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-zinc-400 dark:text-zinc-500 hover:text-white"}`}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === "json" ? "bg-black/10 dark:bg-white/10 text-white" : "text-muted-foreground dark:text-zinc-500 hover:text-white"}`}
                   >
                     JSON
                   </button>

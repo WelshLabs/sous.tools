@@ -22,7 +22,7 @@ export function CategoryHeaderBlock({
   const isGlass = panelStyle === "glass";
   const containerClasses = [
     isGlass
-      ? "st-glass-panel p-6 rounded-2xl relative my-4 flex flex-col gap-1.5"
+      ? " p-6 rounded-2xl relative my-4 flex flex-col gap-1.5"
       : "py-4 flex flex-col gap-1",
     "st-category-header",
     className
@@ -41,7 +41,7 @@ export function CategoryHeaderBlock({
         )}
       </div>
       {subtitle && (
-        <p className="text-sm font-semibold text-zinc-400 font-sans tracking-wide">
+        <p className="text-sm font-semibold text-muted-foreground font-sans tracking-wide">
           {subtitle}
         </p>
       )}

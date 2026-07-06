@@ -43,7 +43,7 @@ export interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className="overflow-x-hidden" suppressHydrationWarning>
-      <body className="antialiased min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 font-sans overflow-x-hidden transition-colors duration-300 relative">
+      <body className="antialiased min-h-screen bg-white text-zinc-900 dark:bg-card dark:text-zinc-50 font-sans overflow-x-hidden transition-colors duration-300 relative" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
 
           {children}

@@ -36,7 +36,7 @@ export function CalloutBlock({
       ? "flex-col items-center justify-center text-center"
       : "items-center",
     isGlass
-      ? "st-glass-panel"
+      ? ""
       : panelStyle !== "none"
         ? "bg-card border border-zinc-800"
         : "",
