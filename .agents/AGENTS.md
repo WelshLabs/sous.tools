@@ -69,3 +69,4 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 *   **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
 *   **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
 *   **Phase X (Infisical Universal Auth Migration)**: Active - Replacing deprecated Service Token with Universal Auth (Client ID/Secret) in GitHub Actions workflows.
+*   **Phase X (Docker Engine Upgrade & CSS Reversion)**: Active - Upgrading Node to 24 in apps/api/Dockerfile, removing static platform flags, and reverting packages/design-system/index.css to its original HSL palette.

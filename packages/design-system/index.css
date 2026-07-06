@@ -24,28 +24,45 @@
 
 @theme {
   /* ── Colors — Semantic Token Dictionary ─────────────────────────────────── */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  /* Base surfaces */
+  --color-background:          #09090b;   /* midnight slate */
+  --color-foreground:          #f8fafc;   /* zinc-50 */
+
+  /* Card / Elevated surfaces */
+  --color-card:                #121212;   /* elevated midnight */
+  --color-card-foreground:     #f8fafc;   /* zinc-50 */
+
+  /* Popover / Overlay surfaces */
+  --color-popover:             #121212;   /* elevated midnight */
+  --color-popover-foreground:  #f8fafc;   /* zinc-50 */
+
+  /* Primary — Neon-Glass Cyan #4cc9f0 */
+  --color-primary:             #4cc9f0;
+  --color-primary-foreground:  #09090b;   /* dark bg for contrast on cyan btn */
+
+  /* Secondary — Muted slate surface */
+  --color-secondary:           #27272a;   /* zinc-800 */
+  --color-secondary-foreground:#f8fafc;
+
+  /* Muted — de-emphasized surfaces and text */
+  --color-muted:               #121212;   
+  --color-muted-foreground:    #a1a1aa;   /* zinc-400 */
+
+  /* Accent — Neon Pink (neon-glass secondary accent) */
+  --color-accent:              #f72585;   
+  --color-accent-foreground:   #f8fafc;
+
+  /* Destructive — Rose/Red */
+  --color-destructive:         #f43f5e;   
+  --color-destructive-foreground: #f8fafc;
+
+  /* Borders & Inputs */
+  --color-border:              #27272a;   /* zinc-800 */
+  --color-input:               #121212;   
+  --color-ring:                #4cc9f0;   
 
   /* ── Supporting Palette (for utility classes & components) ─────────────── */
-  --color-neon-cyan:           #00ffff;
+  --color-neon-cyan:           #4cc9f0;
   --color-neon-pink:           #f72585;
   --color-success:             #10b981;   
   --color-warning:             #f59e0b;   
@@ -76,48 +93,48 @@
 /* ─── Base Theme — Light Fallback ──────────────────────────────────────────── */
 @layer base {
   :root {
-    --background: #f4f4f5; /* Clean off-white */
-    --foreground: #18181b; /* Deep charcoal */
-    --card: #ffffff; /* Pure white for glassmorphism */
-    --card-foreground: #18181b;
-    --popover: #ffffff;
-    --popover-foreground: #18181b;
-    --primary: #00ffff; /* True Neon Cyan */
-    --primary-foreground: #000000;
-    --secondary: #e4e4e7;
-    --secondary-foreground: #18181b;
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-    --accent: #e4e4e7;
-    --accent-foreground: #18181b;
-    --destructive: #f43f5e;
-    --destructive-foreground: #ffffff;
-    --border: #e4e4e7; /* Subtle light gray */
-    --input: #f4f4f5;
-    --ring: #2563eb;
+    --color-background:          210 24% 96%;  
+    --color-foreground:          215 16% 22%;  
+    --color-card:                0 0% 100%;
+    --color-card-foreground:     215 16% 22%;
+    --color-popover:             0 0% 100%;
+    --color-popover-foreground:  215 16% 22%;
+    --color-primary:             180 100% 50%;  
+    --color-primary-foreground:  0 0% 0%;
+    --color-border:              214 32% 91%;
+    --color-secondary:           #e4e4e7;  
+    --color-secondary-foreground:#18181b;
+    --color-muted:               #f4f4f5;  
+    --color-muted-foreground:    #71717a;  
+    --color-accent:              #e4e4e7;
+    --color-accent-foreground:   #18181b;
+    --color-destructive:         #f43f5e;
+    --color-destructive-foreground: #ffffff;
+    --color-input:               #f4f4f5;  
+    --color-ring:                #2563eb;
   }
 
   /* Dark — canonical Neon-Glass aesthetic */
   .dark {
-    --background: #09090b; /* Midnight Slate */
-    --foreground: #ffffff;
-    --card: #18181b; /* Dark slate */
-    --card-foreground: #ffffff;
-    --popover: #18181b;
-    --popover-foreground: #ffffff;
-    --primary: #00ffff; /* True Neon Cyan */
-    --primary-foreground: #000000;
-    --secondary: #27272a;
-    --secondary-foreground: #f8fafc;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #f72585;
-    --accent-foreground: #f8fafc;
-    --destructive: #f43f5e;
-    --destructive-foreground: #f8fafc;
-    --border: #27272a; /* Subtle dark border */
-    --input: #121212;
-    --ring: #00ffff;
+    --color-background:          240 5% 4%;  
+    --color-foreground:          0 0% 100%;  
+    --color-card:                240 5% 10%;  
+    --color-card-foreground:     0 0% 100%;
+    --color-popover:             240 5% 10%;
+    --color-popover-foreground:  0 0% 100%;
+    --color-primary:             180 100% 50%;  
+    --color-primary-foreground:  0 0% 0%;
+    --color-border:              240 5% 15%;
+    --color-secondary:           #27272a;  
+    --color-secondary-foreground:#f8fafc;
+    --color-muted:               #121212;  
+    --color-muted-foreground:    #a1a1aa;  
+    --color-accent:              #f72585;  
+    --color-accent-foreground:   #f8fafc;
+    --color-destructive:         #f43f5e;  
+    --color-destructive-foreground: #f8fafc;
+    --color-input:               #121212;  
+    --color-ring:                #4cc9f0;  
   }
 }
 
