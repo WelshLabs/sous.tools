@@ -1,10 +1,9 @@
+import { TwoToneHeader } from "@soustools/design-system";
+
 export default function InventoryPage() {
   return (
     <div className="flex flex-col gap-8 p-8 h-full bg-background text-foreground">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black uppercase tracking-widest">Inventory</h1>
-        <p className="text-muted-foreground font-medium">Manage your inventory, suppliers, and purchase orders.</p>
-      </div>
+      <TwoToneHeader title="Inventory Dashboard" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-card text-card-foreground border border-border dark:border-border p-6 rounded-2xl hover:border-primary/50 transition-colors shadow-sm">

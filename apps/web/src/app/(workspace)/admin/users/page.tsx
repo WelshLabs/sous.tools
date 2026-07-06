@@ -8,11 +8,11 @@ export default function AdminUsersPage() {
         <TwoToneHeader title="Admin Users" breadcrumb="Manage user roles and permissions." />
       </div>
 
-      <div className="bg-card border border-zinc-800 rounded-2xl p-6">
+      <div className="bg-card border border-border rounded-2xl p-6">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-zinc-800 text-muted-foreground text-sm">
+              <tr className="border-b border-border text-muted-foreground text-sm">
                 <th className="pb-3 px-4 font-medium">Name</th>
                 <th className="pb-3 px-4 font-medium">Email</th>
                 <th className="pb-3 px-4 font-medium">Role</th>
@@ -20,26 +20,26 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+              <tr className="border-b border-border/50 hover:bg-accent/20">
                 <td className="py-4 px-4 text-zinc-300 font-medium">Conar Welsh</td>
                 <td className="py-4 px-4 text-muted-foreground">conar@soustools.com</td>
                 <td className="py-4 px-4 text-muted-foreground">
                   <span className="px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-semibold uppercase tracking-wider">Superadmin</span>
                 </td>
                 <td className="py-4 px-4 text-right">
-                  <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-zinc-700">
+                  <button className="px-3 py-1.5 bg-accent hover:bg-accent text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-border">
                     Edit
                   </button>
                 </td>
               </tr>
-              <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+              <tr className="border-b border-border/50 hover:bg-accent/20">
                 <td className="py-4 px-4 text-zinc-300 font-medium">Demo Chef</td>
                 <td className="py-4 px-4 text-muted-foreground">chef@demo.com</td>
                 <td className="py-4 px-4 text-muted-foreground">
-                  <span className="px-2.5 py-1 rounded-md bg-zinc-800 text-muted-foreground text-xs font-semibold uppercase tracking-wider">User</span>
+                  <span className="px-2.5 py-1 rounded-md bg-accent text-muted-foreground text-xs font-semibold uppercase tracking-wider">User</span>
                 </td>
                 <td className="py-4 px-4 text-right">
-                  <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-zinc-700">
+                  <button className="px-3 py-1.5 bg-accent hover:bg-accent text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-border">
                     Edit
                   </button>
                 </td>

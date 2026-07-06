@@ -114,9 +114,8 @@ export function ActiveKitchenTimers({
   return (
     <div
       className="fixed bottom-6 right-6 z-40 w-80 rounded-2xl shadow-2xl p-4
-        backdrop-blur-md max-h-[400px] overflow-y-auto space-y-3"
+        backdrop-blur-md max-h-[400px] overflow-y-auto space-y-3 bg-card"
       style={{
-        backgroundColor: "rgb(15 23 42 / 0.90)",
         border: "1px solid var(--color-border)",
         color: "var(--color-foreground)",
       }}

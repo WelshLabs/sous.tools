@@ -91,7 +91,7 @@ export function SettingsClient({
         </p>
       </header>
 
-      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1">
+      <div className="flex border-b border-border dark:border-border gap-1">
         {(["general", "integrations", "styling", "downloads"] as const).map(
           (tab) => {
             const icons = {
@@ -123,7 +123,7 @@ export function SettingsClient({
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
                   activeTab === tab
                     ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
-                    : "border-transparent text-zinc-500 dark:text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-black/5 dark:hover:bg-card/40"
+                    : "border-transparent text-zinc-500 dark:text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-card dark:hover:bg-card/40"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -134,7 +134,7 @@ export function SettingsClient({
         )}
       </div>
 
-      <div className="p-6 rounded-2xl bg-white dark:bg-card/40 border border-black/10 dark:border-zinc-900 shadow-2xl backdrop-blur-2xl">
+      <div className="p-6 rounded-2xl bg-card dark:bg-card/40 border border-border dark:border-border shadow-2xl backdrop-blur-2xl">
         {activeTab === "general" && (
           <GeneralSettings initialData={userProfile} onSave={handleSaveGeneral} />
         )}

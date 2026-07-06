@@ -1,4 +1,5 @@
 import { config } from "@soustools/config";
+import { TwoToneHeader } from "@soustools/design-system";
 import { DecksListClient } from "./decks-list-client";
 
 export default async function TVSignageListPage() {
@@ -15,5 +16,10 @@ export default async function TVSignageListPage() {
     console.error("Failed to load decks:", err);
   }
 
-  return <DecksListClient initialDecks={decks} />;
+  return (
+    <div className="flex flex-col h-full">
+      <TwoToneHeader title="Digital Signage" />
+      <DecksListClient initialDecks={decks} />
+    </div>
+  );
 }

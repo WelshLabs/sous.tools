@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   traefik:
@@ -35,7 +35,7 @@ services:
     # Ports deliberately not exposed to the outside world
 
   api:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/soustools-api:latest
+    image: ghcr.io/conarwelsh/soustools-api:latest
     depends_on:
       - redis
     environment:

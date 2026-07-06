@@ -1,4 +1,5 @@
 import { config } from "@soustools/config";
+import { TwoToneHeader } from "@soustools/design-system";
 import { ItemsLedgerClient } from "./items-ledger-client";
 
 export default async function ItemsLedgerPage() {
@@ -15,5 +16,10 @@ export default async function ItemsLedgerPage() {
     console.error("Failed to load items ledger:", err);
   }
 
-  return <ItemsLedgerClient initialItems={items} />;
+  return (
+    <div className="flex flex-col h-full">
+      <TwoToneHeader title="Items Ledger" />
+      <ItemsLedgerClient initialItems={items} />
+    </div>
+  );
 }

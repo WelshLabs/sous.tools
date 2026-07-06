@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PinInput, Button } from "@soustools/design-system";
+import { PinInput, Button, TwoToneHeader } from "@soustools/design-system";
 import { Watch } from "lucide-react";
 import { supabase } from "../../../lib/supabase";
 
@@ -47,12 +47,9 @@ export default function TeamPortalPage() {
 
   return (
     <div className="flex flex-col gap-8 p-8 max-w-4xl mx-auto w-full h-full">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-white uppercase tracking-widest">Team Portal</h1>
-        <p className="text-muted-foreground font-medium">Manage your devices and preferences.</p>
-      </div>
+      <TwoToneHeader title="Team Management" />
 
-      <div className="bg-card border border-zinc-800 p-6 rounded-2xl flex flex-col gap-6 w-full max-w-md">
+      <div className="bg-card border border-border p-6 rounded-2xl flex flex-col gap-6 w-full max-w-md">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
             <Watch className="w-6 h-6" />
