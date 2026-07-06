@@ -29,6 +29,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
+    container_name: ollama
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
