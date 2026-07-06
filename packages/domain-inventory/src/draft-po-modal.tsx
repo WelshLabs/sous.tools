@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { WhiteboardItem, Vendor } from "@soustools/api-types";
 import { toast } from "sonner";
 

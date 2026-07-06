@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Plus, Trash, Edit2, Save, X } from "lucide-react";
 import type { Vendor } from "@soustools/api-types";
 import { TwoToneHeader } from "@soustools/design-system";

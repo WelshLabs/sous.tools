@@ -62,6 +62,7 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 *   **Phase VI (Global Theme Re-Architecture & Overflow Hotfix)**: Complete - Rewrote design system Light Mode CSS variables to pure white/stainless steel, reverted Primary Blue, and fixed base layout overflow in SidebarLayout.
 *   **Phase VI (Targeted UI Salvage)**: Complete - Aggressively purged hardcoded grey backgrounds, transparent blacks, and light text from apps/web inventory and admin route groups.
 *   **Phase VI (Mass Extinction & Architectural Salvage)**: Complete - Executed global programmatic purge of legacy utility classes, fixed Next.js hydration errors in root layout, and resolved flexbox overflow bounds.
+*   **Phase VI (Strict Semantic Theme Restoration)**: Complete - Restored HSL CSS variables, fixed true Neon Cyan brand color, and upgraded Card primitive to dynamic opacity glassmorphism.
 *   **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
 *   **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
 *   **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.

@@ -94,14 +94,14 @@
 /* ─── Base Theme — Light Fallback ──────────────────────────────────────────── */
 @layer base {
   :root {
-    --color-background:          #f8f9fa;  
-    --color-foreground:          #18181b;  
-    --color-card:                #ffffff;
-    --color-card-foreground:     #18181b;
-    --color-popover:             #ffffff;
-    --color-popover-foreground:  #18181b;
-    --color-primary:             #2563eb;  
-    --color-primary-foreground:  #ffffff;
+    --color-background:          210 24% 96%;  
+    --color-foreground:          215 16% 22%;  
+    --color-card:                0 0% 100%;
+    --color-card-foreground:     215 16% 22%;
+    --color-popover:             0 0% 100%;
+    --color-popover-foreground:  215 16% 22%;
+    --color-primary:             180 100% 50%;  
+    --color-primary-foreground:  0 0% 0%;
     --color-secondary:           #e4e4e7;  
     --color-secondary-foreground:#18181b;
     --color-muted:               #f4f4f5;  
@@ -117,14 +117,14 @@
 
   /* Dark — canonical Neon-Glass aesthetic */
   .dark {
-    --color-background:          #09090b;  
-    --color-foreground:          #f8fafc;  
-    --color-card:                #121212;  
-    --color-card-foreground:     #f8fafc;
-    --color-popover:             #121212;
-    --color-popover-foreground:  #f8fafc;
-    --color-primary:             #4cc9f0;  
-    --color-primary-foreground:  #09090b;
+    --color-background:          240 10% 4%;  
+    --color-foreground:          210 40% 98%;  
+    --color-card:                240 5% 10%;  
+    --color-card-foreground:     210 40% 98%;
+    --color-popover:             240 5% 10%;
+    --color-popover-foreground:  210 40% 98%;
+    --color-primary:             180 100% 50%;  
+    --color-primary-foreground:  0 0% 0%;
     --color-secondary:           #27272a;  
     --color-secondary-foreground:#f8fafc;
     --color-muted:               #121212;  
