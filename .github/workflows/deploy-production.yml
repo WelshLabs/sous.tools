@@ -73,5 +73,3 @@ jobs:
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker-compose pull
             docker-compose up -d
-            docker exec ollama ollama pull llama3.2-vision
-            docker exec ollama ollama pull nomic-embed-text
