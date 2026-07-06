@@ -1,0 +1,25 @@
+# The Smart Context Engine
+function ctx() {
+  pnpm run context:all
+  if grep -q "microsoft" /proc/version; then
+    explorer.exe .context/
+    cat .context/context-agents.md | clip.exe
+  else
+    xdg-open .context/
+    cat .context/context-agents.md | xclip -selection clipboard
+  fi
+  echo "Context generated, folder opened, and AGENTS context copied to clipboard!"
+}
+
+# Dev Workflow
+alias dev="pnpm dev"
+alias clean-dev="pnpm clean && pnpm dev"
+alias gship='git add . && git commit -m "chore: auto-sync update" && git push origin main'
+
+# Database
+alias db-nuke="npx supabase db reset"
+alias db-seed="npx supabase db reset && pnpm run seed"
+
+# WearOS ADB
+alias watch-connect="adb connect 192.168.x.x:5555"
+alias watch-push="adb install -r apps/wearos/app/build/outputs/apk/debug/app-debug.apk"

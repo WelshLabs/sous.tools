@@ -49,6 +49,34 @@ services:
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
     restart: unless-stopped
 
+  editor:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - PASSWORD=sousToolsPassword
+      - SUDO_PASSWORD=sousToolsPassword
+    volumes:
+      - /code/sous.tools:/config/workspace
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
+      - "traefik.http.routers.editor.entrypoints=websecure"
+      - "traefik.http.routers.editor.tls.certresolver=myresolver"
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: ollama-pull
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    command: >
+      sh -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision"
+
 volumes:
   letsencrypt:
   redis_data:
