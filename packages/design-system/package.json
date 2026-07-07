@@ -22,9 +22,12 @@
     "@soustools/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.5.2",
     "next": "^14.0.0",
+    "postcss": "^8.5.16",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tailwindcss": "^4.3.2",
     "typescript": "^5.3.3",
     "vitest": "^4.1.9"
   },

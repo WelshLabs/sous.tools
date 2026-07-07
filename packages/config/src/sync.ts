@@ -3,16 +3,23 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { InfisicalSDK } from "@infisical/sdk";
 import * as dotenv from "dotenv";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Vercel natively injects our secrets via the Infisical Integration.
 // Do not attempt to run this file-sync script in the cloud.
 if (process.env.VERCEL) {
-  console.log("Vercel environment detected. Skipping local Infisical sync.");
+  console.log(
+    "Vercel environment detected. Generating stub secrets file for tsc...",
+  );
+  require("fs").writeFileSync(
+    __dirname + "/secrets.ts",
+    "export const secrets = process.env as any;\nexport default process.env as any;\n",
+  );
   process.exit(0);
 }
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Load local .env file inside packages/config if present
 dotenv.config({ path: path.join(__dirname, "../.env") });

@@ -109,3 +109,4 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 - **Phase X (Docker Engine Upgrade & CSS Reversion)**: Active - Upgrading Node to 24 in apps/api/Dockerfile, removing static platform flags, and reverting packages/design-system/index.css to its original HSL palette.
 - **Phase X (The Semantic Purge)**: Active - Purging all hardcoded utility classes (Tailwind colors/borders) globally in UI components and replacing them with semantic tokens.
 - **Phase X (Targeted Semantic Purge & UI Injection)**: Active - Fixing Light Mode contrast, injecting TwoToneHeader into domain routes, and targeted purging of border and background anti-patterns.
+- **Phase X (Infisical Universal Auth & Docker Secrets)**: Active - Acknowledged Oracle Cloud (GHCR) as the production deployment target and updated docker-compose.yml to inject Infisical Machine Identity credentials into the API container to prevent boot crash loops.

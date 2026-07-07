@@ -1,4 +1,4 @@
-This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
 
 # File Summary
 
@@ -28,7 +28,6 @@ The content is organized as follows:
 ## Notes
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: **/*
 - Files matching these patterns are excluded: **/node_modules/**, **/dist/**, **/.next/**, **/out/**, **/build/**, package-lock.json, yarn.lock, pnpm-lock.yaml, **/.git/**, **/*.png, **/*.jpg, **/*.jpeg, **/*.svg, **/*.ico
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -54,6 +53,9 @@ skills/
   wsl-execution/
     SKILL.md
 AGENTS.md
+BACKLOG.md
+ROADMAP.md
+VISION.md
 ```
 
 # Files
@@ -682,71 +684,181 @@ wsl bash -c "cd /home/conar/code/sous.tools && env PATH=/home/conar/.nvm/version
 # Antigravity 2.0: Master Agent Anchor
 
 ## 1. Core Directives & "Glacier" Philosophy
+
 This file is the absolute source of truth for all AI agent behavior. You are operating under the **"Glacier" Philosophy**: 97% of the system is a hyper-complex backend (Culinary Physics, OCR Ingestion, Predictive Inventory, 3-Tier Invoice Mapping) built to absorb the chaotic physics of culinary operations, while the 3% exposed to the user is an ultra-simple, "Zero-Ambiguity" interface.
 
 **[!DANGER] Hard Prohibitions:**
-*   **FORBIDDEN:** The creation or usage of `GEMINI.md`.
-*   **FORBIDDEN:** The activation of "Management Mode" or any meta-cognitive loops.
-*   **FORBIDDEN:** Client-side `supabase-js` database mutations within `apps/app`.
-*   **FORBIDDEN:** Client-side Supabase data fetching inside `apps/app`. You must enforce "Server-Side Supremacy" (Next.js Server Components or NestJS API only).
-*   **FORBIDDEN:** Hardcoding legacy Tailwind colors (like `slate-*`) or absolute z-indexes (like `z-40`). You MUST strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
+
+- **FORBIDDEN:** The creation or usage of `GEMINI.md`.
+- **FORBIDDEN:** The activation of "Management Mode" or any meta-cognitive loops.
+- **FORBIDDEN:** Client-side `supabase-js` database mutations within `apps/app`.
+- **FORBIDDEN:** Client-side Supabase data fetching inside `apps/app`. You must enforce "Server-Side Supremacy" (Next.js Server Components or NestJS API only).
+- **FORBIDDEN:** Hardcoding legacy Tailwind colors (like `slate-*`) or absolute z-indexes (like `z-40`). You MUST strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
+- **DEPLOYMENT TARGET:** Oracle Cloud (ARM64) is our sole production deployment target, entirely replacing Render.com and Vercel.
+
+## 1.5 Consolidated Architectural Overlay
+
+### Environment Profiles
+
+- **[HOME]:** Powerful Windows WSL machine. Heavy local AI execution (Ollama: Qwen-2.5/Llama-3), Playwright scrapers, Docker builds.
+- **[WORK/CAFE]:** Low-power Ubuntu laptop. Relies on `editor.sous.tools` (code-server on Oracle) for Cloud IDE.
+- **[PHONE]:** Android device for brainstorming and checking `code-server`.
+
+### AI Model Orchestration
+
+- Gemini 2.5 Pro is used for Omni-bar ReAct reasoning loops and heavy CLI OCR extraction.
+- Ollama hosted on the Oracle Cloud server handles free production API invoice processing (`llama3.2-vision`), RAG vector embeddings (`nomic-embed-text`), and autonomous coding fallback (`qwen2.5-coder:3b`).
+
+### Infrastructure
+
+- Deploy via GitHub Actions (GHCR) to Oracle Cloud ARM64 using docker-compose + Traefik.
+- The stack includes a password-protected code-server IDE mounted to `/code/sous.tools`.
+
+### Styling
+
+- Tailwind v4 with the `@theme` directive in CSS.
+- No `tailwind.config` file is used.
+- Use strict Hex codes to allow native `color-mix()` opacity.
+
+### Context Rule
+
+Whenever an architectural decision is made, the AI MUST output a verbatim "Context Update Block" for the user to paste into `.agents/`.
 
 ## 2. The Mandatory 3-Tier Workflow
+
 Execute this sequence for every single task, without exception:
-1.  **Tier 1: Analysis & State Update:** Analyze the prompt. Update this `.agents/AGENTS.md` file to reflect planned changes *before* modifying application code.
+
+1.  **Tier 1: Analysis & State Update:** Analyze the prompt. Update this `.agents/AGENTS.md` file to reflect planned changes _before_ modifying application code.
 2.  **Tier 2: Specialized Execution:** Execute logic strictly using defined skills in `.agents/skills/`. Adhere exclusively to `@soustools/` workspace conventions.
 3.  **Tier 3: Validation & Documentation:** Verify implementation against engineering standards. Update Tenant, Dev, and Internal docs simultaneously (The Parallel Rule).
 
 ## 3. Engineering & Architecture Standards (The Skeleton App)
-*   **Server-Side Supremacy:** Next.js (`apps/app`) functions *strictly* as a routing and data orchestration layer. Server Components are the default. Client-side data fetching is heavily restricted; use NestJS (`apps/api`) for business logic and GraphQL/REST endpoints.
-*   **UI Modularity:** All UI presentation logic must utilize the `@soustools/ui` or specialized domain packages (e.g., `packages/domain-recipes`). Local UI implementations inside `apps/app` are "hacky" and strictly forbidden.
-*   **Neon-Glass UI:** Implement high-contrast Dark UI with Cyan (`#00FFFF`) accents for high-heat, high-light kitchen environments. Maximize Progressive Disclosure using Framer Motion. 
-*   **RLS Boundaries:** Every database table must be scoped to an `organization_id`. The admin schema and `/users` route are strictly restricted to System Superadmins.
+
+- **Server-Side Supremacy:** Next.js (`apps/app`) functions _strictly_ as a routing and data orchestration layer. Server Components are the default. Client-side data fetching is heavily restricted; use NestJS (`apps/api`) for business logic and GraphQL/REST endpoints.
+- **UI Modularity:** All UI presentation logic must utilize the `@soustools/ui` or specialized domain packages (e.g., `packages/domain-recipes`). Local UI implementations inside `apps/app` are "hacky" and strictly forbidden.
+- **Neon-Glass UI:** Implement high-contrast Dark UI with Cyan (`#00FFFF`) accents for high-heat, high-light kitchen environments. Maximize Progressive Disclosure using Framer Motion.
+- **RLS Boundaries:** Every database table must be scoped to an `organization_id`. The admin schema and `/users` route are strictly restricted to System Superadmins.
 
 ## 4. Omni-Bar ReAct Execution & Culinary Physics
+
 When the user issues a command via the Omni-bar or WearOS (e.g., "Record wastage: dropped one dozen eggs"), the agent must execute a Gemini ReAct Loop:
-*   **Thought:** [Reasoning about the culinary physics or technical intent, such as Vendor Wars pricing or Baker's Math scaling]
-*   **Action:** [Specific NestJS API tool invocation or data mutation]
-*   **Observation:** [Result of the action, continuing until final response]
+
+- **Thought:** [Reasoning about the culinary physics or technical intent, such as Vendor Wars pricing or Baker's Math scaling]
+- **Action:** [Specific NestJS API tool invocation or data mutation]
+- **Observation:** [Result of the action, continuing until final response]
 
 ## 5. Operational Protocols & Safety
-**[!IMPORTANT] CRITICAL: HALT-ON-ERROR RULE** 
+
+**[!IMPORTANT] CRITICAL: HALT-ON-ERROR RULE**
 Operational stability in a kitchen takes precedence over feature velocity. If a TypeScript, Database Migration, Runtime, or Playwright E2E error occurs, the agent MUST STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. You must request manual intervention.
 
 ## 6. Current Phase State
-*   **Phase II (Database Reset)**: Complete.
-*   **Phase II (Infrastructure Purge & Oracle Cloud Docker Parity)**: Complete.
-*   **Phase IV (AI Dependency Injection)**: Complete.
-*   **Phase IV (Culinary Brain CLI Pipeline)**: Complete.
-*   **Phase IV (Playwright Auto-Scroller Hotfix)**: Complete.
-*   **Phase IV (Playwright Persistent Auth Hotfix)**: Complete.
-*   **Phase IV (Playwright Stealth Bypass Hotfix)**: Complete.
-*   **Phase IV (Playwright Maximum Stealth Hotfix)**: Complete.
-*   **Phase IV (Firefox Stealth Pivot Hotfix)**: Complete.
-*   **Phase IV (Cookie Injection Bypass Hotfix)**: Complete.
-*   **Phase IV (Consumer Chrome DRM Bypass Hotfix)**: Complete.
-*   **Phase IV (CDP Host Hijacking / WSL2 Proxy)**: Complete.
-*   **Phase IV (2-Pass Ingestion + Stable Diffusion API)**: Complete.
-*   **Phase V (Polymorphic Schema Upgrade & Copyright Summarization)**: Complete.
-*   **Phase VI (Captive Portal Handshake & Legacy Purge)**: Active - Transitioning to "Chef-Proof" Smart Device Setup Protocol, deprecating manual cloud-init provisioning.
-*   **Phase VI (OAuth Device Authorization)**: Active - Scaffolding backend logic for pairing codes for WearOS and RPi devices.
-*   **Phase VI (WearOS Dirty Hands Voice Trigger)**: Active - Implementing Jetpack Compose voice UI, SpeechRecognizer intent, and API Handshake. Configured BuildConfig for dynamic API_URL.
-*   **Phase VI (Unified AI Triggers)**: Active - Unifying WearOS and Omni-bar AI triggers into a single context-aware POST /command NestJS endpoint in apps/api.
-*   **Phase VI (Interactive Omni-bar Integration)**: Active - Wiring OmniBar and GlobalAppBar to be fully interactive and context-aware, including voice dictation and floating FAB triggers.
-*   **Phase VI (WearOS Complications & Tiles)**: Active - Scaffolded MainComplicationService and KitchenCommandTileService/Activity.
-*   **Phase VI (WearOS Metrics Mocking)**: Active - Scaffolding real API endpoints returning mock data for WearOS complications.
-*   **Phase VI (WearOS Device Pairing)**: Active - Implementing production-ready OAuth Device Flow (Pairing Codes) using DataStore for secure JWT persistence.
-*   **Phase VI (Device Pairing 404 Routing Hotfix)**: Complete - Resolved 404 NotFoundException for `/pair/confirm` by correctly prefixing the route to `/api/devices/pair/confirm` in frontend clients.
-*   **Phase VI (Auth Header Hotfix)**: Complete - Resolved 401 UnauthorizedException by injecting the Supabase JWT token into the fetch request for `/api/devices/pair/confirm`.
-*   **Phase VI (Light Mode Zero-Tolerance Hotfix)**: Complete - Enforced Frosted Glass variables in pos-simulator globals.css and aggressively purged hardcoded classes from item cards.
-*   **Phase VI (Light Mode Prep Table Re-Architecture)**: Complete - Re-architected Light Mode variables to HSL values ("The Prep Table") and updated PosItemCard.tsx wrapper classes.
-*   **Phase VI (Global Theme Re-Architecture & Overflow Hotfix)**: Complete - Rewrote design system Light Mode CSS variables to pure white/stainless steel, reverted Primary Blue, and fixed base layout overflow in SidebarLayout.
-*   **Phase VI (Targeted UI Salvage)**: Complete - Aggressively purged hardcoded grey backgrounds, transparent blacks, and light text from apps/web inventory and admin route groups.
-*   **Phase VI (Mass Extinction & Architectural Salvage)**: Complete - Executed global programmatic purge of legacy utility classes, fixed Next.js hydration errors in root layout, and resolved flexbox overflow bounds.
-*   **Phase VI (Strict Semantic Theme Restoration)**: Complete - Restored HSL CSS variables, fixed true Neon Cyan brand color, and upgraded Card primitive to dynamic opacity glassmorphism.
-*   **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
-*   **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
-*   **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
-*   **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
-*   **Phase X (Infisical Universal Auth Migration)**: Active - Replacing deprecated Service Token with Universal Auth (Client ID/Secret) in GitHub Actions workflows.
+
+- **Phase II (Database Reset)**: Complete.
+- **Phase II (Infrastructure Purge & Oracle Cloud Docker Parity)**: Complete.
+- **Phase IV (AI Dependency Injection)**: Complete.
+- **Phase IV (Culinary Brain CLI Pipeline)**: Complete.
+- **Phase IV (Playwright Auto-Scroller Hotfix)**: Complete.
+- **Phase IV (Playwright Persistent Auth Hotfix)**: Complete.
+- **Phase IV (Playwright Stealth Bypass Hotfix)**: Complete.
+- **Phase IV (Playwright Maximum Stealth Hotfix)**: Complete.
+- **Phase IV (Firefox Stealth Pivot Hotfix)**: Complete.
+- **Phase IV (Cookie Injection Bypass Hotfix)**: Complete.
+- **Phase IV (Consumer Chrome DRM Bypass Hotfix)**: Complete.
+- **Phase IV (CDP Host Hijacking / WSL2 Proxy)**: Complete.
+- **Phase IV (2-Pass Ingestion + Stable Diffusion API)**: Complete.
+- **Phase V (Polymorphic Schema Upgrade & Copyright Summarization)**: Complete.
+- **Phase VI (Captive Portal Handshake & Legacy Purge)**: Active - Transitioning to "Chef-Proof" Smart Device Setup Protocol, deprecating manual cloud-init provisioning.
+- **Phase VI (OAuth Device Authorization)**: Active - Scaffolding backend logic for pairing codes for WearOS and RPi devices.
+- **Phase VI (WearOS Dirty Hands Voice Trigger)**: Active - Implementing Jetpack Compose voice UI, SpeechRecognizer intent, and API Handshake. Configured BuildConfig for dynamic API_URL.
+- **Phase VI (Unified AI Triggers)**: Active - Unifying WearOS and Omni-bar AI triggers into a single context-aware POST /command NestJS endpoint in apps/api.
+- **Phase VI (Interactive Omni-bar Integration)**: Active - Wiring OmniBar and GlobalAppBar to be fully interactive and context-aware, including voice dictation and floating FAB triggers.
+- **Phase VI (WearOS Complications & Tiles)**: Active - Scaffolded MainComplicationService and KitchenCommandTileService/Activity.
+- **Phase VI (WearOS Metrics Mocking)**: Active - Scaffolding real API endpoints returning mock data for WearOS complications.
+- **Phase VI (WearOS Device Pairing)**: Active - Implementing production-ready OAuth Device Flow (Pairing Codes) using DataStore for secure JWT persistence.
+- **Phase VI (Device Pairing 404 Routing Hotfix)**: Complete - Resolved 404 NotFoundException for `/pair/confirm` by correctly prefixing the route to `/api/devices/pair/confirm` in frontend clients.
+- **Phase VI (Auth Header Hotfix)**: Complete - Resolved 401 UnauthorizedException by injecting the Supabase JWT token into the fetch request for `/api/devices/pair/confirm`.
+- **Phase VI (Light Mode Zero-Tolerance Hotfix)**: Complete - Enforced Frosted Glass variables in pos-simulator globals.css and aggressively purged hardcoded classes from item cards.
+- **Phase VI (Light Mode Prep Table Re-Architecture)**: Complete - Re-architected Light Mode variables to HSL values ("The Prep Table") and updated PosItemCard.tsx wrapper classes.
+- **Phase VI (Global Theme Re-Architecture & Overflow Hotfix)**: Complete - Rewrote design system Light Mode CSS variables to pure white/stainless steel, reverted Primary Blue, and fixed base layout overflow in SidebarLayout.
+- **Phase VI (Targeted UI Salvage)**: Complete - Aggressively purged hardcoded grey backgrounds, transparent blacks, and light text from apps/web inventory and admin route groups.
+- **Phase VI (Mass Extinction & Architectural Salvage)**: Complete - Executed global programmatic purge of legacy utility classes, fixed Next.js hydration errors in root layout, and resolved flexbox overflow bounds.
+- **Phase VI (Strict Semantic Theme Restoration)**: Complete - Restored HSL CSS variables, fixed true Neon Cyan brand color, and upgraded Card primitive to dynamic opacity glassmorphism.
+- **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
+- **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
+- **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
+- **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
+- **Phase X (Infisical Universal Auth Migration)**: Active - Replacing deprecated Service Token with Universal Auth (Client ID/Secret) in GitHub Actions workflows.
+- **Phase X (Docker Engine Upgrade & CSS Reversion)**: Active - Upgrading Node to 24 in apps/api/Dockerfile, removing static platform flags, and reverting packages/design-system/index.css to its original HSL palette.
+- **Phase X (The Semantic Purge)**: Active - Purging all hardcoded utility classes (Tailwind colors/borders) globally in UI components and replacing them with semantic tokens.
+- **Phase X (Targeted Semantic Purge & UI Injection)**: Active - Fixing Light Mode contrast, injecting TwoToneHeader into domain routes, and targeted purging of border and background anti-patterns.
+- **Phase X (Infisical Universal Auth & Docker Secrets)**: Active - Acknowledged Oracle Cloud (GHCR) as the production deployment target and updated docker-compose.yml to inject Infisical Machine Identity credentials into the API container to prevent boot crash loops.
+````
+
+## File: BACKLOG.md
+````markdown
+# Backlog
+
+- Expand the ingestion pipeline to cover additional document and publication sources.
+- Add richer inventory heuristics for weather and event-driven planning.
+- Extend WearOS complication actions and automation flows.
+- Improve onboarding and self-hosted deployment automation.
+- Explore additional AI orchestration and fallback paths.
+````
+
+## File: ROADMAP.md
+````markdown
+# Roadmap
+
+## Active Priorities
+
+1. Finalize the CLI Playwright/Gemini DB schema imports.
+2. Wire NestJS API and BullMQ for invoice ingestion.
+3. Wire NestJS WearOS endpoints.
+
+## Future Work
+
+All lower-priority ideas and exploratory work should be recorded in the backlog rather than the roadmap.
+````
+
+## File: VISION.md
+````markdown
+# Vision: The Glacier Architecture
+
+The system is built around the "Glacier" philosophy: a vast, deeply layered backend engine that absorbs the chaotic physics of real kitchen operations while presenting a zero-ambiguity user experience.
+
+## Core Principles
+
+- The visible application surface is intentionally simple and explicit.
+- The engine beneath it is highly modular, resilient, and capable of handling OCR ingestion, predictive inventory, recipe scaling, invoice mapping, and device automation.
+- The experience should feel calm, trustworthy, and operationally precise even under pressure.
+
+## Neon-Glass UI
+
+The user experience follows a Neon-Glass design language:
+
+- High-contrast dark surfaces with cyan accents.
+- Strong visual hierarchy for fast operational decisions.
+- Progressive disclosure using motion and layered interfaces.
+- Designed for high-heat, high-light kitchen environments.
+
+## Mechanical Detail Preservation
+
+This repository is expected to support the following capabilities:
+
+- A CLI ingestion tool that uses Playwright headless scraping to navigate Google Books and other supported sources.
+- OCR extraction through a throttled Gemini-based pipeline, intentionally paced at 5-10 screenshots per minute to avoid quota exhaustion.
+- Fault-tolerant ingestion using a `processed.json` ledger.
+- Local Ollama-based embedding generation with `pgvector` and structured JSON export into a 3-tier "Rosetta Stone" Supabase FDA global database.
+- WearOS voice triggers and complications.
+- Framer Motion Omni-bar ReAct loops.
+- Baker's math scaling and heuristic inventory synchronization with weather and event data.
+
+## Execution Model
+
+The architecture is intended to be resilient to partial failures and environmental variance:
+
+- The ingestion pipeline should be idempotent.
+- The storage layer should preserve structured metadata and provenance.
+- The production stack should support autonomous fallback while maintaining auditability.
 ````

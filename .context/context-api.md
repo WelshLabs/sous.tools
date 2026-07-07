@@ -1,4 +1,4 @@
-This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
 
 # File Summary
 
@@ -28,7 +28,6 @@ The content is organized as follows:
 ## Notes
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: **/*
 - Files matching these patterns are excluded: **/node_modules/**, **/dist/**, **/.next/**, **/out/**, **/build/**, package-lock.json, yarn.lock, pnpm-lock.yaml, **/.git/**, **/*.png, **/*.jpg, **/*.jpeg, **/*.svg, **/*.ico, **/*.spec.ts
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -237,7 +236,7 @@ import { join } from 'path';
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      autoSchemaFile: process.env.NODE_ENV === 'production' ? true : join(process.cwd(), 'apps/api/src/schema.gql'),
       sortSchema: true,
       playground: true,
       introspection: true,
@@ -249,15 +248,16 @@ export class AppGraphQLModule {}
 
 ## File: health/health.controller.ts
 ```typescript
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get } from "@nestjs/common";
 
-@Controller('health')
+@Controller("health")
 export class HealthController {
   @Get()
   check() {
     return {
-      status: 'ok',
+      status: "ok",
       timestamp: new Date().toISOString(),
+      version: process.env.APP_VERSION || "dev-local",
     };
   }
 }
@@ -7027,7 +7027,7 @@ export class AppService {
   getHelloData(): HelloResponse {
     return {
       message: "Hello World from Sous Tools API!",
-      version: "1.0.0",
+      version: process.env.APP_VERSION || "dev-local",
       status: "healthy",
     };
   }

@@ -17,13 +17,16 @@ export class RecipesService {
       .order("title", { ascending: true });
 
     if (error) throw new Error(error.message);
-    return (data || []).map((row) => mapRecipeRow(row as Record<string, unknown>));
+    return (data || []).map((row) =>
+      mapRecipeRow(row as Record<string, unknown>),
+    );
   }
 
   async findOne(id: string): Promise<Recipe> {
     const { data, error } = await supabase
       .from("recipes")
-      .select(`
+      .select(
+        `
         *,
         vessel:vessel_profiles(*),
         recipe_ingredients (
@@ -31,7 +34,8 @@ export class RecipesService {
           items (*)
         ),
         recipe_tag_assignments(tag_id)
-      `)
+      `,
+      )
       .eq("id", id)
       .single();
 
@@ -41,8 +45,14 @@ export class RecipesService {
 
   async create(
     orgId: string,
-    recipePayload: Omit<Recipe, "id" | "organizationId" | "createdAt" | "recipeIngredients" | "vessel">,
-    ingredientsPayload: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
+    recipePayload: Omit<
+      Recipe,
+      "id" | "organizationId" | "createdAt" | "recipeIngredients" | "vessel"
+    >,
+    ingredientsPayload: Omit<
+      RecipeIngredient,
+      "id" | "recipeId" | "createdAt" | "masterIngredient"
+    >[],
   ): Promise<Recipe> {
     const { data: recipe, error: recipeError } = await supabase
       .from("recipes")
@@ -95,20 +105,34 @@ export class RecipesService {
   async update(
     id: string,
     recipePayload: Partial<Recipe>,
-    ingredientsPayload?: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
+    ingredientsPayload?: Omit<
+      RecipeIngredient,
+      "id" | "recipeId" | "createdAt" | "masterIngredient"
+    >[],
   ): Promise<Recipe> {
     const updateData: Record<string, unknown> = {};
-    if (recipePayload.title !== undefined) updateData.title = recipePayload.title;
-    if (recipePayload.yieldCount !== undefined) updateData.yield_count = recipePayload.yieldCount;
-    if (recipePayload.yieldUnit !== undefined) updateData.yield_unit = recipePayload.yieldUnit;
-    if (recipePayload.vesselId !== undefined) updateData.vessel_id = recipePayload.vesselId;
-    if (recipePayload.instructions !== undefined) updateData.instructions = recipePayload.instructions;
-    if (recipePayload.categoryId !== undefined) updateData.category_id = recipePayload.categoryId;
-    if (recipePayload.status !== undefined) updateData.status = recipePayload.status;
-    if (recipePayload.sourceBook !== undefined) updateData.source_book = recipePayload.sourceBook;
-    if (recipePayload.sourceAuthor !== undefined) updateData.source_author = recipePayload.sourceAuthor;
-    if (recipePayload.sourcePageStart !== undefined) updateData.source_page_start = recipePayload.sourcePageStart;
-    if (recipePayload.sourcePageEnd !== undefined) updateData.source_page_end = recipePayload.sourcePageEnd;
+    if (recipePayload.title !== undefined)
+      updateData.title = recipePayload.title;
+    if (recipePayload.yieldCount !== undefined)
+      updateData.yield_count = recipePayload.yieldCount;
+    if (recipePayload.yieldUnit !== undefined)
+      updateData.yield_unit = recipePayload.yieldUnit;
+    if (recipePayload.vesselId !== undefined)
+      updateData.vessel_id = recipePayload.vesselId;
+    if (recipePayload.instructions !== undefined)
+      updateData.instructions = recipePayload.instructions;
+    if (recipePayload.categoryId !== undefined)
+      updateData.category_id = recipePayload.categoryId;
+    if (recipePayload.status !== undefined)
+      updateData.status = recipePayload.status;
+    if (recipePayload.sourceBook !== undefined)
+      updateData.source_book = recipePayload.sourceBook;
+    if (recipePayload.sourceAuthor !== undefined)
+      updateData.source_author = recipePayload.sourceAuthor;
+    if (recipePayload.sourcePageStart !== undefined)
+      updateData.source_page_start = recipePayload.sourcePageStart;
+    if (recipePayload.sourcePageEnd !== undefined)
+      updateData.source_page_end = recipePayload.sourcePageEnd;
 
     const { error: recipeError } = await supabase
       .from("recipes")
@@ -150,10 +174,7 @@ export class RecipesService {
 
   async remove(id: string): Promise<Recipe> {
     const recipe = await this.findOne(id);
-    const { error } = await supabase
-      .from("recipes")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("recipes").delete().eq("id", id);
 
     if (error) throw new Error(error.message);
     return recipe;

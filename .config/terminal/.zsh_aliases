@@ -20,18 +20,57 @@ alias ohmyzsh="code ~/.oh-my-zsh"
 alias c="clear"
 alias ls="ls -lah"
 
+# Project Specific Aliases
+alias sous="cd ~/code/sous.tools"
+
 # Dev Workflow
-alias dev="pnpm dev"
-alias clean-dev="pnpm clean && pnpm dev"
+# alias dev="pnpm dev"
+# alias clean-dev="pnpm clean && pnpm dev"
 alias gship='git add . && git commit -m "chore: auto-sync update" && git push origin main'
 
+# The CLI Tool (Must remain local to WSL for textbook scraping)
+alias cli="pnpm --filter @soustools/cli run start"
+
 # Database
+# Supabase Local Management
+alias db-up="npx supabase start"
+alias db-stop="npx supabase stop"
 alias db-nuke="npx supabase db reset"
-alias db-seed="npx supabase db reset && pnpm run seed"
+alias db-types="npx supabase gen types typescript --local > packages/supabase/src/database.types.ts"
 
 # WearOS ADB
 alias watch-connect="adb connect 192.168.x.x:5555"
 alias watch-push="adb install -r apps/wearos/app/build/outputs/apk/debug/app-debug.apk"
-
 alias connect-watch="cmd.exe /c adb kill-server && adb kill-server && adb connect 192.168.1.9:42285"
-alias prod-server="cd ~/code/sous.tools && ssh -i ssh-key.key ubuntu@129.158.244.62"
+
+# SSH Aliases
+alias prod="cd ~/code/sous.tools && ssh -i ssh-key.key ubuntu@129.158.244.62"
+
+# Intelligent Docker Aliases
+alias dco='docker compose'
+alias nuke-docker='docker system prune -af'
+
+if [ "$USER" = "ubuntu" ]; then
+    # Oracle Cloud (Production) Environment
+    # Oracle Cloud (Production) Environment
+    alias dprod='sudo docker compose up -d'
+    alias dprod-rebuild='sudo docker compose pull && sudo docker compose up -d'
+    alias prodlogs='sudo docker compose logs -f'
+    
+    # Because Staging and Prod share the same Oracle server
+    alias apilogs='sudo docker compose logs -f api-prod'
+    alias traefiklogs='sudo docker compose logs -f traefik'
+    
+    # Fast container restarts without rebuilding
+    alias restart-api='sudo docker compose restart api-prod'
+else
+    # Local WSL Environment
+    alias dev='docker compose -f docker-compose.dev.yml up -d --build'
+    alias ddown='docker compose -f docker-compose.dev.yml down'
+    alias dlogs='docker compose -f docker-compose.dev.yml logs'
+    alias apilogs='docker compose -f docker-compose.dev.yml logs -f api'
+    alias weblogs='docker compose -f docker-compose.dev.yml logs -f web'
+    
+    # Ollama Local Shortcuts
+    alias ollama-logs='docker compose -f docker-compose.dev.yml logs -f ollama'
+fi

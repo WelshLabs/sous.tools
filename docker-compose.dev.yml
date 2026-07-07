@@ -1,28 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  api:
-    build: 
-      context: .
-      dockerfile: apps/api/Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - REDIS_URL=redis://redis:6379
-
-  web:
-    build:
-      context: .
-      dockerfile: apps/app/Dockerfile
-    ports:
-      - "3001:3000"
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://api:3000
-    depends_on:
-      - api
-
   redis:
     image: redis:alpine
     command: redis-server --appendonly yes
@@ -30,13 +8,105 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - redis
+    ports:
+      - "6001:6001"
+    environment:
+      - NODE_ENV=development
+      - VISION_PROVIDER=ollama
+      - OLLAMA_URL=http://ollama:11434
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - CI=true
+    volumes:
+      - ./:/app
+    command: sh -c "cd apps/api && npm run dev"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:6001
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - CI=true
+      - API_BASE_URL=http://api:6001
+    depends_on:
+      - api
+    volumes:
+      - ./:/app
+    command: sh -c "cd apps/web && npm run dev"
+    restart: unless-stopped
+
+  pos-simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3002:5009"
+    environment:
+      - NODE_ENV=development
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - CI=true
+    depends_on:
+      - api
+    volumes:
+      - ./:/app
+    command: sh -c "cd apps/pos-simulator && npm run dev"
+    restart: unless-stopped
+
+  setup-portal:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - CI=true
+    depends_on:
+      - api
+    volumes:
+      - ./:/app
+    command: sh -c "cd apps/setup-portal && npm run dev"
+    restart: unless-stopped
 
   ollama:
     image: ollama/ollama:latest
+    container_name: ollama
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    entrypoint: /bin/sh
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    command: -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision"
+    depends_on:
+      - ollama
 
 volumes:
   redis_data:

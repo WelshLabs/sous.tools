@@ -3,7 +3,6 @@
     "filePath": "codebase-snapshot.md",
     "style": "markdown"
   },
-  "include": ["**/*"],
   "ignore": {
     "customPatterns": [
       "**/node_modules/**",

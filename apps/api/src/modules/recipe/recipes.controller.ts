@@ -17,7 +17,7 @@ export class RecipesController {
 
   constructor(
     private readonly recipesService: RecipesService,
-    private readonly recipeCostService: RecipeCostService
+    private readonly recipeCostService: RecipeCostService,
   ) {}
 
   @Get()
@@ -64,11 +64,23 @@ export class RecipesController {
 
   @Post()
   async create(
-    @Body("recipe") recipe: Omit<Recipe, "id" | "organizationId" | "createdAt" | "recipeIngredients" | "vessel">,
-    @Body("recipeIngredients") recipeIngredients: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
+    @Body("recipe")
+    recipe: Omit<
+      Recipe,
+      "id" | "organizationId" | "createdAt" | "recipeIngredients" | "vessel"
+    >,
+    @Body("recipeIngredients")
+    recipeIngredients: Omit<
+      RecipeIngredient,
+      "id" | "recipeId" | "createdAt" | "masterIngredient"
+    >[],
   ): Promise<ApiResponse<Recipe>> {
     try {
-      const data = await this.recipesService.create(this.defaultOrgId, recipe, recipeIngredients);
+      const data = await this.recipesService.create(
+        this.defaultOrgId,
+        recipe,
+        recipeIngredients,
+      );
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
@@ -83,10 +95,18 @@ export class RecipesController {
   async update(
     @Param("id") id: string,
     @Body("recipe") recipe: Partial<Recipe>,
-    @Body("recipeIngredients") recipeIngredients?: Omit<RecipeIngredient, "id" | "recipeId" | "createdAt" | "masterIngredient">[]
+    @Body("recipeIngredients")
+    recipeIngredients?: Omit<
+      RecipeIngredient,
+      "id" | "recipeId" | "createdAt" | "masterIngredient"
+    >[],
   ): Promise<ApiResponse<Recipe>> {
     try {
-      const data = await this.recipesService.update(id, recipe, recipeIngredients);
+      const data = await this.recipesService.update(
+        id,
+        recipe,
+        recipeIngredients,
+      );
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
