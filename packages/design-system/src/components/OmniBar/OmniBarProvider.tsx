@@ -8,7 +8,7 @@ import { createBrowserClient } from "@soustools/supabase";
 import { io, Socket } from "socket.io-client";
 import { OmniMessage } from "@soustools/api-types";
 
-export function OmniBarContainer() {
+export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
   
@@ -26,7 +26,6 @@ export function OmniBarContainer() {
   const [isListening, setIsListening] = useState(false);
   const [inputText, setInputText] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [volume, setVolume] = useState(0);
   const [socket, setSocket] = useState<Socket | null>(null);
 
   // Initialize WebSocket connection
@@ -88,29 +87,6 @@ export function OmniBarContainer() {
     }
   }, [isFocusPage, setIsOpen]);
 
-  // Scaffold for Web Audio API to detect volume (for pulsing border)
-  useEffect(() => {
-    let animationFrameId: number;
-
-    if (isListening) {
-      // Dummy volume pulse for visual scaffold
-      let t = 0;
-      const pulse = () => {
-        t += 0.05;
-        // Simple sine wave mapping to 0-1
-        setVolume((Math.sin(t) + 1) / 2);
-        animationFrameId = requestAnimationFrame(pulse);
-      };
-      pulse();
-    } else {
-      setVolume(0);
-    }
-
-    return () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    };
-  }, [isListening]);
-
   const handleToggle = () => {
     if (!isFocusPage) {
       setIsOpen(!isOpen);
@@ -119,11 +95,6 @@ export function OmniBarContainer() {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
-    if (e.target.value === "") {
-      setIsListening(true);
-    } else {
-      setIsListening(false);
-    }
   };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -220,19 +191,21 @@ export function OmniBarContainer() {
   }, [isOpen, isFocusPage, setIsOpen]);
 
   return (
-    <OmniBarPresentation
-      isOpen={isOpen}
-      isListening={isListening}
-      isProcessing={isProcessing}
-      chatHistory={chatHistory}
-      errorMessage={errorMessage}
-      inputText={inputText}
-      volume={volume}
-      isFocusPage={isFocusPage}
-      onToggle={handleToggle}
-      onChange={handleChange}
-      onKeyDown={handleKeyDown}
-      onMicClick={handleMicClick}
-    />
+    <>
+      {children}
+      <OmniBarPresentation
+        isOpen={isOpen}
+        isListening={isListening}
+        isProcessing={isProcessing}
+        chatHistory={chatHistory}
+        errorMessage={errorMessage}
+        inputText={inputText}
+        isFocusPage={isFocusPage}
+        onToggle={handleToggle}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onMicClick={handleMicClick}
+      />
+    </>
   );
 }

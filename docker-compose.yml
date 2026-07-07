@@ -73,6 +73,7 @@ services:
       - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api.service=api"
       - "traefik.http.services.api.loadbalancer.server.port=6001"
     restart: unless-stopped
 
@@ -98,30 +99,35 @@ services:
       - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
       - "traefik.http.routers.editor.entrypoints=websecure"
       - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.editor.service=editor"
       - "traefik.http.services.editor.loadbalancer.server.port=8443"
 
       # 2. Dev Web App
       - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
       - "traefik.http.routers.dev-web.entrypoints=websecure"
       - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-web.service=dev-web"
       - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
 
       # 3. Dev API
       - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
       - "traefik.http.routers.dev-api.entrypoints=websecure"
       - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
+      - "traefik.http.routers.dev-api.service=dev-api"
+      - "traefik.http.services.dev-api.loadbalancer.server.port=6001"
 
       # 4. Dev POS Simulator
       - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
       - "traefik.http.routers.dev-pos.entrypoints=websecure"
       - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-pos.service=dev-pos"
       - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
 
       # 5. Dev Setup Portal
       - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
       - "traefik.http.routers.dev-setup.entrypoints=websecure"
       - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-setup.service=dev-setup"
       - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
 
   ollama-pull:

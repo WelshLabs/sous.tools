@@ -1,5 +1,8 @@
 import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
+import { CacheModule } from "@nestjs/cache-manager";
+// @ts-expect-error cache-manager-ioredis is missing types
+import * as redisStore from "cache-manager-ioredis";
 import { config } from "@soustools/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
@@ -26,6 +29,12 @@ import { HealthModule } from "./health/health.module";
  */
 @Module({
   imports: [
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: config.REDIS_HOST === "localhost" ? "127.0.0.1" : config.REDIS_HOST,
+      port: config.REDIS_PORT,
+    }),
     BullModule.forRoot({
       connection: {
         host:
