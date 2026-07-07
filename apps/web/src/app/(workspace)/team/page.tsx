@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { PinInput, Button, TwoToneHeader } from "@soustools/design-system";
 import { Watch } from "lucide-react";
+import { createBrowserClient } from "@soustools/supabase";
 
 export default function TeamPortalPage() {
   const [pairingCode, setPairingCode] = useState("");
@@ -19,7 +20,8 @@ export default function TeamPortalPage() {
     setMessage("Pairing smartwatch...");
 
     try {
-      //       const { data: { session } } = await supabase.auth.getSession();
+      const supabase = createBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
 
       const response = await fetch("/api/devices/pair/confirm", {
         method: "POST",

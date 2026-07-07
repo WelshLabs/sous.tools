@@ -6,17 +6,24 @@ import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
 import { createBrowserClient } from "@soustools/supabase";
 import { io, Socket } from "socket.io-client";
+import { OmniMessage } from "@soustools/api-types";
 
 export function OmniBarContainer() {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
-  const { contextPayload } = useOmnibarContext();
+  
+  const { 
+    contextPayload, 
+    chatHistory, 
+    isOpen, 
+    isProcessing, 
+    setIsOpen, 
+    setIsProcessing, 
+    addMessage,
+    setChatHistory 
+  } = useOmnibarContext();
 
-  // If we are on the OS focus page, it should always be expanded.
-  // Otherwise, it can be toggled via the circular button in the app bar.
-  const [isExpanded, setIsExpanded] = useState(isFocusPage);
   const [isListening, setIsListening] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [inputText, setInputText] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [volume, setVolume] = useState(0);
@@ -31,36 +38,31 @@ export function OmniBarContainer() {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        console.log("NEXT_PU", process.env.NEXT_PUBLIC_API_URL, session);
+        
         if (!session?.access_token) return;
 
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
-        const socketUrl = apiUrl.startsWith("http")
-          ? apiUrl
-          : window.location.origin;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
+        const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
 
         newSocket = io(socketUrl + "/commands", {
           auth: { token: session.access_token },
           transports: ["websocket"],
         });
 
+        // Listen for standard chat stream
+        newSocket.on("chat_message", (message: OmniMessage) => {
+          addMessage(message);
+          if (message.role === 'model') {
+            setIsProcessing(false);
+          }
+        });
+
+        // Listen for explicit errors
         newSocket.on("command_status", (data: any) => {
           if (data.state === "error") {
             setErrorMessage(data.message);
-            setIsSubmitting(false);
+            setIsProcessing(false);
             setIsListening(false);
-          } else if (data.state === "success") {
-            setInputText(data.message);
-            setTimeout(() => {
-              setInputText("");
-              setIsListening(false);
-              setIsSubmitting(false);
-              if (!isFocusPage) setIsExpanded(false);
-            }, 2000);
-          } else {
-            // Checkpoint event updates the text box
-            setInputText(data.message);
           }
         });
 
@@ -75,16 +77,16 @@ export function OmniBarContainer() {
     return () => {
       if (newSocket) newSocket.disconnect();
     };
-  }, [isFocusPage]);
+  }, [addMessage, setIsProcessing]);
 
-  // Sync expanded state if user navigates to/from /os
+  // Sync expanded state if user navigates to/from /home
   useEffect(() => {
     if (isFocusPage) {
-      setIsExpanded(true);
+      setIsOpen(true);
     } else {
-      setIsExpanded(false);
+      setIsOpen(false);
     }
-  }, [isFocusPage]);
+  }, [isFocusPage, setIsOpen]);
 
   // Scaffold for Web Audio API to detect volume (for pulsing border)
   useEffect(() => {
@@ -110,17 +112,13 @@ export function OmniBarContainer() {
   }, [isListening]);
 
   const handleToggle = () => {
-    // If we are on the OS page, clicking outside shouldn't collapse it
-    // because it's the main interface.
     if (!isFocusPage) {
-      setIsExpanded((prev) => !prev);
+      setIsOpen(!isOpen);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
-
-    // Auto-listen trigger scaffold (if user deletes all text)
     if (e.target.value === "") {
       setIsListening(true);
     } else {
@@ -132,23 +130,35 @@ export function OmniBarContainer() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
 
-      if (isSubmitting) return;
+      if (isProcessing) return;
 
       if (inputText.trim()) {
-        console.log("Submitting via WebSocket:", inputText);
-        setIsSubmitting(true);
+        const textToSubmit = inputText.trim();
+        setInputText("");
+        setIsProcessing(true);
         setErrorMessage(null);
+        setIsOpen(true);
+
+        const newUserMessage: OmniMessage = {
+          id: crypto.randomUUID(),
+          role: 'user',
+          content: textToSubmit,
+          timestamp: new Date()
+        };
+
+        const updatedHistory = [...chatHistory, newUserMessage];
+        setChatHistory(updatedHistory);
 
         try {
           if (!socket || !socket.connected) {
             setErrorMessage("WebSocket not connected. Attempting reconnect...");
             socket?.connect();
-            setIsSubmitting(false);
+            setIsProcessing(false);
             return;
           }
 
           socket.emit("executeCommand", {
-            command: inputText.trim(),
+            chatHistory: updatedHistory,
             source: "omnibar",
             path: pathname,
             context: contextPayload,
@@ -156,12 +166,12 @@ export function OmniBarContainer() {
         } catch (error: any) {
           console.error("Failed to emit command:", error);
           setErrorMessage(error.message || "Network error occurred.");
-          setIsSubmitting(false);
+          setIsProcessing(false);
         }
       }
     } else if (e.key === "Escape") {
       e.preventDefault();
-      if (!isFocusPage) setIsExpanded(false);
+      if (!isFocusPage) setIsOpen(false);
     }
   };
 
@@ -201,19 +211,20 @@ export function OmniBarContainer() {
   // Global escape listener for when textarea is not focused
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isExpanded && !isFocusPage) {
-        setIsExpanded(false);
+      if (e.key === "Escape" && isOpen && !isFocusPage) {
+        setIsOpen(false);
       }
     };
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [isExpanded, isFocusPage]);
+  }, [isOpen, isFocusPage, setIsOpen]);
 
   return (
     <OmniBarPresentation
-      isExpanded={isExpanded}
+      isOpen={isOpen}
       isListening={isListening}
-      isSubmitting={isSubmitting}
+      isProcessing={isProcessing}
+      chatHistory={chatHistory}
       errorMessage={errorMessage}
       inputText={inputText}
       volume={volume}

@@ -39,9 +39,29 @@ services:
     # Ports deliberately not exposed to the outside world
 
   api:
-    image: ghcr.io/conarwelsh/soustools-api:latest
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     depends_on:
       - redis
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:6001/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
     environment:
       # - VISION_PROVIDER=ollama
       # - OLLAMA_HOST=http://ollama:11434

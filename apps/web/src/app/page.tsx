@@ -3,19 +3,19 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@soustools/design-system";
 import { useRouter } from "next/navigation";
-import { Session } from "@supabase/supabase-js";
+
 import { ShieldCheck, CloudLightning, Download } from "lucide-react";
 import { PrimaryLogo } from "@soustools/design-system";
 
 export default function HomePage() {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchSession = async () => {
 //       const { data } = await supabase.auth.getSession();
-//       setSession(data.session);
+      setSession(null);
       setLoading(false);
     };
     fetchSession();

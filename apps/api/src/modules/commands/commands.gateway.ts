@@ -8,7 +8,7 @@ import { UseGuards, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { WsSupabaseAuthGuard } from '../../lib/ws-supabase-auth.guard';
 import { CommandsService } from './commands.service';
-import { OmnibarCommandPayload, OmnibarCommandPayloadSchema } from '@soustools/api-types';
+import { OmnibarCommandPayload, OmnibarCommandPayloadSchema, OmniMessage } from '@soustools/api-types';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 
 @WebSocketGateway({ namespace: '/commands', cors: { origin: '*' } })
@@ -23,28 +23,20 @@ export class CommandsGateway {
     @MessageBody(new ZodValidationPipe(OmnibarCommandPayloadSchema)) payload: OmnibarCommandPayload,
     @ConnectedSocket() client: Socket & { user?: any },
   ) {
-    this.logger.log(`Received command via WebSocket: ${payload.command}`);
+    this.logger.log(`Received chat history via WebSocket (${payload.chatHistory?.length || 0} messages)`);
     
     // orgId from authenticated user
     const orgId = client.user?.user_metadata?.organization_id || "d0000000-0000-0000-0000-000000000000";
 
-    // Emitter callback
-    const emitState = (state: string, message: string) => {
-      client.emit('command_status', { state, message });
+    // Emitter callback for real-time ReAct loop
+    const emitMessage = (message: OmniMessage) => {
+      client.emit('chat_message', message);
     };
 
     try {
-      emitState('processing_nlp', 'Authenticating...');
-      
-      const result = await this.commandsService.handleCommand(payload, orgId, emitState);
-      
-      client.emit('command_status', {
-        state: result.action === 'ERROR' ? 'error' : 'success',
-        message: result.message,
-        data: result,
-      });
+      await this.commandsService.handleCommand(payload, orgId, emitMessage);
     } catch (error: any) {
-      this.logger.error('Error executing command', error);
+      this.logger.error('Error processing command stream', error);
       client.emit('command_status', {
         state: 'error',
         message: error.message || 'An unexpected error occurred while executing the command',

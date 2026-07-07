@@ -46,9 +46,6 @@ export function ModifierGroupBlock({
         
         if (grpData) {
           setGroup(grpData);
-          if (onGroupLoaded) {
-            onGroupLoaded(grpData.name);
-          }
         }
 
         // Fetch options linked to this group
