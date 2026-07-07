@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node ../../packages/config/dist/cli.js next dev -p 5001 --webpack",
+    "dev": "node ../../packages/config/dist/cli.js next dev -p 3000 --webpack",
     "build": "node ../../packages/config/dist/cli.js next build --webpack",
     "start": "node ../../packages/config/dist/cli.js next start",
     "lint": "next lint",

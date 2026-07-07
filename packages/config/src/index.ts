@@ -32,29 +32,47 @@ const isMockEnv =
   String(process.env.INFISICAL_MOCK).toLowerCase() === "true" ||
   process.env.NODE_ENV === "test" ||
   process.env.VITEST === "true" ||
-  (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").includes("placeholder-project.supabase.co");
+  (
+    process.env.SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    ""
+  ).includes("placeholder-project.supabase.co");
 
 export const config: Config = Object.freeze({
-  SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co",
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key",
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-service-role",
+  SUPABASE_URL:
+    process.env.SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    "https://placeholder-project.supabase.co",
+  SUPABASE_ANON_KEY:
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    "placeholder-anon-key",
+  SUPABASE_SERVICE_ROLE_KEY:
+    process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-service-role",
   IS_MOCK_ENV: isMockEnv,
   IS_DEVELOPMENT: isDevelopment,
-  SQUARE_CLIENT_ID: process.env.SQUARE_CLIENT_ID || "sandbox-sq0idb-placeholder",
-  SQUARE_CLIENT_SECRET: process.env.SQUARE_CLIENT_SECRET || "sandbox-sq0csp-placeholder",
+  SQUARE_CLIENT_ID:
+    process.env.SQUARE_CLIENT_ID || "sandbox-sq0idb-placeholder",
+  SQUARE_CLIENT_SECRET:
+    process.env.SQUARE_CLIENT_SECRET || "sandbox-sq0csp-placeholder",
   SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT || "sandbox",
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "google-client-id-placeholder",
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder",
+  GOOGLE_CLIENT_ID:
+    process.env.GOOGLE_CLIENT_ID || "google-client-id-placeholder",
+  GOOGLE_CLIENT_SECRET:
+    process.env.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder",
   API_BASE_URL: process.env.API_BASE_URL || "http://localhost:6001",
   APP_BASE_URL: process.env.APP_BASE_URL || "http://localhost:5001",
-  PRODUCTION_SQUARE_ACCESS_TOKEN: process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || "prod-square-token-placeholder",
-  PORT: Number(process.env.PORT || 6001),
+  PRODUCTION_SQUARE_ACCESS_TOKEN:
+    process.env.PRODUCTION_SQUARE_ACCESS_TOKEN ||
+    "prod-square-token-placeholder",
+  PORT: Number(process.env.PORT || 3001),
   REDIS_HOST: process.env.REDIS_HOST || "127.0.0.1",
   REDIS_PORT: Number(process.env.REDIS_PORT || 6379),
   SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || "",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "gemini-api-key-placeholder",
   TV_BASE_URL: process.env.NEXT_PUBLIC_TV_URL || "http://localhost:5003",
-  NEW_RELIC_LICENSE_KEY: process.env.NEW_RELIC_LICENSE_KEY || "new-relic-license-key-placeholder",
+  NEW_RELIC_LICENSE_KEY:
+    process.env.NEW_RELIC_LICENSE_KEY || "new-relic-license-key-placeholder",
   NEW_RELIC_ENABLED:
     !isMockEnv &&
     !isDevelopment &&

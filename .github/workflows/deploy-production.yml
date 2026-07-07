@@ -1,75 +1,27 @@
-name: Deploy Production API to Oracle Cloud
+name: Deploy Production API to Oracle Cloud Native
 
 on:
   push:
     branches:
       - main
-    # paths:
-    #   - 'apps/api/**'
-    #   - 'docker-compose.yml'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Fetch Infisical Secrets
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: "prod"
-          project-slug: "sous-tools-1cd-a"
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/api/Dockerfile
-          platforms: linux/arm64
-          push: true
-          build-args: |
-            APP_VERSION=${{ github.sha }}
-          tags: ghcr.io/${{ github.repository_owner }}/soustools-api:latest
-
-      - name: Copy docker-compose to Oracle Cloud
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.ORACLE_HOST }}
-          username: ubuntu
-          key: ${{ env.ORACLE_SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "/home/ubuntu"
-
-      - name: Deploy via SSH
+      - name: Trigger Native Hardware Build via SSH
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          SIGNAGE_GITHUB_PAT: ${{ env.SIGNAGE_GITHUB_PAT }}
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
         with:
           host: ${{ env.ORACLE_HOST }}
           username: ubuntu
           key: ${{ env.ORACLE_SSH_KEY }}
-          envs: SIGNAGE_GITHUB_PAT,GITHUB_REPOSITORY_OWNER
           script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            sudo docker compose pull
-            sudo docker compose up -d
+            # 1. Navigate to your actual production codebase on the server
+            cd /home/ubuntu/prod.sous.tools
+
+            # 2. Pull the latest code you just pushed to GitHub
+            git pull origin main
+
+            # 3. Make sure the script is executable and run it!
+            chmod +x deploy.sh
+            ./deploy.sh

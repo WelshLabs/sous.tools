@@ -21,6 +21,9 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "letsencrypt:/letsencrypt"
     restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
 
   redis:
     image: redis:alpine
@@ -67,12 +70,41 @@ services:
     volumes:
       - /home/ubuntu/code/sous.tools:/config/workspace
     restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
     labels:
       - "traefik.enable=true"
+
+      # 1. The Code Server UI
       - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
       - "traefik.http.routers.editor.entrypoints=websecure"
       - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
       - "traefik.http.services.editor.loadbalancer.server.port=8443"
+
+      # 2. Dev Web App
+      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
+      - "traefik.http.routers.dev-web.entrypoints=websecure"
+      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
+
+      # 3. Dev API
+      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
+      - "traefik.http.routers.dev-api.entrypoints=websecure"
+      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
+
+      # 4. Dev POS Simulator
+      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
+      - "traefik.http.routers.dev-pos.entrypoints=websecure"
+      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
+
+      # 5. Dev Setup Portal
+      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
+      - "traefik.http.routers.dev-setup.entrypoints=websecure"
+      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
 
   ollama-pull:
     image: ollama/ollama:latest
@@ -90,3 +122,7 @@ volumes:
   letsencrypt:
   redis_data:
   ollama_data:
+
+networks:
+  traefik_public:
+    external: true
