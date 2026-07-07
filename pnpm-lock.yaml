@@ -358,9 +358,6 @@ importers:
       '@soustools/api-types':
         specifier: workspace:*
         version: link:../../packages/api-types
-      '@soustools/config':
-        specifier: workspace:*
-        version: link:../../packages/config
       '@soustools/design-system':
         specifier: workspace:*
         version: link:../../packages/design-system
@@ -422,6 +419,9 @@ importers:
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.60.0
+      '@soustools/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@soustools/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig

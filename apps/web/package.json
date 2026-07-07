@@ -14,7 +14,6 @@
     "@hookform/resolvers": "^3.3.4",
     "@serwist/next": "^9.5.11",
     "@soustools/api-types": "workspace:*",
-    "@soustools/config": "workspace:*",
     "@soustools/design-system": "workspace:*",
     "@soustools/domain-inventory": "workspace:*",
     "@soustools/domain-recipes": "workspace:*",
@@ -37,6 +36,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
+    "@soustools/config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.11.0",
