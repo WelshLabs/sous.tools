@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 5001 --webpack",
-    "build": "next build --webpack",
-    "start": "next start",
+    "dev": "sous-config next dev -p 5001 --webpack",
+    "build": "sous-config next build --webpack",
+    "start": "sous-config next start",
     "lint": "next lint",
     "test:e2e": "playwright test"
   },
@@ -21,9 +21,6 @@
     "@soustools/domain-settings": "workspace:*",
     "@soustools/domain-signage": "workspace:*",
     "@soustools/logger": "workspace:*",
-    "@soustools/supabase": "workspace:*",
-
-    "@supabase/supabase-js": "^2.43.0",
     "@vercel/analytics": "^1.2.2",
     "@vercel/speed-insights": "^1.0.10",
     "framer-motion": "^12.42.2",

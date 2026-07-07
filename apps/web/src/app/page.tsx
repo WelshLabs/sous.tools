@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
 import { Button } from "@soustools/design-system";
 import { useRouter } from "next/navigation";
 import { Session } from "@supabase/supabase-js";
@@ -15,7 +14,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
+//       const { data } = await supabase.auth.getSession();
       setSession(data.session);
       setLoading(false);
     };

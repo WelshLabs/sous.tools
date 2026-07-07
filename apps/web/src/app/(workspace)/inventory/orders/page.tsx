@@ -5,11 +5,13 @@ export default async function OrdersPage() {
   const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
   let vendors = [];
   let whiteboardItems = [];
+  let purchaseOrders = [];
 
   try {
-    const [vendorsRes, whiteboardRes] = await Promise.all([
+    const [vendorsRes, whiteboardRes, poRes] = await Promise.all([
       fetch(`${baseUrl}/vendors`, { cache: "no-store" }),
       fetch(`${baseUrl}/whiteboard`, { cache: "no-store" }),
+      fetch(`${baseUrl}/purchase-orders`, { cache: "no-store" }),
     ]);
 
     if (vendorsRes.ok) {
@@ -21,9 +23,14 @@ export default async function OrdersPage() {
       const wData = await whiteboardRes.json();
       whiteboardItems = wData.data || [];
     }
+
+    if (poRes.ok) {
+      const pData = await poRes.json();
+      purchaseOrders = pData.data || [];
+    }
   } catch (err) {
     console.error("Failed to load orders data:", err);
   }
 
-  return <OrdersClient initialVendors={vendors} initialWhiteboardItems={whiteboardItems} />;
+  return <OrdersClient initialVendors={vendors} initialWhiteboardItems={whiteboardItems} initialPurchaseOrders={purchaseOrders} />;
 }

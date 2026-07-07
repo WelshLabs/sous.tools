@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { Vendor } from "@soustools/api-types";
 import { toast } from "sonner";
 
@@ -14,7 +13,7 @@ export default function VendorsPage() {
   const [phone, setPhone] = useState("");
 
   const fetchVendors = async () => {
-    const { data } = await supabase.from("vendors").select("*").order("name");
+//     const { data } = await supabase.from("vendors").select("*").order("name");
     if (data) setVendors(data);
     setLoading(false);
   };
@@ -25,9 +24,9 @@ export default function VendorsPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: orgData } = await supabase.from("organizations").select("id").single();
+//     const { data: orgData } = await supabase.from("organizations").select("id").single();
     
-    const { error } = await supabase.from("vendors").insert({
+//     const { error } = await supabase.from("vendors").insert({
       organization_id: orgData?.id,
       name,
       order_method: orderMethod,
@@ -47,7 +46,7 @@ export default function VendorsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("vendors").delete().eq("id", id);
+//     await supabase.from("vendors").delete().eq("id", id);
     fetchVendors();
   };
 

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "../../../lib/supabase";
 import { Search, Edit3, X, Save, Image, DollarSign } from "lucide-react";
 import { Button } from "@soustools/design-system";
 import { toast } from "sonner";

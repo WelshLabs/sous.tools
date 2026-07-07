@@ -5,8 +5,10 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "sous-config": "./dist/cli.js"
+  },
   "scripts": {
-    "secrets:sync": "tsx src/sync.ts && tsc",
     "build": "tsc"
   },
   "dependencies": {

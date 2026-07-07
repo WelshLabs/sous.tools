@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { MenuItemStyles, PosItem } from "@soustools/api-types";
-import { supabase } from "../../../../lib/supabase";
 import { resolveItemState, buildTitleStyle, buildPriceStyle } from "../menu-item-style-utils";
 
 interface ModifierOption {

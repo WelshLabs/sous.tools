@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { Button } from "@soustools/design-system";
+import { Button, OmniBar } from "@soustools/design-system";
 import { 
-  Tv, 
   Settings, 
   Volume2, 
   VolumeX, 
@@ -14,8 +12,10 @@ import {
   Eye,
   EyeOff,
   Search,
-  PackageX
+  PackageX,
+  ChevronLeft
 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 interface KDSTicketItem {
@@ -86,19 +86,30 @@ export default function KDSPage() {
   useEffect(() => {
     // 1. Fetch organization ID
     const fetchOrg = async () => {
-      const { data } = await supabase.from("organizations").select("id").limit(1);
-      if (data && data[0]) {
-        setOrgId(data[0].id);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/organizations?limit=1`);
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data && payload.data.length > 0) {
+            setOrgId(payload.data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch org", err);
       }
     };
 
     // 2. Fetch POS items to enable 86'ing
     const fetchItems = async () => {
-      const { data } = await supabase
-        .from("pos_items")
-        .select("*")
-        .order("name", { ascending: true });
-      if (data) setPosItems(data);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/pos-items`);
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data) setPosItems(payload.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch pos items", err);
+      }
     };
 
     // 3. Setup settings from localStorage
@@ -204,8 +215,12 @@ export default function KDSPage() {
         };
       });
 
-      const { error } = await supabase.from("pos_transactions").insert(transactionsToInsert);
-      if (error) throw error;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/pos-transactions/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transactionsToInsert)
+      });
+      if (!res.ok) throw new Error("Failed to sync transactions");
 
       toast.success(`Ticket #${t.ticketNumber} completed and synced to shadow DB.`);
     } catch (err: any) {
@@ -218,12 +233,13 @@ export default function KDSPage() {
   const handleToggleSoldOut = async (itemId: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus;
     try {
-      const { error } = await supabase
-        .from("pos_items")
-        .update({ is_sold_out: nextStatus })
-        .eq("id", itemId);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/pos-items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_sold_out: nextStatus })
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error("Failed to update item");
 
       setPosItems(prev =>
         prev.map(item => (item.id === itemId ? { ...item, is_sold_out: nextStatus } : item))
@@ -278,17 +294,21 @@ export default function KDSPage() {
 
   return (
     <div className="min-h-[calc(100vh-100px)] flex flex-col bg-zinc-50 dark:bg-card text-zinc-900 dark:text-zinc-100 p-6 space-y-6 relative overflow-hidden">
-      {/* Header Panel */}
-      <header className="glass-panel flex flex-col md:flex-row justify-between items-start md:items-center p-5 rounded-2xl shrink-0 gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
-            <Tv className="w-6 h-6 text-sky-500 dark:text-sky-400" /> Kitchen Display System (KDS)
-          </h1>
-          <p className="text-xs text-zinc-500 dark:text-muted-foreground mt-1">Station: Hot Line & Main Preparation</p>
+      {/* Navigation & Controls Row */}
+      <header className="flex justify-between items-center shrink-0">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/home"
+            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors flex-shrink-0"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex-shrink-0">
+            <OmniBar />
+          </div>
         </div>
 
-        {/* Action Toggles */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex-1 flex justify-center">
           {/* Open vs Closed Toggles */}
           <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-xl p-1 text-xs font-semibold">
             <button
@@ -308,15 +328,15 @@ export default function KDSPage() {
               Completed ({tickets.filter(t => t.status === "CLOSED").length})
             </button>
           </div>
-
-          {/* Settings Trigger */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 bg-card hover:bg-black/10 dark:hover:bg-black/10 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
         </div>
+
+        {/* Settings Trigger */}
+        <button
+          onClick={() => setShowSettings(true)}
+          className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 bg-card hover:bg-black/10 dark:hover:bg-black/10 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer flex-shrink-0"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
       </header>
 
       {/* Main Layout Grid split into Preparation Rack and All Day Panel */}

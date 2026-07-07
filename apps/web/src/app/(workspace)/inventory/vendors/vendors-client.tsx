@@ -49,6 +49,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
       vendors={initialVendors}
       onSave={handleSave}
       onDelete={handleDelete}
+      onAddVendorClick={() => router.push('/inventory/vendors/add')}
     />
   );
 }

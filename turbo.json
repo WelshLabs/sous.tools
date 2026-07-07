@@ -8,15 +8,12 @@
     "INFISICAL_ENV"
   ],
   "tasks": {
-    "secrets:sync": {
-      "cache": false
-    },
     "build": {
-      "dependsOn": ["secrets:sync", "^build"],
+      "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
-      "dependsOn": ["secrets:sync", "^build"],
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },

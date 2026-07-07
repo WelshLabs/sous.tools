@@ -165,6 +165,7 @@ export interface SupplierOrderGroupProps {
   onRemoveItem: (id: string) => void;
   onChangeQty: (id: string, qty: number) => void;
   onChangeSupplier: (id: string, supplierId: string | null) => void;
+  onShopOrder?: () => void;
 }
 
 /**
@@ -185,6 +186,7 @@ export function SupplierOrderGroup({
   onRemoveItem,
   onChangeQty,
   onChangeSupplier,
+  onShopOrder,
 }: SupplierOrderGroupProps) {
   const isUnassigned = !supplier;
 
@@ -234,19 +236,35 @@ export function SupplierOrderGroup({
         </div>
 
         {!isUnassigned && (
-          <button
-            onClick={onPlaceOrder}
-            disabled={isPlacingOrder}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 px-8 rounded-2xl shadow-xl shadow-primary/20 flex items-center gap-3 group transition-colors"
-          >
-            <Check
-              size={16}
-              className="text-primary-foreground group-hover:scale-110 transition-transform"
-            />
-            <span className="text-primary-foreground font-black uppercase text-xs tracking-widest">
-              Place Order ({items.length})
-            </span>
-          </button>
+          <div className="flex flex-row gap-3">
+            {onShopOrder && (
+              <button
+                onClick={onShopOrder}
+                className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground h-12 px-6 rounded-2xl flex items-center gap-2 group transition-colors border border-border dark:border-zinc-700"
+              >
+                <ShoppingBag
+                  size={16}
+                  className="group-hover:scale-110 transition-transform"
+                />
+                <span className="font-black uppercase text-xs tracking-widest">
+                  Shop
+                </span>
+              </button>
+            )}
+            <button
+              onClick={onPlaceOrder}
+              disabled={isPlacingOrder}
+              className="bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 px-8 rounded-2xl shadow-xl shadow-primary/20 flex items-center gap-3 group transition-colors"
+            >
+              <Check
+                size={16}
+                className="text-primary-foreground group-hover:scale-110 transition-transform"
+              />
+              <span className="text-primary-foreground font-black uppercase text-xs tracking-widest">
+                Place Order ({items.length})
+              </span>
+            </button>
+          </div>
         )}
       </div>
 

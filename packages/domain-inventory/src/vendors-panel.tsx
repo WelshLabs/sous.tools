@@ -19,9 +19,10 @@ export interface VendorsPanelProps {
   vendors: Vendor[];
   onSave: (id: string, payload: Partial<Vendor>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onAddVendorClick?: () => void;
 }
 
-export function VendorsPanel({ vendors, onSave, onDelete }: VendorsPanelProps) {
+export function VendorsPanel({ vendors, onSave, onDelete, onAddVendorClick }: VendorsPanelProps) {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Vendor>>({});
 
@@ -51,8 +52,12 @@ export function VendorsPanel({ vendors, onSave, onDelete }: VendorsPanelProps) {
         />
         <button
           onClick={() => {
-            setIsEditing("new");
-            setEditForm({ order_days: [], order_method: "MANUAL" });
+            if (onAddVendorClick) {
+              onAddVendorClick();
+            } else {
+              setIsEditing("new");
+              setEditForm({ order_days: [], order_method: "MANUAL" });
+            }
           }}
           className="flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-foreground rounded-lg font-medium transition-colors cursor-pointer"
         >

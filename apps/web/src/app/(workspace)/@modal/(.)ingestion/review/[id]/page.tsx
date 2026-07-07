@@ -9,7 +9,6 @@ import {
   BrainCircuit,
   Trash2,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { IngestionReview } from "@soustools/api-types";
 import { toast } from "sonner";
 import Link from "next/link";

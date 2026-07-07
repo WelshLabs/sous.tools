@@ -23,7 +23,6 @@ RUN pnpm install --frozen-lockfile
 
 # Build the project
 COPY --from=builder /app/out/full/ .
-ENV INFISICAL_MOCK=true
 RUN pnpm turbo build --filter=api
 
 FROM base AS runner

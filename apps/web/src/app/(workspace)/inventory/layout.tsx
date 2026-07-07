@@ -3,7 +3,7 @@ import Link from "next/link";
 import React from "react";
 import { Package, ListOrdered, Factory } from "lucide-react";
 
-export default function InventoryLayout({ children }: { children: React.ReactNode }) {
+export default function InventoryLayout({ children, modal }: { children: React.ReactNode, modal: React.ReactNode }) {
   const sidebarContent = (
     <div className="flex flex-col gap-2 p-4">
       <Link href="/inventory/items-ledger" className="flex items-center gap-2 p-2 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
@@ -24,7 +24,12 @@ export default function InventoryLayout({ children }: { children: React.ReactNod
   return (
     <SidebarLayout 
       sidebarContent={sidebarContent}
-      mainContent={children}
+      mainContent={
+        <>
+          {children}
+          {modal}
+        </>
+      }
     />
   );
 }

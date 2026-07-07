@@ -1,68 +1,137 @@
 import { Injectable } from '@nestjs/common';
 import { supabase } from '../../lib/supabase';
 
-export interface CreatePurchaseOrderDto {
+export interface AddItemToDraftDto {
   vendor_id: string;
-  items: {
-    whiteboard_id: string;
-    raw_name: string;
-    ordered_qty: number;
-    price_per_unit: number;
-  }[];
+  raw_name: string;
+  ordered_qty: number;
+}
+
+export interface UpdatePoItemDto {
+  ordered_qty?: number;
 }
 
 @Injectable()
 export class PurchaseOrdersService {
   private readonly defaultOrgId = 'd0000000-0000-0000-0000-000000000000';
 
-  async createPo(dto: CreatePurchaseOrderDto): Promise<Record<string, unknown>> {
+  private async getOrgId(): Promise<string> {
     const { data: orgData } = await supabase
       .from('organizations')
       .select('id')
       .limit(1)
       .single();
-      
-    const orgId = orgData?.id || this.defaultOrgId;
+    return orgData?.id || this.defaultOrgId;
+  }
 
-    const { data: po, error: poErr } = await supabase
+  async findAll(): Promise<Record<string, unknown>[]> {
+    const { data, error } = await supabase
       .from('purchase_orders')
-      .insert([
-        {
+      .select(`
+        *,
+        vendors (*),
+        purchase_order_items (*)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data || [];
+  }
+
+  async findOne(id: string): Promise<Record<string, unknown>> {
+    const { data, error } = await supabase
+      .from('purchase_orders')
+      .select(`
+        *,
+        vendors (*),
+        purchase_order_items (*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async addItemToDraft(dto: AddItemToDraftDto): Promise<Record<string, unknown>> {
+    const orgId = await this.getOrgId();
+
+    // Find existing DRAFT PO for this vendor
+    let { data: po } = await supabase
+      .from('purchase_orders')
+      .select('id')
+      .eq('organization_id', orgId)
+      .eq('vendor_id', dto.vendor_id)
+      .eq('status', 'DRAFT')
+      .single();
+
+    // If none exists, create one
+    if (!po) {
+      const { data: newPo, error: createErr } = await supabase
+        .from('purchase_orders')
+        .insert([{
           organization_id: orgId,
           vendor_id: dto.vendor_id,
-          status: 'DRAFT',
-        },
-      ])
+          status: 'DRAFT'
+        }])
+        .select('id')
+        .single();
+      
+      if (createErr) throw new Error(createErr.message);
+      po = newPo;
+    }
+
+    // Insert the item
+    const { data: insertedItem, error: itemErr } = await supabase
+      .from('purchase_order_items')
+      .insert([{
+        po_id: po.id,
+        raw_name: dto.raw_name,
+        ordered_qty: dto.ordered_qty || 1,
+        price_per_unit: 0
+      }])
       .select()
       .single();
 
-    if (poErr) {
-      throw new Error(poErr.message);
-    }
+    if (itemErr) throw new Error(itemErr.message);
+    return insertedItem;
+  }
 
-    const itemsToInsert = dto.items.map((i) => ({
-      po_id: po.id,
-      raw_name: i.raw_name,
-      ordered_qty: i.ordered_qty,
-      price_per_unit: i.price_per_unit,
-    }));
-
-    const { error: itemsErr } = await supabase
+  async updateItem(itemId: string, dto: UpdatePoItemDto): Promise<Record<string, unknown>> {
+    const { data, error } = await supabase
       .from('purchase_order_items')
-      .insert(itemsToInsert);
+      .update(dto)
+      .eq('id', itemId)
+      .select()
+      .single();
 
-    if (itemsErr) {
-      throw new Error(itemsErr.message);
-    }
+    if (error) throw new Error(error.message);
+    return data;
+  }
 
-    // Mark whiteboard items as inactive
-    for (const item of dto.items) {
-      await supabase
-        .from('whiteboard_items')
-        .update({ is_active: false })
-        .eq('id', item.whiteboard_id);
-    }
+  async removeItem(itemId: string): Promise<Record<string, unknown>> {
+    const { data, error } = await supabase
+      .from('purchase_order_items')
+      .delete()
+      .eq('id', itemId)
+      .select()
+      .single();
 
-    return po;
+    if (error) throw new Error(error.message);
+    
+    // If the PO has no more items, we could optionally delete the PO here.
+    return data;
+  }
+
+  async submitPo(id: string): Promise<Record<string, unknown>> {
+    const { data, error } = await supabase
+      .from('purchase_orders')
+      .update({ status: 'SUBMITTED' })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
   }
 }

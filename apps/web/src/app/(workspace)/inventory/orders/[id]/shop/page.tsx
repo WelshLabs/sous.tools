@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { PurchaseOrder, PurchaseOrderItem, Vendor } from "@soustools/api-types";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Circle } from "lucide-react";
@@ -20,17 +19,21 @@ export default function SelfShopPage() {
 
   useEffect(() => {
     const fetchPO = async () => {
-      const { data } = await supabase
-        .from("purchase_orders")
-        .select(`*, vendors (*), purchase_order_items (*)`)
-        .eq("id", id)
-        .single();
-      
-      if (data) {
-        setPo(data as any);
-        // Load offline cached state
-        const cached = localStorage.getItem(`shop-checked-${id}`);
-        if (cached) setCheckedItems(new Set(JSON.parse(cached)));
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/purchase-orders/${id}`,
+        );
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data) {
+            setPo(payload.data);
+            // Load offline cached state
+            const cached = localStorage.getItem(`shop-checked-${id}`);
+            if (cached) setCheckedItems(new Set(JSON.parse(cached)));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch PO", err);
       }
       setLoading(false);
     };
@@ -41,19 +44,33 @@ export default function SelfShopPage() {
     const next = new Set(checkedItems);
     if (next.has(itemId)) next.delete(itemId);
     else next.add(itemId);
-    
+
     setCheckedItems(next);
-    localStorage.setItem(`shop-checked-${id}`, JSON.stringify(Array.from(next)));
+    localStorage.setItem(
+      `shop-checked-${id}`,
+      JSON.stringify(Array.from(next)),
+    );
   };
 
-  if (loading) return <div className="p-8 text-center text-foreground/50">Loading Self-Shop Mode...</div>;
-  if (!po) return <div className="p-8 text-center text-red-400">Order not found.</div>;
+  if (loading)
+    return (
+      <div className="p-8 text-center text-foreground/50">
+        Loading Self-Shop Mode...
+      </div>
+    );
+  if (!po)
+    return <div className="p-8 text-center text-red-400">Order not found.</div>;
 
-  const allChecked = po.purchase_order_items.length > 0 && checkedItems.size === po.purchase_order_items.length;
+  const allChecked =
+    po.purchase_order_items.length > 0 &&
+    checkedItems.size === po.purchase_order_items.length;
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-screen flex flex-col animate-in slide-in-from-bottom-4">
-      <Link href="/purchasing" className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors w-fit">
+      <Link
+        href="/inventory/orders"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors w-fit"
+      >
         <ArrowLeft size={16} /> Back to Purchasing
       </Link>
 
@@ -65,21 +82,21 @@ export default function SelfShopPage() {
           </span>
         </h1>
         <p className="text-muted-foreground">
-          Check off items as you place them in your basket. 
-          Your progress is saved locally if you lose connection.
+          Check off items as you place them in your basket. Your progress is
+          saved locally if you lose connection.
         </p>
       </div>
 
       <div className="flex-1 space-y-3">
-        {po.purchase_order_items?.map(item => {
+        {po.purchase_order_items?.map((item) => {
           const isChecked = checkedItems.has(item.id);
           return (
-            <div 
+            <div
               key={item.id}
               onClick={() => toggleCheck(item.id)}
               className={`p-4 md:p-6 rounded-xl border flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] ${
-                isChecked 
-                  ? "bg-green-500/10 border-green-500/30 text-gray-300" 
+                isChecked
+                  ? "bg-green-500/10 border-green-500/30 text-gray-300"
                   : "glass-panel border-black/10 dark:border-border hover:border-white/20 text-foreground"
               }`}
             >
@@ -89,11 +106,15 @@ export default function SelfShopPage() {
                 ) : (
                   <Circle className="text-foreground/30 w-8 h-8 flex-shrink-0" />
                 )}
-                <span className={`text-xl md:text-2xl font-medium ${isChecked ? "line-through decoration-green-500/50" : ""}`}>
+                <span
+                  className={`text-xl md:text-2xl font-medium ${isChecked ? "line-through decoration-green-500/50" : ""}`}
+                >
                   {item.raw_name}
                 </span>
               </div>
-              <span className={`text-2xl font-bold ${isChecked ? "text-green-500/50" : "text-foreground"}`}>
+              <span
+                className={`text-2xl font-bold ${isChecked ? "text-green-500/50" : "text-foreground"}`}
+              >
                 x{item.ordered_qty}
               </span>
             </div>
@@ -102,19 +123,28 @@ export default function SelfShopPage() {
       </div>
 
       <div className="mt-8 sticky bottom-8">
-        <div className={`p-6 rounded-xl border backdrop-blur-xl transition-all ${
-          allChecked ? "bg-green-600/20 border-green-500/50" : "bg-white/50 dark:bg-black/60 border-black/10 dark:border-border"
-        }`}>
+        <div
+          className={`p-6 rounded-xl border backdrop-blur-xl transition-all ${
+            allChecked
+              ? "bg-green-600/20 border-green-500/50"
+              : "bg-white/50 dark:bg-black/60 border-black/10 dark:border-border"
+          }`}
+        >
           <div className="flex items-center justify-between mb-4">
             <span className="text-lg font-medium">Progress</span>
-            <span className="text-lg font-bold">{checkedItems.size} / {po.purchase_order_items.length} Items</span>
+            <span className="text-lg font-bold">
+              {checkedItems.size} / {po.purchase_order_items.length} Items
+            </span>
           </div>
-          
+
           {allChecked && (
             <div className="text-center animate-in zoom-in">
-              <p className="text-green-400 font-bold text-xl mb-2">Shopping Complete!</p>
+              <p className="text-green-400 font-bold text-xl mb-2">
+                Shopping Complete!
+              </p>
               <p className="text-sm text-muted-foreground">
-                To reconcile pricing, please scan the physical receipt using the Ingestion importer.
+                To reconcile pricing, please scan the physical receipt using the
+                Ingestion importer.
               </p>
             </div>
           )}

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { Button } from "@soustools/design-system";
+import { Button, OmniBar } from "@soustools/design-system";
 import { 
   ShoppingBag, 
   Search, 
@@ -12,10 +11,11 @@ import {
   CreditCard, 
   DollarSign, 
   ChevronRight,
+  ChevronLeft,
   Info,
-  Loader2,
-  RefreshCw
+  Loader2
 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -72,7 +72,7 @@ export default function POSRegisterPage() {
     setLoading(true);
     try {
       // 1. Fetch organization
-      const { data: orgData } = await supabase.from("organizations").select("id").limit(1);
+//       const { data: orgData } = await supabase.from("organizations").select("id").limit(1);
       const targetOrgId = orgData?.[0]?.id || "d0000000-0000-0000-0000-000000000000";
       setOrgId(targetOrgId);
 
@@ -115,20 +115,7 @@ export default function POSRegisterPage() {
     loadPOSCatalog();
   }, []);
 
-  // Sync catalog from Square
-  const handleSyncSquare = async () => {
-    const toastId = toast.loading("Syncing catalog with Square...");
-    try {
-      const res = await fetch(`/api/integrations/square/sync?orgId=${orgId}`, {
-        method: "POST"
-      });
-      if (!res.ok) throw new Error(await res.text());
-      toast.success("POS Catalog synced successfully.", { id: toastId });
-      loadPOSCatalog();
-    } catch (e: any) {
-      toast.error(`Sync failed: ${e.message}`, { id: toastId });
-    }
-  };
+
 
   // Assign items to mock UI categories dynamically based on names
   const getCategory = (itemName: string) => {
@@ -366,9 +353,18 @@ export default function POSRegisterPage() {
     <div className="min-h-[calc(100vh-100px)] flex bg-zinc-50 dark:bg-card text-zinc-900 dark:text-zinc-100 overflow-hidden relative">
       {/* Left pane: POS item catalog (Fluid Grid) */}
       <div className="flex-1 flex flex-col p-6 overflow-y-auto min-w-0 pr-4">
-        {/* Search & Sync Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
-          <div className="relative flex-1 max-w-md w-full">
+        {/* Navigation & Search Header */}
+        <div className="flex items-center gap-3 mb-6 shrink-0">
+          <Link
+            href="/home"
+            className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors flex-shrink-0"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex-shrink-0">
+            <OmniBar />
+          </div>
+          <div className="relative flex-1 w-full">
             <input
               type="text"
               value={searchQuery}
@@ -378,16 +374,10 @@ export default function POSRegisterPage() {
             />
             <Search className="w-4 h-4 text-muted-foreground dark:text-zinc-500 absolute left-3.5 top-3.5" />
           </div>
-
-          <div className="flex gap-2">
-            <Button onClick={handleSyncSquare} className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 flex items-center gap-1.5 py-2">
-              <RefreshCw className="w-4 h-4" /> Sync Square Catalog
-            </Button>
-          </div>
         </div>
 
         {/* Categories Tab Bar */}
-        <div className="flex gap-2 pb-4 overflow-x-auto shrink-0 border-b border-black/5 dark:border-white/5 mb-6">
+        <div className="flex justify-center gap-2 pb-4 overflow-x-auto shrink-0 border-b border-black/5 dark:border-white/5 mb-6">
           {categories.map((cat) => (
             <button
               key={cat}
