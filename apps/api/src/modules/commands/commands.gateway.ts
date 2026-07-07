@@ -4,7 +4,7 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { UseGuards, Logger, UsePipes } from '@nestjs/common';
+import { UseGuards, Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { WsSupabaseAuthGuard } from '../../lib/ws-supabase-auth.guard';
 import { CommandsService } from './commands.service';
@@ -18,10 +18,9 @@ export class CommandsGateway {
   constructor(private readonly commandsService: CommandsService) {}
 
   @UseGuards(WsSupabaseAuthGuard)
-  @UsePipes(new ZodValidationPipe(OmnibarCommandPayloadSchema))
   @SubscribeMessage('executeCommand')
   async handleExecuteCommand(
-    @MessageBody() payload: OmnibarCommandPayload,
+    @MessageBody(new ZodValidationPipe(OmnibarCommandPayloadSchema)) payload: OmnibarCommandPayload,
     @ConnectedSocket() client: Socket & { user?: any },
   ) {
     this.logger.log(`Received command via WebSocket: ${payload.command}`);

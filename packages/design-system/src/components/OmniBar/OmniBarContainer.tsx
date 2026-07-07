@@ -28,16 +28,21 @@ export function OmniBarContainer() {
     const initSocket = async () => {
       try {
         const supabase = createBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        console.log("NEXT_PU", process.env.NEXT_PUBLIC_API_URL, session);
         if (!session?.access_token) return;
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
-        const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
+        const socketUrl = apiUrl.startsWith("http")
+          ? apiUrl
+          : window.location.origin;
 
         newSocket = io(socketUrl + "/commands", {
           auth: { token: session.access_token },
-          transports: ["websocket"]
+          transports: ["websocket"],
         });
 
         newSocket.on("command_status", (data: any) => {
@@ -126,7 +131,7 @@ export function OmniBarContainer() {
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      
+
       if (isSubmitting) return;
 
       if (inputText.trim()) {
@@ -148,7 +153,6 @@ export function OmniBarContainer() {
             path: pathname,
             context: contextPayload,
           });
-          
         } catch (error: any) {
           console.error("Failed to emit command:", error);
           setErrorMessage(error.message || "Network error occurred.");
@@ -163,7 +167,8 @@ export function OmniBarContainer() {
 
   const handleMicClick = () => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
       return;

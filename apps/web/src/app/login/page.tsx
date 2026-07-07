@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@soustools/design-system";
 import { KeyRound, Mail, Sparkles } from "lucide-react";
+import { createBrowserClient } from "@soustools/supabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("conar@dtown.cafe");
@@ -18,18 +19,19 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-//       const { error: authError } = await supabase.auth.signInWithPassword({
-//         email,
-//         password,
-//       });
-// 
-//       if (authError) {
-//         setError(authError.message);
-//       } else {
+      const supabase = createBrowserClient();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        setError(authError.message);
+      } else {
         const urlParams = new URLSearchParams(window.location.search);
         const returnTo = urlParams.get("returnTo");
         router.push(returnTo ? returnTo : "/home");
-//       }
+      }
     } catch (err: unknown) {
       setError("An unexpected error occurred during login.");
     } finally {

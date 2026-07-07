@@ -33,7 +33,7 @@ Respond ONLY with a valid JSON object in this format:
 `;
 
       const aiResponse = await this.ai.models.generateContent({
-        model: 'gemini-2.5-pro',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: { responseMimeType: 'application/json' },
       });

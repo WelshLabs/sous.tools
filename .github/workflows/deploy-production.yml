@@ -9,6 +9,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch Infisical Secrets
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools-1cd-a"
+
       - name: Trigger Native Hardware Build via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:

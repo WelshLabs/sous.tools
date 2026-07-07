@@ -15,7 +15,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchSession = async () => {
 //       const { data } = await supabase.auth.getSession();
-      setSession(data.session);
+//       setSession(data.session);
       setLoading(false);
     };
     fetchSession();

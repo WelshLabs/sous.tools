@@ -5,10 +5,10 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "sous-config nest start",
-    "dev": "sous-config nest start --watch --preserveWatchOutput",
-    "start:debug": "sous-config nest start --debug --watch --preserveWatchOutput",
-    "start:prod": "sous-config node dist/main",
+    "start": "../../packages/config/dist/cli.js nest start",
+    "dev": "../../packages/config/dist/cli.js nest start --watch --preserveWatchOutput",
+    "start:debug": "../../packages/config/dist/cli.js nest start --debug --watch --preserveWatchOutput",
+    "start:prod": "../../packages/config/dist/cli.js node dist/main",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
