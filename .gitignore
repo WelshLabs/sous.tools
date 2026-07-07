@@ -68,3 +68,10 @@ deploy/pi/pi-gen/deploy/
 deploy/pi/pi-gen/work/*.deb
 
 *.deb
+
+# Auto-generated NestJS GraphQL Schema
+apps/api/src/schema.gql
+apps/api/schema.gql
+
+# Auto-generated Config Secrets
+packages/config/src/secrets.ts
