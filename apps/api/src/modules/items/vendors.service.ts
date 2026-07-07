@@ -13,10 +13,11 @@ export type UpdateVendorDto = Partial<CreateVendorDto>;
 
 @Injectable()
 export class VendorsService {
-  async findAll(): Promise<Record<string, unknown>[]> {
+  async findAll(orgId: string): Promise<Record<string, unknown>[]> {
     const { data, error } = await supabase
       .from('vendors')
       .select('*')
+      .eq('organization_id', orgId)
       .order('name', { ascending: true });
 
     if (error) {
@@ -38,11 +39,12 @@ export class VendorsService {
     return data;
   }
 
-  async create(dto: CreateVendorDto): Promise<Record<string, unknown>> {
+  async create(orgId: string, dto: CreateVendorDto): Promise<Record<string, unknown>> {
     const { data, error } = await supabase
       .from('vendors')
       .insert([
         {
+          organization_id: orgId,
           name: dto.name,
           order_days: dto.order_days || [],
           order_method: dto.order_method || null,

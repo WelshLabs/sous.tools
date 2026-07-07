@@ -47,6 +47,7 @@ export interface RecipeCostData {
   costPerServingUsd: number;
   linkedSalePrice?: number;
   marginPct?: number;
+  suggestedSalePrice?: number;
   ingredients: CostIngredient[];
 }
 

@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.0
+    environment:
+      - DOCKER_API_VERSION=1.44
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
@@ -40,8 +42,8 @@ services:
     depends_on:
       - redis
     environment:
-      - VISION_PROVIDER=ollama
-      - OLLAMA_URL=http://ollama:11434
+      # - VISION_PROVIDER=ollama
+      # - OLLAMA_HOST=http://ollama:11434
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}

@@ -17,7 +17,7 @@ export interface RecipeViewerClientProps {
 export function RecipeViewerClient({
   recipe,
   vessels,
-  costData,
+  costData: initialCostData,
   nutritionData,
   versionHistory,
 }: RecipeViewerClientProps) {
@@ -25,6 +25,20 @@ export function RecipeViewerClient({
   const [customWeights, setCustomWeights] = useState<
     Record<string, { amount: number; unit: string }>
   >({});
+  const [costData, setCostData] = useState<any>(initialCostData);
+  const [liveIngredients, setLiveIngredients] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    // Fetch live prices on mount
+    fetch('/api/recipes/ingredients')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.data) {
+          setLiveIngredients(json.data);
+        }
+      })
+      .catch(err => console.error('Failed to fetch live ingredients:', err));
+  }, []);
 
   const scalingOptions: any = {};
   if (Object.keys(customWeights).length > 0) {
@@ -70,6 +84,18 @@ export function RecipeViewerClient({
     }
   };
 
+  const handleCostFactorsChange = async (wastePct: number, portions: number) => {
+    try {
+      const res = await fetch(`/api/recipes/${recipe.id}/cost?wastePct=${wastePct}&portions=${portions}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setCostData(json.data);
+      }
+    } catch (err) {
+      console.error("Failed to refetch cost data:", err);
+    }
+  };
+
   const handleSaveVersion = async () => {
     toast.success("Saved version successfully.");
   };
@@ -96,6 +122,7 @@ export function RecipeViewerClient({
     <RecipeViewer
       recipe={recipe}
       vessels={vessels}
+      masterIngredients={liveIngredients}
       scaledIngredients={scaledIngredients}
       finalMultiplier={finalMultiplier}
       costData={costData}
@@ -103,6 +130,7 @@ export function RecipeViewerClient({
       versionHistory={versionHistory}
       onScaleChange={handleScaleChange}
       onIngredientWeightChange={handleIngredientWeightChange}
+      onCostFactorsChange={handleCostFactorsChange}
       onSaveVersion={handleSaveVersion}
       onRestoreVersion={handleRestoreVersion}
       onDownloadLabel={handleDownloadLabel}

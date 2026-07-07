@@ -130,7 +130,7 @@ export function RecipeBuilderIngredients({
                   </option>
                   {masterIngredients.map((mi) => (
                     <option key={mi.id} value={mi.id}>
-                      {mi.name}
+                      {mi.name} {mi.currentCostPerG ? `($${mi.currentCostPerG.toFixed(3)}/g)` : ""}
                     </option>
                   ))}
                 </select>

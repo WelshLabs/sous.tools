@@ -134,4 +134,16 @@ export class PurchaseOrdersService {
     if (error) throw new Error(error.message);
     return data;
   }
+
+  async receivePo(id: string): Promise<Record<string, unknown>> {
+    const { data, error } = await supabase
+      .from('purchase_orders')
+      .update({ status: 'RECEIVED' })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
 }

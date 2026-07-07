@@ -22,6 +22,9 @@ export interface Config {
   readonly NEW_RELIC_ENABLED: boolean;
   readonly USDA_FDC_API_KEY: string;
   readonly VERCEL_AI_GATEWAY_API_KEY: string;
+  readonly VISION_PROVIDER: string;
+  readonly OLLAMA_HOST: string;
+  readonly OLLAMA_MODEL: string;
 }
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -59,4 +62,7 @@ export const config: Config = Object.freeze({
     process.env.NEW_RELIC_LICENSE_KEY !== "new-relic-license-key-placeholder",
   USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY || "DEMO_KEY",
   VERCEL_AI_GATEWAY_API_KEY: process.env.VERCEL_AI_GATEWAY_API_KEY || "",
+  VISION_PROVIDER: process.env.VISION_PROVIDER || "cloud",
+  OLLAMA_HOST: process.env.OLLAMA_HOST || "http://localhost:11434",
+  OLLAMA_MODEL: process.env.OLLAMA_MODEL || "llama3.2-vision",
 });

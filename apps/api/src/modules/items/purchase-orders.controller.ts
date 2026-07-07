@@ -69,4 +69,14 @@ export class PurchaseOrdersController {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error', timestamp: new Date().toISOString() };
     }
   }
+
+  @Patch(':id/receive')
+  async receivePo(@Param('id') id: string): Promise<ApiResponse<Record<string, unknown>>> {
+    try {
+      const data = await this.service.receivePo(id);
+      return { success: true, data, timestamp: new Date().toISOString() };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error', timestamp: new Date().toISOString() };
+    }
+  }
 }

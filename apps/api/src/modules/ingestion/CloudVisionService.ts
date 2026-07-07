@@ -74,9 +74,16 @@ const invoiceSchema = {
   type: Type.OBJECT,
   properties: {
     vendorName: { type: Type.STRING },
+    vendorAddress: { type: Type.STRING, description: "Vendor's physical address if present" },
+    vendorPhone: { type: Type.STRING, description: "Vendor's phone number if present" },
+    vendorEmail: { type: Type.STRING, description: "Vendor's email if present" },
     invoiceNumber: { type: Type.STRING },
+    orderNumber: { type: Type.STRING, description: "Order number or PO number if present" },
     date: { type: Type.STRING },
     totalAmount: { type: Type.NUMBER },
+    previousBalance: { type: Type.NUMBER, description: "Any previous balance mentioned" },
+    totalDue: { type: Type.NUMBER, description: "Total amount due" },
+    notes: { type: Type.STRING, description: "Any printed or handwritten notes" },
     items: {
       type: Type.ARRAY,
       items: {
@@ -84,6 +91,9 @@ const invoiceSchema = {
         properties: {
           rawName: { type: Type.STRING },
           quantity: { type: Type.NUMBER },
+          uom: { type: Type.STRING },
+          unit: { type: Type.STRING, description: "Unit such as LBS, CASE, EACH" },
+          category: { type: Type.STRING, description: "Categorize as 'ingredient', 'cleaning', 'office', or 'packaging'", enum: ["ingredient", "cleaning", "office", "packaging", "other"] },
           pricePerUnit: { type: Type.NUMBER },
           totalPrice: { type: Type.NUMBER }
         },

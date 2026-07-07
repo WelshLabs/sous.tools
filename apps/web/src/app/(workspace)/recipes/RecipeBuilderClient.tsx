@@ -15,10 +15,23 @@ export interface RecipeBuilderClientProps {
 export function RecipeBuilderClient({
   initialData,
   vessels,
-  masterIngredients,
+  masterIngredients: initialMasterIngredients,
 }: RecipeBuilderClientProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [liveIngredients, setLiveIngredients] = useState<MasterIngredient[]>(initialMasterIngredients);
+
+  React.useEffect(() => {
+    // Fetch live prices on mount
+    fetch('/api/recipes/ingredients')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.data) {
+          setLiveIngredients(json.data);
+        }
+      })
+      .catch(err => console.error('Failed to fetch live ingredients:', err));
+  }, []);
 
   const handleSave = async (payload: any) => {
     setSaving(true);
@@ -51,7 +64,7 @@ export function RecipeBuilderClient({
     <RecipeBuilder
       initialData={initialData}
       vessels={vessels}
-      masterIngredients={masterIngredients}
+      masterIngredients={liveIngredients}
       loading={saving}
       onSave={handleSave}
       backHref="/recipes"

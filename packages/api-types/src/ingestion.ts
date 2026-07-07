@@ -59,6 +59,14 @@ const nullableString = z.string().optional().nullable();
 
 export const OcrInvoiceIngestionPayloadSchema = z
   .object({
+    vendorId: nullableString,
+    vendorAddress: nullableString,
+    vendorPhone: nullableString,
+    vendorEmail: nullableString,
+    orderNumber: nullableString,
+    previousBalance: z.number().optional().nullable(),
+    totalDue: z.number().optional().nullable(),
+    notes: nullableString,
     vendor: z
       .object({
         name: z.string(),
@@ -120,6 +128,9 @@ export const OcrInvoiceIngestionPayloadSchema = z
           .object({
             vendor_item_code: nullableString,
             raw_description: z.string(),
+            uom: nullableString,
+            unit: nullableString,
+            category: z.enum(['ingredient', 'cleaning', 'office', 'packaging', 'other']).optional().nullable(),
             pack_size: nullableString,
             ordered_quantity: z.number(),
             ordered_unit: z.string(),
@@ -130,6 +141,8 @@ export const OcrInvoiceIngestionPayloadSchema = z
             is_taxable: z.boolean(),
             is_shortage: z.boolean(),
             predicted_internal_ingredient: z.string(),
+            itemId: nullableString,
+            each_weight_g: z.number().optional().nullable(),
             yield_intelligence: z
               .object({
                 total_weight_lbs: z.number().optional().nullable(),

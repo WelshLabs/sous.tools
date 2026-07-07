@@ -14,7 +14,10 @@ import { WhiteboardService } from './whiteboard.service';
 import { PurchaseOrdersController } from './purchase-orders.controller';
 import { PurchaseOrdersService } from './purchase-orders.service';
 
+import { NutritionModule } from '../nutrition/nutrition.module';
+
 @Module({
+  imports: [NutritionModule],
   controllers: [
     ItemsController,
     PriceHistoryController,

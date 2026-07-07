@@ -24,7 +24,8 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
         body: JSON.stringify(payload),
       });
       
-      if (!res.ok) throw new Error("Failed to save vendor");
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to save vendor");
       
       toast.success(id === "new" ? "Vendor created successfully!" : "Vendor updated successfully!");
       router.refresh();
@@ -36,7 +37,8 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
   const handleDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/vendors/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete vendor");
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to delete vendor");
       toast.success("Vendor deleted");
       router.refresh();
     } catch (err: any) {

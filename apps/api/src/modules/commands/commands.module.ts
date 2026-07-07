@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { CommandsController } from './commands.controller';
 import { CommandsService } from './commands.service';
+import { CommandsGateway } from './commands.gateway';
+import { ItemsModule } from '../items/items.module';
 
 @Module({
+  imports: [ItemsModule],
   controllers: [CommandsController],
-  providers: [CommandsService],
+  providers: [CommandsService, CommandsGateway],
   exports: [CommandsService],
 })
 export class CommandsModule {}

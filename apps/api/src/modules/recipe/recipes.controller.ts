@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
 } from "@nestjs/common";
 import { RecipesService } from "./recipes.service";
 import { RecipeCostService } from "./recipe-cost.service";
@@ -35,9 +36,17 @@ export class RecipesController {
   }
 
   @Get(":id/cost")
-  async getRecipeCost(@Param("id") id: string): Promise<ApiResponse<unknown>> {
+  async getRecipeCost(
+    @Param("id") id: string,
+    @Query("wastePct") wastePct?: string,
+    @Query("portions") portions?: string
+  ): Promise<ApiResponse<unknown>> {
     try {
-      const data = await this.recipeCostService.getRecipeCost(id);
+      const data = await this.recipeCostService.getRecipeCost(
+        id,
+        wastePct ? Number(wastePct) : 0,
+        portions ? Number(portions) : 1
+      );
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {

@@ -12,12 +12,14 @@ import { ApiResponse } from './inventory.controller';
 
 @Controller('vendors')
 export class VendorsController {
+  private readonly defaultOrgId = 'd0000000-0000-0000-0000-000000000000';
+
   constructor(private readonly service: VendorsService) {}
 
   @Get()
   async findAll(): Promise<ApiResponse<Record<string, unknown>[]>> {
     try {
-      const data = await this.service.findAll();
+      const data = await this.service.findAll(this.defaultOrgId);
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
@@ -45,7 +47,7 @@ export class VendorsController {
   @Post()
   async create(@Body() body: CreateVendorDto): Promise<ApiResponse<Record<string, unknown>>> {
     try {
-      const data = await this.service.create(body);
+      const data = await this.service.create(this.defaultOrgId, body);
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {

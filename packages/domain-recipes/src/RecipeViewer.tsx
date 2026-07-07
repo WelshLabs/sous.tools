@@ -21,6 +21,8 @@ export interface RecipeViewerProps {
   recipe: Recipe;
   /** All available vessel profiles. */
   vessels: VesselProfile[];
+  /** Master ingredients for live pricing */
+  masterIngredients?: import("@soustools/api-types").MasterIngredient[];
   /** Scaled ingredients array emitted by the scaling math utility. */
   scaledIngredients: ScaledIngredient[];
   /** The final calculated multiplier. */
@@ -35,6 +37,7 @@ export interface RecipeViewerProps {
   /** Callbacks for scaling */
   onScaleChange: (multiplier: number, customOpts?: CustomWeightOpts) => void;
   onIngredientWeightChange: (ingId: string, amount: number, unit: string) => void;
+  onCostFactorsChange?: (wastePct: number, portions: number) => void;
 
   /** External Actions */
   onSaveVersion: () => Promise<void>;
@@ -75,6 +78,7 @@ export interface RecipeViewerProps {
 export function RecipeViewer({
   recipe,
   vessels,
+  masterIngredients,
   scaledIngredients,
   finalMultiplier,
   costData,
@@ -87,6 +91,7 @@ export function RecipeViewer({
   onDownloadLabel,
   onSearchItems,
   onSubmitWastage,
+  onCostFactorsChange,
   backHref = "/recipes",
 }: RecipeViewerProps) {
   const [isWastageOpen, setIsWastageOpen] = useState(false);
@@ -153,6 +158,7 @@ export function RecipeViewer({
           <RecipeIngredientsTable
             ingredients={scaledIngredients}
             onWeightChange={onIngredientWeightChange}
+            masterIngredients={masterIngredients}
           />
         </div>
 
@@ -213,6 +219,7 @@ export function RecipeViewer({
         <RecipeCostPanel
           costData={costData}
           onSaveVersion={onSaveVersion}
+          onCostFactorsChange={onCostFactorsChange}
         />
         <RecipeNutritionPanel
           nutrition={nutritionData}

@@ -3,8 +3,10 @@ import { BullModule } from "@nestjs/bullmq";
 import { IngestionController } from "./ingestion.controller";
 import { IngestionProcessor } from "./ingestion.processor";
 import { IntegrationsModule } from "../integrations/integrations.module";
+import { ItemsModule } from "../items/items.module";
 import { CloudVisionService } from "./CloudVisionService";
 import { OllamaVisionService } from "./OllamaVisionService";
+import { config } from "@soustools/config";
 
 @Module({
   imports: [
@@ -12,6 +14,7 @@ import { OllamaVisionService } from "./OllamaVisionService";
       name: "ingestion",
     }),
     IntegrationsModule,
+    ItemsModule,
   ],
   controllers: [IngestionController],
   providers: [
@@ -19,7 +22,7 @@ import { OllamaVisionService } from "./OllamaVisionService";
     {
       provide: "IVisionService",
       useFactory: () => {
-        if (process.env.VISION_PROVIDER === "ollama") {
+        if (config.VISION_PROVIDER === "ollama") {
           return new OllamaVisionService();
         }
         return new CloudVisionService();

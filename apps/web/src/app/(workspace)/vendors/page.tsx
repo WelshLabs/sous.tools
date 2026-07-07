@@ -13,9 +13,19 @@ export default function VendorsPage() {
   const [phone, setPhone] = useState("");
 
   const fetchVendors = async () => {
-//     const { data } = await supabase.from("vendors").select("*").order("name");
-    if (data) setVendors(data);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/vendors");
+      if (res.ok) {
+        const payload = await res.json();
+        if (payload.success && payload.data) {
+          setVendors(payload.data);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch vendors", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -24,30 +34,45 @@ export default function VendorsPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-//     const { data: orgData } = await supabase.from("organizations").select("id").single();
-    
-//     const { error } = await supabase.from("vendors").insert({
-      organization_id: orgData?.id,
-      name,
-      order_method: orderMethod,
-      email,
-      phone
-    });
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Vendor added");
-      setName("");
-      setEmail("");
-      setPhone("");
-      fetchVendors();
+    try {
+      const res = await fetch("/api/vendors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          order_method: orderMethod,
+          email,
+          phone,
+        }),
+      });
+      const payload = await res.json();
+      if (payload.success) {
+        toast.success("Vendor added");
+        setName("");
+        setEmail("");
+        setPhone("");
+        fetchVendors();
+      } else {
+        toast.error(payload.error || "Failed to add vendor");
+      }
+    } catch (err) {
+      toast.error("Failed to add vendor");
     }
   };
 
   const handleDelete = async (id: string) => {
-//     await supabase.from("vendors").delete().eq("id", id);
-    fetchVendors();
+    try {
+      const res = await fetch(`/api/vendors/${id}`, { method: "DELETE" });
+      const payload = await res.json();
+      if (payload.success) {
+        toast.success("Vendor deleted");
+        fetchVendors();
+      } else {
+        toast.error(payload.error || "Failed to delete vendor");
+      }
+    } catch (err) {
+      toast.error("Failed to delete vendor");
+    }
   };
 
   return (

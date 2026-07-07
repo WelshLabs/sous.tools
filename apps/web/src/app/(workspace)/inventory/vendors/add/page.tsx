@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { TwoToneHeader } from "@soustools/design-system";
 
+import { navigateToVendors } from "../actions";
+
 export default function AddVendorPage() {
   const router = useRouter();
   const [form, setForm] = React.useState({
@@ -32,10 +34,11 @@ export default function AddVendorPage() {
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Failed to save vendor");
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to save vendor");
 
       toast.success("Vendor created successfully!");
-      router.back();
+      await navigateToVendors();
     } catch (err: any) {
       toast.error(err.message || "Network error");
     } finally {

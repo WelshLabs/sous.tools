@@ -10,7 +10,7 @@ export default async function WorkspaceLayout({
 }) {
   let notifications = [];
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/notifications/unread`, {
+    const res = await fetch(`${process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/notifications/unread`, {
       cache: "no-store",
     });
     if (res.ok) {

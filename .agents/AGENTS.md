@@ -102,7 +102,7 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 - **Phase VI (Mass Extinction & Architectural Salvage)**: Complete - Executed global programmatic purge of legacy utility classes, fixed Next.js hydration errors in root layout, and resolved flexbox overflow bounds.
 - **Phase VI (Strict Semantic Theme Restoration)**: Complete - Restored HSL CSS variables, fixed true Neon Cyan brand color, and upgraded Card primitive to dynamic opacity glassmorphism.
 - **Phase VII (Route Reorganization)**: Active - Abolishing `(dashboard)`, establishing `(workspace)` and `(fullscreen)` route groups, and standardizing sidebars with `SidebarLayout`.
-- **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`).
+- **Phase VII (API Architecture Refactor)**: Active - Extracting UI-coupled modules into true domain entities (e.g., `devices`, `commands`), and fixing the TS2554 compilation error in CommandsService by passing organization ID.
 - **Phase VIII (Universal Zod Schemas)**: Active - Establishing foundational Zod schemas for the 3-Tier Culinary Engine (recipes, ingredients, macros, allergens) prior to building ingestion pipelines.
 - **Phase IX (Kiosk OS & Self-Hosted Runner)**: Active - Configuring pi-gen for 64-bit unattended Raspberry Pi OS with labwc and Chromium, and setting up an Oracle Cloud self-hosted GitHub Actions runner for external repository release.
 - **Phase X (Infisical Universal Auth Migration)**: Active - Replacing deprecated Service Token with Universal Auth (Client ID/Secret) in GitHub Actions workflows.
@@ -110,3 +110,5 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 - **Phase X (The Semantic Purge)**: Active - Purging all hardcoded utility classes (Tailwind colors/borders) globally in UI components and replacing them with semantic tokens.
 - **Phase X (Targeted Semantic Purge & UI Injection)**: Active - Fixing Light Mode contrast, injecting TwoToneHeader into domain routes, and targeted purging of border and background anti-patterns.
 - **Phase X (Infisical Universal Auth & Docker Secrets)**: Active - Acknowledged Oracle Cloud (GHCR) as the production deployment target and updated docker-compose.yml to inject Infisical Machine Identity credentials into the API container to prevent boot crash loops.
+- **Phase XI (Visual Builder UX Sprint)**: Active - Resolving left panel image rendering (preserving URLs in BullMQ ingestion processor), fixing light mode contrast on selectors, and implementing the inline Creatable Select component with API item creation and weight warning triggers.
+

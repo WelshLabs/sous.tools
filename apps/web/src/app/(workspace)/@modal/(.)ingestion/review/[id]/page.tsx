@@ -29,34 +29,40 @@ export default function IngestionReviewPage() {
 
   useEffect(() => {
     const fetchReview = async () => {
-      const { data } = await supabase
-        .from("ingestion_reviews")
-        .select("*")
-        .eq("id", id)
-        .single();
+      try {
+        const res = await fetch(`/api/ingestion/${id}`);
+        if (!res.ok) throw new Error("Failed to fetch review");
+        
+        const payload = await res.json();
+        const data = payload.data;
+        
+        if (data) {
+          // camelCase conversion
+          const parsed = {
+            id: data.id,
+            organizationId: data.organization_id,
+            userId: data.user_id,
+            source: data.source,
+            rawText: data.raw_text,
+            parsedData: data.parsed_data,
+            status: data.status,
+            sourceDocumentUrl: data.source_document_url,
+            sourceName: data.source_name,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at,
+          } as IngestionReview;
 
-      if (data) {
-        // camelCase conversion
-        const parsed = {
-          id: data.id,
-          organizationId: data.organization_id,
-          userId: data.user_id,
-          source: data.source,
-          rawText: data.raw_text,
-          parsedData: data.parsed_data,
-          status: data.status,
-          sourceDocumentUrl: data.source_document_url,
-          sourceName: data.source_name,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-        } as IngestionReview;
-
-        setReview(parsed);
-        setEditedData(JSON.stringify(parsed.parsedData, null, 2));
-      } else {
-        toast.error("Review not found");
+          setReview(parsed);
+          setEditedData(JSON.stringify(parsed.parsedData, null, 2));
+        } else {
+          toast.error("Review not found");
+        }
+      } catch (err) {
+        toast.error("Failed to load review");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     if (id) fetchReview();
@@ -66,15 +72,20 @@ export default function IngestionReviewPage() {
     try {
       const finalJson = JSON.parse(editedData);
 
-      // Update the DB record with latest JSON changes first
-      await supabase
-        .from("ingestion_reviews")
-        .update({ parsed_data: finalJson })
-        .eq("id", id);
+      if (finalJson.vendorName && finalJson.items) {
+        for (const item of finalJson.items) {
+          if (item.itemId && item._requiresWeightInput && (!item.each_weight_g || item.each_weight_g <= 0)) {
+            toast.error(`Please provide the Weight per Unit for ${item.rawName}`);
+            return;
+          }
+        }
+      }
 
-      // Trigger the real commit API synchronously
+      // Trigger the real commit API synchronously and pass the modified json
       const res = await fetch(`/api/ingestion/review/${id}/commit`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ parsed_data: finalJson })
       });
 
       if (!res.ok) throw new Error("Failed to commit data");
@@ -168,8 +179,8 @@ export default function IngestionReviewPage() {
               </h2>
             </div>
             <div className="flex-1 overflow-auto bg-black/5 dark:bg-black/40">
-              {review.sourceDocumentUrl ? (
-                review.sourceDocumentUrl.endsWith(".pdf") ? (
+              {review.sourceDocumentUrl && (
+                review.sourceDocumentUrl.split("?")[0].toLowerCase().endsWith(".pdf") ? (
                   <iframe
                     src={review.sourceDocumentUrl}
                     className="w-full h-full border-none"
@@ -181,10 +192,6 @@ export default function IngestionReviewPage() {
                     alt="Raw Document"
                   />
                 )
-              ) : (
-                <pre className="text-sm text-zinc-500 dark:text-muted-foreground whitespace-pre-wrap font-mono p-4">
-                  {review.rawText || "No raw text available."}
-                </pre>
               )}
             </div>
           </div>

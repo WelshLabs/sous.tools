@@ -33,9 +33,11 @@
   },
   "dependencies": {
     "@soustools/api-types": "workspace:*",
+    "@soustools/supabase": "workspace:*",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.17.0",
     "next-themes": "^0.4.6",
+    "socket.io-client": "^4.8.3",
     "zustand": "^5.0.14"
   },
   "scripts": {

@@ -14,6 +14,8 @@ export interface RecipeIngredientsTableProps {
    * The app layer recalculates scaling when this fires.
    */
   onWeightChange: (ingId: string, amount: number, unit: string) => void;
+  /** Available master ingredients to calculate live costs. */
+  masterIngredients?: import("@soustools/api-types").MasterIngredient[];
 }
 
 /**
@@ -38,6 +40,7 @@ export interface RecipeIngredientsTableProps {
 export function RecipeIngredientsTable({
   ingredients,
   onWeightChange,
+  masterIngredients,
 }: RecipeIngredientsTableProps) {
   return (
     <div
@@ -61,6 +64,7 @@ export function RecipeIngredientsTable({
             <th className="p-3 w-32">Scaled Weight</th>
             <th className="p-3 w-24">Unit</th>
             <th className="p-3">Type</th>
+            <th className="p-3 w-24 text-right">Cost</th>
           </tr>
         </thead>
         <tbody>
@@ -130,6 +134,15 @@ export function RecipeIngredientsTable({
                       ? `${ing.percentageOfBase}% Baker's`
                       : "Fixed"}
                 </span>
+              </td>
+              <td className="p-3 text-right font-medium text-[11px]" style={{ color: "var(--color-muted-foreground)" }}>
+                {(() => {
+                  const masterIng = masterIngredients?.find(m => m.id === ing.ingredientId);
+                  if (masterIng && masterIng.currentCostPerG) {
+                    return `$${(masterIng.currentCostPerG * ing.weightInGrams).toFixed(2)}`;
+                  }
+                  return "—";
+                })()}
               </td>
             </tr>
           ))}

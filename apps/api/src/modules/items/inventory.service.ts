@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { supabase } from '../../lib/supabase';
+import { Injectable } from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
 
 export interface AdjustStockDto {
   orgId: string;
@@ -28,8 +28,9 @@ export interface StockRow {
 export class InventoryService {
   async getCurrentStock(orgId: string): Promise<StockRow[]> {
     const { data, error } = await supabase
-      .from('inventory_on_hand')
-      .select(`
+      .from("inventory_on_hand")
+      .select(
+        `
         id,
         item_id,
         quantity_g,
@@ -43,8 +44,9 @@ export class InventoryService {
           purchase_unit,
           current_cost_per_g
         )
-      `)
-      .eq('organization_id', orgId);
+      `,
+      )
+      .eq("organization_id", orgId);
 
     if (error) {
       throw new Error(error.message);
@@ -65,14 +67,14 @@ export class InventoryService {
       return {
         id: row.id,
         itemId: row.item_id,
-        itemName: row.items?.name || 'Unknown',
+        itemName: row.items?.name || "Unknown",
         quantityG: row.quantity_g,
         lotNumber: row.lot_number,
         lotExpiry: row.lot_expiry,
         location: row.location,
         daysUntilExpiry,
         currentCostPerG: row.items?.current_cost_per_g || null,
-        purchaseUnit: row.items?.purchase_unit || 'LB',
+        purchaseUnit: row.items?.purchase_unit || "LB",
         eachWeightG: row.items?.each_weight_g || null,
       };
     });
@@ -90,10 +92,9 @@ export class InventoryService {
   }
 
   async adjustStock(dto: AdjustStockDto): Promise<void> {
-    const lotNum = dto.lotNumber || 'default';
-    const { error } = await supabase
-      .from('inventory_on_hand')
-      .upsert({
+    const lotNum = dto.lotNumber || "default";
+    const { error } = await supabase.from("inventory_on_hand").upsert(
+      {
         organization_id: dto.orgId,
         item_id: dto.itemId,
         quantity_g: dto.quantityG,
@@ -101,9 +102,50 @@ export class InventoryService {
         lot_expiry: dto.lotExpiry || null,
         location: dto.location || null,
         updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'organization_id,item_id,lot_number',
-      });
+      },
+      {
+        onConflict: "organization_id,item_id,lot_number",
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async receiveStock(
+    orgId: string,
+    itemId: string,
+    quantityGToAdd: number,
+    lotNumber?: string,
+  ): Promise<void> {
+    const lotNum = lotNumber || "default";
+    const { data: existing, error: fetchErr } = await supabase
+      .from("inventory_on_hand")
+      .select("quantity_g")
+      .eq("organization_id", orgId)
+      .eq("item_id", itemId)
+      .eq("lot_number", lotNum)
+      .single();
+
+    if (fetchErr) throw fetchErr;
+
+    // It's okay if existing is null (row doesn't exist yet)
+    const currentG = existing?.quantity_g || 0;
+    const newG = currentG + quantityGToAdd;
+
+    const { error } = await supabase.from("inventory_on_hand").upsert(
+      {
+        organization_id: orgId,
+        item_id: itemId,
+        quantity_g: newG,
+        lot_number: lotNum,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "organization_id,item_id,lot_number",
+      },
+    );
 
     if (error) {
       throw new Error(error.message);

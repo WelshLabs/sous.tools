@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from "@nestjs/common";
+import { Controller, Get, Post, Res, HttpCode } from "@nestjs/common";
 import { Response } from "express";
 import { AppService } from "./app.service";
 import { ApiResponse, HelloResponse } from "@soustools/api-types";
@@ -32,12 +32,30 @@ export class AppController {
     };
   }
 
-  @Get('favicon.ico')
+  @Get("favicon.ico")
   getFavicon(@Res() res: Response) {
     const pixel = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
-      'base64'
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+      "base64",
     );
-    res.type('image/png').send(pixel);
+    res.type("image/png").send(pixel);
+  }
+  @Get("notifications/unread")
+  getUnreadNotifications(): ApiResponse<any[]> {
+    return {
+      success: true,
+      data: [],
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post("auth/logout")
+  @HttpCode(200)
+  logout(): ApiResponse<null> {
+    return {
+      success: true,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
   }
 }

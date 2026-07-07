@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { config } from "@soustools/config";
 import { IVisionService } from "./IVisionService";
 
 @Injectable()
@@ -53,13 +54,23 @@ ${rawText ? `Additional extracted text context: ${rawText}` : ""}`;
 Return a JSON object following this structure:
 {
   "vendorName": "string",
+  "vendorAddress": "string",
+  "vendorPhone": "string",
+  "vendorEmail": "string",
   "invoiceNumber": "string",
+  "orderNumber": "string",
   "date": "string",
   "totalAmount": 123.45,
+  "previousBalance": 0.00,
+  "totalDue": 123.45,
+  "notes": "string",
   "items": [
     {
       "rawName": "string",
       "quantity": 2,
+      "uom": "lbs",
+      "unit": "LBS",
+      "category": "ingredient",
       "pricePerUnit": 10.50,
       "totalPrice": 21.00
     }
@@ -71,13 +82,13 @@ ${rawText ? `Additional extracted text context: ${rawText}` : ""}`;
   }
 
   private async queryOllama(prompt: string, imageBuffer?: Buffer, _mimeType?: string): Promise<any> {
-    let host = process.env.OLLAMA_HOST || "http://localhost:11434";
+    let host = config.OLLAMA_HOST;
     if (!host.endsWith("/api/generate")) {
       host = host.replace(/\/$/, "") + "/api/generate";
     }
 
     const payload = {
-      model: process.env.OLLAMA_MODEL || "llama3.2-vision",
+      model: config.OLLAMA_MODEL,
       prompt,
       images: imageBuffer ? [imageBuffer.toString("base64")] : [],
       stream: false,

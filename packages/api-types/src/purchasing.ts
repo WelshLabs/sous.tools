@@ -23,7 +23,7 @@ export interface PurchaseOrder {
   id: string;
   organization_id: string;
   vendor_id: string;
-  status: 'DRAFT' | 'SUBMITTED' | 'RECONCILED';
+  status: 'DRAFT' | 'SUBMITTED' | 'RECEIVED' | 'RECONCILED';
   order_date: string;
   created_at: string;
   

@@ -20,8 +20,8 @@ services:
       - "6001:6001"
     environment:
       - NODE_ENV=development
-      - VISION_PROVIDER=ollama
-      - OLLAMA_URL=http://ollama:11434
+      # - VISION_PROVIDER=ollama
+      # - OLLAMA_HOST=http://ollama:11434
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}

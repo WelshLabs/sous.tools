@@ -18,12 +18,17 @@ import {
 import { runControllerAction } from "../signage/response.helper";
 import { supabase } from "../../lib/supabase";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { InventoryService } from "../items/inventory.service";
+import { PriceHistoryService } from "../items/price-history.service";
+import { WhiteboardService } from "../items/whiteboard.service";
 
 @Controller("ingestion")
 export class IngestionController {
-
   constructor(
     @InjectQueue("ingestion") private readonly ingestionQueue: Queue,
+    private readonly inventoryService: InventoryService,
+    private readonly priceHistoryService: PriceHistoryService,
+    private readonly whiteboardService: WhiteboardService,
   ) {}
 
   @Get()
@@ -33,6 +38,19 @@ export class IngestionController {
         .from("ingestion_reviews")
         .select("*")
         .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return data;
+    });
+  }
+
+  @Get(":id")
+  async getReview(@Param("id") id: string): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      const { data, error } = await supabase
+        .from("ingestion_reviews")
+        .select("*")
+        .eq("id", id)
+        .single();
       if (error) throw new Error(error.message);
       return data;
     });
@@ -113,7 +131,10 @@ export class IngestionController {
   }
 
   @Post("review/:id/commit")
-  async commitReview(@Param("id") id: string): Promise<ApiResponse<void>> {
+  async commitReview(
+    @Param("id") id: string,
+    @Body() body?: { parsed_data?: any },
+  ): Promise<ApiResponse<void>> {
     return runControllerAction(async () => {
       const { data: review, error } = await supabase
         .from("ingestion_reviews")
@@ -124,7 +145,13 @@ export class IngestionController {
 
       if (review.status === "APPROVED") return;
 
-      const parsed = review.parsed_data as any;
+      const parsed = body?.parsed_data || review.parsed_data;
+      if (body?.parsed_data) {
+        await supabase
+          .from("ingestion_reviews")
+          .update({ parsed_data: parsed })
+          .eq("id", id);
+      }
 
       const recipesToCommit = parsed.recipes
         ? parsed.recipes
@@ -264,6 +291,54 @@ export class IngestionController {
             ordered_qty: item.quantity || 1,
             price_per_unit: item.pricePerUnit || 0,
           });
+
+          if (item.itemId) {
+            let masterEachWeight = 0;
+            let masterPurchaseUnit = "CASE";
+            let masterName = item.rawName;
+
+            const { data: master } = await supabase
+              .from("items")
+              .select("id, name, each_weight_g, purchase_unit")
+              .eq("id", item.itemId)
+              .single();
+
+            if (master) {
+              masterPurchaseUnit = master.purchase_unit || "CASE";
+              masterName = master.name;
+              masterEachWeight = master.each_weight_g || 0;
+
+              if (item.each_weight_g && item.each_weight_g > 0) {
+                masterEachWeight = item.each_weight_g;
+                await supabase
+                  .from("items")
+                  .update({ each_weight_g: masterEachWeight })
+                  .eq("id", master.id);
+              }
+            }
+
+            if (!masterEachWeight || masterEachWeight <= 0) {
+              await this.whiteboardService.create({
+                raw_name: `Invoice ${parsed.invoiceNumber || "Unknown"} received, but ${masterName} is missing a weight conversion. Stock not added.`,
+              });
+            } else {
+              const quantityG = (item.quantity || 1) * masterEachWeight;
+              await this.inventoryService.receiveStock(
+                review.organization_id,
+                item.itemId,
+                quantityG,
+              );
+            }
+
+            await this.priceHistoryService.recordPrice({
+              itemId: item.itemId,
+              orgId: review.organization_id,
+              purchaseUnit: masterPurchaseUnit,
+              unitCost: item.pricePerUnit || 0,
+              vendorId: vendor?.id || null,
+              purchaseOrderId: po.id,
+            });
+          }
         }
       }
 
@@ -348,5 +423,4 @@ export class IngestionController {
       }
     });
   }
-
 }

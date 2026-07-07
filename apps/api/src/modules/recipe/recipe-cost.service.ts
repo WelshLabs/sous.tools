@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { supabase } from '../../lib/supabase';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
 
 export interface CostIngredient {
   ingredientId: string;
@@ -14,26 +14,30 @@ export interface RecipeCost {
   linkedSalePrice?: number;
   marginPct?: number;
   ingredients: CostIngredient[];
+  suggestedSalePrice?: number;
 }
 
 @Injectable()
 export class RecipeCostService {
-  async getRecipeCost(recipeId: string): Promise<RecipeCost> {
+  async getRecipeCost(
+    recipeId: string,
+    wastePct: number = 0,
+    portions: number = 1,
+  ): Promise<RecipeCost> {
     const { data: recipe, error: recipeError } = await supabase
-      .from('recipes')
-      .select('yield_count')
-      .eq('id', recipeId)
+      .from("recipes")
+      .select("yield_count")
+      .eq("id", recipeId)
       .single();
 
     if (recipeError || !recipe) {
       throw new NotFoundException(`Recipe with ID ${recipeId} not found`);
     }
 
-    const yieldCount = Number(recipe.yield_count) || 1;
-
     const { data: ingredients, error: ingError } = await supabase
-      .from('recipe_ingredients')
-      .select(`
+      .from("recipe_ingredients")
+      .select(
+        `
         id,
         amount,
         unit,
@@ -45,8 +49,9 @@ export class RecipeCostService {
           units_per_case,
           current_cost_per_g
         )
-      `)
-      .eq('recipe_id', recipeId);
+      `,
+      )
+      .eq("recipe_id", recipeId);
 
     if (ingError) {
       throw new Error(ingError.message);
@@ -55,7 +60,7 @@ export class RecipeCostService {
     const costIngredients: CostIngredient[] = [];
     let totalCostUsd = 0;
 
-    for (const ing of (ingredients || [])) {
+    for (const ing of ingredients || []) {
       const item = ing.items as any;
       if (!item) continue;
 
@@ -64,47 +69,47 @@ export class RecipeCostService {
       const unitsPerCase = Number(item.units_per_case) || 0;
       const costPerG = Number(item.current_cost_per_g) || 0;
       const amount = Number(ing.amount) || 0;
-      const unit = (ing.unit || '').toUpperCase();
+      const unit = (ing.unit || "").toUpperCase();
 
       let weightG = 0;
       switch (unit) {
-        case 'G':
+        case "G":
           weightG = amount;
           break;
-        case 'KG':
+        case "KG":
           weightG = amount * 1000;
           break;
-        case 'LB':
+        case "LB":
           weightG = amount * 453.59237;
           break;
-        case 'OZ':
+        case "OZ":
           weightG = amount * 28.349523;
           break;
-        case 'ML':
+        case "ML":
           weightG = amount * density;
           break;
-        case 'L':
+        case "L":
           weightG = amount * density * 1000;
           break;
-        case 'TSP':
+        case "TSP":
           weightG = amount * density * 4.92892;
           break;
-        case 'TBSP':
+        case "TBSP":
           weightG = amount * density * 14.7868;
           break;
-        case 'CUP':
+        case "CUP":
           weightG = amount * density * 236.588;
           break;
-        case 'GAL':
+        case "GAL":
           weightG = amount * density * 3785.41;
           break;
-        case 'QT':
+        case "QT":
           weightG = amount * density * 946.353;
           break;
-        case 'EACH':
+        case "EACH":
           weightG = amount * eachWeight;
           break;
-        case 'CASE':
+        case "CASE":
           weightG = amount * eachWeight * unitsPerCase;
           break;
         default:
@@ -122,12 +127,18 @@ export class RecipeCostService {
       });
     }
 
-    const costPerServingUsd = totalCostUsd / yieldCount;
+    // Apply yield loss: True Batch Cost = Raw Batch Cost / (1 - (wastePct / 100))
+    const safeWastePct = Math.min(Math.max(wastePct, 0), 99.9);
+    const trueBatchCostUsd = totalCostUsd / (1 - safeWastePct / 100);
+
+    // Apply portion sizing: True Plate Cost
+    const safePortions = portions > 0 ? portions : 1;
+    const costPerServingUsd = trueBatchCostUsd / safePortions;
 
     const { data: link, error: linkError } = await supabase
-      .from('pos_item_recipe_links')
-      .select('portion_fraction, pos_items (price)')
-      .eq('recipe_id', recipeId)
+      .from("pos_item_recipe_links")
+      .select("portion_fraction, pos_items (price)")
+      .eq("recipe_id", recipeId)
       .limit(1)
       .maybeSingle();
 
@@ -147,11 +158,14 @@ export class RecipeCostService {
       }
     }
 
+    const suggestedSalePrice = costPerServingUsd / 0.28;
+
     return {
-      totalCostUsd,
+      totalCostUsd: trueBatchCostUsd, // Returning the adjusted batch cost
       costPerServingUsd,
       linkedSalePrice,
       marginPct,
+      suggestedSalePrice,
       ingredients: costIngredients,
     };
   }

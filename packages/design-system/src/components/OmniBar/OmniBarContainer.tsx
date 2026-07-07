@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
+import { createBrowserClient } from "@soustools/supabase";
+import { io, Socket } from "socket.io-client";
 
 export function OmniBarContainer() {
   const pathname = usePathname();
@@ -14,8 +16,61 @@ export function OmniBarContainer() {
   // Otherwise, it can be toggled via the circular button in the app bar.
   const [isExpanded, setIsExpanded] = useState(isFocusPage);
   const [isListening, setIsListening] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [inputText, setInputText] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [volume, setVolume] = useState(0);
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    let newSocket: Socket | null = null;
+    const initSocket = async () => {
+      try {
+        const supabase = createBrowserClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.access_token) return;
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
+
+        newSocket = io(socketUrl + "/commands", {
+          auth: { token: session.access_token },
+          transports: ["websocket"]
+        });
+
+        newSocket.on("command_status", (data: any) => {
+          if (data.state === "error") {
+            setErrorMessage(data.message);
+            setIsSubmitting(false);
+            setIsListening(false);
+          } else if (data.state === "success") {
+            setInputText(data.message);
+            setTimeout(() => {
+              setInputText("");
+              setIsListening(false);
+              setIsSubmitting(false);
+              if (!isFocusPage) setIsExpanded(false);
+            }, 2000);
+          } else {
+            // Checkpoint event updates the text box
+            setInputText(data.message);
+          }
+        });
+
+        setSocket(newSocket);
+      } catch (err) {
+        console.error("Failed to initialize WebSocket:", err);
+      }
+    };
+
+    initSocket();
+
+    return () => {
+      if (newSocket) newSocket.disconnect();
+    };
+  }, [isFocusPage]);
 
   // Sync expanded state if user navigates to/from /os
   useEffect(() => {
@@ -49,8 +104,6 @@ export function OmniBarContainer() {
     };
   }, [isListening]);
 
-
-
   const handleToggle = () => {
     // If we are on the OS page, clicking outside shouldn't collapse it
     // because it's the main interface.
@@ -61,7 +114,7 @@ export function OmniBarContainer() {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
-    
+
     // Auto-listen trigger scaffold (if user deletes all text)
     if (e.target.value === "") {
       setIsListening(true);
@@ -73,27 +126,34 @@ export function OmniBarContainer() {
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (inputText.trim()) {
-        console.log("Submitting:", inputText);
-        
-        try {
-          await fetch('/api/commands', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              command: inputText.trim(),
-              source: 'omnibar',
-              path: pathname,
-              context: contextPayload,
-            })
-          });
-        } catch (error) {
-          console.error("Failed to submit command:", error);
-        }
+      
+      if (isSubmitting) return;
 
-        setInputText("");
-        setIsListening(false);
-        if (!isFocusPage) setIsExpanded(false);
+      if (inputText.trim()) {
+        console.log("Submitting via WebSocket:", inputText);
+        setIsSubmitting(true);
+        setErrorMessage(null);
+
+        try {
+          if (!socket || !socket.connected) {
+            setErrorMessage("WebSocket not connected. Attempting reconnect...");
+            socket?.connect();
+            setIsSubmitting(false);
+            return;
+          }
+
+          socket.emit("executeCommand", {
+            command: inputText.trim(),
+            source: "omnibar",
+            path: pathname,
+            context: contextPayload,
+          });
+          
+        } catch (error: any) {
+          console.error("Failed to emit command:", error);
+          setErrorMessage(error.message || "Network error occurred.");
+          setIsSubmitting(false);
+        }
       }
     } else if (e.key === "Escape") {
       e.preventDefault();
@@ -102,34 +162,34 @@ export function OmniBarContainer() {
   };
 
   const handleMicClick = () => {
-    // @ts-ignore
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
       return;
     }
-    
+
     setIsListening(true);
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
-    
+
     recognition.onresult = (event: any) => {
       const transcript = Array.from(event.results)
         .map((result: any) => result[0].transcript)
         .join("");
       setInputText(transcript);
     };
-    
+
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event.error);
       setIsListening(false);
     };
-    
+
     recognition.onend = () => {
       setIsListening(false);
     };
-    
+
     recognition.start();
   };
 
@@ -148,6 +208,8 @@ export function OmniBarContainer() {
     <OmniBarPresentation
       isExpanded={isExpanded}
       isListening={isListening}
+      isSubmitting={isSubmitting}
+      errorMessage={errorMessage}
       inputText={inputText}
       volume={volume}
       isFocusPage={isFocusPage}

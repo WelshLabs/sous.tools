@@ -36,6 +36,7 @@ export interface MasterIngredient {
   isGlutenSource?: boolean;
   fdcId?: number | null;
   nutritionVerifiedAt?: string | null;
+  currentCostPerG?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -102,6 +103,7 @@ export interface Recipe {
   recipeIngredients?: RecipeIngredient[];
   tagIds?: string[];
   posItemId?: string | null;
+  suggestedSalePrice?: string | null;
 }
 
 export interface RecipeIngredient {
@@ -135,18 +137,24 @@ export const IngredientSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string(),
   description: z.string().optional(),
-  macros: z.object({
-    calories: z.number().nullable(),
-    proteinG: z.number().nullable(),
-    carbsG: z.number().nullable(),
-    fatG: z.number().nullable(),
-  }).optional(),
+  macros: z
+    .object({
+      calories: z.number().nullable(),
+      proteinG: z.number().nullable(),
+      carbsG: z.number().nullable(),
+      fatG: z.number().nullable(),
+    })
+    .optional(),
   allergens: z.array(z.string()).optional(),
-  vendorMappings: z.array(z.object({
-    vendorId: z.string(),
-    vendorItemCode: z.string(),
-    vendorItemName: z.string().optional(),
-  })).optional(),
+  vendorMappings: z
+    .array(
+      z.object({
+        vendorId: z.string(),
+        vendorItemCode: z.string(),
+        vendorItemName: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const RecipeIngredientSchema = z.object({
@@ -177,4 +185,3 @@ export const RecipeSchema = z.object({
 
 export type ZodIngredient = z.infer<typeof IngredientSchema>;
 export type ZodRecipe = z.infer<typeof RecipeSchema>;
-

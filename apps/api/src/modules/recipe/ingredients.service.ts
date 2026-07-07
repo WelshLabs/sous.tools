@@ -88,6 +88,7 @@ export class IngredientsService {
       densityGMl: Number(row.density_g_ml),
       nutritionMacros: row.nutrition_macros || { calories: null, proteinG: null, carbsG: null, fatG: null },
       allergens: row.allergens || [],
+      currentCostPerG: Number(row.current_cost_per_g) || 0,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };

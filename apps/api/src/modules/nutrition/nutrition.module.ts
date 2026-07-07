@@ -15,6 +15,6 @@ import { LabelRendererService } from "./label-renderer.service";
     UsdaResolverService,
     LabelRendererService,
   ],
-  exports: [NutritionService],
+  exports: [NutritionService, UsdaResolverService, DietaryClassifierService],
 })
 export class NutritionModule {}

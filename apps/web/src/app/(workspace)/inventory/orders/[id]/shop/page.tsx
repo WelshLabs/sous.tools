@@ -137,7 +137,7 @@ export default function SelfShopPage() {
             </span>
           </div>
 
-          {allChecked && (
+          {allChecked && po.status !== 'SUBMITTED' && po.status !== 'RECEIVED' && po.status !== 'RECONCILED' && (
             <div className="text-center animate-in zoom-in">
               <p className="text-green-400 font-bold text-xl mb-2">
                 Shopping Complete!
@@ -146,6 +146,47 @@ export default function SelfShopPage() {
                 To reconcile pricing, please scan the physical receipt using the
                 Ingestion importer.
               </p>
+            </div>
+          )}
+
+          {po.status === 'SUBMITTED' && (
+            <div className="text-center animate-in zoom-in space-y-4">
+              <p className="text-blue-400 font-bold text-xl mb-2">
+                Order Submitted
+              </p>
+              <p className="text-sm text-muted-foreground">
+                When you receive the physical invoice, ingest it here to automatically reconcile this purchase order.
+              </p>
+              <label className="cursor-pointer inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 transition-all">
+                Ingest Invoice
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    formData.append("po_id", po.id);
+                    
+                    try {
+                      // Post to the backend ingestion endpoint
+                      const res = await fetch("/api/ingestion", {
+                        method: "POST",
+                        body: formData
+                      });
+                      if (res.ok) {
+                        alert("Invoice ingested successfully! It is now processing.");
+                      } else {
+                        alert("Failed to ingest invoice.");
+                      }
+                    } catch (err) {
+                      console.error("Upload error", err);
+                    }
+                  }}
+                />
+              </label>
             </div>
           )}
         </div>

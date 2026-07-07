@@ -21,6 +21,8 @@ export interface RecipeCostPanelProps {
    * The app layer should POST to /api/recipes/:id/versions.
    */
   onSaveVersion: () => void | Promise<void>;
+  /** Called when waste or portions change, so the app layer can refetch */
+  onCostFactorsChange?: (wastePct: number, portions: number) => void;
 }
 
 /**
@@ -52,8 +54,11 @@ export function RecipeCostPanel({
   loading = false,
   saving = false,
   onSaveVersion,
+  onCostFactorsChange,
 }: RecipeCostPanelProps) {
   const [savedFlash, setSavedFlash] = useState(false);
+  const [wastePct, setWastePct] = useState(0);
+  const [portions, setPortions] = useState(1);
 
   const handleSave = async () => {
     await onSaveVersion();
@@ -106,7 +111,7 @@ export function RecipeCostPanel({
     );
   }
 
-  const { totalCostUsd, costPerServingUsd, linkedSalePrice, marginPct } =
+  const { totalCostUsd, costPerServingUsd, linkedSalePrice, marginPct, suggestedSalePrice } =
     costData;
 
   const marginColor: string =
@@ -154,12 +159,52 @@ export function RecipeCostPanel({
         </button>
       </div>
 
+      {/* Cost Factors Inputs */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[10px] font-bold uppercase mb-1" style={{ color: "var(--color-muted-foreground)" }}>
+            Yield / Waste (%)
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="99"
+            value={wastePct}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value) || 0;
+              setWastePct(val);
+              onCostFactorsChange?.(val, portions);
+            }}
+            className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+            style={{ backgroundColor: "var(--color-input)", border: "1px solid var(--color-border)", color: "var(--color-foreground)" }}
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-bold uppercase mb-1" style={{ color: "var(--color-muted-foreground)" }}>
+            Portions
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={portions}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value) || 1;
+              setPortions(val);
+              onCostFactorsChange?.(wastePct, val);
+            }}
+            className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+            style={{ backgroundColor: "var(--color-input)", border: "1px solid var(--color-border)", color: "var(--color-foreground)" }}
+          />
+        </div>
+      </div>
+
       {/* Summary tiles */}
-      <div className="grid grid-cols-2 gap-2 text-center">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 text-center">
         {[
-          { label: "Total Cost",  value: `$${totalCostUsd.toFixed(2)}`,      color: "var(--color-foreground)" },
-          { label: "Per Serving", value: `$${costPerServingUsd.toFixed(2)}`, color: "var(--color-foreground)" },
-          { label: "Sale Price",  value: linkedSalePrice ? `$${linkedSalePrice.toFixed(2)}` : "—", color: "var(--color-foreground)" },
+          { label: "Batch Cost",  value: `$${totalCostUsd.toFixed(2)}`,      color: "var(--color-foreground)" },
+          { label: "Plate Cost", value: `$${costPerServingUsd.toFixed(2)}`, color: "var(--color-foreground)" },
+          { label: "Sug. Sale Price",  value: suggestedSalePrice ? `$${suggestedSalePrice.toFixed(2)}` : "—", color: "#4cc9f0" },
+          { label: "Linked POS",  value: linkedSalePrice ? `$${linkedSalePrice.toFixed(2)}` : "—", color: "var(--color-foreground)" },
           { label: "Margin",      value: marginPct !== undefined ? `${marginPct.toFixed(1)}%` : "—", color: marginColor },
         ].map(({ label, value, color }) => (
           <div key={label} className="p-2 rounded-lg" style={tileStyle}>

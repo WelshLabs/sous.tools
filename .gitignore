@@ -75,3 +75,5 @@ apps/api/schema.gql
 
 # Auto-generated Config Secrets
 packages/config/src/secrets.ts
+packages/.secrets.cache.json
+.secrets.cache.json

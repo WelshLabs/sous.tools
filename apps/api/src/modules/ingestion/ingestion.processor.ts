@@ -20,6 +20,7 @@ export class IngestionProcessor extends WorkerHost {
     
     let rawText = "";
     let sourceDocumentUrl = "";
+    let actualSourceDocumentUrl = "";
     let sourceName = null;
 
     try {
@@ -37,7 +38,7 @@ export class IngestionProcessor extends WorkerHost {
       }
 
       let parsedData: any = {};
-      const actualSourceDocumentUrl = job.data.sourceDocumentUrl || sourceDocumentUrl;
+      actualSourceDocumentUrl = job.data.sourceDocumentUrl || sourceDocumentUrl;
       let buffer: Buffer | undefined = undefined;
       let mimeType: string | undefined = undefined;
 
@@ -78,7 +79,7 @@ export class IngestionProcessor extends WorkerHost {
           raw_text: rawText,
           parsed_data: parsedData,
           status: "PENDING",
-          source_document_url: sourceDocumentUrl || null
+          source_document_url: actualSourceDocumentUrl || null
         };
         if (sourceName) updatePayload.source_name = sourceName;
 
@@ -91,7 +92,7 @@ export class IngestionProcessor extends WorkerHost {
           raw_text: rawText,
           parsed_data: parsedData,
           status: "PENDING",
-          source_document_url: sourceDocumentUrl || null
+          source_document_url: actualSourceDocumentUrl || null
         };
         if (sourceName) insertPayload.source_name = sourceName;
 
@@ -110,14 +111,21 @@ export class IngestionProcessor extends WorkerHost {
 
       if (notifError) console.error("Failed to create notification:", notifError);
     } catch (err: any) {
-      console.error(`AI Ingestion job failed for review ID ${job.data.reviewId || "unknown"}:`, err);
+      console.error(`AI Ingestion job failed (Attempt ${job.attemptsMade + 1}/${job.opts.attempts || 1}) for review ID ${job.data.reviewId || "unknown"}:`, err);
+      
+      const maxAttempts = job.opts.attempts || 1;
+      const willRetry = job.attemptsMade + 1 < maxAttempts;
+      
       if (job.data.reviewId) {
         await supabase.from("ingestion_reviews").update({
           parsed_data: { error: err.message || "Failed to process ingestion" },
-          status: "FAILED",
-          source_document_url: sourceDocumentUrl || null
+          status: willRetry ? "PENDING" : "FAILED",
+          source_document_url: actualSourceDocumentUrl || null
         }).eq("id", job.data.reviewId);
       }
+      
+      // If we don't want to retry non-transient errors, we could throw an UnrecoverableError,
+      // but BullMQ will naturally exhaust attempts. For now, just throw the error.
       throw err;
     }
 

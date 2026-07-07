@@ -244,20 +244,23 @@ export function OrdersPanel({
               </p>
             </div>
           ) : (
-            historyOrders.map(po => (
-              <div key={po.id} className="glass-panel p-6 rounded-2xl flex items-center justify-between border border-border">
-                <div>
-                  <h3 className="font-bold text-lg">{po.vendors?.name || "Unknown Vendor"}</h3>
-                  <p className="text-sm text-muted-foreground">{new Date(po.created_at).toLocaleDateString()} - {po.status}</p>
+            historyOrders.map(po => {
+              const isReceived = po.status === 'RECEIVED' || po.status === 'RECONCILED';
+              return (
+                <div key={po.id} className={`glass-panel p-6 rounded-2xl flex items-center justify-between border border-border transition-opacity ${isReceived ? 'opacity-50' : ''}`}>
+                  <div>
+                    <h3 className="font-bold text-lg">{po.vendors?.name || "Unknown Vendor"}</h3>
+                    <p className="text-sm text-muted-foreground">{new Date(po.created_at).toLocaleDateString()} - {po.status}</p>
+                  </div>
+                  <button
+                    onClick={() => onShopOrder(po.id)}
+                    className="px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-colors"
+                  >
+                    View Order
+                  </button>
                 </div>
-                <button
-                  onClick={() => onShopOrder(po.id)}
-                  className="px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-colors"
-                >
-                  View Order
-                </button>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       ) : (
