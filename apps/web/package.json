@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "sous-config next dev -p 5001 --webpack",
-    "build": "sous-config next build --webpack",
-    "start": "sous-config next start",
+    "dev": "node ../../packages/config/dist/cli.js next dev -p 5001 --webpack",
+    "build": "node ../../packages/config/dist/cli.js next build --webpack",
+    "start": "node ../../packages/config/dist/cli.js next start",
     "lint": "next lint",
     "test:e2e": "playwright test"
   },
