@@ -14,7 +14,7 @@ if (process.env.VERCEL) {
   console.log(
     "Vercel environment detected. Generating stub secrets file for tsc...",
   );
-  require("fs").writeFileSync(
+  fs.writeFileSync(
     __dirname + "/secrets.ts",
     "export const secrets = process.env as any;\nexport default process.env as any;\n",
   );
