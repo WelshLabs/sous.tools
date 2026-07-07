@@ -11,9 +11,7 @@ export default async function TVSignageEditorPage({ params }: PageProps) {
   const { deckId } = await params;
   const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
   
-  const cookieStore = await cookies();
-  const supabase = createServerClient(cookieStore);
-
+  // Removed unused cookieStore
   let deck = null;
   let items = [];
 

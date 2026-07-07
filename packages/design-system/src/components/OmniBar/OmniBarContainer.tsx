@@ -32,7 +32,7 @@ export function OmniBarContainer() {
         
         if (!session?.access_token) return;
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
         const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
 
         newSocket = io(socketUrl + "/commands", {

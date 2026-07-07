@@ -32,11 +32,11 @@ const isMockEnv =
   String(process.env.INFISICAL_MOCK).toLowerCase() === "true" ||
   process.env.NODE_ENV === "test" ||
   process.env.VITEST === "true" ||
-  (process.env.SUPABASE_URL || "").includes("placeholder-project.supabase.co");
+  (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").includes("placeholder-project.supabase.co");
 
 export const config: Config = Object.freeze({
-  SUPABASE_URL: process.env.SUPABASE_URL || "https://placeholder-project.supabase.co",
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || "placeholder-anon-key",
+  SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co",
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key",
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-service-role",
   IS_MOCK_ENV: isMockEnv,
   IS_DEVELOPMENT: isDevelopment,

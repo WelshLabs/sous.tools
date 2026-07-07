@@ -30,11 +30,9 @@ export default function CatalogEditorPage() {
   const fetchCatalog = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("pos_items")
-        .select("*")
-        .order("name", { ascending: true });
-      if (error) throw error;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-simulator/items`);
+      if (!res.ok) throw new Error("Failed to fetch catalog items");
+      const data = await res.json();
       setItems((data as PosItem[]) || []);
     } catch (err: any) {
       toast.error(`Failed to load catalog: ${err.message}`);
@@ -61,18 +59,18 @@ export default function CatalogEditorPage() {
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("pos_items")
-        .update({
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-simulator/items/${editingItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: editName,
           description: editDesc || null,
           price: parseFloat(editPrice) || 0,
           is_sold_out: editSoldOut,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", editingItem.id);
+        }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error("Failed to update item");
 
       toast.success("Catalog item updated successfully!");
       setEditingItem(null);

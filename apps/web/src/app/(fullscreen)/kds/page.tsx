@@ -87,7 +87,7 @@ export default function KDSPage() {
     // 1. Fetch organization ID
     const fetchOrg = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/organizations?limit=1`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/organizations?limit=1`);
         if (res.ok) {
           const payload = await res.json();
           if (payload.data && payload.data.length > 0) {
@@ -102,7 +102,7 @@ export default function KDSPage() {
     // 2. Fetch POS items to enable 86'ing
     const fetchItems = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/pos-items`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos-items`);
         if (res.ok) {
           const payload = await res.json();
           if (payload.data) setPosItems(payload.data);
@@ -215,7 +215,7 @@ export default function KDSPage() {
         };
       });
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/pos-transactions/bulk`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos-transactions/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(transactionsToInsert)
@@ -233,7 +233,7 @@ export default function KDSPage() {
   const handleToggleSoldOut = async (itemId: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/pos-items/${itemId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos-items/${itemId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_sold_out: nextStatus })

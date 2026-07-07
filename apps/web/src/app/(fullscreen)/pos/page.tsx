@@ -71,33 +71,22 @@ export default function POSRegisterPage() {
   const loadPOSCatalog = async () => {
     setLoading(true);
     try {
-      // 1. Fetch organization
-//       const { data: orgData } = await supabase.from("organizations").select("id").limit(1);
-      const targetOrgId = orgData?.[0]?.id || "d0000000-0000-0000-0000-000000000000";
+      // 1. Fetch organization (Mocking target org for now)
+      const targetOrgId = "d0000000-0000-0000-0000-000000000000";
       setOrgId(targetOrgId);
 
       // 2. Fetch POS items
-      const { data: posItems } = await supabase
-        .from("pos_items")
-        .select("*")
-        .eq("organization_id", targetOrgId);
+      const itemsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-simulator/items?organizationId=${targetOrgId}`);
+      const posItems = itemsRes.ok ? await itemsRes.json() : [];
       
       // 3. Fetch modifier groups
-      const { data: modGroups } = await supabase
-        .from("pos_modifier_groups")
-        .select("*")
-        .eq("organization_id", targetOrgId);
+      const modGroups: any[] = []; // Not implemented in API yet
 
       // 4. Fetch modifier options
-      const { data: modOptions } = await supabase
-        .from("pos_modifier_options")
-        .select("*")
-        .eq("organization_id", targetOrgId);
+      const modOptions: any[] = []; // Not implemented in API yet
 
       // 5. Fetch POS item modifier group links
-      const { data: links } = await supabase
-        .from("pos_item_modifier_groups")
-        .select("*");
+      const links: any[] = []; // Not implemented in API yet
 
       if (posItems) setItems(posItems);
       if (modGroups) setModifierGroups(modGroups);

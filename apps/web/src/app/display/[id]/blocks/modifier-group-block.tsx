@@ -40,26 +40,21 @@ export function ModifierGroupBlock({
 
       try {
         // Resolve group
-        const { data: grpData, error: grpError } = await supabase
-          .from("pos_modifier_groups")
-          .select("id, name, min_selected_modifiers, max_selected_modifiers")
-          .or(`id.eq.${modifierGroupId},external_id.eq.${modifierGroupId}`)
-          .single();
-
-        if (grpError || !grpData) {
-          setLoading(false);
-          return;
+        const resGrp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-modifier-groups/${modifierGroupId}`);
+        if (!resGrp.ok) throw new Error();
+        const grpData = await resGrp.json();
+        
+        if (grpData) {
+          setGroup(grpData);
+          if (onGroupLoaded) {
+            onGroupLoaded(grpData.name);
+          }
         }
 
-        setGroup(grpData as ModifierGroup);
-
         // Fetch options linked to this group
-        const { data: optsData, error: optsError } = await supabase
-          .from("pos_modifier_options")
-          .select("id, name, price, is_sold_out")
-          .eq("modifier_group_id", grpData.id);
-
-        if (!optsError && optsData) {
+        const resOpts = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-modifier-groups/${modifierGroupId}/options`);
+        const optsData = resOpts.ok ? await resOpts.json() : [];
+        if (optsData) {
           setOptions(optsData as ModifierOption[]);
         }
       } catch (err) {

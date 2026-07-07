@@ -21,7 +21,7 @@ export default function SelfShopPage() {
     const fetchPO = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/purchase-orders/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/purchase-orders/${id}`,
         );
         if (res.ok) {
           const payload = await res.json();

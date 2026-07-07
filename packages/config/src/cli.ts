@@ -108,6 +108,14 @@ async function run() {
     if (process.env[key] === undefined) {
       process.env[key] = value;
     }
+    
+    // Auto-map for Next.js browser client
+    if (key === "SUPABASE_URL" && process.env.NEXT_PUBLIC_SUPABASE_URL === undefined) {
+      process.env.NEXT_PUBLIC_SUPABASE_URL = value;
+    }
+    if (key === "SUPABASE_ANON_KEY" && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === undefined) {
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = value;
+    }
   }
 
   const [cmd, ...cmdArgs] = args;

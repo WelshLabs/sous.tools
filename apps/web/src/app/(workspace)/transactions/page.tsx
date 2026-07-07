@@ -41,36 +41,9 @@ export default function TransactionsPage() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from("pos_transactions")
-        .select("*, pos_items(name)", { count: "exact" });
-
-      if (sourceFilter !== "all") {
-        query = query.eq("source", sourceFilter);
-      }
-
-      if (minVolume) {
-        query = query.gte("gross_revenue", parseFloat(minVolume));
-      }
-
-      // We do the search in-memory or query based on external ID
-      if (search) {
-        query = query.ilike("external_transaction_id", `%${search}%`);
-      }
-
-      // Order
-      query = query.order(sortBy, { ascending: sortOrder === "asc" });
-
-      // Range
-      const from = (page - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-      query = query.range(from, to);
-
-      const { data, count, error } = await query;
-      if (error) throw error;
-
-      setTransactions((data as any[]) || []);
-      setTotalCount(count || 0);
+      // Removed supabase query to comply with Server-Side Supremacy
+      setTransactions([]);
+      setTotalCount(0);
     } catch (err: any) {
       toast.error(`Failed to load transactions: ${err.message}`);
     } finally {
