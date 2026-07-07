@@ -15,10 +15,9 @@ export default async function TVSignageEditorPage({ params }: PageProps) {
   let items = [];
 
   try {
-    const [deckRes, itemsRes, orgRes] = await Promise.all([
+    const [deckRes, itemsRes] = await Promise.all([
       fetch(`${baseUrl}/signage/layouts/${deckId}`, { cache: "no-store" }),
       fetch(`${baseUrl}/pos-simulator/items`, { cache: "no-store" }),
-      //       supabase.from("organizations").select("design_tokens").limit(1).single()
     ]);
 
     if (deckRes.ok) {
@@ -29,10 +28,6 @@ export default async function TVSignageEditorPage({ params }: PageProps) {
     if (itemsRes.ok) {
       const data = await itemsRes.json();
       items = data.data || [];
-    }
-
-    if (deck && deck.config && orgRes.data?.design_tokens) {
-      deck.config.designTokens = orgRes.data.design_tokens;
     }
   } catch (err) {
     console.error("Failed to fetch signage deck editor data:", err);

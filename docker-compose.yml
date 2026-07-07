@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   traefik:
-    image: traefik:v3.0
+    image: traefik:latest
     environment:
       - DOCKER_API_VERSION=1.44
     command:
@@ -65,7 +65,7 @@ services:
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
     volumes:
-      - /code/sous.tools:/config/workspace
+      - /home/ubuntu/code/sous.tools:/config/workspace
     restart: unless-stopped
     labels:
       - "traefik.enable=true"

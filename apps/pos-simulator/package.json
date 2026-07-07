@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "sous-config next dev -H 0.0.0.0 -p 5009",
-    "build": "sous-config next build",
-    "start": "sous-config next start",
+    "dev": "node ../../packages/config/dist/cli.js next dev -H 0.0.0.0 -p 5009",
+    "build": "node ../../packages/config/dist/cli.js next build",
+    "start": "node ../../packages/config/dist/cli.js next start",
     "lint": "next lint"
   },
   "dependencies": {
