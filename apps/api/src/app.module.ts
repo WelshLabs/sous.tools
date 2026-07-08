@@ -27,6 +27,11 @@ import { HealthModule } from "./health/health.module";
  *
  * Integrates controllers, queues, and providers for the core application.
  */
+
+if (process.env.NODE_ENV === "production" && !process.env.REDIS_HOST && !process.env.REDIS_URL) {
+  throw new Error("FATAL: REDIS_HOST is not defined in production environment");
+}
+
 @Module({
   imports: [
     CacheModule.register({
