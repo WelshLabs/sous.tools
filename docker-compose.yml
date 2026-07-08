@@ -91,7 +91,7 @@ services:
       - SUDO_PASSWORD=sousToolsPassword
       - DOCKER_MODS=linuxserver/mods:code-server-nodejs
     volumes:
-      - ~/dev.sous.tools:/config/workspace
+      - ~/dev.sous.tools:/workspace
       - ~/.config/code-server:/config
     restart: unless-stopped
     networks:
