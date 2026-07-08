@@ -115,7 +115,12 @@ async function fetchSecrets(): Promise<Record<string, string>> {
       }
     }
 
-    fs.writeFileSync(CACHE_FILE_PATH, JSON.stringify(finalSecrets, null, 2), "utf8");
+    // Only persist the cache to disk outside of production.
+    // In Docker, the filesystem is restricted (EACCES) and writing secrets
+    // to disk is a security risk. In production, secrets live in memory only.
+    if (process.env.NODE_ENV !== "production") {
+      fs.writeFileSync(CACHE_FILE_PATH, JSON.stringify(finalSecrets, null, 2), "utf8");
+    }
     return finalSecrets;
   } catch (error) {
     console.error("[@soustools/config] Infisical fetch failed:", (error as Error).message);
@@ -128,6 +133,14 @@ async function fetchSecrets(): Promise<Record<string, string>> {
 }
 
 function loadCache(): Record<string, string> {
+  // In production, the Docker filesystem is read-restricted and there is no
+  // pre-written cache to load. Skip all fs access entirely — assertProductionSecrets()
+  // will halt the process if the returned defaults are still placeholder values.
+  if (process.env.NODE_ENV === "production") {
+    console.warn("[@soustools/config] Production environment: skipping cache read. Infisical is the only source of truth.");
+    return { ...defaults };
+  }
+
   try {
     if (fs.existsSync(CACHE_FILE_PATH)) {
       console.log("[@soustools/config] Loading secrets from local cache.");

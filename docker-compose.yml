@@ -92,6 +92,7 @@ services:
       - DOCKER_MODS=linuxserver/mods:code-server-nodejs
     volumes:
       - /home/ubuntu/code/sous.tools:/config/workspace
+      - ~/.config/code-server:/config
     restart: unless-stopped
     networks:
       - default
