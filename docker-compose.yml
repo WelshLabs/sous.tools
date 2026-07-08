@@ -84,14 +84,14 @@ services:
     image: lscr.io/linuxserver/code-server:latest
     container_name: code-server
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=America/New_York
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
       - DOCKER_MODS=linuxserver/mods:code-server-nodejs
     volumes:
-      - /home/ubuntu/code/sous.tools:/config/workspace
+      - ~/dev.sous.tools:/config/workspace
       - ~/.config/code-server:/config
     restart: unless-stopped
     networks:
@@ -145,7 +145,7 @@ services:
     # 1. Override the default Ollama binary entrypoint
     entrypoint: /bin/sh
     # 2. Pass the shell command directly without the YAML '>' block scalar
-    command: -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision"
+    command: -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision && ollama pull qwen2.5-coder:7b && deepseek-coder:6.7b"
 
 volumes:
   letsencrypt:

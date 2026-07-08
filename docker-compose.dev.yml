@@ -7,7 +7,7 @@ services:
     image: redis:alpine
     command: redis-server --appendonly yes
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -17,6 +17,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
+    profiles: ["home"]
     ports:
       - "11434:11434"
     volumes:
@@ -28,9 +29,10 @@ services:
   ollama-pull:
     image: ollama/ollama:latest
     entrypoint: /bin/sh
+    profiles: ["home"]
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    command: -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision"
+    command: -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision && ollama pull qwen2.5-coder:7b && deepseek-coder:6.7b"
     depends_on:
       - ollama
     networks:
