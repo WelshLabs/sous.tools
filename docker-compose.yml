@@ -52,7 +52,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:6001/health",
+          "http://localhost:3001/health",
         ]
       interval: 10s
       timeout: 5s
@@ -74,8 +74,11 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.api.service=api"
-      - "traefik.http.services.api.loadbalancer.server.port=6001"
+      - "traefik.http.services.api.loadbalancer.server.port=3001"
     restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
 
   editor:
     image: lscr.io/linuxserver/code-server:latest
@@ -86,6 +89,7 @@ services:
       - TZ=America/New_York
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
+      - DOCKER_MODS=linuxserver/mods:code-server-nodejs
     volumes:
       - /home/ubuntu/code/sous.tools:/config/workspace
     restart: unless-stopped

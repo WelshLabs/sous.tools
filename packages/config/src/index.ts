@@ -60,8 +60,8 @@ export const config: Config = Object.freeze({
     process.env.GOOGLE_CLIENT_ID || "google-client-id-placeholder",
   GOOGLE_CLIENT_SECRET:
     process.env.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder",
-  API_BASE_URL: process.env.API_BASE_URL || "http://localhost:6001",
-  APP_BASE_URL: process.env.APP_BASE_URL || "http://localhost:5001",
+  API_BASE_URL: process.env.API_BASE_URL || "http://localhost:3001",
+  APP_BASE_URL: process.env.APP_BASE_URL || "http://localhost:3000",
   PRODUCTION_SQUARE_ACCESS_TOKEN:
     process.env.PRODUCTION_SQUARE_ACCESS_TOKEN ||
     "prod-square-token-placeholder",
@@ -70,7 +70,7 @@ export const config: Config = Object.freeze({
   REDIS_PORT: Number(process.env.REDIS_PORT || 6379),
   SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || "",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "gemini-api-key-placeholder",
-  TV_BASE_URL: process.env.NEXT_PUBLIC_TV_URL || "http://localhost:5003",
+  TV_BASE_URL: process.env.NEXT_PUBLIC_TV_URL || "http://localhost:3003",
   NEW_RELIC_LICENSE_KEY:
     process.env.NEW_RELIC_LICENSE_KEY || "new-relic-license-key-placeholder",
   NEW_RELIC_ENABLED:

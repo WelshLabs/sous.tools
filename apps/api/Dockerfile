@@ -37,11 +37,11 @@ COPY --from=installer /app .
 
 USER nestjs
 
-# Expose the NestJS API default port
-EXPOSE 6001
+# Expose the NestJS API port (3001 in the 3000-3003 block)
+EXPOSE 3001
 
 ENV NODE_ENV=production
-ENV PORT=6001
+ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application

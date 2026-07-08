@@ -19,11 +19,11 @@ const defaults: Record<string, string> = {
   SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
   GOOGLE_CLIENT_ID: "google-client-id-placeholder",
   GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
-  API_BASE_URL: "http://localhost:6001",
-  APP_BASE_URL: "http://localhost:5001",
+  API_BASE_URL: "http://localhost:3001",
+  APP_BASE_URL: "http://localhost:3000",
   PRODUCTION_SQUARE_ACCESS_TOKEN: "prod-square-token-placeholder",
-  PORT: "6001",
-  REDIS_HOST: "127.0.0.1",
+  PORT: "3001",
+  REDIS_HOST: "127.0.0.1", // Localhost default — MUST be overridden by Infisical in production
   REDIS_PORT: "6379",
   NEW_RELIC_LICENSE_KEY: "new-relic-license-key-placeholder",
   GEMINI_API_KEY: "gemini-api-key-placeholder",
@@ -33,6 +33,49 @@ const defaults: Record<string, string> = {
   SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
   SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
 };
+
+/**
+ * Keys that MUST have real values fetched from Infisical in production.
+ * If these still hold their placeholder/localhost defaults, the app MUST NOT boot.
+ * This prevents silent ECONNREFUSED errors (e.g., REDIS_HOST defaulting to 127.0.0.1).
+ */
+const PRODUCTION_CRITICAL_KEYS: Array<{ key: string; placeholder: string }> = [
+  { key: "REDIS_HOST", placeholder: "127.0.0.1" },
+  { key: "SUPABASE_URL", placeholder: "https://placeholder-project.supabase.co" },
+  { key: "SUPABASE_SERVICE_ROLE_KEY", placeholder: "placeholder-service-role-key-from-mock-sync" },
+  { key: "SUPABASE_ANON_KEY", placeholder: "placeholder-anon-key-from-mock-sync" },
+];
+
+/**
+ * Validates that critical production secrets are not placeholder values.
+ * Calls process.exit(1) if any critical key still holds a localhost/placeholder value.
+ */
+function assertProductionSecrets(secrets: Record<string, string>): void {
+  const isProduction = process.env.NODE_ENV === "production";
+  const isMock = String(process.env.INFISICAL_MOCK).toLowerCase() === "true";
+  const isTest = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+
+  if (!isProduction || isMock || isTest) return;
+
+  const failedKeys: string[] = [];
+  for (const { key, placeholder } of PRODUCTION_CRITICAL_KEYS) {
+    const value = secrets[key];
+    if (!value || value === placeholder) {
+      failedKeys.push(key);
+    }
+  }
+
+  if (failedKeys.length > 0) {
+    console.error(
+      `[@soustools/config] FATAL: Production boot blocked. The following critical environment variables ` +
+      `were not fetched from Infisical and still contain placeholder/localhost defaults:\n` +
+      failedKeys.map((k) => `  - ${k}`).join("\n") +
+      `\n\nEnsure INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID are set ` +
+      `in the container environment and that Infisical is reachable.`
+    );
+    process.exit(1);
+  }
+}
 
 async function fetchSecrets(): Promise<Record<string, string>> {
   const isMock =
@@ -76,7 +119,11 @@ async function fetchSecrets(): Promise<Record<string, string>> {
     return finalSecrets;
   } catch (error) {
     console.error("[@soustools/config] Infisical fetch failed:", (error as Error).message);
-    return loadCache();
+    const cached = loadCache();
+    // In production, a failed Infisical fetch with no valid cache is fatal.
+    // We call assertProductionSecrets here; it will process.exit(1) if critical keys are still placeholders.
+    assertProductionSecrets(cached);
+    return cached;
   }
 }
 
@@ -102,6 +149,10 @@ async function run() {
   }
 
   const secrets = await fetchSecrets();
+
+  // Final production safety gate: abort before spawning the child process
+  // if critical secrets are still at their placeholder values.
+  assertProductionSecrets(secrets);
   
   // Inject into process.env
   for (const [key, value] of Object.entries(secrets)) {
