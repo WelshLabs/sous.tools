@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { spawn } from "child_process";
-import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { InfisicalSDK } from "@infisical/sdk";
@@ -9,10 +8,9 @@ import * as dotenv from "dotenv";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load local .env file inside workspace root if present
+// Load local .env file inside workspace root if present (dev convenience only).
+// In production containers, env vars are injected by Docker / the orchestrator.
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
-
-const CACHE_FILE_PATH = path.join(__dirname, "../../.secrets.cache.json");
 
 const defaults: Record<string, string> = {
   SQUARE_CLIENT_ID: "sandbox-sq0idb-placeholder",
@@ -77,6 +75,16 @@ function assertProductionSecrets(secrets: Record<string, string>): void {
   }
 }
 
+/**
+ * Fetches secrets from Infisical and returns them as a plain in-memory object.
+ * No filesystem I/O is performed at any point — secrets never touch disk.
+ *
+ * In mock/test environments (INFISICAL_MOCK=true or NODE_ENV=test), returns
+ * the hardcoded defaults object so CI and local dev work without Infisical.
+ *
+ * If Infisical credentials are missing entirely, returns defaults and lets
+ * assertProductionSecrets() decide whether to halt.
+ */
 async function fetchSecrets(): Promise<Record<string, string>> {
   const isMock =
     String(process.env.INFISICAL_MOCK).toLowerCase() === "true" ||
@@ -93,8 +101,12 @@ async function fetchSecrets(): Promise<Record<string, string>> {
   const projectId = process.env.INFISICAL_PROJECT_ID;
 
   if (!clientId || !clientSecret || !projectId) {
-    console.warn("[@soustools/config] Missing Infisical creds. Falling back to cache.");
-    return loadCache();
+    console.warn(
+      "[@soustools/config] Missing Infisical credentials " +
+      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
+      "Returning defaults — assertProductionSecrets() will halt if NODE_ENV=production."
+    );
+    return { ...defaults };
   }
 
   try {
@@ -115,43 +127,14 @@ async function fetchSecrets(): Promise<Record<string, string>> {
       }
     }
 
-    // Only persist the cache to disk outside of production.
-    // In Docker, the filesystem is restricted (EACCES) and writing secrets
-    // to disk is a security risk. In production, secrets live in memory only.
-    if (process.env.NODE_ENV !== "production") {
-      fs.writeFileSync(CACHE_FILE_PATH, JSON.stringify(finalSecrets, null, 2), "utf8");
-    }
+    // Secrets are returned entirely in-memory. No filesystem writes, ever.
     return finalSecrets;
   } catch (error) {
     console.error("[@soustools/config] Infisical fetch failed:", (error as Error).message);
-    const cached = loadCache();
-    // In production, a failed Infisical fetch with no valid cache is fatal.
-    // We call assertProductionSecrets here; it will process.exit(1) if critical keys are still placeholders.
-    assertProductionSecrets(cached);
-    return cached;
-  }
-}
-
-function loadCache(): Record<string, string> {
-  // In production, the Docker filesystem is read-restricted and there is no
-  // pre-written cache to load. Skip all fs access entirely — assertProductionSecrets()
-  // will halt the process if the returned defaults are still placeholder values.
-  if (process.env.NODE_ENV === "production") {
-    console.warn("[@soustools/config] Production environment: skipping cache read. Infisical is the only source of truth.");
+    // Return defaults — assertProductionSecrets() will halt if we are in production
+    // and any critical key still holds a placeholder value.
     return { ...defaults };
   }
-
-  try {
-    if (fs.existsSync(CACHE_FILE_PATH)) {
-      console.log("[@soustools/config] Loading secrets from local cache.");
-      const data = fs.readFileSync(CACHE_FILE_PATH, "utf8");
-      return { ...defaults, ...JSON.parse(data) };
-    }
-  } catch (e) {
-    console.error("[@soustools/config] Failed to read cache.", e);
-  }
-  console.log("[@soustools/config] Using hardcoded defaults.");
-  return { ...defaults };
 }
 
 async function run() {
@@ -163,30 +146,34 @@ async function run() {
 
   const secrets = await fetchSecrets();
 
-  // Final production safety gate: abort before spawning the child process
+  // Production safety gate: halt before spawning the child process
   // if critical secrets are still at their placeholder values.
   assertProductionSecrets(secrets);
-  
-  // Inject into process.env
-  for (const [key, value] of Object.entries(secrets)) {
-    if (process.env[key] === undefined) {
-      process.env[key] = value;
-    }
-    
-    // Auto-map for Next.js browser client
-    if (key === "SUPABASE_URL" && process.env.NEXT_PUBLIC_SUPABASE_URL === undefined) {
-      process.env.NEXT_PUBLIC_SUPABASE_URL = value;
-    }
-    if (key === "SUPABASE_ANON_KEY" && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === undefined) {
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = value;
-    }
+
+  // Build the child environment by explicitly merging fetched secrets on top of the
+  // current process environment. Secrets already present in the environment (e.g.
+  // injected by Docker) take precedence over Infisical values via Object spread order.
+  const childEnv: Record<string, string> = {
+    ...defaults,           // lowest priority: hardcoded fallbacks
+    ...secrets,            // Infisical values override defaults
+    ...process.env as Record<string, string>, // host/container env takes highest priority
+  };
+
+  // Auto-map Supabase keys for Next.js browser client if not already present.
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_URL && childEnv.SUPABASE_URL) {
+    childEnv.NEXT_PUBLIC_SUPABASE_URL = childEnv.SUPABASE_URL;
+  }
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
+    childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
   }
 
   const [cmd, ...cmdArgs] = args;
-  
+
+  // Secrets are passed directly into the spawned process environment — never written
+  // to disk, never shared through the filesystem.
   const child = spawn(cmd, cmdArgs, {
     stdio: "inherit",
-    env: process.env,
+    env: childEnv,
     shell: process.platform === "win32",
   });
 
@@ -194,7 +181,7 @@ async function run() {
     process.exit(code ?? 1);
   });
 
-  ['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal => {
+  ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
     process.on(signal, () => {
       if (!child.killed) {
         child.kill(signal as NodeJS.Signals);
