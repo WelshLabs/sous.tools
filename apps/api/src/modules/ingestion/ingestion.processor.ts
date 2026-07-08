@@ -5,12 +5,14 @@ import { GoogleDriveService } from "../integrations/google-drive.service";
 import { supabase } from "../../lib/supabase";
 import { Inject } from "@nestjs/common";
 import { IVisionService } from "./IVisionService";
+import { IngestionGateway } from "./ingestion.gateway";
 
 @Processor("ingestion")
 export class IngestionProcessor extends WorkerHost {
   constructor(
     private readonly driveService: GoogleDriveService,
-    @Inject("IVisionService") private readonly visionService: IVisionService
+    @Inject("IVisionService") private readonly visionService: IVisionService,
+    private readonly gateway: IngestionGateway
   ) {
     super();
   }
@@ -22,6 +24,8 @@ export class IngestionProcessor extends WorkerHost {
     let sourceDocumentUrl = "";
     let actualSourceDocumentUrl = "";
     let sourceName = null;
+
+    this.gateway.emitJobStateChange(organizationId, "processing_started", { jobId: job.id });
 
     try {
       if (source === "google_drive" && fileIds && fileIds.length > 0) {
@@ -43,12 +47,16 @@ export class IngestionProcessor extends WorkerHost {
       let mimeType: string | undefined = undefined;
 
       if (actualSourceDocumentUrl) {
+        let filePath = "";
         try {
-          const fileName = actualSourceDocumentUrl.split('/').pop();
-          if (fileName) {
+          filePath = actualSourceDocumentUrl.includes('/ingestion-sources/')
+            ? actualSourceDocumentUrl.split('/ingestion-sources/')[1]
+            : (actualSourceDocumentUrl.split('/').pop() || "");
+
+          if (filePath) {
             const { data: fileData, error: downloadErr } = await supabase.storage
               .from("ingestion-sources")
-              .download(fileName);
+              .download(filePath);
               
             if (downloadErr) throw downloadErr;
             if (fileData) {
@@ -61,7 +69,7 @@ export class IngestionProcessor extends WorkerHost {
             }
           }
         } catch (fetchErr) {
-          console.error("Failed to download source document from Supabase storage:", fetchErr);
+          console.error(`Failed to download invoice image from storage path: ${filePath}`, fetchErr);
         }
       }
 
@@ -72,6 +80,9 @@ export class IngestionProcessor extends WorkerHost {
       } else {
         throw new Error(`Unsupported document type: ${documentType}`);
       }
+
+      this.gateway.emitJobStateChange(organizationId, "vision_extraction_complete", { jobId: job.id, parsedData });
+      this.gateway.emitJobStateChange(organizationId, "rosetta_mapping_complete", { jobId: job.id });
 
       // 3. Save Ingestion Review
       if (job.data.reviewId) {
@@ -100,6 +111,8 @@ export class IngestionProcessor extends WorkerHost {
         if (error) throw new Error(`Failed to save ingestion review: ${error.message}`);
       }
 
+      this.gateway.emitJobStateChange(organizationId, "awaiting_review", { jobId: job.id, reviewId: job.data.reviewId });
+
       const { error: notifError } = await supabase.from("notifications").insert({
         organization_id: organizationId,
         user_id: userId,
@@ -110,8 +123,12 @@ export class IngestionProcessor extends WorkerHost {
       });
 
       if (notifError) console.error("Failed to create notification:", notifError);
+      
+      this.gateway.emitJobStateChange(organizationId, "completed", { jobId: job.id });
     } catch (err: any) {
       console.error(`AI Ingestion job failed (Attempt ${job.attemptsMade + 1}/${job.opts.attempts || 1}) for review ID ${job.data.reviewId || "unknown"}:`, err);
+      
+      this.gateway.emitJobStateChange(organizationId, "failed", { jobId: job.id, error: err.message });
       
       const maxAttempts = job.opts.attempts || 1;
       const willRetry = job.attemptsMade + 1 < maxAttempts;

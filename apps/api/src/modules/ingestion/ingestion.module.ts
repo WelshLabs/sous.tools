@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
 import { IngestionController } from "./ingestion.controller";
 import { IngestionProcessor } from "./ingestion.processor";
+import { IngestionGateway } from "./ingestion.gateway";
 import { IntegrationsModule } from "../integrations/integrations.module";
 import { ItemsModule } from "../items/items.module";
 import { CloudVisionService } from "./CloudVisionService";
@@ -19,6 +20,7 @@ import { config } from "@soustools/config";
   controllers: [IngestionController],
   providers: [
     IngestionProcessor,
+    IngestionGateway,
     {
       provide: "IVisionService",
       useFactory: () => {

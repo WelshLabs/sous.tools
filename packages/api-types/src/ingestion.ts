@@ -4,7 +4,8 @@ export type IngestionSource =
   | "google_drive"
   | "camera"
   | "share_target"
-  | "upload";
+  | "upload"
+  | "omnibar";
 
 export interface IngestionPayload {
   organizationId: string;
@@ -17,6 +18,18 @@ export interface IngestionPayload {
   sourceDocumentUrl?: string;
   sourceName?: string;
 }
+
+export const IngestionPayloadSchema = z.object({
+  organizationId: z.string(),
+  userId: z.string(),
+  source: z.enum(["google_drive", "camera", "share_target", "upload", "omnibar"] as const),
+  documentType: z.enum(["recipe", "invoice"]),
+  fileIds: z.array(z.string()).optional(),
+  imagesBase64: z.array(z.string()).optional(),
+  reviewId: z.string().optional(),
+  sourceDocumentUrl: z.string().optional(),
+  sourceName: z.string().optional(),
+});
 
 export type IngestionStatus = "PENDING" | "APPROVED" | "REJECTED";
 

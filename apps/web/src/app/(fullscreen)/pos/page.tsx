@@ -124,7 +124,7 @@ export default function POSRegisterPage() {
   const categories = ["All", "Mains", "Sides/Salads", "Beverages", "Other"];
 
   // Filtered items list
-  const filteredItems = items.filter(item => {
+  const filteredItems = (Array.isArray(items) ? items : []).filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "All" || getCategory(item.name) === selectedCategory;
     return matchesSearch && matchesCategory;

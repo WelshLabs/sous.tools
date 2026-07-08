@@ -12,8 +12,7 @@ import { Queue } from "bullmq";
 import {
   ApiResponse,
   IngestionPayload,
-  OcrInvoiceIngestionPayloadSchema,
-  OcrInvoiceIngestionPayload,
+  IngestionPayloadSchema,
 } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import { supabase } from "../../lib/supabase";
@@ -57,6 +56,7 @@ export class IngestionController {
   }
 
   @Post("submit")
+  @UsePipes(new ZodValidationPipe(IngestionPayloadSchema))
   async submit(
     @Body() payload: IngestionPayload,
   ): Promise<ApiResponse<{ jobId: string }>> {
@@ -357,70 +357,6 @@ export class IngestionController {
         .delete()
         .eq("id", id);
       if (error) throw new Error(error.message);
-    });
-  }
-
-  @Post("ocr")
-  @UsePipes(new ZodValidationPipe(OcrInvoiceIngestionPayloadSchema))
-  async processOcr(
-    @Body() payload: OcrInvoiceIngestionPayload,
-  ): Promise<ApiResponse<any>> {
-    return runControllerAction(async () => {
-      const orgId = "d0000000-0000-0000-0000-000000000000";
-      const vendorName = payload.vendor.name;
-
-      const { data: vendor, error: findError } = await supabase
-        .from("vendors")
-        .select("*")
-        .eq("organization_id", orgId)
-        .ilike("name", vendorName)
-        .maybeSingle();
-
-      if (findError) {
-        throw new Error(
-          `Failed to check existing vendor: ${findError.message}`,
-        );
-      }
-
-      const updateData = {
-        customer_account_number: payload.vendor.customer_account_number || null,
-        terms: payload.invoice_metadata.terms || null,
-        route: payload.invoice_metadata.route || null,
-        sales_rep: payload.invoice_metadata.sales_rep || null,
-      };
-
-      if (vendor) {
-        const { data: updatedVendor, error: updateError } = await supabase
-          .from("vendors")
-          .update(updateData)
-          .eq("id", vendor.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          throw new Error(`Failed to update vendor: ${updateError.message}`);
-        }
-        return {
-          message: "Vendor updated successfully",
-          vendor: updatedVendor,
-        };
-      } else {
-        const { data: newVendor, error: insertError } = await supabase
-          .from("vendors")
-          .insert({
-            organization_id: orgId,
-            name: vendorName,
-            order_method: "MANUAL",
-            ...updateData,
-          })
-          .select()
-          .single();
-
-        if (insertError) {
-          throw new Error(`Failed to create vendor: ${insertError.message}`);
-        }
-        return { message: "Vendor created successfully", vendor: newVendor };
-      }
     });
   }
 }

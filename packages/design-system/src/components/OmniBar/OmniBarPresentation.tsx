@@ -7,6 +7,7 @@ import { Mic } from "lucide-react";
 import { OmniMessage } from "@soustools/api-types";
 import { OmniChatWindow } from "./OmniChatWindow";
 import { OmniInputPill } from "./OmniInputPill";
+import { useOmnibarContext } from "./OmniBarContext";
 
 export interface OmniBarPresentationProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export function OmniBarPresentation({
   onKeyDown,
   onMicClick,
 }: OmniBarPresentationProps) {
+  const { isDragging, stagedFiles } = useOmnibarContext();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -51,7 +53,7 @@ export function OmniBarPresentation({
 
   return (
     <>
-      {/* Portal the backdrop AND the expanded OmniBar so they escape the App Bar's stacking context */}
+      {/* Backdrop for Expanded State */}
       {mounted && !isFocusPage && createPortal(
         <AnimatePresence>
           {isOpen && (
@@ -61,8 +63,8 @@ export function OmniBarPresentation({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 w-screen h-screen backdrop-blur-md bg-black/60 pointer-events-auto"
-              style={{ zIndex: 9999 }}
+              className="fixed inset-0 w-screen h-screen backdrop-blur-md bg-background/60 pointer-events-auto"
+              style={{ zIndex: 40 }}
               onClick={() => onToggle()}
             />
           )}
@@ -70,44 +72,11 @@ export function OmniBarPresentation({
         document.body
       )}
 
-      {/* Expanded OmniBar (Portaled to escape App Bar z-index 50) */}
+      {/* Global Anchored Container */}
       {mounted && !isFocusPage && createPortal(
-        <AnimatePresence>
-          {isOpen && (
-            <div
-              className="fixed bottom-24 left-[5%] right-[5%] md:left-[15%] md:right-[15%] lg:left-[25%] lg:right-[25%] flex flex-col gap-4 pointer-events-none"
-              style={{ zIndex: 10000 }}
-            >
-              <OmniChatWindow chatHistory={chatHistory} scrollRef={scrollRef} />
-              <OmniInputPill
-                inputText={inputText}
-                isListening={isListening}
-                isProcessing={isProcessing}
-                errorMessage={errorMessage}
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                onMicClick={onMicClick}
-                onToggle={onToggle}
-                showClose={true}
-              />
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
-
-      {/* Collapsed OmniBar (or /home Focus Page OmniBar which is inline) */}
-      {(!isOpen || isFocusPage) && (
-        <div
-          className={`relative z-10 flex flex-col items-center justify-center
-            ${isFocusPage 
-              ? `w-full max-w-4xl mx-auto flex flex-col gap-4`
-              : "w-12 h-12"
-            }
-          `}
-        >
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center justify-end w-full max-w-3xl pointer-events-none gap-4">
           <AnimatePresence mode="wait">
-            {!isFocusPage && !isOpen ? (
+            {!isOpen ? (
               <motion.div
                 key="collapsed"
                 layoutId="omnibar-input-pill"
@@ -116,7 +85,7 @@ export function OmniBarPresentation({
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
                 onClick={onToggle}
-                className="w-12 h-12 rounded-full bg-[var(--color-card)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors cursor-pointer pointer-events-auto shadow-lg"
+                className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer pointer-events-auto shadow-lg"
                 style={{
                   boxShadow: isProcessing ? `0 0 20px var(--color-primary)` : undefined,
                   borderColor: isProcessing ? "var(--color-primary)" : "var(--color-border)",
@@ -127,7 +96,7 @@ export function OmniBarPresentation({
             ) : (
               <div
                 key="expanded"
-                className="w-full flex flex-col gap-4"
+                className="w-full flex flex-col gap-4 pointer-events-none"
               >
                 <OmniChatWindow chatHistory={chatHistory} scrollRef={scrollRef} />
                 <OmniInputPill
@@ -138,11 +107,36 @@ export function OmniBarPresentation({
                   onChange={onChange}
                   onKeyDown={onKeyDown}
                   onMicClick={onMicClick}
-                  showClose={false}
+                  onToggle={onToggle}
+                  showClose={true}
+                  isDragging={isDragging}
+                  stagedFiles={stagedFiles}
                 />
               </div>
             )}
           </AnimatePresence>
+        </div>,
+        document.body
+      )}
+
+      {/* Focus Page (Inline) */}
+      {isFocusPage && (
+        <div className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50">
+          <div className="w-full max-w-3xl flex flex-col justify-center px-4 gap-4 pointer-events-none">
+            <OmniChatWindow chatHistory={chatHistory} scrollRef={scrollRef} />
+            <OmniInputPill
+              inputText={inputText}
+              isListening={isListening}
+              isProcessing={isProcessing}
+              errorMessage={errorMessage}
+              onChange={onChange}
+              onKeyDown={onKeyDown}
+              onMicClick={onMicClick}
+              showClose={false}
+              isDragging={isDragging}
+              stagedFiles={stagedFiles}
+            />
+          </div>
         </div>
       )}
     </>

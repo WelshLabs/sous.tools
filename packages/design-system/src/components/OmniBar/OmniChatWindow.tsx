@@ -18,7 +18,7 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.98 }}
-      className="w-full bg-[var(--color-card)] border border-[var(--color-border)] shadow-2xl rounded-[32px] p-6 pointer-events-auto flex flex-col"
+      className="w-full bg-card border border-border shadow-2xl rounded-[32px] p-6 pointer-events-auto flex flex-col"
     >
       <div 
         ref={scrollRef}
@@ -43,17 +43,22 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
               className={`flex flex-col max-w-[85%] ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
             >
               {isAgentStep ? (
-                <div className="flex items-center gap-2 text-xs text-[var(--color-muted-foreground)] opacity-70 font-mono bg-black/20 rounded-xl px-4 py-2 border border-[var(--color-border)]">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--color-primary)]" />
+                <div className="flex items-center gap-2 text-xs text-muted-foreground opacity-70 font-mono bg-card rounded-xl px-4 py-2 border border-border">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
                   {msg.content}
                 </div>
               ) : (
-                <div className={`px-5 py-3 rounded-2xl ${
+                <div className={`px-5 py-3 rounded-2xl flex flex-col gap-2 ${
                   isUser 
-                    ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-[var(--color-foreground)] rounded-tr-sm' 
-                    : 'bg-black/30 border border-[var(--color-border)] text-[var(--color-foreground)] rounded-tl-sm'
+                    ? 'bg-primary/10 border border-primary/20 text-foreground rounded-tr-sm' 
+                    : 'bg-card border border-border text-foreground rounded-tl-sm'
                 }`}>
-                  {msg.content}
+                  {msg.content.match(/https?:\/\/[^\s]+/) ? (
+                    <motion.div layoutId={`file-${msg.id}`} className="w-48 h-32 rounded-xl overflow-hidden border border-border relative">
+                      <img src={msg.content.match(/https?:\/\/[^\s]+/)![0]} alt="Uploaded file" className="w-full h-full object-cover" />
+                    </motion.div>
+                  ) : null}
+                  <span>{msg.content.replace(/https?:\/\/[^\s]+/, '')}</span>
                 </div>
               )}
             </motion.div>

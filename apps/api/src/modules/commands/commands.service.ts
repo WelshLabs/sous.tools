@@ -9,6 +9,9 @@ import { randomUUID } from 'crypto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { config } from '@soustools/config';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { supabase } from '../../lib/supabase';
 
 const addToPurchaseOrderTool: FunctionDeclaration = {
   name: 'add_to_purchase_order',
@@ -48,6 +51,18 @@ const getRecipeCostTool: FunctionDeclaration = {
       recipeId: { type: Type.STRING, description: 'The ID of the recipe' },
     },
     required: ['recipeId'],
+  },
+};
+
+const ingestVendorInvoiceTool: FunctionDeclaration = {
+  name: 'ingest_vendor_invoice',
+  description: 'Ingests a vendor invoice file URL into the OCR pipeline for processing.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      fileUrl: { type: Type.STRING, description: 'The URL of the uploaded invoice file' },
+    },
+    required: ['fileUrl'],
   },
 };
 
@@ -101,6 +116,7 @@ export class CommandsService {
     private readonly whiteboardService: WhiteboardService,
     private readonly recipeCostService: RecipeCostService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectQueue('ingestion') private ingestionQueue: Queue,
   ) {}
 
   private mapToGeminiContent(chatHistory: OmniMessage[]): Content[] {
@@ -146,7 +162,7 @@ export class CommandsService {
                 parts: [{ text: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor." }]
               },
               tools: [{
-                functionDeclarations: [addToPurchaseOrderTool, addToWhiteboardTool, getRecipeCostTool, updateItemStatusTool, adjustThrottleTimeTool, reconcileInventoryTool]
+                functionDeclarations: [addToPurchaseOrderTool, addToWhiteboardTool, getRecipeCostTool, ingestVendorInvoiceTool, updateItemStatusTool, adjustThrottleTimeTool, reconcileInventoryTool]
               }]
             }
           });
@@ -225,13 +241,50 @@ export class CommandsService {
             agentMessageContent = `Setting inventory for ${args.itemId} to ${args.quantity} ${args.unit}...`;
             if (emitMessage) emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
             toolResponseData = { success: true, message: `Inventory reconciled.` };
+          } else if (functionName === 'ingest_vendor_invoice') {
+            agentMessageContent = `Invoice received. Sending to the ingestion pipeline...`;
+            if (emitMessage) emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
+            
+            const userId = payload.context?.userId || "d0000000-0000-0000-0000-000000000000";
+
+            const { data: review, error } = await supabase
+              .from("ingestion_reviews")
+              .insert({
+                organization_id: orgId,
+                user_id: userId,
+                source: "omnibar",
+                source_document_url: args.fileUrl,
+                raw_text: "",
+                parsed_data: { processing: true },
+                status: "PENDING",
+              })
+              .select()
+              .single();
+
+            if (!error && review) {
+              await this.ingestionQueue.add("process-ingestion", {
+                organizationId: orgId,
+                userId: userId,
+                source: "omnibar",
+                documentType: "invoice",
+                sourceDocumentUrl: args.fileUrl,
+                reviewId: review.id,
+              }, { attempts: 3, backoff: { type: "exponential", delay: 2000 } });
+              toolResponseData = { success: true, message: `Successfully queued invoice for ingestion.` };
+            } else {
+              toolResponseData = { success: false, error: `Failed to create ingestion review: ${error?.message}` };
+            }
           }
 
-          // Append model's function call to history
-          contents.push({
-            role: 'model',
-            parts: [{ functionCall: call }] as Part[],
-          });
+          // Append model's full response content to history to preserve thought_signature, text, and functionCall
+          if (response.candidates?.[0]?.content) {
+            contents.push(response.candidates[0].content);
+          } else {
+            contents.push({
+              role: 'model',
+              parts: [{ functionCall: call }] as Part[],
+            });
+          }
 
           // Append tool response to history
           contents.push({

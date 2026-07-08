@@ -40,6 +40,7 @@ USER nestjs
 # Expose the NestJS API default port
 EXPOSE 6001
 
+ENV NODE_ENV=production
 ENV PORT=6001
 ENV HOSTNAME="0.0.0.0"
 

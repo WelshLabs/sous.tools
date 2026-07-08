@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import { IngestionReview } from "@soustools/api-types";
 import Link from "next/link";
-import { BrainCircuit, Clock, CheckCircle, Trash2 } from "lucide-react";
+import { BrainCircuit, Clock, CheckCircle, Trash2, XCircle } from "lucide-react";
 import { ConfirmModal } from "../../../components/ui/confirm-modal";
+import { io, Socket } from "socket.io-client";
+import { createBrowserClient } from "@soustools/supabase";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function IngestionDashboardPage() {
-  const [reviews, setReviews] = useState<IngestionReview[]>([]);
+  const [reviews, setReviews] = useState<(IngestionReview & { sourceName?: string | null })[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -16,9 +19,8 @@ export default function IngestionDashboardPage() {
       const res = await fetch("/api/ingestion");
       if (res.ok) {
         const payload = await res.json();
-        const data = payload.data;
-        if (data) {
-          const parsed = data.map((d: any) => ({
+        if (payload.data) {
+          setReviews(payload.data.map((d: any) => ({
             id: d.id,
             organizationId: d.organization_id,
             userId: d.user_id,
@@ -29,8 +31,7 @@ export default function IngestionDashboardPage() {
             status: d.status,
             createdAt: d.created_at,
             updatedAt: d.updated_at
-          })) as (IngestionReview & { sourceName?: string | null })[];
-          setReviews(parsed);
+          })));
         }
       }
     } catch (err) {
@@ -42,6 +43,31 @@ export default function IngestionDashboardPage() {
 
   useEffect(() => {
     fetchReviews();
+    
+    let socket: Socket | null = null;
+    const initSocket = async () => {
+      const supabase = createBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
+      const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
+
+      socket = io(socketUrl + "/ingestion", {
+        query: { orgId: session.user.user_metadata.organization_id || "d0000000-0000-0000-0000-000000000000" },
+        transports: ["websocket"],
+      });
+
+      socket.on("job_state_change", (event: any) => {
+        // Refetch or optimistically update if it's a major state change
+        if (event.state === 'awaiting_review' || event.state === 'completed' || event.state === 'failed') {
+          fetchReviews();
+        }
+      });
+    };
+
+    initSocket();
+    return () => { if (socket) socket.disconnect(); };
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -55,74 +81,98 @@ export default function IngestionDashboardPage() {
     }
   };
 
+  const pendingReviews = reviews.filter(r => r.status === "PENDING");
+  const approvedReviews = reviews.filter(r => r.status === "APPROVED");
+  const rejectedReviews = reviews.filter(r => r.status === "REJECTED");
+
+  const KanbanColumn = ({ title, items, icon: Icon, colorClass }: any) => (
+    <div className="flex flex-col gap-4">
+      <div className={`flex items-center gap-2 p-3 rounded-xl border ${colorClass.border} ${colorClass.bg} ${colorClass.text}`}>
+        <Icon size={20} />
+        <h2 className="font-bold tracking-wide uppercase">{title}</h2>
+        <div className={`ml-auto px-2 py-0.5 rounded-full text-xs font-black bg-black/30`}>{items.length}</div>
+      </div>
+      
+      <div className="flex flex-col gap-4 flex-1 min-h-[200px] p-2 bg-black/10 rounded-2xl border border-white/5">
+        <AnimatePresence>
+          {items.map((review: any) => (
+            <motion.div
+              layout
+              key={review.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="glass-panel p-4 flex flex-col gap-3 group hover:border-sky-500/50 transition-colors cursor-pointer"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <BrainCircuit className="w-4 h-4 text-sky-400" />
+                  <span className="font-bold truncate max-w-[150px] text-sm" title={review.sourceName || review.source}>
+                    {review.sourceName || review.source.replace("_", " ")}
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => { e.preventDefault(); setDeleteId(review.id); }}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                {new Date(review.createdAt).toLocaleString()}
+              </div>
+
+              <Link href={`/ingestion/review/${review.id}`} className="w-full">
+                <div className="w-full py-2 mt-2 bg-white/5 hover:bg-sky-500/20 text-center text-sm font-bold text-sky-300 rounded-lg border border-white/5 hover:border-sky-500/30 transition-colors">
+                  Open Review
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        {items.length === 0 && !loading && (
+          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground font-medium opacity-50">Empty</div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
+    <div className="flex flex-col gap-8 p-8 h-full bg-background text-foreground animate-in fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Processing Hub</h1>
-          <p className="text-gray-500 mt-2">Review AI-extracted documents and invoices.</p>
+          <h1 className="text-4xl font-black tracking-tight uppercase">Processing Hub</h1>
+          <p className="text-muted-foreground mt-2 font-medium">Review AI-extracted documents across the ingestion pipeline.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
-          <div className="col-span-full text-center text-white/50 py-12">Loading queue...</div>
-        ) : reviews.length === 0 ? (
-          <div className="col-span-full text-center text-white/50 py-12">No documents pending review.</div>
-        ) : (
-          reviews.map(review => (
-            <Link key={review.id} href={`/ingestion/review/${review.id}`} className="block">
-              <div className="glass-panel p-6 flex flex-col h-full group hover:border-sky-500/50 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-2">
-                    <BrainCircuit className="w-5 h-5 text-sky-400" />
-                    <h2 className="text-xl font-bold truncate max-w-[200px]" title={review.sourceName || review.source.replace("_", " ").toLowerCase()}>
-                      {review.sourceName || review.source.replace("_", " ").toLowerCase()}
-                    </h2>
-                  </div>
-                  <span className={`px-2 py-1 text-xs font-bold rounded uppercase tracking-wider ${
-                    review.status === "PENDING" ? "bg-amber-500/20 text-amber-300" :
-                    review.status === "REJECTED" ? "bg-red-500/20 text-red-300" :
-                    "bg-emerald-500/20 text-emerald-300"
-                  }`}>
-                    {review.status}
-                  </span>
-                </div>
-
-                <div className="flex-1 text-sm text-gray-400 mb-6">
-                  {review.status === "PENDING" ? (
-                    <span className="flex items-center gap-2"><Clock size={16}/> Needs Human Review</span>
-                  ) : review.status === "REJECTED" ? (
-                    <span className="flex items-center gap-2 text-red-400"><CheckCircle size={16}/> Rejected</span>
-                  ) : (
-                    <span className="flex items-center gap-2 text-emerald-400"><CheckCircle size={16}/> Approved</span>
-                  )}
-                  <div className="mt-4">
-                    Uploaded: {new Date(review.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-
-                <div className="w-full flex items-center gap-2">
-                  <div className="flex-1 flex items-center justify-center bg-black/5 bg-card text-white py-2 rounded-md font-medium group-hover:bg-sky-500 transition-colors">
-                    Open Review
-                  </div>
-                  <button
-                    onClick={(e) => { e.preventDefault(); setDeleteId(review.id); }}
-                    className="p-2 bg-black/5 bg-card hover:bg-red-500/20 text-zinc-500 dark:text-muted-foreground hover:text-red-400 rounded-md transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </Link>
-          ))
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <KanbanColumn 
+          title="Needs Review" 
+          items={pendingReviews} 
+          icon={Clock} 
+          colorClass={{ border: "border-amber-500/20", bg: "bg-amber-500/10", text: "text-amber-400" }} 
+        />
+        <KanbanColumn 
+          title="Approved" 
+          items={approvedReviews} 
+          icon={CheckCircle} 
+          colorClass={{ border: "border-emerald-500/20", bg: "bg-emerald-500/10", text: "text-emerald-400" }} 
+        />
+        <KanbanColumn 
+          title="Rejected" 
+          items={rejectedReviews} 
+          icon={XCircle} 
+          colorClass={{ border: "border-rose-500/20", bg: "bg-rose-500/10", text: "text-rose-400" }} 
+        />
       </div>
 
       <ConfirmModal
         isOpen={!!deleteId}
-        title="Delete Ingestion Review"
-        message="Are you sure you want to delete this item? This action cannot be undone."
+        title="Delete Review"
+        message="Are you sure you want to delete this extraction record? This cannot be undone."
         confirmText="Delete"
         isDestructive={true}
         onCancel={() => setDeleteId(null)}

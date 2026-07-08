@@ -4,9 +4,16 @@ import { CommandsService } from './commands.service';
 import { CommandsGateway } from './commands.gateway';
 import { ItemsModule } from '../items/items.module';
 import { RecipeModule } from '../recipe/recipe.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports: [ItemsModule, RecipeModule],
+  imports: [
+    BullModule.registerQueue({
+      name: 'ingestion',
+    }),
+    ItemsModule, 
+    RecipeModule
+  ],
   controllers: [CommandsController],
   providers: [CommandsService, CommandsGateway],
   exports: [CommandsService],

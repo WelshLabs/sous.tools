@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
 import { createBrowserClient } from "@soustools/supabase";
 import { io, Socket } from "socket.io-client";
+import { motion, AnimatePresence } from "framer-motion";
 import { OmniMessage } from "@soustools/api-types";
 
 export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
@@ -20,7 +21,9 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
     setIsOpen, 
     setIsProcessing, 
     addMessage,
-    setChatHistory 
+    setChatHistory,
+    setIsDragging,
+    setExecuteBackgroundCommand
   } = useOmnibarContext();
 
   const [isListening, setIsListening] = useState(false);
@@ -77,6 +80,86 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
       if (newSocket) newSocket.disconnect();
     };
   }, [addMessage, setIsProcessing]);
+
+  // Execute Background Command
+  useEffect(() => {
+    const executeBackgroundCommand = (text: string) => {
+      if (!text.trim()) return;
+      setIsProcessing(true);
+      const newUserMessage: OmniMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: text,
+        timestamp: new Date()
+      };
+      const updatedHistory = [...chatHistory, newUserMessage];
+      setChatHistory(updatedHistory);
+
+      try {
+        if (!socket || !socket.connected) {
+          socket?.connect();
+        }
+        socket?.emit("executeCommand", {
+          chatHistory: updatedHistory,
+          source: "omnibar",
+          path: pathname,
+          context: contextPayload,
+        });
+      } catch (error: any) {
+        console.error("Failed to emit background command:", error);
+        setIsProcessing(false);
+      }
+    };
+    setExecuteBackgroundCommand(executeBackgroundCommand);
+  }, [socket, chatHistory, pathname, contextPayload, setExecuteBackgroundCommand, setChatHistory, setIsProcessing]);
+
+  const dragCounter = useRef(0);
+
+  // Global Drag Listeners
+  useEffect(() => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer?.types.includes("Files")) {
+        dragCounter.current++;
+        if (dragCounter.current === 1) {
+          setIsDragging(true);
+          setIsOpen(true);
+        }
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter.current--;
+      if (dragCounter.current === 0) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleDrop = () => {
+      // Don't prevent default here for the drop, let OmniInputPill handle it if dropped there, 
+      // but we do need to reset the drag state. Wait, if we preventDefault, child might not get it?
+      // Actually child event runs first if bubbling, but window captures it at the end.
+      dragCounter.current = 0;
+      setIsDragging(false);
+    };
+
+    window.addEventListener("dragenter", handleDragEnter);
+    window.addEventListener("dragleave", handleDragLeave);
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("drop", handleDrop);
+
+    return () => {
+      window.removeEventListener("dragenter", handleDragEnter);
+      window.removeEventListener("dragleave", handleDragLeave);
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("drop", handleDrop);
+    };
+  }, [setIsDragging, setIsOpen]);
 
   // Sync expanded state if user navigates to/from /home
   useEffect(() => {
@@ -192,6 +275,22 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
 
   return (
     <>
+      {/* Global Top Progress Bar */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ width: "0%", opacity: 1 }}
+            animate={{ width: "80%", opacity: 1 }}
+            exit={{ width: "100%", opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="fixed top-0 left-0 h-[2px] bg-[var(--color-primary)] z-[100000]"
+            style={{
+              boxShadow: "0 0 10px var(--color-primary), 0 0 20px var(--color-primary)",
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {children}
       <OmniBarPresentation
         isOpen={isOpen}
