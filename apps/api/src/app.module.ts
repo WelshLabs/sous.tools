@@ -28,8 +28,11 @@ import { HealthModule } from "./health/health.module";
  * Integrates controllers, queues, and providers for the core application.
  */
 
-if (process.env.NODE_ENV === "production" && !process.env.REDIS_HOST && !process.env.REDIS_URL) {
-  throw new Error("FATAL: REDIS_HOST is not defined in production environment");
+if (process.env.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
+  throw new Error(
+    `FATAL: REDIS_HOST resolved to '127.0.0.1' in production. ` +
+    `Infisical must provide a real Redis hostname (e.g. 'redis').`
+  );
 }
 
 @Module({
@@ -37,13 +40,12 @@ if (process.env.NODE_ENV === "production" && !process.env.REDIS_HOST && !process
     CacheModule.register({
       isGlobal: true,
       store: redisStore,
-      host: config.REDIS_HOST === "localhost" ? "127.0.0.1" : config.REDIS_HOST,
+      host: config.REDIS_HOST,
       port: config.REDIS_PORT,
     }),
     BullModule.forRoot({
       connection: {
-        host:
-          config.REDIS_HOST === "localhost" ? "127.0.0.1" : config.REDIS_HOST,
+        host: config.REDIS_HOST,
         port: config.REDIS_PORT,
         family: 4,
         retryStrategy: (times: number) => {
