@@ -149,21 +149,22 @@ export function OmniInputPill({
           <div className="flex gap-4 p-2 overflow-x-auto">
             {stagedFiles.map((file) => (
               <motion.div key={file.id} layoutId={`file-${file.id}`} className="relative w-48 shrink-0 flex flex-col gap-2">
-                <div className="w-full h-32 rounded-2xl overflow-hidden bg-card border border-border relative flex items-center justify-center">
+                <div className="relative overflow-hidden flex items-center justify-center w-full h-32 rounded-xl bg-card border border-border">
                   {file.status === 'uploading' && (
-                    <motion.div
-                      className="absolute inset-0 z-0"
-                      animate={{ background: ['conic-gradient(from 0deg, transparent 0%, #06b6d4 50%, transparent 100%)', 'conic-gradient(from 360deg, transparent 0%, #06b6d4 50%, transparent 100%)'] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      style={{ padding: '2px' }}
-                    >
-                      <div className="w-full h-full bg-background rounded-2xl" />
-                    </motion.div>
+                    <>
+                      <motion.div
+                        className="absolute w-[200%] aspect-square"
+                        style={{ background: "conic-gradient(from 0deg, transparent 70%, rgba(6,182,212,1) 100%)" }}
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                      />
+                      <div className="absolute inset-[2px] bg-background z-10 rounded-xl" />
+                    </>
                   )}
                   {file.url ? (
-                    <motion.img initial={{ opacity: 0 }} animate={{ opacity: 1 }} src={file.url} alt="Uploaded" className="w-full h-full object-cover z-10" />
+                    <motion.img initial={{ opacity: 0 }} animate={{ opacity: 1 }} src={file.url} alt="Uploaded" className="w-full h-full object-cover relative z-20" />
                   ) : (
-                    <FileImage className="w-8 h-8 text-muted-foreground z-10" />
+                    <FileImage className="w-8 h-8 text-muted-foreground relative z-20" />
                   )}
                 </div>
                 {file.status === 'complete' && (

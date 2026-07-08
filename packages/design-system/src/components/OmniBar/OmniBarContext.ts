@@ -15,6 +15,7 @@ export interface OmniBarState {
   chatHistory: OmniMessage[];
   setChatHistory: (history: OmniMessage[]) => void;
   addMessage: (message: OmniMessage) => void;
+  markLoadingComplete: () => void;
   
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -39,6 +40,11 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
   chatHistory: [],
   setChatHistory: (history) => set({ chatHistory: history }),
   addMessage: (message) => set((state) => ({ chatHistory: [...state.chatHistory, message] })),
+  markLoadingComplete: () => set((state) => ({
+    chatHistory: state.chatHistory.map(msg => 
+      msg.role === 'agent_step' ? { ...msg, isLoading: false } : msg
+    )
+  })),
   
   isOpen: false,
   setIsOpen: (isOpen) => set({ isOpen }),

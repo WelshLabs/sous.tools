@@ -7,13 +7,13 @@ import { OmniBar } from "./index";
 export function FloatingOmniTrigger() {
   return (
     <motion.div 
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full"
+      className="fixed bottom-6 right-6 z-50 rounded-full"
       animate={{ 
-        scale: [1.0, 1.02, 1.0],
+        scale: [1, 1.05, 1],
         boxShadow: [
-          '0 0 10px rgba(0,255,255,0.1)',
-          '0 0 20px rgba(0,255,255,0.3)',
-          '0 0 10px rgba(0,255,255,0.1)'
+          "0px 0px 0px rgba(6,182,212,0)", 
+          "0px 0px 20px rgba(6,182,212,0.6)", 
+          "0px 0px 0px rgba(6,182,212,0)"
         ]
       }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}

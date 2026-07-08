@@ -23,7 +23,8 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
     addMessage,
     setChatHistory,
     setIsDragging,
-    setExecuteBackgroundCommand
+    setExecuteBackgroundCommand,
+    markLoadingComplete
   } = useOmnibarContext();
 
   const [isListening, setIsListening] = useState(false);
@@ -56,6 +57,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
           addMessage(message);
           if (message.role === 'model') {
             setIsProcessing(false);
+            markLoadingComplete();
           }
         });
 
@@ -65,6 +67,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
             setErrorMessage(data.message);
             setIsProcessing(false);
             setIsListening(false);
+            markLoadingComplete();
           }
         });
 
@@ -79,7 +82,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
     return () => {
       if (newSocket) newSocket.disconnect();
     };
-  }, [addMessage, setIsProcessing]);
+  }, [addMessage, setIsProcessing, markLoadingComplete]);
 
   // Execute Background Command
   useEffect(() => {

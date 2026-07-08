@@ -18,11 +18,11 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.98 }}
-      className="w-full bg-card border border-border shadow-2xl rounded-[32px] p-6 pointer-events-auto flex flex-col"
+      className="w-full bg-card border border-border shadow-2xl rounded-[32px] p-4 pointer-events-auto flex flex-col"
     >
       <div 
         ref={scrollRef}
-        className="w-full flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2
+        className="w-full flex flex-col gap-4 max-h-[35vh] overflow-y-auto pr-2
           [&::-webkit-scrollbar]:w-1.5 
           [&::-webkit-scrollbar-track]:bg-transparent 
           [&::-webkit-scrollbar-thumb]:bg-cyan-500/50 
@@ -44,7 +44,7 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
             >
               {isAgentStep ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground opacity-70 font-mono bg-card rounded-xl px-4 py-2 border border-border">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                  {msg.isLoading !== false && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
                   {msg.content}
                 </div>
               ) : (

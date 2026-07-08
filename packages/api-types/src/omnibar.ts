@@ -5,6 +5,7 @@ export const OmniMessageSchema = z.object({
   role: z.enum(["user", "model", "agent_step"]),
   content: z.string(),
   timestamp: z.date().or(z.string().transform((v) => new Date(v))),
+  isLoading: z.boolean().optional(),
 });
 
 export type OmniMessage = z.infer<typeof OmniMessageSchema>;
