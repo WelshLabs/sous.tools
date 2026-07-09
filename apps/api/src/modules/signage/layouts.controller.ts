@@ -7,8 +7,11 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { type LayoutsService } from "./layouts.service";
-import { type ApiResponse, type SignageLayoutConfig } from "@soustools/api-types";
+import { LayoutsService } from "./layouts.service";
+import {
+  type ApiResponse,
+  type SignageLayoutConfig,
+} from "@soustools/api-types";
 import { runControllerAction } from "./response.helper";
 
 /**
@@ -23,7 +26,9 @@ export class LayoutsController {
 
   @Get()
   async findAll(): Promise<ApiResponse<unknown[]>> {
-    return runControllerAction(() => this.layoutsService.findAll(this.defaultOrgId));
+    return runControllerAction(() =>
+      this.layoutsService.findAll(this.defaultOrgId),
+    );
   }
 
   @Get("slug/:orgSlug/:deckSlug")
@@ -42,9 +47,7 @@ export class LayoutsController {
   }
 
   @Post()
-  async create(
-    @Body("name") name: string,
-  ): Promise<ApiResponse<unknown>> {
+  async create(@Body("name") name: string): Promise<ApiResponse<unknown>> {
     return runControllerAction(() =>
       this.layoutsService.create(this.defaultOrgId, name ?? "New Deck"),
     );

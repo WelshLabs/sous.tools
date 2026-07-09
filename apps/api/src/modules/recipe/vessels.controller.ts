@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { type VesselsService } from "./vessels.service";
+import { VesselsService } from "./vessels.service";
 import { type ApiResponse, type VesselProfile } from "@soustools/api-types";
 
 @Controller("recipes/vessels")
@@ -46,7 +46,7 @@ export class VesselsController {
 
   @Post()
   async create(
-    @Body() payload: Omit<VesselProfile, "id" | "organizationId" | "createdAt">
+    @Body() payload: Omit<VesselProfile, "id" | "organizationId" | "createdAt">,
   ): Promise<ApiResponse<VesselProfile>> {
     try {
       const data = await this.vesselsService.create(this.defaultOrgId, payload);
@@ -63,7 +63,7 @@ export class VesselsController {
   @Put(":id")
   async update(
     @Param("id") id: string,
-    @Body() payload: Partial<VesselProfile>
+    @Body() payload: Partial<VesselProfile>,
   ): Promise<ApiResponse<VesselProfile>> {
     try {
       const data = await this.vesselsService.update(id, payload);

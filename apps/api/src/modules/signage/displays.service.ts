@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { handleDbResult } from "./displays.helpers";
-import { type SignageGateway } from "./signage.gateway";
+import { SignageGateway } from "./signage.gateway";
 
 /**
  * Service managing signage displays in the database.
@@ -12,7 +12,9 @@ import { type SignageGateway } from "./signage.gateway";
  */
 @Injectable()
 export class DisplaysService {
-  constructor(private readonly gateway: SignageGateway) {}
+  constructor(
+    @Inject(SignageGateway) private readonly gateway: SignageGateway,
+  ) {}
 
   async findAll(orgId: string): Promise<unknown[]> {
     const { data, error } = await supabase
@@ -32,7 +34,11 @@ export class DisplaysService {
   }
 
   /** Creates a browser-only display (no device, no port label). */
-  async create(orgId: string, name: string, deckId?: string | null): Promise<unknown> {
+  async create(
+    orgId: string,
+    name: string,
+    deckId?: string | null,
+  ): Promise<unknown> {
     const { data, error } = await supabase
       .from("signage_displays")
       .insert([{ organization_id: orgId, name, deck_id: deckId ?? null }])
@@ -81,7 +87,11 @@ export class DisplaysService {
   }
 
   /** Pairs a hardware device and automatically registers its display ports (HDMI-1, HDMI-2). */
-  async pairDevice(orgId: string, pairingCode: string, name: string): Promise<unknown> {
+  async pairDevice(
+    orgId: string,
+    pairingCode: string,
+    name: string,
+  ): Promise<unknown> {
     const { data: device, error: deviceError } = await supabase
       .from("signage_devices")
       .select("*")
@@ -137,3 +147,5 @@ export class DisplaysService {
     return updatedDevice;
   }
 }
+
+// (removed debug logs)

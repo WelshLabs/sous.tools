@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
-import { type WastageService, type RecordWastageDto } from './wastage.service';
+import { Controller, Get, Post, Body, Query } from "@nestjs/common";
+import { WastageService, type RecordWastageDto } from "./wastage.service";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -8,15 +8,15 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-@Controller('wastage')
+@Controller("wastage")
 export class WastageController {
-  private readonly defaultOrgId = 'd0000000-0000-0000-0000-000000000000';
+  private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
 
   constructor(private readonly service: WastageService) {}
 
   @Post()
   async recordWastage(
-    @Body() body: Omit<RecordWastageDto, 'orgId'>
+    @Body() body: Omit<RecordWastageDto, "orgId">,
   ): Promise<ApiResponse<void>> {
     try {
       await this.service.recordWastage({
@@ -27,26 +27,32 @@ export class WastageController {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
   }
 
-  @Get('report')
+  @Get("report")
   async getWastageReport(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
   ): Promise<ApiResponse<unknown[]>> {
     try {
-      const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const start =
+        startDate ||
+        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const end = endDate || new Date().toISOString();
-      const data = await this.service.getWastageReport(this.defaultOrgId, start, end);
+      const data = await this.service.getWastageReport(
+        this.defaultOrgId,
+        start,
+        end,
+      );
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }

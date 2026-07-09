@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
 import { AdminGuard } from "../../common/guards/admin.guard";
-import { type DevicesService } from "./devices.service";
+import { DevicesService } from "./devices.service";
 import { type ApiResponse, type SignageDevice } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import { z } from "zod";
@@ -37,7 +37,9 @@ export class DevicesController {
    * This is called by the Pi on first boot when it has no tenant config.
    */
   @Post("register")
-  async register(): Promise<ApiResponse<{ deviceId: string; pairingCode: string }>> {
+  async register(): Promise<
+    ApiResponse<{ deviceId: string; pairingCode: string }>
+  > {
     return runControllerAction(() => this.devicesService.register());
   }
 
@@ -45,7 +47,15 @@ export class DevicesController {
    * Poll endpoint for the Pi to check if a user has entered its pairing code.
    */
   @Get(":deviceId/status")
-  async getStatus(@Param("deviceId") deviceId: string): Promise<ApiResponse<{ paired: boolean; supabaseUrl?: string; supabaseAnonKey?: string }>> {
+  async getStatus(
+    @Param("deviceId") deviceId: string,
+  ): Promise<
+    ApiResponse<{
+      paired: boolean;
+      supabaseUrl?: string;
+      supabaseAnonKey?: string;
+    }>
+  > {
     return runControllerAction(() => this.devicesService.getStatus(deviceId));
   }
 
@@ -53,7 +63,9 @@ export class DevicesController {
    * Loads the paired device's current settings.
    */
   @Get(":deviceId")
-  async findOne(@Param("deviceId") deviceId: string): Promise<ApiResponse<SignageDevice>> {
+  async findOne(
+    @Param("deviceId") deviceId: string,
+  ): Promise<ApiResponse<SignageDevice>> {
     return runControllerAction(() => this.devicesService.findOne(deviceId));
   }
 
@@ -65,7 +77,8 @@ export class DevicesController {
     @Param("deviceId") deviceId: string,
     @Body("name") name?: string,
     @Body("timezone") timezone?: string,
-    @Body("maintenanceWindow") maintenanceWindow?: {
+    @Body("maintenanceWindow")
+    maintenanceWindow?: {
       hour: number;
       minute: number;
       dayOfWeek: number | null;
@@ -80,20 +93,30 @@ export class DevicesController {
    * Captive Portal Handshake - Pairs a device via MAC address and Tenant Token.
    */
   @Post("pair")
-  async pair(@Body() body: any): Promise<ApiResponse<{ device_pairing_token: string }>> {
+  async pair(
+    @Body() body: any,
+  ): Promise<ApiResponse<{ device_pairing_token: string }>> {
     const result = PairSchema.safeParse(body);
     if (!result.success) {
       throw new BadRequestException(result.error);
     }
-    
-    return runControllerAction(() => 
-      this.devicesService.pair(result.data.hardwareMac, result.data.tenantAdminToken, result.data.requestedName)
+
+    return runControllerAction(() =>
+      this.devicesService.pair(
+        result.data.hardwareMac,
+        result.data.tenantAdminToken,
+        result.data.requestedName,
+      ),
     );
   }
 
   @Post("pair/init")
-  async initPairing(@Body("deviceType") deviceType: "wearos" | "rpi"): Promise<ApiResponse<{ code: string }>> {
-    return runControllerAction(() => this.devicesService.initPairing(deviceType));
+  async initPairing(
+    @Body("deviceType") deviceType: "wearos" | "rpi",
+  ): Promise<ApiResponse<{ code: string }>> {
+    return runControllerAction(() =>
+      this.devicesService.initPairing(deviceType),
+    );
   }
 
   @Post("pair/confirm")
@@ -101,19 +124,27 @@ export class DevicesController {
   async confirmPairing(
     @Body("code") code: string,
     @Body("deviceType") deviceType: "wearos" | "rpi",
-    @Req() req: any
+    @Req() req: any,
   ): Promise<ApiResponse<{ success: boolean }>> {
-    return runControllerAction(() => this.devicesService.confirmPairing(code, deviceType, req.user));
+    return runControllerAction(() =>
+      this.devicesService.confirmPairing(code, deviceType, req.user),
+    );
   }
 
   @Get("pair/status/:code")
-  async getPairingStatus(@Param("code") code: string): Promise<ApiResponse<{ status: string; token?: string }>> {
-    return runControllerAction(() => this.devicesService.getPairingStatus(code));
+  async getPairingStatus(
+    @Param("code") code: string,
+  ): Promise<ApiResponse<{ status: string; token?: string }>> {
+    return runControllerAction(() =>
+      this.devicesService.getPairingStatus(code),
+    );
   }
 
   @Post(":id/revoke")
   @UseGuards(AdminGuard)
-  async revokeDevice(@Param("id") id: string): Promise<ApiResponse<{ success: boolean }>> {
+  async revokeDevice(
+    @Param("id") id: string,
+  ): Promise<ApiResponse<{ success: boolean }>> {
     return runControllerAction(() => this.devicesService.revokeDevice(id));
   }
 }

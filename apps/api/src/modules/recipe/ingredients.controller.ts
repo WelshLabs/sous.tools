@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { type IngredientsService } from "./ingredients.service";
+import { IngredientsService } from "./ingredients.service";
 import { type ApiResponse, type MasterIngredient } from "@soustools/api-types";
 
 @Controller("recipes/ingredients")
@@ -31,7 +31,9 @@ export class IngredientsController {
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: string): Promise<ApiResponse<MasterIngredient>> {
+  async findOne(
+    @Param("id") id: string,
+  ): Promise<ApiResponse<MasterIngredient>> {
     try {
       const data = await this.ingredientsService.findOne(id);
       return { success: true, data, timestamp: new Date().toISOString() };
@@ -46,10 +48,17 @@ export class IngredientsController {
 
   @Post()
   async create(
-    @Body() payload: Omit<MasterIngredient, "id" | "organizationId" | "createdAt" | "updatedAt">
+    @Body()
+    payload: Omit<
+      MasterIngredient,
+      "id" | "organizationId" | "createdAt" | "updatedAt"
+    >,
   ): Promise<ApiResponse<MasterIngredient>> {
     try {
-      const data = await this.ingredientsService.create(this.defaultOrgId, payload);
+      const data = await this.ingredientsService.create(
+        this.defaultOrgId,
+        payload,
+      );
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
@@ -63,7 +72,7 @@ export class IngredientsController {
   @Put(":id")
   async update(
     @Param("id") id: string,
-    @Body() payload: Partial<MasterIngredient>
+    @Body() payload: Partial<MasterIngredient>,
   ): Promise<ApiResponse<MasterIngredient>> {
     try {
       const data = await this.ingredientsService.update(id, payload);
@@ -78,7 +87,9 @@ export class IngredientsController {
   }
 
   @Delete(":id")
-  async remove(@Param("id") id: string): Promise<ApiResponse<MasterIngredient>> {
+  async remove(
+    @Param("id") id: string,
+  ): Promise<ApiResponse<MasterIngredient>> {
     try {
       const data = await this.ingredientsService.remove(id);
       return { success: true, data, timestamp: new Date().toISOString() };

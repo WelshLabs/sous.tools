@@ -1,5 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { type RecipeNutritionCache } from '@soustools/api-types';
+import { Injectable, Logger } from "@nestjs/common";
+import { type RecipeNutritionCache } from "@soustools/api-types";
+
+type LabelNutrition = {
+  calories?: number | null;
+  total_fat_g?: number | null;
+  cholesterol_mg?: number | null;
+  sodium_mg?: number | null;
+  total_carbohydrate_g?: number | null;
+  protein_g?: number | null;
+};
+
+const round = (value: unknown): number => Math.round(Number(value) || 0);
 
 @Injectable()
 export class LabelRendererService {
@@ -8,7 +19,7 @@ export class LabelRendererService {
   async renderSvg(cache: RecipeNutritionCache): Promise<string> {
     this.logger.debug(`Rendering FDA label for recipe ${cache.recipeId}`);
 
-    const n = cache.perServingNutrition;
+    const n = cache.perServingNutrition as LabelNutrition;
     const s = cache.servings;
 
     // FDA Standard Formatting logic (simplified SVG string)
@@ -26,29 +37,29 @@ export class LabelRendererService {
         
         <text x="20" y="120" font-size="12" font-weight="bold" fill="black">Amount per serving</text>
         <text x="20" y="150" font-size="28" font-weight="900" fill="black">Calories</text>
-        <text x="280" y="150" font-size="28" font-weight="900" text-anchor="end" fill="black">${Math.round(n.calories || 0)}</text>
+        <text x="280" y="150" font-size="28" font-weight="900" text-anchor="end" fill="black">${round(n.calories)}</text>
         <line x1="15" y1="160" x2="285" y2="160" stroke="black" stroke-width="4" />
         
         <text x="280" y="175" font-size="12" font-weight="bold" text-anchor="end" fill="black">% Daily Value*</text>
         
         <!-- Total Fat -->
-        <text x="20" y="195" font-size="12" font-weight="bold" fill="black">Total Fat ${Math.round(n.total_fat_g || 0)}g</text>
+        <text x="20" y="195" font-size="12" font-weight="bold" fill="black">Total Fat ${round(n.total_fat_g)}g</text>
         <line x1="15" y1="205" x2="285" y2="205" stroke="black" stroke-width="1" />
         
         <!-- Cholesterol -->
-        <text x="20" y="220" font-size="12" font-weight="bold" fill="black">Cholesterol ${Math.round(n.cholesterol_mg || 0)}mg</text>
+        <text x="20" y="220" font-size="12" font-weight="bold" fill="black">Cholesterol ${round(n.cholesterol_mg)}mg</text>
         <line x1="15" y1="230" x2="285" y2="230" stroke="black" stroke-width="1" />
         
         <!-- Sodium -->
-        <text x="20" y="245" font-size="12" font-weight="bold" fill="black">Sodium ${Math.round(n.sodium_mg || 0)}mg</text>
+        <text x="20" y="245" font-size="12" font-weight="bold" fill="black">Sodium ${round(n.sodium_mg)}mg</text>
         <line x1="15" y1="255" x2="285" y2="255" stroke="black" stroke-width="1" />
         
         <!-- Total Carbs -->
-        <text x="20" y="270" font-size="12" font-weight="bold" fill="black">Total Carbohydrate ${Math.round(n.total_carbohydrate_g || 0)}g</text>
+        <text x="20" y="270" font-size="12" font-weight="bold" fill="black">Total Carbohydrate ${round(n.total_carbohydrate_g)}g</text>
         <line x1="15" y1="280" x2="285" y2="280" stroke="black" stroke-width="1" />
         
         <!-- Protein -->
-        <text x="20" y="295" font-size="12" font-weight="bold" fill="black">Protein ${Math.round(n.protein_g || 0)}g</text>
+        <text x="20" y="295" font-size="12" font-weight="bold" fill="black">Protein ${round(n.protein_g)}g</text>
         <line x1="15" y1="305" x2="285" y2="305" stroke="black" stroke-width="4" />
         
         <text x="20" y="325" font-size="10" fill="black">* The % Daily Value (DV) tells you how much a nutrient in</text>

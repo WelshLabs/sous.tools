@@ -10,3 +10,6 @@ model_list:
 
 general_settings:
   master_key: sk-1234 # Used by your tools to auth with LiteLLM
+
+
+# https://n8n.sous.tools:5678/webhook-test/ebb9a8f0-efc1-4627-9e71-3a9b25e88c1b

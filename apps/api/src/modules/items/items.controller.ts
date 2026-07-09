@@ -1,5 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { type ItemsService, type CreateItemDto, type UpdateItemDto } from './items.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from "@nestjs/common";
+import { ItemsService } from "./items.service";
+import type { CreateItemDto, UpdateItemDto } from "./items-query.helper";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -8,35 +18,37 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-@Controller('items')
+@Controller("items")
 export class ItemsController {
-  private readonly defaultOrgId = 'd0000000-0000-0000-0000-000000000000';
+  private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
 
   constructor(private readonly service: ItemsService) {}
 
   @Get()
-  async findAll(@Query('search') search?: string): Promise<ApiResponse<unknown>> {
+  async findAll(
+    @Query("search") search?: string,
+  ): Promise<ApiResponse<unknown>> {
     try {
       const data = await this.service.findAll(this.defaultOrgId, search);
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  @Get(":id")
+  async findOne(@Param("id") id: string): Promise<ApiResponse<unknown>> {
     try {
       const data = await this.service.findOne(id);
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
@@ -50,16 +62,16 @@ export class ItemsController {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
   }
 
-  @Put(':id')
+  @Put(":id")
   async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateItemDto
+    @Param("id") id: string,
+    @Body() dto: UpdateItemDto,
   ): Promise<ApiResponse<unknown>> {
     try {
       const data = await this.service.update(id, dto);
@@ -67,21 +79,21 @@ export class ItemsController {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  @Delete(":id")
+  async remove(@Param("id") id: string): Promise<ApiResponse<unknown>> {
     try {
       const data = await this.service.remove(id);
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }

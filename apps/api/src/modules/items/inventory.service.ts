@@ -8,12 +8,13 @@ interface DbStockRow {
   lot_number?: string;
   quantity_g: number;
   location?: string;
+  // Supabase relationship returns an array of related rows; index into [0]
   items?: {
     name?: string;
     current_cost_per_g?: number;
     purchase_unit?: string;
     each_weight_g?: number;
-  };
+  }[];
 }
 
 export interface AdjustStockDto {
@@ -82,15 +83,15 @@ export class InventoryService {
       return {
         id: row.id,
         itemId: row.item_id,
-        itemName: row.items?.name || "Unknown",
+        itemName: row.items?.[0]?.name || "Unknown",
         quantityG: row.quantity_g,
-        lotNumber: row.lot_number,
-        lotExpiry: row.lot_expiry,
-        location: row.location,
+        lotNumber: row.lot_number ?? null,
+        lotExpiry: row.lot_expiry ?? null,
+        location: row.location ?? null,
         daysUntilExpiry,
-        currentCostPerG: row.items?.current_cost_per_g || null,
-        purchaseUnit: row.items?.purchase_unit || "LB",
-        eachWeightG: row.items?.each_weight_g || null,
+        currentCostPerG: row.items?.[0]?.current_cost_per_g || null,
+        purchaseUnit: row.items?.[0]?.purchase_unit || "LB",
+        eachWeightG: row.items?.[0]?.each_weight_g || null,
       };
     });
 

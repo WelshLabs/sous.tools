@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { supabase } from '../../lib/supabase';
+import { Injectable } from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
 
 interface DbWastageRow {
   id: string;
   item_id: string;
-  items?: { name?: string };
+  // relationship returns array of related items; index into [0]
+  items?: { name?: string }[];
   amount_g: number;
   reason: string;
   recorded_at: string;
@@ -30,17 +31,15 @@ export interface WastageReportRow {
 @Injectable()
 export class WastageService {
   async recordWastage(dto: RecordWastageDto): Promise<void> {
-    const { error } = await supabase
-      .from('wastage_ledger')
-      .insert([
-        {
-          organization_id: dto.orgId,
-          item_id: dto.itemId,
-          amount_g: dto.amountG,
-          reason: dto.reason || 'OTHER',
-          recorded_by: dto.recordedBy || null,
-        },
-      ]);
+    const { error } = await supabase.from("wastage_ledger").insert([
+      {
+        organization_id: dto.orgId,
+        item_id: dto.itemId,
+        amount_g: dto.amountG,
+        reason: dto.reason || "OTHER",
+        recorded_by: dto.recordedBy || null,
+      },
+    ]);
 
     if (error) {
       throw new Error(error.message);
@@ -50,15 +49,15 @@ export class WastageService {
   async getWastageReport(
     orgId: string,
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<WastageReportRow[]> {
     const { data, error } = await supabase
-      .from('wastage_ledger')
-      .select('id, item_id, amount_g, reason, recorded_at, items (name)')
-      .eq('organization_id', orgId)
-      .gte('recorded_at', startDate)
-      .lte('recorded_at', endDate)
-      .order('recorded_at', { ascending: false });
+      .from("wastage_ledger")
+      .select("id, item_id, amount_g, reason, recorded_at, items (name)")
+      .eq("organization_id", orgId)
+      .gte("recorded_at", startDate)
+      .lte("recorded_at", endDate)
+      .order("recorded_at", { ascending: false });
 
     if (error) {
       throw new Error(error.message);
@@ -67,7 +66,7 @@ export class WastageService {
     return (data || []).map((row: DbWastageRow) => ({
       id: row.id,
       itemId: row.item_id,
-      itemName: row.items?.name || 'Unknown',
+      itemName: row.items?.[0]?.name || "Unknown",
       amountG: row.amount_g,
       reason: row.reason,
       recordedAt: row.recorded_at,

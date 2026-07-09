@@ -1,9 +1,20 @@
-import { Controller, Get, Post, Body, Query, NotFoundException } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  NotFoundException,
+} from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { type SignageGateway } from "../signage/signage.gateway";
+import { SignageGateway } from "../signage/signage.gateway";
 import { type ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
-import { getMockItems, handleSquareStockToggle, resolveItemDetails } from "./pos-simulator.helpers";
+import {
+  getMockItems,
+  handleSquareStockToggle,
+  resolveItemDetails,
+} from "./pos-simulator.helpers";
 
 /**
  * Controller simulating Point of Sale (POS) updates from Square.
@@ -15,7 +26,9 @@ export class PosSimulatorController {
   constructor(private readonly gateway: SignageGateway) {}
 
   @Get("items")
-  async getItems(@Query("organizationId") organizationId?: string): Promise<ApiResponse<unknown[]>> {
+  async getItems(
+    @Query("organizationId") organizationId?: string,
+  ): Promise<ApiResponse<unknown[]>> {
     return runControllerAction(async () => {
       const orgId = organizationId || this.defaultOrgId;
       const { data, error } = await supabase
@@ -38,7 +51,9 @@ export class PosSimulatorController {
 
       const { data, error } = await supabase
         .from("pos_items")
-        .upsert(mockItems, { onConflict: "organization_id,pos_provider,external_id" })
+        .upsert(mockItems, {
+          onConflict: "organization_id,pos_provider,external_id",
+        })
         .select();
 
       if (error) {
@@ -61,7 +76,12 @@ export class PosSimulatorController {
         throw new Error("isSoldOut parameter is required");
       }
 
-      const { orgId, targetSquareId } = await resolveItemDetails(supabase, itemId, squareId, this.defaultOrgId);
+      const { orgId, targetSquareId } = await resolveItemDetails(
+        supabase,
+        itemId,
+        squareId,
+        this.defaultOrgId,
+      );
 
       const { data: integration } = await supabase
         .from("integrations")
@@ -71,20 +91,26 @@ export class PosSimulatorController {
         .maybeSingle();
 
       if (integration && targetSquareId) {
-        await handleSquareStockToggle(targetSquareId, isSoldOut, integration.access_token, quantity, unlimited);
+        await handleSquareStockToggle(
+          targetSquareId,
+          isSoldOut,
+          integration.access_token,
+          quantity,
+          unlimited,
+        );
       }
 
-      let query = supabase
-        .from("pos_items")
-        .update({
-          is_sold_out: isSoldOut,
-          updated_at: new Date().toISOString(),
-        });
+      let query = supabase.from("pos_items").update({
+        is_sold_out: isSoldOut,
+        updated_at: new Date().toISOString(),
+      });
 
       if (itemId) {
         query = query.eq("id", itemId);
       } else if (targetSquareId) {
-        query = query.eq("external_id", targetSquareId).eq("pos_provider", "SQUARE");
+        query = query
+          .eq("external_id", targetSquareId)
+          .eq("pos_provider", "SQUARE");
       } else {
         throw new Error("Either itemId or squareId is required");
       }
@@ -111,12 +137,11 @@ export class PosSimulatorController {
         for (const deck of decks) {
           this.gateway.broadcastDeckUpdate(
             deck.id as string,
-            deck.config as Parameters<typeof this.gateway.broadcastDeckUpdate>[1],
+            deck.config as Parameters<
+              typeof this.gateway.broadcastDeckUpdate
+            >[1],
           );
-          this.gateway.broadcastItemsUpdate(
-            deck.id as string,
-            allItems || [],
-          );
+          this.gateway.broadcastItemsUpdate(deck.id as string, allItems || []);
         }
       }
 

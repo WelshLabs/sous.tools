@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { io } from "socket.io-client";
 import { type SignageDisplay, type PosItem, type SignageLayoutConfig } from "@soustools/api-types";
 import { type SignageLayout } from "./types";
@@ -8,7 +8,7 @@ import { config } from "@soustools/config";
 export function useDisplayPlayer(
   displayId: string,
   initialDisplay?: SignageDisplay | null,
-  initialLayout?: any | null,
+  initialLayout?: SignageLayout | null,
   initialItems?: RawDbPosItem[],
   initialErrorState?: string | null
 ) {
@@ -23,9 +23,9 @@ export function useDisplayPlayer(
   const [loading, setLoading] = useState(!initialDisplay && !initialErrorState);
   const [errorState, setErrorState] = useState<string | null>(initialErrorState || null);
 
-  const CACHE_DISPLAY = `display_${displayId}`;
-  const CACHE_LAYOUT = `layout_${displayId}`;
-  const CACHE_ITEMS = `items_${displayId}`;
+  const CACHE_DISPLAY = useMemo(() => `display_${displayId}`, [displayId]);
+  const CACHE_LAYOUT = useMemo(() => `layout_${displayId}`, [displayId]);
+  const CACHE_ITEMS = useMemo(() => `items_${displayId}`, [displayId]);
 
   const fetchDisplayAndLayout = useCallback(async () => {
     try {
@@ -85,7 +85,7 @@ export function useDisplayPlayer(
         setLoading(false);
       }
     }
-  }, [displayId]);
+  }, [CACHE_DISPLAY, CACHE_LAYOUT, CACHE_ITEMS, displayId]);
 
   useEffect(() => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

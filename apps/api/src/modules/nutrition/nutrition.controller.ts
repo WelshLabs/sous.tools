@@ -6,11 +6,11 @@ import {
   Header,
   NotFoundException,
 } from "@nestjs/common";
-import { type NutritionService } from "./nutrition.service";
-import { type LabelRendererService } from "./label-renderer.service";
-import { type UsdaResolverService } from "./usda-resolver.service";
+import { NutritionService } from "./nutrition.service";
+import { LabelRendererService } from "./label-renderer.service";
+import { UsdaResolverService } from "./usda-resolver.service";
+import type { Recipe, RecipeNutritionCache } from "@soustools/api-types";
 import { createAdminClient } from "@soustools/supabase";
-// import { Recipe } from "@soustools/api-types";
 
 @Controller("recipes")
 export class NutritionController {
@@ -71,7 +71,9 @@ export class NutritionController {
 
       // Compute nutrition
       const computedCache =
-        await this.nutritionService.aggregateRecipeNutrition(recipeData as unknown as Recipe);
+        await this.nutritionService.aggregateRecipeNutrition(
+          recipeData as unknown as Recipe,
+        );
 
       // Save cache asynchronously (don't block response)
       supabase
@@ -83,14 +85,18 @@ export class NutritionController {
     }
 
     if (format === "svg") {
-      return this.labelRenderer.renderSvg(cache as unknown as RecipeNutritionCache);
+      return this.labelRenderer.renderSvg(
+        cache as unknown as RecipeNutritionCache,
+      );
     } else {
       throw new Error(`Format ${format} not supported yet in renderer`);
     }
   }
 
   @Get(":id/nutrition")
-  async getNutrition(@Param("id") recipeId: string): Promise<Record<string, unknown>> {
+  async getNutrition(
+    @Param("id") recipeId: string,
+  ): Promise<Record<string, unknown>> {
     const supabase = createAdminClient();
 
     // Try to get from cache first
@@ -133,7 +139,9 @@ export class NutritionController {
       }
 
       const computedCache =
-        await this.nutritionService.aggregateRecipeNutrition(recipeData as unknown as Recipe);
+        await this.nutritionService.aggregateRecipeNutrition(
+          recipeData as unknown as Recipe,
+        );
       supabase
         .from("recipe_nutrition_cache")
         .upsert(computedCache as unknown as Record<string, unknown>)
@@ -160,9 +168,11 @@ export class NutritionController {
   }
 
   @Get("usda/search")
-  async searchUsda(@Query("query") query: string): Promise<Record<string, unknown>> {
+  async searchUsda(
+    @Query("query") query: string,
+  ): Promise<Record<string, unknown>> {
     if (!query) throw new Error("Query is required");
-    const result = await this.usdaResolver.resolveIngredient(query); 
+    const result = await this.usdaResolver.resolveIngredient(query);
     return { success: true, data: result };
   }
 }

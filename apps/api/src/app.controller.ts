@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Res, HttpCode } from "@nestjs/common";
 import { type Response } from "express";
-import { type AppService } from "./app.service";
+import { AppService } from "./app.service";
 import { type ApiResponse, type HelloResponse } from "@soustools/api-types";
 
 /**

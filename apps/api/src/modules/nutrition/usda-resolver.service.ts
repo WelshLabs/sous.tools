@@ -1,13 +1,36 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { config } from "@soustools/config";
 
+export interface UsdaMatch {
+  serving_size_g?: number;
+  calories?: number;
+  total_fat_g?: number;
+  saturated_fat_g?: number;
+  trans_fat_g?: number;
+  cholesterol_mg?: number;
+  sodium_mg?: number;
+  total_carbohydrate_g?: number;
+  dietary_fiber_g?: number;
+  total_sugars_g?: number;
+  added_sugars_g?: number;
+  protein_g?: number;
+  vitamin_d_mcg?: number;
+  calcium_mg?: number;
+  iron_mg?: number;
+  potassium_mg?: number;
+  fdc_id?: number;
+  fdc_food_name?: string;
+  verified?: boolean;
+  [key: string]: any;
+}
+
 @Injectable()
 export class UsdaResolverService {
   private readonly logger = new Logger(UsdaResolverService.name);
   private readonly baseUrl = "https://api.nal.usda.gov/fdc/v1";
   private readonly apiKey = config.USDA_FDC_API_KEY;
 
-  async resolveIngredient(query: string): Promise<Record<string, unknown> | null> {
+  async resolveIngredient(query: string): Promise<UsdaMatch | null> {
     try {
       this.logger.log(`Resolving nutrition for query: ${query}`);
       const url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&api_key=${this.apiKey}`;
@@ -31,12 +54,18 @@ export class UsdaResolverService {
     }
   }
 
-  private mapUsdaToMacros(foodItem: { fdcId: number; description: string; foodNutrients?: Array<{ nutrientId: number; value?: number }> }): Record<string, unknown> {
+  private mapUsdaToMacros(foodItem: {
+    fdcId: number;
+    description: string;
+    foodNutrients?: Array<{ nutrientId: number; value?: number }>;
+  }): UsdaMatch {
     // 1008 = Calories, 1003 = Protein, 1004 = Total lipid (fat), 1005 = Carbohydrate
     // Using NAL IDs.
     const nutrients = foodItem.foodNutrients || [];
     const getNutrient = (id: number) =>
-      nutrients.find((n: { nutrientId: number; value?: number }) => n.nutrientId === id)?.value || 0;
+      nutrients.find(
+        (n: { nutrientId: number; value?: number }) => n.nutrientId === id,
+      )?.value || 0;
 
     return {
       serving_size_g: 100, // USDA FDC responses are generally per 100g

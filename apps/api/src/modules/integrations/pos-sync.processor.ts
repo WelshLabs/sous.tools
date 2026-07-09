@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { type Job } from "bullmq";
 import { Injectable, Logger } from "@nestjs/common";
-import { type IntegrationsService } from "./integrations.service";
+import { IntegrationsService } from "./integrations.service";
 
 /**
  * BullMQ processor for handling POS catalog and inventory synchronization tasks.
@@ -16,10 +16,16 @@ export class PosSyncProcessor extends WorkerHost {
   }
 
   async process(
-    job: Job<{ orgId: string; type: "sync-catalog" | "webhook-inventory"; payload?: Record<string, unknown> }>
+    job: Job<{
+      orgId: string;
+      type: "sync-catalog" | "webhook-inventory";
+      payload?: Record<string, unknown>;
+    }>,
   ): Promise<void> {
     const { orgId, type } = job.data;
-    this.logger.log(`Processing job ${job.id} of type ${type} for org ${orgId}`);
+    this.logger.log(
+      `Processing job ${job.id} of type ${type} for org ${orgId}`,
+    );
 
     if (type === "sync-catalog") {
       await this.service.syncSquareCatalog(orgId);

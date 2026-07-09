@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
-import { type InventoryService, type AdjustStockDto } from './inventory.service';
+import { Controller, Get, Post, Body } from "@nestjs/common";
+import { InventoryService, type AdjustStockDto } from "./inventory.service";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -8,9 +8,9 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-@Controller('inventory')
+@Controller("inventory")
 export class InventoryController {
-  private readonly defaultOrgId = 'd0000000-0000-0000-0000-000000000000';
+  private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
 
   constructor(private readonly service: InventoryService) {}
 
@@ -22,15 +22,15 @@ export class InventoryController {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
   }
 
-  @Post('adjust')
+  @Post("adjust")
   async adjustStock(
-    @Body() body: Omit<AdjustStockDto, 'orgId'>
+    @Body() body: Omit<AdjustStockDto, "orgId">,
   ): Promise<ApiResponse<void>> {
     try {
       await this.service.adjustStock({
@@ -41,7 +41,7 @@ export class InventoryController {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }

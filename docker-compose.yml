@@ -112,6 +112,7 @@ services:
       - N8N_HOST=n8n.sous.tools
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
+      - N8N_COMMAND_ENABLE=true
     volumes:
       - ./n8n_data:/home/node/.n8n
     networks:

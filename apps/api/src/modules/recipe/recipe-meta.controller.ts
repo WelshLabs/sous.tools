@@ -1,6 +1,10 @@
 import { Controller, Get } from "@nestjs/common";
-import { type RecipeMetaService } from "./recipe-meta.service";
-import { type ApiResponse, type RecipeCategory, type RecipeTag } from "@soustools/api-types";
+import { RecipeMetaService } from "./recipe-meta.service";
+import {
+  type ApiResponse,
+  type RecipeCategory,
+  type RecipeTag,
+} from "@soustools/api-types";
 
 /**
  * RecipeMetaController handles categories and tags endpoints.
@@ -15,7 +19,9 @@ export class RecipeMetaController {
   @Get("categories")
   async findCategories(): Promise<ApiResponse<RecipeCategory[]>> {
     try {
-      const data = await this.recipeMetaService.findAllCategories(this.defaultOrgId);
+      const data = await this.recipeMetaService.findAllCategories(
+        this.defaultOrgId,
+      );
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {
       return {

@@ -1,19 +1,22 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { type OmnibarCommandPayload, type OmniMessage } from '@soustools/api-types';
-import { GoogleGenAI, type Content, type Part } from '@google/genai';
-import { ALL_COMMAND_TOOLS } from './commands-tools';
-import { type PurchaseOrdersService } from '../items/purchase-orders.service';
-import { type VendorsService } from '../items/vendors.service';
-import { type WhiteboardService } from '../items/whiteboard.service';
-import { type RecipeCostService } from '../recipe/recipe-cost.service';
-import { randomUUID } from 'crypto';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { type Cache } from 'cache-manager';
-import { config } from '@soustools/config';
-import { InjectQueue } from '@nestjs/bullmq';
-import { type Queue } from 'bullmq';
-import { supabase } from '../../lib/supabase';
-import { fallbackToOllama } from './commands-ollama.helper';
+import { Injectable, Logger, Inject } from "@nestjs/common";
+import {
+  type OmnibarCommandPayload,
+  type OmniMessage,
+} from "@soustools/api-types";
+import { GoogleGenAI, type Content, type Part } from "@google/genai";
+import { ALL_COMMAND_TOOLS } from "./commands-tools";
+import { PurchaseOrdersService } from "../items/purchase-orders.service";
+import { VendorsService } from "../items/vendors.service";
+import { WhiteboardService } from "../items/whiteboard.service";
+import { RecipeCostService } from "../recipe/recipe-cost.service";
+import { randomUUID } from "crypto";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { type Cache } from "cache-manager";
+import { config } from "@soustools/config";
+import { InjectQueue } from "@nestjs/bullmq";
+import { type Queue } from "bullmq";
+import { supabase } from "../../lib/supabase";
+import { fallbackToOllama } from "./commands-ollama.helper";
 
 @Injectable()
 export class CommandsService {
@@ -26,12 +29,13 @@ export class CommandsService {
     private readonly whiteboardService: WhiteboardService,
     private readonly recipeCostService: RecipeCostService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    @InjectQueue('ingestion') private ingestionQueue: Queue,
+    @InjectQueue("ingestion") private ingestionQueue: Queue,
   ) {}
 
   private mapToGeminiContent(chatHistory: OmniMessage[]): Content[] {
     return chatHistory.map((msg) => ({
-      role: msg.role === 'model' || msg.role === 'agent_step' ? 'model' : 'user',
+      role:
+        msg.role === "model" || msg.role === "agent_step" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
   }
@@ -44,7 +48,7 @@ export class CommandsService {
     this.logger.log(`\n🤖 AI COMMAND RECEIVED [${payload.source}]`);
 
     try {
-      const isLockedOut = await this.cacheManager.get('gemini_quota_lockout');
+      const isLockedOut = await this.cacheManager.get("gemini_quota_lockout");
       const history = payload.chatHistory || [];
 
       if (isLockedOut) {
@@ -52,7 +56,7 @@ export class CommandsService {
       }
 
       const contents = this.mapToGeminiContent(history);
-      
+
       // We will loop to handle function calls
       let isDone = false;
       let finalResult = null;
@@ -60,28 +64,41 @@ export class CommandsService {
 
       while (!isDone && iterations < 5) {
         iterations++;
-        
+
         let response;
         try {
           response = await this.ai.models.generateContent({
-            model: 'gemini-3.1-flash-lite',
+            model: "gemini-3.1-flash-lite",
             contents,
             config: {
               systemInstruction: {
-                role: 'system',
-                parts: [{ text: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor." }]
+                role: "system",
+                parts: [
+                  {
+                    text: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor.",
+                  },
+                ],
               },
-              tools: [{
-                functionDeclarations: ALL_COMMAND_TOOLS
-              }]
-            }
+              tools: [
+                {
+                  functionDeclarations: ALL_COMMAND_TOOLS,
+                },
+              ],
+            },
           });
         } catch (genError: any) {
-          if (genError.status === 429 || genError.message?.includes('429')) {
-            this.logger.warn('Gemini 429 Quota Exceeded. Setting lockout and falling back to Ollama.');
-            await this.cacheManager.set('gemini_quota_lockout', true, 3600000); // 3600 seconds in ms
+          if (genError.status === 429 || genError.message?.includes("429")) {
+            this.logger.warn(
+              "Gemini 429 Quota Exceeded. Setting lockout and falling back to Ollama.",
+            );
+            await this.cacheManager.set("gemini_quota_lockout", true, 3600000); // 3600 seconds in ms
             if (emitMessage) {
-              emitMessage({ id: randomUUID(), role: 'agent_step', content: 'Quota exceeded. Falling back to local Ollama...', timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: "Quota exceeded. Falling back to local Ollama...",
+                timestamp: new Date(),
+              });
             }
             return this.fallbackToOllama(history, emitMessage);
           }
@@ -98,64 +115,125 @@ export class CommandsService {
           let toolResponseData: any = {};
           let agentMessageContent = `Executing ${functionName}...`;
 
-          if (functionName === 'add_to_purchase_order') {
+          if (functionName === "add_to_purchase_order") {
             agentMessageContent = `Adding ${args.quantity} ${args.unit} ${args.itemName} to ${args.vendorName} draft PO...`;
             if (emitMessage) {
-              emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
             }
 
             const vendors = await this.vendorsService.findAll(orgId);
-            const matchedVendor = vendors.find((v: any) => v.name?.toLowerCase().includes(args.vendorName.toLowerCase()));
+            const matchedVendor = vendors.find((v: any) =>
+              v.name?.toLowerCase().includes(args.vendorName.toLowerCase()),
+            );
 
             if (matchedVendor) {
-              const rawName = `${args.quantity} ${args.unit} ${args.itemName}`.trim();
+              const rawName =
+                `${args.quantity} ${args.unit} ${args.itemName}`.trim();
               await this.purchaseOrdersService.addItemToDraft({
                 vendor_id: matchedVendor.id as string,
                 raw_name: rawName,
                 ordered_qty: args.quantity,
               });
-              toolResponseData = { success: true, message: `Successfully added to ${matchedVendor.name} PO.` };
+              toolResponseData = {
+                success: true,
+                message: `Successfully added to ${matchedVendor.name} PO.`,
+              };
             } else {
-              toolResponseData = { success: false, error: `Vendor ${args.vendorName} not found.` };
+              toolResponseData = {
+                success: false,
+                error: `Vendor ${args.vendorName} not found.`,
+              };
             }
-          } else if (functionName === 'add_to_whiteboard') {
+          } else if (functionName === "add_to_whiteboard") {
             agentMessageContent = `Adding ${args.quantity} ${args.unit} ${args.itemName} to the Whiteboard...`;
             if (emitMessage) {
-              emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
             }
 
-            const rawName = `${args.quantity} ${args.unit} ${args.itemName}`.trim();
+            const rawName =
+              `${args.quantity} ${args.unit} ${args.itemName}`.trim();
             await this.whiteboardService.create({ raw_name: rawName });
-            toolResponseData = { success: true, message: `Added to whiteboard.` };
-          } else if (functionName === 'get_recipe_cost') {
+            toolResponseData = {
+              success: true,
+              message: `Added to whiteboard.`,
+            };
+          } else if (functionName === "get_recipe_cost") {
             agentMessageContent = `Calculating cost for recipe...`;
             if (emitMessage) {
-              emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
             }
-            
+
             try {
-              const cost = await this.recipeCostService.getRecipeCost(args.recipeId);
+              const cost = await this.recipeCostService.getRecipeCost(
+                args.recipeId,
+              );
               toolResponseData = { success: true, cost };
             } catch (err: any) {
               toolResponseData = { success: false, error: err.message };
             }
-          } else if (functionName === 'update_item_status') {
+          } else if (functionName === "update_item_status") {
             agentMessageContent = `Updating item ${args.itemId} status to ${args.status}...`;
-            if (emitMessage) emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
+            if (emitMessage)
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
             toolResponseData = { success: true, message: `Status updated.` };
-          } else if (functionName === 'adjust_throttle_time') {
+          } else if (functionName === "adjust_throttle_time") {
             agentMessageContent = `Adding ${args.minutes} minutes to throttle time...`;
-            if (emitMessage) emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
-            toolResponseData = { success: true, message: `Throttle time adjusted.` };
-          } else if (functionName === 'reconcile_inventory') {
+            if (emitMessage)
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
+            toolResponseData = {
+              success: true,
+              message: `Throttle time adjusted.`,
+            };
+          } else if (functionName === "reconcile_inventory") {
             agentMessageContent = `Setting inventory for ${args.itemId} to ${args.quantity} ${args.unit}...`;
-            if (emitMessage) emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
-            toolResponseData = { success: true, message: `Inventory reconciled.` };
-          } else if (functionName === 'ingest_vendor_invoice') {
+            if (emitMessage)
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
+            toolResponseData = {
+              success: true,
+              message: `Inventory reconciled.`,
+            };
+          } else if (functionName === "ingest_vendor_invoice") {
             agentMessageContent = `Invoice received. Sending to the ingestion pipeline...`;
-            if (emitMessage) emitMessage({ id: randomUUID(), role: 'agent_step', content: agentMessageContent, timestamp: new Date() });
-            
-            const userId = payload.context?.userId || "d0000000-0000-0000-0000-000000000000";
+            if (emitMessage)
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
+
+            const userId =
+              payload.context?.userId || "d0000000-0000-0000-0000-000000000000";
 
             const { data: review, error } = await supabase
               .from("ingestion_reviews")
@@ -172,17 +250,27 @@ export class CommandsService {
               .single();
 
             if (!error && review) {
-              await this.ingestionQueue.add("process-ingestion", {
-                organizationId: orgId,
-                userId: userId,
-                source: "omnibar",
-                documentType: "invoice",
-                sourceDocumentUrl: args.fileUrl,
-                reviewId: review.id,
-              }, { attempts: 3, backoff: { type: "exponential", delay: 2000 } });
-              toolResponseData = { success: true, message: `Successfully queued invoice for ingestion.` };
+              await this.ingestionQueue.add(
+                "process-ingestion",
+                {
+                  organizationId: orgId,
+                  userId: userId,
+                  source: "omnibar",
+                  documentType: "invoice",
+                  sourceDocumentUrl: args.fileUrl,
+                  reviewId: review.id,
+                },
+                { attempts: 3, backoff: { type: "exponential", delay: 2000 } },
+              );
+              toolResponseData = {
+                success: true,
+                message: `Successfully queued invoice for ingestion.`,
+              };
             } else {
-              toolResponseData = { success: false, error: `Failed to create ingestion review: ${error?.message}` };
+              toolResponseData = {
+                success: false,
+                error: `Failed to create ingestion review: ${error?.message}`,
+              };
             }
           }
 
@@ -191,59 +279,67 @@ export class CommandsService {
             contents.push(response.candidates[0].content);
           } else {
             contents.push({
-              role: 'model',
+              role: "model",
               parts: [{ functionCall: call }] as Part[],
             });
           }
 
           // Append tool response to history
           contents.push({
-            role: 'user', // SDK uses 'user' for function responses, or 'function' depending on SDK version. GenAI uses 'user' with functionResponse part.
-            parts: [{
-              functionResponse: {
-                name: functionName,
-                response: toolResponseData
-              }
-            }] as Part[],
+            role: "user", // SDK uses 'user' for function responses, or 'function' depending on SDK version. GenAI uses 'user' with functionResponse part.
+            parts: [
+              {
+                functionResponse: {
+                  name: functionName,
+                  response: toolResponseData,
+                },
+              },
+            ] as Part[],
           });
         } else if (response.text) {
           isDone = true;
-          finalResult = { action: 'SUCCESS', message: response.text };
-          
+          finalResult = { action: "SUCCESS", message: response.text };
+
           if (emitMessage) {
             emitMessage({
               id: randomUUID(),
-              role: 'model',
+              role: "model",
               content: response.text,
-              timestamp: new Date()
+              timestamp: new Date(),
             });
           }
         } else {
           isDone = true;
-          finalResult = { action: 'ERROR', message: 'No recognizable response from model.' };
+          finalResult = {
+            action: "ERROR",
+            message: "No recognizable response from model.",
+          };
         }
       }
 
       return finalResult;
     } catch (error) {
-      this.logger.error('Failed to parse or execute command via Gemini', error);
-      const fallbackMsg = 'I failed to understand that command, Chef.';
+      this.logger.error("Failed to parse or execute command via Gemini", error);
+      const fallbackMsg = "I failed to understand that command, Chef.";
       if (emitMessage) {
         emitMessage({
           id: randomUUID(),
-          role: 'model',
+          role: "model",
           content: fallbackMsg,
-          timestamp: new Date()
+          timestamp: new Date(),
         });
       }
       return {
-        action: 'ERROR',
+        action: "ERROR",
         message: fallbackMsg,
       };
     }
   }
 
-  private async fallbackToOllama(history: OmniMessage[], emitMessage?: (msg: OmniMessage) => void) {
+  private async fallbackToOllama(
+    history: OmniMessage[],
+    emitMessage?: (msg: OmniMessage) => void,
+  ) {
     return fallbackToOllama(history, this.logger, emitMessage);
   }
 }

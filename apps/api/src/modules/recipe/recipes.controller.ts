@@ -8,9 +8,13 @@ import {
   Param,
   Query,
 } from "@nestjs/common";
-import { type RecipesService } from "./recipes.service";
-import { type RecipeCostService } from "./recipe-cost.service";
-import { type ApiResponse, type Recipe, type RecipeIngredient } from "@soustools/api-types";
+import { RecipesService } from "./recipes.service";
+import { RecipeCostService } from "./recipe-cost.service";
+import {
+  type ApiResponse,
+  type Recipe,
+  type RecipeIngredient,
+} from "@soustools/api-types";
 
 @Controller("recipes")
 export class RecipesController {
@@ -39,13 +43,13 @@ export class RecipesController {
   async getRecipeCost(
     @Param("id") id: string,
     @Query("wastePct") wastePct?: string,
-    @Query("portions") portions?: string
+    @Query("portions") portions?: string,
   ): Promise<ApiResponse<unknown>> {
     try {
       const data = await this.recipeCostService.getRecipeCost(
         id,
         wastePct ? Number(wastePct) : 0,
-        portions ? Number(portions) : 1
+        portions ? Number(portions) : 1,
       );
       return { success: true, data, timestamp: new Date().toISOString() };
     } catch (err) {

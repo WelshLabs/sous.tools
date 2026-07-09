@@ -1,4 +1,15 @@
-import { Controller, Post, Headers, Req, HttpCode, HttpStatus, UnauthorizedException, Logger, NotFoundException, Param } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Headers,
+  Req,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
+  Logger,
+  NotFoundException,
+  Param,
+} from "@nestjs/common";
 import { type Request } from "express";
 import { InjectQueue } from "@nestjs/bullmq";
 import { type Queue } from "bullmq";
@@ -29,7 +40,7 @@ export class WebhooksController {
     @Param("provider") provider: string,
     @Headers("x-square-hmacsha256-signature") squareSignature: string,
     @Headers("x-square-signature") squareAltSignature: string,
-    @Req() req: Request
+    @Req() req: Request,
   ): Promise<{ status: string }> {
     const signature = squareSignature || squareAltSignature;
     interface RequestWithRawBody extends Request {
@@ -47,7 +58,10 @@ export class WebhooksController {
     }
   }
 
-  private async handleSquare(signature: string, rawBody: string): Promise<{ status: string }> {
+  private async handleSquare(
+    signature: string,
+    rawBody: string,
+  ): Promise<{ status: string }> {
     const payload = JSON.parse(rawBody) as WebhookPayload;
     const eventId = payload.event_id;
     const merchantId = payload.merchant_id;
@@ -64,12 +78,16 @@ export class WebhooksController {
       .maybeSingle();
 
     if (existingEvent) {
-      this.logger.log(`Duplicate event detected. Event ID: ${eventId}. Returning 200 early.`);
+      this.logger.log(
+        `Duplicate event detected. Event ID: ${eventId}. Returning 200 early.`,
+      );
       return { status: "duplicate_ignored" };
     }
 
     if (!merchantId) {
-      throw new UnauthorizedException("Invalid Square webhook payload: missing merchant_id");
+      throw new UnauthorizedException(
+        "Invalid Square webhook payload: missing merchant_id",
+      );
     }
 
     // Resolve organization associated with this Square Merchant
@@ -81,15 +99,21 @@ export class WebhooksController {
       .maybeSingle();
 
     if (error || !integration) {
-      this.logger.warn(`No integration found for Square merchant ID ${merchantId}`);
-      throw new NotFoundException(`No integration found for merchant: ${merchantId}`);
+      this.logger.warn(
+        `No integration found for Square merchant ID ${merchantId}`,
+      );
+      throw new NotFoundException(
+        `No integration found for merchant: ${merchantId}`,
+      );
     }
 
     const orgId = integration.organization_id;
     const settings = (integration.settings || {}) as Record<string, unknown>;
-    
+
     // Verify signature strictly if key is configured, fallback to tenant's key
-    const signatureKey = settings.webhook_signature_key || config.SQUARE_WEBHOOK_SIGNATURE_KEY;
+    const signatureKey =
+      (settings.webhook_signature_key as unknown as string) ||
+      config.SQUARE_WEBHOOK_SIGNATURE_KEY;
     const notificationUrl = `${config.API_BASE_URL}/integrations/webhooks/square`;
 
     if (!config.IS_MOCK_ENV && signatureKey) {
@@ -97,12 +121,14 @@ export class WebhooksController {
         throw new UnauthorizedException("Missing Square signature header");
       }
       const hash = crypto
-        .createHmac("sha256", signatureKey)
+        .createHmac("sha256", String(signatureKey))
         .update(notificationUrl + rawBody)
         .digest("base64");
-      
+
       if (hash !== signature) {
-        this.logger.warn(`Signature mismatch. Computed: ${hash}, received: ${signature}`);
+        this.logger.warn(
+          `Signature mismatch. Computed: ${hash}, received: ${signature}`,
+        );
         throw new UnauthorizedException("Invalid webhook signature");
       }
     }
@@ -117,7 +143,7 @@ export class WebhooksController {
     await this.posSyncQueue.add("pos-sync-job", {
       orgId,
       type: "webhook-inventory",
-      payload: payload.data as unknown as Record<string, unknown>
+      payload: payload.data as unknown as Record<string, unknown>,
     });
 
     return { status: "queued" };

@@ -1,6 +1,12 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest, type CookieOptions } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { config as appConfig } from "@soustools/config";
+
+interface CookieSetItem {
+  name: string;
+  value: string;
+  options?: CookieOptions;
+}
 
 export async function proxy(request: NextRequest) {
   // Public routes that don't require authentication
@@ -34,14 +40,14 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: any[]) {
-          cookiesToSet.forEach(({ name, value }: any) =>
+        setAll(cookiesToSet: CookieSetItem[]) {
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           response = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value, options }: any) =>
+          cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
         },

@@ -40,12 +40,17 @@ export function RecipeViewerClient({
       .catch(err => console.error('Failed to fetch live ingredients:', err));
   }, []);
 
-  const scalingOptions: any = {};
-  if (Object.keys(customWeights).length > 0) {
-    scalingOptions.customIngredientWeights = customWeights;
-  } else if (multiplier !== 1.0) {
-    scalingOptions.targetYield = recipe.yieldCount * multiplier;
-  }
+  const scalingOptions = useMemo(() => {
+    if (Object.keys(customWeights).length > 0) {
+      return { customIngredientWeights: customWeights };
+    }
+
+    if (multiplier !== 1.0) {
+      return { targetYield: recipe.yieldCount * multiplier };
+    }
+
+    return {};
+  }, [customWeights, multiplier, recipe.yieldCount]);
 
   const { multiplier: finalMultiplier, items: scaledIngredients } = useMemo(() => {
     return calculateRecipeScale(

@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { type SignageGateway } from "./signage.gateway";
+import { SignageGateway } from "./signage.gateway";
+import { Inject } from "@nestjs/common";
 import { type SignageLayoutConfig } from "@soustools/api-types";
 
 /**
@@ -9,7 +10,9 @@ import { type SignageLayoutConfig } from "@soustools/api-types";
  */
 @Injectable()
 export class LayoutsService {
-  constructor(private readonly gateway: SignageGateway) {}
+  constructor(
+    @Inject(SignageGateway) private readonly gateway: SignageGateway,
+  ) {}
 
   async findAll(orgId: string): Promise<unknown[]> {
     const { data, error } = await supabase
@@ -31,7 +34,12 @@ export class LayoutsService {
 
     if (error) throw new Error(error.message);
     if (data && data.organizations) {
-      data.config = { ...data.config, designTokens: (data.organizations as unknown as { design_tokens: unknown }).design_tokens };
+      data.config = {
+        ...data.config,
+        designTokens: (
+          data.organizations as unknown as { design_tokens: unknown }
+        ).design_tokens,
+      };
       delete data.organizations;
     }
     return data;
@@ -47,7 +55,12 @@ export class LayoutsService {
 
     if (error) throw new Error(error.message);
     if (data && data.organizations) {
-      data.config = { ...data.config, designTokens: (data.organizations as unknown as { design_tokens: unknown }).design_tokens };
+      data.config = {
+        ...data.config,
+        designTokens: (
+          data.organizations as unknown as { design_tokens: unknown }
+        ).design_tokens,
+      };
       delete data.organizations;
     }
     return data;
@@ -57,12 +70,14 @@ export class LayoutsService {
     const slug = this.generateSlug(name);
     const { data, error } = await supabase
       .from("signage_decks")
-      .insert([{
-        organization_id: orgId,
-        name,
-        slug,
-        config: { soldOutBehavior: "LABEL", slides: [], overlays: [] },
-      }])
+      .insert([
+        {
+          organization_id: orgId,
+          name,
+          slug,
+          config: { soldOutBehavior: "LABEL", slides: [], overlays: [] },
+        },
+      ])
       .select()
       .single();
 
@@ -114,10 +129,14 @@ export class LayoutsService {
   }
 
   private generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 60) || `deck-${Date.now()}`;
+    return (
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 60) || `deck-${Date.now()}`
+    );
   }
 }
+
+// (removed debug logs)
