@@ -9,8 +9,8 @@ export interface StagedFile {
 }
 
 export interface OmniBarState {
-  contextPayload: Record<string, any>;
-  setContextPayload: (payload: Record<string, any>) => void;
+  contextPayload: Record<string, unknown>;
+  setContextPayload: (payload: Record<string, unknown>) => void;
   
   chatHistory: OmniMessage[];
   setChatHistory: (history: OmniMessage[]) => void;

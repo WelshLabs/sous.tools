@@ -174,8 +174,7 @@ export function QuickAddBar({
 export function inferVendorForItem(
   ingredientName: string,
 ): string | null {
-  // eslint-disable-next-line no-console
-  console.info(
+    console.info(
     `[VendorInference] Stub invoked for "${ingredientName}". ` +
     "Replace with AI assignment call when engine is ready.",
   );

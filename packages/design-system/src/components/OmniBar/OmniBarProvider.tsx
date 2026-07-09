@@ -5,8 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
-import { createBrowserClient } from "@soustools/supabase";
-import { io, type Socket } from "socket.io-client";
+import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
 
@@ -14,108 +13,19 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
   
-  const { 
+  const {
     contextPayload, 
     chatHistory, 
     isOpen, 
     isProcessing, 
     setIsOpen, 
-    setIsProcessing, 
-    addMessage,
+    setIsProcessing,
     setChatHistory,
     setIsDragging,
-    setExecuteBackgroundCommand,
-    markLoadingComplete
   } = useOmnibarContext();
 
-  const [isListening, setIsListening] = useState(false);
   const [inputText, setInputText] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
-
-  // Initialize WebSocket connection
-  useEffect(() => {
-    let newSocket: Socket | null = null;
-    const initSocket = async () => {
-      try {
-        const supabase = createBrowserClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        
-        if (!session?.access_token) return;
-
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
-        const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
-
-        newSocket = io(socketUrl + "/commands", {
-          auth: { token: session.access_token },
-          transports: ["websocket"],
-        });
-
-        // Listen for standard chat stream
-        newSocket.on("chat_message", (message: OmniMessage) => {
-          addMessage(message);
-          if (message.role === 'model') {
-            setIsProcessing(false);
-            markLoadingComplete();
-          }
-        });
-
-        // Listen for explicit errors
-        newSocket.on("command_status", (data: any) => {
-          if (data.state === "error") {
-            setErrorMessage(data.message);
-            setIsProcessing(false);
-            setIsListening(false);
-            markLoadingComplete();
-          }
-        });
-
-        setSocket(newSocket);
-      } catch (err) {
-        console.error("Failed to initialize WebSocket:", err);
-      }
-    };
-
-    initSocket();
-
-    return () => {
-      if (newSocket) newSocket.disconnect();
-    };
-  }, [addMessage, setIsProcessing, markLoadingComplete]);
-
-  // Execute Background Command
-  useEffect(() => {
-    const executeBackgroundCommand = (text: string) => {
-      if (!text.trim()) return;
-      setIsProcessing(true);
-      const newUserMessage: OmniMessage = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: text,
-        timestamp: new Date()
-      };
-      const updatedHistory = [...chatHistory, newUserMessage];
-      setChatHistory(updatedHistory);
-
-      try {
-        if (!socket || !socket.connected) {
-          socket?.connect();
-        }
-        socket?.emit("executeCommand", {
-          chatHistory: updatedHistory,
-          source: "omnibar",
-          path: pathname,
-          context: contextPayload,
-        });
-      } catch (error: any) {
-        console.error("Failed to emit background command:", error);
-        setIsProcessing(false);
-      }
-    };
-    setExecuteBackgroundCommand(executeBackgroundCommand);
-  }, [socket, chatHistory, pathname, contextPayload, setExecuteBackgroundCommand, setChatHistory, setIsProcessing]);
+  const { socket, errorMessage, setErrorMessage, isListening, setIsListening } = useOmniSocket();
 
   const dragCounter = useRef(0);
 
@@ -221,9 +131,10 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
             path: pathname,
             context: contextPayload,
           });
-        } catch (error: any) {
-          console.error("Failed to emit command:", error);
-          setErrorMessage(error.message || "Network error occurred.");
+        } catch (err: unknown) {
+          console.error("Failed to emit command:", err);
+          const errorMessage = err instanceof Error ? err.message : "Network error occurred.";
+          setErrorMessage(errorMessage);
           setIsProcessing(false);
         }
       }
@@ -235,27 +146,28 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
 
   const handleMicClick = () => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+      (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition ||
+      (window as unknown as { webkitSpeechRecognition: unknown }).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
       return;
     }
 
     setIsListening(true);
-    const recognition = new SpeechRecognition();
+    const SpeechRecognitionConstructor = SpeechRecognition as unknown as { new(): { continuous: boolean, interimResults: boolean, onresult: (e: { results: Iterable<{ transcript: string }[]> }) => void, onerror: (e: { error: unknown }) => void, onend: () => void, start: () => void } };
+    const recognition = new SpeechRecognitionConstructor();
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: { results: Iterable<unknown[]>, error: unknown }) => {
       const transcript = Array.from(event.results)
-        .map((result: any) => result[0].transcript)
+        .map((result: { transcript: string }[]) => result[0].transcript)
         .join("");
       setInputText(transcript);
     };
 
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error", event.error);
+    recognition.onerror = (event: { results: Iterable<unknown[]>, error: unknown }) => {
+      console.error("Speech recognition error", String(event.error));
       setIsListening(false);
     };
 
