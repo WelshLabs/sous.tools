@@ -14,19 +14,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      # 1. We must install the Supabase CLI natively first
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 11.5.2
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+      # 2. Staging Phase
       - name: Fetch staging secrets from Infisical
         uses: infisical/secrets-action@v1.0.7
         with:
@@ -38,14 +30,17 @@ jobs:
 
       - name: Run staging Supabase migrations
         env:
-          SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          # Infisical automatically injects SUPABASE_PROJECT_ID and SUPABASE_DB_PASSWORD into the environment here
         run: |
-          if [ -z "$SUPABASE_POOLER_URL" ]; then
-            echo "Error: SUPABASE_POOLER_URL is not defined."
+          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "Error: Missing required staging environment variables from Infisical."
             exit 1
           fi
-          npx supabase db push --db-url "${SUPABASE_POOLER_URL}?statement_cache_mode=describe"
+          supabase link --project-ref $SUPABASE_PROJECT_ID
+          supabase db push
 
+      # 3. Production Phase
       - name: Fetch production secrets from Infisical
         uses: infisical/secrets-action@v1.0.7
         with:
@@ -57,10 +52,11 @@ jobs:
 
       - name: Run production Supabase migrations
         env:
-          SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          if [ -z "$SUPABASE_POOLER_URL" ]; then
-            echo "Error: SUPABASE_POOLER_URL is not defined."
+          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "Error: Missing required production environment variables from Infisical."
             exit 1
           fi
-          npx supabase db push --db-url "${SUPABASE_POOLER_URL}?statement_cache_mode=describe"
+          supabase link --project-ref $SUPABASE_PROJECT_ID
+          supabase db push
