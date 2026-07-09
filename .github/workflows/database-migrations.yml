@@ -17,6 +17,8 @@ jobs:
       # 1. We must install the Supabase CLI natively first
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
       # 2. Staging Phase
       - name: Fetch staging secrets from Infisical
