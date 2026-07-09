@@ -132,6 +132,7 @@ services:
     volumes:
       - /home/ubuntu/dev.sous.tools:/workspace
       - /home/ubuntu/.config/code-server:/config
+      - /home/ubuntu/.ssh:/config/.ssh:ro
     restart: unless-stopped
     networks:
       - default
