@@ -9,7 +9,7 @@ import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
 
-export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
+export function OmniBarProvider({ children, token }: { children?: React.ReactNode; token?: string }) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
   
@@ -25,7 +25,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
   } = useOmnibarContext();
 
   const [inputText, setInputText] = useState("");
-  const { socket, errorMessage, setErrorMessage, isListening, setIsListening } = useOmniSocket();
+  const { socket, errorMessage, setErrorMessage, isListening, setIsListening } = useOmniSocket(token);
 
   const dragCounter = useRef(0);
 
@@ -97,6 +97,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      
 
       if (isProcessing) return;
 
@@ -106,7 +107,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
         setIsProcessing(true);
         setErrorMessage(null);
         setIsOpen(true);
-
+        
         const newUserMessage: OmniMessage = {
           id: crypto.randomUUID(),
           role: 'user',
@@ -124,7 +125,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
             setIsProcessing(false);
             return;
           }
-
+          
           socket.emit("executeCommand", {
             chatHistory: updatedHistory,
             source: "omnibar",

@@ -10,7 +10,6 @@ import { WsException } from "@nestjs/websockets";
 export class WsSupabaseAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient();
-    
     let token = client.handshake?.auth?.token || client.handshake?.headers?.authorization;
     
     if (token && token.startsWith('Bearer ')) {

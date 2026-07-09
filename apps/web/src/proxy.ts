@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { config as appConfig } from "@soustools/config";
 
+// @todo this should be a constant somewhere because it is used in multiple places (frontend and backend) and should be consistent
 const SESSION_COOKIE = "sb-session-token";
 
 /**

@@ -39,7 +39,7 @@ export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
   return "/commands";
 }
 
-export function useOmniSocket() {
+export function useOmniSocket(token?: string) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
@@ -68,7 +68,9 @@ export function useOmniSocket() {
         // The HttpOnly session cookie is automatically sent by the browser.
         // No JS-accessible token is needed — NestJS validates commands gateway via WsSupabaseAuthGuard.
         newSocket = io(socketUrl, {
-          withCredentials: true,
+          auth: {
+            token,
+          },
           transports: ["websocket"],
         });
 
@@ -105,7 +107,7 @@ export function useOmniSocket() {
     return () => {
       if (newSocket) newSocket.disconnect();
     };
-  }, [addMessage, setIsProcessing, markLoadingComplete]);
+  }, [addMessage, setIsProcessing, markLoadingComplete, token]);
 
   // Execute Background Command
   useEffect(() => {
@@ -125,6 +127,15 @@ export function useOmniSocket() {
         if (!socket || !socket.connected) {
           socket?.connect();
         }
+
+        socket?.on('exception', (error) => {
+          console.error('NestJS Guard/Pipe Exception:', error);
+        });
+
+        socket?.on('error', (error) => {
+          console.error('Socket Error:', error);
+        });
+
         socket?.emit("executeCommand", {
           chatHistory: updatedHistory,
           source: "omnibar",

@@ -1,6 +1,7 @@
 import React from "react";
-import { GlobalAppBar, OmniBarProvider } from "@soustools/design-system";
+import { GlobalAppBar } from "@soustools/design-system";
 import { logoutAction } from "@/app/actions/auth";
+
 export default async function WorkspaceLayout({ 
   children,
   modal
@@ -29,10 +30,8 @@ export default async function WorkspaceLayout({
         isAdmin={true}
       />
       <main className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-y-auto min-w-0">
-        <OmniBarProvider>
-          {children}
-          {modal}
-        </OmniBarProvider>
+        {children}
+        {modal}
       </main>
     </div>
   );
