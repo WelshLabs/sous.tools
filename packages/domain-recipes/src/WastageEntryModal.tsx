@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useState, useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
-import { InventoryItem, WastageReason } from "./types";
+import { type InventoryItem, type WastageReason } from "./types";
 
 const UNIT_TO_G: Record<string, number> = {
   g: 1,

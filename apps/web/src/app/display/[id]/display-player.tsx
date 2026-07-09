@@ -5,8 +5,8 @@ import { useDisplayPlayer } from "./use-display-player";
 import { PairingScreen } from "./pairing-screen";
 import { SlideCarousel } from "./slide-carousel";
 import { buildAllAnimationCss } from "@soustools/domain-signage";
-import { SignageDisplay } from "@soustools/api-types";
-import { RawDbPosItem } from "./helpers";
+import { type SignageDisplay } from "@soustools/api-types";
+import { type RawDbPosItem } from "./helpers";
 
 interface DisplayPlayerProps {
   displayId: string;

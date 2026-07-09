@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MediaSlide } from "@soustools/api-types";
+import { type MediaSlide } from "@soustools/api-types";
 
 interface MediaCarouselBlockProps {
   slides: MediaSlide[];

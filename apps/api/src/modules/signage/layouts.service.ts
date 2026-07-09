@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { SignageGateway } from "./signage.gateway";
-import { SignageLayoutConfig } from "@soustools/api-types";
+import { type SignageGateway } from "./signage.gateway";
+import { type SignageLayoutConfig } from "@soustools/api-types";
 
 /**
  * Service for CRUD operations on signage decks.

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { MasterIngredient } from "@soustools/api-types";
+import { type MasterIngredient } from "@soustools/api-types";
 
 @Injectable()
 export class IngredientsService {

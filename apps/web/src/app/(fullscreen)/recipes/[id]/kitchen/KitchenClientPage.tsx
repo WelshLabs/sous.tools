@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ActiveKitchen } from "@soustools/domain-recipes";
-import { Recipe, KitchenTimerState } from "@soustools/api-types";
+import { type Recipe, type KitchenTimerState } from "@soustools/api-types";
 
 export function KitchenClientPage({ recipe }: { recipe: Recipe }) {
   const [timers, setTimers] = useState<KitchenTimerState[]>([]);

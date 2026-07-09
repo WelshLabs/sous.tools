@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
-import { SignageDisplay, PosItem, SignageLayoutConfig } from "@soustools/api-types";
-import { SignageLayout } from "./types";
-import { mapDbItemToPosItem, registerDisplayDevice, RawDbPosItem } from "./helpers";
+import { type SignageDisplay, type PosItem, type SignageLayoutConfig } from "@soustools/api-types";
+import { type SignageLayout } from "./types";
+import { mapDbItemToPosItem, registerDisplayDevice, type RawDbPosItem } from "./helpers";
 import { config } from "@soustools/config";
 
 export function useDisplayPlayer(

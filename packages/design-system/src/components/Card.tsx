@@ -2,7 +2,7 @@ import * as React from "react";
 
 /* ─── Card ─────────────────────────────────────────────────────────────────── */
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CardProps = React.HTMLAttributes<HTMLDivElement>;
 
 /**
  * Root container for the Neon-Glass Card component.
@@ -38,7 +38,7 @@ export function Card({ className = "", children, ...props }: CardProps) {
 
 /* ─── CardHeader ───────────────────────────────────────────────────────────── */
 
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
 
 /**
  * Header region of a Card. Provides consistent padding and a bottom border
@@ -62,8 +62,7 @@ export function CardHeader({
 
 /* ─── CardTitle ────────────────────────────────────────────────────────────── */
 
-export interface CardTitleProps
-  extends React.HTMLAttributes<HTMLHeadingElement> {}
+export type CardTitleProps = React.HTMLAttributes<HTMLHeadingElement>;
 
 /**
  * Title element within a CardHeader. Renders as `<h3>` with bold tight
@@ -87,8 +86,7 @@ export function CardTitle({
 
 /* ─── CardContent ──────────────────────────────────────────────────────────── */
 
-export interface CardContentProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+export type CardContentProps = React.HTMLAttributes<HTMLDivElement>;
 
 /**
  * Main content area of a Card. Provides standard padding and removes top
@@ -108,7 +106,7 @@ export function CardContent({
 
 /* ─── CardFooter ───────────────────────────────────────────────────────────── */
 
-export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CardFooterProps = React.HTMLAttributes<HTMLDivElement>;
 
 /**
  * Footer region of a Card. Flex-row layout for action buttons or metadata.
@@ -121,7 +119,7 @@ export function CardFooter({
 }: CardFooterProps) {
   return (
     <div
-      className={`flex items-center gap-3 px-6 py-4 ${className}`}
+      className={`flex items-center px-6 py-4 ${className}`}
       style={{ borderTop: "1px solid var(--color-border)" }}
       {...props}
     >

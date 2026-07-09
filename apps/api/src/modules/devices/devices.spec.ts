@@ -1,4 +1,4 @@
-import { Test, TestingModule } from "@nestjs/testing";
+import { Test, type TestingModule } from "@nestjs/testing";
 import { DevicesController } from "./devices.controller";
 import { DevicesService } from "./devices.service";
 import { supabase } from "../../lib/supabase";

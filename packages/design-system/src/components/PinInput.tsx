@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, KeyboardEvent, ClipboardEvent } from 'react';
+import React from "react";
+import { useRef, type KeyboardEvent, type ClipboardEvent } from 'react';
 
 export interface PinInputProps {
   length?: number;

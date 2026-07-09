@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import { RecipeDietaryBadges } from "./RecipeDietaryBadges";
-import { RecipeNutritionCache } from "@soustools/api-types";
+import { type RecipeNutritionCache } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
 import { Download, Activity, ShieldAlert } from "lucide-react";
 

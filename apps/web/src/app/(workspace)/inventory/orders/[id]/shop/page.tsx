@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { PurchaseOrder, PurchaseOrderItem, Vendor } from "@soustools/api-types";
+import { type PurchaseOrder, type PurchaseOrderItem, type Vendor } from "@soustools/api-types";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Circle } from "lucide-react";
 

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { SignageLayoutConfig, ColumnLayoutSlide } from "@soustools/api-types";
+import React from "react";
+import { useState } from "react";
+import { type SignageLayoutConfig, type ColumnLayoutSlide } from "@soustools/api-types";
 import { Code2 } from "lucide-react";
 import { CssEditorModal } from "./css-editor-modal";
 import { DisplayPicker } from "./display-picker";

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { IntegrationStatus } from "@soustools/api-types";
+import { useState, useEffect } from "react";
+import { type IntegrationStatus } from "@soustools/api-types";
 import { IntegrationCard } from "./integration-card";
 
 

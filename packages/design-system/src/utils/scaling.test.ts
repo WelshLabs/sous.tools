@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { convertUnit, calculateRecipeScale } from "./scaling";
-import { RecipeIngredient } from "@soustools/api-types";
+import { type RecipeIngredient } from "@soustools/api-types";
 
 describe("convertUnit", () => {
   it("converts within the same unit", () => {

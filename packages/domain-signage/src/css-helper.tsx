@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
+import { useRef } from "react";
 import { Copy, Sparkles, BookOpen, ChevronDown } from "lucide-react";
 
 interface CssHelperProps {

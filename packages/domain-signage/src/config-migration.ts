@@ -1,12 +1,12 @@
 import {
-  RawSignageLayoutConfig,
-  SignageLayoutConfig,
-  LegacyMenuSlide,
-  ColumnLayoutSlide,
-  SignageSlide,
-  MenuItemStyles,
-  MenuItemStateStyle,
-  SignageBlock,
+  type RawSignageLayoutConfig,
+  type SignageLayoutConfig,
+  type LegacyMenuSlide,
+  type ColumnLayoutSlide,
+  type SignageSlide,
+  type MenuItemStyles,
+  type MenuItemStateStyle,
+  type SignageBlock,
 } from "@soustools/api-types";
 
 export const DEFAULT_REGULAR_STYLE: MenuItemStateStyle = {

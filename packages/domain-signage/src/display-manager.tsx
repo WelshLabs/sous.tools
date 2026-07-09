@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { SignageDisplay } from "@soustools/api-types";
+import React from "react";
+import { useState } from "react";
+import { type SignageDisplay } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
 import { Monitor, Plus, RefreshCw } from "lucide-react";
 import { PairDisplayDialog } from "./pair-display-dialog";

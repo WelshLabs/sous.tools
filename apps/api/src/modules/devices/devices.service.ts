@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { SignageDevice } from "@soustools/api-types";
+import { type SignageDevice } from "@soustools/api-types";
 import { config } from "@soustools/config";
 import Redis from "ioredis";
 import * as jwt from "jsonwebtoken";

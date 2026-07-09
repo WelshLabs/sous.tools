@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
-import { SignageLayoutConfig, PosItem } from "@soustools/api-types";
+import { type SignageLayoutConfig, type PosItem } from "@soustools/api-types";
 import { io } from "socket.io-client";
-import { mapDbItemToPosItem, RawDbPosItem } from "../../../display/[id]/helpers";
+import { mapDbItemToPosItem, type RawDbPosItem } from "@/app/display/[id]/helpers";
 import { config as appConfig } from "@soustools/config";
 import { useRouter } from "next/navigation";
 

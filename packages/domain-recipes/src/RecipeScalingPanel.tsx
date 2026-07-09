@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Recipe, VesselProfile } from "@soustools/api-types";
+import React from "react";
+import { useState, useEffect } from "react";
+import { type Recipe, type VesselProfile } from "@soustools/api-types";
 import { Scale } from "lucide-react";
 
 /** Scale mode options. */

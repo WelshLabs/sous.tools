@@ -1,6 +1,6 @@
 import React from "react";
-import { PosItem, MenuItemStyles, SignageBlock } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle, buildDescriptionStyle } from "../menu-item-style-utils";
+import { type PosItem, type MenuItemStyles, type SignageBlock } from "@soustools/api-types";
+import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle, buildDescriptionStyle } from "@/app/display/[id]/menu-item-style-utils";
 
 type MenuListBlockProps = Extract<SignageBlock, { type: "MenuListBlock" }> & {
   items: PosItem[];
@@ -43,7 +43,7 @@ export function MenuListBlock({
         );
 
         let borderClass = "border";
-        let cardStyle = buildCardStyle(optStyle);
+        const cardStyle = buildCardStyle(optStyle);
         if (isFlatItem) {
           borderClass = "border-transparent bg-transparent px-2 py-1.5";
           delete cardStyle.backgroundColor;

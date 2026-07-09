@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { DeckCard } from "@soustools/domain-signage";
 import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { SignageLayoutConfig } from "@soustools/api-types";
+import { type SignageLayoutConfig } from "@soustools/api-types";
 
 interface SignageDeck {
   id: string;

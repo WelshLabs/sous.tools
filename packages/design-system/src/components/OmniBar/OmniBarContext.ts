@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { OmniMessage } from '@soustools/api-types';
+import { type OmniMessage } from '@soustools/api-types';
 
 export interface StagedFile {
   id: string;

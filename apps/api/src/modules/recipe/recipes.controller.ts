@@ -8,9 +8,9 @@ import {
   Param,
   Query,
 } from "@nestjs/common";
-import { RecipesService } from "./recipes.service";
-import { RecipeCostService } from "./recipe-cost.service";
-import { ApiResponse, Recipe, RecipeIngredient } from "@soustools/api-types";
+import { type RecipesService } from "./recipes.service";
+import { type RecipeCostService } from "./recipe-cost.service";
+import { type ApiResponse, type Recipe, type RecipeIngredient } from "@soustools/api-types";
 
 @Controller("recipes")
 export class RecipesController {

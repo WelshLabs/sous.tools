@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SignageDisplay } from "@soustools/api-types";
+import { type SignageDisplay } from "@soustools/api-types";
 import { Monitor } from "lucide-react";
 
 export interface DisplayPickerProps {

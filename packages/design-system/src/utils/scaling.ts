@@ -1,4 +1,4 @@
-import { RecipeIngredient } from "@soustools/api-types";
+import { type RecipeIngredient } from "@soustools/api-types";
 
 // Standard conversion rates to base units:
 // Weight base unit: g (grams)

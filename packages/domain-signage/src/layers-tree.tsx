@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ColumnLayoutSlide, SignageBlock } from "@soustools/api-types";
+import { type ColumnLayoutSlide, type SignageBlock } from "@soustools/api-types";
 import { ChevronRight, ChevronDown, LayoutGrid, Type } from "lucide-react";
 
 export interface LayersTreeProps {

@@ -1,5 +1,5 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { getSquareBaseUrl, SquareInventoryCount } from "./square-client.helper";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { getSquareBaseUrl, type SquareInventoryCount } from "./square-client.helper";
 
 export { getSquareBaseUrl, getVariationAndLocationId } from "./square-client.helper";
 export { seedSquareCatalog } from "./square-seed.helper";

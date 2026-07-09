@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { handleDbResult } from "./displays.helpers";
-import { SignageGateway } from "./signage.gateway";
+import { type SignageGateway } from "./signage.gateway";
 
 /**
  * Service managing signage displays in the database.

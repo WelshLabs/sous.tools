@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { PosItem, HighlightItemConfig } from "@soustools/api-types";
+import React from "react";
+import { useState } from "react";
+import { type PosItem, type HighlightItemConfig } from "@soustools/api-types";
 import { Star, Check, Search, ChevronDown, ChevronUp } from "lucide-react";
 
 interface MenuItemSelectorProps {

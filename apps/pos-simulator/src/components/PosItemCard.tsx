@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PosItem } from "@soustools/api-types";
+import { type PosItem } from "@soustools/api-types";
 import { RotateCw, CheckSquare, Square } from "lucide-react";
 
 export interface PosItemCardProps {

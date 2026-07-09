@@ -1,5 +1,5 @@
 import { supabase } from "../../lib/supabase";
-import { SignageGateway } from "./signage.gateway";
+import { type SignageGateway } from "./signage.gateway";
 
 /**
  * Handles validation of database results, throwing an error if one occurred.

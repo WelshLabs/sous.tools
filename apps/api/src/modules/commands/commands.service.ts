@@ -1,114 +1,24 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { OmnibarCommandPayload, OmniMessage } from '@soustools/api-types';
-import { GoogleGenAI, Type, FunctionDeclaration, Content, Part } from '@google/genai';
-import { PurchaseOrdersService } from '../items/purchase-orders.service';
-import { VendorsService } from '../items/vendors.service';
-import { WhiteboardService } from '../items/whiteboard.service';
-import { RecipeCostService } from '../recipe/recipe-cost.service';
+import { type OmnibarCommandPayload, type OmniMessage } from '@soustools/api-types';
+import { GoogleGenAI, type Content, type Part } from '@google/genai';
+import { ALL_COMMAND_TOOLS } from './commands-tools';
+import { type PurchaseOrdersService } from '../items/purchase-orders.service';
+import { type VendorsService } from '../items/vendors.service';
+import { type WhiteboardService } from '../items/whiteboard.service';
+import { type RecipeCostService } from '../recipe/recipe-cost.service';
 import { randomUUID } from 'crypto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import { type Cache } from 'cache-manager';
 import { config } from '@soustools/config';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
+import { type Queue } from 'bullmq';
 import { supabase } from '../../lib/supabase';
-
-const addToPurchaseOrderTool: FunctionDeclaration = {
-  name: 'add_to_purchase_order',
-  description: 'Adds an item to a draft purchase order for a specific vendor.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      itemName: { type: Type.STRING, description: 'The name of the item to add' },
-      quantity: { type: Type.NUMBER, description: 'The quantity to order' },
-      unit: { type: Type.STRING, description: 'The unit of measure (e.g., cases, lbs, unit)' },
-      vendorName: { type: Type.STRING, description: 'The name of the vendor' },
-    },
-    required: ['itemName', 'quantity', 'unit', 'vendorName'],
-  },
-};
-
-const addToWhiteboardTool: FunctionDeclaration = {
-  name: 'add_to_whiteboard',
-  description: 'Adds an item to the kitchen whiteboard when a vendor is not specified or unknown.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      itemName: { type: Type.STRING, description: 'The name of the item to add' },
-      quantity: { type: Type.NUMBER, description: 'The quantity to order' },
-      unit: { type: Type.STRING, description: 'The unit of measure' },
-    },
-    required: ['itemName', 'quantity', 'unit'],
-  },
-};
-
-const getRecipeCostTool: FunctionDeclaration = {
-  name: 'get_recipe_cost',
-  description: 'Calculates the current cost of a specific recipe.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      recipeId: { type: Type.STRING, description: 'The ID of the recipe' },
-    },
-    required: ['recipeId'],
-  },
-};
-
-const ingestVendorInvoiceTool: FunctionDeclaration = {
-  name: 'ingest_vendor_invoice',
-  description: 'Ingests a vendor invoice file URL into the OCR pipeline for processing.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      fileUrl: { type: Type.STRING, description: 'The URL of the uploaded invoice file' },
-    },
-    required: ['fileUrl'],
-  },
-};
-
-const updateItemStatusTool: FunctionDeclaration = {
-  name: 'update_item_status',
-  description: 'Updates the status of an item (e.g., 86ing an item by setting it to out_of_stock).',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      itemId: { type: Type.STRING, description: 'The ID or name of the item' },
-      status: { type: Type.STRING, description: 'The new status (e.g., out_of_stock)' },
-    },
-    required: ['itemId', 'status'],
-  },
-};
-
-const adjustThrottleTimeTool: FunctionDeclaration = {
-  name: 'adjust_throttle_time',
-  description: 'Adjusts the ticket or kitchen throttle time when the kitchen is busy (e.g., "in the weeds").',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      minutes: { type: Type.NUMBER, description: 'The number of minutes to add to the throttle time' },
-    },
-    required: ['minutes'],
-  },
-};
-
-const reconcileInventoryTool: FunctionDeclaration = {
-  name: 'reconcile_inventory',
-  description: 'Performs an absolute overwrite of an inventory count (e.g., "we have 3 gallons all day").',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      itemId: { type: Type.STRING, description: 'The ID or name of the item' },
-      quantity: { type: Type.NUMBER, description: 'The absolute quantity on hand' },
-      unit: { type: Type.STRING, description: 'The unit of measure' },
-    },
-    required: ['itemId', 'quantity', 'unit'],
-  },
-};
+import { fallbackToOllama } from './commands-ollama.helper';
 
 @Injectable()
 export class CommandsService {
   private readonly logger = new Logger(CommandsService.name);
-  private readonly ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  private readonly ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
 
   constructor(
     private readonly purchaseOrdersService: PurchaseOrdersService,
@@ -162,7 +72,7 @@ export class CommandsService {
                 parts: [{ text: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor." }]
               },
               tools: [{
-                functionDeclarations: [addToPurchaseOrderTool, addToWhiteboardTool, getRecipeCostTool, ingestVendorInvoiceTool, updateItemStatusTool, adjustThrottleTimeTool, reconcileInventoryTool]
+                functionDeclarations: ALL_COMMAND_TOOLS
               }]
             }
           });
@@ -334,53 +244,6 @@ export class CommandsService {
   }
 
   private async fallbackToOllama(history: OmniMessage[], emitMessage?: (msg: OmniMessage) => void) {
-    this.logger.log('Routing to local Ollama model (qwen2.5-coder:3b)');
-    try {
-      const messages = history.map(m => ({
-        role: m.role === 'agent_step' ? 'assistant' : (m.role === 'model' ? 'assistant' : 'user'),
-        content: m.content
-      }));
-
-      // Add system prompt
-      messages.unshift({
-        role: 'system',
-        content: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor."
-      });
-
-      const ollamaUrl = `${config.OLLAMA_HOST || 'http://127.0.0.1:11434'}/api/chat`;
-      const response = await fetch(ollamaUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'qwen2.5-coder:3b',
-          messages,
-          stream: false
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Ollama responded with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      const reply = data.message?.content || 'Heard, chef (Ollama fallback).';
-
-      if (emitMessage) {
-        emitMessage({
-          id: randomUUID(),
-          role: 'model',
-          content: reply,
-          timestamp: new Date()
-        });
-      }
-      return { action: 'SUCCESS', message: reply };
-    } catch (err: any) {
-      this.logger.error('Ollama fallback failed', err);
-      const fallbackMsg = 'I failed to understand that command, Chef (and fallback failed).';
-      if (emitMessage) {
-        emitMessage({ id: randomUUID(), role: 'model', content: fallbackMsg, timestamp: new Date() });
-      }
-      return { action: 'ERROR', message: fallbackMsg };
-    }
+    return fallbackToOllama(history, this.logger, emitMessage);
   }
 }

@@ -1,6 +1,6 @@
 import { Command, CommandRunner, Option } from "nest-commander";
 import { Logger } from "@nestjs/common";
-import { IngestionService } from "../ingestion/ingestion.service";
+import { type IngestionService } from "../ingestion/ingestion.service";
 
 interface ImportTextbookOptions {
   pages: number;

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { SignageSlide, PosItem, ColumnLayoutSlide, MenuItemStyles } from "@soustools/api-types";
+import { type SignageSlide, type PosItem, type ColumnLayoutSlide, type MenuItemStyles } from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
 
 interface SlideCarouselProps {

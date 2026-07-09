@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RecipeNutritionCache } from '@soustools/api-types';
+import { type RecipeNutritionCache } from '@soustools/api-types';
 
 @Injectable()
 export class LabelRendererService {

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import { SignageLayoutConfig, PosItem, SignageBlock } from "@soustools/api-types";
+import React from "react";
+import { useRef, useState, useEffect } from "react";
+import { type SignageLayoutConfig, type PosItem, type SignageBlock } from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
 import { buildAllAnimationCss } from "./menu-item-style-utils";
 

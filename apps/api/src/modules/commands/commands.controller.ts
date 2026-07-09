@@ -1,8 +1,8 @@
 import { Controller, Post, Body, UseGuards, UsePipes, Req } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../lib/supabase-auth.guard';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { OmnibarCommandPayload, OmnibarCommandPayloadSchema, ApiResponse } from '@soustools/api-types';
-import { CommandsService } from './commands.service';
+import { type OmnibarCommandPayload, OmnibarCommandPayloadSchema, type ApiResponse } from '@soustools/api-types';
+import { type CommandsService } from './commands.service';
 import { runControllerAction } from '../signage/response.helper';
 
 @Controller('commands')

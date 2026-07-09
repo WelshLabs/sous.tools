@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { VesselProfile } from "@soustools/api-types";
+import React from "react";
+import { useState, useEffect } from "react";
+import { type VesselProfile } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
 import { X } from "lucide-react";
 

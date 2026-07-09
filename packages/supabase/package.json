@@ -6,7 +6,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.0",
@@ -16,6 +18,9 @@
   "devDependencies": {
     "@soustools/tsconfig": "workspace:*",
     "@types/node": "^20.11.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@soustools/eslint-config": "workspace:*",
+    "eslint": "^9",
+    "typescript-eslint": "^8"
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MenuItemStyles } from "@soustools/api-types";
+import { type MenuItemStyles } from "@soustools/api-types";
 
 export type ItemState = "regular" | "highlighted" | "soldOut";
 

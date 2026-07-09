@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { ColumnConfig } from "@soustools/api-types";
+import React from "react";
+import { useState, useCallback } from "react";
+import { type ColumnConfig } from "@soustools/api-types";
 import { Plus } from "lucide-react";
 
 interface ColumnEmptyViewProps {

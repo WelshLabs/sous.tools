@@ -6,7 +6,7 @@ import {
   GlobalStylingSettings,
   GeneralSettings,
   DownloadsPanel,
-  SettingsFormValues,
+  type SettingsFormValues,
 } from "@soustools/domain-settings";
 import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
 import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";

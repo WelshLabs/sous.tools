@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { Recipe } from "@soustools/api-types";
+import { type Recipe } from "@soustools/api-types";
 import { Play, Edit3, Trash2, Scale, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RecipeBuilder } from "@soustools/domain-recipes";
-import { Recipe, VesselProfile, MasterIngredient } from "@soustools/api-types";
+import { type Recipe, type VesselProfile, type MasterIngredient } from "@soustools/api-types";
 import { toast } from "sonner";
 
 export interface RecipeBuilderClientProps {

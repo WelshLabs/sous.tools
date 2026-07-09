@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { TwoToneHeader } from "@soustools/design-system";
 
-import { navigateToVendors } from "../actions";
+import { navigateToVendors } from "@/app/(workspace)/inventory/vendors/actions";
 
 export default function AddVendorPage() {
   const router = useRouter();

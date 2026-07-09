@@ -1,6 +1,6 @@
 import { Command, CommandRunner, Option } from 'nest-commander';
 import { Logger } from '@nestjs/common';
-import { GeminiParserService } from '../ingestion/gemini-parser.service';
+import { type GeminiParserService } from '../ingestion/gemini-parser.service';
 
 interface ParseTextbookOptions {
   slug?: string;
@@ -17,7 +17,7 @@ export class ParseTextbookCommand extends CommandRunner {
     super();
   }
 
-  async run(inputs: string[], options: ParseTextbookOptions): Promise<void> {
+  async run(_inputs: string[], options: ParseTextbookOptions): Promise<void> {
     const bookSlug = options?.slug;
     if (!bookSlug) {
       this.logger.error("bookSlug (--slug) is required.");
@@ -28,7 +28,7 @@ export class ParseTextbookCommand extends CommandRunner {
     try {
       await this.geminiParserService.parseQueue(bookSlug);
       this.logger.log('Pass 2 completed successfully.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Pass 2 failed: ${error.message}`);
       process.exit(1);
     }

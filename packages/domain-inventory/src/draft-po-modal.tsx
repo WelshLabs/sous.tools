@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WhiteboardItem, Vendor } from "@soustools/api-types";
+import { type WhiteboardItem, type Vendor } from "@soustools/api-types";
 import { toast } from "sonner";
 
 /**
@@ -54,7 +54,7 @@ export function DraftPoModal({ isOpen, onClose, items, vendors, onCreatePO }: Dr
       await onCreatePO(selectedVendor, Array.from(selectedItems));
       setSelectedItems(new Set());
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(`An unexpected error occurred: ${err.message || err}`);
     } finally {
       setIsSubmitting(false);

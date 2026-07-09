@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import { RecipeCard } from "./RecipeCard";
-import { Recipe } from "@soustools/api-types";
+import { type Recipe } from "@soustools/api-types";
 import { Loader2 } from "lucide-react";
 
 /**

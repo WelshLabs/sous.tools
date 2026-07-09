@@ -1,4 +1,4 @@
-import { Recipe, VesselProfile, RecipeIngredient, MasterIngredient, NutritionMacros } from "@soustools/api-types";
+import { type Recipe, type VesselProfile, type RecipeIngredient, type MasterIngredient, type NutritionMacros } from "@soustools/api-types";
 
 /**
  * Maps database row to Recipe API type.

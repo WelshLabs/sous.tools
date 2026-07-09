@@ -1,11 +1,11 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { Job } from "bullmq";
-import { IngestionPayload } from "@soustools/api-types";
-import { GoogleDriveService } from "../integrations/google-drive.service";
+import { type Job } from "bullmq";
+import { type IngestionPayload } from "@soustools/api-types";
+import { type GoogleDriveService } from "../integrations/google-drive.service";
 import { supabase } from "../../lib/supabase";
 import { Inject } from "@nestjs/common";
-import { IVisionService } from "./IVisionService";
-import { IngestionGateway } from "./ingestion.gateway";
+import { type IVisionService } from "./IVisionService";
+import { type IngestionGateway } from "./ingestion.gateway";
 
 @Processor("ingestion")
 export class IngestionProcessor extends WorkerHost {

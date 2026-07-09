@@ -1,7 +1,7 @@
 import { Controller, Post, Headers, Req, HttpCode, HttpStatus, UnauthorizedException, Logger, NotFoundException, Param } from "@nestjs/common";
-import { Request } from "express";
+import { type Request } from "express";
 import { InjectQueue } from "@nestjs/bullmq";
-import { Queue } from "bullmq";
+import { type Queue } from "bullmq";
 import * as crypto from "crypto";
 import { config } from "@soustools/config";
 import { supabase } from "../../lib/supabase";

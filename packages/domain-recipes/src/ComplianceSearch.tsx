@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useState } from "react";
 import { X, Search, Loader2 } from "lucide-react";
 
 /** Nutrition macro summary returned from a compliance search product. */

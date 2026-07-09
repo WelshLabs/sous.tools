@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PlaywrightFlipperService } from './playwright-flipper.service';
+import { type PlaywrightFlipperService } from './playwright-flipper.service';
 import { GoogleGenAI } from '@google/genai';
 import { config } from '@soustools/config';
 import * as fs from 'fs';
@@ -66,18 +66,18 @@ export class IngestionService {
     if (fs.existsSync(ledgerPath)) {
       try {
         ledger = JSON.parse(fs.readFileSync(ledgerPath, 'utf8'));
-      } catch (e) {
+      } catch (_e) {
         this.logger.warn(
           'Failed to parse processed.json ledger, resetting to empty array.',
         );
       }
     }
 
-    let encyclopedia: any[] = [];
+    let encyclopedia: unknown[] = [];
     if (fs.existsSync(outputPath)) {
       try {
         encyclopedia = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-      } catch (e) {
+      } catch (_e) {
         this.logger.warn(
           'Failed to parse encyclopedia_output.json, resetting to empty array.',
         );
@@ -180,7 +180,7 @@ Return the result as a structured JSON object conforming to this schema:
         fs.writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2), 'utf8');
 
         this.logger.log(`Successfully processed page ${file}`);
-      } catch (err: any) {
+      } catch (err: unknown) {
         this.logger.error(`Failed to process page ${file}: ${err.message}`);
         throw err;
       }

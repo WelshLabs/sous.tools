@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ScaledIngredient } from "./types";
+import type { MasterIngredient } from "@soustools/api-types";
+import { type ScaledIngredient } from "./types";
 
 /**
  * Props for the RecipeIngredientsTable component.
@@ -15,7 +15,7 @@ export interface RecipeIngredientsTableProps {
    */
   onWeightChange: (ingId: string, amount: number, unit: string) => void;
   /** Available master ingredients to calculate live costs. */
-  masterIngredients?: import("@soustools/api-types").MasterIngredient[];
+  masterIngredients?: MasterIngredient[];
 }
 
 /**

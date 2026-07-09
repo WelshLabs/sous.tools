@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Vendor } from "@soustools/api-types";
+import { type Vendor } from "@soustools/api-types";
 import { toast } from "sonner";
 
 export default function VendorsPage() {
@@ -21,7 +21,7 @@ export default function VendorsPage() {
           setVendors(payload.data);
         }
       }
-    } catch (err) {
+    } catch (_err) {
       console.error("Failed to fetch vendors", err);
     } finally {
       setLoading(false);
@@ -55,7 +55,7 @@ export default function VendorsPage() {
       } else {
         toast.error(payload.error || "Failed to add vendor");
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to add vendor");
     }
   };
@@ -70,7 +70,7 @@ export default function VendorsPage() {
       } else {
         toast.error(payload.error || "Failed to delete vendor");
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to delete vendor");
     }
   };

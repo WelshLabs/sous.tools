@@ -23,7 +23,7 @@ export class PlaywrightFlipperService {
     const response = await fetch('http://172.18.16.1:9222/json/version', {
       headers: { Host: 'localhost:9222' },
     });
-    const data: any = await response.json();
+    const data: unknown = await response.json();
 
     // 2. Extract the browser UUID path and force it to use our WSL proxy IP
     const wsPath = new URL(data.webSocketDebuggerUrl).pathname;
@@ -51,7 +51,7 @@ export class PlaywrightFlipperService {
         try {
           const element = activePage.locator(readingAreaSelector);
           await element.screenshot({ path: outputPath });
-        } catch (e: any) {
+        } catch (e: unknown) {
           this.logger.warn(
             `Failed to screenshot reading area selector "${readingAreaSelector}": ${e.message}. Falling back to page screenshot.`,
           );

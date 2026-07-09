@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { IntegrationStatus } from "@soustools/api-types";
+import { type IntegrationStatus } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
 import {
   CheckCircle,

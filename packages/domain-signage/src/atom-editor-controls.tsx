@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { MenuItemStateStyle, MenuItemBadge } from "@soustools/api-types";
+import React from "react";
+import { useState } from "react";
+import { type MenuItemStateStyle, type MenuItemBadge } from "@soustools/api-types";
 import { FontPickerPopover } from "./font-picker-popover";
 
 export const ColorRow: React.FC<{

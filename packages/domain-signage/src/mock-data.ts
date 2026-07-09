@@ -1,4 +1,4 @@
-import { SignageDisplay, PosItem } from "@soustools/api-types";
+import { type SignageDisplay, type PosItem } from "@soustools/api-types";
 
 /**
  * Mock signage displays for the DisplayManager component.

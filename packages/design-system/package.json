@@ -29,7 +29,10 @@
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.3.2",
     "typescript": "^5.3.3",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "@soustools/eslint-config": "workspace:*",
+    "eslint": "^9",
+    "typescript-eslint": "^8"
   },
   "dependencies": {
     "@soustools/api-types": "workspace:*",
@@ -41,6 +44,7 @@
     "zustand": "^5.0.14"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
   }
 }

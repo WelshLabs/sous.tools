@@ -1,6 +1,6 @@
-import React from "react";
-import { MenuItemStateStyle, MenuItemStyles, HighlightAnimation, PosItem } from "@soustools/api-types";
-import { HighlightItemConfig } from "@soustools/api-types";
+import type React from "react";
+import { type MenuItemStateStyle, type MenuItemStyles, type HighlightAnimation, type PosItem } from "@soustools/api-types";
+import { type HighlightItemConfig } from "@soustools/api-types";
 
 /** Build inline card container styles from a state style object. */
 export function buildCardStyle(style: MenuItemStateStyle): React.CSSProperties {

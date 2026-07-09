@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { VesselProfile } from "@soustools/api-types";
+import { type VesselProfile } from "@soustools/api-types";
 
 @Injectable()
 export class VesselsService {

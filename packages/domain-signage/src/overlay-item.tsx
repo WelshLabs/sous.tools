@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SignageOverlay } from "@soustools/api-types";
+import { type SignageOverlay } from "@soustools/api-types";
 import { Trash2 } from "lucide-react";
 
 /**

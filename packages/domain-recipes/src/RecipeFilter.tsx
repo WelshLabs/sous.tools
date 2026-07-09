@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { RecipeCategory, RecipeTag } from "@soustools/api-types";
+import { type RecipeCategory, type RecipeTag } from "@soustools/api-types";
 import { Folder, Tag, Sparkles } from "lucide-react";
 
 /**

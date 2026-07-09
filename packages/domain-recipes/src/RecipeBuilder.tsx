@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { VesselProfile, MasterIngredient, Recipe } from "@soustools/api-types";
+import React from "react";
+import { useState, useEffect } from "react";
+import { type VesselProfile, type MasterIngredient, type Recipe } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
 import { ChefHat, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RecipeBuilderIngredients } from "./RecipeBuilderIngredients";
 import { RecipeBuilderInstructions } from "./RecipeBuilderInstructions";
-import { RecipeIngredientLine, RecipeInstructionStep } from "./types";
+import { type RecipeIngredientLine, type RecipeInstructionStep } from "./types";
 
 /**
  * Props for the RecipeBuilder form.

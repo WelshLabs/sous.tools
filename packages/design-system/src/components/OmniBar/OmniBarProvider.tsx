@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
 import { createBrowserClient } from "@soustools/supabase";
-import { io, Socket } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { OmniMessage } from "@soustools/api-types";
+import { type OmniMessage } from "@soustools/api-types";
 
 export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ColumnConfig, PosItem } from "@soustools/api-types";
+import { type ColumnConfig, type PosItem } from "@soustools/api-types";
 import { X } from "lucide-react";
 import { MenuItemSelector } from "./menu-item-selector";
 

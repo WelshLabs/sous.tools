@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { MenuItemStyles, MenuItemStateStyle } from "@soustools/api-types";
-import { StateTabBar, ItemState } from "./state-tab-bar";
-import { MenuItemPreviewCard, AtomKey } from "./menu-item-preview-card";
+import React from "react";
+import { useState } from "react";
+import { type MenuItemStyles, type MenuItemStateStyle } from "@soustools/api-types";
+import { StateTabBar, type ItemState } from "./state-tab-bar";
+import { MenuItemPreviewCard, type AtomKey } from "./menu-item-preview-card";
 import { AtomEditorPopover } from "./atom-editor-popover";
 
 interface MenuItemStylesInspectorProps {

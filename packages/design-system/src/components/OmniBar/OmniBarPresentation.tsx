@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React from "react";
+import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic } from "lucide-react";
-import { OmniMessage } from "@soustools/api-types";
+import { type OmniMessage } from "@soustools/api-types";
 import { OmniChatWindow } from "./OmniChatWindow";
 import { OmniInputPill } from "./OmniInputPill";
 import { useOmnibarContext } from "./OmniBarContext";

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
-import { InventoryService, AdjustStockDto } from './inventory.service';
+import { type InventoryService, type AdjustStockDto } from './inventory.service';
 
 export interface ApiResponse<T> {
   success: boolean;

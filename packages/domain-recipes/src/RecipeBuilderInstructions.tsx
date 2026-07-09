@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Plus, Trash2, Clock } from "lucide-react";
-import { RecipeInstructionStep } from "./types";
+import { type RecipeInstructionStep } from "./types";
 
 /**
  * Props for the RecipeBuilderInstructions component.

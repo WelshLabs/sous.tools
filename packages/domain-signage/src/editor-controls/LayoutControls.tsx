@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { SignageBlock, BlockSizing } from "@soustools/api-types";
+import { useState } from "react";
+import { type SignageBlock, type BlockSizing } from "@soustools/api-types";
 import { Link2, Unlink } from "lucide-react";
 
 interface LayoutControlsProps {

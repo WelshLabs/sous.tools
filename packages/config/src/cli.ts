@@ -118,7 +118,7 @@ async function fetchSecrets(): Promise<Record<string, string>> {
       projectId,
     });
 
-    const secretsArray = (secretsResponse as any).secrets || [];
+    const secretsArray = (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
     const finalSecrets: Record<string, string> = { ...defaults };
 
     for (const secret of secretsArray) {

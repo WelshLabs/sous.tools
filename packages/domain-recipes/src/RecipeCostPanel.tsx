@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useState } from "react";
 import { DollarSign, Save } from "lucide-react";
-import { RecipeCostData } from "./types";
+import { type RecipeCostData } from "./types";
 
 /**
  * Props for the RecipeCostPanel component.

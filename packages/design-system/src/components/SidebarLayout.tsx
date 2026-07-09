@@ -1,4 +1,3 @@
-import React from "react";
 
 export interface SidebarLayoutProps {
   /** The content of the sidebar (e.g., InsightsSidebar or standard navigation) */

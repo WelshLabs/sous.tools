@@ -1,6 +1,6 @@
 import { Command, CommandRunner, Option } from 'nest-commander';
 import { Logger } from '@nestjs/common';
-import { IngestionService } from '../ingestion/ingestion.service';
+import { type IngestionService } from '../ingestion/ingestion.service';
 
 @Command({
   name: 'import',
@@ -16,7 +16,7 @@ export class ImportCommand extends CommandRunner {
 
   async run(
     passedParam: string[],
-    options?: Record<string, any>,
+    _options?: Record<string, any>,
   ): Promise<void> {
     const [action, target] = passedParam;
 

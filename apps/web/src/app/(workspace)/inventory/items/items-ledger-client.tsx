@@ -39,7 +39,7 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
       } else {
         toast.error("Failed to save item");
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("Network error saving item");
     }
   };
@@ -53,7 +53,7 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
       } else {
         toast.error("Failed to delete item");
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("Network error deleting item");
     }
   };
@@ -113,7 +113,7 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
           });
         }
         router.refresh();
-      } catch (err) {
+      } catch (_err) {
         toast.error("Import failed");
       } finally {
         setImporting(false);

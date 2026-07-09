@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { SignageBlock } from "@soustools/api-types";
+import { type SignageBlock } from "@soustools/api-types";
 
 interface BackgroundControlsProps {
   block: SignageBlock;

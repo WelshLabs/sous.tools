@@ -1,4 +1,3 @@
-import React from "react";
 
 const iconCls = "rounded border border-white/20 bg-black/10 dark:bg-white/10";
 

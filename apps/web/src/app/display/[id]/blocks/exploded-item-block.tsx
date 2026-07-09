@@ -1,5 +1,5 @@
 import React from "react";
-import { PosItem } from "@soustools/api-types";
+import { type PosItem } from "@soustools/api-types";
 
 interface ExplodedItemBlockProps {
   menuItemId?: string;

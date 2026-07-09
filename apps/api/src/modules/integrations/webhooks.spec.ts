@@ -1,10 +1,10 @@
-import { Test, TestingModule } from "@nestjs/testing";
+import { Test, type TestingModule } from "@nestjs/testing";
 import { WebhooksController } from "./webhooks.controller";
-import { Queue } from "bullmq";
+import { type Queue } from "bullmq";
 import { getQueueToken } from "@nestjs/bullmq";
 import { supabase } from "../../lib/supabase";
 import { UnauthorizedException, NotFoundException } from "@nestjs/common";
-import { Request } from "express";
+import { type Request } from "express";
 
 jest.mock("../../lib/supabase", () => ({
   supabase: {

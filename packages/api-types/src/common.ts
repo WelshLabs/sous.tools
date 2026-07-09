@@ -97,6 +97,6 @@ export interface IntegrationStatus {
   provider: "SQUARE" | "GOOGLE";
   connected: boolean;
   connectedAs?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
+import { type ColumnConfig, type PosItem, type MenuItemStyles } from "@soustools/api-types";
 import { MenuItemCard } from "./menu-item-card";
 import { DEFAULT_MENU_ITEM_STYLES } from "@soustools/domain-signage";
 

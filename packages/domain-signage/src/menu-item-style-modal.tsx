@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
-import { MenuItemStyles, MenuItemStateStyle } from "@soustools/api-types";
-import { StateTabBar, ItemState } from "./state-tab-bar";
-import { MenuItemPreviewCard, AtomKey } from "./menu-item-preview-card";
+import { type MenuItemStyles, type MenuItemStateStyle } from "@soustools/api-types";
+import { StateTabBar, type ItemState } from "./state-tab-bar";
+import { MenuItemPreviewCard, type AtomKey } from "./menu-item-preview-card";
 import { AtomEditorPopover } from "./atom-editor-popover";
 
 export interface MenuItemStyleModalProps {

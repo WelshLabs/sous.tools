@@ -1,6 +1,6 @@
 import React from "react";
 import { GlobalAppBar, OmniBarProvider } from "@soustools/design-system";
-import { logoutAction } from "../actions/auth";
+import { logoutAction } from "@/app/actions/auth";
 export default async function WorkspaceLayout({ 
   children,
   modal

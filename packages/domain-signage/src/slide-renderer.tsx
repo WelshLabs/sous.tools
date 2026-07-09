@@ -2,10 +2,10 @@
 
 import React from "react";
 import {
-  SignageSlide,
-  PosItem,
-  SignageLayoutConfig,
-  SignageBlock,
+  type SignageSlide,
+  type PosItem,
+  type SignageLayoutConfig,
+  type SignageBlock,
 } from "@soustools/api-types";
 import { BlockEditorNode } from "./block-editor-node";
 import { PreviewBlockRenderer } from "./preview-block-renderer";

@@ -7,8 +7,8 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { VesselsService } from "./vessels.service";
-import { ApiResponse, VesselProfile } from "@soustools/api-types";
+import { type VesselsService } from "./vessels.service";
+import { type ApiResponse, type VesselProfile } from "@soustools/api-types";
 
 @Controller("recipes/vessels")
 export class VesselsController {

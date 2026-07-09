@@ -32,7 +32,7 @@ export default function LoginPage() {
         const returnTo = urlParams.get("returnTo");
         router.push(returnTo ? returnTo : "/home");
       }
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
       setError("An unexpected error occurred during login.");
     } finally {
       setLoading(false);

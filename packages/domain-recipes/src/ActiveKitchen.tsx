@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Recipe, KitchenTimerState } from "@soustools/api-types";
+import { useState, useEffect } from "react";
+import { type Recipe, type KitchenTimerState } from "@soustools/api-types";
 import { ArrowLeft, Play, Sun, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { ActiveKitchenTimers } from "./ActiveKitchenTimers";

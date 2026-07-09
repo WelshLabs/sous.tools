@@ -1,6 +1,6 @@
 import React from "react";
-import { PosItem, MenuItemStyles, UpgradeItem } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle } from "../menu-item-style-utils";
+import { type PosItem, type MenuItemStyles, type UpgradeItem } from "@soustools/api-types";
+import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle } from "@/app/display/[id]/menu-item-style-utils";
 
 interface NestedItemBlockProps {
   basePosItemId?: string;

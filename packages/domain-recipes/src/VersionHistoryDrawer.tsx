@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import { X, History } from "lucide-react";
-import { VersionRow } from "./types";
+import { type VersionRow } from "./types";
 
 /**
  * Props for the VersionHistoryDrawer component.

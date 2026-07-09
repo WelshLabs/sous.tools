@@ -1,5 +1,5 @@
 import React from "react";
-import { PosItem, ItemModifierOverride } from "@soustools/api-types";
+import { type PosItem, type ItemModifierOverride } from "@soustools/api-types";
 import { Layers } from "lucide-react";
 
 interface MenuListModifierSettingsProps {

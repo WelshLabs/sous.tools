@@ -1,7 +1,7 @@
 import { Controller, Post, Put, Delete, Body, Param, UseGuards, UsePipes } from '@nestjs/common';
 import { AdminGuard } from '../../common/guards/admin.guard';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { PasswordUpdateSchema, PasswordUpdateDto } from '@soustools/api-types';
+import { PasswordUpdateSchema, type PasswordUpdateDto } from '@soustools/api-types';
 
 @Controller('users')
 export class UsersController {

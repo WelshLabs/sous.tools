@@ -1,4 +1,4 @@
-import { PosItem } from "@soustools/api-types";
+import { type PosItem } from "@soustools/api-types";
 
 export interface RawDbPosItem {
   id: string;

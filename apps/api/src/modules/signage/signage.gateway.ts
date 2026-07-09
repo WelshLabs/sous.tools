@@ -2,11 +2,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
+  type OnGatewayConnection,
+  type OnGatewayDisconnect,
 } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
-import { SignageLayoutConfig } from "@soustools/api-types";
+import { type Server, type Socket } from "socket.io";
+import { type SignageLayoutConfig } from "@soustools/api-types";
 
 interface JoinPayload {
   displayId?: string;

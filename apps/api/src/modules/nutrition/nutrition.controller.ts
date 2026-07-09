@@ -6,9 +6,9 @@ import {
   Header,
   NotFoundException,
 } from "@nestjs/common";
-import { NutritionService } from "./nutrition.service";
-import { LabelRendererService } from "./label-renderer.service";
-import { UsdaResolverService } from "./usda-resolver.service";
+import { type NutritionService } from "./nutrition.service";
+import { type LabelRendererService } from "./label-renderer.service";
+import { type UsdaResolverService } from "./usda-resolver.service";
 import { createAdminClient } from "@soustools/supabase";
 // import { Recipe } from "@soustools/api-types";
 

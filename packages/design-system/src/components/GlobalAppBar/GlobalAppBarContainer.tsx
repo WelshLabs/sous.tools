@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GlobalAppBarPresentation, AppBarNotification } from "./GlobalAppBarPresentation";
+import { GlobalAppBarPresentation, type AppBarNotification } from "./GlobalAppBarPresentation";
 export interface GlobalAppBarContainerProps {
   notifications?: AppBarNotification[];
   onLogoutAction?: () => void | Promise<void>;

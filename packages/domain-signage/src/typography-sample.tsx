@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { TypographyConfig } from "@soustools/api-types";
+import { type TypographyConfig } from "@soustools/api-types";
 import { FontPickerPopover } from "./font-picker-popover";
 
 export type TypographyKey = keyof TypographyConfig;

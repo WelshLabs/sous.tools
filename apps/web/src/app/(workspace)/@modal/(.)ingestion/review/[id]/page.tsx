@@ -9,10 +9,10 @@ import {
   BrainCircuit,
   Trash2,
 } from "lucide-react";
-import { IngestionReview } from "@soustools/api-types";
+import { type IngestionReview } from "@soustools/api-types";
 import { toast } from "sonner";
 import Link from "next/link";
-import { ConfirmModal } from "../../../../../../components/ui/confirm-modal";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { VisualBuilder } from "../../../../ingestion/review/[id]/visual-builder";
 import { ModalShell } from "@soustools/domain-signage";
 
@@ -57,7 +57,7 @@ export default function IngestionReviewPage() {
         } else {
           toast.error("Review not found");
         }
-      } catch (err) {
+      } catch (_err) {
         toast.error("Failed to load review");
         console.error(err);
       } finally {
@@ -92,7 +92,7 @@ export default function IngestionReviewPage() {
 
       toast.success("Ingestion Approved and mapped to Live Data!");
       router.push("/recipes");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to commit changes. Ensure JSON is valid.");
     }
   };
@@ -103,7 +103,7 @@ export default function IngestionReviewPage() {
       if (!res.ok) throw new Error("Failed to delete");
       toast.success("Review deleted successfully");
       router.push("/ingestion");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to delete review");
       setShowDeleteConfirm(false);
     }

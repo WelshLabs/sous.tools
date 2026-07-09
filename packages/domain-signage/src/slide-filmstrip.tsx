@@ -5,7 +5,7 @@ import {
   DragDropContext,
   Droppable,
   Draggable,
-  DropResult,
+  type DropResult,
 } from "@hello-pangea/dnd";
 import type { SignageSlide, PosItem, SignageLayoutConfig } from "@soustools/api-types";
 import { GripVertical, Plus } from "lucide-react";

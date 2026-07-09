@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SignageBlock, PosItem, MenuItemStyles, BlockSizing } from "@soustools/api-types";
+import { type SignageBlock, type PosItem, type MenuItemStyles, type BlockSizing } from "@soustools/api-types";
 import { CategoryHeaderBlock } from "./blocks/category-header-block";
 import { PosItemBlock } from "./blocks/pos-item-block";
 import { CalloutBlock } from "./blocks/callout-block";

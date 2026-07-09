@@ -1,8 +1,8 @@
-import { SignageBlock } from "./signage-blocks.js";
+import { type SignageBlock } from "./signage-blocks.js";
 import {
-  BaseSlide,
-  HighlightItemConfig,
-  MenuItemStyles,
+  type BaseSlide,
+  type HighlightItemConfig,
+  type MenuItemStyles,
 } from "./signage-base.js";
 
 export * from "./signage-base.js";

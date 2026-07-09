@@ -1,4 +1,4 @@
-import { SignageBlock } from "@soustools/api-types";
+import { type SignageBlock } from "@soustools/api-types";
 
 export function findBlockInTree(block: SignageBlock, id: string): SignageBlock | null {
   if (block.id === id) return block;

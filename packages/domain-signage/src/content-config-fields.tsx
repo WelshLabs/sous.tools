@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SignageBlock, PosItem } from "@soustools/api-types";
+import { type SignageBlock, type PosItem } from "@soustools/api-types";
 import { PosItemPicker } from "./pos-item-picker";
 
 interface ContentConfigFieldsProps {

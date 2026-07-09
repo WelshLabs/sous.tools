@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { KitchenTimerState } from "@soustools/api-types";
+import { useState, useEffect } from "react";
+import { type KitchenTimerState } from "@soustools/api-types";
 import { Play, Pause, RotateCcw, Clock, X, Bell } from "lucide-react";
 
 /**

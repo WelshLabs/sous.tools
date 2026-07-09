@@ -1,5 +1,5 @@
 import { config } from "@soustools/config";
-import { RecipeBuilderClient } from "../../RecipeBuilderClient";
+import { RecipeBuilderClient } from "@/app/(workspace)/recipes/RecipeBuilderClient";
 
 interface EditRecipePageProps {
   params: Promise<{ id: string }>;

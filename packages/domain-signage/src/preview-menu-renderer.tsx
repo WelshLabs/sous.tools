@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PosItem, ColumnConfig, MenuItemStyles } from "@soustools/api-types";
+import { type ColumnConfig, type MenuItemStyles } from "@soustools/api-types";
 import {
   buildCardStyle,
   buildTitleStyle,

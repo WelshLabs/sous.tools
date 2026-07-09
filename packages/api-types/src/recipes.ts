@@ -25,7 +25,7 @@ export interface MasterIngredient {
   organizationId: string;
   name: string;
   densityGMl: number;
-  nutritionMacros: NutritionMacros | Record<string, any>; // USDA FDC JSONB format
+  nutritionMacros: NutritionMacros | Record<string, unknown>; // USDA FDC JSONB format
   allergens: string[];
   ingredientType?: string | null;
   isAnimalProduct?: boolean;
@@ -44,8 +44,8 @@ export interface MasterIngredient {
 export interface RecipeNutritionCache {
   recipeId: string;
   servings: number;
-  perServingNutrition: Record<string, any>;
-  per100gNutrition: Record<string, any>;
+  perServingNutrition: Record<string, unknown>;
+  per100gNutrition: Record<string, unknown>;
   dietaryFlags: Record<string, boolean>;
   computedAt: string | null;
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { SignageBlock, GlobalDesignTokens } from "@soustools/api-types";
+import { type SignageBlock, type GlobalDesignTokens } from "@soustools/api-types";
 
 interface TypographyControlsProps {
   block: SignageBlock;

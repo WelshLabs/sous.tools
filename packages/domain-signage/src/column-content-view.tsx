@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ColumnConfig, PosItem, MenuItemStyles } from "@soustools/api-types";
+import { type ColumnConfig, type PosItem, type MenuItemStyles } from "@soustools/api-types";
 import { Image as ImageIcon } from "lucide-react";
 import {
   buildCardStyle,

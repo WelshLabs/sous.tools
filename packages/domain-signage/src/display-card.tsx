@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SignageDisplay } from "@soustools/api-types";
+import { type SignageDisplay } from "@soustools/api-types";
 import { Trash2, Wifi, WifiOff, ExternalLink, Settings } from "lucide-react";
 
 interface DisplayCardProps {

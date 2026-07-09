@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { PosItem } from "@soustools/api-types";
+import React from "react";
+import { useState, useRef, useEffect } from "react";
+import { type PosItem } from "@soustools/api-types";
 import { Search, X } from "lucide-react";
 
 interface PosItemPickerProps {

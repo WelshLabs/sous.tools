@@ -4,6 +4,7 @@
   "scripts": {
     "build": "INFISICAL_MOCK=true turbo build",
     "dev": "turbo dev",
+    "typecheck": "turbo typecheck",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "test": "INFISICAL_MOCK=true turbo test",
@@ -29,9 +30,14 @@
     "restart:traefik": "docker compose -f docker-compose.dev.yml restart traefik"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-boundaries": "^7.0.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.0.0",
     "repomix": "^1.16.0",
-    "turbo": "^2.9.17"
+    "turbo": "^2.9.17",
+    "typescript-eslint": "^8.63.0"
   },
   "engines": {
     "node": ">=22.22.0"

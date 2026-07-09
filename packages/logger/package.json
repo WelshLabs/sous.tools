@@ -20,7 +20,9 @@
     }
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
     "pino": "^9.0.0"
@@ -29,6 +31,9 @@
     "@soustools/tsconfig": "workspace:*",
     "@types/node": "^20.11.0",
     "pino-pretty": "^11.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@soustools/eslint-config": "workspace:*",
+    "eslint": "^9",
+    "typescript-eslint": "^8"
   }
 }

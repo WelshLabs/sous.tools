@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { DisplayManager } from "@soustools/domain-signage";
-import { SignageDisplay } from "@soustools/api-types";
+import { type SignageDisplay } from "@soustools/api-types";
 
 interface DevicesClientWrapperProps {
   displays: SignageDisplay[];

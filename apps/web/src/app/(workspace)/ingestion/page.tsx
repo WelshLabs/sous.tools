@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IngestionReview } from "@soustools/api-types";
+import { type IngestionReview } from "@soustools/api-types";
 import Link from "next/link";
 import { BrainCircuit, Clock, CheckCircle, Trash2, XCircle } from "lucide-react";
-import { ConfirmModal } from "../../../components/ui/confirm-modal";
-import { io, Socket } from "socket.io-client";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { io, type Socket } from "socket.io-client";
 import { createBrowserClient } from "@soustools/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 

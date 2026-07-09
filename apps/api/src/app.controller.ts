@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Res, HttpCode } from "@nestjs/common";
-import { Response } from "express";
-import { AppService } from "./app.service";
-import { ApiResponse, HelloResponse } from "@soustools/api-types";
+import { type Response } from "express";
+import { type AppService } from "./app.service";
+import { type ApiResponse, type HelloResponse } from "@soustools/api-types";
 
 /**
  * Controller handling root application routes.

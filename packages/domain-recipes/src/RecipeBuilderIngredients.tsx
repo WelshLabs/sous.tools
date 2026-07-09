@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { MasterIngredient } from "@soustools/api-types";
+import { type MasterIngredient } from "@soustools/api-types";
 import { Plus, Trash2 } from "lucide-react";
-import { RecipeIngredientLine } from "./types";
+import { type RecipeIngredientLine } from "./types";
 
 /**
  * Props for the RecipeBuilderIngredients component.

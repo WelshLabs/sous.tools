@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { Recipe, VesselProfile } from "@soustools/api-types";
+import { useState } from "react";
+import { type Recipe, type VesselProfile, type MasterIngredient } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
 import { ArrowLeft, Play, Info, History, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { RecipeScalingPanel, CustomWeightOpts } from "./RecipeScalingPanel";
+import { RecipeScalingPanel, type CustomWeightOpts } from "./RecipeScalingPanel";
 import { RecipeNutritionPanel } from "./RecipeNutritionPanel";
 import { RecipeIngredientsTable } from "./RecipeIngredientsTable";
 import { RecipeCostPanel } from "./RecipeCostPanel";
 import { WastageEntryModal } from "./WastageEntryModal";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
-import { ScaledIngredient, RecipeCostData, VersionRow } from "./types";
+import { type ScaledIngredient, type RecipeCostData, type VersionRow } from "./types";
 
 /**
  * Props for the RecipeViewer component.
@@ -22,7 +22,7 @@ export interface RecipeViewerProps {
   /** All available vessel profiles. */
   vessels: VesselProfile[];
   /** Master ingredients for live pricing */
-  masterIngredients?: import("@soustools/api-types").MasterIngredient[];
+  masterIngredients?: MasterIngredient[];
   /** Scaled ingredients array emitted by the scaling math utility. */
   scaledIngredients: ScaledIngredient[];
   /** The final calculated multiplier. */

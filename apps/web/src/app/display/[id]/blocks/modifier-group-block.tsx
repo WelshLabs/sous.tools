@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { MenuItemStyles, PosItem } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle } from "../menu-item-style-utils";
+import { type MenuItemStyles, type PosItem } from "@soustools/api-types";
+import { resolveItemState, buildTitleStyle, buildPriceStyle } from "@/app/display/[id]/menu-item-style-utils";
 
 interface ModifierOption {
   id: string;

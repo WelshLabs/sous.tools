@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { ItemsService, CreateItemDto, UpdateItemDto } from './items.service';
+import { type ItemsService, type CreateItemDto, type UpdateItemDto } from './items.service';
 
 export interface ApiResponse<T> {
   success: boolean;

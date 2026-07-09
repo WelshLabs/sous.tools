@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MenuItemStateStyle } from "@soustools/api-types";
+import { type MenuItemStateStyle } from "@soustools/api-types";
 import {
   buildCardStyle,
   buildTitleStyle,

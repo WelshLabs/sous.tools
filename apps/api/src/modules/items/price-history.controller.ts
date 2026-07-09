@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { PriceHistoryService, RecordPriceDto } from './price-history.service';
+import { type PriceHistoryService, type RecordPriceDto } from './price-history.service';
 
 export interface ApiResponse<T> {
   success: boolean;

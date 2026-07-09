@@ -4,8 +4,8 @@ import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "../components/theme-provider";
-import { InstrumentationClient } from "../instrumentation-client";
+import { ThemeProvider } from "@/components/theme-provider";
+import { InstrumentationClient } from "@/instrumentation-client";
 
 export async function generateMetadata(): Promise<Metadata> {
   const env = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;

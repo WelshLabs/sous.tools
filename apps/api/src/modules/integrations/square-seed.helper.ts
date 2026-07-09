@@ -1,7 +1,7 @@
 import { config } from "@soustools/config";
 import { getSquareBaseUrl } from "./square-client.helper";
 import {
-  SquareObject,
+  type SquareObject,
   mapModifierListToSandbox,
   mapItemToSandbox,
 } from "./square-seed-types";

@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { config } from "@soustools/config";
-import { IntegrationStatus } from "@soustools/api-types";
+import { type IntegrationStatus } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
 import { seedSquareCatalog, syncSquareCatalog } from "./square-sync.helper";
-import { SquareDriver } from "./drivers/square.driver";
+import { type SquareDriver } from "./drivers/square.driver";
 
 @Injectable()
 export class IntegrationsService {

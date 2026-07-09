@@ -1,5 +1,4 @@
 import React from "react";
-import { use } from "react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { config } from "@soustools/config";
@@ -34,7 +33,7 @@ export default async function DeckPreviewPage({
 }: {
   params: Promise<Params>;
 }) {
-  const { deckId } = await use(params);
+  const { deckId } = await params;
   const deck = await fetchDeck(deckId);
 
   const liveBase = config.TV_BASE_URL;

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SignageBlock, PosItem, MenuItemStyles } from "@soustools/api-types";
+import { type MenuItemStyles } from "@soustools/api-types";
 import { PreviewContentBlocks } from "./preview-content-blocks";
 
 interface PreviewBlockRendererProps {

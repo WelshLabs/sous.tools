@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { PosItem } from "@soustools/api-types";
+import { type PosItem } from "@soustools/api-types";
 import { RotateCw, AlertTriangle } from "lucide-react";
 import { PosItemCard } from "./PosItemCard";
 import { StockPromptModal } from "./StockPromptModal";
-import { MOCK_POS_ITEMS, mapDbItemToPosItem, RawDbPosItem } from "./helpers";
+import { MOCK_POS_ITEMS, mapDbItemToPosItem, type RawDbPosItem } from "./helpers";
 
 export const PosSimulator: React.FC = () => {
   const [items, setItems] = useState<PosItem[]>([]);

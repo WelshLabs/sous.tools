@@ -3,9 +3,9 @@
 import { Edit, Trash2 } from "lucide-react";
 
 export interface ItemsLedgerTableProps {
-  items: any[];
+  items: unknown[];
   loading: boolean;
-  onEdit: (item: any) => void;
+  onEdit: (item: unknown) => void;
   onDelete: (id: string) => void;
 }
 

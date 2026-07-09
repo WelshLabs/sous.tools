@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next';
+import { type MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   const env = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;

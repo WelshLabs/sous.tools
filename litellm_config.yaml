@@ -1,0 +1,12 @@
+model_list:
+  - model_name: local-coder
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b
+      api_base: http://ollama:11434
+  - model_name: gemini-pro
+    litellm_params:
+      model: gemini/gemini-1.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+general_settings:
+  master_key: sk-1234 # Used by your tools to auth with LiteLLM

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { RecipeList } from "@soustools/domain-recipes";
-import { Recipe } from "@soustools/api-types";
+import { type Recipe } from "@soustools/api-types";
 import { toast } from "sonner";
 
 export function RecipesClientPage({ initialRecipes }: { initialRecipes: Recipe[] }) {
@@ -18,7 +18,7 @@ export function RecipesClientPage({ initialRecipes }: { initialRecipes: Recipe[]
       } else {
         toast.error("Failed to delete recipe");
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error("Error deleting recipe");
     }
   };

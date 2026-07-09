@@ -1,4 +1,4 @@
-import { SignageLayoutConfig } from "@soustools/api-types";
+import { type SignageLayoutConfig } from "@soustools/api-types";
 
 /**
  * Represents the configuration and details of a television signage layout.

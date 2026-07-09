@@ -1,4 +1,4 @@
-import { SignageDisplay } from "@soustools/api-types";
+import { type SignageDisplay } from "@soustools/api-types";
 
 /**
  * Maps raw backend display record to typed SignageDisplay interface.

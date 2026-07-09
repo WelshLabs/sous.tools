@@ -42,7 +42,7 @@ export default function TeamPortalPage() {
       setStatus("success");
       setMessage("Smartwatch successfully paired!");
       setPairingCode("");
-    } catch (err) {
+    } catch (_err) {
       setStatus("error");
       setMessage(
         "Failed to pair smartwatch. Please check the code and try again.",

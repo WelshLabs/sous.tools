@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-import { SignageBlock, PosItem, MenuItemStyles } from "@soustools/api-types";
-import { buildTitleStyle, buildPriceStyle, buildCardStyle, buildDescriptionStyle, resolveItemState } from "./menu-item-style-utils";
+import { type MenuItemStyles } from "@soustools/api-types";
+import { buildCardStyle, buildDescriptionStyle, resolveItemState } from "./menu-item-style-utils";
 
 interface ComplexPreviewProps {
   block: SignageBlock;
@@ -27,7 +26,7 @@ export function PreviewNestedItem({ block, items, styles }: ComplexPreviewProps)
   const isGlass = block.panelStyle === "glass";
   const isFlat = block.panelStyle === "none" || !blockStyles.regular.backgroundColor || blockStyles.regular.backgroundColor === "transparent";
 
-  let containerClasses = [
+  const containerClasses = [
     "p-2 rounded flex flex-col gap-1 text-[9px]",
     isFlat ? "bg-transparent border-transparent" : "bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5",
     isGlass ? "" : "st-nested-item",

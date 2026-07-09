@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Query, NotFoundException } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { SignageGateway } from "../signage/signage.gateway";
-import { ApiResponse } from "@soustools/api-types";
+import { type SignageGateway } from "../signage/signage.gateway";
+import { type ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import { getMockItems, handleSquareStockToggle, resolveItemDetails } from "./pos-simulator.helpers";
 

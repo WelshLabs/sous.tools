@@ -5,10 +5,10 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { UseGuards, Logger } from '@nestjs/common';
-import { Socket } from 'socket.io';
+import { type Socket } from 'socket.io';
 import { WsSupabaseAuthGuard } from '../../lib/ws-supabase-auth.guard';
-import { CommandsService } from './commands.service';
-import { OmnibarCommandPayload, OmnibarCommandPayloadSchema, OmniMessage } from '@soustools/api-types';
+import { type CommandsService } from './commands.service';
+import { type OmnibarCommandPayload, OmnibarCommandPayloadSchema, type OmniMessage } from '@soustools/api-types';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 
 @WebSocketGateway({ namespace: '/commands', cors: { origin: '*' } })

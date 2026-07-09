@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { SignageLayoutConfig } from "@soustools/api-types";
+import { type SignageLayoutConfig } from "@soustools/api-types";
 
 export function useLayoutDraft(
   deckId: string | undefined,

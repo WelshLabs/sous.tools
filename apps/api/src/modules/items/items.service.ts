@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { supabase } from '../../lib/supabase';
-import { UsdaResolverService } from '../nutrition/usda-resolver.service';
+import { type UsdaResolverService } from '../nutrition/usda-resolver.service';
 
 export interface CreateItemDto {
   name: string;
@@ -63,7 +63,7 @@ export class ItemsService {
   async create(orgId: string, dto: CreateItemDto): Promise<Record<string, unknown>> {
     let nutrition_macros = dto.nutrition_macros || {};
     let fdc_id = dto.fdc_id;
-    let allergens = [...(dto.allergens || [])];
+    const allergens = [...(dto.allergens || [])];
     let is_animal_product = dto.is_animal_product ?? false;
     let is_meat = dto.is_meat ?? false;
     let is_seafood = dto.is_seafood ?? false;
@@ -156,7 +156,7 @@ export class ItemsService {
 
     let nutrition_macros = dto.nutrition_macros || existing.nutrition_macros || {};
     let fdc_id = dto.fdc_id !== undefined ? dto.fdc_id : existing.fdc_id;
-    let allergens = dto.allergens ? [...dto.allergens] : [...((existing.allergens as string[]) || [])];
+    const allergens = dto.allergens ? [...dto.allergens] : [...((existing.allergens as string[]) || [])];
     let is_animal_product = dto.is_animal_product ?? existing.is_animal_product;
     let is_meat = dto.is_meat ?? existing.is_meat;
     let is_seafood = dto.is_seafood ?? existing.is_seafood;

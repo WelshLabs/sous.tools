@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React from "react";
+import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, X, Paperclip, UploadCloud, FileImage } from "lucide-react";
 import { createBrowserClient } from "@soustools/supabase";
-import { useOmnibarContext, StagedFile } from "./OmniBarContext";
-import { OmniMessage } from "@soustools/api-types";
+import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
+import { type OmniMessage } from "@soustools/api-types";
 
 export interface OmniInputPillProps {
   inputText: string;

@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
 import { 
-  PurchaseOrdersService, 
-  AddItemToDraftDto,
-  UpdatePoItemDto
+  type PurchaseOrdersService, 
+  type AddItemToDraftDto,
+  type UpdatePoItemDto
 } from './purchase-orders.service';
-import { ApiResponse } from './inventory.controller';
+import { type ApiResponse } from './inventory.controller';
 
 @Controller('purchase-orders')
 export class PurchaseOrdersController {

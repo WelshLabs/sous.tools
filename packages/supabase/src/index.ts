@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import {
   createBrowserClient as createSupabaseBrowserClient,
   createServerClient as createSupabaseServerClient,
@@ -20,10 +21,8 @@ function validateConfig(): void {
 /**
  * Creates a Supabase client instance for use in browser/client-side components.
  * Automatically loads configurations from `@soustools/config`.
- *
- * @returns {any} Initialized Supabase client.
  */
-export function createBrowserClient(): any {
+export function createBrowserClient(): ReturnType<typeof createSupabaseBrowserClient> {
   validateConfig();
   return createSupabaseBrowserClient(
     config.SUPABASE_URL,
@@ -31,22 +30,24 @@ export function createBrowserClient(): any {
   );
 }
 
-/**
- * Shape of next.js cookies() wrapper required for server side cookie sync.
- */
+/** Shape of Next.js cookies() wrapper required for server-side cookie sync. */
 export interface CookieStore {
-  getAll: () => any[];
-  set: (name: string, value: string, options: any) => void;
+  getAll: () => Array<{ name: string; value: string }>;
+  set: (name: string, value: string, options: Record<string, unknown>) => void;
+}
+
+/** Cookie item shape used internally by @supabase/ssr. */
+interface CookieItem {
+  name: string;
+  value: string;
+  options: Record<string, unknown>;
 }
 
 /**
  * Creates a request-specific Supabase client for Next.js Server Components, Actions, or Route Handlers.
  * Synchronizes session states using cookies to prevent auth token leaks between requests.
- *
- * @param {CookieStore} cookieStore Active Next.js request cookie store.
- * @returns {any} Request-specific Supabase client.
  */
-export function createServerClient(cookieStore: CookieStore): any {
+export function createServerClient(cookieStore: CookieStore): ReturnType<typeof createSupabaseServerClient> {
   validateConfig();
   return createSupabaseServerClient(
     config.SUPABASE_URL,
@@ -56,9 +57,9 @@ export function createServerClient(cookieStore: CookieStore): any {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet: any[]) {
+        setAll(cookiesToSet: CookieItem[]) {
           try {
-            cookiesToSet.forEach(({ name, value, options }: any) =>
+            cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options),
             );
           } catch {
@@ -73,8 +74,7 @@ export function createServerClient(cookieStore: CookieStore): any {
 /**
  * Creates an administrative or backend Supabase client instance for NestJS or background script execution.
  *
- * @param {string} [serviceRoleKey] Optional override service role key. Defaults to service role key from config.
- * @returns {SupabaseClient} Administrative Supabase client.
+ * @param serviceRoleKey Optional override service role key. Defaults to service role key from config.
  */
 export function createAdminClient(serviceRoleKey?: string): SupabaseClient {
   validateConfig();

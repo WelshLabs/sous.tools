@@ -1,5 +1,5 @@
 import { config } from "@soustools/config";
-import { RecipeBuilderClient } from "../RecipeBuilderClient";
+import { RecipeBuilderClient } from "@/app/(workspace)/recipes/RecipeBuilderClient";
 
 export default async function NewRecipePage() {
   const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";

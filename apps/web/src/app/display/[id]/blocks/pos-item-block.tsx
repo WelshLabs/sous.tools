@@ -1,6 +1,6 @@
 import React from "react";
-import { PosItem, MenuItemStyles } from "@soustools/api-types";
-import { MenuItemCard } from "../menu-item-card";
+import { type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import { MenuItemCard } from "@/app/display/[id]/menu-item-card";
 
 interface PosItemBlockProps {
   posItemId: string;

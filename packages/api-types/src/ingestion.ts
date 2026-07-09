@@ -41,7 +41,7 @@ export interface IngestionReview {
   sourceName?: string | null;
   rawText: string | null;
   sourceDocumentUrl?: string | null;
-  parsedData: Record<string, any>;
+  parsedData: Record<string, unknown>;
   status: IngestionStatus;
   createdAt: string;
   updatedAt: string;

@@ -3,7 +3,7 @@
  * @description Content block components (leaves) for the signage visual editor.
  */
 
-import { BaseBlock } from "./signage-blocks.js";
+import { type BaseBlock } from "./signage-blocks.js";
 
 /**
  * An item upgrade or variation configuration for NestedItemBlock.
