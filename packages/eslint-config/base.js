@@ -156,6 +156,22 @@ export const baseConfig = [
       "boundaries/element-types": "off",
     },
   },
+  // ── Config file overrides ──────────────────────────────────────────────
+  {
+    files: ["**/*.config.js", "**/*.config.mjs", "**/*.config.ts"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        module: "readonly",
+        require: "readonly",
+      },
+    },
+    rules: {
+      "no-restricted-syntax": "off",
+    },
+  },
 ];
 
 export default baseConfig;
