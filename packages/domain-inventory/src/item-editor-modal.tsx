@@ -127,7 +127,13 @@ export function ItemEditorModal({
           fdc_id: payload.data!.fdc_id,
           force_usda_sync: true,
           usda_query: usdaQuery,
-          nutrition_macros: { ...payload.data },
+          nutrition_macros: {
+            calories: payload.data!.calories,
+            protein_g: payload.data!.protein_g,
+            total_carbohydrate_g: payload.data!.total_carbohydrate_g,
+            total_fat_g: payload.data!.total_fat_g,
+          },
+
         }));
       } else {
         toast.error("No matches found in USDA DB.");

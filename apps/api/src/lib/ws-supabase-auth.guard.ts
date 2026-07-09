@@ -17,9 +17,17 @@ export class WsSupabaseAuthGuard implements CanActivate {
       token = token.split(' ')[1];
     }
 
+    if (!token && client.handshake?.headers?.cookie) {
+      const match = client.handshake.headers.cookie.match(/sb-session-token=([^;]+)/);
+      if (match) {
+        token = match[1];
+      }
+    }
+
     if (!token) {
       throw new WsException("Unauthorized: No token provided");
     }
+
 
     const {
       data: { user },

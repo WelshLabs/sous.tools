@@ -3,11 +3,12 @@
 import { Edit, Trash2 } from "lucide-react";
 
 export interface ItemsLedgerTableProps {
-  items: unknown[];
+  items: any[];
   loading: boolean;
-  onEdit: (item: unknown) => void;
+  onEdit: (item: any) => void;
   onDelete: (id: string) => void;
 }
+
 
 export function ItemsLedgerTable({
   items,

@@ -115,7 +115,7 @@ export function InvoiceItemRow({
                   {item._requiresWeightInput && (!item.category || item.category === "ingredient") && (
                     <div className="col-span-4 mt-1 flex flex-col gap-1">
                       <label className="text-[10px] uppercase text-sky-600 dark:text-sky-500 font-bold flex items-center gap-1">
-                        ℹ️ Optional: Set Unit Weight {item._tempWeightUnit || item.unit || item.uom ? `(${(item._tempWeightUnit || item.unit || item.uom).toUpperCase()})` : ""}
+                        ℹ️ Optional: Set Unit Weight {item._tempWeightUnit || item.unit || item.uom ? `(${(item._tempWeightUnit || item.unit || item.uom || "").toUpperCase()})` : ""}
                       </label>
                       <div className="flex gap-1">
                         <input
@@ -141,7 +141,8 @@ export function InvoiceItemRow({
                         />
                         <select
                           disabled={disabled}
-                          value={item._tempWeightUnit || ((item.unit || item.uom || "").toLowerCase().startsWith("lb") ? "lbs" : (item.unit || item.uom)) || "g"}
+                          value={item._tempWeightUnit || ((item.unit || item.uom || "").toLowerCase().startsWith("lb") ? "lbs" : (item.unit || item.uom || "g"))}
+
                           onChange={(e) => {
                             const unit = e.target.value;
                             const val = item._tempWeightVal || 0;
@@ -164,7 +165,8 @@ export function InvoiceItemRow({
                           <option value="gal">Gallons</option>
                         </select>
                       </div>
-                      {item.each_weight_g > 0 && (
+                      {(item.each_weight_g ?? 0) > 0 && (
+
                         <div className="text-[10px] text-sky-600 dark:text-sky-400 font-medium">
                           ↳ Saves as: {item.each_weight_g}g
                         </div>

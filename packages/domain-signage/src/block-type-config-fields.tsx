@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type { SignageBlock, PosItem } from "@soustools/api-types";
+import type { SignageBlock, PosItem, SignageLayoutConfig } from "@soustools/api-types";
 import { MenuItemStylesInspector } from "./menu-item-styles-inspector";
 import { LayoutControls } from "./editor-controls/LayoutControls";
 import { TypographyControls } from "./editor-controls/TypographyControls";
@@ -20,7 +20,6 @@ import { MediaCarouselBlockConfig } from "./block-configs/media-carousel-block-c
 import { CalloutBlockConfig } from "./block-configs/callout-block-config";
 
 export interface BlockTypeConfigFieldsProps {
-
   selectedBlockId: string;
   selectedBlock: SignageBlock;
   onUpdateBlock: (blockId: string, updates: Partial<SignageBlock>) => void;
@@ -28,6 +27,7 @@ export interface BlockTypeConfigFieldsProps {
   onFetchModifierGroups?: (posItemId: string) => Promise<Array<{ id: string; name: string }>>;
   handleUpdateBlockStyles: (s: MenuItemStyles) => void;
   parentExplodedItem: SignageBlock | null;
+  config: SignageLayoutConfig;
 }
 
 /** Organism: All per-block-type configuration fields rendered inside the block inspector. */
@@ -39,7 +39,9 @@ export function BlockTypeConfigFields({
   onFetchModifierGroups,
   handleUpdateBlockStyles,
   parentExplodedItem,
+  config,
 }: BlockTypeConfigFieldsProps) {
+
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0 space-y-6">
 

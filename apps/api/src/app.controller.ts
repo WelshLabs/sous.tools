@@ -1,12 +1,12 @@
-import { Controller, Get, Post, Body, Res, HttpCode, UnauthorizedException } from "@nestjs/common";
+import { Controller, Get, Post, Body, Res, HttpCode, UnauthorizedException, UseGuards, Req } from "@nestjs/common";
 import type { Response } from "express";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { AppService } from "./app.service";
-
 import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/api-types";
-
 import { config } from "@soustools/config";
 import { supabase } from "./lib/supabase";
+import { SupabaseAuthGuard } from "./lib/supabase-auth.guard";
+import { randomUUID } from "crypto";
 
 const COOKIE_NAME = "sb-session-token";
 const COOKIE_OPTIONS = {
@@ -101,6 +101,48 @@ export class AppController {
   }
 
   /**
+   * Generates a signed upload URL for direct client-side storage uploads.
+   * Prevents proxying large binary data payloads through the NestJS server.
+   */
+  @Post("storage/upload-url")
+  @UseGuards(SupabaseAuthGuard)
+  async getUploadUrl(
+    @Body() body: { fileName: string },
+    @Req() req: any,
+  ): Promise<ApiResponse<{ signedUrl: string; publicUrl: string; filePath: string }>> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException("User not authenticated");
+    }
+
+    const fileId = randomUUID();
+    const ext = body.fileName.split(".").pop() || "bin";
+    const filePath = `${user.id}/${fileId}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from("ingestion-sources")
+      .createSignedUploadUrl(filePath);
+
+    if (error || !data) {
+      throw new Error(error?.message || "Failed to create signed upload URL");
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("ingestion-sources")
+      .getPublicUrl(filePath);
+
+    return {
+      success: true,
+      data: {
+        signedUrl: data.signedUrl,
+        publicUrl: publicUrlData.publicUrl,
+        filePath,
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
    * Destroys the session by clearing the HttpOnly session cookie.
    */
   @Post("auth/logout")
@@ -114,3 +156,4 @@ export class AppController {
     };
   }
 }
+

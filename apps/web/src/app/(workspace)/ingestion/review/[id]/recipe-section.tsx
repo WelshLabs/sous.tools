@@ -12,6 +12,9 @@ export interface RecipeSectionProps {
   items: { id: string; name: string; each_weight_g: number | null }[];
   handleIngredientUpdate: (rIdx: number, ingIdx: number, field: string, value: any) => void;
   handleCreateRecipeItem: (name: string, recipeIndex: number, ingIndex: number) => void;
+  handleUpdate: (recipeIndex: number, field: string, value: any) => void;
+  parsed: any;
+  onChange: (newData: string) => void;
 }
 
 export function RecipeSection({
@@ -22,7 +25,12 @@ export function RecipeSection({
   items,
   handleIngredientUpdate,
   handleCreateRecipeItem,
+  handleUpdate,
+  parsed,
+  onChange,
 }: RecipeSectionProps) {
+
+
   return (
     <>
       {recipes.map((recipe: any, rIdx: number) => {

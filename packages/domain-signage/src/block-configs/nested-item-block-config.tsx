@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import type { SignageBlock, PosItem } from "@soustools/api-types";
-import { PosItemPicker } from "../pos-item-picker";
+import { PosItemPicker, PosItemMultiPicker } from "../pos-item-picker";
+
 
 export function NestedItemBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock, items }: { selectedBlock: SignageBlock, selectedBlockId: string, onUpdateBlock: (id: string, updates: any) => void, items: PosItem[] }) {
   return (

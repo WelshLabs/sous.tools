@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { createBrowserClient } from "@soustools/supabase";
 import { io, type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
-import { config } from "@soustools/config";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
 
@@ -27,18 +25,14 @@ export function useOmniSocket() {
     let newSocket: Socket | null = null;
     const initSocket = async () => {
       try {
-        const supabase = createBrowserClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session?.access_token) return;
-
-        const apiUrl = config.API_BASE_URL;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
         const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
 
+
+        // The HttpOnly session cookie is automatically sent by the browser.
+        // No JS-accessible token is needed — NestJS validates commands gateway via WsSupabaseAuthGuard.
         newSocket = io(socketUrl + "/commands", {
-          auth: { token: session.access_token },
+          withCredentials: true,
           transports: ["websocket"],
         });
 

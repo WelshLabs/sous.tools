@@ -1,10 +1,11 @@
 "use client";
 import React from "react";
-import { type SignageBlock } from "@soustools/api-types";
+import { type SignageBlock, type PosItem } from "@soustools/api-types";
 import { PosItemMultiPicker } from "../pos-item-picker";
 import { MenuListModifierSettings } from "../menu-list-modifier-settings";
 
-export function MenuListBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock }: { selectedBlock: SignageBlock, selectedBlockId: string, onUpdateBlock: (id: string, updates: any) => void }) {
+export function MenuListBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock, items = [] }: { selectedBlock: SignageBlock, selectedBlockId: string, onUpdateBlock: (id: string, updates: any) => void, items?: PosItem[] }) {
+
   return (
 <>
       {/* MenuList Data Source */}

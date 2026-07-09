@@ -53,10 +53,11 @@ export default function IngestionReviewPage() {
         } else {
           toast.error("Review not found");
         }
-      } catch (_err) {
+      } catch (err) {
         toast.error("Failed to load review");
         console.error(err);
       } finally {
+
         setLoading(false);
       }
     };

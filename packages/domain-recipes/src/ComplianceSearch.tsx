@@ -3,6 +3,9 @@
 import React from "react";
 import { useState } from "react";
 import { X, Search, Loader2 } from "lucide-react";
+import { ComplianceSearchForm } from "./ComplianceSearchForm";
+import { ComplianceSearchResultItem } from "./ComplianceSearchResultItem";
+
 
 /** Nutrition macro summary returned from a compliance search product. */
 export interface ComplianceNutritionMacros {

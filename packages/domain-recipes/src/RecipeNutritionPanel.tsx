@@ -85,7 +85,8 @@ export function RecipeNutritionPanel({
     );
   }
 
-  const macros = nutrition.perServingNutrition;
+  const macros: any = nutrition.perServingNutrition;
+
 
   return (
     <div

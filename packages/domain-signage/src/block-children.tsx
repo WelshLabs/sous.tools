@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
-import type { SignageBlock, MenuItemStyles } from "@soustools/api-types";
+import type { SignageBlock, MenuItemStyles, PosItem } from "@soustools/api-types";
+
 import { Rows, Columns, LayoutGrid } from "lucide-react";
 
 // In order to avoid circular dependency issues, we can import BlockEditorNode here.

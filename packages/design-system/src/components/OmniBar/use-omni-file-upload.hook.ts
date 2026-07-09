@@ -1,11 +1,9 @@
 import type React from "react";
-import { createBrowserClient } from "@soustools/supabase";
 import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
 import { type OmniMessage } from "@soustools/api-types";
 
 export function useOmniFileUpload() {
   const { setStagedFiles, executeBackgroundCommand, chatHistory, setChatHistory } = useOmnibarContext();
-  const supabase = createBrowserClient();
 
   const handleFileUpload = async (file: File) => {
     const fileId = crypto.randomUUID();
@@ -13,31 +11,51 @@ export function useOmniFileUpload() {
     setStagedFiles((prev) => [...prev, newStagedFile]);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) throw new Error("No active session");
+      // 1. Get a secure signed upload URL from NestJS API (which communicates with Supabase)
+      const res = await fetch("/api/storage/upload-url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileName: file.name }),
+      });
 
-      const ext = file.name.split('.').pop();
-      const filePath = `${sessionData.session.user.id}/${fileId}.${ext}`;
-      
-      const { error } = await supabase.storage
-        .from('ingestion-sources')
-        .upload(filePath, file);
+      if (!res.ok) {
+        throw new Error("Failed to retrieve signed upload URL from API");
+      }
 
-      if (error) throw error;
+      const payload = await res.json();
+      if (!payload.success || !payload.data?.signedUrl || !payload.data?.publicUrl) {
+        throw new Error(payload.error || "Invalid response structure from API");
+      }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('ingestion-sources')
-        .getPublicUrl(filePath);
+      const { signedUrl, publicUrl } = payload.data;
 
-      setStagedFiles((prev) => prev.map(f => f.id === fileId ? { ...f, url: publicUrl, status: 'complete' } : f));
+      // 2. Upload the binary data directly to the signed URL (bypass NestJS to save server bandwidth)
+      const uploadRes = await fetch(signedUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+        },
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Direct upload failed with status ${uploadRes.status}`);
+      }
+
+      setStagedFiles((prev) =>
+        prev.map((f) => (f.id === fileId ? { ...f, url: publicUrl, status: 'complete' } : f))
+      );
 
       // Trigger background analysis
       executeBackgroundCommand(`[SYSTEM: User uploaded a file at ${publicUrl}. Quickly analyze the image. If it is an invoice/receipt, ask if they want to ingest it. If it's a recipe, ask if they want to save it. Adjust your response based on the image content. Use your gritty line-cook persona.]`);
 
     } catch (error) {
       console.error("Upload failed:", error);
-      setStagedFiles((prev) => prev.map(f => f.id === fileId ? { ...f, status: 'error' } : f));
+      setStagedFiles((prev) =>
+        prev.map((f) => (f.id === fileId ? { ...f, status: 'error' } : f))
+      );
     }
   };
 

@@ -79,7 +79,9 @@ export function BlockSettingsPanel({
         onFetchModifierGroups={onFetchModifierGroups}
         handleUpdateBlockStyles={handleUpdateBlockStyles}
         parentExplodedItem={parentExplodedItem}
+        config={config}
       />
+
     </div>
   );
 }

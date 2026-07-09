@@ -96,7 +96,8 @@ export function RecipeBuilderIngredientRow({
           value={line.calculationType}
           onChange={(e) =>
             handleUpdateLine(idx, {
-              calculationType: e.target.value as unknown,
+              calculationType: e.target.value as any,
+
             })
           }
           className="rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"

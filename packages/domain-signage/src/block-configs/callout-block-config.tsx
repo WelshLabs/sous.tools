@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
-import type { SignageBlock } from "@soustools/api-types";
+import type { SignageBlock, PosItem } from "@soustools/api-types";
+
 
 export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock }: { selectedBlock: SignageBlock, selectedBlockId: string, onUpdateBlock: (id: string, updates: any) => void, items?: PosItem[] }) {
   return (

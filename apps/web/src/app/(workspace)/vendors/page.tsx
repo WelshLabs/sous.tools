@@ -21,9 +21,10 @@ export default function VendorsPage() {
           setVendors(payload.data);
         }
       }
-    } catch (_err) {
+    } catch (err) {
       console.error("Failed to fetch vendors", err);
     } finally {
+
       setLoading(false);
     }
   };

@@ -29,7 +29,8 @@ export interface RecipeViewerProps {
   /** Cost data pre-fetched. */
   costData: RecipeCostData | null;
   /** Nutrition data pre-fetched. */
-  nutritionData: unknown; // Mapped to the RecipeNutritionPanel
+  nutritionData: any; // Mapped to the RecipeNutritionPanel
+
   /** Version history pre-fetched. */
   versionHistory: VersionRow[];
 
@@ -44,7 +45,8 @@ export interface RecipeViewerProps {
   onDownloadLabel: () => void;
   
   /** Wastage actions */
-  onSearchItems: (query: string) => Promise<unknown[]>;
+  onSearchItems: (query: string) => Promise<any[]>;
+
   onSubmitWastage: (payload: unknown) => Promise<boolean>;
 
   /** Back navigation */

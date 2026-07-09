@@ -59,7 +59,7 @@ export function IntegrationsPanel({
     } catch (err: unknown) {
       setNotification({
         type: "error",
-        message: err.message || "Network error during disconnection.",
+        message: (err as any).message || "Network error during disconnection.",
       });
     } finally {
       setActionLoading(false);
@@ -81,11 +81,12 @@ export function IntegrationsPanel({
     } catch (err: unknown) {
       setNotification({
         type: "error",
-        message: err.message || `Failed to ${action} catalog.`,
+        message: (err as any).message || `Failed to ${action} catalog.`,
       });
     } finally {
       setActionLoading(false);
     }
+
   };
 
   return (

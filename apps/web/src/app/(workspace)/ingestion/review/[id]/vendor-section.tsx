@@ -11,6 +11,7 @@ export interface VendorSectionProps {
   items: ItemOption[];
   handleInvoiceItemUpdate: (index: number, key: string, value: string | number | boolean | null) => void;
   handleCreateItem: (name: string, index: number) => void;
+  handleCreateVendor: (name: string) => void;
   onChange: (newData: string) => void;
   vendors: VendorOption[];
 }
@@ -21,9 +22,11 @@ export function VendorSection({
   items,
   handleInvoiceItemUpdate,
   handleCreateItem,
+  handleCreateVendor,
   onChange,
   vendors,
 }: VendorSectionProps) {
+
   return (
       <div className="flex-1 overflow-y-auto bg-black/5 dark:bg-black/40 p-4 space-y-4">
         <div className="border border-black/10 dark:border-white/10 rounded-xl bg-card/50 overflow-hidden shadow-sm p-4 space-y-4">

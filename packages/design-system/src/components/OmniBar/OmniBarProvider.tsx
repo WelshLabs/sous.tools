@@ -159,17 +159,18 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onresult = (event: { results: Iterable<unknown[]>, error: unknown }) => {
+    recognition.onresult = (event: any) => {
       const transcript = Array.from(event.results)
-        .map((result: { transcript: string }[]) => result[0].transcript)
+        .map((result: any) => result[0].transcript)
         .join("");
       setInputText(transcript);
     };
 
-    recognition.onerror = (event: { results: Iterable<unknown[]>, error: unknown }) => {
+    recognition.onerror = (event: any) => {
       console.error("Speech recognition error", String(event.error));
       setIsListening(false);
     };
+
 
     recognition.onend = () => {
       setIsListening(false);

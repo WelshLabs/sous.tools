@@ -29,7 +29,8 @@ export function VendorCardForm({ form, setForm, onSave, onCancel }: VendorCardFo
 
       <select
         value={form.order_method ?? "MANUAL"}
-        onChange={(e) => setForm({ ...form, order_method: e.target.value })}
+        onChange={(e) => setForm({ ...form, order_method: e.target.value as any })}
+
         className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-border rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
       >
         <option value="" disabled>Select Order Method</option>

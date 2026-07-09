@@ -89,7 +89,7 @@ export function RecipeBuilder({
       setYieldUnit(initialData.yieldUnit || "Portions");
       setVesselId(initialData.vesselId || "");
       setIngredients(
-        (initialData.recipeIngredients || []).map((ri: unknown) => ({
+        (initialData.recipeIngredients || []).map((ri: any) => ({
           masterIngredientId: ri.masterIngredientId,
           amount: ri.amount,
           unit: ri.unit,
@@ -100,12 +100,13 @@ export function RecipeBuilder({
         }))
       );
       setSteps(
-        (initialData.instructions || []).map((step: unknown) => ({
+        (initialData.instructions || []).map((step: any) => ({
           stepNumber: step.stepNumber,
           text: step.text,
           timerDurationSeconds: step.timerDurationSeconds,
         }))
       );
+
       setStatus(initialData.status || "APPROVED");
     }
   }, [initialData]);
@@ -164,7 +165,8 @@ export function RecipeBuilder({
               />{" "}
               {initialData ? "Edit Recipe" : "Create Recipe"}
             </h2>
-            <p className="text-xs" style={labelStyle}>
+            <p className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
+
               Configure yields, baseline flour groups, and step durations.
             </p>
           </div>

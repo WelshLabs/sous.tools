@@ -14,7 +14,8 @@ export function VisualBuilder({
   disabled,
   organizationId,
 }: VisualBuilderProps) {
-  const { items, setItems, vendors } = useVisualBuilderData(organizationId);
+  const { items, setItems, vendors, setVendors } = useVisualBuilderData(organizationId);
+
   const [expandedRecipes, setExpandedRecipes] = useState<Record<number, boolean>>({});
 
   const handleCreateItem = async (name: string, index: number) => {
@@ -39,14 +40,11 @@ export function VisualBuilder({
         newData.items[index]._requiresWeightInput = true;
         onChange(JSON.stringify(newData, null, 2));
 
-        // @ts-expect-error - no types
         toast.success(`Created and mapped master item "${name}"`);
       } else {
-        // @ts-expect-error - no types
         toast.error(payload.error || "Failed to create item");
       }
     } catch (err) {
-      // @ts-expect-error - no types
       toast.error("Failed to create master item");
       console.error(err);
     }
@@ -74,26 +72,25 @@ export function VisualBuilder({
         targetRecipe.ingredients[ingIndex].itemId = newItem.id;
         onChange(JSON.stringify(newData, null, 2));
 
-        // @ts-expect-error - no types
         toast.success(`Created and mapped master ingredient "${name}"`);
       } else {
-        // @ts-expect-error - no types
         toast.error(payload.error || "Failed to create item");
       }
     } catch (err) {
-      // @ts-expect-error - no types
       toast.error("Failed to create master ingredient");
       console.error(err);
     }
   };
 
-  let parsed: Record<string, unknown> = {};
+
+  let parsed: any = {};
   let parseError = false;
   try {
-    parsed = JSON.parse(editedData) as Record<string, unknown>;
+    parsed = JSON.parse(editedData);
   } catch {
     parseError = true;
   }
+
 
   useAutoMapping({ parsed, parseError, items, disabled, onChange });
 
@@ -118,14 +115,70 @@ export function VisualBuilder({
     value: string | number | boolean | null,
   ) => {
     const newData = { ...parsed };
-    const targetRecipe = (newData.recipes ? (newData.recipes as Record<string, unknown>[])[recipeIndex] : newData) as Record<string, unknown>;
+    const targetRecipe = (newData.recipes ? newData.recipes[recipeIndex] : newData) as any;
     targetRecipe.ingredients[ingIndex][field] = value;
     onChange(JSON.stringify(newData, null, 2));
+  };
+
+  const handleRecipeUpdate = (
+    recipeIndex: number,
+    field: string,
+    value: string | number | boolean | null,
+  ) => {
+    const newData = { ...parsed };
+    const targetRecipe = (newData.recipes ? newData.recipes[recipeIndex] : newData) as any;
+    targetRecipe[field] = value;
+    onChange(JSON.stringify(newData, null, 2));
+  };
+
+
+  const handleInvoiceItemUpdate = (
+    index: number,
+    field: string,
+    value: string | number | boolean | null,
+  ) => {
+    const newData = { ...parsed };
+    if (newData.items && Array.isArray(newData.items)) {
+      newData.items[index][field] = value;
+    }
+    onChange(JSON.stringify(newData, null, 2));
+  };
+
+  const handleCreateVendor = async (name: string) => {
+    try {
+      const res = await fetch("/api/vendors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) throw new Error("Failed to create vendor");
+      const payload = await res.json();
+      if (payload.success && payload.data) {
+        const newVendor = {
+          id: payload.data.id,
+          name: payload.data.name,
+        };
+        setVendors((prev) => [...prev, newVendor]);
+
+        const newData = { ...parsed };
+        newData.vendorId = newVendor.id;
+        onChange(JSON.stringify(newData, null, 2));
+
+        toast.success(`Created and mapped master vendor "${name}"`);
+      } else {
+        toast.error(payload.error || "Failed to create vendor");
+      }
+    } catch (err) {
+      toast.error("Failed to create master vendor");
+      console.error(err);
+    }
+
   };
 
   const toggleExpand = (i: number) => {
     setExpandedRecipes((prev) => ({ ...prev, [i]: !prev[i] }));
   };
+
 
   if (parsed.vendorName && parsed.items) {
     return (
@@ -160,7 +213,12 @@ export function VisualBuilder({
         items={items}
         handleIngredientUpdate={handleIngredientUpdate}
         handleCreateRecipeItem={handleCreateRecipeItem}
+        handleUpdate={handleRecipeUpdate}
+        parsed={parsed}
+        onChange={onChange}
       />
     </div>
   );
 }
+
+

@@ -55,8 +55,9 @@ export function DraftPoModal({ isOpen, onClose, items, vendors, onCreatePO }: Dr
       setSelectedItems(new Set());
       onClose();
     } catch (err: unknown) {
-      toast.error(`An unexpected error occurred: ${err.message || err}`);
+      toast.error(`An unexpected error occurred: ${(err as any).message || err}`);
     } finally {
+
       setIsSubmitting(false);
     }
   };

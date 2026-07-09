@@ -70,7 +70,8 @@ export function ActiveKitchen({
     requestWakeLock();
     return () => {
       if (wakeLock) {
-        wakeLock.release().then(() => setWakeLock(null));
+        (wakeLock as any).release().then(() => setWakeLock(null));
+
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
