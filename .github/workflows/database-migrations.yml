@@ -32,7 +32,7 @@ jobs:
 
       - name: Run staging Supabase migrations
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
           # Infisical automatically injects SUPABASE_PROJECT_ID and SUPABASE_DB_PASSWORD into the environment here
         run: |
           if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
@@ -54,7 +54,7 @@ jobs:
 
       - name: Run production Supabase migrations
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
         run: |
           if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
             echo "Error: Missing required production environment variables from Infisical."
