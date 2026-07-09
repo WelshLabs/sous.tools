@@ -174,6 +174,30 @@ services:
       - "traefik.http.routers.dev-setup.service=dev-setup"
       - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
 
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: ollama-pull
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - |
+        echo "Waiting for Ollama to boot..."
+        sleep 10
+
+        # Add any new models to this list separated by a space
+        MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
+
+        for model in $$MODELS; do
+          echo "Checking/Pulling $$model..."
+          ollama pull $$model
+        done
+
+        echo "All models verified and ready!"
+
   # ollama-pull:
   #   image: ollama/ollama:latest
   #   container_name: ollama-pull
