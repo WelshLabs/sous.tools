@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import "./pre-bootstrap";
 import { config } from "@soustools/config";
 
@@ -5,6 +6,7 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
 import { logger, patchConsole } from "@soustools/logger";
+import cookieParser from "cookie-parser";
 
 patchConsole();
 
@@ -24,11 +26,17 @@ async function bootstrap(): Promise<void> {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  // Parse cookies so guards can read HttpOnly session tokens
+  app.use(cookieParser());
+
   // Use global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Enable CORS for frontend integration
-  app.enableCors();
+  // Enable CORS for frontend integration (allow credentials for cookie-based auth)
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
   const port = config.PORT;
   await app.listen(config.PORT, "0.0.0.0");

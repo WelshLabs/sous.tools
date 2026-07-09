@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+const coerceBoolean = z.preprocess((val) => {
+  if (typeof val === "string") {
+    if (val.toLowerCase() === "true") return true;
+    if (val.toLowerCase() === "false") return false;
+  }
+  return val;
+}, z.boolean());
+
 const baseSchema = z.object({
   SQUARE_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
   API_BASE_URL: z.string().default("http://localhost:3001"),
@@ -16,7 +24,7 @@ const baseSchema = z.object({
 
 const devSchema = baseSchema.extend({
   IS_DEVELOPMENT: z.literal(true).default(true),
-  IS_MOCK_ENV: z.boolean().default(true),
+  IS_MOCK_ENV: coerceBoolean.default(true),
   SUPABASE_URL: z.string().default("https://placeholder-project.supabase.co"),
   SUPABASE_ANON_KEY: z.string().default("placeholder-anon-key"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().default("placeholder-service-role"),
@@ -28,7 +36,7 @@ const devSchema = baseSchema.extend({
   SQUARE_WEBHOOK_SIGNATURE_KEY: z.string().default(""),
   GEMINI_API_KEY: z.string().default("gemini-api-key-placeholder"),
   NEW_RELIC_LICENSE_KEY: z.string().default("new-relic-license-key-placeholder"),
-  NEW_RELIC_ENABLED: z.boolean().default(false),
+  NEW_RELIC_ENABLED: coerceBoolean.default(false),
   VERCEL_AI_GATEWAY_API_KEY: z.string().default(""),
 });
 
@@ -46,7 +54,7 @@ const prodSchema = baseSchema.extend({
   SQUARE_WEBHOOK_SIGNATURE_KEY: z.string().min(1),
   GEMINI_API_KEY: z.string().min(1),
   NEW_RELIC_LICENSE_KEY: z.string().optional(),
-  NEW_RELIC_ENABLED: z.boolean().default(true),
+  NEW_RELIC_ENABLED: coerceBoolean.default(true),
   VERCEL_AI_GATEWAY_API_KEY: z.string().optional(),
 });
 

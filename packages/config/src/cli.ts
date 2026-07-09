@@ -30,6 +30,7 @@ const defaults: Record<string, string> = {
   SUPABASE_URL: "https://placeholder-project.supabase.co",
   SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
   SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
+  SQUARE_WEBHOOK_SIGNATURE_KEY: "sandbox-sq0whk-placeholder",
 };
 
 /**

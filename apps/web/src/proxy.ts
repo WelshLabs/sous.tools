@@ -1,13 +1,17 @@
-import { NextResponse, type NextRequest, type CookieOptions } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 import { config as appConfig } from "@soustools/config";
 
-interface CookieSetItem {
-  name: string;
-  value: string;
-  options?: CookieOptions;
-}
+const SESSION_COOKIE = "sb-session-token";
 
+/**
+ * Middleware proxy that enforces authentication for protected routes.
+ *
+ * Auth strategy: check for the presence of the HttpOnly session cookie set by
+ * the NestJS API on login. The cookie's *validity* is verified by the NestJS
+ * SupabaseAuthGuard on every actual data request — we do not re-validate it
+ * here to avoid either leaking Supabase into the frontend or adding a network
+ * round-trip on every page load.
+ */
 export async function proxy(request: NextRequest) {
   // Public routes that don't require authentication
   const isPublicRoute =
@@ -26,47 +30,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+  // Check for the HttpOnly session cookie set by the NestJS API on login
+  const sessionCookie = request.cookies.get(SESSION_COOKIE);
 
-  const supabase = createServerClient(
-    appConfig.SUPABASE_URL,
-    appConfig.SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet: CookieSetItem[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // If user is not authenticated, redirect to login
-  if (!user) {
+  if (!sessionCookie?.value) {
     const url = new URL("/login", request.url);
     url.searchParams.set("returnTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

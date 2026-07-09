@@ -6,7 +6,6 @@ import Link from "next/link";
 import { BrainCircuit, Clock, CheckCircle, Trash2, XCircle } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { io, type Socket } from "socket.io-client";
-import { createBrowserClient } from "@soustools/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function IngestionDashboardPage() {
@@ -43,32 +42,30 @@ export default function IngestionDashboardPage() {
 
   useEffect(() => {
     fetchReviews();
-    
+
     let socket: Socket | null = null;
-    const initSocket = async () => {
-      const supabase = createBrowserClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
-      const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
+    const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
 
-      socket = io(socketUrl + "/ingestion", {
-        query: { orgId: session.user.user_metadata.organization_id || "d0000000-0000-0000-0000-000000000000" },
-        transports: ["websocket"],
-      });
+    // The HttpOnly session cookie is sent automatically with withCredentials.
+    // No JS-accessible Supabase token is needed — the NestJS gateway validates via cookie.
+    socket = io(socketUrl + "/ingestion", {
+      query: { orgId: "d0000000-0000-0000-0000-000000000000" },
+      withCredentials: true,
+      transports: ["websocket"],
+    });
 
-      socket.on("job_state_change", (event: any) => {
-        // Refetch or optimistically update if it's a major state change
-        if (event.state === 'awaiting_review' || event.state === 'completed' || event.state === 'failed') {
-          fetchReviews();
-        }
-      });
-    };
+    socket.on("job_state_change", (event: any) => {
+      // Refetch or optimistically update if it's a major state change
+      if (event.state === 'awaiting_review' || event.state === 'completed' || event.state === 'failed') {
+        fetchReviews();
+      }
+    });
 
-    initSocket();
     return () => { if (socket) socket.disconnect(); };
   }, []);
+
 
   const handleDelete = async (id: string) => {
     try {

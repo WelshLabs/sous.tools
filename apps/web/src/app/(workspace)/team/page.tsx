@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { PinInput, Button, TwoToneHeader } from "@soustools/design-system";
 import { Watch } from "lucide-react";
-import { createBrowserClient } from "@soustools/supabase";
 
 export default function TeamPortalPage() {
   const [pairingCode, setPairingCode] = useState("");
@@ -20,15 +19,12 @@ export default function TeamPortalPage() {
     setMessage("Pairing smartwatch...");
 
     try {
-      const supabase = createBrowserClient();
-      const { data: { session } } = await supabase.auth.getSession();
-
+      // credentials: "include" sends the HttpOnly session cookie automatically —
+      // no JS-accessible token needed. The NestJS SupabaseAuthGuard validates it.
       const response = await fetch("/api/devices/pair/confirm", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           code: pairingCode.toUpperCase(),
           deviceType: "wearos",

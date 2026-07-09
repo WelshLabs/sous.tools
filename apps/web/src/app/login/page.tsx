@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@soustools/design-system";
 import { KeyRound, Mail, Sparkles } from "lucide-react";
-import { createBrowserClient } from "@soustools/supabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("conar@dtown.cafe");
@@ -19,14 +18,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = createBrowserClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      // POST credentials to the NestJS API — it calls Supabase and sets an
+      // HttpOnly cookie. The frontend never touches a raw Supabase token.
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       });
 
-      if (authError) {
-        setError(authError.message);
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        setError((payload as { message?: string }).message || "Invalid email or password.");
       } else {
         const urlParams = new URLSearchParams(window.location.search);
         const returnTo = urlParams.get("returnTo");
