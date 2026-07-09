@@ -52,7 +52,7 @@ export class VesselsService {
   }
 
   async update(id: string, payload: Partial<VesselProfile>): Promise<VesselProfile> {
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (payload.name !== undefined) updateData.name = payload.name;
     if (payload.shape !== undefined) updateData.shape = payload.shape;
     if (payload.length !== undefined) updateData.length = payload.length;
@@ -84,7 +84,18 @@ export class VesselsService {
     return this.mapRow(data);
   }
 
-  private mapRow(row: any): VesselProfile {
+  private mapRow(row: {
+    id: string;
+    organization_id: string;
+    name: string;
+    shape: "ROUND" | "RECTANGULAR";
+    length: number | null;
+    width: number | null;
+    height: number | null;
+    diameter: number | null;
+    volume_ml: number;
+    created_at: string;
+  }): VesselProfile {
     return {
       id: row.id,
       organizationId: row.organization_id,

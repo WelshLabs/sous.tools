@@ -50,7 +50,7 @@ export class PosTransactionsService {
       throw new Error(error.message);
     }
 
-    return (data || []).map((row: any) => ({
+    return (data || []).map((row: { pos_item_id: string; units_7d?: number; units_30d?: number; revenue_7d?: number; revenue_30d?: number }) => ({
       posItemId: row.pos_item_id,
       units: Number(days === 7 ? row.units_7d : row.units_30d) || 0,
       revenue: Number(days === 7 ? row.revenue_7d : row.revenue_30d) || 0,

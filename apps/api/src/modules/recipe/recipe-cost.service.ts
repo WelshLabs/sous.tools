@@ -61,7 +61,14 @@ export class RecipeCostService {
     let totalCostUsd = 0;
 
     for (const ing of ingredients || []) {
-      const item = ing.items as any;
+      const item = ing.items as unknown as {
+        id: string;
+        name: string;
+        density_g_ml?: number;
+        each_weight_g?: number;
+        units_per_case?: number;
+        current_cost_per_g?: number;
+      } | null;
       if (!item) continue;
 
       const density = Number(item.density_g_ml) || 1.0;
@@ -146,7 +153,7 @@ export class RecipeCostService {
     let marginPct: number | undefined;
 
     if (!linkError && link) {
-      const posItem = link.pos_items as any;
+      const posItem = link.pos_items as unknown as { price?: number } | null;
       if (posItem && posItem.price) {
         const salePrice = Number(posItem.price) || 0;
         const portion = Number(link.portion_fraction) || 1.0;

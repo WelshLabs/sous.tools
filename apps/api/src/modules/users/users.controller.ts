@@ -8,13 +8,13 @@ export class UsersController {
   
   @Post()
   @UseGuards(AdminGuard)
-  createUser(@Body() _body: any) {
+  createUser(@Body() _body: Record<string, unknown>) {
     return { message: 'User created' };
   }
 
   @Put(':id')
   @UseGuards(AdminGuard)
-  updateUser(@Param('id') id: string, @Body() _body: any) {
+  updateUser(@Param('id') id: string, @Body() _body: Record<string, unknown>) {
     return { message: `User ${id} updated` };
   }
 

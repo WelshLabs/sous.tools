@@ -71,26 +71,26 @@ export class NutritionController {
 
       // Compute nutrition
       const computedCache =
-        await this.nutritionService.aggregateRecipeNutrition(recipeData as any);
+        await this.nutritionService.aggregateRecipeNutrition(recipeData as unknown as Recipe);
 
       // Save cache asynchronously (don't block response)
       supabase
         .from("recipe_nutrition_cache")
-        .upsert(computedCache as any)
+        .upsert(computedCache as unknown as Record<string, unknown>)
         .then();
 
-      cache = computedCache as any;
+      cache = computedCache as unknown as Record<string, unknown>;
     }
 
     if (format === "svg") {
-      return this.labelRenderer.renderSvg(cache as any);
+      return this.labelRenderer.renderSvg(cache as unknown as RecipeNutritionCache);
     } else {
       throw new Error(`Format ${format} not supported yet in renderer`);
     }
   }
 
   @Get(":id/nutrition")
-  async getNutrition(@Param("id") recipeId: string): Promise<any> {
+  async getNutrition(@Param("id") recipeId: string): Promise<Record<string, unknown>> {
     const supabase = createAdminClient();
 
     // Try to get from cache first
@@ -133,13 +133,13 @@ export class NutritionController {
       }
 
       const computedCache =
-        await this.nutritionService.aggregateRecipeNutrition(recipeData as any);
+        await this.nutritionService.aggregateRecipeNutrition(recipeData as unknown as Recipe);
       supabase
         .from("recipe_nutrition_cache")
-        .upsert(computedCache as any)
+        .upsert(computedCache as unknown as Record<string, unknown>)
         .then();
 
-      cache = computedCache as any;
+      cache = computedCache as unknown as Record<string, unknown>;
     }
 
     // Map DB snake_case structure back to camelCase properties for frontend if needed,
@@ -160,7 +160,7 @@ export class NutritionController {
   }
 
   @Get("usda/search")
-  async searchUsda(@Query("query") query: string): Promise<any> {
+  async searchUsda(@Query("query") query: string): Promise<Record<string, unknown>> {
     if (!query) throw new Error("Query is required");
     const result = await this.usdaResolver.resolveIngredient(query); 
     return { success: true, data: result };

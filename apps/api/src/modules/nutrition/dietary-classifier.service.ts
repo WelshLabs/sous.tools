@@ -5,7 +5,7 @@ import { type MasterIngredient } from '@soustools/api-types';
 export class DietaryClassifierService {
   private readonly logger = new Logger(DietaryClassifierService.name);
 
-  classifyRecipe(ingredients: MasterIngredient[], perServingMacros: Record<string, any>): Record<string, boolean> {
+  classifyRecipe(ingredients: MasterIngredient[], perServingMacros: Record<string, number>): Record<string, boolean> {
     this.logger.debug(`Classifying recipe with ${ingredients.length} ingredients`);
 
     const hasAnimalProduct = ingredients.some(i => i.isAnimalProduct);

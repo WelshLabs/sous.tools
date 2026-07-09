@@ -49,7 +49,7 @@ export class IngredientsService {
   }
 
   async update(id: string, payload: Partial<MasterIngredient>): Promise<MasterIngredient> {
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
     if (payload.name !== undefined) updateData.name = payload.name;
@@ -80,17 +80,27 @@ export class IngredientsService {
     return this.mapRow(data);
   }
 
-  private mapRow(row: any): MasterIngredient {
+  private mapRow(row: {
+    id: string;
+    organization_id: string;
+    name: string;
+    density_g_ml?: number;
+    nutrition_macros?: Record<string, unknown>;
+    allergens?: string[];
+    current_cost_per_g?: number;
+    created_at: string;
+    updated_at: string;
+  }): MasterIngredient {
     return {
       id: row.id,
       organizationId: row.organization_id,
       name: row.name,
-      densityGMl: Number(row.density_g_ml),
+      densityGMl: Number(row.density_g_ml || 0),
       nutritionMacros: row.nutrition_macros || { calories: null, proteinG: null, carbsG: null, fatG: null },
       allergens: row.allergens || [],
-      currentCostPerG: Number(row.current_cost_per_g) || 0,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      currentCostPerG: Number(row.current_cost_per_g || 0) || 0,
+      createdAt: row.created_at || "",
+      updatedAt: row.updated_at || "",
     };
   }
 }

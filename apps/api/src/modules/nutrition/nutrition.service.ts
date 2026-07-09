@@ -27,7 +27,7 @@ export class NutritionService {
       const amountG = ri.amount; // Simplify: assuming amount is in grams for this logic
       totalWeightG += amountG;
 
-      const macros = ri.masterIngredient.nutritionMacros as Record<string, any>;
+      const macros = ri.masterIngredient.nutritionMacros as Record<string, unknown>;
       if (!macros) continue;
 
       const multiplier = amountG / 100;
@@ -39,8 +39,8 @@ export class NutritionService {
     }
 
     const servings = recipe.yieldCount || 1;
-    const perServingNutrition: Record<string, any> = {};
-    const per100gNutrition: Record<string, any> = {};
+    const perServingNutrition: Record<string, number> = {};
+    const per100gNutrition: Record<string, number> = {};
 
     for (const [key, value] of Object.entries(totals)) {
       perServingNutrition[key] = value / servings;
@@ -59,7 +59,7 @@ export class NutritionService {
     };
   }
 
-  async resolveAndSaveIngredientNutrition(ingredientQuery: string): Promise<any> {
+  async resolveAndSaveIngredientNutrition(ingredientQuery: string): Promise<Record<string, unknown> | null> {
     return this.usdaResolver.resolveIngredient(ingredientQuery);
   }
 }

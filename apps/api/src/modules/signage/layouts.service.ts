@@ -31,7 +31,7 @@ export class LayoutsService {
 
     if (error) throw new Error(error.message);
     if (data && data.organizations) {
-      data.config = { ...data.config, designTokens: (data.organizations as any).design_tokens };
+      data.config = { ...data.config, designTokens: (data.organizations as unknown as { design_tokens: unknown }).design_tokens };
       delete data.organizations;
     }
     return data;
@@ -47,7 +47,7 @@ export class LayoutsService {
 
     if (error) throw new Error(error.message);
     if (data && data.organizations) {
-      data.config = { ...data.config, designTokens: (data.organizations as any).design_tokens };
+      data.config = { ...data.config, designTokens: (data.organizations as unknown as { design_tokens: unknown }).design_tokens };
       delete data.organizations;
     }
     return data;

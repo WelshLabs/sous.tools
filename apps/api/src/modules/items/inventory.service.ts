@@ -1,6 +1,21 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 
+interface DbStockRow {
+  id: string;
+  item_id: string;
+  lot_expiry?: string;
+  lot_number?: string;
+  quantity_g: number;
+  location?: string;
+  items?: {
+    name?: string;
+    current_cost_per_g?: number;
+    purchase_unit?: string;
+    each_weight_g?: number;
+  };
+}
+
 export interface AdjustStockDto {
   orgId: string;
   itemId: string;
@@ -55,7 +70,7 @@ export class InventoryService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const stocks: StockRow[] = (data || []).map((row: any) => {
+    const stocks: StockRow[] = (data || []).map((row: DbStockRow) => {
       let daysUntilExpiry: number | null = null;
       if (row.lot_expiry) {
         const expiry = new Date(row.lot_expiry);

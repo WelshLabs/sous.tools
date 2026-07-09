@@ -30,7 +30,7 @@ export class DisplaysController {
   @Get("active-connections")
   async getActiveConnections(): Promise<ApiResponse<Record<string, boolean>>> {
     return runControllerAction(async () => {
-      const displays = (await this.displaysService.findAll(this.defaultOrgId)) as any[];
+      const displays = (await this.displaysService.findAll(this.defaultOrgId)) as Array<{ id: string }>;
       const connections: Record<string, boolean> = {};
       for (const display of displays) {
         connections[display.id] = this.signageGateway.isDisplayOnline(display.id);

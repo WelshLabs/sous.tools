@@ -7,7 +7,7 @@ export class UsdaResolverService {
   private readonly baseUrl = "https://api.nal.usda.gov/fdc/v1";
   private readonly apiKey = config.USDA_FDC_API_KEY;
 
-  async resolveIngredient(query: string): Promise<any> {
+  async resolveIngredient(query: string): Promise<Record<string, unknown> | null> {
     try {
       this.logger.log(`Resolving nutrition for query: ${query}`);
       const url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&api_key=${this.apiKey}`;
@@ -31,12 +31,12 @@ export class UsdaResolverService {
     }
   }
 
-  private mapUsdaToMacros(foodItem: any): Record<string, any> {
+  private mapUsdaToMacros(foodItem: { fdcId: number; description: string; foodNutrients?: Array<{ nutrientId: number; value?: number }> }): Record<string, unknown> {
     // 1008 = Calories, 1003 = Protein, 1004 = Total lipid (fat), 1005 = Carbohydrate
     // Using NAL IDs.
     const nutrients = foodItem.foodNutrients || [];
     const getNutrient = (id: number) =>
-      nutrients.find((n: any) => n.nutrientId === id)?.value || 0;
+      nutrients.find((n: { nutrientId: number; value?: number }) => n.nutrientId === id)?.value || 0;
 
     return {
       serving_size_g: 100, // USDA FDC responses are generally per 100g

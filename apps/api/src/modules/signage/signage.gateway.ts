@@ -86,7 +86,7 @@ export class SignageGateway
   }
 
   /** Broadcasts all updated POS items to clients subscribed to a deck room. */
-  broadcastItemsUpdate(deckId: string, items: any[]): void {
+  broadcastItemsUpdate(deckId: string, items: unknown[]): void {
     if (this.server) {
       this.server
         .to(`deck:${deckId}`)

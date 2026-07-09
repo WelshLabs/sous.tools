@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { supabase } from '../../lib/supabase';
 
+interface DbWastageRow {
+  id: string;
+  item_id: string;
+  items?: { name?: string };
+  amount_g: number;
+  reason: string;
+  recorded_at: string;
+}
+
 export interface RecordWastageDto {
   orgId: string;
   itemId: string;
@@ -55,7 +64,7 @@ export class WastageService {
       throw new Error(error.message);
     }
 
-    return (data || []).map((row: any) => ({
+    return (data || []).map((row: DbWastageRow) => ({
       id: row.id,
       itemId: row.item_id,
       itemName: row.items?.name || 'Unknown',

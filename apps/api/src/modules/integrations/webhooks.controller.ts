@@ -86,7 +86,7 @@ export class WebhooksController {
     }
 
     const orgId = integration.organization_id;
-    const settings = (integration.settings || {}) as Record<string, any>;
+    const settings = (integration.settings || {}) as Record<string, unknown>;
     
     // Verify signature strictly if key is configured, fallback to tenant's key
     const signatureKey = settings.webhook_signature_key || config.SQUARE_WEBHOOK_SIGNATURE_KEY;

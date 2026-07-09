@@ -1,27 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { supabase } from '../../lib/supabase';
 import { type UsdaResolverService } from '../nutrition/usda-resolver.service';
-
-export interface CreateItemDto {
-  name: string;
-  category?: string;
-  purchase_unit?: string;
-  units_per_case?: number;
-  each_weight_g?: number | null;
-  density_g_ml?: number;
-  shelf_life_days?: number;
-  allergens?: string[];
-  is_animal_product?: boolean;
-  is_meat?: boolean;
-  is_seafood?: boolean;
-  is_dairy?: boolean;
-  is_egg?: boolean;
-  is_gluten_source?: boolean;
-  fdc_id?: number;
-  nutrition_macros?: Record<string, unknown>;
-}
-
-export type UpdateItemDto = Partial<CreateItemDto> & { force_usda_sync?: boolean; usda_query?: string };
+import {
+  type CreateItemDto,
+  type UpdateItemDto,
+  classifyItemDietAndAllergens,
+} from './items-query.helper';
 
 @Injectable()
 export class ItemsService {
@@ -63,7 +47,7 @@ export class ItemsService {
   async create(orgId: string, dto: CreateItemDto): Promise<Record<string, unknown>> {
     let nutrition_macros = dto.nutrition_macros || {};
     let fdc_id = dto.fdc_id;
-    const allergens = [...(dto.allergens || [])];
+    let allergens = [...(dto.allergens || [])];
     let is_animal_product = dto.is_animal_product ?? false;
     let is_meat = dto.is_meat ?? false;
     let is_seafood = dto.is_seafood ?? false;
@@ -78,40 +62,22 @@ export class ItemsService {
           nutrition_macros = match;
           fdc_id = match.fdc_id;
           
-          const fullName = `${dto.name.toLowerCase()} ${(match.fdc_food_name || "").toLowerCase()}`;
-          
-          if (fullName.match(/milk|cheese|butter|cream|whey|yogurt/)) {
-             is_dairy = true; is_animal_product = true;
-             if (!allergens.includes("dairy")) allergens.push("dairy");
-          }
-          if (fullName.match(/egg|mayo/)) {
-             is_egg = true; is_animal_product = true;
-             if (!allergens.includes("egg")) allergens.push("egg");
-          }
-          if (fullName.match(/wheat|flour|bread|pasta|cracker|dough/)) {
-             is_gluten_source = true;
-             if (!allergens.includes("wheat")) allergens.push("wheat");
-          }
-          if (fullName.match(/peanut/)) {
-             if (!allergens.includes("peanuts")) allergens.push("peanuts");
-          }
-          if (fullName.match(/almond|walnut|pecan|cashew|pistachio|macadamia|hazelnut/)) {
-             if (!allergens.includes("tree_nuts")) allergens.push("tree_nuts");
-          }
-          if (fullName.match(/soy|edamame|tofu|tempeh/)) {
-             if (!allergens.includes("soy")) allergens.push("soy");
-          }
-          if (fullName.match(/fish|salmon|tuna|cod|tilapia|halibut|trout/)) {
-             is_seafood = true; is_animal_product = true;
-             if (!allergens.includes("fish")) allergens.push("fish");
-          }
-          if (fullName.match(/shrimp|crab|lobster|shellfish|clam|oyster/)) {
-             is_seafood = true; is_animal_product = true;
-             if (!allergens.includes("shellfish")) allergens.push("shellfish");
-          }
-          if (fullName.match(/beef|pork|chicken|turkey|lamb|bacon|sausage|meat|steak|veal/)) {
-             is_meat = true; is_animal_product = true;
-          }
+          const classified = classifyItemDietAndAllergens(dto.name, match.fdc_food_name || "", allergens, {
+            is_dairy,
+            is_egg,
+            is_gluten_source,
+            is_seafood,
+            is_meat,
+            is_animal_product,
+          });
+
+          is_dairy = classified.is_dairy;
+          is_egg = classified.is_egg;
+          is_gluten_source = classified.is_gluten_source;
+          is_seafood = classified.is_seafood;
+          is_meat = classified.is_meat;
+          is_animal_product = classified.is_animal_product;
+          allergens = classified.allergens;
         }
       } catch (err) {
         console.error("Failed to auto-resolve USDA data for item:", err);
@@ -156,14 +122,14 @@ export class ItemsService {
 
     let nutrition_macros = dto.nutrition_macros || existing.nutrition_macros || {};
     let fdc_id = dto.fdc_id !== undefined ? dto.fdc_id : existing.fdc_id;
-    const allergens = dto.allergens ? [...dto.allergens] : [...((existing.allergens as string[]) || [])];
-    let is_animal_product = dto.is_animal_product ?? existing.is_animal_product;
-    let is_meat = dto.is_meat ?? existing.is_meat;
-    let is_seafood = dto.is_seafood ?? existing.is_seafood;
-    let is_dairy = dto.is_dairy ?? existing.is_dairy;
-    let is_egg = dto.is_egg ?? existing.is_egg;
-    let is_gluten_source = dto.is_gluten_source ?? existing.is_gluten_source;
-    const category = dto.category || existing.category || 'INGREDIENT';
+    let allergens = dto.allergens ? [...dto.allergens] : [...((existing.allergens as string[]) || [])];
+    let is_animal_product = dto.is_animal_product ?? (existing.is_animal_product as boolean);
+    let is_meat = dto.is_meat ?? (existing.is_meat as boolean);
+    let is_seafood = dto.is_seafood ?? (existing.is_seafood as boolean);
+    let is_dairy = dto.is_dairy ?? (existing.is_dairy as boolean);
+    let is_egg = dto.is_egg ?? (existing.is_egg as boolean);
+    let is_gluten_source = dto.is_gluten_source ?? (existing.is_gluten_source as boolean);
+    const category = dto.category || (existing.category as string) || 'INGREDIENT';
     const name = dto.name || existingName;
 
     const nameChanged = dto.name && dto.name !== existingName;
@@ -177,40 +143,22 @@ export class ItemsService {
           nutrition_macros = match;
           fdc_id = match.fdc_id;
           
-          const fullName = `${name.toLowerCase()} ${(match.fdc_food_name || "").toLowerCase()}`;
-          
-          if (fullName.match(/milk|cheese|butter|cream|whey|yogurt/)) {
-             is_dairy = true; is_animal_product = true;
-             if (!allergens.includes("dairy")) allergens.push("dairy");
-          }
-          if (fullName.match(/egg|mayo/)) {
-             is_egg = true; is_animal_product = true;
-             if (!allergens.includes("egg")) allergens.push("egg");
-          }
-          if (fullName.match(/wheat|flour|bread|pasta|cracker|dough/)) {
-             is_gluten_source = true;
-             if (!allergens.includes("wheat")) allergens.push("wheat");
-          }
-          if (fullName.match(/peanut/)) {
-             if (!allergens.includes("peanuts")) allergens.push("peanuts");
-          }
-          if (fullName.match(/almond|walnut|pecan|cashew|pistachio|macadamia|hazelnut/)) {
-             if (!allergens.includes("tree_nuts")) allergens.push("tree_nuts");
-          }
-          if (fullName.match(/soy|edamame|tofu|tempeh/)) {
-             if (!allergens.includes("soy")) allergens.push("soy");
-          }
-          if (fullName.match(/fish|salmon|tuna|cod|tilapia|halibut|trout/)) {
-             is_seafood = true; is_animal_product = true;
-             if (!allergens.includes("fish")) allergens.push("fish");
-          }
-          if (fullName.match(/shrimp|crab|lobster|shellfish|clam|oyster/)) {
-             is_seafood = true; is_animal_product = true;
-             if (!allergens.includes("shellfish")) allergens.push("shellfish");
-          }
-          if (fullName.match(/beef|pork|chicken|turkey|lamb|bacon|sausage|meat|steak|veal/)) {
-             is_meat = true; is_animal_product = true;
-          }
+          const classified = classifyItemDietAndAllergens(name, match.fdc_food_name || "", allergens, {
+            is_dairy,
+            is_egg,
+            is_gluten_source,
+            is_seafood,
+            is_meat,
+            is_animal_product,
+          });
+
+          is_dairy = classified.is_dairy;
+          is_egg = classified.is_egg;
+          is_gluten_source = classified.is_gluten_source;
+          is_seafood = classified.is_seafood;
+          is_meat = classified.is_meat;
+          is_animal_product = classified.is_animal_product;
+          allergens = classified.allergens;
         }
       } catch (err) {
         console.error("Failed to auto-resolve USDA data on update:", err);

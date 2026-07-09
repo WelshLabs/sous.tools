@@ -37,7 +37,7 @@ export class PosLinksService {
       throw new Error(error.message);
     }
 
-    return (data || []).map((row: any) => ({
+    return (data || []).map((row: { recipe_id: string; portion_fraction: number }) => ({
       recipeId: row.recipe_id,
       portionFraction: Number(row.portion_fraction) || 1.0,
     }));
