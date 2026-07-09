@@ -77,3 +77,6 @@ apps/api/schema.gql
 packages/config/src/secrets.ts
 packages/.secrets.cache.json
 .secrets.cache.json
+
+.pnpm-store
+newrelic_agent.log

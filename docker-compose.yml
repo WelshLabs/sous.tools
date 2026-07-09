@@ -130,8 +130,8 @@ services:
       - OPENAI_API_BASE=https://ai.sous.tools
       - OPENAI_API_KEY=sk-1234 # Master key defined in litellm_config.yaml
     volumes:
-      - /home/ubuntu/code/sous.tools:/config/workspace
-      - ~/.config/code-server:/config
+      - /home/ubuntu/dev.sous.tools:/workspace
+      - /home/ubuntu/.config/code-server:/config
     restart: unless-stopped
     networks:
       - default
