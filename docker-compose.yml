@@ -125,7 +125,9 @@ services:
       - "traefik.http.services.n8n.loadbalancer.server.port=5678" # (Ensure this matches n8n's internal port)
 
   editor:
-    image: lscr.io/linuxserver/code-server:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.editor
     container_name: code-server
     environment:
       - PUID=1001
@@ -133,7 +135,6 @@ services:
       - TZ=America/New_York
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
-      - DOCKER_MODS=linuxserver/mods:code-server-nodejs
       - OPENAI_API_BASE=https://ai.sous.tools
       - OPENAI_API_KEY=sk-1234 # Master key defined in litellm_config.yaml
     volumes:
