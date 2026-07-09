@@ -67,11 +67,7 @@ export function RecipeBuilderIngredients({
     );
   };
 
-  const inputStyle: React.CSSProperties = {
-    backgroundColor: "var(--color-input)",
-    border: "1px solid var(--color-border)",
-    color: "var(--color-foreground)",
-  };
+
 
   return (
     <div className="space-y-4">

@@ -225,7 +225,6 @@ export function RecipeCostPanel({
 
       {/* Ingredient cost table */}
       <RecipeCostTable ingredients={costData.ingredients} />
-      </div>
     </div>
   );
 }

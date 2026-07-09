@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { type Recipe, type KitchenTimerState } from "@soustools/api-types";
-import { ArrowLeft, Play, Sun, CheckCircle2 } from "lucide-react";
+import { type Recipe, type KitchenTimerState, type RecipeInstruction } from "@soustools/api-types";
+import { ArrowLeft, Sun } from "lucide-react";
 import Link from "next/link";
 import { ActiveKitchenTimers } from "./ActiveKitchenTimers";
 import { ActiveKitchenStep } from "./ActiveKitchenStep";
@@ -166,7 +166,7 @@ export function ActiveKitchen({
           return (
             <ActiveKitchenStep
               key={step.stepNumber}
-              step={step as unknown as import("@soustools/api-types").RecipeInstruction}
+              step={step as unknown as RecipeInstruction}
               isChecked={isChecked}
               onToggleCheck={toggleStepCheck}
               onStartTimer={handleStartStepTimer}
