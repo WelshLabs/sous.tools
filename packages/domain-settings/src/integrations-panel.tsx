@@ -56,7 +56,7 @@ export function IntegrationsPanel({
         type: "success",
         message: `${provider} integration disconnected.`,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setNotification({
         type: "error",
         message: err.message || "Network error during disconnection.",
@@ -78,7 +78,7 @@ export function IntegrationsPanel({
             ? "Square menu catalog synchronized successfully!"
             : "Square sandbox catalog seeded successfully!",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setNotification({
         type: "error",
         message: err.message || `Failed to ${action} catalog.`,

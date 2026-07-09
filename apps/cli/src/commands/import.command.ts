@@ -14,11 +14,8 @@ export class ImportCommand extends CommandRunner {
     super();
   }
 
-  async run(
-    passedParam: string[],
-    _options?: Record<string, any>,
-  ): Promise<void> {
-    const [action, target] = passedParam;
+  async run(inputs: string[], _options: Record<string, unknown>): Promise<void> {
+    const [action, target] = inputs;
 
     switch (action) {
       case 'book':

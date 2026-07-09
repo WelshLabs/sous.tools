@@ -44,7 +44,7 @@ export function GeneralSettings({ initialData, onSave }: GeneralSettingsProps) {
     watch,
     formState: { errors },
   } = useForm<SettingsFormValues>({
-    resolver: zodResolver(SettingsSchema as any),
+    resolver: zodResolver(SettingsSchema as unknown),
     defaultValues: {
       name: initialData.name,
       email: initialData.email,
@@ -65,7 +65,7 @@ export function GeneralSettings({ initialData, onSave }: GeneralSettingsProps) {
       await onSave(data);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to save settings", err);
       setServerError(err.message || "Failed to save settings");
     } finally {
