@@ -1,18 +1,21 @@
 # Antigravity/Cursor Architectural Rules
 
 ## 1. Domain-Driven Design (DDD)
+
 - **Strict Boundaries:** Next.js apps (`apps/*`) and domain packages (`packages/domain-*`) are strictly forbidden from importing anything from `packages/infrastructure`.
 - **Server-Side Supremacy:** Next.js functions strictly as a routing and data orchestration layer. Server Components are the default. Client-side Supabase data fetching inside `apps/app` is forbidden.
 - **API First:** Next.js apps must rely solely on the NestJS API for data; they should have zero knowledge of the backend infrastructure.
 - **Config Lockdown:** `process.env` is strictly forbidden outside of `@soustools/config`. All apps must import the type-safe, validated `config` object.
 
 ## 2. Component Architecture
+
 - **Container/View Pattern:** Pure presentational UI components must live in `*.tsx` files and are banned from importing data-fetching hooks or infrastructure logic.
 - **Logic Quarantines:** Business logic, API calls, and state management must be strictly quarantined to `*.container.tsx` files.
 - **Max Lines:** Files must not exceed 200 lines. Refactor logically into Atoms, Molecules, and Organisms instead of artificially chopping files.
 - **Zero Tech Debt:** Do not use `eslint-disable` to bypass rules. If a file fails linting, refactor it into compliance.
 
 ## 3. Design System & Styling
+
 - **Tailwind v4:** Use the `@theme` directive in CSS. No `tailwind.config` file.
 - **Neon-Glass UI:** Implement high-contrast Dark UI with Cyan (`#00FFFF`) accents for high-heat, high-light kitchen environments. Maximize Progressive Disclosure.
 - **Semantic Variables:** Hardcoding legacy Tailwind colors (e.g., `slate-*`) or absolute z-indexes (e.g., `z-40`) is forbidden. Strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
@@ -20,4 +23,5 @@
 - **Animations:** Use Framer Motion for micro-animations and spring physics to achieve a premium, dynamic feel.
 
 ## 4. Error Handling
+
 - **Halt-on-Error:** If a TypeScript, Database Migration, Runtime, or Playwright E2E error occurs, STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. Request manual intervention.
