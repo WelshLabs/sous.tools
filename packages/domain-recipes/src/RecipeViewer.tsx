@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { type Recipe, type VesselProfile, type MasterIngredient } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
+import { RecipeViewerHeader } from "./RecipeViewerHeader";
 import { ArrowLeft, Play, Info, History, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { RecipeScalingPanel, type CustomWeightOpts } from "./RecipeScalingPanel";
@@ -11,6 +12,7 @@ import { RecipeIngredientsTable } from "./RecipeIngredientsTable";
 import { RecipeCostPanel } from "./RecipeCostPanel";
 import { WastageEntryModal } from "./WastageEntryModal";
 import { VersionHistoryDrawer } from "./VersionHistoryDrawer";
+import { RecipeBatchSummary } from "./RecipeBatchSummary";
 import { type ScaledIngredient, type RecipeCostData, type VersionRow } from "./types";
 
 /**
@@ -30,7 +32,7 @@ export interface RecipeViewerProps {
   /** Cost data pre-fetched. */
   costData: RecipeCostData | null;
   /** Nutrition data pre-fetched. */
-  nutritionData: any; // Mapped to the RecipeNutritionPanel
+  nutritionData: unknown; // Mapped to the RecipeNutritionPanel
   /** Version history pre-fetched. */
   versionHistory: VersionRow[];
 
@@ -45,8 +47,8 @@ export interface RecipeViewerProps {
   onDownloadLabel: () => void;
   
   /** Wastage actions */
-  onSearchItems: (query: string) => Promise<any[]>;
-  onSubmitWastage: (payload: any) => Promise<boolean>;
+  onSearchItems: (query: string) => Promise<unknown[]>;
+  onSubmitWastage: (payload: unknown) => Promise<boolean>;
 
   /** Back navigation */
   backHref?: string;
@@ -107,46 +109,12 @@ export function RecipeViewer({
       }}
     >
       <div className="lg:col-span-2 space-y-6">
-        <header
-          className="flex justify-between items-center pb-4"
-          style={{ borderBottom: "1px solid var(--color-border)" }}
-        >
-          <div className="flex items-center gap-3">
-            <Link
-              href={backHref}
-              className="p-2 rounded-lg transition-colors hover:bg-white/5 cursor-pointer"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <h2 className="text-2xl font-extrabold font-brand tracking-wide">
-              {recipe.title}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setIsHistoryOpen(true)}
-              className="flex items-center gap-1.5 shadow-lg"
-            >
-              <History className="w-4 h-4" /> History
-            </Button>
-            <Link href={`/recipes/${recipe.id}/kitchen`}>
-              <Button
-                size="sm"
-                className="flex items-center gap-1.5 shadow-lg"
-                style={{
-                  backgroundColor: "#10b981",
-                  color: "#fff",
-                  borderColor: "transparent",
-                }}
-              >
-                <Play className="w-4 h-4 fill-current" /> Active Kitchen Mode
-              </Button>
-            </Link>
-          </div>
-        </header>
+        <RecipeViewerHeader
+          recipeTitle={recipe.title}
+          recipeId={recipe.id}
+          backHref={backHref}
+          onOpenHistory={() => setIsHistoryOpen(true)}
+        />
 
         <div className="space-y-4">
           <h3
@@ -176,7 +144,7 @@ export function RecipeViewer({
             <div className="space-y-3">
               {recipe.instructions.map((step, idx) => {
                 const stepText =
-                  typeof step === "string" ? step : (step as any).text;
+                  typeof step === "string" ? step : (step as unknown).text;
                 return (
                   <div
                     key={idx}
@@ -226,68 +194,12 @@ export function RecipeViewer({
           onDownloadLabel={onDownloadLabel}
         />
 
-        <div
-          className="p-4 rounded-2xl space-y-4 shadow-xl"
-          style={{
-            backgroundColor: "var(--color-card)",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          <h3
-            className="text-sm font-bold flex items-center gap-1"
-            style={{ color: "var(--color-foreground)" }}
-          >
-            <Info className="w-4 h-4" style={{ color: "var(--color-primary)" }} />{" "}
-            Batch Summary
-          </h3>
-          <div
-            className="space-y-2 text-xs"
-            style={{ color: "var(--color-muted-foreground)" }}
-          >
-            <div
-              className="flex justify-between pb-2"
-              style={{ borderBottom: "1px solid var(--color-border)" }}
-            >
-              <span>Target Yield:</span>
-              <span className="font-bold" style={{ color: "var(--color-foreground)" }}>
-                {(recipe.yieldCount * finalMultiplier).toFixed(1)}{" "}
-                {recipe.yieldUnit}
-              </span>
-            </div>
-            <div
-              className="flex justify-between pb-2"
-              style={{ borderBottom: "1px solid var(--color-border)" }}
-            >
-              <span>Total Batch Weight:</span>
-              <span className="font-bold" style={{ color: "var(--color-foreground)" }}>
-                {scaledIngredients
-                  .reduce((acc, item) => acc + item.weightInGrams, 0)
-                  .toFixed(0)}{" "}
-                g
-              </span>
-            </div>
-            <div
-              className="flex justify-between pb-2"
-              style={{ borderBottom: "1px solid var(--color-border)" }}
-            >
-              <span>Target Pan/Vessel:</span>
-              <span className="font-bold" style={{ color: "var(--color-foreground)" }}>
-                {recipe.vessel?.name || "Standard Yield"}
-              </span>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            onClick={() => setIsWastageOpen(true)}
-            className="w-full font-bold flex items-center justify-center gap-1.5"
-            style={{
-              backgroundColor: "rgb(244 63 94 / 0.15)",
-              color: "var(--color-destructive)",
-              borderColor: "rgb(244 63 94 / 0.3)",
-            }}
-          >
-            <Trash2 className="w-4 h-4" /> Log Food Waste
-          </Button>
+        <RecipeBatchSummary
+          recipe={recipe}
+          finalMultiplier={finalMultiplier}
+          scaledIngredients={scaledIngredients}
+          onOpenWastage={() => setIsWastageOpen(true)}
+        />
         </div>
       </div>
 

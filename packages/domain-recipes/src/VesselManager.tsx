@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { type VesselProfile } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
-import { Scale, Plus, Trash2, Edit3, Loader2, X } from "lucide-react";
+import { Plus, Trash2, Edit3, Loader2 } from "lucide-react";
+import { VesselManagerHeader } from "./VesselManagerHeader";
 import { VesselDialog } from "./VesselDialog";
 
 /**
@@ -89,9 +90,6 @@ export function VesselManager({
     return `${val} cm`;
   };
 
-  const toggleBtnClass =
-    "text-[10px] px-2 py-0.5 rounded font-bold transition-all cursor-pointer";
-
   return (
     <>
       <div
@@ -107,119 +105,13 @@ export function VesselManager({
           borderLeft: "1px solid var(--color-border)",
         }}
       >
-        <header
-          className="flex justify-between items-center p-5 border-b"
-          style={{
-            borderColor: "var(--color-border)",
-            backgroundColor: "rgb(15 23 42 / 0.50)",
-          }}
-        >
-          <div>
-            <h2
-              className="text-lg font-bold flex items-center gap-2"
-              style={{ color: "var(--color-foreground)" }}
-            >
-              <Scale className="w-5 h-5" style={{ color: "var(--color-primary)" }} />{" "}
-              Vessels Manager
-            </h2>
-            <p
-              className="text-xs mt-0.5"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
-              Manage pan capacities for vessel-aware scaling.
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg transition-colors cursor-pointer hover:bg-white/5"
-            style={{ color: "var(--color-muted-foreground)" }}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </header>
-
-        {/* Toggles Unit System Sub-Header */}
-        <div
-          className="flex gap-4 px-5 py-3 border-b text-xs"
-          style={{
-            borderColor: "var(--color-border)",
-            backgroundColor: "rgb(15 23 42 / 0.30)",
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className="text-[10px] uppercase font-bold"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
-              Dimensions:
-            </span>
-            <div
-              className="flex rounded p-0.5"
-              style={{
-                backgroundColor: "var(--color-input)",
-                border: "1px solid var(--color-border)",
-              }}
-            >
-              <button
-                onClick={() => setUnitSystem("cm")}
-                className={`${toggleBtnClass} ${
-                  unitSystem === "cm"
-                    ? "bg-white/10 text-white"
-                    : "text-zinc-400 hover:text-zinc-300"
-                }`}
-              >
-                CM
-              </button>
-              <button
-                onClick={() => setUnitSystem("in")}
-                className={`${toggleBtnClass} ${
-                  unitSystem === "in"
-                    ? "bg-white/10 text-white"
-                    : "text-zinc-400 hover:text-zinc-300"
-                }`}
-              >
-                IN
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span
-              className="text-[10px] uppercase font-bold"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
-              Volume:
-            </span>
-            <div
-              className="flex rounded p-0.5"
-              style={{
-                backgroundColor: "var(--color-input)",
-                border: "1px solid var(--color-border)",
-              }}
-            >
-              <button
-                onClick={() => setVolumeUnit("ml")}
-                className={`${toggleBtnClass} ${
-                  volumeUnit === "ml"
-                    ? "bg-white/10 text-white"
-                    : "text-zinc-400 hover:text-zinc-300"
-                }`}
-              >
-                ML
-              </button>
-              <button
-                onClick={() => setVolumeUnit("g")}
-                className={`${toggleBtnClass} ${
-                  volumeUnit === "g"
-                    ? "bg-white/10 text-white"
-                    : "text-zinc-400 hover:text-zinc-300"
-                }`}
-              >
-                G
-              </button>
-            </div>
-          </div>
-        </div>
+        <VesselManagerHeader
+          onClose={onClose}
+          unitSystem={unitSystem}
+          setUnitSystem={setUnitSystem}
+          volumeUnit={volumeUnit}
+          setVolumeUnit={setVolumeUnit}
+        />
 
         <div className="flex-1 overflow-y-auto p-5">
           <Button

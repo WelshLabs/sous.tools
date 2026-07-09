@@ -7,6 +7,7 @@ import { Button } from "@soustools/design-system";
 import { ChefHat, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RecipeBuilderIngredients } from "./RecipeBuilderIngredients";
+import { RecipeBuilderFormFields } from "./RecipeBuilderFormFields";
 import { RecipeBuilderInstructions } from "./RecipeBuilderInstructions";
 import { type RecipeIngredientLine, type RecipeInstructionStep } from "./types";
 
@@ -88,7 +89,7 @@ export function RecipeBuilder({
       setYieldUnit(initialData.yieldUnit || "Portions");
       setVesselId(initialData.vesselId || "");
       setIngredients(
-        (initialData.recipeIngredients || []).map((ri: any) => ({
+        (initialData.recipeIngredients || []).map((ri: unknown) => ({
           masterIngredientId: ri.masterIngredientId,
           amount: ri.amount,
           unit: ri.unit,
@@ -99,7 +100,7 @@ export function RecipeBuilder({
         }))
       );
       setSteps(
-        (initialData.instructions || []).map((step: any) => ({
+        (initialData.instructions || []).map((step: unknown) => ({
           stepNumber: step.stepNumber,
           text: step.text,
           timerDurationSeconds: step.timerDurationSeconds,
@@ -127,16 +128,6 @@ export function RecipeBuilder({
     } finally {
       setSaving(false);
     }
-  };
-
-  const labelStyle: React.CSSProperties = {
-    color: "var(--color-muted-foreground)",
-  };
-
-  const inputStyle: React.CSSProperties = {
-    backgroundColor: "var(--color-input)",
-    border: "1px solid var(--color-border)",
-    color: "var(--color-foreground)",
   };
 
   return (
@@ -197,86 +188,19 @@ export function RecipeBuilder({
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-2">
-          <label className="block text-xs font-medium mb-1" style={labelStyle}>
-            Recipe Title
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Traditional Sourdough Bread"
-            className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-            style={inputStyle}
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1" style={labelStyle}>
-            Default Yield
-          </label>
-          <input
-            type="number"
-            step="any"
-            min="0.01"
-            value={yieldCount}
-            onChange={(e) => setYieldCount(parseFloat(e.target.value) || 1)}
-            className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-            style={inputStyle}
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1" style={labelStyle}>
-            Yield Unit
-          </label>
-          <input
-            type="text"
-            value={yieldUnit}
-            onChange={(e) => setYieldUnit(e.target.value)}
-            placeholder="e.g. loaves, portions"
-            className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-            style={inputStyle}
-            required
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-xs font-medium mb-1" style={labelStyle}>
-          Default Vessel Profile (Optional)
-        </label>
-        <select
-          value={vesselId}
-          onChange={(e) => setVesselId(e.target.value)}
-          className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-          style={inputStyle}
-        >
-          <option value="">None (Standard Yield Scaling only)</option>
-          {vessels.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name} ({v.volumeMl} ml)
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-xs font-medium mb-1" style={labelStyle}>
-          Recipe Status
-        </label>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-          style={inputStyle}
-        >
-          <option value="PENDING_REVIEW">Pending Review</option>
-          <option value="APPROVED">Approved</option>
-          <option value="ARCHIVED">Archived</option>
-        </select>
-      </div>
+      <RecipeBuilderFormFields
+        title={title}
+        setTitle={setTitle}
+        yieldCount={yieldCount}
+        setYieldCount={setYieldCount}
+        yieldUnit={yieldUnit}
+        setYieldUnit={setYieldUnit}
+        vesselId={vesselId}
+        setVesselId={setVesselId}
+        status={status}
+        setStatus={setStatus}
+        vessels={vessels}
+      />
 
       <RecipeBuilderIngredients
         lines={ingredients}

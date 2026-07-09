@@ -35,7 +35,7 @@ export interface ComplianceSearchProps {
 }
 
 /** A raw product result from the Open Food Facts API. */
-interface OpenFoodFactsProduct {
+export interface OpenFoodFactsProduct {
   code?: string;
   product_name?: string;
   product_name_en?: string;
@@ -161,38 +161,12 @@ export function ComplianceSearch({
           Compliance Search (Open Food Facts)
         </h3>
 
-        <form onSubmit={handleSearch} className="flex gap-2 mb-4">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search food ingredients (e.g. Milk, Butter, Flour)..."
-            className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
-            style={{
-              backgroundColor: "var(--color-input)",
-              border: "1px solid var(--color-border)",
-              color: "var(--color-foreground)",
-            }}
-            required
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors
-              cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
-            style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-primary-foreground)",
-            }}
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Search className="w-4 h-4" />
-            )}{" "}
-            Search
-          </button>
-        </form>
+        <ComplianceSearchForm
+          query={query}
+          setQuery={setQuery}
+          loading={loading}
+          onSearch={handleSearch}
+        />
 
         {error && (
           <div
@@ -220,42 +194,11 @@ export function ComplianceSearch({
             </div>
           ) : (
             results.map((prod) => (
-              <button
+              <ComplianceSearchResultItem
                 key={prod.code || Math.random().toString()}
-                onClick={() => handleSelectProduct(prod)}
-                className="w-full text-left p-3 rounded-lg transition-all
-                  cursor-pointer flex justify-between items-center gap-4"
-                style={{
-                  backgroundColor: "rgb(30 41 59 / 0.50)",
-                  border: "1px solid var(--color-border)",
-                }}
-              >
-                <div>
-                  <h4
-                    className="text-sm font-bold line-clamp-1"
-                    style={{ color: "var(--color-foreground)" }}
-                  >
-                    {prod.product_name || prod.product_name_en || "Unnamed Product"}
-                  </h4>
-                  <p
-                    className="text-xs"
-                    style={{ color: "var(--color-muted-foreground)" }}
-                  >
-                    {prod.brands || "Unknown Brand"}
-                  </p>
-                </div>
-                <div
-                  className="text-[10px] px-2 py-0.5 rounded font-bold uppercase
-                    tracking-wider whitespace-nowrap"
-                  style={{
-                    backgroundColor: "rgb(76 201 240 / 0.10)",
-                    border: "1px solid rgb(76 201 240 / 0.20)",
-                    color: "var(--color-primary)",
-                  }}
-                >
-                  Select &amp; Auto-fill
-                </div>
-              </button>
+                prod={prod}
+                onSelectProduct={handleSelectProduct}
+              />
             ))
           )}
         </div>
