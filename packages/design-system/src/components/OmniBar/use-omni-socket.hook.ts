@@ -1,8 +1,43 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { io, type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
+
+export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
+  const configuredBase = apiUrl?.trim();
+  const fallbackBase = currentOrigin?.trim();
+
+  if (configuredBase) {
+    const normalizedBase = configuredBase.replace(/\/$/, "");
+
+    if (/^wss?:\/\//i.test(normalizedBase)) {
+      return normalizedBase.endsWith("/commands")
+        ? normalizedBase
+        : `${normalizedBase}/commands`;
+    }
+
+    if (/^https?:\/\//i.test(normalizedBase)) {
+      const protocol = normalizedBase.startsWith("https://")
+        ? "wss://"
+        : "ws://";
+      return `${protocol}${normalizedBase.replace(/^https?:\/\//i, "")}/commands`;
+    }
+
+    return `https://${normalizedBase}/commands`;
+  }
+
+  if (fallbackBase) {
+    const normalizedBase = fallbackBase.replace(/\/$/, "");
+    return normalizedBase.endsWith("/commands")
+      ? normalizedBase
+      : `${normalizedBase}/commands`;
+  }
+
+  return "/commands";
+}
 
 export function useOmniSocket() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -25,13 +60,14 @@ export function useOmniSocket() {
     let newSocket: Socket | null = null;
     const initSocket = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001";
-        const socketUrl = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
-
+        const socketUrl = resolveSocketUrl(
+          process.env.NEXT_PUBLIC_API_URL,
+          typeof window !== "undefined" ? window.location.origin : undefined,
+        );
 
         // The HttpOnly session cookie is automatically sent by the browser.
         // No JS-accessible token is needed — NestJS validates commands gateway via WsSupabaseAuthGuard.
-        newSocket = io(socketUrl + "/commands", {
+        newSocket = io(socketUrl, {
           withCredentials: true,
           transports: ["websocket"],
         });
@@ -46,14 +82,17 @@ export function useOmniSocket() {
         });
 
         // Listen for explicit errors
-        newSocket.on("command_status", (data: { state: string; message: string }) => {
-          if (data.state === "error") {
-            setErrorMessage(data.message);
-            setIsProcessing(false);
-            setIsListening(false);
-            markLoadingComplete();
-          }
-        });
+        newSocket.on(
+          "command_status",
+          (data: { state: string; message: string }) => {
+            if (data.state === "error") {
+              setErrorMessage(data.message);
+              setIsProcessing(false);
+              setIsListening(false);
+              markLoadingComplete();
+            }
+          },
+        );
 
         setSocket(newSocket);
       } catch (err: unknown) {

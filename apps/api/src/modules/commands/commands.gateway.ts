@@ -15,7 +15,17 @@ import {
 } from "@soustools/api-types";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 
-@WebSocketGateway({ namespace: "/commands", cors: { origin: "*" } })
+@WebSocketGateway({
+  namespace: "/commands",
+  cors: {
+    origin: [
+      "https://dev.sous.tools",
+      "https://sous.tools",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  },
+})
 export class CommandsGateway {
   private readonly logger = new Logger(CommandsGateway.name);
 
