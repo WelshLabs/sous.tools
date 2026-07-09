@@ -14,9 +14,10 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchSession = async () => {
-//       const { data } = await supabase.auth.getSession();
+// In Next.js client, session is checked via cookies/middleware.
       setSession(null);
       setLoading(false);
+
     };
     fetchSession();
   }, []);
