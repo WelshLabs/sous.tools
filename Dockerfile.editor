@@ -1,7 +1,7 @@
 FROM lscr.io/linuxserver/code-server:latest
 
 # Install Zsh, curl, and Starship
-RUN apt-get update && apt-get install -y zsh curl git && \
+RUN apt-get update && apt-get install -y zsh curl git psmisc tmux && \
     curl -sS https://starship.rs/install.sh | sh -s -- -y
 
 # Install a specific Node version and pnpm (e.g., Node 22)
