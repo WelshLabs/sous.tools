@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { type Recipe, type VesselProfile, type MasterIngredient, type RecipeInstruction } from "@soustools/api-types";
-import { Button } from "@soustools/design-system";
 import { RecipeViewerHeader } from "./RecipeViewerHeader";
-import { ArrowLeft, Play, Info, History, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { RecipeScalingPanel, type CustomWeightOpts } from "./RecipeScalingPanel";
 import { RecipeNutritionPanel } from "./RecipeNutritionPanel";
 import { RecipeIngredientsTable } from "./RecipeIngredientsTable";
