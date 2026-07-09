@@ -1,0 +1,66 @@
+name: Database Migrations
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    name: Database Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11.5.2
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Fetch staging secrets from Infisical
+        uses: infisical/secrets-action@v1.0.7
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: staging
+          export-env: true
+
+      - name: Run staging Supabase migrations
+        env:
+          SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
+        run: |
+          if [ -z "$SUPABASE_POOLER_URL" ]; then
+            echo "Error: SUPABASE_POOLER_URL is not defined."
+            exit 1
+          fi
+          npx supabase db push --db-url "${SUPABASE_POOLER_URL}?statement_cache_mode=describe"
+
+      - name: Fetch production secrets from Infisical
+        uses: infisical/secrets-action@v1.0.7
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: prod
+          export-env: true
+
+      - name: Run production Supabase migrations
+        env:
+          SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
+        run: |
+          if [ -z "$SUPABASE_POOLER_URL" ]; then
+            echo "Error: SUPABASE_POOLER_URL is not defined."
+            exit 1
+          fi
+          npx supabase db push --db-url "${SUPABASE_POOLER_URL}?statement_cache_mode=describe"
