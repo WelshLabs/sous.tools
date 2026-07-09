@@ -9,6 +9,7 @@ const withSerwist = withSerwistInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ["dev.sous.tools", "localhost"],
   transpilePackages: [
     "@soustools/ui", 
     "@soustools/design-system", 
