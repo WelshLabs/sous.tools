@@ -35,7 +35,7 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
           # Infisical automatically injects SUPABASE_PROJECT_ID and SUPABASE_DB_PASSWORD into the environment here
         run: |
-          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
+          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
             echo "Error: Missing required staging environment variables from Infisical."
             exit 1
           fi
@@ -56,7 +56,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
         run: |
-          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
+          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
             echo "Error: Missing required production environment variables from Infisical."
             exit 1
           fi
