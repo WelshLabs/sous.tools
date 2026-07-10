@@ -1,121 +1,21 @@
 # Active Sprint
 
-## Features & Enhancements
+Here's a summary of the current open issues:
 
-- [ ] **Omnibar Uploads:**
-    - Implement file upload functionality (file, camera, Google Drive).
-    - Allow copy/pasting files into the input.
-    - Enhance UI/UX for visual appeal.
-    - Add PWA share target functionality, navigating to `/home` with context.
-- [ ] **Orders Page:**
-    - Add a dropdown for uploading orders (Google Drive, camera, image) with ingestion logic.
-    - Implement filters for "Open," "Pending Review," and "Completed" orders.
-    - Paginate "Completed" orders, display all "Open" orders.
-    - Link "Pending Review" orders to the review screen.
-    - Allow uploading invoices not associated with an order.
-    - Implement modal for review screen using Next.js intercepting and parallel routes.
-- [ ] **Recipes Page:**
-    - Rename heading to "Recipes."
-    - Link recipes to POS items.
-    - Redesign status queue bar into a responsive toolbar.
-    - Add search input to filter recipes.
-    - Remove "Status Queue" and "Verification Queue" tabs.
-    - Move "All Recipes" tab to replace "Verification Queue" (default to approved recipes).
-    - Rename "Verification Queue" tab to "Pending Review."
-    - Ensure "Verification Queue" tab displays unverified recipes.
-    - All ingestions should appear on the ingestion queue page; specific ingestions on their respective pages.
-    - Clicking on items in the "Verification Queue" tab should navigate to the review screen.
-- [ ] **Users Page:**
-    - Create an ADMIN ONLY page for CRUD operations on users.
-    - Implement new API routes with admin role restrictions.
-    - Add a divider and admin-only links to the sidebar, visible only to admins.
-- [ ] **Square Integration:**
-    - Fix the "Organization not loaded yet" error when connecting to Square.
-    - Load and display all sales data from Square on a dedicated screen.
-    - Load and display all items from Square in an item catalog editor.
-    - Fetch orders from Square and display them on an orders page and in the KDS.
-    - Create a transactions page for Square data.
-    - Make the integration driver-based for future support of other platforms (Toast, Lightspeed, etc.).
-- [ ] **Rename PWA:**
-    - Rename the PWA to "sous.tools" or "Sous Tools".
-    - Correct the PWA titlebar to display "sous.tools".
-    - Style the chrome using standalone mode and `window-controls-overlay`.
-    - Add an app icon.
-- [ ] **Dashboard Page:**
-    - Implement "Real-Time Food Cost Percentage" (POS sales + live recipe costs).
-    - Display "Gross Profit (MTD)" with trend line.
-    - Display "Total Sales" (current day/week) from POS.
-    - Create an "Action Required" section for:
-        - Ingredient Price Spikes.
-        - Low Par Levels.
-        - Pending Reconciliations.
-        - Today's Expected Deliveries.
-    - Implement a "Menu Profitability & Engineering" section for:
-        - Top Margin Drivers.
-        - Margin Bleeders.
-        - 86'd / Depleted Items.
-    - Add a "System & Hardware Health" section for:
-        - Digital Signage Status.
-        - POS Sync Status.
-    - Utilize a grid layout with a neon-glass UI design system.
-- [ ] **Mobile App Bar:**
-    - Update the app bar to display: Dashboard, Recipes, Home Icon, Orders.
-    - Remove the incorrect "Alerts" navigation.
-    - Implement an alert badge somewhere on the screen (not in the app bar).
-
-## Technical Debt & Infrastructure
-
-- [ ] **Knip Setup:**
-    - Integrate Knip into the CI/CD pipeline.
-    - Add Knip results to the agent context.
-    - Plan for automatic GitHub issue creation based on urgency.
-- [ ] **API Client:**
-    - Generate a fully functional API client for frontend use (including auth, file uploads).
-    - Refactor the codebase to ubiquitously use the new API client.
-- [ ] **User Profile Button:**
-    - Dynamically display real user information instead of hardcoded initials.
-- [ ] **`use-omni-socket.hoot.ts` Refactor:**
-    - Remove direct access to `process.env`.
-- [ ] **Supabase Migrations:**
-    - Update database connection configurations for Supabase changes.
-    - Correctly configure migrations using the appropriate URL.
-    - Verify and clean up unused Infisical keys.
-- [ ] **New Relic Logging:**
-    - Implement isomorphic, application-level logging to New Relic.
-    - Securely manage `NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY` via Infisical.
-    - Build a shared monorepo package (`@soustools/logger`) using `pino`.
-    - Implement global monkey-patching for console methods.
-    - Configure server-side logging (NestJS & Server Components) to structured JSON stdout.
-    - Configure browser-side logging using `pino.browser.transmit` to POST errors to New Relic.
-    - Integrate `@vercel/analytics` and `@vercel/speed-insights`.
-    - Implement a global `error.tsx` boundary for client-side errors.
-    - Initialize New Relic APM agent and global logger in NestJS `main.ts`.
-    - Implement a global NestJS `ExceptionFilter`.
-    - Offload network requests for logging to separate threads.
-
-## Bug Fixes & General Improvements
-
-- [ ] **Random Bugs:**
-    - Fix Order page heading from "Whiteboard" and address content overflow/responsiveness.
-    - Resolve errors preventing saving order items.
-    - Fix migration failures preventing vendor saving.
-    - Ensure recipes are importing correctly.
-    - Rename the "Ingestion Queue" page.
-    - Fix the Ingestion Queue to display data and process correctly.
-    - Add status indicators (processing, ready for review) to the ingestion queue and review process.
-    - Correct the favicon to be blue lines with a transparent background and increase its size.
-    - Reverse the order of Raspberry Pi Imager and Balena in the download instructions.
-    - Add visual confirmation for password confirmation in general settings.
-    - Resolve "infinite recursion detected in policy for relation 'org_members'" error when saving passwords.
-    - Remove the redundant logout button from the sidebar.
-    - Implement autocomplete for the Order page.
-    - Add duplicate checks for orders.
-    - Implement order history checks.
-    - Suggest low-inventory items on the Order page.
-    - Fix the KDS page's vertical scrollbar.
-    - Make the Vessel Manager configurable for inches (toggleable with cm).
-    - Change calculated volume from ml to grams (toggleable).
-    - Ensure saving vessels functions correctly with toast notifications and list updates.
-- [ ] **Dark/Light Mode:**
-    - Fix dark/light mode toggling and add system mode option.
-    - Ensure all components respond correctly to mode changes.
+- [ ] omnibar uploads (New feature or request)
+- [ ] knip
+- [ ] api client
+- [ ] user profile button
+- [ ] use-omni-socket.hoot.ts
+- [ ] test issue
+- [ ] Supabase migrations
+- [ ] Orders Page
+- [ ] Recipes Page
+- [ ] Users Page
+- [ ] Square Integration
+- [ ] rename pwa
+- [ ] dark/light mode
+- [ ] new relic logging
+- [ ] Random Bugs
+- [ ] dashboard page
+- [ ] mobile app bar
