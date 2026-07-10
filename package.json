@@ -1,9 +1,6 @@
 {
   "name": "sous-tools-monorepo",
   "private": true,
-  "bin": {
-    "sous-tools": "bin/sous-tools.js"
-  },
   "scripts": {
     "build": "INFISICAL_MOCK=true turbo build",
     "dev": "turbo dev",

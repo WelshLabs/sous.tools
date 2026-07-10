@@ -25,3 +25,6 @@
 ## 4. Error Handling
 
 - **Halt-on-Error:** If a TypeScript, Database Migration, Runtime, or Playwright E2E error occurs, STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. Request manual intervention.
+
+
+When executing code changes in the terminal, you must use pm2 restart <app-name> to apply the changes to the dev server. Do not kill and restart the entire ecosystem.
