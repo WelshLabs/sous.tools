@@ -1,79 +1,72 @@
 # Active Sprint
 
-This document summarizes the open GitHub issues for the current sprint.
+Here's a summary of the open issues for the current sprint:
 
-## Tasks
-
-- [ ] omnibar uploads
-    - After clicking the attachment button, it should fly out somehow into a few icons: file upload; camera; Google drive. Also there should be the ability to copy/paste a file in the input. This should be really visually appealing with wonderful UI/UX.
-    - Can we have the ability to be on a social page or webpage etc and click the share button and have the pwa be an option to share it to? And take you to /home and right into the omnibar with that context?
-- [ ] knip
-    - We need to get knip setup in our CI/CD pipeline.
-    - The results should be added to the context that all of our agents see.
-    - We should plan the best way to possibly automatically create github issues and add them to our project to be addressed depending on urgency levels.
-- [ ] api client
-    - We should have a fully generated api client for use on the front ends, including auth helpers, file uploads, etc, and completely refactor the codebase to use it ubiquitously.
-- [ ] user profile button
-    - The CW is hardcoded, this needs to be displaying real user info
-- [ ] use-omni-socket.hoot.ts
-    - Accesses process.env directly, this shouldnt be happening anywhere.
-- [ ] test issue
-    - This is testing the n8n workflow
-- [ ] Supabase migrations
-    - Supabase recently changed the way the allow connections to the database. Also we were doing migrations using the wrong url before anyways (SUPABASEPOLLER_URL). We need to make sure that all of our connections are checked and verified to be working with the new ways, as well as cleaning up any infisical keys that we no longer need.
-- [ ] Orders Page
-    - There should be a button with a dropdown the same as on the recipes page that allows a user to upload an order via google drive, take a photo, or upload an image and have the same ingestion process happen as it does for recipes (shared components to achieve this, because it will be used in several places in the app and always will send to the ingestion queue with an additional parameter of the document type).
-    - On the slideout sheet to view orders there should be filters for: open; pending review; completed. Completed should be paginated because we should not need to show too many, but open orders should show them all. Clicking on an order that is pending review should take you to the review screen.
-    - The process right now allows a user to upload an invoice on an open order, but a user should also be able to upload an invoice that is not associated to an order from the main orders page using the dropdown mentioned above.
-    - The review screen could maybe be a modal window that uses nextjs intercepting and parallel routes pattern for modals so that it can load over this page, or over the recipes page, or the ingestion page when a user clicks on the respective open review button.
-- [ ] Recipes Page
-    - The header should just say Recipes not Recipe Ingredients.
-    - We need to make sure we can link a Recipe to a POS item (may be named differently).
-    - I don't like the current status queue bar, can we make it like a toolbar under the header bar, add a search input to filter recipes, remove the word and the icon that says status queue, and make sure its responsive cause it is currently not. Also we can remove the APPROVED tab and move the All Recipes tab in its place (All recipes by default should show the approved recipes), Don't have the titles of these tags be all uppercase, and instead of Verification Queue name that tab Pending Review.
-    - The verification queue tab doesn't show the recipes that have not been verified yet, for instance I have 3 recipes on the ingestion queue page, but the verification queue on the recipes page doesn't have any entries. The ingestion queue page should show ALL ingestions (recipes, invoices, orders, etc) but on their respective pages (where they hit upload from) should show just their own ingestions. If showing items in the verification queue tab on the recipes page, it should take you to the review screen to complete the review process.
-- [ ] Users Page
-    - There should be a page in the site to CRUD users that should be ADMIN ONLY, and this will expose new API routes that is the first time in our data that we are restricting actions to the admin role so we need to make sure the security is in place.
-    - Admins should be able to add, edit, remove users as well as edit their profile values.
-    - In the sidebar there should be a divider and the admin only links below it, the divider and the admin links should only show for admin users.
-- [ ] Square Integration
-    - Trying to connect to square currently just says "Organization not loaded yet. Please refresh the page." when you click the button.
-    - Need to load in all sales data from square and have a screen in the UI to show sales.
-    - Need to load all items in from square and have an item catalog editor in the UI as its own page to be able to view the entire catalog: items/modifiers/groups/categories/discounts/units/etc.
-    - Need to be able to fetch orders from square and have an orders page, as well as be able to show them in the KDS.
-    - Need a transactions page that fetches data from square.
-    - I know we are referring to Square in particular here but it should be driver based so we can implement drivers for Toast/Lightspeed/etc.
-- [ ] rename pwa
-    - Shortcut should be called sous.tools or Sous Tools.
-    - Currently it is called Sous Tools Kitchen.
-    - Also the PWA Titlebar says "Sous Tools Kitch-Sous Tools-Kitchen App" and should just say sous.tools.
-    - Style the chrome using standalone mode and window-controls-overlay.
-    - Also there is no app icon, its just a blank blank square.
-- [ ] dark/light mode
-    - The UI is currently not changing from dark/light mode and there is no option for a system mode. Also the components are not responding properly to the mode change, some components are in dark mode, some are in light mode. Something is definitely toggling as certain elements will actually change slightly but only slightly and only random small elements.
-- [ ] new relic logging
-    - Render Dashboard: Add standard environment variables (`NEW_RELIC_NO_CONFIG_FILE: true`, `NEW_RELIC_LICENSE_KEY`, `NEW_RELIC_APP_NAME`). Navigate to 'Log Streams' and add New Relic as a Syslog TLS target endpoint using your account's region string.
-    - Wherever possible offload network requests for these into a separate thread to not add delays to normal requests either via queues/workers or wherever is most reasonable in the app structure.
-- [ ] Random Bugs
-    - Orders page needs the heading changed from Whiteboard, and the content is overflowing, not responsive. And order items are erroring and wont save.
-    - Migration is failing causing the vendors to not be able to be saved.
-    - Recipes are not importing.
-    - Ingestion queue needs to be renamed to something. Also it is not currently working, it doesn't get any data and the json just shows as processing. Also it should show in the badge on the ingestion queue page if it is still being processed by the system or if its ready for review, possibly with a loading indicator of some sort, same thing for when you open it for review.
-    - Favicon is still showing as black, it should be showing as blue lines for the icon with a transparent background. Also the favicon is much smaller than the rest of the icons for other websites in my browser, you can barely see any detail in it, should be larger.
-    - In the downloads tab on the settings page, in the instructions panel, it should have raspberry pi imager as the recommended one and balena as the other option please reverse the order of these 2.
-    - In the general settings tab on the settings page, there should be visual confirmation on the input for confirm password that shows if you have actually confirmed it, and when trying to save a new password I get the message: "infinite recursion detected in policy for relation "org_members"".
-    - There are currently 2 logout buttons, one in the sidebar and one in the user dropdown in the appbar, remove the one in the sidebar it's redundant.
-    - Order page needs autocomplete.
-    - Check for dups.
-    - Check through order history.
-    - Should suggest things that are low in inventory.
-    - KDS page has a weird vertical scrollbar even with minimal content.
-    - Vessel manager is currently hardset to cm and needs option for inches, also the calculated volume is in ml but grams is more useful (should be able to toggle). Also saving vessels does not do anything, no toast and doesn't appear in the list.
-- [ ] dashboard page
-    - Financial Pulse (Top-Line Overview): Real-Time Food Cost Percentage, Gross Profit (MTD), Total Sales.
-    - Purchasing & Cost Alerts (Action Required): Ingredient Price Spikes, Low Par Levels, Pending Reconciliations, Today's Expected Deliveries.
-    - Menu Profitability & Engineering (Insights): Top Margin Drivers, Margin Bleeders, 86'd / Depleted Items.
-    - System & Hardware Health: Digital Signage Status, POS Sync Status.
-    - Dashboard Layout Strategy: Grid layout, span-2 cards for Financial Pulse and Profitability, smaller cards for System Health and pending tasks. Neon-glass UI design system.
-- [ ] mobile app bar
-    - Currently displays: kitchen, recipes, home icon, alerts, and more. Alerts goes to the signage page incorrectly.
-    - Should show: dashboard, recipes, home icon, orders. An alert badge should show somewhere on the screen but not in the appbar.
+- [ ] omnibar uploads: Implement file upload options (file, camera, Google Drive) and copy/paste functionality in the omnibar. Also, enable sharing to the PWA from other applications, directing the context to the omnibar.
+- [ ] knip: Set up knip in the CI/CD pipeline, integrate its results into the agent context, and explore automatic GitHub issue creation based on urgency.
+- [ ] api client: Generate a fully functional API client for frontend use, including authentication helpers and file upload capabilities. Refactor the codebase to universally adopt this client.
+- [ ] user profile button: Dynamically display real user information instead of the hardcoded "CW".
+- [ ] use-omni-socket.hoot.ts: Address direct access to `process.env` within `use-omni-socket.hoot.ts`.
+- [ ] test issue: This is a test issue for the n8n workflow.
+- [ ] Supabase migrations: Update Supabase connections and migrations to align with recent changes. Verify all connections and clean up unnecessary Infisical keys.
+- [ ] Orders Page:
+    - Implement order upload via Google Drive, camera, or image upload, leveraging shared components for ingestion.
+    - Add filters to the orders slideout sheet: open, pending review, completed. Paginate completed orders, display all open orders, and link pending review orders to the review screen.
+    - Allow uploading invoices not associated with an order from the main orders page.
+    - Consider a modal window for the review screen using Next.js intercepting and parallel routes.
+- [ ] Recipes Page:
+    - Update the header to "Recipes" from "Recipe Ingredients".
+    - Implement linking of recipes to POS items.
+    - Redesign the status queue bar to a responsive toolbar under the header, including a search input. Remove the "status queue" tab and its icon. Move the "All Recipes" tab to the default position (displaying approved recipes). Rename the "Verification Queue" tab to "Pending Review" and ensure tab titles are not all uppercase.
+    - Ensure the verification queue tab displays unverified recipes. All ingestions should be visible on the ingestion queue page, with individual pages showing their respective ingestions. Clicking on a recipe in the verification queue should navigate to the review screen.
+- [ ] Users Page:
+    - Create an ADMIN-ONLY page to CRUD users, implementing new API routes with robust security for admin-only actions.
+    - Admins should be able to add, edit, and remove users, as well as edit their profile values.
+    - Add a divider in the sidebar followed by admin-only links, visible only to admin users.
+- [ ] Square Integration:
+    - Resolve the "Organization not loaded yet" error when attempting to connect to Square.
+    - Load and display all sales data from Square on a dedicated sales screen.
+    - Load and manage all items from Square, including an item catalog editor for viewing items, modifiers, groups, categories, discounts, and units.
+    - Fetch orders from Square, display them on an orders page, and integrate them into the KDS.
+    - Implement a transactions page to fetch data from Square.
+    - Design a driver-based system to support integrations with other platforms like Toast and Lightspeed.
+- [ ] rename pwa:
+    - Rename the PWA to "sous.tools" or "Sous Tools" from "Sous Tools Kitchen".
+    - Update the PWA Titlebar to "sous.tools".
+    - Style the chrome using standalone mode and `window-controls-overlay`.
+    - Add a proper app icon, replacing the blank square.
+- [ ] dark/light mode:
+    - Fix the UI to correctly switch between dark and light modes, including a system mode option.
+    - Ensure all components respond correctly to mode changes, resolving inconsistencies.
+- [ ] new relic logging: Implement New Relic logging across the application:
+    - Configure environment variables for New Relic.
+    - Set up New Relic as a Syslog TLS target.
+    - Develop a shared monorepo package (`@soustools/logger`) using `pino` for isomorphic logging.
+    - Implement global monkey-patching for console methods.
+    - Configure structured JSON logging to stdout for server environments.
+    - Implement `pino.browser.transmit` for client-side error logging to New Relic.
+    - Integrate the logger initialization in Next.js applications and NestJS backend.
+    - Integrate `@vercel/analytics` and `@vercel/speed-insights`.
+    - Implement global `error.tsx` boundary for Next.js and a NestJS `ExceptionFilter`.
+    - Store the New Relic license key securely in Infisical and sync to Vercel or use Infisical CLI.
+    - Offload network requests for logging to separate threads.
+- [ ] Random Bugs:
+    - **Order page:** Change heading from "Whiteboard", fix overflowing and non-responsive content, resolve order item saving errors. Implement autocomplete, duplicate checks, order history review, and low-inventory suggestions.
+    - **Migration:** Fix failing migrations preventing vendor saving.
+    - **Recipe import:** Resolve issues with recipe import.
+    - **Ingestion Queue:** Rename the page. Fix data fetching issues and processing. Add status indicators (processing, ready for review) to the badge and within the review interface.
+    - **Favicon:** Update favicon to blue lines with a transparent background and increase its size for better visibility.
+    - **Settings - Downloads:** Reverse the order of Raspberry Pi Imager and Balena in the instructions.
+    - **Settings - General:** Implement visual confirmation for the "confirm password" input and resolve the "infinite recursion detected" error when saving passwords.
+    - **Logout Buttons:** Remove the redundant logout button from the sidebar.
+    - **KDS Page:** Remove the weird vertical scrollbar.
+    - **Vessel Manager:** Allow switching between centimeters and inches, toggle volume units between ml and grams, and fix saving functionality.
+- [ ] dashboard page:
+    - **Financial Pulse:** Display real-time food cost percentage, MTD gross profit with trend line, and total sales.
+    - **Purchasing & Cost Alerts:** List ingredient price spikes, low par levels, pending reconciliations, and today's expected deliveries.
+    - **Menu Profitability & Engineering:** Show top margin drivers, margin bleeders, and 86'd/depleted items.
+    - **System & Hardware Health:** Display digital signage status and POS sync status.
+    - Implement a grid layout with larger cards for key metrics and smaller cards for alerts and health status, using a neon-glass UI design.
+- [ ] mobile app bar:
+    - Update the app bar to display: Dashboard, Recipes, Home icon, Orders.
+    - Remove the incorrect "alerts" link from the app bar, and consider an alert badge elsewhere on the screen.
