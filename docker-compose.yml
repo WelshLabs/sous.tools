@@ -87,12 +87,16 @@ services:
     image: ghcr.io/berriai/litellm:main-latest
     container_name: litellm
     restart: unless-stopped
+    command: 
+      - --config
+      - /app/config.yaml
+      - --detailed_debug
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - LITELLM_MASTER_KEY=sk-1234
     volumes:
-      - ./litellm_config.yaml:/app/config.yaml
+      - /home/ubuntu/prod.sous.tools/litellm_config.yaml:/app/config.yaml
     networks:
       - traefik_public
     labels:
