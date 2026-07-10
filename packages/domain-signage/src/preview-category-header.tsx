@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+
 import { getTypoStyle } from "./preview-utils";
 
 export function PreviewCategoryHeader({ block }: { block: any }) {

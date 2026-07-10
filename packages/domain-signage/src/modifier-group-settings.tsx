@@ -52,7 +52,8 @@ export function ModifierGroupSettings({
   return (
     <div className="flex flex-col gap-2">
       {groups.map((g) => {
-        const isSelected = (selectedBlock as Record<string, unknown>).modifierGroupId === g.id;
+        const isSelected = (selectedBlock as unknown as Record<string, any>).modifierGroupId === g.id;
+        
         return (
           <label
             key={g.id}

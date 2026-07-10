@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { io, type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
@@ -39,7 +39,13 @@ export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
   return "/commands";
 }
 
-export function useOmniSocket(token?: string) {
+export function useOmniSocket(token?: string): {
+  socket: Socket | null;
+  errorMessage: string | null;
+  setErrorMessage: Dispatch<SetStateAction<string | null>>;
+  isListening: boolean;
+  setIsListening: Dispatch<SetStateAction<boolean>>;
+} {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);

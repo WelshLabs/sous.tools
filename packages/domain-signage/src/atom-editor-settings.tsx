@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { type MenuItemStateStyle } from "@soustools/api-types";
 import { ColorRow, FontRow, SliderRow, WeightSelect } from "./atom-editor-controls";
 import type { ItemState } from "./state-tab-bar";

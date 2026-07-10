@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { SupplierHeader } from "./SupplierHeader";
 import { OrderItemRow } from "./SupplierLineItem";

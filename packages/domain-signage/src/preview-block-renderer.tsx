@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { type MenuItemStyles } from "@soustools/api-types";
+import { type MenuItemStyles, SignageBlock, PosItem } from "@soustools/api-types";
 import { PreviewContentBlocks } from "./preview-content-blocks";
 
 interface PreviewBlockRendererProps {
@@ -30,7 +30,7 @@ export function PreviewBlockRenderer({
       ].filter(Boolean).join(" ");
       return (
         <div className={classes} data-unique-id={block.uniqueSelector}>
-          {(block.blocks || []).map((sub, idx) => (
+          {(block.blocks || []).map((sub: SignageBlock, idx: number) => (
             <PreviewBlockRenderer key={idx} block={sub} items={items} styles={styles} onFetchModifierOptions={onFetchModifierOptions} />
           ))}
         </div>

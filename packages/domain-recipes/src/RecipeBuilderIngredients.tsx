@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { type MasterIngredient } from "@soustools/api-types";
 import { Plus } from "lucide-react";
 import { RecipeBuilderIngredientRow } from "./RecipeBuilderIngredientRow";

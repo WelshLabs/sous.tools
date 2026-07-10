@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+
 import type { SignageBlock } from "@soustools/api-types";
 import { Trash2 } from "lucide-react";
 

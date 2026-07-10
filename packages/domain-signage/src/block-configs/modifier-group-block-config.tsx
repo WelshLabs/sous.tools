@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+
 import type { SignageBlock } from "@soustools/api-types";
 import { ModifierGroupSettings } from "../modifier-group-settings";
 

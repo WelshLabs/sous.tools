@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+
+import { getTypoStyle } from "./menu-item-style-utils";
 
 export function PreviewTimeline({ block }: { block: any }) {
     

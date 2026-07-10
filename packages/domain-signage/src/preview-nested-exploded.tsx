@@ -1,7 +1,7 @@
 "use client";
 
-import { type MenuItemStyles } from "@soustools/api-types";
-import { buildCardStyle, buildDescriptionStyle, resolveItemState } from "./menu-item-style-utils";
+import { type MenuItemStyles, SignageBlock, PosItem } from "@soustools/api-types";
+import { buildCardStyle, buildDescriptionStyle, resolveItemState, buildTitleStyle, buildPriceStyle } from "./menu-item-style-utils";
 
 interface ComplexPreviewProps {
   block: SignageBlock;
@@ -13,7 +13,7 @@ export function PreviewNestedItem({ block, items, styles }: ComplexPreviewProps)
   if (block.type !== "NestedItemBlock") return null;
 
   const baseItem = items.find((i) => i.id === block.basePosItemId || i.externalId === block.basePosItemId);
-  const baseName = baseItem ? baseItem.name : (block.basePosItemId ? block.basePosItemId.replace("dummy-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Unknown Item");
+  const baseName = baseItem ? baseItem.name : (block.basePosItemId ? block.basePosItemId.replace("dummy-", "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Unknown Item");
   const basePrice = baseItem ? Number(baseItem.price) : 0;
   const isGroupHeader = basePrice === 0;
   

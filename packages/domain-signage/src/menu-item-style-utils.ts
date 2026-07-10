@@ -110,3 +110,18 @@ export function buildAllAnimationCss(styles: MenuItemStyles): string {
   if (styles.soldOut.animation) animations.add(styles.soldOut.animation);
   return Array.from(animations).map(buildAnimationCss).filter(Boolean).join("\n");
 }
+
+export function getTypoStyle(block: Record<string, any>, element: string): React.CSSProperties {
+  const config = block?.config || {};
+  
+  // If your blocks store typography config by element type (e.g., config.body.fontSize)
+  const styleConfig = config[element] || config.typography?.[element] || {};
+
+  return {
+    fontFamily: styleConfig.fontFamily || "inherit",
+    fontSize: styleConfig.fontSize || "inherit",
+    fontWeight: styleConfig.fontWeight || "inherit",
+    color: styleConfig.color || styleConfig.textColor || "inherit",
+    textAlign: styleConfig.textAlign || "inherit",
+  };
+}

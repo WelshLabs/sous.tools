@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+
 import type { SignageBlock } from "@soustools/api-types";
 
 export function ImageBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock }: { selectedBlock: SignageBlock, selectedBlockId: string, onUpdateBlock: (id: string, updates: any) => void }) {

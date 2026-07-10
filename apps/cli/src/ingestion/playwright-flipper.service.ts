@@ -26,7 +26,7 @@ export class PlaywrightFlipperService {
     const data: unknown = await response.json();
 
     // 2. Extract the browser UUID path and force it to use our WSL proxy IP
-    const wsPath = new URL(data.webSocketDebuggerUrl).pathname;
+    const wsPath = new URL((data as { webSocketDebuggerUrl: string }).webSocketDebuggerUrl).pathname;
     const fixedWsUrl = `ws://172.18.16.1:9222${wsPath}`;
 
     // 3. Connect Playwright directly to the raw WebSocket
@@ -53,7 +53,7 @@ export class PlaywrightFlipperService {
           await element.screenshot({ path: outputPath });
         } catch (e: unknown) {
           this.logger.warn(
-            `Failed to screenshot reading area selector "${readingAreaSelector}": ${e.message}. Falling back to page screenshot.`,
+            `Failed to screenshot reading area selector "${readingAreaSelector}": ${e instanceof Error ? e.message : String(e)}. Falling back to page screenshot.`,
           );
           await activePage.screenshot({ path: outputPath });
         }

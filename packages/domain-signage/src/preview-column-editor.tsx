@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type SignageBlock } from "@soustools/api-types";
+import { type ColumnConfig, type SignageBlock, PosItem, MenuItemStyles } from "@soustools/api-types";
 import { ColumnEmptyView } from "./column-empty-view";
 import { ColumnContentView } from "./column-content-view";
 import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";

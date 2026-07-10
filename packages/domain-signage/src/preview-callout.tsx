@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
 
 import * as LucideIcons from "lucide-react";
+import { getTypoStyle } from "./menu-item-style-utils";
 
 export function PreviewCallout({ block }: { block: any }) {
     

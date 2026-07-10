@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
-import type { MenuItemStyles } from "@soustools/api-types";
-import { resolveItemState } from "./menu-item-style-utils";
+
+import type { MenuItemStyles, PosItem } from "@soustools/api-types";
+import { resolveItemState, buildTitleStyle, buildPriceStyle } from "./menu-item-style-utils";
 
 
 export function PreviewMenuList({ block, items, styles }: { block: any, items: PosItem[], styles: MenuItemStyles }) {
@@ -33,7 +33,7 @@ export function PreviewMenuList({ block, items, styles }: { block: any, items: P
 
       return (
         <div className={containerClasses} data-unique-id={block.uniqueSelector}>
-          {block.itemIds.map((itemId) => {
+          {block.itemIds.map((itemId: string) => {
             const item = items.find(
               (i) => i.id === itemId || i.externalId === itemId,
             );

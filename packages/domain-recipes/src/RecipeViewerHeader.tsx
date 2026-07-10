@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { ArrowLeft, Play, History } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@soustools/design-system";

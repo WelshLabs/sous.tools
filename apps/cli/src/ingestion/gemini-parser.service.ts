@@ -152,10 +152,12 @@ JSON Schema format to follow:
 
         // Pass 2b: Image Generation via Stable Diffusion
         for (const block of parsedResult.contentBlocks) {
-          (block as unknown).generatedImages = [];
-          
-          if (block.illustrationIntent === 'GENERATE_FOOD' && (block as unknown).instructionalDescriptions) {
-            for (const description of (block as unknown).instructionalDescriptions) {
+          const blockRecord = block as Record<string, any>; // Cast once to a generic object
+
+          blockRecord.generatedImages = [];
+
+          if (blockRecord.illustrationIntent === 'GENERATE_FOOD' && blockRecord.instructionalDescriptions) {
+            for (const description of blockRecord.instructionalDescriptions) {
               this.logger.log(
                 `Generating SD image for description: ${description}`,
               );
@@ -177,14 +179,18 @@ JSON Schema format to follow:
 
                 if (sdResponse.ok) {
                   const sdData: unknown = await sdResponse.json();
-                  if (sdData.images && sdData.images.length > 0) {
-                    const imageBuffer = Buffer.from(sdData.images[0], 'base64');
+                  const data = sdData as { images?: string[] }; // Assert the expected shape
+
+                  if (data.images && data.images.length > 0) {
+                    const imageBuffer = Buffer.from(data.images[0], 'base64');
                     const imageId = crypto.randomUUID();
                     const imagePath = path.join(imagesDir, `${imageId}.png`);
+                    
                     fs.writeFileSync(imagePath, imageBuffer);
+                    
                     this.logger.log(`Saved generated image to ${imagePath}`);
 
-                    (block as unknown).generatedImages.push(imagePath);
+                    (block as Record<string, any>).generatedImages.push(imagePath);
                   }
                 } else {
                   this.logger.error(
@@ -192,13 +198,13 @@ JSON Schema format to follow:
                   );
                 }
               } catch (sdErr: unknown) {
-                this.logger.error(`Failed to reach SD API: ${sdErr.message}`);
+                this.logger.error(`Failed to reach SD API: ${sdErr instanceof Error ? sdErr.message : String(sdErr)}`);
               }
             }
           }
         }
 
-        (parsedResult as unknown).sourceFile = file;
+        (parsedResult as Record<string, any>).sourceFile = file;
         
         const outDir = path.join(process.cwd(), 'output', bookSlug);
         if (!fs.existsSync(outDir)) {
@@ -216,7 +222,7 @@ JSON Schema format to follow:
         const extractedBlocks = parsedResult.contentBlocks ? parsedResult.contentBlocks.length : 0;
         this.logger.log(`Successfully extracted ${extractedBlocks} blocks from ${file} to ${outFilePath}`);
       } catch (err: unknown) {
-        this.logger.error(`Failed to process spread ${file}: ${err.message}`);
+        this.logger.error(`Failed to process spread ${file}: ${err instanceof Error ? err.message : String(err)}`);
       }
 
       this.logger.log(`Sleeping for 5000ms to respect rate limits...`);

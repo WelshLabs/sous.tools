@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
-import type { MenuItemStyles } from "@soustools/api-types";
-import { resolveItemState } from "./menu-item-style-utils";
+
+import type { MenuItemStyles, PosItem } from "@soustools/api-types";
+import { resolveItemState, buildPriceStyle, buildTitleStyle } from "./menu-item-style-utils";
 
 export function PreviewPosItem({ block, items, styles }: { block: any, items: PosItem[], styles: MenuItemStyles }) {
     

@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import type { SignageBlock, PosItem, SignageLayoutConfig } from "@soustools/api-types";
 import { MenuItemStylesInspector } from "./menu-item-styles-inspector";
 import { LayoutControls } from "./editor-controls/LayoutControls";

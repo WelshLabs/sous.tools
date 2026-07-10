@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import type { RecipeCostData } from "./types";
 
 export interface RecipeCostTableProps {

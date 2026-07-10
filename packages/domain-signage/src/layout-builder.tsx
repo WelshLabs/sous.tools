@@ -141,7 +141,7 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
               <div className={`flex-1 min-h-0 w-full overflow-y-auto transition-all duration-300 ${isWorkspaceOpen ? "mr-96" : ""}`}>
                 <LayoutPreview config={config} items={items} activeSlideIndex={activeSlideIndex} selectedBlockId={selectedBlockId} onSelectBlock={(id) => { setSelectedBlockId(id); setIsWorkspaceOpen(true); }} onFetchModifierOptions={onFetchModifierOptions} />
               </div>
-              <RightSidePanel items={items} isOpen={isWorkspaceOpen} config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={updateConfig} onUpdateSlide={updateSlide} onClose={() => setIsWorkspaceOpen(false)} deckId={deckId} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} selectedBlock={activeBlock} onUpdateBlock={handleUpdateBlock} onFetchModifierGroups={onFetchModifierGroups} />
+              <RightSidePanel items={items} isOpen={isWorkspaceOpen} config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={updateConfig} onUpdateSlide={updateSlide} onClose={() => setIsWorkspaceOpen(false)} deckId={deckId} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} selectedBlock={activeBlock || undefined} onUpdateBlock={handleUpdateBlock} onFetchModifierGroups={onFetchModifierGroups} />
             </>
           )}
         </DragDropContext>

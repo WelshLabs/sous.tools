@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { Info, Trash2 } from "lucide-react";
 import { Button } from "@soustools/design-system";
 import type { Recipe } from "@soustools/api-types";

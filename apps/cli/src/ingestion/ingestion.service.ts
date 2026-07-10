@@ -181,7 +181,7 @@ Return the result as a structured JSON object conforming to this schema:
 
         this.logger.log(`Successfully processed page ${file}`);
       } catch (err: unknown) {
-        this.logger.error(`Failed to process page ${file}: ${err.message}`);
+        this.logger.error(`Failed to process page ${file}: ${err instanceof Error ? err.message : String(err)}`);
         throw err;
       }
 

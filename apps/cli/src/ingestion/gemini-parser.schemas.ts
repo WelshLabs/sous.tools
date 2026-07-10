@@ -15,16 +15,20 @@ export const ingredientSchema = z.object({
 export const preprocessArray = <T extends z.ZodTypeAny>(schema: T) =>
       z.preprocess((val) => {
         if (val == null) return undefined;
-    export const arr = Array.isArray(val) ? val : [val];
-    export const filtered = arr.filter(v => v != null);
-        return filtered.length > 0 ? filtered : undefined;
+
+        const arr = Array.isArray(val) ? val : [val];
+        const filtered = arr.filter(v => v != null);
+
+        return filtered.length > 0 ? filtered : undefined;        
       }, z.array(schema).optional()).optional();
 
 export const preprocessStringArray = () =>
       z.preprocess((val) => {
         if (val == null) return undefined;
-    export const arr = Array.isArray(val) ? val : [val];
-    export const filtered = arr.filter(v => v != null && typeof v === 'string' && v.toLowerCase() !== 'none');
+        
+        const arr = Array.isArray(val) ? val : [val];
+        const filtered = arr.filter(v => v != null && typeof v === 'string' && v.toLowerCase() !== 'none');
+        
         return filtered.length > 0 ? filtered : undefined;
       }, z.array(z.string()).optional());
 

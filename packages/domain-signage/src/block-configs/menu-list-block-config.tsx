@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+
 import { type SignageBlock, type PosItem } from "@soustools/api-types";
 import { PosItemMultiPicker } from "../pos-item-picker";
 import { MenuListModifierSettings } from "../menu-list-modifier-settings";

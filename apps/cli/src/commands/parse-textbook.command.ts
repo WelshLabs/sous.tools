@@ -29,7 +29,7 @@ export class ParseTextbookCommand extends CommandRunner {
       await this.geminiParserService.parseQueue(bookSlug);
       this.logger.log('Pass 2 completed successfully.');
     } catch (error: unknown) {
-      this.logger.error(`Pass 2 failed: ${error.message}`);
+      this.logger.error(`Pass 2 failed: ${error instanceof Error ? error.message : String(error)}`);
       process.exit(1);
     }
   }

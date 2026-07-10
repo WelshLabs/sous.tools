@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+
 import type { SignageBlock, PosItem } from "@soustools/api-types";
 
 

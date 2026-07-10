@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Truck, Calendar, Check, ShoppingBag } from "lucide-react";
 import type { OrderSupplier, OrderLineItem } from "./SupplierOrderGroup.types";
 
