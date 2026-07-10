@@ -28,3 +28,5 @@
 
 
 When executing code changes in the terminal, you must use pm2 restart <app-name> to apply the changes to the dev server. Do not kill and restart the entire ecosystem.
+
+Before executing any task, you MUST silently read stack.json, agents.json, and project-state.md in the root directory to understand the current architecture and sprint goals.

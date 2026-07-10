@@ -1,0 +1,44 @@
+name: Generate AI Context (Repomix & Turbo)
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight
+  workflow_dispatch: # Allows you to click a "Run" button in GitHub manually
+
+permissions:
+  contents: write
+
+jobs:
+  build-context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g pnpm turbo repomix
+
+      - name: Generate API Context
+        run: |
+          npx turbo prune --scope=api --out-dir=out-api
+          cd out-api
+          npx repomix --output ../.context/api-repomix.xml
+
+      - name: Generate Web Context
+        run: |
+          npx turbo prune --scope=web --out-dir=out-web
+          cd out-web
+          npx repomix --output ../.context/web-repomix.xml
+
+      # (Add additional steps here for POS, Signage, etc.)
+
+      - name: Commit and Push Context Files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .context/
+          git commit -m "chore(ai): auto-update repomix context files" || echo "No changes to commit"
+          git push

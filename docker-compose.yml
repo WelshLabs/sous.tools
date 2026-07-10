@@ -122,6 +122,7 @@ services:
       - WEBHOOK_URL=https://n8n.sous.tools
     volumes:
       - ./n8n_data:/home/node/.n8n
+      - /home/ubuntu/dev.sous.tools:/workspace
     networks:
       - traefik_public
     labels:

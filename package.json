@@ -27,7 +27,9 @@
     "docker": "docker-compose -f docker-compose.dev.yml up -d",
     "import:book": "infisical run -- pnpm --filter cli run start -- import:textbook 'https://play.google.com/books/reader?id=H39zEAAAQBAJ&pg=GBS.PA150' --pages 5",
     "build:packages": "pnpm --filter './packages/**' build",
-    "restart:traefik": "docker compose -f docker-compose.dev.yml restart traefik"
+    "restart:traefik": "docker compose -f docker-compose.dev.yml restart traefik",
+    "prompt:setup": "cat .agents/setup-prompt.txt | xclip -selection clipboard && echo '✅ Setup prompt copied to clipboard!'",
+    "prompt:teardown": "cat .agents/teardown-prompt.txt | xclip -selection clipboard && echo '✅ Teardown prompt copied!'"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

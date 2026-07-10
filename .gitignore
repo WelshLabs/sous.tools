@@ -80,3 +80,5 @@ packages/.secrets.cache.json
 
 .pnpm-store
 newrelic_agent.log
+
+.continue/

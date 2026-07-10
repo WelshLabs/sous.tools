@@ -1,0 +1,5 @@
+Here are our latest `.context/` repomix files, `project-state.md`, `stack.json`, and `agents.json`. You are my CTO. Read these to understand our architecture, current sprint, and the available workforce.
+
+My goal today is to plan our next steps. What is our priority today based on the project state? 
+
+When suggesting an execution plan for a GitHub issue, you must explicitly state which agent from `agents.json` I should use, which model is best, and provide the exact prompt I should hand to that agent. Ensure the prompt instructs the agent to use the GitHub MCP server to read the automated diagnosis on the issue, execute the changes, and close it when finished.
