@@ -74,3 +74,6 @@ else
     # Ollama Local Shortcuts
     alias ollama-logs='docker compose -f docker-compose.dev.yml logs -f ollama'
 fi
+
+export ANTHROPIC_BASE_URL="https://ai.sous.tools"
+export ANTHROPIC_API_KEY="sk-1234"

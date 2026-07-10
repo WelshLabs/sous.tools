@@ -16,7 +16,7 @@
 
 ## 3. Design System & Styling
 
-- **Tailwind v4:** Use the `@theme` directive in CSS. No `tailwind.config` file.
+- **Tailwind v4:** Use the `@theme` directive in CSS. No `tailwind.config` file.  Always use semantic classnames instead of hardcoded tailwind colors or spacing.
 - **Neon-Glass UI:** Implement high-contrast Dark UI with Cyan (`#00FFFF`) accents for high-heat, high-light kitchen environments. Maximize Progressive Disclosure.
 - **Semantic Variables:** Hardcoding legacy Tailwind colors (e.g., `slate-*`) or absolute z-indexes (e.g., `z-40`) is forbidden. Strictly use semantic CSS variables (e.g., `var(--z-overlay)`) and the "Midnight Slate" (`zinc-*`) palette defined in `@soustools/design-system`.
 - **Opacities:** Use strict Hex codes to allow native `color-mix()` opacity.

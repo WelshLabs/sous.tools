@@ -1,15 +1,27 @@
 model_list:
-  - model_name: local-coder
+  # Route to your local Ollama container
+  - model_name: qwen2.5-coder:7b
     litellm_params:
       model: ollama/qwen2.5-coder:7b
       api_base: http://ollama:11434
-  - model_name: gemini-pro
+  - model_name: deepseek-coder-v2
+    litellm_params:
+      model: ollama/deepseek-coder-v2
+      api_base: http://ollama:11434
+  
+  # Route to Google Gemini
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemini-1.5-flash
     litellm_params:
       model: gemini/gemini-1.5-flash
       api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
 
 general_settings:
-  master_key: sk-1234 # Used by your tools to auth with LiteLLM
-
-
-# https://n8n.sous.tools:5678/webhook-test/ebb9a8f0-efc1-4627-9e71-3a9b25e88c1b
+  master_key: sk-1234 # This is your new "Universal" API Key

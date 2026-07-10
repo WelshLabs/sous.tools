@@ -7,8 +7,9 @@ RUN apt-get update && apt-get install -y zsh curl git psmisc tmux && \
 # Install a specific Node version and pnpm (e.g., Node 22)
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
-    npm install -g pnpm
-    npm install -g pm2
+    npm install -g pnpm && \
+    npm install -g pm2 && \
+    npm install -g @anthropic-ai/claude-code
 
 # Set Zsh as the default shell for the 'abc' user (the default user for linuxserver images)
 RUN usermod -s /bin/zsh abc
