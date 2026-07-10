@@ -4,7 +4,7 @@
   "environments": {
     "home_dev": "Windows WSL2, Local Supabase Docker, Redis + Ollama Docker",
     "work_dev": "Oracle VPS (24GB ARM64), Code-server, Redis, LiteLLM, n8n, Ollama, Docker",
-    "production": "Vercel (Next.js), Oracle VPS (NestJS API, Redis, LiteLLM, Traefik), Hosted Supabase"
+    "production": "Vercel (Next.js), Oracle VPS (NestJS API, Redis, LiteLLM, Traefik, n8n), Hosted Supabase"
   },
   "core_stack": {
     "frontend": "Next.js 16 (React, Server Components)",
