@@ -6,7 +6,7 @@
   },
   "v0": {
     "role": "Visual Scaffolder",
-    "purpose": "Rapidly generating UI atoms, molecules, and organisms based on neon-glass design tokens.",
+    "purpose": "Rapidly generating UI atoms,  molecules, and organisms based on neon-glass design tokens.",
     "context": ["Tailwind v4 semantic tokens"]
   },
   "claude_code": {
