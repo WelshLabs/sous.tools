@@ -4,7 +4,13 @@ import { Save, X } from "lucide-react";
 import type { Vendor } from "@soustools/api-types";
 
 const DAYS_OF_WEEK = [
-  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
 ];
 
 export interface VendorCardFormProps {
@@ -15,7 +21,12 @@ export interface VendorCardFormProps {
 }
 
 /** Molecule: Inline form card for creating or editing a vendor record. */
-export function VendorCardForm({ form, setForm, onSave, onCancel }: VendorCardFormProps) {
+export function VendorCardForm({
+  form,
+  setForm,
+  onSave,
+  onCancel,
+}: VendorCardFormProps) {
   return (
     <div className="st-glass-panel p-5 rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-500/5 shadow-md flex flex-col gap-3">
       <input
@@ -29,11 +40,17 @@ export function VendorCardForm({ form, setForm, onSave, onCancel }: VendorCardFo
 
       <select
         value={form.order_method ?? "MANUAL"}
-        onChange={(e) => setForm({ ...form, order_method: e.target.value as any })}
-
+        onChange={(e) =>
+          setForm({
+            ...form,
+            order_method: e.target.value as Vendor["order_method"],
+          })
+        }
         className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-border rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
       >
-        <option value="" disabled>Select Order Method</option>
+        <option value="" disabled>
+          Select Order Method
+        </option>
         <option value="EMAIL">Email</option>
         <option value="SMS">Text Message</option>
         <option value="MANUAL">Manual</option>

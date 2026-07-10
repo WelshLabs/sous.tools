@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { io, type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
+import { config } from "@soustools/config";
 
 export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
   const configuredBase = apiUrl?.trim();
@@ -67,7 +69,7 @@ export function useOmniSocket(token?: string): {
     const initSocket = async () => {
       try {
         const socketUrl = resolveSocketUrl(
-          process.env.NEXT_PUBLIC_API_URL,
+          config.API_BASE_URL,
           typeof window !== "undefined" ? window.location.origin : undefined,
         );
 
@@ -134,12 +136,12 @@ export function useOmniSocket(token?: string): {
           socket?.connect();
         }
 
-        socket?.on('exception', (error) => {
-          console.error('NestJS Guard/Pipe Exception:', error);
+        socket?.on("exception", (error) => {
+          console.error("NestJS Guard/Pipe Exception:", error);
         });
 
-        socket?.on('error', (error) => {
-          console.error('Socket Error:', error);
+        socket?.on("error", (error) => {
+          console.error("Socket Error:", error);
         });
 
         socket?.emit("executeCommand", {

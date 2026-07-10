@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { type IntegrationStatus } from "@soustools/api-types";
 import { IntegrationCard } from "./integration-card";
 
-
 export interface IntegrationsPanelProps {
   integrations: IntegrationStatus[];
   onConnect: (provider: string) => void;
@@ -59,7 +58,10 @@ export function IntegrationsPanel({
     } catch (err: unknown) {
       setNotification({
         type: "error",
-        message: (err as any).message || "Network error during disconnection.",
+        message:
+          err instanceof Error
+            ? err.message
+            : "Network error during disconnection.",
       });
     } finally {
       setActionLoading(false);
@@ -81,12 +83,12 @@ export function IntegrationsPanel({
     } catch (err: unknown) {
       setNotification({
         type: "error",
-        message: (err as any).message || `Failed to ${action} catalog.`,
+        message:
+          err instanceof Error ? err.message : `Failed to ${action} catalog.`,
       });
     } finally {
       setActionLoading(false);
     }
-
   };
 
   return (

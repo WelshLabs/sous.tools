@@ -1,14 +1,14 @@
 "use client";
 
 import { Edit, Trash2 } from "lucide-react";
+import type { PosItem } from "@soustools/api-types";
 
 export interface ItemsLedgerTableProps {
-  items: any[];
+  items: PosItem[];
   loading: boolean;
-  onEdit: (item: any) => void;
+  onEdit: (item: PosItem) => void;
   onDelete: (id: string) => void;
 }
-
 
 export function ItemsLedgerTable({
   items,
@@ -47,11 +47,13 @@ export function ItemsLedgerTable({
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
           {items.map((item) => (
-              <tr
+            <tr
               key={item.id}
               className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
             >
-              <td className="px-6 py-4 font-medium text-zinc-900 dark:text-foreground">{item.name}</td>
+              <td className="px-6 py-4 font-medium text-zinc-900 dark:text-foreground">
+                {item.name}
+              </td>
               <td className="px-6 py-4">
                 <span className="px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded-md text-xs">
                   {item.category}
@@ -72,7 +74,9 @@ export function ItemsLedgerTable({
                     </span>
                   ))}
                   {(!item.allergens || item.allergens.length === 0) && (
-                    <span className="text-zinc-500 dark:text-zinc-600 italic">None</span>
+                    <span className="text-zinc-500 dark:text-zinc-600 italic">
+                      None
+                    </span>
                   )}
                 </div>
               </td>

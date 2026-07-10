@@ -32,66 +32,14 @@ export class GeminiParserService {
       fs.mkdirSync(imagesDir, { recursive: true });
     }
 
-
     const schema = geminiParserSchema;
 
     // Enforce model name as requested
     // const modelName = "gemini-2.5-pro";
     const modelName = 'gemini-3.1-flash-lite';
 
-    const prompt = `You are an elite culinary scientist and research chef. Extract the content from this textbook spread as an array of polymorphic content blocks.
-Strictly conform to the provided JSON schema. Write highly detailed physical text descriptions for any visual diagrams (e.g., dough shaping techniques) and put them in instructionalDescriptions.
-Summarize all prose to avoid copyright infringement.
-
-JSON Schema format to follow:
-{
-  "bookTitle": "string (Extract from page headers, e.g., 'Professional Baking')",
-  "pageNumbers": "string (Extract from corners, e.g., '24-25')",
-  "contentBlocks": [
-    {
-      "classification": "RECIPE",
-      "illustrationIntent": "GENERATE_FOOD | EXTRACT_ORIGINAL_PHOTO | NONE",
-      "parentRecipeReference": "string (optional, exact name of the base recipe if this is a variation)",
-      "recipeName": "string",
-      "recipeContext": "string",
-      "ingredients": [{"name": "string", "quantity": "number", "unit": "string"}],
-      "objectiveSteps": ["string"]
-    },
-    {
-      "classification": "ENCYCLOPEDIA",
-      "illustrationIntent": "EXTRACT_ORIGINAL_PHOTO | NONE",
-      "encyclopediaSummary": "string (CRITICAL: REQUIRED. Summarize the prose, do not leave blank)",
-      "instructionalDescriptions": ["string (Detailed physical descriptions of photos/diagrams)"]
-    },
-    {
-      "classification": "MATH_FORMULA",
-      "illustrationIntent": "NONE",
-      "formulaName": "string",
-      "formulaDetails": "string (CRITICAL: REQUIRED. Extract the actual math logic, do not leave blank)"
-    },
-    {
-      "classification": "REFERENCE_TABLE",
-      "illustrationIntent": "NONE",
-      "tableName": "string (optional)",
-      "tableData": [["string", "string", "string"]]
-    },
-    {
-      "classification": "TECHNIQUE_OR_METHOD",
-      "illustrationIntent": "EXTRACT_ORIGINAL_PHOTO | NONE",
-      "instructionalDescriptions": ["string (CRITICAL: REQUIRED. Describe the workflow in detail)"]
-    },
-    {
-      "classification": "FLAVOR_PAIRING",
-      "illustrationIntent": "EXTRACT_ORIGINAL_PHOTO | NONE",
-      "baseIngredient": "string",
-      "pairings": ["string"],
-      "affinities": ["string (optional)"],
-      "season": "string (optional)",
-      "weight": "string (optional)",
-      "volume": "string (optional)"
-    }
-  ]
-}`;
+    import { GEMINI_SPREAD_PROMPT } from './prompt-templates';
+    const prompt = GEMINI_SPREAD_PROMPT;
 
     for (const file of files) {
       this.logger.log(`Processing spread ${file}...`);
@@ -99,7 +47,9 @@ JSON Schema format to follow:
       const imageBase64 = fs.readFileSync(filePath).toString('base64');
 
       try {
-        let response: Awaited<ReturnType<typeof this.ai.models.generateContent>> | undefined;
+        let response:
+          | Awaited<ReturnType<typeof this.ai.models.generateContent>>
+          | undefined;
         let attempts = 0;
         const maxAttempts = 3;
         while (attempts < maxAttempts) {
@@ -125,12 +75,16 @@ JSON Schema format to follow:
             if (attempts >= maxAttempts) {
               throw error;
             }
-            this.logger.warn(`Network error on ${file}. Retrying attempt ${attempts}/3...`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            this.logger.warn(
+              `Network error on ${file}. Retrying attempt ${attempts}/3...`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 2000));
           }
         }
         if (!response) {
-          throw new Error(`No response received from Gemini for spread ${file} after ${maxAttempts} attempts`);
+          throw new Error(
+            `No response received from Gemini for spread ${file} after ${maxAttempts} attempts`,
+          );
         }
 
         const textResponse = response.text;
@@ -143,7 +97,7 @@ JSON Schema format to follow:
         const firstBrace = textResponse.indexOf('{');
         const lastBrace = textResponse.lastIndexOf('}');
         if (firstBrace === -1 || lastBrace === -1) {
-          throw new Error("No JSON object found in response");
+          throw new Error('No JSON object found in response');
         }
         const cleanJson = textResponse.substring(firstBrace, lastBrace + 1);
 
@@ -152,11 +106,18 @@ JSON Schema format to follow:
 
         // Pass 2b: Image Generation via Stable Diffusion
         for (const block of parsedResult.contentBlocks) {
-          const blockRecord = block as Record<string, any>; // Cast once to a generic object
+          const blockRecord = block as Record<string, unknown> & {
+            generatedImages?: string[];
+            illustrationIntent?: string;
+            instructionalDescriptions?: string[];
+          };
 
-          blockRecord.generatedImages = [];
+          blockRecord.generatedImages = blockRecord.generatedImages ?? [];
 
-          if (blockRecord.illustrationIntent === 'GENERATE_FOOD' && blockRecord.instructionalDescriptions) {
+          if (
+            blockRecord.illustrationIntent === 'GENERATE_FOOD' &&
+            blockRecord.instructionalDescriptions
+          ) {
             for (const description of blockRecord.instructionalDescriptions) {
               this.logger.log(
                 `Generating SD image for description: ${description}`,
@@ -185,12 +146,14 @@ JSON Schema format to follow:
                     const imageBuffer = Buffer.from(data.images[0], 'base64');
                     const imageId = crypto.randomUUID();
                     const imagePath = path.join(imagesDir, `${imageId}.png`);
-                    
+
                     fs.writeFileSync(imagePath, imageBuffer);
-                    
+
                     this.logger.log(`Saved generated image to ${imagePath}`);
 
-                    (block as Record<string, any>).generatedImages.push(imagePath);
+                    if (!Array.isArray(blockRecord.generatedImages))
+                      blockRecord.generatedImages = [];
+                    (blockRecord.generatedImages as string[]).push(imagePath);
                   }
                 } else {
                   this.logger.error(
@@ -198,31 +161,45 @@ JSON Schema format to follow:
                   );
                 }
               } catch (sdErr: unknown) {
-                this.logger.error(`Failed to reach SD API: ${sdErr instanceof Error ? sdErr.message : String(sdErr)}`);
+                this.logger.error(
+                  `Failed to reach SD API: ${sdErr instanceof Error ? sdErr.message : String(sdErr)}`,
+                );
               }
             }
           }
         }
 
-        (parsedResult as Record<string, any>).sourceFile = file;
-        
+        (
+          parsedResult as Record<string, unknown> & { sourceFile?: string }
+        ).sourceFile = file;
+
         const outDir = path.join(process.cwd(), 'output', bookSlug);
         if (!fs.existsSync(outDir)) {
           fs.mkdirSync(outDir, { recursive: true });
         }
-        
+
         const baseName = path.basename(file, '.png');
-        const fileName = parsedResult.pageNumbers 
-          ? `pages-${parsedResult.pageNumbers.replace(/[^a-zA-Z0-9-]/g, '-')}.json` 
+        const fileName = parsedResult.pageNumbers
+          ? `pages-${parsedResult.pageNumbers.replace(/[^a-zA-Z0-9-]/g, '-')}.json`
           : `${baseName}.json`;
-        
+
         const outFilePath = path.join(outDir, fileName);
-        fs.writeFileSync(outFilePath, JSON.stringify(parsedResult, null, 2), 'utf8');
-        
-        const extractedBlocks = parsedResult.contentBlocks ? parsedResult.contentBlocks.length : 0;
-        this.logger.log(`Successfully extracted ${extractedBlocks} blocks from ${file} to ${outFilePath}`);
+        fs.writeFileSync(
+          outFilePath,
+          JSON.stringify(parsedResult, null, 2),
+          'utf8',
+        );
+
+        const extractedBlocks = parsedResult.contentBlocks
+          ? parsedResult.contentBlocks.length
+          : 0;
+        this.logger.log(
+          `Successfully extracted ${extractedBlocks} blocks from ${file} to ${outFilePath}`,
+        );
       } catch (err: unknown) {
-        this.logger.error(`Failed to process spread ${file}: ${err instanceof Error ? err.message : String(err)}`);
+        this.logger.error(
+          `Failed to process spread ${file}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
 
       this.logger.log(`Sleeping for 5000ms to respect rate limits...`);

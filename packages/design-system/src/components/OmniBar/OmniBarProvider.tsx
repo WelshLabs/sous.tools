@@ -9,23 +9,30 @@ import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
 
-export function OmniBarProvider({ children, token }: { children?: React.ReactNode; token?: string }) {
+export function OmniBarProvider({
+  children,
+  token,
+}: {
+  children?: React.ReactNode;
+  token?: string;
+}) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
-  
+
   const {
-    contextPayload, 
-    chatHistory, 
-    isOpen, 
-    isProcessing, 
-    setIsOpen, 
+    contextPayload,
+    chatHistory,
+    isOpen,
+    isProcessing,
+    setIsOpen,
     setIsProcessing,
     setChatHistory,
     setIsDragging,
   } = useOmnibarContext();
 
   const [inputText, setInputText] = useState("");
-  const { socket, errorMessage, setErrorMessage, isListening, setIsListening } = useOmniSocket(token);
+  const { socket, errorMessage, setErrorMessage, isListening, setIsListening } =
+    useOmniSocket(token);
 
   const dragCounter = useRef(0);
 
@@ -55,7 +62,7 @@ export function OmniBarProvider({ children, token }: { children?: React.ReactNod
     };
 
     const handleDrop = () => {
-      // Don't prevent default here for the drop, let OmniInputPill handle it if dropped there, 
+      // Don't prevent default here for the drop, let OmniInputPill handle it if dropped there,
       // but we do need to reset the drag state. Wait, if we preventDefault, child might not get it?
       // Actually child event runs first if bubbling, but window captures it at the end.
       dragCounter.current = 0;
@@ -97,7 +104,6 @@ export function OmniBarProvider({ children, token }: { children?: React.ReactNod
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      
 
       if (isProcessing) return;
 
@@ -107,12 +113,12 @@ export function OmniBarProvider({ children, token }: { children?: React.ReactNod
         setIsProcessing(true);
         setErrorMessage(null);
         setIsOpen(true);
-        
+
         const newUserMessage: OmniMessage = {
           id: crypto.randomUUID(),
-          role: 'user',
+          role: "user",
           content: textToSubmit,
-          timestamp: new Date()
+          timestamp: new Date(),
         };
 
         const updatedHistory = [...chatHistory, newUserMessage];
@@ -125,7 +131,7 @@ export function OmniBarProvider({ children, token }: { children?: React.ReactNod
             setIsProcessing(false);
             return;
           }
-          
+
           socket.emit("executeCommand", {
             chatHistory: updatedHistory,
             source: "omnibar",
@@ -134,7 +140,8 @@ export function OmniBarProvider({ children, token }: { children?: React.ReactNod
           });
         } catch (err: unknown) {
           console.error("Failed to emit command:", err);
-          const errorMessage = err instanceof Error ? err.message : "Network error occurred.";
+          const errorMessage =
+            err instanceof Error ? err.message : "Network error occurred.";
           setErrorMessage(errorMessage);
           setIsProcessing(false);
         }
@@ -148,30 +155,39 @@ export function OmniBarProvider({ children, token }: { children?: React.ReactNod
   const handleMicClick = () => {
     const SpeechRecognition =
       (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition: unknown }).webkitSpeechRecognition;
+      (window as unknown as { webkitSpeechRecognition: unknown })
+        .webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
       return;
     }
 
     setIsListening(true);
-    const SpeechRecognitionConstructor = SpeechRecognition as unknown as { new(): { continuous: boolean, interimResults: boolean, onresult: (e: { results: Iterable<{ transcript: string }[]> }) => void, onerror: (e: { error: unknown }) => void, onend: () => void, start: () => void } };
+    const SpeechRecognitionConstructor = SpeechRecognition as unknown as {
+      new (): {
+        continuous: boolean;
+        interimResults: boolean;
+        onresult: (e: { results: Iterable<{ transcript: string }[]> }) => void;
+        onerror: (e: { error: unknown }) => void;
+        onend: () => void;
+        start: () => void;
+      };
+    };
     const recognition = new SpeechRecognitionConstructor();
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
-        .map((result: any) => result[0].transcript)
+        .map((result: SpeechRecognitionResult) => result[0]?.transcript ?? "")
         .join("");
       setInputText(transcript);
     };
 
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error", String(event.error));
+    recognition.onerror = (event: Event) => {
+      console.error("Speech recognition error", event);
       setIsListening(false);
     };
-
 
     recognition.onend = () => {
       setIsListening(false);
@@ -203,7 +219,8 @@ export function OmniBarProvider({ children, token }: { children?: React.ReactNod
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="fixed top-0 left-0 h-[2px] bg-[var(--color-primary)] z-[100000]"
             style={{
-              boxShadow: "0 0 10px var(--color-primary), 0 0 20px var(--color-primary)",
+              boxShadow:
+                "0 0 10px var(--color-primary), 0 0 20px var(--color-primary)",
             }}
           />
         )}
