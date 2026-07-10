@@ -39,7 +39,9 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
-    # Ports deliberately not exposed to the outside world
+    networks:
+      - default
+      - traefik_public
 
   api:
     build:
