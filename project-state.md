@@ -1,0 +1,86 @@
+# Active Sprint
+
+Here's a summary of the open issues for the current sprint:
+
+## Features & Enhancements
+- [ ] **omnibar uploads**: Implement file upload functionality (file, camera, Google Drive) in the omnibar, with support for copy/pasting files. Enhance UI/UX for visual appeal. Add ability to share from external pages to the PWA, directing to the omnibar with context.
+- [ ] **knip**: Set up knip in the CI/CD pipeline. Integrate knip results into the agent context. Plan for automated GitHub issue creation based on urgency.
+- [ ] **api client**: Generate a fully functional API client for frontends, including authentication helpers and file upload capabilities. Refactor codebase to universally use this client.
+- [ ] **user profile button**: Replace hardcoded user initials with dynamic display of real user information.
+- [ ] **Supabase migrations**: Update database connection methods to align with Supabase's new requirements. Verify all connections and clean up unused Infisical keys.
+- [ ] **Orders Page**:
+    - Implement a dropdown for uploading orders via Google Drive, camera, or image upload, with a shared ingestion process.
+    - Add filters to the orders slideout sheet: "Open", "Pending Review", and "Completed" (paginated).
+    - Link pending review orders to the review screen.
+    - Allow uploading invoices not associated with an order from the main orders page.
+    - Consider using Next.js intercepting/parallel routes for a modal-based review screen.
+- [ ] **Recipes Page**:
+    - Change the header to "Recipes" instead of "Recipe Ingredients".
+    - Implement functionality to link recipes to POS items.
+    - Redesign the status queue bar to a responsive toolbar under the header, with a search input.
+    - Remove the "Status Queue" icon and text.
+    - Relabel tabs: "All Recipes" (defaulting to approved recipes) and "Pending Review" (replacing "Verification Queue").
+    - Ensure the "Pending Review" tab displays unverified recipes and links to the review screen.
+    - Clarify that the ingestion queue page should show all ingestions, while individual pages show their respective ingestions.
+- [ ] **Users Page**:
+    - Create an ADMIN ONLY page for CRUD operations on users.
+    - Implement new API routes with robust security for admin-only actions.
+    - Admins should be able to add, edit, and remove users, as well as modify profile values.
+    - Add a divider and admin-only links to the sidebar, visible only to admins.
+- [ ] **Square Integration**:
+    - Fix the "Organization not loaded yet" error when connecting to Square.
+    - Load and display all sales data from Square on a dedicated sales screen.
+    - Load and manage all items from Square in an item catalog editor page.
+    - Fetch orders from Square and display them on an orders page and in the KDS.
+    - Create a transactions page to display Square transaction data.
+    - Design the integration to be driver-based for future support of other systems (Toast, Lightspeed, etc.).
+- [ ] **rename pwa**:
+    - Rename the app to "sous.tools" or "Sous Tools".
+    - Correct the PWA title bar to display "sous.tools".
+    - Style the chrome using standalone mode and window-controls-overlay.
+    - Add a proper app icon.
+- [ ] **dark/light mode**:
+    - Ensure the UI correctly switches between dark and light modes, with a system mode option.
+    - Fix components to consistently respond to mode changes.
+- [ ] **new relic logging**:
+    - Configure environment variables for New Relic.
+    - Set up New Relic as a Syslog TLS target in "Log Streams".
+    - Implement isomorphic, application-level logging to stream telemetry to New Relic without violating Vercel's free tier.
+    - Manage the New Relic ingest key securely through Infisical.
+    - Build a shared monorepo package using 'pino' for global full-stack logging.
+    - Implement a global monkey-patching wrapper for console logs.
+    - Configure server-side logging to structured JSON (stdout).
+    - Implement client-side logging to transmit errors to New Relic's Log Endpoint.
+    - Integrate Vercel analytics and speed insights modules.
+    - Implement global `error.tsx` boundary component for client-side failures.
+    - Integrate New Relic APM agent and logger wrapper in the NestJS backend.
+    - Implement a global NestJS `ExceptionFilter`.
+    - Configure Infisical for secret management and sync to Vercel or wrap build tasks.
+    - Offload network requests for logging to separate threads.
+- [ ] **dashboard page**:
+    - Implement "Financial Pulse" section: Real-Time Food Cost Percentage, Gross Profit (MTD), Total Sales.
+    - Implement "Purchasing & Cost Alerts": Ingredient Price Spikes, Low Par Levels, Pending Reconciliations, Today's Expected Deliveries.
+    - Implement "Menu Profitability & Engineering": Top Margin Drivers, Margin Bleeders, 86'd / Depleted Items.
+    - Implement "System & Hardware Health": Digital Signage Status, POS Sync Status.
+    - Utilize a grid layout with a neon-glass UI design system.
+- [ ] **mobile app bar**:
+    - Update the mobile app bar to display: Dashboard, Recipes, Home icon, Orders.
+    - Relocate alerts to a badge or another appropriate location.
+    - Correct the "alerts" navigation to the correct page.
+
+## Bug Fixes & Refactors
+- [ ] **use-omni-socket.hoot.ts**: Remove direct access to `process.env` in this file.
+- [ ] **Random Bugs**:
+    - Fix Orders page heading, responsiveness, and order item saving.
+    - Resolve migration failures preventing vendor saving.
+    - Fix recipe import issues.
+    - Rename the Ingestion Queue, fix data retrieval, and add processing/review status indicators.
+    - Update favicon to blue lines, with correct sizing and transparency.
+    - Reverse the order of Raspberry Pi Imager and Balena in the download instructions.
+    - Add visual confirmation for password confirmation and resolve the "infinite recursion detected" error when saving passwords.
+    - Remove the redundant logout button from the sidebar.
+    - Add autocomplete to the Order page, check for duplicates, and review order history.
+    - Implement suggestions for low-inventory items on the Order page.
+    - Fix the KDS page's vertical scrollbar.
+    - Make the Vessel Manager configurable for units (cm/inches) and add a toggle for volume (ml/grams).
+    - Ensure saving vessels functions correctly and provides user feedback.
