@@ -120,6 +120,7 @@ services:
       - N8N_PROTOCOL=https
       - N8N_COMMAND_ENABLE=true
       - WEBHOOK_URL=https://n8n.sous.tools
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
     volumes:
       - ./n8n_data:/home/node/.n8n
       - /home/ubuntu/dev.sous.tools:/workspace
