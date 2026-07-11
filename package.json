@@ -1,51 +1,24 @@
 {
-  "name": "sous-tools-monorepo",
+  "name": "sous-monorepo",
   "private": true,
   "scripts": {
-    "build": "INFISICAL_MOCK=true turbo build",
-    "dev": "turbo dev",
-    "typecheck": "turbo typecheck",
+    "build": "turbo build",
+    "dev": "dotenv -- turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "test": "INFISICAL_MOCK=true turbo test",
-    "secrets:sync": "pnpm --filter @soustools/config secrets:sync",
-    "audit:secrets": "npx tsx scripts/audit-secrets.ts",
-    "clean:all": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist .turbo apps/*/.turbo packages/*/.turbo && pnpm install",
-    "clean:dockerimages": "sudo bash -c 'rm -rf node_modules apps/*/node_modules packages/*/node_modules .pnpm-store'",
-    "push:all": "git push origin HEAD:main HEAD:staging",
-    "context:tree": "repomix . --include-full-directory-structure --no-files --output .context/context-tree.md",
-    "context:root": "repomix . --include \"package.json,turbo.json,tsconfig.json,docker-compose.dev.yml,docker-compose.yml,Dockerfile.dev\" --output .context/context-root.md",
-    "context:agents": "repomix .agents --output .context/context-agents.md",
-    "context:api": "repomix apps/api/src --ignore \"**/*.spec.ts\" --output .context/context-api.md",
-    "context:web": "repomix apps/web/src --ignore \"**/*.test.tsx\" --output .context/context-web.md",
-    "context:design-system": "repomix packages/design-system/src --output .context/context-design-system.md",
-    "context:domains": "repomix packages/domain-*/src packages/api-types/src --output .context/context-domains.md",
-    "context:db": "repomix supabase --output .context/context-db.md",
-    "context:wearos": "repomix apps/wearos --output .context/context-wearos.md",
-    "context:config": "repomix packages/config --output .context/context-config.md",
-    "context:all": "pnpm run context:tree && pnpm run context:root && pnpm run context:agents && pnpm run context:api && pnpm run context:web && pnpm run context:design-system && pnpm run context:domains && pnpm run context:db && pnpm run context:wearos && pnpm run context:config",
-    "docker": "docker-compose -f docker-compose.dev.yml up -d",
-    "import:book": "infisical run -- pnpm --filter cli run start -- import:textbook 'https://play.google.com/books/reader?id=H39zEAAAQBAJ&pg=GBS.PA150' --pages 5",
-    "build:packages": "pnpm --filter './packages/**' build",
-    "restart:traefik": "docker compose -f docker-compose.dev.yml restart traefik",
-    "prompt:setup": "cat .agents/setup-prompt.txt | xclip -selection clipboard && echo '✅ Setup prompt copied to clipboard!'",
-    "prompt:teardown": "cat .agents/teardown-prompt.txt | xclip -selection clipboard && echo '✅ Teardown prompt copied!'"
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:types": "pnpm --filter @sous-chefs/supabase db:types",
+    "knip": "knip"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^9.39.4",
-    "eslint-plugin-boundaries": "^7.0.2",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "prettier": "^3.0.0",
-    "repomix": "^1.16.0",
-    "turbo": "^2.9.17",
-    "typescript-eslint": "^8.63.0"
+    "@sous-chefs/eslint-config": "workspace:*",
+    "@sous-chefs/tsconfig": "workspace:*",
+    "dotenv-cli": "^7.4.2",
+    "knip": "^5.25.0",
+    "prettier": "^3.3.2",
+    "turbo": "^2.0.4"
   },
+  "packageManager": "pnpm@9.1.1",
   "engines": {
-    "node": ">=22.22.0"
-  },
-  "packageManager": "pnpm@11.5.2",
-  "dependencies": {
-    "jsonwebtoken": "^9.0.3"
+    "node": ">=18"
   }
 }
