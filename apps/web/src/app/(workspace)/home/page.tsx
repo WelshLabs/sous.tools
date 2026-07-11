@@ -1,22 +1,9 @@
-import Link from 'next/link';
+import { PrimaryLogo } from "@soustools/design-system";
 
-const HomePage = () => {
+export default function HomePage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-center p-4">
-      <h1 className="text-5xl font-bold mb-4">Welcome to Sous</h1>
-      <p className="text-xl text-muted-foreground mb-8">
-        Your AI-powered restaurant operating system.
-      </p>
-      <div className="space-x-4">
-        <Link href="/recipes" className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3 rounded-md text-lg font-medium">
-            Go to Recipes
-        </Link>
-        <Link href="/inventory" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-3 rounded-md text-lg font-medium">
-            Go to Inventory
-        </Link>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4">
+      <PrimaryLogo className="text-sky-400 h-24 w-auto mb-8" />
     </div>
   );
-};
-
-export default HomePage;
+}

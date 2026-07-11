@@ -19,28 +19,28 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
+    "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.5.2",
+    "eslint": "^9",
     "next": "^14.0.0",
     "postcss": "^8.5.16",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.3.2",
     "typescript": "^5.3.3",
-    "vitest": "^4.1.9",
-    "@soustools/eslint-config": "workspace:*",
-    "eslint": "^9",
-    "typescript-eslint": "^8"
+    "typescript-eslint": "^8",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
     "framer-motion": "^12.42.2",
-
     "lucide-react": "^1.17.0",
     "next-themes": "^0.4.6",
+    "recharts": "^3.9.2",
     "socket.io-client": "^4.8.3",
     "zustand": "^5.0.14"
   },

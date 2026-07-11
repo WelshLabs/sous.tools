@@ -84,3 +84,5 @@ export type { ScaledIngredientResult } from "./utils/scaling";
 export { PrimaryLogo } from "./components/logos/PrimaryLogo";
 export { MicroIcon } from "./components/logos/MicroIcon";
 export { Lettermark } from "./components/logos/Lettermark";
+export { RevenueChart, TicketTimeChart } from "./components/DashboardCharts";
+export type { RevenueData, TicketTimeData } from "./components/DashboardCharts";

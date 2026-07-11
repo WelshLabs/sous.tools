@@ -18,6 +18,7 @@ import { UsersModule } from "./modules/users/users.module";
 import { CommandsModule } from "./modules/commands/commands.module";
 import { DevicesModule } from "./modules/devices/devices.module";
 import { MetricsModule } from "./modules/metrics/metrics.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
 
 import { AppGraphQLModule } from "./graphql/graphql.module";
 import { HealthModule } from "./health/health.module";
@@ -70,6 +71,7 @@ if (process.env.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") 
     CommandsModule,
     DevicesModule,
     MetricsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
