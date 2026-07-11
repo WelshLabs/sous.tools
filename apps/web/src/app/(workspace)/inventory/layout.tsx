@@ -8,19 +8,19 @@ export default function InventoryLayout({ children, modal }: { children: any, mo
     <div className="flex flex-col gap-2 p-4">
       <Link href="/inventory/items" className="flex items-center gap-2 p-2 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
         <Package className="w-4 h-4" />
-        Items Ledger
+        <span>Items Ledger</span>
       </Link>
       <Link href="/inventory/orders" className="flex items-center gap-2 p-2 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
         <ListOrdered className="w-4 h-4" />
-        Orders
+        <span>Orders</span>
       </Link>
       <Link href="/inventory/vendors" className="flex items-center gap-2 p-2 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
         <Factory className="w-4 h-4" />
-        Vendors
+        <span>Vendors</span>
       </Link>
       <Link href="/inventory/invoices" className="flex items-center gap-2 p-2 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
         <FileText className="w-4 h-4" />
-        Invoices
+        <span>Invoices</span>
       </Link>
     </div>
   );

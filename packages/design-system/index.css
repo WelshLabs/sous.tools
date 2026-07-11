@@ -139,4 +139,15 @@
       inset 0 0 12px rgb(0 255 255 / 0.15),
       0 0 12px rgb(0 255 255 / 0.25);
   }
+
+  .sidebar-collapsed a {
+    justify-content: center !important;
+    gap: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .sidebar-collapsed a span {
+    display: none !important;
+  }
 }
+

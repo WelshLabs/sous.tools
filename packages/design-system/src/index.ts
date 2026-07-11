@@ -77,6 +77,8 @@ export type { SidebarProps, SidebarNavItem } from "./components/Sidebar";
 export { SidebarLayout } from "./components/SidebarLayout";
 export type { SidebarLayoutProps } from "./components/SidebarLayout";
 
+export { useSidebarStore } from "./store/sidebarStore";
+
 export { OmniBar, OmniBarProvider, OmniBarPresentation, FloatingOmniTrigger, useOmnibarContext, AttachmentFlyout } from "./components/OmniBar";
 export type { OmniBarPresentationProps, AttachmentFlyoutProps, StagedFile } from "./components/OmniBar";
 
