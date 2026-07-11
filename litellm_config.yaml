@@ -9,50 +9,25 @@ model_list:
       model: ollama/deepseek-coder-v2
       api_base: http://ollama:11434
   
-  # --- Route to Google Gemini (Strict Naming) ---
-  - model_name: gemini-3.5-flash
+  # --- Route to Google Gemini (Official API Endpoints) ---
+  - model_name: gemini-1.5-pro
     litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-  
-  - model_name: gemini-3.1-pro
-    litellm_params:
-      model: gemini/gemini-3.1-pro
+      model: gemini/gemini-1.5-pro
       api_key: os.environ/GEMINI_API_KEY
       
-  - model_name: gemini-3.1-flash-lite
+  - model_name: gemini-1.5-flash
     litellm_params:
-      model: gemini/gemini-3.1-flash-lite
+      model: gemini/gemini-1.5-flash
       api_key: os.environ/GEMINI_API_KEY
       
-  - model_name: gemini-3-flash
+  - model_name: gemini-1.5-flash-8b
     litellm_params:
-      model: gemini/gemini-3-flash
+      model: gemini/gemini-1.5-flash-8b
       api_key: os.environ/GEMINI_API_KEY
       
-  - model_name: gemini-2.5-pro
+  - model_name: gemini-2.0-flash-exp
     litellm_params:
-      model: gemini/gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
-      
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: gemini/gemini-2.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-      
-  - model_name: gemini-2.5-flash-lite
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-      
-  - model_name: gemini-2-flash
-    litellm_params:
-      model: gemini/gemini-2-flash
-      api_key: os.environ/GEMINI_API_KEY
-      
-  - model_name: gemini-2-flash-lite
-    litellm_params:
-      model: gemini/gemini-2-flash-lite
+      model: gemini/gemini-2.0-flash-exp
       api_key: os.environ/GEMINI_API_KEY
 
 general_settings:
