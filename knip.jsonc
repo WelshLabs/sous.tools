@@ -1,88 +1,52 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": [
-    "apps/api/src/main.ts",
-    "apps/cli/src/main.ts",
-    "apps/web/next.config.mjs",
-    "apps/pos-simulator/next.config.mjs",
-    "apps/setup-portal/next.config.mjs",
-    "scripts/*.js",
-    "scripts/*.ts",
-    "scripts/*.mjs"
-  ],
-  "project": [
-    "apps/**/*",
-    "packages/**/*"
-  ],
-  "ignore": [
-    "**/node_modules/**",
-    "**/.next/**",
-    "**/dist/**",
-    "**/build/**",
-    "apps/wearos/**",
-    "deploy/**",
-    "supabase/**",
-    "packages/supabase/schema.sql"
-  ],
-  "ignoreDependencies": [
-    "eslint-config-next",
-    "react",
-    "react-dom",
-    "@types/react",
-    "@types/react-dom"
-  ],
   "workspaces": {
     "apps/api": {
-      "entry": "src/main.ts",
-      "ignore": ["src/schema.gql"]
+      "entry": ["src/main.ts"]
     },
     "apps/cli": {
-      "entry": "src/main.ts"
-    },
-    "apps/web": {
-      "entry": "next.config.mjs",
-      "ignore": ["next-env.d.ts", "src/proxy.ts"]
+      "entry": ["src/main.ts"]
     },
     "apps/pos-simulator": {
-      "entry": "next.config.mjs",
-      "ignore": ["next-env.d.ts"]
+      "entry": ["next.config.mjs", "src/app/page.tsx"]
     },
     "apps/setup-portal": {
-      "entry": "next.config.mjs",
-      "ignore": ["next-env.d.ts"]
+      "entry": ["next.config.mjs", "src/app/page.tsx"]
     },
-    "packages/api-types": {
-      "entry": "src/index.ts"
+    "apps/web": {
+      "entry": ["next.config.mjs", "src/app/page.tsx", "playwright.config.ts", "e2e/**/*.spec.ts"]
     },
-    "packages/config": {
-      "entry": "src/index.ts"
-    },
-    "packages/design-system": {
-      "entry": "src/index.ts"
-    },
-    "packages/domain-inventory": {
-      "entry": "src/index.ts"
-    },
-    "packages/domain-recipes": {
-      "entry": "src/index.ts"
-    },
-    "packages/domain-settings": {
-      "entry": "src/index.ts"
-    },
-    "packages/domain-signage": {
-      "entry": "src/index.ts"
-    },
+    "packages/api-types": { "entry": "src/index.ts" },
+    "packages/config": { "entry": "src/index.ts" },
+    "packages/design-system": { "entry": "src/index.ts" },
+    "packages/domain-inventory": { "entry": "src/index.ts" },
+    "packages/domain-recipes": { "entry": "src/index.ts" },
+    "packages/domain-settings": { "entry": "src/index.ts" },
+    "packages/domain-signage": { "entry": "src/index.ts" },
+    "packages/logger": { "entry": "src/index.ts" },
+    "packages/supabase": { "entry": "src/index.ts" },
     "packages/eslint-config": {
-      "entry": ["*.js"]
-    },
-    "packages/logger": {
-      "entry": "src/index.ts"
-    },
-    "packages/supabase": {
-      "entry": "src/index.ts"
+      "entry": "*.js"
     },
     "packages/tsconfig": {
-      "entry": ["*.json"]
+      "project": ["*.json"]
     }
-  }
+  },
+  "ignore": [
+    "**/*.d.ts",
+    "packages/supabase/src/database.types.ts",
+    "apps/wearos/**",
+    "deploy/**",
+    "dist/**",
+    ".next/**"
+  ],
+  "ignoreDependencies": [
+    "husky",
+    "supabase",
+    "dotenv-cli",
+    "turbo",
+    "prettier",
+    "typescript",
+    "@playwright/test"
+  ]
 }
