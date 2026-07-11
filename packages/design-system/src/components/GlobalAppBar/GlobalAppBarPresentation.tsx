@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LayoutGrid, LogOut, Settings, MonitorPlay, ChefHat, Check, Home, Users, ClipboardList, Package, Tv, ShieldCheck } from "lucide-react";
+import { Bell, LayoutGrid, LogOut, Settings, MonitorPlay, ChefHat, Check, Home, Users, ClipboardList, Package, Tv, ShieldCheck, LayoutDashboard } from "lucide-react";
 import { PrimaryLogo } from "../logos/PrimaryLogo";
 import { OmniBar } from "../OmniBar";
 import { ThemeToggle } from "../ThemeToggle";
@@ -128,6 +128,12 @@ export function GlobalAppBarPresentation({
                   <Home className="w-5 h-5 text-sky-400" />
                 </div>
                 <span className="text-xs font-medium">Home</span>
+              </Link>
+              <Link href="/dashboard" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-card transition-colors text-muted-foreground hover:text-foreground">
+                <div className="w-10 h-10 bg-cyan-500/10 rounded-full flex items-center justify-center mb-2">
+                  <LayoutDashboard className="w-5 h-5 text-cyan-400" />
+                </div>
+                <span className="text-xs font-medium">Dashboard</span>
               </Link>
               <Link href="/pos" onClick={onCloseMenus} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-card transition-colors text-muted-foreground hover:text-foreground">
                 <div className="w-10 h-10 bg-violet-500/10 rounded-full flex items-center justify-center mb-2">
