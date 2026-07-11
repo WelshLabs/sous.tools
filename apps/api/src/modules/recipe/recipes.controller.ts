@@ -8,8 +8,8 @@ import {
   Param,
   Query,
 } from "@nestjs/common";
-import { RecipesService } from "./recipes.service";
-import { RecipeCostService } from "./recipe-cost.service";
+import { type RecipesService } from "./recipes.service";
+import { type RecipeCostService } from "./recipe-cost.service";
 import {
   type ApiResponse,
   type Recipe,

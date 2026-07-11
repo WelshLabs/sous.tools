@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Query } from "@nestjs/common";
-import { WastageService, type RecordWastageDto } from "./wastage.service";
+import { type WastageService, type RecordWastageDto } from "./wastage.service";
 
 export interface ApiResponse<T> {
   success: boolean;

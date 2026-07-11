@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { DietaryClassifierService } from "./dietary-classifier.service";
-import { UsdaResolverService } from "./usda-resolver.service";
+import { type DietaryClassifierService } from "./dietary-classifier.service";
+import { type UsdaResolverService } from "./usda-resolver.service";
 import {
   type Recipe,
   type MasterIngredient,

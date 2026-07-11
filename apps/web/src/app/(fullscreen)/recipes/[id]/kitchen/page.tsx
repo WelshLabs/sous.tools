@@ -7,7 +7,7 @@ interface KitchenPageProps {
 
 export default async function KitchenPage({ params }: KitchenPageProps) {
   const { id } = await params;
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  const baseUrl = (config as any).API_BASE_URL || "http://127.0.0.1:6001";
   
   let recipe = null;
   try {

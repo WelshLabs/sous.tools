@@ -7,7 +7,7 @@ import {
 import { UseGuards, Logger } from "@nestjs/common";
 import { type Socket } from "socket.io";
 import { WsSupabaseAuthGuard } from "../../lib/ws-supabase-auth.guard";
-import { CommandsService } from "./commands.service";
+import { type CommandsService } from "./commands.service";
 import {
   type OmnibarCommandPayload,
   OmnibarCommandPayloadSchema,

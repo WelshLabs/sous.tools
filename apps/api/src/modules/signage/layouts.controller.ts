@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { LayoutsService } from "./layouts.service";
+import { type LayoutsService } from "./layouts.service";
 import {
   type ApiResponse,
   type SignageLayoutConfig,

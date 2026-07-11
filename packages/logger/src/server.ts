@@ -17,6 +17,7 @@ const initializeServerLogger = () => {
   // Monkey-patch console methods
   (['log', 'info', 'warn', 'error'] as const).forEach(level => {
     const originalMethod = console[level];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console[level] = (firstArg: any, ...restArgs: any[]) => {
       const pinoLevel = level === 'log' ? 'info' : level;
       pinoServer[pinoLevel](firstArg, ...restArgs);

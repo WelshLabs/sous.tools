@@ -12,8 +12,8 @@ import { type Response } from "express";
 import { type ApiResponse, type IntegrationStatus } from "@soustools/api-types";
 import { config } from "@soustools/config";
 import { runControllerAction } from "../signage/response.helper";
-import { IntegrationsService } from "./integrations.service";
-import { GoogleDriveService } from "./google-drive.service";
+import { type IntegrationsService } from "./integrations.service";
+import { type GoogleDriveService } from "./google-drive.service";
 
 @Controller("integrations")
 export class IntegrationsController {

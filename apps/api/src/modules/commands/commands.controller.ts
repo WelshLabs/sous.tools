@@ -13,7 +13,7 @@ import {
   OmnibarCommandPayloadSchema,
   type ApiResponse,
 } from "@soustools/api-types";
-import { CommandsService } from "./commands.service";
+import { type CommandsService } from "./commands.service";
 import { runControllerAction } from "../signage/response.helper";
 
 @Controller("commands")

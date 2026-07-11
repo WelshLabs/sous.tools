@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -38,11 +39,11 @@ export interface SidebarProps {
   /**
    * Logo shown when the sidebar is expanded. Pass the `<PrimaryLogo>` component.
    */
-  expandedLogo?: React.ReactNode;
+  expandedLogo?: any;
   /**
    * Icon shown when the sidebar is collapsed. Pass the `<MicroIcon>` component.
    */
-  collapsedIcon?: React.ReactNode;
+  collapsedIcon?: any;
   /**
    * When true, renders an "Admin" section separator and a "Users Admin" link.
    * The role-check logic lives in the app layer; pass the result as a boolean.

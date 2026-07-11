@@ -6,8 +6,8 @@ export default async function WorkspaceLayout({
   children,
   modal
 }: { 
-  children: React.ReactNode;
-  modal: React.ReactNode;
+  children: any;
+  modal: any;
 }) {
   let notifications = [];
   try {

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param } from "@nestjs/common";
 import {
-  PriceHistoryService,
+  type PriceHistoryService,
   type RecordPriceDto,
 } from "./price-history.service";
 

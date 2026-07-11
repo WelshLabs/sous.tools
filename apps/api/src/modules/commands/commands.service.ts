@@ -5,10 +5,10 @@ import {
 } from "@soustools/api-types";
 import { GoogleGenAI, type Content, type Part } from "@google/genai";
 import { ALL_COMMAND_TOOLS } from "./commands-tools";
-import { PurchaseOrdersService } from "../items/purchase-orders.service";
-import { VendorsService } from "../items/vendors.service";
-import { WhiteboardService } from "../items/whiteboard.service";
-import { RecipeCostService } from "../recipe/recipe-cost.service";
+import { type PurchaseOrdersService } from "../items/purchase-orders.service";
+import { type VendorsService } from "../items/vendors.service";
+import { type WhiteboardService } from "../items/whiteboard.service";
+import { type RecipeCostService } from "../recipe/recipe-cost.service";
 import { randomUUID } from "crypto";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { type Cache } from "cache-manager";

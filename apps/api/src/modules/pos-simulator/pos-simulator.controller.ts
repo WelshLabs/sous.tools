@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { SignageGateway } from "../signage/signage.gateway";
+import { type SignageGateway } from "../signage/signage.gateway";
 import { type ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import {

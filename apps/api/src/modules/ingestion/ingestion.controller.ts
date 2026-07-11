@@ -17,9 +17,9 @@ import {
 import { runControllerAction } from "../signage/response.helper";
 import { supabase } from "../../lib/supabase";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
-import { InventoryService } from "../items/inventory.service";
-import { PriceHistoryService } from "../items/price-history.service";
-import { WhiteboardService } from "../items/whiteboard.service";
+import { type InventoryService } from "../items/inventory.service";
+import { type PriceHistoryService } from "../items/price-history.service";
+import { type WhiteboardService } from "../items/whiteboard.service";
 
 @Controller("ingestion")
 export class IngestionController {

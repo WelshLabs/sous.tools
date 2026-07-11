@@ -7,7 +7,7 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { IngredientsService } from "./ingredients.service";
+import { type IngredientsService } from "./ingredients.service";
 import { type ApiResponse, type MasterIngredient } from "@soustools/api-types";
 
 @Controller("recipes/ingredients")

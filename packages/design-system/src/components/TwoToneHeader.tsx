@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
 
 /**
@@ -20,7 +21,7 @@ export interface TwoToneHeaderProps {
   /**
    * Optional right-side slot — render a badge, tag, or icon cluster here.
    */
-  trailing?: React.ReactNode;
+  trailing?: any;
   /** Additional className applied to the outer wrapper `<div>`. */
   className?: string;
 }

@@ -24,7 +24,7 @@
     "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "eslint": "^9.2.0",
-    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-hooks": "rc",
     "globals": "^15.2.0",
     "husky": "^9.0.11",
     "knip": "^5.12.0",
@@ -40,5 +40,11 @@
   "packageManager": "pnpm@9.1.0",
   "dependencies": {
     "eslint-plugin-react": "^7.34.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^19.0.0",
+      "@types/react-dom": "^19.0.0"
+    }
   }
 }

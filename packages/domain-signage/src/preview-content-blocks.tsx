@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { type MenuItemStyles, PosItem, SignageBlock } from "@soustools/api-types";
+import { type MenuItemStyles, type PosItem, type SignageBlock } from "@soustools/api-types";
 import { PreviewNestedItem } from "./preview-nested-exploded";
 
 

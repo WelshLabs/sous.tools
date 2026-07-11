@@ -5,7 +5,7 @@ import { config } from "@soustools/config";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
-import { initializeServerLogger } from "@soustools/logger/server";
+import initializeServerLogger from "@soustools/logger/server";
 import cookieParser from "cookie-parser";
 
 initializeServerLogger();
@@ -40,7 +40,7 @@ async function bootstrap(): Promise<void> {
 
   const port = config.PORT;
   await app.listen(config.PORT, "0.0.0.0");
-  console.info(`Application is running on: http://0.0.0.0:${port}`);
+  console.log(`Application is running on: http://0.0.0.0:${port}`);
 }
 
 bootstrap().catch((err: unknown) => {

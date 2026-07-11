@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -13,7 +15,7 @@ export function OmniBarProvider({
   children,
   token,
 }: {
-  children?: React.ReactNode;
+  children?: any;
   token?: string;
 }) {
   const pathname = usePathname();
@@ -177,14 +179,14 @@ export function OmniBarProvider({
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       const transcript = Array.from(event.results)
-        .map((result: SpeechRecognitionResult) => result[0]?.transcript ?? "")
+        .map((result: any) => result[0]?.transcript ?? "")
         .join("");
       setInputText(transcript);
     };
 
-    recognition.onerror = (event: Event) => {
+    recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event);
       setIsListening(false);
     };

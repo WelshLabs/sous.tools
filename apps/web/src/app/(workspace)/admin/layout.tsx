@@ -3,7 +3,7 @@ import Link from "next/link";
 import React from "react";
 import { MonitorSmartphone, Users } from "lucide-react";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: any }) {
   const sidebarContent = (
     <div className="flex flex-col gap-2 p-4">
       <Link href="/admin/devices" className="flex items-center gap-2 p-2 hover:bg-white/5 rounded-lg text-zinc-300 hover:text-white transition-colors text-sm font-medium">

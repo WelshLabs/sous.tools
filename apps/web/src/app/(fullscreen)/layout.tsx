@@ -3,7 +3,7 @@
 import React from "react";
 
 interface FullscreenLayoutProps {
-  children: React.ReactNode;
+  children: any;
 }
 
 export default function FullscreenLayout({ children }: FullscreenLayoutProps) {

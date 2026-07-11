@@ -8,7 +8,7 @@ import {
   Param,
 } from "@nestjs/common";
 import {
-  PurchaseOrdersService,
+  type PurchaseOrdersService,
   type AddItemToDraftDto,
   type UpdatePoItemDto,
 } from "./purchase-orders.service";

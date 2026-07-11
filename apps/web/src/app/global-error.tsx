@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { logger } from "@soustools/logger/browser";
+
 
 /**
  * Props for the Root GlobalError component.
@@ -23,8 +23,9 @@ export interface GlobalErrorProps {
  */
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
-    logger.error({ err: error, digest: error.digest }, "Root kitchen app global layout error caught");
+    console.error("Root kitchen app global layout error caught", { err: error, digest: error.digest });
   }, [error]);
+
 
   return (
     <html lang="en">

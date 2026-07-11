@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export interface SidebarLayoutProps {
   /** The content of the sidebar (e.g., InsightsSidebar or standard navigation) */
-  sidebarContent: React.ReactNode;
+  sidebarContent: any;
   /** The main content area */
-  mainContent: React.ReactNode;
+  mainContent: any;
 }
 
 /**

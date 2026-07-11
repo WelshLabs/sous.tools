@@ -1,6 +1,6 @@
 "use client";
 
-import { type MenuItemStyles, SignageBlock, PosItem } from "@soustools/api-types";
+import { type MenuItemStyles, type SignageBlock, type PosItem } from "@soustools/api-types";
 import { buildCardStyle, buildDescriptionStyle, resolveItemState, buildTitleStyle, buildPriceStyle } from "./menu-item-style-utils";
 
 interface ComplexPreviewProps {

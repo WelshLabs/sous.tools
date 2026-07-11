@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { type ColumnLayoutSlide, type SignageSlide, type MenuItemStyles, PosItem } from "@soustools/api-types";
+import { type ColumnLayoutSlide, type SignageSlide, type MenuItemStyles, type PosItem } from "@soustools/api-types";
 import { PreviewBlockRenderer } from "./preview-block-renderer";
 import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 

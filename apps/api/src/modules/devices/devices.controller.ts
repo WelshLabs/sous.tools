@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
 import { AdminGuard } from "../../common/guards/admin.guard";
-import { DevicesService } from "./devices.service";
+import { type DevicesService } from "./devices.service";
 import { type ApiResponse, type SignageDevice } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import { z } from "zod";
