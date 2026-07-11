@@ -14,8 +14,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const message = exception instanceof Error ? exception.message : 'Internal server error';
+    const stack = exception instanceof Error ? exception.stack : undefined;
 
-    console.error({ err: exception, status, path: request?.url }, 'Exception caught by filter');
+    console.error(
+      { 
+        err: exception, 
+        stack, 
+        status, 
+        path: request?.url 
+      }, 
+      `Exception caught by filter: ${message}`
+    );
 
     if (response && typeof response.status === 'function') {
       response.status(status).json({

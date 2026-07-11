@@ -1,3 +1,7 @@
+import "newrelic";
+import initializeServerLogger from "@soustools/logger/server";
+initializeServerLogger();
+
 import "reflect-metadata";
 import "./pre-bootstrap";
 import { config } from "@soustools/config";
@@ -5,10 +9,7 @@ import { config } from "@soustools/config";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
-import initializeServerLogger from "@soustools/logger/server";
 import cookieParser from "cookie-parser";
-
-initializeServerLogger();
 
 import * as express from "express";
 

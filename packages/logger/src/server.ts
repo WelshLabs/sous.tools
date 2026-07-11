@@ -14,13 +14,26 @@ const initializeServerLogger = () => {
     }
   });
 
+  let isLogging = false;
+
   // Monkey-patch console methods
   (['log', 'info', 'warn', 'error'] as const).forEach(level => {
     const originalMethod = console[level];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console[level] = (firstArg: any, ...restArgs: any[]) => {
-      const pinoLevel = level === 'log' ? 'info' : level;
-      pinoServer[pinoLevel](firstArg, ...restArgs);
+      if (isLogging) {
+        originalMethod.apply(console, [firstArg, ...restArgs]);
+        return;
+      }
+      isLogging = true;
+      try {
+        const pinoLevel = level === 'log' ? 'info' : level;
+        pinoServer[pinoLevel](firstArg, ...restArgs);
+      } catch (_err) {
+        // ignore
+      } finally {
+        isLogging = false;
+      }
       originalMethod.apply(console, [firstArg, ...restArgs]);
     };
   });

@@ -336,6 +336,9 @@ importers:
       '@soustools/design-system':
         specifier: workspace:*
         version: link:../../packages/design-system
+      '@soustools/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@soustools/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
@@ -400,6 +403,9 @@ importers:
       '@soustools/design-system':
         specifier: workspace:*
         version: link:../../packages/design-system
+      '@soustools/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@vercel/analytics':
         specifier: ^1.2.2
         version: 1.6.1(next@14.2.35(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
