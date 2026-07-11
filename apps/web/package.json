@@ -22,7 +22,7 @@
     "@soustools/domain-signage": "workspace:*",
     "@soustools/logger": "workspace:*",
     "@vercel/analytics": "^1.2.2",
-    "@vercel/speed-insights": "^1.0.10",
+    "@vercel/speed-insights": "^1.3.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.17.0",
     "next": "^16.0.0-canary.0",
@@ -38,16 +38,16 @@
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@soustools/config": "workspace:*",
+    "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.11.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^9",
     "postcss": "^8.4.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.4.0",
-    "@soustools/eslint-config": "workspace:*",
-    "eslint": "^9",
     "typescript-eslint": "^8"
   },
   "engines": {

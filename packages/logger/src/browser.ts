@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY } from '@soustools/config';
+import { config } from '@soustools/config';
 
 const initializeBrowserLogger = () => {
   const pinoBrowser = pino({
@@ -13,7 +13,7 @@ const initializeBrowserLogger = () => {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Api-Key': NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
+                  ...(config.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY && { 'Api-Key': config.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY }),
                 },
                 body: JSON.stringify({
                   ...logEvent,
@@ -32,11 +32,12 @@ const initializeBrowserLogger = () => {
   });
 
   // Monkey-patch console methods
-  ['log', 'info', 'warn', 'error'].forEach(level => {
+  (['log', 'info', 'warn', 'error'] as const).forEach(level => {
     const originalMethod = console[level];
-    console[level] = (...args) => {
-      pinoBrowser[level](...args);
-      originalMethod.apply(console, args);
+    console[level] = (firstArg: any, ...restArgs: any[]) => {
+      const pinoLevel = level === 'log' ? 'info' : level;
+      pinoBrowser[pinoLevel](firstArg, ...restArgs);
+      originalMethod.apply(console, [firstArg, ...restArgs]);
     };
   });
 };

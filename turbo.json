@@ -21,7 +21,7 @@
       "cache": true
     },
     "dev": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["@soustools/config#build", "^build"],
       "cache": false,
       "persistent": true
     },

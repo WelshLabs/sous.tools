@@ -1,5 +1,5 @@
-import initializeBrowserLogger from './browser';
-import initializeServerLogger from './server';
+import initializeBrowserLogger from './browser.js';
+import initializeServerLogger from './server.js';
 
 const initializeLogger = () => {
     if (typeof window === 'undefined') {

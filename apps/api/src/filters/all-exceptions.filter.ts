@@ -1,5 +1,5 @@
 import { type ExceptionFilter, Catch, type ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
-import { logger } from '@soustools/logger';
+
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -15,7 +15,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const message = exception instanceof Error ? exception.message : 'Internal server error';
 
-    logger.error({ err: exception, status, path: request?.url }, 'Exception caught by filter');
+    console.error({ err: exception, status, path: request?.url }, 'Exception caught by filter');
 
     if (response && typeof response.status === 'function') {
       response.status(status).json({

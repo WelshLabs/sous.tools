@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@soustools/api-types": "workspace:*",
+    "@soustools/config": "workspace:*",
     "framer-motion": "^12.42.2",
 
     "lucide-react": "^1.17.0",

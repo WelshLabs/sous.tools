@@ -15,11 +15,12 @@ const initializeServerLogger = () => {
   });
 
   // Monkey-patch console methods
-  ['log', 'info', 'warn', 'error'].forEach(level => {
+  (['log', 'info', 'warn', 'error'] as const).forEach(level => {
     const originalMethod = console[level];
-    console[level] = (...args) => {
-      pinoServer[level](...args);
-      originalMethod.apply(console, args);
+    console[level] = (firstArg: any, ...restArgs: any[]) => {
+      const pinoLevel = level === 'log' ? 'info' : level;
+      pinoServer[pinoLevel](firstArg, ...restArgs);
+      originalMethod.apply(console, [firstArg, ...restArgs]);
     };
   });
 };

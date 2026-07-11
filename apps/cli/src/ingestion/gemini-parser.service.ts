@@ -5,6 +5,7 @@ import * as path from 'path';
 import { geminiParserSchema } from './gemini-parser.schemas';
 import * as crypto from 'crypto';
 import { config } from '@soustools/config';
+import { GEMINI_SPREAD_PROMPT } from './prompt-templates';
 
 @Injectable()
 export class GeminiParserService {
@@ -38,7 +39,6 @@ export class GeminiParserService {
     // const modelName = "gemini-2.5-pro";
     const modelName = 'gemini-3.1-flash-lite';
 
-    import { GEMINI_SPREAD_PROMPT } from './prompt-templates';
     const prompt = GEMINI_SPREAD_PROMPT;
 
     for (const file of files) {

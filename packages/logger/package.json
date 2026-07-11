@@ -25,6 +25,7 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@soustools/config": "workspace:*",
     "pino": "^9.0.0"
   },
   "devDependencies": {
