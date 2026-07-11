@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { type Request } from "express";
 import { InjectQueue } from "@nestjs/bullmq";
-import { type Queue } from "bullmq";
+import { Queue } from "bullmq";
 import * as crypto from "crypto";
 import { config } from "@soustools/config";
 import { supabase } from "../../lib/supabase";

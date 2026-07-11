@@ -1,9 +1,9 @@
-import { Test, type TestingModule } from "@nestjs/testing";
+import { Test, TestingModule } from "@nestjs/testing";
 import { LayoutsController } from "./layouts.controller";
 import { LayoutsService } from "./layouts.service";
 import { SignageGateway } from "./signage.gateway";
 import { supabase } from "../../lib/supabase";
-import { type Server } from "socket.io";
+import { Server } from "socket.io";
 
 jest.mock("../../lib/supabase", () => ({
   supabase: {

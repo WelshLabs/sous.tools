@@ -8,18 +8,16 @@ import {
   UsePipes,
 } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
-import { type Queue } from "bullmq";
-import {
-  type ApiResponse,
-  type IngestionPayload,
+import { Queue } from "bullmq";
+import { ApiResponse, type IngestionPayload,
   IngestionPayloadSchema,
 } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import { supabase } from "../../lib/supabase";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
-import { type InventoryService } from "../items/inventory.service";
-import { type PriceHistoryService } from "../items/price-history.service";
-import { type WhiteboardService } from "../items/whiteboard.service";
+import { InventoryService } from "../items/inventory.service";
+import { PriceHistoryService } from "../items/price-history.service";
+import { WhiteboardService } from "../items/whiteboard.service";
 
 @Controller("ingestion")
 export class IngestionController {

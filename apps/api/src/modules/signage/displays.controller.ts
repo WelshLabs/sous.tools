@@ -7,9 +7,9 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { type DisplaysService } from "./displays.service";
-import { type SignageGateway } from "./signage.gateway";
-import { type ApiResponse } from "@soustools/api-types";
+import { DisplaysService } from "./displays.service";
+import { SignageGateway } from "./signage.gateway";
+import { ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "./response.helper";
 
 /**

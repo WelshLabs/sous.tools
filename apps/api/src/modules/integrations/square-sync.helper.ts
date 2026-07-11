@@ -1,8 +1,6 @@
-import { type SupabaseClient } from "@supabase/supabase-js";
-import { getSquareBaseUrl, type SquareInventoryCount } from "./square-client.helper";
-import {
-  type SquareCatalogObject,
-  type SquareOrder,
+import { SupabaseClient } from "@supabase/supabase-js";
+import { getSquareBaseUrl, SquareInventoryCount } from "./square-client.helper";
+import { SquareCatalogObject, SquareOrder,
   mapSquareModifierGroups,
   mapSquareModifierOptions,
   mapSquarePosItems,

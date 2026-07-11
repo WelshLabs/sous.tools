@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { type RecipeNutritionCache } from "@soustools/api-types";
+import { RecipeNutritionCache } from "@soustools/api-types";
 
 type LabelNutrition = {
   calories?: number | null;

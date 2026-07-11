@@ -1,4 +1,4 @@
-import { type ApiResponse } from "@soustools/api-types";
+import { ApiResponse } from "@soustools/api-types";
 
 /**
  * Executes a controller action and wraps its return value or thrown error in a standard API response.

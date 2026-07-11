@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { type HelloResponse } from "@soustools/api-types";
+import { HelloResponse } from "@soustools/api-types";
 
 /**
  * Service managing logic for base application endpoints.

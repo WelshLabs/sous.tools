@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Res, HttpCode, UnauthorizedException, UseGuards, Req } from "@nestjs/common";
 import type { Response } from "express";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { AppService } from "./app.service";
 import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/api-types";
 import { config } from "@soustools/config";

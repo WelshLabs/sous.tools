@@ -1,9 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
-import { type RecipeMetaService } from "./recipe-meta.service";
-import {
-  type ApiResponse,
-  type RecipeCategory,
-  type RecipeTag,
+import { RecipeMetaService } from "./recipe-meta.service";
+import { ApiResponse, RecipeCategory, RecipeTag,
 } from "@soustools/api-types";
 
 /**

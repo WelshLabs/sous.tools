@@ -7,8 +7,8 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { type SignageGateway } from "../signage/signage.gateway";
-import { type ApiResponse } from "@soustools/api-types";
+import { SignageGateway } from "../signage/signage.gateway";
+import { ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";
 import {
   getMockItems,

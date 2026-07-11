@@ -16,6 +16,7 @@ export const nestjsConfig = [
           destructuredArrayIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/consistent-type-imports": "off",
     },
   },
   // NestJS bootstrap and config files: permit process.env

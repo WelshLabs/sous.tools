@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { type IVisionService } from "./IVisionService";
+import { IVisionService } from "./IVisionService";
 import { GoogleGenAI, Type } from "@google/genai";
 import { config } from "@soustools/config";
 

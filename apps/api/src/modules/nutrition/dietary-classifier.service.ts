@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { type MasterIngredient } from '@soustools/api-types';
+import { MasterIngredient } from '@soustools/api-types';
 
 @Injectable()
 export class DietaryClassifierService {

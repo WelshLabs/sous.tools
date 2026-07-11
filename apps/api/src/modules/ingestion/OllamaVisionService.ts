@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { config } from "@soustools/config";
-import { type IVisionService } from "./IVisionService";
+import { IVisionService } from "./IVisionService";
 
 @Injectable()
 export class OllamaVisionService implements IVisionService {

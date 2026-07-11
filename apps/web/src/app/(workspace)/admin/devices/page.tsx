@@ -16,7 +16,7 @@ export default async function DevicesPage() {
     const [dispRes, layRes, devRes] = await Promise.all([
       fetch(`${baseUrl}/signage/displays`, { cache: "no-store" }),
       fetch(`${baseUrl}/signage/layouts`, { cache: "no-store" }),
-      fetch(`${baseUrl}/api/devices`, { cache: "no-store" }),
+      fetch(`${baseUrl}/devices`, { cache: "no-store" }),
     ]);
 
     if (dispRes.ok) {

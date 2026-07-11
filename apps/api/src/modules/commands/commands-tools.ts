@@ -1,4 +1,4 @@
-import { Type, type FunctionDeclaration } from '@google/genai';
+import { Type, FunctionDeclaration } from '@google/genai';
 
 export const addToPurchaseOrderTool: FunctionDeclaration = {
   name: 'add_to_purchase_order',

@@ -1,4 +1,4 @@
-import { type SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@soustools/supabase";
 
 /**

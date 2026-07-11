@@ -1,5 +1,5 @@
-import { type OmniMessage } from '@soustools/api-types';
-import { type Logger } from '@nestjs/common';
+import { OmniMessage } from '@soustools/api-types';
+import { Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { config } from '@soustools/config';
 

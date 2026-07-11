@@ -1,9 +1,7 @@
 import { Controller, Get, Post, Delete, Body, Param } from "@nestjs/common";
-import {
-  type WhiteboardService,
-  type CreateWhiteboardItemDto,
+import { WhiteboardService, type CreateWhiteboardItemDto,
 } from "./whiteboard.service";
-import { type ApiResponse } from "./inventory.controller";
+import { ApiResponse } from "./inventory.controller";
 
 @Controller("whiteboard")
 export class WhiteboardController {

@@ -8,7 +8,7 @@ import {
   Param,
   Query,
 } from "@nestjs/common";
-import { type ItemsService } from "./items.service";
+import { ItemsService } from "./items.service";
 import type { CreateItemDto, UpdateItemDto } from "./items-query.helper";
 
 export interface ApiResponse<T> {

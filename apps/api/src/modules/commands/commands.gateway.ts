@@ -5,13 +5,11 @@ import {
   ConnectedSocket,
 } from "@nestjs/websockets";
 import { UseGuards, Logger } from "@nestjs/common";
-import { type Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { WsSupabaseAuthGuard } from "../../lib/ws-supabase-auth.guard";
-import { type CommandsService } from "./commands.service";
-import {
-  type OmnibarCommandPayload,
-  OmnibarCommandPayloadSchema,
-  type OmniMessage,
+import { CommandsService } from "./commands.service";
+import { type OmnibarCommandPayload,
+  OmnibarCommandPayloadSchema, type OmniMessage,
 } from "@soustools/api-types";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 

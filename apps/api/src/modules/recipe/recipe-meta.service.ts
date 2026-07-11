@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { type RecipeCategory, type RecipeTag } from "@soustools/api-types";
+import { RecipeCategory, RecipeTag } from "@soustools/api-types";
 
 /**
  * RecipeMetaService manages recipe categories and tags metadata.
