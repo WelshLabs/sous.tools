@@ -9,26 +9,31 @@ model_list:
       model: ollama/deepseek-coder-v2
       api_base: http://ollama:11434
   
-  # --- Route to Google Gemini (Official API Endpoints) ---
-  - model_name: gemini-1.5-pro
+  # --- Route to Google Gemini (2026 Models) ---
+  - model_name: gemini-3.5-flash
     litellm_params:
-      model: gemini/gemini-1.5-pro
+      model: gemini/gemini-3.5-flash
       api_key: os.environ/GEMINI_API_KEY
       
-  - model_name: gemini-1.5-flash
+  - model_name: gemini-3.1-pro
     litellm_params:
-      model: gemini/gemini-1.5-flash
+      model: gemini/gemini-3.1-pro
       api_key: os.environ/GEMINI_API_KEY
       
-  - model_name: gemini-1.5-flash-8b
+  - model_name: gemini-3.1-flash-lite
     litellm_params:
-      model: gemini/gemini-1.5-flash-8b
+      model: gemini/gemini-3.1-flash-lite
       api_key: os.environ/GEMINI_API_KEY
       
-  - model_name: gemini-2.0-flash-exp
+  - model_name: gemini-2.5-pro
     litellm_params:
-      model: gemini/gemini-2.0-flash-exp
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+      
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
       api_key: os.environ/GEMINI_API_KEY
 
 general_settings:
-  master_key: sk-1234 # This is your "Universal" API Key
+  master_key: sk-1234
