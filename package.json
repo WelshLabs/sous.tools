@@ -21,8 +21,8 @@
   "devDependencies": {
     "@eslint/js": "^9.2.0",
     "@playwright/test": "^1.44.0",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/tsconfig": "workspace:*",
+    "@soustools/eslint-config": "workspace:*",
+    "@soustools/tsconfig": "workspace:*",
     "eslint": "^9.2.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "globals": "^15.2.0",
