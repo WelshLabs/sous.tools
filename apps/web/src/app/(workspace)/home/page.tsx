@@ -1,31 +1,22 @@
-import { FinancialPulse } from './components/FinancialPulse';
-import { MenuProfitability } from './components/MenuProfitability';
-import { PurchasingAlerts } from './components/PurchasingAlerts';
-import { SystemHealth } from './components/SystemHealth';
+import Link from 'next/link';
 
-export default function DashboardPage() {
+const HomePage = () => {
   return (
-    <div className="p-4 md:p-8">
-      <h1 className="text-3xl font-bold mb-6 text-white">Dashboard</h1>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Row 1: Financial Pulse spanning all columns */}
-        <div className="xl:col-span-3">
-          <FinancialPulse />
-        </div>
-
-        {/* Row 2: Profitability and Alerts */}
-        <div className="xl:col-span-2">
-          <MenuProfitability />
-        </div>
-        <div>
-          <PurchasingAlerts />
-        </div>
-
-        {/* Row 3: System Health spanning all columns */}
-        <div className="xl:col-span-3">
-          <SystemHealth />
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-screen text-center p-4">
+      <h1 className="text-5xl font-bold mb-4">Welcome to Sous</h1>
+      <p className="text-xl text-muted-foreground mb-8">
+        Your AI-powered restaurant operating system.
+      </p>
+      <div className="space-x-4">
+        <Link href="/recipes" className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3 rounded-md text-lg font-medium">
+            Go to Recipes
+        </Link>
+        <Link href="/inventory" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-3 rounded-md text-lg font-medium">
+            Go to Inventory
+        </Link>
       </div>
     </div>
   );
-}
+};
+
+export default HomePage;
