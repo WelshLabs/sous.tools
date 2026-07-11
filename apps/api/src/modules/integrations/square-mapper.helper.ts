@@ -4,6 +4,7 @@ export interface SquareCatalogObject {
   item_data?: {
     name?: string;
     description?: string;
+    category_id?: string;
     modifier_list_info?: Array<{
       modifier_list_id: string;
     }>;
@@ -29,12 +30,34 @@ export interface SquareCatalogObject {
       };
     }>;
   };
+  category_data?: {
+    name: string;
+  };
+  discount_data?: {
+    name: string;
+    discount_type: string;
+    percentage?: string;
+    amount_money?: {
+      amount: number;
+    };
+  };
 }
 
 export interface SquareOrder {
   id: string;
+  location_id?: string;
+  state?: string;
   closed_at?: string;
   created_at?: string;
+  total_money?: {
+    amount: number;
+  };
+  total_discount_money?: {
+    amount: number;
+  };
+  total_tax_money?: {
+    amount: number;
+  };
   line_items?: Array<{
     catalog_object_id: string;
     uid?: string;
@@ -46,6 +69,38 @@ export interface SquareOrder {
       amount: number;
     };
   }>;
+}
+
+export interface POSCategoryUpsert {
+  organization_id: string;
+  pos_provider: string;
+  external_id: string;
+  name: string;
+  updated_at: string;
+}
+
+export interface POSDiscountUpsert {
+  organization_id: string;
+  pos_provider: string;
+  external_id: string;
+  name: string;
+  discount_type: string;
+  amount_or_percentage: number;
+  updated_at: string;
+}
+
+export interface POSOrderUpsert {
+  organization_id: string;
+  pos_provider: string;
+  external_id: string;
+  location_id: string | null;
+  state: string;
+  total_money: number;
+  total_discount_money: number;
+  total_tax_money: number;
+  closed_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface POSModifierGroupUpsert {
@@ -71,6 +126,7 @@ export interface POSModifierOptionUpsert {
 
 export interface POSItemUpsert {
   organization_id: string;
+  category_id?: string | null;
   pos_provider: string;
   external_id: string;
   name: string;
@@ -95,6 +151,62 @@ export interface POSTransactionUpsert {
   transaction_time: string;
   source: string;
   external_transaction_id: string;
+}
+
+export function mapSquareCategories(
+  categories: SquareCatalogObject[],
+  orgId: string
+): POSCategoryUpsert[] {
+  return categories.map((cat) => ({
+    organization_id: orgId,
+    pos_provider: "SQUARE",
+    external_id: cat.id,
+    name: cat.category_data?.name || "Unnamed Category",
+    updated_at: new Date().toISOString(),
+  }));
+}
+
+export function mapSquareDiscounts(
+  discounts: SquareCatalogObject[],
+  orgId: string
+): POSDiscountUpsert[] {
+  return discounts.map((disc) => {
+    let amountOrPercent = 0;
+    if (disc.discount_data?.discount_type === "FIXED_PERCENTAGE" && disc.discount_data.percentage) {
+      amountOrPercent = parseFloat(disc.discount_data.percentage);
+    } else if (disc.discount_data?.discount_type === "FIXED_AMOUNT" && disc.discount_data.amount_money) {
+      amountOrPercent = disc.discount_data.amount_money.amount / 100;
+    }
+    
+    return {
+      organization_id: orgId,
+      pos_provider: "SQUARE",
+      external_id: disc.id,
+      name: disc.discount_data?.name || "Unnamed Discount",
+      discount_type: disc.discount_data?.discount_type || "UNKNOWN",
+      amount_or_percentage: amountOrPercent,
+      updated_at: new Date().toISOString(),
+    };
+  });
+}
+
+export function mapSquareOrders(
+  orders: SquareOrder[],
+  orgId: string
+): POSOrderUpsert[] {
+  return orders.map((order) => ({
+    organization_id: orgId,
+    pos_provider: "SQUARE",
+    external_id: order.id,
+    location_id: order.location_id || null,
+    state: order.state || "UNKNOWN",
+    total_money: (order.total_money?.amount || 0) / 100,
+    total_discount_money: (order.total_discount_money?.amount || 0) / 100,
+    total_tax_money: (order.total_tax_money?.amount || 0) / 100,
+    closed_at: order.closed_at || null,
+    created_at: order.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }));
 }
 
 export function mapSquareModifierGroups(
@@ -143,6 +255,7 @@ export function mapSquareModifierOptions(
 export function mapSquarePosItems(
   items: SquareCatalogObject[],
   countsMap: Record<string, number>,
+  catMap: Map<string, string>,
   orgId: string
 ): POSItemUpsert[] {
   return items.map((item) => {
@@ -151,8 +264,15 @@ export function mapSquarePosItems(
     const priceAmount = firstVariation?.item_variation_data?.price_money?.amount || 0;
     const price = priceAmount / 100;
     const stockQuantity = countsMap[variationId] !== undefined ? countsMap[variationId] : 1;
+    
+    let localCategoryId = null;
+    if (item.item_data?.category_id) {
+      localCategoryId = catMap.get(item.item_data.category_id) || null;
+    }
+
     return {
       organization_id: orgId,
+      category_id: localCategoryId,
       pos_provider: "SQUARE",
       external_id: item.id,
       name: item.item_data?.name || "Unnamed Item",
@@ -218,3 +338,4 @@ export function mapSquareTransactions(
   });
   return result;
 }
+

@@ -124,47 +124,30 @@ export default function KDSPage() {
       if (savedVol) setSoundVolume(parseFloat(savedVol));
     }
 
-    Promise.all([fetchOrg(), fetchItems()]).then(() => setLoading(false));
-
-    // Seed mock tickets
-    setTickets([
-      {
-        id: "t-1",
-        ticketNumber: "104",
-        tableNumber: "Cook Line - T4",
-        createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10m ago
-        isRush: true,
-        status: "OPEN",
-        items: [
-          { name: "Truffle Burger", qty: 2, notes: "Medium-Rare" },
-          { name: "Truffle Fries", qty: 1 }
-        ]
-      },
-      {
-        id: "t-2",
-        ticketNumber: "105",
-        tableNumber: "Main Room - T12",
-        createdAt: new Date(Date.now() - 4 * 60 * 1000).toISOString(), // 4m ago
-        isRush: false,
-        status: "OPEN",
-        items: [
-          { name: "Caesar Salad", qty: 1, notes: "Dressing on side" },
-          { name: "Tomato Soup", qty: 1 }
-        ]
-      },
-      {
-        id: "t-3",
-        ticketNumber: "106",
-        tableNumber: "Patio - T2",
-        createdAt: new Date().toISOString(),
-        isRush: false,
-        status: "OPEN",
-        items: [
-          { name: "Truffle Burger", qty: 1 },
-          { name: "Caesar Salad", qty: 2 }
-        ]
+    // 4. Fetch POS orders to seed tickets
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos/orders`);
+        if (res.ok) {
+          const payload = await res.json();
+          if (Array.isArray(payload)) {
+            setTickets(payload.map((o: any) => ({
+              id: o.id,
+              ticketNumber: o.external_id.substring(o.external_id.length - 4),
+              tableNumber: o.location_id || "Unknown",
+              createdAt: o.created_at,
+              isRush: false,
+              status: o.state === "COMPLETED" ? "CLOSED" : "OPEN",
+              items: [{ name: "POS Order Amount", qty: 1, notes: `$${o.total_money}` }]
+            })));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch pos orders", err);
       }
-    ]);
+    };
+
+    Promise.all([fetchOrg(), fetchItems(), fetchOrders()]).then(() => setLoading(false));
   }, []);
 
   // Save settings helpers

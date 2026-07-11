@@ -45,6 +45,17 @@ export type { InputProps } from "./components/Input";
 export { Label } from "./components/Label";
 export type { LabelProps } from "./components/Label";
 
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "./components/Table";
+
 // ── Layout & UI Components (Phase 2 Migration) ─────────────────────────────
 export { ConfirmModal } from "./components/ConfirmModal";
 export type { ConfirmModalProps } from "./components/ConfirmModal";
