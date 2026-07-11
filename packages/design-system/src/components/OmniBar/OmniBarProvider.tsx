@@ -10,6 +10,7 @@ import { useOmnibarContext } from "./OmniBarContext";
 import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
+import { toast } from "sonner";
 
 export function OmniBarProvider({
   children,
@@ -161,7 +162,7 @@ export function OmniBarProvider({
       (window as unknown as { webkitSpeechRecognition: unknown })
         .webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser.");
+      toast.error("Speech recognition is not supported in this browser.");
       return;
     }
 

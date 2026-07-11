@@ -1,12 +1,12 @@
-/* eslint-disable max-lines */
 "use client";
 
 import React, { useState } from "react";
 import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, X, Paperclip, UploadCloud, FileImage, Camera, HardDrive } from "lucide-react";
+import { Mic, X, UploadCloud, FileImage } from "lucide-react";
 import { useOmniFileUpload } from "./use-omni-file-upload.hook";
-import type { StagedFile } from "./OmniBarContext";
+import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
+import { AttachmentFlyout } from "./AttachmentFlyout";
 
 export interface OmniInputPillProps {
   inputText: string;
@@ -40,6 +40,7 @@ export function OmniInputPill({
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
 
   const { onFileSelect, handleDrop, handleActionChip, handleFileUpload } = useOmniFileUpload();
+  const { setShowGoogleDriveBrowser } = useOmnibarContext();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -155,69 +156,28 @@ export function OmniInputPill({
             autoFocus
           />
           
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <AnimatePresence>
-              {isAttachmentOpen && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20, scale: 0.8 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 20, scale: 0.8 }}
-                  className="flex items-center gap-1.5 bg-[var(--color-popover)] border border-[var(--color-border)] px-2 py-1 rounded-full shadow-lg"
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAttachmentOpen(false);
-                      if (fileInputRef.current) {
-                        fileInputRef.current.removeAttribute("capture");
-                      }
-                      fileInputRef.current?.click();
-                    }}
-                    className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
-                    title="Upload File"
-                  >
-                    <UploadCloud className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAttachmentOpen(false);
-                      if (fileInputRef.current) {
-                        fileInputRef.current.setAttribute("capture", "environment");
-                      }
-                      fileInputRef.current?.click();
-                    }}
-                    className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
-                    title="Use Camera"
-                  >
-                    <Camera className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAttachmentOpen(false);
-                      alert("Google Drive integration coming soon!");
-                    }}
-                    className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
-                    title="Google Drive"
-                  >
-                    <HardDrive className="w-4 h-4" />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <button 
-              type="button"
-              onClick={() => setIsAttachmentOpen(!isAttachmentOpen)} 
-              className={`p-2 rounded-full transition-colors flex-shrink-0 ${
-                isAttachmentOpen 
-                  ? 'bg-primary/20 text-primary' 
-                  : 'text-muted-foreground hover:text-primary hover:bg-card'
-              }`}
-            >
-              <Paperclip className="w-5 h-5" />
-            </button>
-          </div>
+          <AttachmentFlyout
+            isOpen={isAttachmentOpen}
+            onToggle={() => setIsAttachmentOpen(!isAttachmentOpen)}
+            onUploadClick={() => {
+              setIsAttachmentOpen(false);
+              if (fileInputRef.current) {
+                fileInputRef.current.removeAttribute("capture");
+              }
+              fileInputRef.current?.click();
+            }}
+            onCameraClick={() => {
+              setIsAttachmentOpen(false);
+              if (fileInputRef.current) {
+                fileInputRef.current.setAttribute("capture", "environment");
+              }
+              fileInputRef.current?.click();
+            }}
+            onGoogleDriveClick={() => {
+              setIsAttachmentOpen(false);
+              setShowGoogleDriveBrowser(true);
+            }}
+          />
 
           {showClose && onToggle && (
             <button 

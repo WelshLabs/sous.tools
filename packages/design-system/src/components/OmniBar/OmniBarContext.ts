@@ -29,6 +29,8 @@ export interface OmniBarState {
   inputText: string;
   setInputText: (text: string) => void;
 
+  showGoogleDriveBrowser: boolean;
+  setShowGoogleDriveBrowser: (show: boolean) => void;
   stagedFiles: StagedFile[];
   setStagedFiles: (files: StagedFile[] | ((prev: StagedFile[]) => StagedFile[])) => void;
 
@@ -61,6 +63,8 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
   inputText: '',
   setInputText: (inputText) => set({ inputText }),
 
+  showGoogleDriveBrowser: false,
+  setShowGoogleDriveBrowser: (showGoogleDriveBrowser) => set({ showGoogleDriveBrowser }),
   stagedFiles: [],
   setStagedFiles: (update) => set((state) => ({ 
     stagedFiles: typeof update === 'function' ? update(state.stagedFiles) : update 

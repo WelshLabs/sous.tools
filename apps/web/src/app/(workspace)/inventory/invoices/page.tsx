@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Camera, FileText, HardDrive, PlusCircle, ArrowRight, ChevronDown } from "lucide-react";
 import { TwoToneHeader } from "@soustools/design-system";
 import { GoogleDriveBrowser } from "@soustools/domain-settings";
+import { toast } from "sonner";
 
 function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "drive") => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -87,7 +88,7 @@ export default function InvoicesHubPage() {
           router.push("/ingestion");
         }
       } else {
-        alert("Failed to ingest invoice.");
+        toast.error("Failed to ingest invoice.");
       }
     } catch (err) {
       console.error("Upload error", err);
@@ -114,7 +115,7 @@ export default function InvoicesHubPage() {
     };
     reader.onerror = () => {
       setIsSubmitting(false);
-      alert("Failed to read file.");
+      toast.error("Failed to read file.");
     };
     reader.readAsDataURL(file);
     // Reset input

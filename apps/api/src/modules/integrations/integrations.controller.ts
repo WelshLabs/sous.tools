@@ -11,6 +11,7 @@ import {
 import { type Response } from "express";
 import { ApiResponse, IntegrationStatus } from "@soustools/api-types";
 import { config } from "@soustools/config";
+import { randomUUID } from "crypto";
 import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
 import { GoogleDriveService } from "./google-drive.service";
@@ -104,6 +105,24 @@ export class IntegrationsController {
   ) {
     const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
     return this.driveService.listFiles(targetOrgId, query, folderId);
+  }
+
+  @Post("google/import-file")
+  async importGoogleFile(
+    @Body() body: { fileId: string; orgId?: string },
+  ) {
+    return runControllerAction(async () => {
+      const targetOrgId = body.orgId || "d0000000-0000-0000-0000-000000000000";
+      const reviewId = randomUUID();
+      const result = await this.driveService.processDriveFile(body.fileId, targetOrgId, reviewId);
+      if (!result.sourceDocumentUrl) {
+        throw new Error("Failed to process Google Drive file");
+      }
+      return {
+        url: result.sourceDocumentUrl,
+        name: result.sourceName || "Google Drive File",
+      };
+    });
   }
 
   @Post("checkout")
