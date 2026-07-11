@@ -66,7 +66,7 @@ export type { SidebarProps, SidebarNavItem } from "./components/Sidebar";
 export { SidebarLayout } from "./components/SidebarLayout";
 export type { SidebarLayoutProps } from "./components/SidebarLayout";
 
-export { OmniBar, OmniBarProvider, OmniBarPresentation, FloatingOmniTrigger } from "./components/OmniBar";
+export { OmniBar, OmniBarProvider, OmniBarPresentation, FloatingOmniTrigger, useOmnibarContext } from "./components/OmniBar";
 export type { OmniBarPresentationProps } from "./components/OmniBar";
 
 export { GlobalAppBar, GlobalAppBarPresentation } from "./components/GlobalAppBar";

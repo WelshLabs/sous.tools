@@ -14,6 +14,8 @@ const NEW_RELIC_LICENSE_KEY = process.env.NEW_RELIC_LICENSE_KEY;
 const NEW_RELIC_APP_NAME = process.env.NEW_RELIC_APP_NAME;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
 
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:6001';
+
 export const config = {
     IS_MOCK_ENV,
     SUPABASE_URL: NEXT_PUBLIC_SUPABASE_URL,
@@ -28,7 +30,7 @@ export const config = {
     NEW_RELIC_LICENSE_KEY,
     NEW_RELIC_APP_NAME,
     GEMINI_API_KEY,
-    API_BASE_URL: process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL,
+    API_BASE_URL: process.env.API_BASE_URL || NEXT_PUBLIC_API_URL,
     APP_BASE_URL: process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL,
     TV_BASE_URL: process.env.TV_BASE_URL || process.env.NEXT_PUBLIC_TV_BASE_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',

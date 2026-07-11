@@ -26,6 +26,9 @@ export interface OmniBarState {
   isDragging: boolean;
   setIsDragging: (isDragging: boolean) => void;
 
+  inputText: string;
+  setInputText: (text: string) => void;
+
   stagedFiles: StagedFile[];
   setStagedFiles: (files: StagedFile[] | ((prev: StagedFile[]) => StagedFile[])) => void;
 
@@ -54,6 +57,9 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
 
   isDragging: false,
   setIsDragging: (isDragging) => set({ isDragging }),
+
+  inputText: '',
+  setInputText: (inputText) => set({ inputText }),
 
   stagedFiles: [],
   setStagedFiles: (update) => set((state) => ({ 

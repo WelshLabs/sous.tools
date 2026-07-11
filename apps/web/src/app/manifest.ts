@@ -10,6 +10,15 @@ export default function manifest(): MetadataRoute.Manifest {
     display_override: ['window-controls-overlay'],
     background_color: '#09090B',
     theme_color: '#09090B',
+    share_target: {
+      action: '/home',
+      method: 'GET',
+      params: {
+        title: 'title',
+        text: 'text',
+        url: 'url',
+      },
+    },
     icons: [
       {
         src: '/favicon-prod.svg',

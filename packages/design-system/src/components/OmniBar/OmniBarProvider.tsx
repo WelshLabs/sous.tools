@@ -3,7 +3,7 @@
 "use client";
 
 import React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
@@ -30,9 +30,10 @@ export function OmniBarProvider({
     setIsProcessing,
     setChatHistory,
     setIsDragging,
+    inputText,
+    setInputText,
   } = useOmnibarContext();
 
-  const [inputText, setInputText] = useState("");
   const { socket, errorMessage, setErrorMessage, isListening, setIsListening } =
     useOmniSocket(token);
 

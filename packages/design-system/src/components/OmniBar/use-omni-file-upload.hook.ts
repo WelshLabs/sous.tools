@@ -87,5 +87,5 @@ export function useOmniFileUpload() {
     executeBackgroundCommand(`${action} ${file.url}`);
   };
 
-  return { onFileSelect, handleDrop, handleActionChip };
+  return { onFileSelect, handleDrop, handleActionChip, handleFileUpload };
 }
