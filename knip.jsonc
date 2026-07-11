@@ -1,49 +1,88 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "workspaces": {
-    "apps/api": {
-      "entry": ["src/main.ts"]
-    },
-    "apps/cli": {
-      "entry": ["src/main.ts"]
-    },
-    "apps/pos-simulator": {
-      "entry": ["next.config.mjs", "src/app/**/*.tsx"]
-    },
-    "apps/setup-portal": {
-      "entry": ["next.config.mjs", "src/app/**/*.tsx"]
-    },
-    "apps/web": {
-      "entry": [
-        "next.config.mjs",
-        "playwright.config.ts",
-        "src/app/**/{page,layout,template,error,global-error}.tsx",
-        "src/app/api/**/route.ts",
-        "src/instrumentation.ts",
-        "src/sw.ts",
-        "src/proxy.ts"
-      ]
-    },
-    "packages/*": {
-      "entry": "src/index.ts",
-      "project": ["src/**/*.{ts,tsx}"]
-    }
-  },
+  "entry": [
+    "apps/api/src/main.ts",
+    "apps/cli/src/main.ts",
+    "apps/web/next.config.mjs",
+    "apps/pos-simulator/next.config.mjs",
+    "apps/setup-portal/next.config.mjs",
+    "scripts/*.js",
+    "scripts/*.ts",
+    "scripts/*.mjs"
+  ],
+  "project": [
+    "apps/**/*",
+    "packages/**/*"
+  ],
   "ignore": [
-    "**/*.d.ts",
-    "packages/tsconfig/**",
-    "packages/eslint-config/**",
-    "supabase/migrations/**"
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**",
+    "apps/wearos/**",
+    "deploy/**",
+    "supabase/**",
+    "packages/supabase/schema.sql"
   ],
   "ignoreDependencies": [
-    "turbo",
-    "pnpm",
-    "eslint",
-    "prettier",
-    "eslint-*",
-    "@typescript-eslint/*",
-    "eslint-config-*",
-    "ts-node",
-    "@types/node"
-  ]
+    "eslint-config-next",
+    "react",
+    "react-dom",
+    "@types/react",
+    "@types/react-dom"
+  ],
+  "workspaces": {
+    "apps/api": {
+      "entry": "src/main.ts",
+      "ignore": ["src/schema.gql"]
+    },
+    "apps/cli": {
+      "entry": "src/main.ts"
+    },
+    "apps/web": {
+      "entry": "next.config.mjs",
+      "ignore": ["next-env.d.ts", "src/proxy.ts"]
+    },
+    "apps/pos-simulator": {
+      "entry": "next.config.mjs",
+      "ignore": ["next-env.d.ts"]
+    },
+    "apps/setup-portal": {
+      "entry": "next.config.mjs",
+      "ignore": ["next-env.d.ts"]
+    },
+    "packages/api-types": {
+      "entry": "src/index.ts"
+    },
+    "packages/config": {
+      "entry": "src/index.ts"
+    },
+    "packages/design-system": {
+      "entry": "src/index.ts"
+    },
+    "packages/domain-inventory": {
+      "entry": "src/index.ts"
+    },
+    "packages/domain-recipes": {
+      "entry": "src/index.ts"
+    },
+    "packages/domain-settings": {
+      "entry": "src/index.ts"
+    },
+    "packages/domain-signage": {
+      "entry": "src/index.ts"
+    },
+    "packages/eslint-config": {
+      "entry": ["*.js"]
+    },
+    "packages/logger": {
+      "entry": "src/index.ts"
+    },
+    "packages/supabase": {
+      "entry": "src/index.ts"
+    },
+    "packages/tsconfig": {
+      "entry": ["*.json"]
+    }
+  }
 }
