@@ -1,0 +1,88 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "scripts/**/*.{js,mjs,ts}",
+    "apps/api/src/main.ts",
+    "apps/cli/src/main.ts",
+    "apps/web/next.config.mjs",
+    "apps/pos-simulator/next.config.mjs",
+    "apps/setup-portal/next.config.mjs",
+    "packages/config/src/index.ts"
+  ],
+  "project": ["**/*.{js,mjs,ts,tsx}"],
+  "workspaces": {
+    "apps/api": {
+      "entry": "src/main.ts",
+      "project": ["src/**/*.ts"],
+      "ignore": ["src/schema.gql"]
+    },
+    "apps/cli": {
+      "entry": "src/main.ts",
+      "project": ["src/**/*.ts"]
+    },
+    "apps/pos-simulator": {
+      "entry": "next.config.mjs",
+      "project": ["src/**/*.{ts,tsx}", "src/app/**/*.tsx"]
+    },
+    "apps/setup-portal": {
+      "entry": "next.config.mjs",
+      "project": ["src/**/*.{ts,tsx}", "src/app/**/*.tsx"]
+    },
+    "apps/web": {
+      "entry": ["next.config.mjs", "src/instrumentation.ts", "src/sw.ts"],
+      "project": ["src/**/*.{ts,tsx}", "src/app/**/*.tsx", "*.config.{js,ts,mjs}"],
+      "ignore": ["src/proxy.ts"]
+    },
+    "packages/api-types": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.ts"
+    },
+    "packages/config": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.ts"
+    },
+    "packages/design-system": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.tsx"
+    },
+    "packages/domain-inventory": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.tsx"
+    },
+    "packages/domain-recipes": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.tsx"
+    },
+    "packages/domain-settings": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.tsx"
+    },
+    "packages/domain-signage": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.tsx"
+    },
+    "packages/logger": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.ts"
+    },
+    "packages/supabase": {
+      "entry": "src/index.ts",
+      "project": "src/**/*.ts"
+    }
+  },
+  "ignore": ["**/node_modules/**", "**/dist/**", "**/build/**", "apps/wearos/**"],
+  "ignoreBinaries": ["esbuild"],
+  "ignoreDependencies": [
+    "eslint",
+    "prettier",
+    "turbo",
+    "typescript",
+    "@types/node",
+    "ts-node",
+    "postcss",
+    "tailwindcss",
+    "autoprefixer",
+    "reflect-metadata",
+    "rxjs"
+  ]
+}
