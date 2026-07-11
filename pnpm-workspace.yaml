@@ -1,26 +1,3 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-allowBuilds:
-  '@apollo/protobufjs': true
-  '@datadog/pprof': true
-  '@google/genai': true
-  '@nestjs/core': true
-  '@newrelic/fn-inspect': true
-  '@newrelic/native-metrics': true
-  esbuild: true
-  msgpackr-extract: true
-  protobufjs: true
-  sharp: true
-minimumReleaseAgeExclude:
-  - '@turbo/darwin-64@2.9.17'
-  - '@turbo/darwin-arm64@2.9.17'
-  - '@turbo/linux-64@2.9.17'
-  - '@turbo/linux-arm64@2.9.17'
-  - '@turbo/windows-64@2.9.17'
-  - '@turbo/windows-arm64@2.9.17'
-  - turbo@2.9.17
-
-overrides:
-  "@hookform/resolvers>zod": 3.25.76
-
+  - 'apps/*'
+  - 'packages/*'
