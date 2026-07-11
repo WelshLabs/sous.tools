@@ -1,5 +1,5 @@
 model_list:
-  # Route to your local Ollama container
+  # --- Route to your local Ollama container ---
   - model_name: qwen2.5-coder:7b
     litellm_params:
       model: ollama/qwen2.5-coder:7b
@@ -9,43 +9,51 @@ model_list:
       model: ollama/deepseek-coder-v2
       api_base: http://ollama:11434
   
-  # Route to Google Gemini
-  - model_name: gemini-2-flash (unlim)
+  # --- Route to Google Gemini (Strict Naming) ---
+  - model_name: gemini-3.5-flash
     litellm_params:
-      model: gemini/gemini-2-flash
+      model: gemini/gemini-3.5-flash
       api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2-flash-lite (unlim)
-    litellm_params:
-      model: gemini/gemini-2-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: gemini/gemini-2.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.5-flash-lite (unlim)
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.5-pro
-    litellm_params:
-      model: gemini/gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-3-flash
-    litellm_params:
-      model: gemini/gemini-3-flash
-      api_key: os.environ/GEMINI_API_KEY
+  
   - model_name: gemini-3.1-pro
     litellm_params:
       model: gemini/gemini-3.1-pro
       api_key: os.environ/GEMINI_API_KEY
+      
   - model_name: gemini-3.1-flash-lite
     litellm_params:
       model: gemini/gemini-3.1-flash-lite
       api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-3.1-flash
+      
+  - model_name: gemini-3-flash
     litellm_params:
-      model: gemini/gemini-3.1-flash
+      model: gemini/gemini-3-flash
+      api_key: os.environ/GEMINI_API_KEY
+      
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+      
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+      
+  - model_name: gemini-2.5-flash-lite
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+      
+  - model_name: gemini-2-flash
+    litellm_params:
+      model: gemini/gemini-2-flash
+      api_key: os.environ/GEMINI_API_KEY
+      
+  - model_name: gemini-2-flash-lite
+    litellm_params:
+      model: gemini/gemini-2-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
 general_settings:
-  master_key: sk-1234 # This is your new "Universal" API Key
+  master_key: sk-1234 # This is your "Universal" API Key
