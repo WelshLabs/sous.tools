@@ -1,25 +1,28 @@
 # Active Sprint
 
-Here's a summary of the open issues for the current sprint:
+## :hammer: In Progress
 
-## 🚀 Features & Enhancements
+### Frontend
+- [ ] **omnibar uploads**
+    - Implement attachment options (file upload, camera, Google Drive).
+    - Enable copy/paste file functionality into the input.
+    - Design visually appealing UI/UX for the omnibar.
+    - Implement PWA share target functionality to share to the omnibar with context.
 
-*   [ ] **Omnibar Uploads:**
-    *   Implement attachment options (file upload, camera, Google Drive).
-    *   Enable copy/paste file functionality into the input.
-    *   Focus on visually appealing UI/UX for the omnibar.
-    *   Add PWA share target functionality, directing to `/home` with context in the omnibar.
-*   [ ] **New Relic Logging:**
-    *   Integrate New Relic logging for comprehensive telemetry.
-    *   Implement isomorphic, application-level logging to bypass Vercel free tier limitations.
-    *   Centralize secret handling for the New Relic ingest key using Infisical.
-    *   Build a shared `pino` logger package (`@soustools/logger`) for global full-stack logging.
-    *   Configure server-side logging to output structured JSON to stdout.
-    *   Configure client-side logging to transmit error-level logs asynchronously to New Relic.
-    *   Initialize the logger wrapper in Next.js root layouts and NestJS `main.ts`.
-    *   Integrate `@vercel/analytics` and `@vercel/speed-insights` into Next.js root layout.
-    *   Implement `error.tsx` boundary for client-side error catching.
-    *   Implement a global NestJS `ExceptionFilter` for backend error handling.
-    *   Configure cloud deployment pipelines and ensure secrets are synced to Vercel or available during build.
-    *   Offload network requests for logging to separate threads.
-    *   Monitor Oracle Cloud infrastructure, including remote development environments.
+### DevOps & Backend
+- [ ] **new relic logging**
+    - Implement isomorphic, application-level logging to stream telemetry to New Relic.
+    - Securely manage `NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY` via Infisical.
+    - Build a shared monorepo package (`@soustools/logger`) using 'pino' for global full-stack logging.
+    - Implement a global monkey-patching wrapper for `console.log`, `info`, `warn`, `error`.
+    - Configure server-side logging to format logs to standard out (stdout) as structured JSON.
+    - Configure browser-side logging with `pino.browser.transmit` to POST client runtime crashes to New Relic's Log Endpoint (error level only).
+    - Integrate logger initialization in the root layout of Next.js applications.
+    - Embed `@vercel/analytics` and `@vercel/speed-insights` into the root DOM tree layout.
+    - Implement a global `error.tsx` boundary component for Next.js client-side failures.
+    - Initialize New Relic APM agent and logger wrapper in NestJS `main.ts`.
+    - Implement a global NestJS `ExceptionFilter` for unhandled backend exceptions.
+    - Configure Infisical secrets sync to Vercel or use Infisical CLI for build tasks.
+    - Offload network requests for logging to separate threads (queues/workers).
+    - Analyze and implement full New Relic monitoring capabilities on the free tier.
+    - Ensure metrics from remote development environment (`code-server`) are reported and distinguished.
