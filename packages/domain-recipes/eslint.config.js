@@ -1,6 +1,3 @@
-import { baseConfig } from "@soustools/eslint-config";
+import next from '@soustools/eslint-config/next';
 
-export default [
-  ...baseConfig,
-  { ignores: ["dist/**", "node_modules/**"] },
-];
+export default [...next];
