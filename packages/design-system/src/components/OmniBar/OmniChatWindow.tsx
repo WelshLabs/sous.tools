@@ -22,7 +22,7 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
     >
       <div 
         ref={scrollRef}
-        className="w-full flex flex-col gap-4 max-h-[35vh] overflow-y-auto pr-2
+        className="w-full flex flex-col gap-2.5 max-h-[35vh] overflow-y-auto pr-2
           [&::-webkit-scrollbar]:w-1.5 
           [&::-webkit-scrollbar-track]:bg-transparent 
           [&::-webkit-scrollbar-thumb]:bg-cyan-500/50 
@@ -43,12 +43,12 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
               className={`flex flex-col max-w-[85%] ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
             >
               {isAgentStep ? (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground opacity-70 font-mono bg-card rounded-xl px-4 py-2 border border-border">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground opacity-70 font-mono bg-card rounded-xl px-3 py-1.5 border border-border">
                   {msg.isLoading !== false && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
                   {msg.content}
                 </div>
               ) : (
-                <div className={`px-5 py-3 rounded-2xl flex flex-col gap-2 ${
+                <div className={`px-4 py-2 rounded-2xl flex flex-col gap-1.5 ${
                   isUser 
                     ? 'bg-primary/10 border border-primary/20 text-foreground rounded-tr-sm' 
                     : 'bg-card border border-border text-foreground rounded-tl-sm'
