@@ -1,4 +1,4 @@
-name: Generate AI Context (Repomix & Turbo)
+name: Generate AI Context (Knip & Architecture)
 
 on:
   schedule:
@@ -15,30 +15,40 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-      - name: Setup Node and pnpm
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install -g pnpm turbo repomix
 
-      - name: Generate API Context
+      - name: Setup pnpm and turbo
+        run: npm install -g pnpm turbo
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Prepare Context Directory
+        run: mkdir -p .context
+
+      - name: Generate Knip Tech Debt Report
         run: |
-          npx turbo prune --scope=api --out-dir=out-api
-          cd out-api
-          npx repomix --output ../.context/api-repomix.xml
+          # Run Knip and pipe the output to a text file. 
+          # The '|| true' prevents the action from failing/crashing if tech debt is found.
+          pnpm run knip > .context/knip-report.txt || true
 
-      - name: Generate Web Context
+      - name: Generate Turborepo Dependency Graph
         run: |
-          npx turbo prune --scope=web --out-dir=out-web
-          cd out-web
-          npx repomix --output ../.context/web-repomix.xml
+          # Tells NotebookLM exactly how your packages and apps depend on each other
+          npx turbo graph > .context/turbo-graph.txt || true
 
-      # (Add additional steps here for POS, Signage, etc.)
+      - name: Generate Codebase Directory Tree
+        run: |
+          # Creates a map of the file structure without dumping 14,000 lines of code
+          tree -I 'node_modules|.git|.next|dist|out|.turbo|.context' > .context/directory-tree.txt || true
 
       - name: Commit and Push Context Files
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .context/
-          git commit -m "chore(ai): auto-update repomix context files" || echo "No changes to commit"
+          git commit -m "chore(ai): auto-update knip and architecture context files" || echo "No changes to commit"
           git push
