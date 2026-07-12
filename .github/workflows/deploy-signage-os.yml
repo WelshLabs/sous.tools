@@ -34,6 +34,9 @@ jobs:
           echo "IMG_NAME=soustools-signage" > config
           echo "TARGET_HOSTNAME=signage" >> config
 
+          # Force 64-bit build for Raspberry Pi 5 / Oracle Ampere compatibility
+          echo "TARGET_ARCH=arm64" >> config
+
           # SSH & User Setup (The Bootstrap User for Ansible)
           echo "ENABLE_SSH=1" >> config
           echo "FIRST_USER_NAME=sous" >> config
