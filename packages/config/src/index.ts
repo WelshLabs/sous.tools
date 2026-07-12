@@ -48,4 +48,6 @@ export const config = {
     OLLAMA_HOST: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434',
     OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'llava',
     VISION_PROVIDER: process.env.VISION_PROVIDER || 'openai',
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    IS_PRODUCTION: process.env.NODE_ENV === 'production',
 };

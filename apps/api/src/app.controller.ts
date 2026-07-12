@@ -10,8 +10,8 @@ import { randomUUID } from "crypto";
 const COOKIE_NAME = "sb-session-token";
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  // Only enforce Secure in real (non-mock) environments — mock/local dev uses plain HTTP
-  secure: !config.IS_MOCK_ENV,
+  // Only enforce Secure in production — local dev/testing uses plain HTTP
+  secure: config.IS_PRODUCTION,
   sameSite: "lax" as const,
   maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
   path: "/",
@@ -115,7 +115,8 @@ export class AppController {
     }
 
     const fileId = randomUUID();
-    const ext = body.fileName.split(".").pop() || "bin";
+    const fileName = body?.fileName || "file.bin";
+    const ext = fileName.split(".").pop() || "bin";
     const filePath = `${user.id}/${fileId}.${ext}`;
 
     const { data, error } = await supabase.storage
