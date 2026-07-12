@@ -154,5 +154,35 @@ export class AppController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  /**
+   * Returns current session information by validating the sb-session-token cookie.
+   */
+  @Get("auth/session")
+  async getSession(@Req() req: any): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
+    const token = req.cookies?.[COOKIE_NAME];
+    if (!token) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    return {
+      success: true,
+      data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
 

@@ -1,16 +1,37 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@soustools/design-system";
-import { KeyRound, Mail, Sparkles } from "lucide-react";
+import { Button, PrimaryLogo } from "@soustools/design-system";
+import { KeyRound, Mail } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("conar@dtown.cafe");
   const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.success && payload.data?.user) {
+            router.replace("/home");
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to check active session:", err);
+      } finally {
+        setRedirecting(false);
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -42,6 +63,14 @@ export default function LoginPage() {
     }
   };
 
+  if (redirecting) {
+    return (
+      <main className="flex items-center justify-center min-h-screen bg-background">
+        <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
+      </main>
+    );
+  }
+
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-background">
       {/* Background Neon Orbs */}
@@ -50,15 +79,10 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-border shadow-2xl relative z-[var(--z-overlay)]">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/30 mb-4 shadow-lg shadow-primary/10">
-            <Sparkles className="w-6 h-6 text-primary" />
-          </div>
+          <PrimaryLogo className="h-16 w-auto text-primary mb-4" />
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight text-center">
-            Kitchen Portal
+            Sous Tools Login
           </h1>
-          <p className="text-sm text-muted-foreground mt-2 text-center">
-            Standardize your culinary operations in real-time.
-          </p>
         </div>
 
         {error && (
