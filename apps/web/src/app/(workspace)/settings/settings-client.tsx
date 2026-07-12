@@ -78,6 +78,11 @@ export function SettingsClient({
     if (!res.ok) throw new Error(`Failed to ${action}`);
   };
 
+  const handleTabChange = (tab: "general" | "integrations" | "styling" | "downloads") => {
+    setActiveTab(tab);
+    router.replace(`/settings?tab=${tab}`);
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100 animate-in fade-in">
       <header className="flex flex-col gap-1">
@@ -119,7 +124,7 @@ export function SettingsClient({
             return (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleTabChange(tab)}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
                   activeTab === tab
                     ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
