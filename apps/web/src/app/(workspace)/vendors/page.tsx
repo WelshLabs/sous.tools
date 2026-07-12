@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { type Vendor } from "@soustools/api-types";
 import { toast } from "sonner";
 
+export const dynamic = 'force-dynamic';
+
 export default function VendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);

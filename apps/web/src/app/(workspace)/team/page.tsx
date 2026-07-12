@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { PinInput, Button, TwoToneHeader } from "@soustools/design-system";
 import { Watch } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default function TeamPortalPage() {
   const [pairingCode, setPairingCode] = useState("");
   const [status, setStatus] = useState<

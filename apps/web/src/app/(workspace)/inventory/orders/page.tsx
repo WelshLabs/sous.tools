@@ -1,6 +1,8 @@
 import { config } from "@soustools/config";
 import { OrdersClient } from "./OrdersClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function OrdersPage() {
   const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
   let vendors = [];

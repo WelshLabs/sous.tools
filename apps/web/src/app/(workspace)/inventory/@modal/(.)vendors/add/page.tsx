@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { TwoToneHeader } from "@soustools/design-system";
 
+export const dynamic = 'force-dynamic';
+
 export default function InterceptedAddVendorModal() {
   const router = useRouter();
   const [form, setForm] = React.useState({

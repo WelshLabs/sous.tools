@@ -8,6 +8,8 @@ import { TwoToneHeader } from "@soustools/design-system";
 import { GoogleDriveBrowser } from "@soustools/domain-settings";
 import { toast } from "sonner";
 
+export const dynamic = 'force-dynamic';
+
 function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "drive") => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

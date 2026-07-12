@@ -4,6 +4,8 @@ import { TwoToneHeader } from "@soustools/design-system";
 import Link from "next/link";
 import { FileUp, ShoppingCart, Activity, ShieldAlert, Sparkles, TrendingUp } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default function InventoryPage() {
   return (
     <div className="flex flex-col gap-8 p-8 h-full bg-background text-foreground animate-in fade-in">
