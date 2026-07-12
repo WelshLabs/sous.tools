@@ -2,13 +2,13 @@ packages:
   - 'apps/*'
   - 'packages/*'
 allowBuilds:
-  '@apollo/protobufjs': set this to true or false
-  '@google/genai': set this to true or false
-  '@nestjs/core': set this to true or false
-  '@newrelic/fn-inspect': set this to true or false
-  '@newrelic/native-metrics': set this to true or false
-  '@scarf/scarf': set this to true or false
-  esbuild: set this to true or false
-  msgpackr-extract: set this to true or false
-  protobufjs: set this to true or false
-  sharp: set this to true or false
+  '@apollo/protobufjs': true
+  '@google/genai': true
+  '@nestjs/core': true
+  '@newrelic/fn-inspect': true
+  '@newrelic/native-metrics': true
+  '@scarf/scarf': true
+  esbuild: true
+  msgpackr-extract: true
+  protobufjs: true
+  sharp: true

@@ -5,9 +5,6 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "sous-config": "./dist/cli.js"
-  },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
