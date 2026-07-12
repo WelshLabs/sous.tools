@@ -16,10 +16,10 @@
     "@eslint/js": "^9",
     "eslint": "^9",
     "eslint-plugin-boundaries": "^5",
-    "eslint-plugin-prettier": "latest",
     "typescript-eslint": "^8"
   },
   "devDependencies": {
-    "@soustools/tsconfig": "workspace:*"
+    "@soustools/tsconfig": "workspace:*",
+    "eslint-plugin-prettier": "latest"
   }
 }
