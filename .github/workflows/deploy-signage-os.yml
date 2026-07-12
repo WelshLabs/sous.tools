@@ -45,6 +45,7 @@ jobs:
 
           # 3. Execute the Dockerized build
           sudo chmod +x ./build-docker.sh
+          sudo chmod +x ./build.sh
           sudo ./build-docker.sh
 
       - name: Fetch Infisical Secrets
