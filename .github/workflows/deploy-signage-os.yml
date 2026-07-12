@@ -15,6 +15,9 @@ jobs:
   build:
     runs-on: [self-hosted, linux, arm64]
     steps:
+      - name: Who am I?
+        run: whoami
+
       - name: Purge root-owned workspace files (Pre-checkout)
         run: |
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
@@ -41,6 +44,7 @@ jobs:
           # mkdir -p deploy work
 
           # 3. Execute the Dockerized build
+          sudo chmod +x ./build-docker.sh
           sudo ./build-docker.sh
 
       - name: Fetch Infisical Secrets
