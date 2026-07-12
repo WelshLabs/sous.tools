@@ -17,6 +17,7 @@ export function useOmniFileUpload() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ fileName: file.name }),
       });
 
