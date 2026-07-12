@@ -42,11 +42,5 @@
   "packageManager": "pnpm@11.5.2",
   "dependencies": {
     "eslint-plugin-react": "^7.34.1"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "^19.0.0",
-      "@types/react-dom": "^19.0.0"
-    }
   }
 }
