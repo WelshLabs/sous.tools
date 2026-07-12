@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, Camera, HardDrive, Paperclip } from "lucide-react";
+import { UploadCloud, Camera, Paperclip } from "lucide-react";
+import { useOmnibarContext } from "./OmniBarContext";
 
 export interface AttachmentFlyoutProps {
   isOpen: boolean;
@@ -12,6 +13,14 @@ export interface AttachmentFlyoutProps {
   onGoogleDriveClick: () => void;
 }
 
+const GoogleDriveIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 1443 1250" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M481 0h481l481 833H962L481 0z" fill="#0066da" />
+    <path d="M241 1250L0 833l481-833 240 417-480 833z" fill="#00a852" />
+    <path d="M962 1250l241-417H481l-240 417h721z" fill="#ffcc00" />
+  </svg>
+);
+
 export function AttachmentFlyout({
   isOpen,
   onToggle,
@@ -19,6 +28,23 @@ export function AttachmentFlyout({
   onCameraClick,
   onGoogleDriveClick,
 }: AttachmentFlyoutProps) {
+  const { isGoogleDriveConnected } = useOmnibarContext();
+  const [hasCamera, setHasCamera] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+          const videoDevices = devices.filter((d) => d.kind === "videoinput");
+          setHasCamera(videoDevices.length > 0);
+        })
+        .catch(() => {
+          setHasCamera(false);
+        });
+    }
+  }, []);
+
   return (
     <div className="flex items-center gap-1.5 flex-shrink-0">
       <AnimatePresence>
@@ -37,22 +63,28 @@ export function AttachmentFlyout({
             >
               <UploadCloud className="w-4 h-4" />
             </button>
-            <button
-              type="button"
-              onClick={onCameraClick}
-              className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
-              title="Use Camera"
-            >
-              <Camera className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={onGoogleDriveClick}
-              className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
-              title="Google Drive"
-            >
-              <HardDrive className="w-4 h-4" />
-            </button>
+            
+            {hasCamera && (
+              <button
+                type="button"
+                onClick={onCameraClick}
+                className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
+                title="Use Camera"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            )}
+
+            {isGoogleDriveConnected && (
+              <button
+                type="button"
+                onClick={onGoogleDriveClick}
+                className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors flex items-center justify-center"
+                title="Google Drive"
+              >
+                <GoogleDriveIcon className="w-4 h-4" />
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -70,3 +102,4 @@ export function AttachmentFlyout({
     </div>
   );
 }
+

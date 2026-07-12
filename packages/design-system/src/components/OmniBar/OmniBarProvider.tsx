@@ -33,12 +33,31 @@ export function OmniBarProvider({
     setIsDragging,
     inputText,
     setInputText,
+    setIsGoogleDriveConnected,
   } = useOmnibarContext();
 
   const { socket, errorMessage, setErrorMessage, isListening, setIsListening } =
     useOmniSocket(token);
 
   const dragCounter = useRef(0);
+
+  // Fetch integration status for Google Drive
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/integrations/status");
+        if (res.ok) {
+          const payload = await res.json();
+          const list = Array.isArray(payload) ? payload : payload.data || [];
+          const google = list.find((item: any) => item.provider === "GOOGLE");
+          setIsGoogleDriveConnected(!!google?.connected);
+        }
+      } catch (err) {
+        console.error("Failed to fetch Google Drive integration status:", err);
+      }
+    };
+    fetchStatus();
+  }, [setIsGoogleDriveConnected]);
 
   // Global Drag Listeners
   useEffect(() => {

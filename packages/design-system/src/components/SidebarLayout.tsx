@@ -5,9 +5,9 @@ import { useSidebarStore } from "../store/sidebarStore";
 
 export interface SidebarLayoutProps {
   /** The content of the sidebar (e.g., InsightsSidebar or standard navigation) */
-  sidebarContent: any;
+  sidebarContent: React.ReactNode;
   /** The main content area */
-  mainContent: any;
+  mainContent: React.ReactNode;
 }
 
 /**

@@ -64,8 +64,8 @@ export function OmniBarPresentation({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 w-screen h-screen backdrop-blur-md bg-background/60 pointer-events-auto"
-              style={{ zIndex: 40 }}
+              className="fixed inset-0 w-screen h-screen backdrop-blur-md bg-background/30 pointer-events-auto"
+              style={{ zIndex: 55 }}
               onClick={() => onToggle()}
             />
           )}
@@ -75,7 +75,7 @@ export function OmniBarPresentation({
 
       {/* Global Anchored Container */}
       {mounted && !isFocusPage && createPortal(
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center justify-end w-full max-w-3xl pointer-events-none gap-4">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-60 flex flex-col items-center justify-end w-full max-w-3xl pointer-events-none gap-4">
           <AnimatePresence mode="wait">
             {!isOpen ? (
               <motion.div

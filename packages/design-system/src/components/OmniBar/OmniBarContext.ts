@@ -34,6 +34,9 @@ export interface OmniBarState {
   stagedFiles: StagedFile[];
   setStagedFiles: (files: StagedFile[] | ((prev: StagedFile[]) => StagedFile[])) => void;
 
+  isGoogleDriveConnected: boolean;
+  setIsGoogleDriveConnected: (connected: boolean) => void;
+
   executeBackgroundCommand: (text: string) => void;
   setExecuteBackgroundCommand: (fn: (text: string) => void) => void;
 }
@@ -69,6 +72,9 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
   setStagedFiles: (update) => set((state) => ({ 
     stagedFiles: typeof update === 'function' ? update(state.stagedFiles) : update 
   })),
+
+  isGoogleDriveConnected: false,
+  setIsGoogleDriveConnected: (isGoogleDriveConnected) => set({ isGoogleDriveConnected }),
 
   executeBackgroundCommand: () => {},
   setExecuteBackgroundCommand: (fn) => set({ executeBackgroundCommand: fn }),
