@@ -75,6 +75,8 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
 
   if (chatHistory.length === 0) return null;
 
+  const hasRecipe = chatHistory.some((m) => !!m.recipeData);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -84,14 +86,14 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
     >
       <div 
         ref={scrollRef}
-        className="w-full flex flex-col gap-2.5 max-h-[35vh] overflow-y-auto pr-2
+        className={`w-full flex flex-col gap-2.5 ${hasRecipe ? 'max-h-[60vh]' : 'max-h-[35vh]'} overflow-y-auto pr-2
           [&::-webkit-scrollbar]:w-1.5 
           [&::-webkit-scrollbar-track]:bg-transparent 
           [&::-webkit-scrollbar-thumb]:bg-cyan-500/50 
           [&::-webkit-scrollbar-thumb]:shadow-[0_0_8px_rgba(0,255,255,0.5)]
           [&::-webkit-scrollbar-thumb]:rounded-full 
           hover:[&::-webkit-scrollbar-thumb]:bg-cyan-400/80 
-          transition-colors"
+          transition-colors`}
       >
         {chatHistory.map((msg, index) => {
           const isUser = msg.role === 'user';
@@ -102,7 +104,7 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               key={msg.id || index}
-              className={`flex flex-col ${msg.recipeData ? 'w-full max-w-full' : 'max-w-[85%]'} ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
+              className={`flex flex-col ${msg.recipeData ? 'w-full max-w-none' : 'max-w-[85%]'} ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
             >
               {isAgentStep ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground opacity-70 font-mono bg-card rounded-xl px-3 py-1.5 border border-border">

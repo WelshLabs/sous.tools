@@ -95,7 +95,8 @@ Return a JSON object strictly following this structure:
       "baseIngredient": "onion",
       "preparationNote": "finely chopped",
       "quantity": 1,
-      "unit": "cup"
+      "unit": "cup",
+      "sectionGroup": "Filling"
     }
   ],
   "instructions": [

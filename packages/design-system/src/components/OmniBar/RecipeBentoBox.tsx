@@ -100,10 +100,23 @@ export function RecipeBentoBox({
     );
   };
 
+  // Group ingredients by sectionGroup
+  const groupedIngredients = React.useMemo(() => {
+    const groups: Record<string, Array<{ ing: RecipeExtractionDTO["ingredients"][number]; index: number }>> = {};
+    recipe.ingredients?.forEach((ing, index) => {
+      const section = ing.sectionGroup?.trim() || "Ingredients";
+      if (!groups[section]) {
+        groups[section] = [];
+      }
+      groups[section].push({ ing, index });
+    });
+    return groups;
+  }, [recipe.ingredients]);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 w-full text-left">
+    <div className="flex flex-col gap-4 w-full text-left">
       {/* Frosted Header / Metadata */}
-      <div className="md:col-span-12 backdrop-blur-md bg-white/10 dark:bg-zinc-900/40 border border-white/20 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="backdrop-blur-md bg-white/10 dark:bg-zinc-900/40 border border-white/20 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">
             EXTRACTED RECIPE
@@ -128,33 +141,42 @@ export function RecipeBentoBox({
         </div>
       </div>
 
-      {/* Bento Grid Item 1: Ingredients */}
-      <div className="md:col-span-7 backdrop-blur-md bg-white/5 dark:bg-zinc-950/20 border border-white/10 dark:border-zinc-900/60 rounded-2xl p-4 shadow-lg flex flex-col gap-3">
+      {/* Ingredients Panel */}
+      <div className="backdrop-blur-md bg-white/5 dark:bg-zinc-950/20 border border-white/10 dark:border-zinc-900/60 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         <h3 className="text-sm font-semibold tracking-wider text-cyan-300 font-mono uppercase border-b border-white/10 pb-2">
           Ingredients
         </h3>
-        <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+        <div className="flex flex-col gap-5 pr-1">
           {recipe.ingredients && recipe.ingredients.length > 0 ? (
-            recipe.ingredients.map((ing, idx) => renderIngredientRow(ing, idx))
+            Object.entries(groupedIngredients).map(([sectionName, items]) => (
+              <div key={sectionName} className="flex flex-col gap-2">
+                <div className="text-[11px] font-bold tracking-widest text-cyan-400 font-mono uppercase bg-white/5 dark:bg-black/20 border border-white/10 dark:border-zinc-800/50 px-3 py-1 rounded-lg w-fit">
+                  {sectionName}
+                </div>
+                <div className="flex flex-col gap-2 pl-3 border-l border-cyan-500/10 dark:border-cyan-500/5">
+                  {items.map(({ ing, index }) => renderIngredientRow(ing, index))}
+                </div>
+              </div>
+            ))
           ) : (
             <span className="text-xs text-muted-foreground italic">No ingredients found.</span>
           )}
         </div>
       </div>
 
-      {/* Bento Grid Item 2: Instructions */}
-      <div className="md:col-span-5 backdrop-blur-md bg-white/5 dark:bg-zinc-950/20 border border-white/10 dark:border-zinc-900/60 rounded-2xl p-4 shadow-lg flex flex-col gap-3">
+      {/* Instructions Panel */}
+      <div className="backdrop-blur-md bg-white/5 dark:bg-zinc-950/20 border border-white/10 dark:border-zinc-900/60 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         <h3 className="text-sm font-semibold tracking-wider text-cyan-300 font-mono uppercase border-b border-white/10 pb-2">
           Instructions
         </h3>
-        <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
+        <div className="flex flex-col gap-3 pr-1">
           {recipe.instructions && recipe.instructions.length > 0 ? (
             recipe.instructions.map((step, idx) => (
-              <div key={idx} className="flex gap-2.5 items-start text-sm">
+              <div key={idx} className="flex gap-3 items-start text-sm">
                 <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20 font-mono">
                   {idx + 1}
                 </span>
-                <p className="text-muted-foreground leading-normal mt-0.5">{step}</p>
+                <p className="text-muted-foreground leading-relaxed mt-0.5">{step}</p>
               </div>
             ))
           ) : (

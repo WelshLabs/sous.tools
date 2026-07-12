@@ -120,7 +120,8 @@ const recipeExtractionSchema = {
           baseIngredient: { type: Type.STRING, description: "The isolated primary ingredient itself, removing any prep descriptors or quantities. e.g. 'Yellow Onion', 'Unsalted Butter', 'AP Flour'" },
           preparationNote: { type: Type.STRING, description: "All descriptors relating to prep state, cut type, temp, or divisions. e.g., 'diced, divided', 'melted', 'room temperature', 'sifted'" },
           quantity: { type: Type.NUMBER, description: "The numerical quantity extracted. Convert fractions to decimals." },
-          unit: { type: Type.STRING, description: "The unit of measurement. e.g., 'cup', 'g', 'oz', 'piece', 'tbsp'" }
+          unit: { type: Type.STRING, description: "The unit of measurement. e.g., 'cup', 'g', 'oz', 'piece', 'tbsp'" },
+          sectionGroup: { type: Type.STRING, description: "The section header grouping name for this ingredient if one is specified in the recipe layout (e.g. 'Dough', 'Filling', 'Glaze', 'Topping')." }
         },
         required: ["rawString", "baseIngredient"]
       }
@@ -171,7 +172,8 @@ Pay extremely close attention to the ingredient parsing:
 - 'baseIngredient' must be the isolated food substance (e.g. 'Yellow Onion', 'Unsalted Butter', 'AP Flour'). Intelligently split out preparation modifiers.
 - 'preparationNote' must contain all preparation and state instructions (e.g., 'diced, divided', 'melted', 'room temp', 'sifted').
 - 'quantity' must be the numeric amount (e.g., '1 1/2' becomes 1.5).
-- 'unit' must be the unit of measurement (e.g. 'cup', 'tbsp', 'g').`
+- 'unit' must be the unit of measurement (e.g. 'cup', 'tbsp', 'g').
+- 'sectionGroup' must be the header/title of the recipe section/group that this ingredient is grouped under if the recipe presents them in sections (e.g. 'Dough', 'Filling', 'Glaze'). If no section headers exist, leave it as null.`
     };
 
     let responseText = "";

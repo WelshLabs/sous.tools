@@ -191,6 +191,7 @@ export const RecipeExtractionDTOSchema = z.object({
       unit: z.string().nullable().optional(),
       itemId: z.string().uuid().nullable().optional(),
       confidence: z.number().nullable().optional(),
+      sectionGroup: z.string().nullable().optional(),
     })
   ),
   instructions: z.array(z.string()),

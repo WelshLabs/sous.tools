@@ -43,10 +43,52 @@ export class NormalizationService {
   }
 
   /**
+   * Automatically populates any missing embeddings for the global master_ingredients table.
+   * This is a self-healing process to keep pgvector indices up-to-date.
+   */
+  async ensureMasterEmbeddings(): Promise<void> {
+    try {
+      const { data: list, error } = await supabase
+        .from("master_ingredients")
+        .select("id, name, embedding");
+
+      if (error) {
+        this.logger.error("Failed to fetch master ingredients for embedding check", error);
+        return;
+      }
+      if (!list) return;
+
+      for (const item of list) {
+        if (!item.embedding) {
+          try {
+            this.logger.log(`Generating embedding for master ingredient "${item.name}"`);
+            const embedding = await this.getEmbedding(item.name);
+            const { error: updateErr } = await supabase
+              .from("master_ingredients")
+              .update({ embedding: embedding as any })
+              .eq("id", item.id);
+
+            if (updateErr) {
+              this.logger.error(`Failed to save embedding for master ingredient "${item.name}"`, updateErr);
+            }
+          } catch (err) {
+            this.logger.error(`Error during self-healing master embedding generation for "${item.name}"`, err);
+          }
+        }
+      }
+    } catch (err) {
+      this.logger.error("Error in ensureMasterEmbeddings", err);
+    }
+  }
+
+  /**
    * Automatically populates any missing embeddings for the organization's items table.
    * This is a self-healing process to keep pgvector indices up-to-date.
    */
   async ensureEmbeddings(organizationId: string): Promise<void> {
+    // Keep master ingredients embeddings up-to-date as well
+    await this.ensureMasterEmbeddings();
+
     try {
       const { data: items, error } = await supabase
         .from("items")
@@ -163,53 +205,112 @@ export class NormalizationService {
           org_id: organizationId,
         });
 
-        if (matchesErr || !matches || matches.length === 0) {
-          normalizedItems.push({
-            ...item,
-            itemId: null,
-            confidence: 0.0,
-          });
+        let matched = false;
+
+        if (!matchesErr && matches && matches.length > 0) {
+          const topMatch = matches[0];
+          const secondMatch = matches[1];
+
+          // Criteria for strong clear match:
+          // Top similarity is high (>= 0.85) AND either there is no second match or the gap is significant (>= 0.15)
+          const isClearMatch =
+            topMatch.similarity >= 0.85 &&
+            (!secondMatch || (topMatch.similarity - secondMatch.similarity) >= 0.15);
+
+          if (isClearMatch) {
+            normalizedItems.push({
+              ...item,
+              itemId: topMatch.id,
+              mappedName: topMatch.name,
+              confidence: Number(topMatch.similarity.toFixed(2)),
+            });
+            matched = true;
+          } else {
+            // If highly ambiguous, use Gemini Flash to tie-break among the candidates
+            this.logger.log(`Ambiguous matches for "${rawName}". Invoking Gemini Flash tie-breaker.`);
+            const geminiMatch = await this.tieBreakWithGemini(rawName, matches);
+
+            if (geminiMatch && geminiMatch.itemId) {
+              const matchedCandidate = matches.find((m: any) => m.id === geminiMatch.itemId);
+              normalizedItems.push({
+                ...item,
+                itemId: geminiMatch.itemId,
+                mappedName: matchedCandidate ? matchedCandidate.name : rawName,
+                confidence: geminiMatch.confidence,
+              });
+              matched = true;
+            }
+          }
+        }
+
+        if (matched) {
           continue;
         }
 
-        const topMatch = matches[0];
-        const secondMatch = matches[1];
+        // Tier 3: If no matches in tenant items, fallback to global master_ingredients table via match_master_ingredients
+        this.logger.log(`No matches for "${rawName}" in tenant items. Falling back to global USDA/Escoffier tier...`);
+        const { data: globalMatches, error: globalMatchesErr } = await supabase.rpc("match_master_ingredients", {
+          query_embedding: `[${queryEmbedding.join(",")}]`,
+          match_threshold: 0.3,
+          match_count: 3,
+        });
 
-        // Criteria for strong clear match:
-        // Top similarity is high (>= 0.85) AND either there is no second match or the gap is significant (>= 0.15)
-        const isClearMatch =
-          topMatch.similarity >= 0.85 &&
-          (!secondMatch || (topMatch.similarity - secondMatch.similarity) >= 0.15);
+        if (!globalMatchesErr && globalMatches && globalMatches.length > 0) {
+          const topGlobalMatch = globalMatches[0];
+          // Since it matched the global tier, let's copy/lazy-load this item into the tenant's items table.
+          const { data: globalIng } = await supabase
+            .from("master_ingredients")
+            .select("*")
+            .eq("id", topGlobalMatch.id)
+            .single();
 
-        if (isClearMatch) {
-          normalizedItems.push({
-            ...item,
-            itemId: topMatch.id,
-            mappedName: topMatch.name,
-            confidence: Number(topMatch.similarity.toFixed(2)),
-          });
-          continue;
+          if (globalIng) {
+            this.logger.log(`Lazy-loading global master ingredient "${globalIng.name}" into tenant items for organization "${organizationId}"`);
+            const { data: newItem, error: insertErr } = await supabase
+              .from("items")
+              .insert({
+                organization_id: organizationId,
+                name: globalIng.name,
+                category: "ingredient",
+                purchase_unit: "UNIT",
+                units_per_case: 1,
+                each_weight_g: null,
+                density_g_ml: globalIng.density_g_ml,
+                is_animal_product: globalIng.is_animal_product,
+                is_meat: globalIng.is_meat,
+                is_seafood: globalIng.is_seafood,
+                is_dairy: globalIng.is_dairy,
+                is_egg: globalIng.is_egg,
+                is_gluten_source: globalIng.is_gluten_source,
+                allergens: Array.isArray(globalIng.allergens) ? globalIng.allergens : [],
+                fdc_id: globalIng.fdc_id,
+                nutrition_macros: globalIng.nutrition_macros,
+                embedding: globalIng.embedding,
+              })
+              .select()
+              .single();
+
+            if (!insertErr && newItem) {
+              normalizedItems.push({
+                ...item,
+                itemId: newItem.id,
+                mappedName: newItem.name,
+                confidence: Number(topGlobalMatch.similarity.toFixed(2)),
+              });
+              continue;
+            } else {
+              this.logger.error(`Failed to insert lazy-loaded item: ${insertErr?.message}`);
+            }
+          }
         }
 
-        // If highly ambiguous, use Gemini Flash to tie-break among the candidates
-        this.logger.log(`Ambiguous matches for "${rawName}". Invoking Gemini Flash tie-breaker.`);
-        const geminiMatch = await this.tieBreakWithGemini(rawName, matches);
+        // If completely unmatched, return null/0.0 confidence
+        normalizedItems.push({
+          ...item,
+          itemId: null,
+          confidence: 0.0,
+        });
 
-        if (geminiMatch && geminiMatch.itemId) {
-          const matchedCandidate = matches.find((m: any) => m.id === geminiMatch.itemId);
-          normalizedItems.push({
-            ...item,
-            itemId: geminiMatch.itemId,
-            mappedName: matchedCandidate ? matchedCandidate.name : rawName,
-            confidence: geminiMatch.confidence,
-          });
-        } else {
-          normalizedItems.push({
-            ...item,
-            itemId: null,
-            confidence: 0.0,
-          });
-        }
       } catch (err) {
         this.logger.error(`Fuzzy match failed for item "${rawName}"`, err);
         normalizedItems.push({
