@@ -34,21 +34,22 @@ jobs:
           echo "IMG_NAME=soustools-signage" > config
           echo "TARGET_HOSTNAME=signage" >> config
 
-          # Force 64-bit build for Raspberry Pi 5 / Oracle Ampere compatibility
+          # Force 64-bit build for Raspberry Pi 5 (using both standard variable names)
           echo "TARGET_ARCH=arm64" >> config
+          echo "ARCH=arm64" >> config
 
-          # SSH & User Setup (The Bootstrap User for Ansible)
+          # SSH & User Setup
           echo "ENABLE_SSH=1" >> config
           echo "FIRST_USER_NAME=sous" >> config
           echo "FIRST_USER_PASS=bootstrap123" >> config
           echo "CONTINUE=1" >> config
           
-          # 2. Recreate the directories we explicitly purged in the pre-checkout step
-          # mkdir -p deploy work
+          # 2. Restore the lost executable flags for EVERY internal script
+          echo "Restoring lost +x permissions to all pi-gen scripts..."
+          sudo find . -type f -name "*.sh" -exec chmod +x {} +
+          sudo chmod +x stage*/prerun.sh || true
 
           # 3. Execute the Dockerized build
-          sudo chmod +x ./build-docker.sh
-          sudo chmod +x ./build.sh
           sudo ./build-docker.sh
 
       - name: Fetch Infisical Secrets
