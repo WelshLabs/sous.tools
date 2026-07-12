@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { type OmniMessage } from "@soustools/api-types";
+import { type OmniMessage, type RecipeExtractionDTO } from "@soustools/api-types";
 import { RecipeBentoBox } from "./RecipeBentoBox";
 import { useOmnibarContext } from "./OmniBarContext";
 import { toast } from "sonner";
@@ -73,6 +73,57 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
     }
   };
 
+  const handleSaveRecipe = async (recipe: RecipeExtractionDTO) => {
+    try {
+      const res = await fetch("/api/recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipe: {
+            title: recipe.recipeName || "Untitled Recipe",
+            yieldCount: recipe.yieldAmount || 1,
+            yieldUnit: recipe.yieldUnit || "pieces",
+            instructions: recipe.instructions.map((text, idx) => ({
+              text,
+              stepNumber: idx + 1,
+              timerDurationSeconds: null,
+            })),
+            status: "APPROVED",
+          },
+          recipeIngredients: recipe.ingredients.map((ing) => ({
+            masterIngredientId: ing.itemId,
+            calculationType: "fixed_weight",
+            baseCalculationGroup: false,
+            amount: ing.quantity || 1,
+            unit: ing.unit || "EACH",
+            rawName: ing.rawString,
+            prepNotes: ing.preparationNote || null,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        let details = "";
+        try {
+          const body = await res.json();
+          details = body.message || body.error || JSON.stringify(body);
+        } catch {
+          details = `Status ${res.status}`;
+        }
+        throw new Error(details);
+      }
+
+      toast.success("Recipe confirmed and saved successfully!");
+      // Remove message with this recipe from chat history
+      const updatedHistory = chatHistory.filter((m) => m.recipeData !== recipe);
+      setChatHistory(updatedHistory);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Failed to save recipe: ${msg}`);
+      console.error(err);
+    }
+  };
+
   if (chatHistory.length === 0) return null;
 
   const hasRecipe = chatHistory.some((m) => !!m.recipeData);
@@ -118,6 +169,7 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
                     masterIngredients={masterIngredients}
                     onConfirmAlias={(rawString, masterId) => handleConfirmAlias(rawString, masterId, organizationId)}
                     onUpdateIngredient={(ingIndex, updates) => handleUpdateIngredient(index, ingIndex, updates)}
+                    onSaveRecipe={handleSaveRecipe}
                   />
                 </div>
               ) : (

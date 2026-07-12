@@ -14,6 +14,7 @@ export interface RecipeBentoBoxProps {
     index: number,
     updates: Partial<RecipeExtractionDTO["ingredients"][number]>
   ) => void;
+  onSaveRecipe?: (payload: RecipeExtractionDTO) => void;
 }
 
 export function RecipeBentoBox({
@@ -22,7 +23,10 @@ export function RecipeBentoBox({
   disabled = false,
   onConfirmAlias,
   onUpdateIngredient,
+  onSaveRecipe,
 }: RecipeBentoBoxProps) {
+  const isSaveDisabled = React.useMemo(() => !recipe.ingredients || recipe.ingredients.length === 0 || recipe.ingredients.some((ing) => !ing.itemId), [recipe.ingredients]);
+
   const renderIngredientRow = (ing: RecipeExtractionDTO["ingredients"][number], index: number) => {
     const isExact = ing.confidence === 1.0;
     const isSuggested = ing.confidence !== undefined && ing.confidence !== null && ing.confidence >= 0.6 && ing.confidence < 1.0;
@@ -99,15 +103,11 @@ export function RecipeBentoBox({
       </div>
     );
   };
-
-  // Group ingredients by sectionGroup
   const groupedIngredients = React.useMemo(() => {
     const groups: Record<string, Array<{ ing: RecipeExtractionDTO["ingredients"][number]; index: number }>> = {};
     recipe.ingredients?.forEach((ing, index) => {
       const section = ing.sectionGroup?.trim() || "Ingredients";
-      if (!groups[section]) {
-        groups[section] = [];
-      }
+      if (!groups[section]) groups[section] = [];
       groups[section].push({ ing, index });
     });
     return groups;
@@ -115,7 +115,6 @@ export function RecipeBentoBox({
 
   return (
     <div className="flex flex-col gap-4 w-full text-left">
-      {/* Frosted Header / Metadata */}
       <div className="backdrop-blur-md bg-white/10 dark:bg-zinc-900/40 border border-white/20 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">
@@ -140,8 +139,6 @@ export function RecipeBentoBox({
           )}
         </div>
       </div>
-
-      {/* Ingredients Panel */}
       <div className="backdrop-blur-md bg-white/5 dark:bg-zinc-950/20 border border-white/10 dark:border-zinc-900/60 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         <h3 className="text-sm font-semibold tracking-wider text-cyan-300 font-mono uppercase border-b border-white/10 pb-2">
           Ingredients
@@ -163,8 +160,6 @@ export function RecipeBentoBox({
           )}
         </div>
       </div>
-
-      {/* Instructions Panel */}
       <div className="backdrop-blur-md bg-white/5 dark:bg-zinc-950/20 border border-white/10 dark:border-zinc-900/60 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         <h3 className="text-sm font-semibold tracking-wider text-cyan-300 font-mono uppercase border-b border-white/10 pb-2">
           Instructions
@@ -183,6 +178,18 @@ export function RecipeBentoBox({
             <span className="text-xs text-muted-foreground italic">No instructions found.</span>
           )}
         </div>
+      </div>
+      <div className="flex justify-end mt-2">
+        <button
+          type="button"
+          disabled={isSaveDisabled || disabled}
+          onClick={() => {
+            if (onSaveRecipe) onSaveRecipe(recipe);
+          }}
+          className="w-full md:w-auto px-6 py-3 font-semibold text-sm rounded-xl text-zinc-950 dark:text-white bg-cyan-400 hover:bg-cyan-500 disabled:opacity-50 disabled:bg-cyan-400/20 disabled:text-muted-foreground/60 dark:disabled:bg-cyan-950/20 shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_25px_rgba(34,211,238,0.5)] cursor-pointer disabled:cursor-not-allowed disabled:shadow-none transition-all active:scale-98"
+        >
+          Confirm & Save Recipe
+        </button>
       </div>
     </div>
   );

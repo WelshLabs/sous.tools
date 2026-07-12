@@ -2,13 +2,14 @@ import { Injectable, Logger } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { config } from "@soustools/config";
 import { GoogleGenAI } from "@google/genai";
+import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 
 @Injectable()
 export class NormalizationService {
   private readonly logger = new Logger(NormalizationService.name);
   private readonly ai: GoogleGenAI;
 
-  constructor() {
+  constructor(private readonly usdaResolver: UsdaResolverService) {
     this.ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
   }
 
@@ -255,6 +256,8 @@ export class NormalizationService {
           match_count: 3,
         });
 
+        let globalMatched = false;
+
         if (!globalMatchesErr && globalMatches && globalMatches.length > 0) {
           const topGlobalMatch = globalMatches[0];
           // Since it matched the global tier, let's copy/lazy-load this item into the tenant's items table.
@@ -297,10 +300,92 @@ export class NormalizationService {
                 mappedName: newItem.name,
                 confidence: Number(topGlobalMatch.similarity.toFixed(2)),
               });
+              globalMatched = true;
+            } else {
+              this.logger.error(`Failed to insert lazy-loaded item: ${insertErr?.message}`);
+            }
+          }
+        }
+
+        if (globalMatched) {
+          continue;
+        }
+
+        // Tier 4 (USDA API Fallback): If global search yields no results, query the USDA FoodData Central API
+        this.logger.log(`No matches for "${rawName}" in global master_ingredients. Falling back to USDA API...`);
+        const usdaMatch = await this.usdaResolver.resolveIngredient(rawName);
+        if (usdaMatch) {
+          this.logger.log(`Found USDA match: "${usdaMatch.fdc_food_name}" (FDC ID: ${usdaMatch.fdc_id}). Caching to master_ingredients and lazy-loading to tenant...`);
+
+          // A. Generate embedding for the new USDA item (gracefully handle if Ollama is down)
+          let usdaEmbedding: number[] | null = null;
+          try {
+            usdaEmbedding = await this.getEmbedding(usdaMatch.fdc_food_name || rawName);
+          } catch (embedErr) {
+            this.logger.warn(`Failed to generate embedding for USDA item "${usdaMatch.fdc_food_name || rawName}" (Ollama might be down): ${embedErr}`);
+          }
+
+          // B. Cache into master_ingredients
+          const globalOrgId = "d0000000-0000-0000-0000-000000000000";
+          const { data: newGlobalIng, error: globalErr } = await supabase
+            .from("master_ingredients")
+            .insert({
+              organization_id: globalOrgId,
+              name: usdaMatch.fdc_food_name || rawName,
+              density_g_ml: 1.0,
+              nutrition_macros: {
+                calories: usdaMatch.calories || 0,
+                fatG: usdaMatch.total_fat_g || 0,
+                carbsG: usdaMatch.total_carbohydrate_g || 0,
+                proteinG: usdaMatch.protein_g || 0,
+              },
+              allergens: [],
+              is_animal_product: false,
+              fdc_id: usdaMatch.fdc_id,
+              embedding: usdaEmbedding as any,
+            })
+            .select()
+            .single();
+
+          if (!globalErr && newGlobalIng) {
+            // C. Lazy-load into tenant items table
+            const { data: newItem, error: insertErr } = await supabase
+              .from("items")
+              .insert({
+                organization_id: organizationId,
+                name: newGlobalIng.name,
+                category: "ingredient",
+                purchase_unit: "UNIT",
+                units_per_case: 1,
+                each_weight_g: null,
+                density_g_ml: newGlobalIng.density_g_ml,
+                is_animal_product: newGlobalIng.is_animal_product,
+                is_meat: newGlobalIng.is_meat,
+                is_seafood: newGlobalIng.is_seafood,
+                is_dairy: newGlobalIng.is_dairy,
+                is_egg: newGlobalIng.is_egg,
+                is_gluten_source: newGlobalIng.is_gluten_source,
+                allergens: Array.isArray(newGlobalIng.allergens) ? newGlobalIng.allergens : [],
+                fdc_id: newGlobalIng.fdc_id,
+                nutrition_macros: newGlobalIng.nutrition_macros,
+                embedding: newGlobalIng.embedding,
+              })
+              .select()
+              .single();
+
+            if (!insertErr && newItem) {
+              normalizedItems.push({
+                ...item,
+                itemId: newItem.id,
+                mappedName: newItem.name,
+                confidence: 0.85, // USDA match high-confidence fallback
+              });
               continue;
             } else {
               this.logger.error(`Failed to insert lazy-loaded item: ${insertErr?.message}`);
             }
+          } else {
+            this.logger.error(`Failed to cache USDA match to master_ingredients: ${globalErr?.message}`);
           }
         }
 
