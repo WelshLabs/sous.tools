@@ -105,6 +105,30 @@ export default function IngestionReviewPage() {
     }
   };
 
+  const handleConfirmAlias = async (rawName: string, itemId: string) => {
+    if (!review) return;
+    try {
+      const parsedData = typeof editedData === "string" ? JSON.parse(editedData) : review.parsedData;
+      const res = await fetch("/api/ingestion/alias", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId: review.organizationId,
+          vendorName: parsedData.vendorName || "Unknown Vendor",
+          vendorItemString: rawName,
+          masterIngredientId: itemId,
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to save alias mapping");
+      
+      toast.success(`Saved alias mapping for "${rawName}"`);
+    } catch (err) {
+      toast.error("Failed to save alias mapping");
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -181,6 +205,7 @@ export default function IngestionReviewPage() {
               onChange={setEditedData}
               disabled={review.status !== "PENDING"}
               organizationId={review.organizationId}
+              onConfirmAlias={handleConfirmAlias}
             />
           ) : (
             <div className="flex-1">

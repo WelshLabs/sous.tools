@@ -3,6 +3,7 @@ export interface VisualBuilderProps {
   onChange: (newData: string) => void;
   disabled: boolean;
   organizationId: string;
+  onConfirmAlias?: (rawString: string, masterId: string) => void;
 }
 
 export interface ParsedInvoiceItem {
@@ -30,6 +31,8 @@ export interface ParsedInvoiceItem {
   totalPrice?: number;
   _tempWeightUnit?: string;
   _tempWeightVal?: number;
+  confidence?: number;
+  mappedName?: string;
 }
 
 export interface ParsedInvoice {

@@ -14,6 +14,7 @@ export interface VendorSectionProps {
   handleCreateVendor: (name: string) => void;
   onChange: (newData: string) => void;
   vendors: VendorOption[];
+  onConfirmAlias?: (rawString: string, masterId: string) => void;
 }
 
 export function VendorSection({
@@ -25,6 +26,7 @@ export function VendorSection({
   handleCreateVendor,
   onChange,
   vendors,
+  onConfirmAlias,
 }: VendorSectionProps) {
 
   return (
@@ -138,6 +140,7 @@ export function VendorSection({
                 handleCreateItem={handleCreateItem}
                 parsed={parsed}
                 onChange={onChange}
+                onConfirmAlias={onConfirmAlias}
               />
             ))}
           </div>

@@ -13,6 +13,7 @@ export function VisualBuilder({
   onChange,
   disabled,
   organizationId,
+  onConfirmAlias,
 }: VisualBuilderProps) {
   const { items, setItems, vendors, setVendors } = useVisualBuilderData(organizationId);
 
@@ -191,6 +192,7 @@ export function VisualBuilder({
         handleCreateItem={handleCreateItem}
         onChange={onChange}
         vendors={vendors}
+        onConfirmAlias={onConfirmAlias}
       />
     );
   }

@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase";
 import { Inject } from "@nestjs/common";
 import { type IVisionService } from "./IVisionService";
 import { IngestionGateway } from "./ingestion.gateway";
+import { NormalizationService } from "./normalization.service";
 
 @Processor("ingestion")
 export class IngestionProcessor extends WorkerHost {
@@ -13,6 +14,7 @@ export class IngestionProcessor extends WorkerHost {
     private readonly driveService: GoogleDriveService,
     @Inject("IVisionService") private readonly visionService: IVisionService,
     private readonly gateway: IngestionGateway,
+    private readonly normalizationService: NormalizationService,
   ) {
     super();
   }
@@ -99,6 +101,13 @@ export class IngestionProcessor extends WorkerHost {
           rawText,
           mimeType,
         );
+        if (parsedData && parsedData.items && Array.isArray(parsedData.items)) {
+          parsedData.items = await this.normalizationService.normalizeInvoiceItems(
+            organizationId,
+            parsedData.vendorName || "",
+            parsedData.items,
+          );
+        }
       } else {
         throw new Error(`Unsupported document type: ${documentType}`);
       }

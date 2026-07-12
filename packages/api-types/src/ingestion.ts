@@ -51,9 +51,10 @@ export interface VendorItemAlias {
   id: string;
   organizationId: string;
   vendorId: string;
-  vendorItemName: string;
-  internalItemId: string | null;
+  vendorItemString: string;
+  masterIngredientId: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface AppNotification {

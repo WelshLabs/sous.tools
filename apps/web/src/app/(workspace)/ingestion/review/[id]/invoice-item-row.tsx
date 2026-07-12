@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Check } from "lucide-react";
 import { CreatableSelect } from "./creatable-select";
 import type { ParsedInvoice, ItemOption, ParsedInvoiceItem } from "./visual-builder.types";
 
@@ -13,6 +14,7 @@ export interface InvoiceItemRowProps {
   handleCreateItem: (name: string, index: number) => void;
   parsed: ParsedInvoice;
   onChange: (newData: string) => void;
+  onConfirmAlias?: (rawString: string, masterId: string) => void;
 }
 
 export function InvoiceItemRow({
@@ -24,6 +26,7 @@ export function InvoiceItemRow({
   handleCreateItem,
   parsed,
   onChange,
+  onConfirmAlias,
 }: InvoiceItemRowProps) {
   return (
               <div key={i} className="grid grid-cols-12 gap-3 items-start bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100">
@@ -36,14 +39,48 @@ export function InvoiceItemRow({
                     className="w-full bg-black/5 bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-sm focus:border-sky-500 outline-none"
                     placeholder="Raw Item Name"
                   />
-                  <CreatableSelect
-                    disabled={disabled}
-                    value={item.itemId || ""}
-                    options={items}
-                    onChange={(val) => handleInvoiceItemUpdate(i, "itemId", val)}
-                    onCreate={(name) => handleCreateItem(name, i)}
-                    placeholder="⚠️ Map to Internal Item..."
-                  />
+                  {/* Select and Suggestion Panel */}
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <CreatableSelect
+                          disabled={disabled}
+                          value={item.confidence === 1.0 ? (item.itemId || "") : ""}
+                          options={items}
+                          onChange={(val) => {
+                            handleInvoiceItemUpdate(i, "itemId", val);
+                            if (val) {
+                              handleInvoiceItemUpdate(i, "confidence", 1.0);
+                              onConfirmAlias?.(item.rawName || "", val);
+                            }
+                          }}
+                          onCreate={(name) => handleCreateItem(name, i)}
+                          placeholder="⚠️ Map to Internal Item..."
+                        />
+                      </div>
+                      {item.confidence === 1.0 && item.itemId && (
+                        <div className="flex items-center justify-center bg-emerald-500/10 text-emerald-500 p-1.5 rounded-lg border border-emerald-500/20" title="Exact Match (1.0 Confidence)">
+                          <Check className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Suggestion Chip */}
+                    {item.confidence !== undefined && item.confidence >= 0.6 && item.confidence < 1.0 && item.itemId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleInvoiceItemUpdate(i, "confidence", 1.0);
+                          onConfirmAlias?.(item.rawName || "", item.itemId || "");
+                        }}
+                        className="self-start flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold px-2 py-1.5 rounded-lg border border-amber-500/25 cursor-pointer transition-all active:scale-95"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        <span>Suggested: {item.mappedName || items.find(opt => opt.id === item.itemId)?.name || "Master Item"}</span>
+                        <span className="text-[10px] opacity-75 font-normal ml-1 border-l border-amber-500/30 pl-1.5">Click to Confirm</span>
+                      </button>
+                    )}
+                  </div>
                   <select
                     disabled={disabled}
                     value={item.category || "ingredient"}

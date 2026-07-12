@@ -7,6 +7,7 @@ import { IntegrationsModule } from "../integrations/integrations.module";
 import { ItemsModule } from "../items/items.module";
 import { CloudVisionService } from "./CloudVisionService";
 import { OllamaVisionService } from "./OllamaVisionService";
+import { NormalizationService } from "./normalization.service";
 import { config } from "@soustools/config";
 
 @Module({
@@ -21,6 +22,7 @@ import { config } from "@soustools/config";
   providers: [
     IngestionProcessor,
     IngestionGateway,
+    NormalizationService,
     {
       provide: "IVisionService",
       useFactory: () => {
@@ -31,7 +33,7 @@ import { config } from "@soustools/config";
       },
     },
   ],
-  exports: ["IVisionService"],
+  exports: ["IVisionService", NormalizationService],
 })
 export class IngestionModule {}
 

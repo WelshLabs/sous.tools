@@ -357,4 +357,61 @@ export class IngestionController {
       if (error) throw new Error(error.message);
     });
   }
+
+  @Post("alias")
+  async saveAlias(
+    @Body() body: {
+      organizationId: string;
+      vendorName: string;
+      vendorItemString: string;
+      masterIngredientId: string;
+    }
+  ): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      const { organizationId, vendorName, vendorItemString, masterIngredientId } = body;
+      if (!organizationId || !vendorName || !vendorItemString || !masterIngredientId) {
+        throw new Error("Missing required fields");
+      }
+
+      // Find or create vendor
+      let { data: vendor } = await supabase
+        .from("vendors")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .ilike("name", vendorName)
+        .maybeSingle();
+
+      if (!vendor) {
+        const { data: newVendor, error: vErr } = await supabase
+          .from("vendors")
+          .insert({
+            organization_id: organizationId,
+            name: vendorName,
+            order_method: "MANUAL",
+          })
+          .select()
+          .single();
+        if (vErr) throw new Error(vErr.message);
+        vendor = newVendor;
+      }
+
+      // Upsert alias mapping
+      const { data, error } = await supabase
+        .from("vendor_item_aliases")
+        .upsert({
+          organization_id: organizationId,
+          vendor_id: vendor!.id,
+          vendor_item_string: vendorItemString,
+          master_ingredient_id: masterIngredientId,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: "organization_id,vendor_id,vendor_item_string"
+        })
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    });
+  }
 }
