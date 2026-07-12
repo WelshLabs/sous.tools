@@ -7,6 +7,7 @@ import { Mic, X, UploadCloud } from "lucide-react";
 import { useOmniFileUpload } from "./use-omni-file-upload.hook";
 import { useOmnibarContext } from "./OmniBarContext";
 import { AttachmentFlyout } from "./AttachmentFlyout";
+import type { StagedFile } from "./OmniBarContext";
 
 export interface OmniInputPillProps {
   inputText: string;
@@ -19,6 +20,7 @@ export interface OmniInputPillProps {
   onToggle?: () => void;
   showClose?: boolean;
   isDragging?: boolean;
+  stagedFiles?: StagedFile[]; 
 }
 
 export function OmniInputPill({

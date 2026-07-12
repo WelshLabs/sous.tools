@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Receipt, BookOpen } from "lucide-react";
 import { UnifiedItemRow } from "./UnifiedItemRow";
 import { DocumentViewer } from "./DocumentViewer";

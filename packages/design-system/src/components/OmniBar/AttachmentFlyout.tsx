@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UploadCloud, Camera, Paperclip } from "lucide-react";
 import { useOmnibarContext } from "./OmniBarContext";

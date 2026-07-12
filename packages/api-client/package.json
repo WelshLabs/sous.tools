@@ -4,6 +4,7 @@
   "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "type": "module",
   "scripts": {
     "generate": "openapi-typescript ../../apps/api/openapi.json -o ./src/schema.d.ts",
     "typecheck": "tsc --noEmit",
@@ -11,7 +12,8 @@
   },
   "dependencies": {
     "openapi-fetch": "^0.11.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "@soustools/config": "workspace:*"
   },
   "devDependencies": {
     "openapi-typescript": "^7.3.0",

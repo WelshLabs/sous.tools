@@ -1,9 +1,10 @@
 import createClient from "openapi-fetch";
-import { io } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 import type { paths } from "./schema";
+import { config } from "@soustools/config";
 
 export const createApiClient = (options: { baseUrl?: string } = {}) => {
-  const baseUrl = options.baseUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const baseUrl = options.baseUrl || config.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   
   const client = createClient<paths>({ baseUrl });
 
@@ -42,13 +43,13 @@ export const createApiClient = (options: { baseUrl?: string } = {}) => {
   return client;
 };
 
-const defaultBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const defaultBaseUrl = config.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 // Global singleton client for convenience in browser
 export const api = createApiClient({ baseUrl: defaultBaseUrl });
 
 // Encapsulated socket connection
-export const socket = io(defaultBaseUrl, {
+export const socket: Socket = io(defaultBaseUrl, {
   withCredentials: true,
   autoConnect: false,
 });

@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Check, ChevronDown, Plus, Loader2 } from "lucide-react";
 import { api } from "@soustools/api-client";
 

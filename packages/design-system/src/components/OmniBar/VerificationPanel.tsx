@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import { X, FileImage } from "lucide-react";
 import { type StagedFile } from "./OmniBarContext";
