@@ -73,6 +73,7 @@ services:
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
