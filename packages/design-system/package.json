@@ -35,6 +35,8 @@
     "vitest": "^4.1.9"
   },
   "dependencies": {
+    "@radix-ui/react-tooltip": "^1.1.2",
+    "@soustools/api-client": "workspace:*",
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
     "framer-motion": "^12.42.2",

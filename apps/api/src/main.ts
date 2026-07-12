@@ -7,6 +7,8 @@ import "./pre-bootstrap";
 import { config } from "@soustools/config";
 
 import { NestFactory } from "@nestjs/core";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import * as fs from "fs";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
 import cookieParser from "cookie-parser";
@@ -24,8 +26,8 @@ import * as express from "express";
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(express.json({ limit: "2mb" }));
+  app.use(express.urlencoded({ limit: "2mb", extended: true }));
 
   // Parse cookies so guards can read HttpOnly session tokens
   app.use(cookieParser());
@@ -38,6 +40,15 @@ async function bootstrap(): Promise<void> {
     origin: true,
     credentials: true,
   });
+
+  // Setup Swagger / OpenAPI
+  const options = new DocumentBuilder()
+    .setTitle("Sous Tools API")
+    .setDescription("The global API for Sous Tools")
+    .setVersion("1.0")
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  fs.writeFileSync("openapi.json", JSON.stringify(document));
 
   const port = config.PORT;
   await app.listen(config.PORT, "0.0.0.0");

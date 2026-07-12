@@ -39,6 +39,9 @@ export interface OmniBarState {
 
   executeBackgroundCommand: (text: string) => void;
   setExecuteBackgroundCommand: (fn: (text: string) => void) => void;
+
+  apiClient: typeof fetch;
+  setApiClient: (fn: typeof fetch) => void;
 }
 
 export const useOmnibarContext = create<OmniBarState>((set) => ({
@@ -78,4 +81,7 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
 
   executeBackgroundCommand: () => {},
   setExecuteBackgroundCommand: (fn) => set({ executeBackgroundCommand: fn }),
+
+  apiClient: typeof window !== 'undefined' ? window.fetch.bind(window) : fetch,
+  setApiClient: (fn) => set({ apiClient: fn }),
 }));

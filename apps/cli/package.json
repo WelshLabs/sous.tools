@@ -26,7 +26,6 @@
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
     "@soustools/logger": "workspace:*",
-    "@soustools/supabase": "workspace:*",
     "nest-commander": "^3.13.0",
     "playwright": "^1.60.0",
     "reflect-metadata": "^0.2.0",

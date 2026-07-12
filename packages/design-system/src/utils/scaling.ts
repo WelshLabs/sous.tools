@@ -47,7 +47,8 @@ export function convertUnit(
   // Handle count units (each, case) → grams conversion
   if (COUNT_UNITS.has(from)) {
     if (eachWeightG === undefined || eachWeightG <= 0) {
-      throw new Error(`Unit "${fromUnit}" requires eachWeightG to convert to mass/volume`);
+      console.warn(`Unit "${fromUnit}" requires eachWeightG to convert to mass/volume. Using fallback.`);
+      return amount;
     }
     const totalG =
       from === 'case'

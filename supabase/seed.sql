@@ -81,9 +81,9 @@ INSERT INTO public.vessel_profiles (id, organization_id, name, shape, length, wi
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------
--- 6. Master ingredient conversion library
+-- 6. Master item conversion library
 -- ---------------------------------------------------------------------------
-INSERT INTO public.master_ingredients (id, organization_id, name, density_g_ml, nutrition_macros, allergens) VALUES
+INSERT INTO public.master_items (id, organization_id, name, density_g_ml, nutrition_macros, allergens) VALUES
   ('a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000000', 'Bread Flour',     0.57, '{"calories": 364, "proteinG": 12,   "carbsG": 76,  "fatG": 1.5}'::jsonb, '["wheat"]'::jsonb),
   ('a0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000000', 'Water',           1.0,  '{"calories": 0,   "proteinG": 0,    "carbsG": 0,   "fatG": 0}'::jsonb,   '[]'::jsonb),
   ('a0000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000000', 'Active Dry Yeast', 0.79, '{"calories": 325, "proteinG": 40,   "carbsG": 41,  "fatG": 7}'::jsonb,   '[]'::jsonb),
@@ -108,7 +108,7 @@ INSERT INTO public.recipes (id, organization_id, title, yield_count, yield_unit,
    'APPROVED')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.recipe_ingredients (id, recipe_id, master_ingredient_id, calculation_type, base_calculation_group, amount, unit, prep_notes) VALUES
+INSERT INTO public.recipe_ingredients (id, recipe_id, master_item_id, calculation_type, base_calculation_group, amount, unit, prep_notes) VALUES
   ('b0000000-0000-0000-0000-000000000001', 'beef0000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'fixed_weight', true,  500, 'g', 'Use unbleached flour.'),
   ('b0000000-0000-0000-0000-000000000002', 'beef0000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', 'fixed_weight', false, 350, 'g', 'Filtered water at 75°F.'),
   ('b0000000-0000-0000-0000-000000000003', 'beef0000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000003', 'fixed_weight', false, 10,  'g', 'Ensure fresh active yeast.'),

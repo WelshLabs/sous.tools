@@ -10,5 +10,5 @@ export { VerificationPanel } from "./VerificationPanel";
 export type { VerificationPanelProps } from "./VerificationPanel";
 export { CreatableSelect } from "./CreatableSelect";
 export type { CreatableSelectProps, CreatableSelectOption } from "./CreatableSelect";
-export { RecipeBentoBox } from "./RecipeBentoBox";
-export type { RecipeBentoBoxProps } from "./RecipeBentoBox";
+export { UnifiedReviewPanel } from "./UnifiedReviewPanel";
+export type { UnifiedReviewPanelProps } from "./UnifiedReviewPanel";

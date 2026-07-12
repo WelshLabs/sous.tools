@@ -1,67 +1,15 @@
 import type React from "react";
 import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
 import { type OmniMessage } from "@soustools/api-types";
+import { api, uploadFile } from "@soustools/api-client";
 
 export function useOmniFileUpload() {
-  const { setStagedFiles, executeBackgroundCommand, chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
+  const { setStagedFiles, chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
 
   const handleFileUpload = async (file: File) => {
     const fileId = crypto.randomUUID();
-    const newStagedFile: StagedFile = { id: fileId, url: null, status: 'uploading', file };
+    const newStagedFile: StagedFile = { id: fileId, url: null, status: 'complete', file };
     setStagedFiles((prev) => [...prev, newStagedFile]);
-
-    try {
-      // 1. Get a secure signed upload URL from NestJS API (which communicates with Supabase)
-      const res = await fetch("/api/storage/upload-url", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ fileName: file.name }),
-      });
-
-      if (!res.ok) {
-        let details = "";
-        try {
-          const body = await res.json();
-          details = body.message || body.error || JSON.stringify(body);
-        } catch {
-          details = `Status ${res.status}`;
-        }
-        throw new Error(`Failed to retrieve signed upload URL from API: ${details}`);
-      }
-
-      const payload = await res.json();
-      if (!payload.success || !payload.data?.signedUrl || !payload.data?.publicUrl) {
-        throw new Error(payload.error || "Invalid response structure from API");
-      }
-
-      const { signedUrl, publicUrl } = payload.data;
-
-      // 2. Upload the binary data directly to the signed URL (bypass NestJS to save server bandwidth)
-      const uploadRes = await fetch(signedUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": file.type || "application/octet-stream",
-        },
-        body: file,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error(`Direct upload failed with status ${uploadRes.status}`);
-      }
-
-      setStagedFiles((prev) =>
-        prev.map((f) => (f.id === fileId ? { ...f, url: publicUrl, status: 'complete' } : f))
-      );
-
-    } catch (error) {
-      console.error("Upload failed:", error);
-      setStagedFiles((prev) =>
-        prev.map((f) => (f.id === fileId ? { ...f, status: 'error' } : f))
-      );
-    }
   };
 
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,10 +28,11 @@ export function useOmniFileUpload() {
   const handleParseRecipe = async (file: StagedFile) => {
     setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
 
+    const imageUrl = file.file ? URL.createObjectURL(file.file) : file.url;
     const userMsg: OmniMessage = {
       id: file.id,
       role: 'user',
-      content: `Parse Recipe: ${file.url || file.file?.name || "Image"}`,
+      content: `Parse Recipe: ${imageUrl || "Image"}`,
       timestamp: new Date()
     };
 
@@ -99,31 +48,28 @@ export function useOmniFileUpload() {
     setChatHistory([...chatHistory, userMsg, pendingMsg]);
 
     try {
-      let base64: string | undefined;
+      let publicUrl: string | undefined;
       if (file.file) {
-        base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file.file!);
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = (err) => reject(err);
-        });
+        publicUrl = await uploadFile(file.file);
       }
 
-      const orgId = contextPayload.organizationId || "d0000000-0000-0000-0000-000000000000";
+      const orgId = (contextPayload.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
 
-      const res = await fetch("/api/ingestion/recipe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const { data, error } = await api.POST("/ingestion/recipe", {
+        body: {
           organizationId: orgId,
-          imageBase64: base64,
-        }),
+          sourceUrl: publicUrl,
+          sourceName: file.file?.name,
+        },
       });
 
-      if (!res.ok) throw new Error("Failed to parse recipe");
+      if (error) throw new Error("Failed to parse recipe");
 
-      const payload = await res.json();
-      const recipeData = payload.data || payload;
+      const recipeData = (data.data || data) as { ingredients?: unknown[]; recipeName?: string; extractedMetadata?: Record<string, unknown> };
+      if (recipeData) {
+        if (!recipeData.extractedMetadata) recipeData.extractedMetadata = {};
+        recipeData.extractedMetadata.sourceUrl = imageUrl;
+      }
 
       const recipeMsg: OmniMessage = {
         id: loadingMessageId,
@@ -136,6 +82,8 @@ export function useOmniFileUpload() {
       setChatHistory([...chatHistory, userMsg, recipeMsg]);
     } catch (err) {
       console.error(err);
+      // Reset staged file gracefully
+      setStagedFiles((prev) => [...prev, file]);
       const errorMsg: OmniMessage = {
         id: loadingMessageId,
         role: 'model',
@@ -146,24 +94,83 @@ export function useOmniFileUpload() {
     }
   };
 
+  const handleExtractInvoice = async (file: StagedFile) => {
+    setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
+
+    const imageUrl = file.file ? URL.createObjectURL(file.file) : file.url;
+    const userMsg: OmniMessage = {
+      id: file.id,
+      role: 'user',
+      content: `Extract Invoice: ${imageUrl || "Image"}`,
+      timestamp: new Date()
+    };
+
+    const loadingMessageId = crypto.randomUUID();
+    const pendingMsg: OmniMessage = {
+      id: loadingMessageId,
+      role: 'agent_step',
+      content: "Extracting invoice...",
+      isLoading: true,
+      timestamp: new Date()
+    };
+
+    setChatHistory([...chatHistory, userMsg, pendingMsg]);
+
+    try {
+      let publicUrl: string | undefined;
+      if (file.file) {
+        publicUrl = await uploadFile(file.file);
+      }
+
+      const orgId = (contextPayload.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
+
+      const { data, error } = await api.POST("/ingestion/invoice", {
+        body: {
+          organizationId: orgId,
+          sourceUrl: publicUrl,
+          sourceName: file.file?.name,
+        },
+      });
+
+      if (error) throw new Error("Failed to extract invoice");
+
+      const extractedData = (data.data || data) as { items?: unknown[]; vendorName?: string; extractedMetadata?: Record<string, unknown> };
+      if (extractedData) {
+        if (!extractedData.extractedMetadata) extractedData.extractedMetadata = {};
+        extractedData.extractedMetadata.sourceUrl = imageUrl;
+      }
+
+      const successMsg: OmniMessage = {
+        id: loadingMessageId,
+        role: 'model',
+        content: `Invoice extracted successfully! Found ${extractedData?.items?.length || 0} items from ${extractedData?.vendorName || "Vendor"}. Please verify the ingredient mappings below:`,
+        invoiceData: extractedData,
+        timestamp: new Date()
+      };
+
+      setChatHistory([...chatHistory, userMsg, successMsg]);
+    } catch (err) {
+      console.error(err);
+      // Reset staged file gracefully
+      setStagedFiles((prev) => [...prev, file]);
+      const errorMsg: OmniMessage = {
+        id: loadingMessageId,
+        role: 'model',
+        content: "Sorry, I encountered an error while extracting the invoice.",
+        timestamp: new Date()
+      };
+      setChatHistory([...chatHistory, userMsg, errorMsg]);
+    }
+  };
+
   const handleActionChip = (action: "Extract Invoice" | "Parse Recipe", file: StagedFile) => {
     if (action === "Parse Recipe") {
       handleParseRecipe(file);
       return;
+    } else if (action === "Extract Invoice") {
+      handleExtractInvoice(file);
+      return;
     }
-
-    setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
-    
-    // Convert to a user chat message with layoutId for teleportation
-    const userMsg: OmniMessage = {
-      id: file.id, // Keep the same ID for layout teleport
-      role: 'user',
-      content: `${action}: ${file.url}`,
-      timestamp: new Date()
-    };
-    
-    setChatHistory([...chatHistory, userMsg]);
-    executeBackgroundCommand(`${action} ${file.url}`);
   };
 
   return { onFileSelect, handleDrop, handleActionChip, handleFileUpload };

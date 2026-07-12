@@ -13,6 +13,9 @@ import { RecipeCostService } from "./recipe-cost.service";
 import { ApiResponse, Recipe, RecipeIngredient,
 } from "@soustools/api-types";
 
+import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse } from "@nestjs/swagger";
+
+@ApiTags("recipes")
 @Controller("recipes")
 export class RecipesController {
   private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
@@ -73,6 +76,50 @@ export class RecipesController {
   }
 
   @Post()
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        recipe: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            yieldCount: { type: "number" },
+            yieldUnit: { type: "string" },
+            instructions: { 
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  text: { type: "string" },
+                  stepNumber: { type: "number" },
+                  timerDurationSeconds: { type: "number", nullable: true }
+                }
+              }
+            },
+            status: { type: "string" }
+          }
+        },
+        recipeIngredients: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              masterIngredientId: { type: "string" },
+              calculationType: { type: "string" },
+              baseCalculationGroup: { type: "boolean" },
+              amount: { type: "number" },
+              unit: { type: "string" },
+              rawName: { type: "string" },
+              prepNotes: { type: "string", nullable: true }
+            }
+          }
+        }
+      },
+      required: ["recipe", "recipeIngredients"]
+    }
+  })
+  @NestjsApiResponse({ status: 201, description: "Success", schema: { type: "object", additionalProperties: true } })
   async create(
     @Body("recipe")
     recipe: Omit<

@@ -7,6 +7,7 @@ export const OmniMessageSchema = z.object({
   timestamp: z.date().or(z.string().transform((v) => new Date(v))),
   isLoading: z.boolean().optional(),
   recipeData: z.any().optional(),
+  invoiceData: z.any().optional(),
 });
 
 export type OmniMessage = z.infer<typeof OmniMessageSchema>;

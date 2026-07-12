@@ -1,17 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { config } from "@soustools/config";
-import { GoogleGenAI } from "@google/genai";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 
 @Injectable()
 export class NormalizationService {
   private readonly logger = new Logger(NormalizationService.name);
-  private readonly ai: GoogleGenAI;
 
-  constructor(private readonly usdaResolver: UsdaResolverService) {
-    this.ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
-  }
+  constructor(private readonly usdaResolver: UsdaResolverService) {}
 
   /**
    * Generates a 768-dimension vector embedding using the local nomic-embed-text model on Ollama.
@@ -44,17 +40,17 @@ export class NormalizationService {
   }
 
   /**
-   * Automatically populates any missing embeddings for the global master_ingredients table.
+   * Automatically populates any missing embeddings for the global master_items table.
    * This is a self-healing process to keep pgvector indices up-to-date.
    */
   async ensureMasterEmbeddings(): Promise<void> {
     try {
       const { data: list, error } = await supabase
-        .from("master_ingredients")
+        .from("master_items")
         .select("id, name, embedding");
 
       if (error) {
-        this.logger.error("Failed to fetch master ingredients for embedding check", error);
+        this.logger.error("Failed to fetch master items for embedding check", error);
         return;
       }
       if (!list) return;
@@ -62,15 +58,15 @@ export class NormalizationService {
       for (const item of list) {
         if (!item.embedding) {
           try {
-            this.logger.log(`Generating embedding for master ingredient "${item.name}"`);
+            this.logger.log(`Generating embedding for master item "${item.name}"`);
             const embedding = await this.getEmbedding(item.name);
             const { error: updateErr } = await supabase
-              .from("master_ingredients")
+              .from("master_items")
               .update({ embedding: embedding as any })
               .eq("id", item.id);
 
             if (updateErr) {
-              this.logger.error(`Failed to save embedding for master ingredient "${item.name}"`, updateErr);
+              this.logger.error(`Failed to save embedding for master item "${item.name}"`, updateErr);
             }
           } catch (err) {
             this.logger.error(`Error during self-healing master embedding generation for "${item.name}"`, err);
@@ -132,7 +128,8 @@ export class NormalizationService {
   async normalizeInvoiceItems(
     organizationId: string,
     vendorName: string | null | undefined,
-    items: Array<{ rawName?: string; baseIngredient?: string; [key: string]: any }>
+    items: Array<{ rawName?: string; suggestedInternalName?: string; category?: string; amount?: number; unit?: string; price?: number; [key: string]: any }>,
+    isInvoice?: boolean
   ): Promise<any[]> {
     await this.ensureEmbeddings(organizationId);
 
@@ -155,7 +152,7 @@ export class NormalizationService {
     if (vendorId) {
       const { data, error } = await supabase
         .from("vendor_item_aliases")
-        .select("vendor_item_string, master_ingredient_id")
+        .select("vendor_item_string, item_id")
         .eq("organization_id", organizationId)
         .eq("vendor_id", vendorId);
       if (!error && data) {
@@ -167,290 +164,253 @@ export class NormalizationService {
 
     for (const item of items) {
       const rawName = (item.rawName || item.baseIngredient || "").trim();
-      if (!rawName) {
+      const suggestedInternalName = (item.suggestedInternalName || "").trim();
+      const category = (item.category || "INGREDIENT").toUpperCase();
+
+      const searchName = suggestedInternalName || rawName;
+
+      if (!rawName && !suggestedInternalName) {
         normalizedItems.push(item);
         continue;
       }
 
-      // Step A: Exact alias match check
-      const aliasMatch = aliases.find(
-        (a) => a.vendor_item_string.toLowerCase() === rawName.toLowerCase()
-      );
-
-      if (aliasMatch) {
-        // Fetch internal mapped name
-        const { data: masterItem } = await supabase
-          .from("items")
-          .select("name")
-          .eq("id", aliasMatch.master_ingredient_id)
-          .single();
-
-        normalizedItems.push({
-          ...item,
-          itemId: aliasMatch.master_ingredient_id,
-          mappedName: masterItem?.name || rawName,
-          confidence: 1.0,
-        });
-        continue;
-      }
-
-      // Step B: Fuzzy / pgvector semantic match search
       try {
-        const queryEmbedding = await this.getEmbedding(rawName);
-        
-        // Invoke pgvector similarity RPC
-        const { data: matches, error: matchesErr } = await supabase.rpc("match_items", {
-          query_embedding: `[${queryEmbedding.join(",")}]`,
-          match_threshold: 0.3,
-          match_count: 3,
-          org_id: organizationId,
-        });
+        const suggestions: Array<{ itemId: string; name: string; similarity: number; matchColor: "green" | "yellow" | "orange" }> = [];
 
-        let matched = false;
+        // Step A: Exact alias match check
+        const aliasMatch = aliases.find(
+          (a) => a.vendor_item_string.toLowerCase() === rawName.toLowerCase()
+        );
 
-        if (!matchesErr && matches && matches.length > 0) {
-          const topMatch = matches[0];
-          const secondMatch = matches[1];
+        if (aliasMatch) {
+          const { data: masterItem } = await supabase
+            .from("items")
+            .select("name")
+            .eq("id", aliasMatch.item_id)
+            .single();
 
-          // Criteria for strong clear match:
-          // Top similarity is high (>= 0.85) AND either there is no second match or the gap is significant (>= 0.15)
-          const isClearMatch =
-            topMatch.similarity >= 0.85 &&
-            (!secondMatch || (topMatch.similarity - secondMatch.similarity) >= 0.15);
-
-          if (isClearMatch) {
-            normalizedItems.push({
-              ...item,
-              itemId: topMatch.id,
-              mappedName: topMatch.name,
-              confidence: Number(topMatch.similarity.toFixed(2)),
+          if (masterItem) {
+            suggestions.push({
+              itemId: aliasMatch.item_id,
+              name: masterItem.name,
+              similarity: 1.0,
+              matchColor: "green"
             });
-            matched = true;
-          } else {
-            // If highly ambiguous, use Gemini Flash to tie-break among the candidates
-            this.logger.log(`Ambiguous matches for "${rawName}". Invoking Gemini Flash tie-breaker.`);
-            const geminiMatch = await this.tieBreakWithGemini(rawName, matches);
-
-            if (geminiMatch && geminiMatch.itemId) {
-              const matchedCandidate = matches.find((m: any) => m.id === geminiMatch.itemId);
-              normalizedItems.push({
-                ...item,
-                itemId: geminiMatch.itemId,
-                mappedName: matchedCandidate ? matchedCandidate.name : rawName,
-                confidence: geminiMatch.confidence,
-              });
-              matched = true;
-            }
           }
         }
 
-        if (matched) {
-          continue;
-        }
-
-        // Tier 3: If no matches in tenant items, fallback to global master_ingredients table via match_master_ingredients
-        this.logger.log(`No matches for "${rawName}" in tenant items. Falling back to global USDA/Escoffier tier...`);
-        const { data: globalMatches, error: globalMatchesErr } = await supabase.rpc("match_master_ingredients", {
-          query_embedding: `[${queryEmbedding.join(",")}]`,
-          match_threshold: 0.3,
-          match_count: 3,
-        });
-
-        let globalMatched = false;
-
-        if (!globalMatchesErr && globalMatches && globalMatches.length > 0) {
-          const topGlobalMatch = globalMatches[0];
-          // Since it matched the global tier, let's copy/lazy-load this item into the tenant's items table.
-          const { data: globalIng } = await supabase
-            .from("master_ingredients")
-            .select("*")
-            .eq("id", topGlobalMatch.id)
-            .single();
-
-          if (globalIng) {
-            this.logger.log(`Lazy-loading global master ingredient "${globalIng.name}" into tenant items for organization "${organizationId}"`);
-            const { data: newItem, error: insertErr } = await supabase
-              .from("items")
-              .insert({
-                organization_id: organizationId,
-                name: globalIng.name,
-                category: "ingredient",
-                purchase_unit: "UNIT",
-                units_per_case: 1,
-                each_weight_g: null,
-                density_g_ml: globalIng.density_g_ml,
-                is_animal_product: globalIng.is_animal_product,
-                is_meat: globalIng.is_meat,
-                is_seafood: globalIng.is_seafood,
-                is_dairy: globalIng.is_dairy,
-                is_egg: globalIng.is_egg,
-                is_gluten_source: globalIng.is_gluten_source,
-                allergens: Array.isArray(globalIng.allergens) ? globalIng.allergens : [],
-                fdc_id: globalIng.fdc_id,
-                nutrition_macros: globalIng.nutrition_macros,
-                embedding: globalIng.embedding,
-              })
-              .select()
-              .single();
-
-            if (!insertErr && newItem) {
-              normalizedItems.push({
-                ...item,
-                itemId: newItem.id,
-                mappedName: newItem.name,
-                confidence: Number(topGlobalMatch.similarity.toFixed(2)),
-              });
-              globalMatched = true;
-            } else {
-              this.logger.error(`Failed to insert lazy-loaded item: ${insertErr?.message}`);
-            }
-          }
-        }
-
-        if (globalMatched) {
-          continue;
-        }
-
-        // Tier 4 (USDA API Fallback): If global search yields no results, query the USDA FoodData Central API
-        this.logger.log(`No matches for "${rawName}" in global master_ingredients. Falling back to USDA API...`);
-        const usdaMatch = await this.usdaResolver.resolveIngredient(rawName);
-        if (usdaMatch) {
-          this.logger.log(`Found USDA match: "${usdaMatch.fdc_food_name}" (FDC ID: ${usdaMatch.fdc_id}). Caching to master_ingredients and lazy-loading to tenant...`);
-
-          // A. Generate embedding for the new USDA item (gracefully handle if Ollama is down)
-          let usdaEmbedding: number[] | null = null;
+        // Generate embedding
+        let queryEmbedding: number[] | null = null;
+        if (suggestions.length === 0 || !isInvoice) {
           try {
-            usdaEmbedding = await this.getEmbedding(usdaMatch.fdc_food_name || rawName);
-          } catch (embedErr) {
-            this.logger.warn(`Failed to generate embedding for USDA item "${usdaMatch.fdc_food_name || rawName}" (Ollama might be down): ${embedErr}`);
+            queryEmbedding = await this.getEmbedding(searchName);
+          } catch (err) {
+            this.logger.warn(`Failed to generate embedding for "${searchName}"`, err);
           }
+        }
 
-          // B. Cache into master_ingredients
-          const globalOrgId = "d0000000-0000-0000-0000-000000000000";
-          const { data: newGlobalIng, error: globalErr } = await supabase
-            .from("master_ingredients")
-            .insert({
-              organization_id: globalOrgId,
-              name: usdaMatch.fdc_food_name || rawName,
-              density_g_ml: 1.0,
-              nutrition_macros: {
-                calories: usdaMatch.calories || 0,
-                fatG: usdaMatch.total_fat_g || 0,
-                carbsG: usdaMatch.total_carbohydrate_g || 0,
-                proteinG: usdaMatch.protein_g || 0,
-              },
-              allergens: [],
-              is_animal_product: false,
-              fdc_id: usdaMatch.fdc_id,
-              embedding: usdaEmbedding as any,
-            })
-            .select()
-            .single();
+        // Step B: match_items (Tenant DB)
+        if (queryEmbedding && suggestions.length === 0) {
+          const { data: tenantMatches, error: tenantErr } = await supabase.rpc("match_items", {
+            query_embedding: `[${queryEmbedding.join(",")}]`,
+            match_threshold: 0.5,
+            match_count: 5,
+            org_id: organizationId,
+          });
 
-          if (!globalErr && newGlobalIng) {
-            // C. Lazy-load into tenant items table
-            const { data: newItem, error: insertErr } = await supabase
-              .from("items")
+          if (!tenantErr && tenantMatches && tenantMatches.length > 0) {
+            for (const match of tenantMatches) {
+              const similarity = Number(match.similarity);
+              suggestions.push({
+                itemId: match.id,
+                name: match.name,
+                similarity,
+                matchColor: similarity > 0.95 ? "green" : similarity > 0.75 ? "yellow" : "orange"
+              });
+            }
+          }
+        }
+
+        // Step C: If category is INGREDIENT and no high-confidence match in Tenant DB, call match_master_items
+        const hasHighConfidenceTenant = suggestions.some(s => s.similarity >= 0.85);
+
+        if (queryEmbedding && category === "INGREDIENT" && !hasHighConfidenceTenant) {
+          const { data: globalMatches, error: globalErr } = await supabase.rpc("match_master_items", {
+            query_embedding: `[${queryEmbedding.join(",")}]`,
+            match_threshold: 0.5,
+            match_count: 5,
+          });
+
+          if (!globalErr && globalMatches && globalMatches.length > 0) {
+            const topGlobalMatch = globalMatches[0];
+            const isHighConfidence = topGlobalMatch.similarity >= 0.85;
+
+            if (isHighConfidence) {
+              const { data: globalIng } = await supabase
+                .from("master_items")
+                .select("*")
+                .eq("id", topGlobalMatch.id)
+                .single();
+
+              if (globalIng) {
+                this.logger.log(`Lazy-loading global master item "${globalIng.name}" into tenant items`);
+                const { data: newItem, error: insertErr } = await supabase
+                  .from("items")
+                  .insert({
+                    organization_id: organizationId,
+                    name: globalIng.name,
+                    category: "INGREDIENT",
+                    purchase_unit: "EACH",
+                    units_per_case: 1,
+                    each_weight_g: null,
+                    density_g_ml: globalIng.density_g_ml,
+                    is_animal_product: globalIng.is_animal_product,
+                    is_meat: globalIng.is_meat,
+                    is_seafood: globalIng.is_seafood,
+                    is_dairy: globalIng.is_dairy,
+                    is_egg: globalIng.is_egg,
+                    is_gluten_source: globalIng.is_gluten_source,
+                    allergens: Array.isArray(globalIng.allergens) ? globalIng.allergens : [],
+                    fdc_id: globalIng.fdc_id,
+                    nutrition_macros: globalIng.nutrition_macros,
+                    embedding: globalIng.embedding,
+                  })
+                  .select()
+                  .single();
+
+                if (!insertErr && newItem) {
+                  const similarity = Number(topGlobalMatch.similarity);
+                  suggestions.unshift({
+                    itemId: newItem.id,
+                    name: newItem.name,
+                    similarity,
+                    matchColor: similarity > 0.95 ? "green" : similarity > 0.75 ? "yellow" : "orange"
+                  });
+                } else {
+                  this.logger.error(`Failed to insert lazy-loaded item: ${insertErr?.message}`);
+                }
+              }
+            } else {
+              for (const match of globalMatches) {
+                const similarity = Number(match.similarity);
+                if (!suggestions.some(s => s.itemId === match.id)) {
+                  suggestions.push({
+                    itemId: match.id,
+                    name: match.name,
+                    similarity,
+                    matchColor: similarity > 0.95 ? "green" : similarity > 0.75 ? "yellow" : "orange"
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // Step D: Call UsdaResolverService if category is INGREDIENT and still no high confidence suggestions
+        const hasHighConfidence = suggestions.some(s => s.similarity >= 0.85);
+
+        if (category === "INGREDIENT" && !hasHighConfidence) {
+          this.logger.log(`No high-confidence matches for "${searchName}". Querying USDA resolver fallback...`);
+          const usdaMatch = await this.usdaResolver.resolveIngredient(searchName);
+          if (usdaMatch) {
+            this.logger.log(`Found USDA match: "${usdaMatch.fdc_food_name}" (FDC ID: ${usdaMatch.fdc_id}). Caching to master_items and lazy-loading to tenant...`);
+
+            let usdaEmbedding: number[] | null = null;
+            if (queryEmbedding) {
+              usdaEmbedding = queryEmbedding;
+            } else {
+              try {
+                usdaEmbedding = await this.getEmbedding(usdaMatch.fdc_food_name || searchName);
+              } catch (embedErr) {
+                this.logger.warn(`Failed to generate embedding for USDA item`, embedErr);
+              }
+            }
+
+            const globalOrgId = "d0000000-0000-0000-0000-000000000000";
+            const { data: newGlobalIng, error: globalErr } = await supabase
+              .from("master_items")
               .insert({
-                organization_id: organizationId,
-                name: newGlobalIng.name,
-                category: "ingredient",
-                purchase_unit: "UNIT",
-                units_per_case: 1,
-                each_weight_g: null,
-                density_g_ml: newGlobalIng.density_g_ml,
-                is_animal_product: newGlobalIng.is_animal_product,
-                is_meat: newGlobalIng.is_meat,
-                is_seafood: newGlobalIng.is_seafood,
-                is_dairy: newGlobalIng.is_dairy,
-                is_egg: newGlobalIng.is_egg,
-                is_gluten_source: newGlobalIng.is_gluten_source,
-                allergens: Array.isArray(newGlobalIng.allergens) ? newGlobalIng.allergens : [],
-                fdc_id: newGlobalIng.fdc_id,
-                nutrition_macros: newGlobalIng.nutrition_macros,
-                embedding: newGlobalIng.embedding,
+                organization_id: globalOrgId,
+                name: usdaMatch.fdc_food_name || searchName,
+                density_g_ml: 1.0,
+                nutrition_macros: {
+                  calories: usdaMatch.calories || 0,
+                  fatG: usdaMatch.total_fat_g || 0,
+                  carbsG: usdaMatch.total_carbohydrate_g || 0,
+                  proteinG: usdaMatch.protein_g || 0,
+                },
+                allergens: [],
+                is_animal_product: false,
+                fdc_id: usdaMatch.fdc_id,
+                embedding: usdaEmbedding as any,
               })
               .select()
               .single();
 
-            if (!insertErr && newItem) {
-              normalizedItems.push({
-                ...item,
-                itemId: newItem.id,
-                mappedName: newItem.name,
-                confidence: 0.85, // USDA match high-confidence fallback
-              });
-              continue;
+            if (!globalErr && newGlobalIng) {
+              const { data: newItem, error: insertErr } = await supabase
+                .from("items")
+                .insert({
+                  organization_id: organizationId,
+                  name: newGlobalIng.name,
+                  category: "INGREDIENT",
+                  purchase_unit: "EACH",
+                  units_per_case: 1,
+                  each_weight_g: null,
+                  density_g_ml: newGlobalIng.density_g_ml,
+                  is_animal_product: newGlobalIng.is_animal_product,
+                  is_meat: newGlobalIng.is_meat,
+                  is_seafood: newGlobalIng.is_seafood,
+                  is_dairy: newGlobalIng.is_dairy,
+                  is_egg: newGlobalIng.is_egg,
+                  is_gluten_source: newGlobalIng.is_gluten_source,
+                  allergens: Array.isArray(newGlobalIng.allergens) ? newGlobalIng.allergens : [],
+                  fdc_id: newGlobalIng.fdc_id,
+                  nutrition_macros: newGlobalIng.nutrition_macros,
+                  embedding: newGlobalIng.embedding,
+                })
+                .select()
+                .single();
+
+              if (!insertErr && newItem) {
+                suggestions.unshift({
+                  itemId: newItem.id,
+                  name: newItem.name,
+                  similarity: 0.85,
+                  matchColor: "yellow"
+                });
+              }
             } else {
-              this.logger.error(`Failed to insert lazy-loaded item: ${insertErr?.message}`);
+              this.logger.error(`Failed to cache USDA match: ${globalErr?.message}`);
             }
-          } else {
-            this.logger.error(`Failed to cache USDA match to master_ingredients: ${globalErr?.message}`);
           }
         }
 
-        // If completely unmatched, return null/0.0 confidence
+        // Sort suggestions descending by similarity
+        suggestions.sort((a, b) => b.similarity - a.similarity);
+
+        // Find top suggestion for backward compatibility
+        const topSuggestion = suggestions[0];
+
         normalizedItems.push({
           ...item,
-          itemId: null,
-          confidence: 0.0,
+          itemId: topSuggestion ? topSuggestion.itemId : null,
+          mappedName: topSuggestion ? topSuggestion.name : searchName,
+          confidence: topSuggestion ? Number(topSuggestion.similarity.toFixed(2)) : 0.0,
+          suggestions
         });
 
       } catch (err) {
-        this.logger.error(`Fuzzy match failed for item "${rawName}"`, err);
+        this.logger.error(`Matching failed for item "${searchName}"`, err);
         normalizedItems.push({
           ...item,
           itemId: null,
           confidence: 0.0,
+          suggestions: []
         });
       }
     }
 
     return normalizedItems;
-  }
-
-  /**
-   * Uses Gemini Flash to tie-break ambiguous vector search matches.
-   */
-  private async tieBreakWithGemini(
-    rawName: string,
-    candidates: Array<{ id: string; name: string; similarity: number }>
-  ): Promise<{ itemId: string | null; confidence: number } | null> {
-    try {
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: `
-You are a back-office culinary matching assistant. 
-We have a raw vendor item string: "${rawName}".
-We found some possible candidates in our master ingredient catalog, but the match is ambiguous.
-Please match the raw item string to the best candidate.
-
-Candidates:
-${JSON.stringify(candidates.map((c) => ({ id: c.id, name: c.name })))}
-
-If one of the candidates is a logical match, return its ID and a confidence score between 0.6 and 0.84.
-If none of them is a logical or correct match, return null.
-
-Return your response strictly in the following JSON format:
-{
-  "itemId": "selected-candidate-id-or-null",
-  "confidence": 0.75
-}
-`,
-        config: {
-          responseMimeType: "application/json",
-        },
-      });
-
-      const text = response.text || "{}";
-      const result = JSON.parse(text);
-      return {
-        itemId: result.itemId || null,
-        confidence: typeof result.confidence === "number" ? result.confidence : 0.0,
-      };
-    } catch (err) {
-      this.logger.error("Gemini tie-breaker failed", err);
-      return null;
-    }
   }
 }

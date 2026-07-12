@@ -85,12 +85,12 @@ async function main() {
   const supabase = createAdminClient();
   const orgId = "d0000000-0000-0000-0000-000000000000";
 
-  console.log(`Seeding ${STAPLES.length} Escoffier staples into master_ingredients...`);
+  console.log(`Seeding ${STAPLES.length} GlobalMaster staples into master_items...`);
 
   for (const name of STAPLES) {
     // 1. Check if item already exists
     const { data: existing } = await supabase
-      .from("master_ingredients")
+      .from("master_items")
       .select("id")
       .eq("organization_id", orgId)
       .ilike("name", name)
@@ -104,14 +104,27 @@ async function main() {
     // 2. Generate embedding (graceful if Ollama is unresponsive)
     const embedding = await getEmbedding(name);
 
-    // 3. Insert new master ingredient
-    const { error } = await supabase.from("master_ingredients").insert({
+    const lowerName = name.toLowerCase();
+    const isGluten = lowerName.includes("flour") || lowerName.includes("wheat");
+    const isDairy = lowerName.includes("butter") || lowerName.includes("milk") || lowerName.includes("cream") || lowerName.includes("cheese");
+    const isEgg = lowerName.includes("egg");
+    const isMeat = lowerName.includes("beef") || lowerName.includes("pork") || lowerName.includes("chicken") || lowerName.includes("bacon");
+    const isSeafood = lowerName.includes("salmon") || lowerName.includes("shrimp") || lowerName.includes("fish");
+    const isAnimal = isDairy || isEgg || isMeat || isSeafood;
+
+    // 3. Insert new master item
+    const { error } = await supabase.from("master_items").insert({
       organization_id: orgId,
       name,
       density_g_ml: 1.0,
       nutrition_macros: { calories: 0, fatG: 0, carbsG: 0, proteinG: 0 },
       allergens: [],
-      is_animal_product: false,
+      is_animal_product: isAnimal,
+      is_dairy: isDairy,
+      is_egg: isEgg,
+      is_meat: isMeat,
+      is_seafood: isSeafood,
+      is_gluten_source: isGluten,
       embedding: embedding as any
     });
 

@@ -3,136 +3,38 @@ import { IVisionService } from "./IVisionService";
 import { GoogleGenAI, Type } from "@google/genai";
 import { config } from "@soustools/config";
 
-const recipeSchema = {
+const unifiedExtractionSchema = {
   type: Type.OBJECT,
   properties: {
-    title: { type: Type.STRING },
-    yieldCount: { type: Type.NUMBER },
-    yieldUnit: { type: Type.STRING },
-    sourceBook: { type: Type.STRING, description: "Book or publication title if visible" },
-    sourceAuthor: { type: Type.STRING, description: "Author of the recipe if visible" },
-    sourcePageStart: { type: Type.NUMBER },
-    sourcePageEnd: { type: Type.NUMBER },
-    vessel: {
+    documentType: {
+      type: Type.STRING,
+      enum: ["INVOICE", "RECIPE", "OTHER"],
+      description: "Classify if the document is primarily an INVOICE, a RECIPE, or OTHER."
+    },
+    lineItems: {
+      type: Type.ARRAY,
+      description: "The line items or ingredients extracted from the document.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          rawName: { type: Type.STRING, description: "The raw description string or name as printed on the document." },
+          suggestedInternalName: { type: Type.STRING, description: "A clean, generic, professional name guessed from the raw string (e.g. 'Chicken Breast' for 'CUTLET BLACK.L', or 'All-Purpose Flour' for 'AP FLOUR 50LB')." },
+          category: { type: Type.STRING, enum: ["INGREDIENT", "PACKAGING", "CLEANING", "SMALLWARES", "FEE", "OTHER"] },
+          amount: { type: Type.NUMBER, description: "The quantity or amount of this item." },
+          unit: { type: Type.STRING, description: "The unit of measurement (e.g., LBS, CASE, CUP, G, EACH)." },
+          price: { type: Type.NUMBER, description: "The unit price or line price if applicable. Default to 0 if not present (like in recipes)." }
+        },
+        required: ["rawName", "suggestedInternalName", "category", "amount", "unit", "price"]
+      }
+    },
+    extractedMetadata: {
       type: Type.OBJECT,
-      properties: {
-        name: { type: Type.STRING },
-        shape: { type: Type.STRING, enum: ["ROUND", "RECTANGULAR"] },
-        length: { type: Type.NUMBER },
-        width: { type: Type.NUMBER },
-        height: { type: Type.NUMBER },
-        diameter: { type: Type.NUMBER },
-        volumeMl: { type: Type.NUMBER }
-      },
-      required: ["name", "shape", "volumeMl"]
-    },
-    ingredients: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          name: { type: Type.STRING },
-          amount: { type: Type.NUMBER },
-          unit: { type: Type.STRING },
-          component: { type: Type.STRING, description: "The component or section this ingredient belongs to, e.g., 'Dough', 'Glaze', 'Filling', 'Caramelized apples'. Leave null if the recipe has no sections." },
-          calculationType: { type: Type.STRING, enum: ["WEIGHT", "VOLUME", "COUNT"] },
-          prepNotes: { type: Type.STRING, description: "e.g., diced, melted, room temp" }
-        },
-        required: ["name", "amount", "unit"]
-      }
-    },
-    instructions: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          text: { type: Type.STRING, description: "The instruction text" },
-          stepNumber: { type: Type.NUMBER },
-          timerDurationSeconds: { type: Type.NUMBER, description: "If a duration is mentioned in this step, convert it to seconds" }
-        },
-        required: ["text", "stepNumber"]
-      }
-    },
-    prepTimeMinutes: { type: Type.NUMBER, description: "Preparation time in minutes" },
-    cookTimeMinutes: { type: Type.NUMBER, description: "Cooking/baking/proofing time in minutes" }
-  },
-  required: ["title", "ingredients", "instructions"]
-};
-
-const recipeResponseSchema = {
-  type: Type.OBJECT,
-  properties: {
-    recipes: {
-      type: Type.ARRAY,
-      items: recipeSchema
+      description: "An open-ended dictionary containing all other document-level fields (e.g. vendor name/address/phone/email, invoice/PO numbers, recipe yields/servings, prep/cook times, past due balances, dates, notes, author)."
     }
   },
-  required: ["recipes"]
+  required: ["documentType", "lineItems", "extractedMetadata"]
 };
 
-const invoiceSchema = {
-  type: Type.OBJECT,
-  properties: {
-    vendorName: { type: Type.STRING },
-    vendorAddress: { type: Type.STRING, description: "Vendor's physical address if present" },
-    vendorPhone: { type: Type.STRING, description: "Vendor's phone number if present" },
-    vendorEmail: { type: Type.STRING, description: "Vendor's email if present" },
-    invoiceNumber: { type: Type.STRING },
-    orderNumber: { type: Type.STRING, description: "Order number or PO number if present" },
-    date: { type: Type.STRING },
-    totalAmount: { type: Type.NUMBER },
-    previousBalance: { type: Type.NUMBER, description: "Any previous balance mentioned" },
-    totalDue: { type: Type.NUMBER, description: "Total amount due" },
-    notes: { type: Type.STRING, description: "Any printed or handwritten notes" },
-    items: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          rawName: { type: Type.STRING },
-          quantity: { type: Type.NUMBER },
-          uom: { type: Type.STRING },
-          unit: { type: Type.STRING, description: "Unit such as LBS, CASE, EACH" },
-          category: { type: Type.STRING, description: "Categorize as 'ingredient', 'cleaning', 'office', or 'packaging'", enum: ["ingredient", "cleaning", "office", "packaging", "other"] },
-          pricePerUnit: { type: Type.NUMBER },
-          totalPrice: { type: Type.NUMBER }
-        },
-        required: ["rawName", "quantity", "pricePerUnit"]
-      }
-    }
-  },
-  required: ["vendorName", "items"]
-};
-
-const recipeExtractionSchema = {
-  type: Type.OBJECT,
-  properties: {
-    recipeName: { type: Type.STRING },
-    yieldAmount: { type: Type.NUMBER },
-    yieldUnit: { type: Type.STRING },
-    prepTimeMinutes: { type: Type.NUMBER },
-    ingredients: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          rawString: { type: Type.STRING, description: "The original complete text line of the ingredient as listed in the recipe, e.g., '1 cup finely chopped onions'" },
-          baseIngredient: { type: Type.STRING, description: "The isolated primary ingredient itself, removing any prep descriptors or quantities. e.g. 'Yellow Onion', 'Unsalted Butter', 'AP Flour'" },
-          preparationNote: { type: Type.STRING, description: "All descriptors relating to prep state, cut type, temp, or divisions. e.g., 'diced, divided', 'melted', 'room temperature', 'sifted'" },
-          quantity: { type: Type.NUMBER, description: "The numerical quantity extracted. Convert fractions to decimals." },
-          unit: { type: Type.STRING, description: "The unit of measurement. e.g., 'cup', 'g', 'oz', 'piece', 'tbsp'" },
-          sectionGroup: { type: Type.STRING, description: "The section header grouping name for this ingredient if one is specified in the recipe layout (e.g. 'Dough', 'Filling', 'Glaze', 'Topping')." }
-        },
-        required: ["rawString", "baseIngredient"]
-      }
-    },
-    instructions: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING }
-    }
-  },
-  required: ["recipeName", "ingredients", "instructions"]
-};
 
 @Injectable()
 export class CloudVisionService implements IVisionService {
@@ -143,99 +45,81 @@ export class CloudVisionService implements IVisionService {
   }
 
   async processRecipe(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any> {
-    return this.processDocument("recipe", imageBuffer, rawText, mimeType);
+    return this.extractPolymorphicDocument(imageBuffer, rawText, mimeType);
   }
 
   async processInvoice(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any> {
-    return this.processDocument("invoice", imageBuffer, rawText, mimeType);
+    return this.extractPolymorphicDocument(imageBuffer, rawText, mimeType);
   }
 
-  async extractRecipe(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any> {
-    const inlineDataParts: any[] = [];
-
-    if (imageBuffer) {
-      inlineDataParts.push({
-        inlineData: {
-          mimeType: mimeType || "image/jpeg",
-          data: imageBuffer.toString("base64")
-        }
-      });
-    }
-
-    const genConfig = {
-      responseMimeType: "application/json",
-      responseSchema: recipeExtractionSchema,
-      systemInstruction: `You are an expert culinary data-entry clerk. Extract a single structured recipe from the provided document.
-Your job is to read the recipe text or image and extract a structured JSON payload conforming to the provided schema.
-Pay extremely close attention to the ingredient parsing:
-- 'rawString' must be the exact raw text line of the ingredient.
-- 'baseIngredient' must be the isolated food substance (e.g. 'Yellow Onion', 'Unsalted Butter', 'AP Flour'). Intelligently split out preparation modifiers.
-- 'preparationNote' must contain all preparation and state instructions (e.g., 'diced, divided', 'melted', 'room temp', 'sifted').
-- 'quantity' must be the numeric amount (e.g., '1 1/2' becomes 1.5).
-- 'unit' must be the unit of measurement (e.g. 'cup', 'tbsp', 'g').
-- 'sectionGroup' must be the header/title of the recipe section/group that this ingredient is grouped under if the recipe presents them in sections (e.g. 'Dough', 'Filling', 'Glaze'). If no section headers exist, leave it as null.`
-    };
-
-    let responseText = "";
-
-    if (inlineDataParts.length > 0) {
-      const contents: any[] = [...inlineDataParts];
-      if (rawText) contents.push({ text: rawText });
-      contents.push({ text: "Extract the single recipe data from this document." });
-      
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents,
-        config: genConfig
-      });
-      responseText = response.text || "{}";
-    } else if (rawText) {
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: rawText,
-        config: genConfig
-      });
-      responseText = response.text || "{}";
-    } else {
-      return {};
-    }
-
-    return JSON.parse(responseText);
+  async extractInvoice(imageBuffer?: Buffer, rawText?: string, mimeType?: string, sourceName?: string, sourceUrl?: string): Promise<any> {
+    return this.extractPolymorphicDocument(imageBuffer, rawText, mimeType, sourceName, sourceUrl);
   }
 
-  private async processDocument(
-    documentType: "recipe" | "invoice",
+  async extractRecipe(imageBuffer?: Buffer, rawText?: string, mimeType?: string, sourceName?: string, sourceUrl?: string): Promise<any> {
+    return this.extractPolymorphicDocument(imageBuffer, rawText, mimeType, sourceName, sourceUrl);
+  }
+
+  private async extractPolymorphicDocument(
     imageBuffer?: Buffer,
     rawText?: string,
-    mimeType?: string
+    mimeType?: string,
+    sourceName?: string,
+    sourceUrl?: string
   ): Promise<any> {
     const inlineDataParts: any[] = [];
+    let finalBuffer = imageBuffer;
+    let finalMimeType = mimeType || "image/jpeg";
 
-    if (imageBuffer) {
+    if (!finalBuffer && sourceUrl) {
+      try {
+        const res = await fetch(sourceUrl);
+        if (!res.ok) throw new Error(`Failed to fetch image from sourceUrl: ${res.statusText}`);
+        const arrayBuffer = await res.arrayBuffer();
+        finalBuffer = Buffer.from(arrayBuffer);
+        const contentType = res.headers.get("content-type");
+        if (contentType) finalMimeType = contentType;
+      } catch (err) {
+        console.error("Error fetching sourceUrl for Gemini vision extraction:", err);
+      }
+    }
+
+    if (finalBuffer) {
       inlineDataParts.push({
         inlineData: {
-          mimeType: mimeType || "image/jpeg",
-          data: imageBuffer.toString("base64")
+          mimeType: finalMimeType,
+          data: finalBuffer.toString("base64")
         }
       });
     }
 
+    const filenameHint = sourceName ? `The original filename is "${sourceName}". Use this filename as a strong hint for classification, name, or metadata if the document lacks a clear title.` : ``;
+
     const genConfig = {
       responseMimeType: "application/json",
-      responseSchema: documentType === "recipe" ? recipeResponseSchema : invoiceSchema,
-      systemInstruction: `You are an expert culinary and back-office AI. Extract structured data from the provided document. For recipes, extract an array of ALL recipes found in the document under the 'recipes' key. 
-- You MUST aggressively search for all distinct recipes and group them into the 'recipes' array. DO NOT return an empty array if you see any culinary content.
-- For vessels/pans, if dimensions are mentioned (e.g., 9x13 pan), automatically calculate the volumeMl (e.g., 9 * 13 * 2 (height) * 16.387 = ~3800ml) and set shape to RECTANGULAR.
-- Extract any cooking/prep times into timerDurationSeconds accurately.
-The requested document type is: ${documentType}`
+      responseSchema: unifiedExtractionSchema,
+      systemInstruction: `You are an expert restaurant back-office system receiver, culinary data-entry clerk, and master inventory manager.
+${filenameHint}
+Intelligently analyze the document (which could be a vendor invoice, a supplier delivery ticket, a recipe printout, or a hand-written recipe) and classify it under 'documentType' as "INVOICE", "RECIPE", or "OTHER".
+
+Perform the following for the 'lineItems' array:
+1. Identify all list items on the document. For invoices, these are purchase items/fees. For recipes, these are ingredients.
+2. For each item:
+   - 'rawName': The exact description/name printed or written on the document.
+   - 'suggestedInternalName': Guess a clean, generic, professional name (e.g. 'Chicken Breast' for 'CUTLET BLACK.L', or 'All-Purpose Flour' for 'AP FLOUR 50LB').
+   - 'category': Classify as INGREDIENT, PACKAGING, CLEANING, SMALLWARES, FEE, or OTHER. For recipes, this is usually INGREDIENT. For invoices, recognize fees (e.g. delivery fee) and set to FEE.
+   - 'amount': The numerical quantity/amount (e.g. 2 for 2.0, 1.5 for 1-1/2).
+   - 'unit': The unit of measurement (e.g., LBS, CASE, CUP, G, EACH).
+   - 'price': For invoices, extract the unit price or line price. For recipes, set to 0.
+
+CRITICAL: Extract ALL other document-level fields (e.g., vendor name, vendor address/phone/email, invoice/PO numbers, recipe yields/servings, prep/cook times, past due balances, dates, notes, author) into the open-ended 'extractedMetadata' object. Capture as much detail as possible. Do not put line items inside extractedMetadata.`
     };
 
     let responseText = "";
-
     if (inlineDataParts.length > 0) {
       const contents: any[] = [...inlineDataParts];
       if (rawText) contents.push({ text: rawText });
-      contents.push({ text: `Extract the ${documentType} data from this document.` });
+      contents.push({ text: "Extract the data from this document." });
       
       const response = await this.ai.models.generateContent({
         model: "gemini-2.5-flash",
@@ -251,9 +135,29 @@ The requested document type is: ${documentType}`
       });
       responseText = response.text || "{}";
     } else {
-      return {};
+      return { documentType: "OTHER", lineItems: [], extractedMetadata: {} };
     }
 
-    return JSON.parse(responseText);
+    const parsed = JSON.parse(responseText);
+
+    // Provide backward-compatible wrappers
+    if (parsed.documentType === "INVOICE") {
+      parsed.vendorName = parsed.extractedMetadata?.vendorName || parsed.extractedMetadata?.vendor || "";
+      parsed.items = (parsed.lineItems || []).map((item: any) => ({
+        ...item,
+        quantity: item.amount,
+        pricePerUnit: item.price
+      }));
+    } else if (parsed.documentType === "RECIPE") {
+      parsed.recipeName = parsed.extractedMetadata?.recipeName || parsed.extractedMetadata?.title || "";
+      parsed.ingredients = (parsed.lineItems || []).map((item: any) => ({
+        ...item,
+        rawString: item.rawName,
+        baseIngredient: item.suggestedInternalName,
+        quantity: item.amount
+      }));
+    }
+
+    return parsed;
   }
 }

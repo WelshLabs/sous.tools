@@ -12,7 +12,6 @@
   "dependencies": {
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
-    "@soustools/supabase": "workspace:*",
     "@soustools/design-system": "workspace:*",
     "@supabase/supabase-js": "^2.43.0",
     "lucide-react": "^1.17.0",

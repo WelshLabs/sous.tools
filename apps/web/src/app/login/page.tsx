@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, PrimaryLogo } from "@soustools/design-system";
 import { KeyRound, Mail } from "lucide-react";
+import { api } from "@soustools/api-client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("conar@dtown.cafe");
@@ -16,13 +17,11 @@ export default function LoginPage() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const res = await fetch("/api/auth/session");
-        if (res.ok) {
-          const payload = await res.json();
-          if (payload.success && payload.data?.user) {
-            router.replace("/home");
-            return;
-          }
+        const { data } = await api.GET("/auth/session");
+        const payloadData = data?.data as Record<string, any> | undefined;
+        if (data?.success && payloadData?.user) {
+          router.replace("/home");
+          return;
         }
       } catch (err) {
         console.error("Failed to check active session:", err);
@@ -41,16 +40,13 @@ export default function LoginPage() {
     try {
       // POST credentials to the NestJS API — it calls Supabase and sets an
       // HttpOnly cookie. The frontend never touches a raw Supabase token.
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+      const { data, error: apiError } = await api.POST("/auth/login", {
+        body: { email, password },
       });
 
-      if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        setError((payload as { message?: string }).message || "Invalid email or password.");
+      if (apiError || !data?.success) {
+        const payload = apiError as { message?: string } | undefined;
+        setError(payload?.message || "Invalid email or password.");
       } else {
         const urlParams = new URLSearchParams(window.location.search);
         const returnTo = urlParams.get("returnTo");

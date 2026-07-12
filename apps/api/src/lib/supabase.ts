@@ -1,5 +1,13 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { createAdminClient } from "@soustools/supabase";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { config } from "@soustools/config";
+
+export function createAdminClient(): SupabaseClient {
+  return createClient(
+    config.SUPABASE_URL,
+    config.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 /**
  * Shared instance of the Supabase Client configured using the config package.

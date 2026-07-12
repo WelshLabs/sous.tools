@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { type OmniMessage, type RecipeExtractionDTO } from "@soustools/api-types";
-import { RecipeBentoBox } from "./RecipeBentoBox";
-import { useOmnibarContext } from "./OmniBarContext";
-import { toast } from "sonner";
+import { type OmniMessage } from "@soustools/api-types";
+import { UnifiedReviewPanel } from "./UnifiedReviewPanel";
+import { useOmniActions } from "./use-omni-actions.hook";
+import { api } from "@soustools/api-client";
+import Link from "next/link";
 
 export interface OmniChatWindowProps {
   chatHistory: OmniMessage[];
@@ -12,20 +13,16 @@ export interface OmniChatWindowProps {
 }
 
 export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) {
-  const { setChatHistory, contextPayload } = useOmnibarContext();
   const [masterIngredients, setMasterIngredients] = useState<Array<{ id: string; name: string }>>([]);
-
-  const organizationId = (contextPayload?.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch("/api/items");
-        if (res.ok) {
-          const payload = await res.json();
-          if (payload.data) {
-            setMasterIngredients(payload.data.map((d: { id: string; name: string }) => ({ id: d.id, name: d.name })));
-          }
+        const { data, error } = await api.GET("/items", { params: { query: { search: "" } } });
+        if (error) throw new Error(String(error));
+        if (data && data.data) {
+          const items = data.data as Array<{ id: string; name: string }>;
+          setMasterIngredients(items.map(d => ({ id: d.id, name: d.name })));
         }
       } catch (err) {
         console.error("Failed to load items in OmniChatWindow", err);
@@ -34,99 +31,17 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
     fetchItems();
   }, []);
 
-  const handleConfirmAlias = async (rawName: string, itemId: string, orgId: string) => {
-    try {
-      const res = await fetch("/api/ingestion/alias", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          organizationId: orgId,
-          vendorName: "Internal Ingredients", // No vendor context for recipes
-          vendorItemString: rawName,
-          masterIngredientId: itemId,
-        })
-      });
-
-      if (!res.ok) throw new Error("Failed to save alias mapping");
-      toast.success(`Saved alias mapping for "${rawName}"`);
-    } catch (err) {
-      toast.error("Failed to save alias mapping");
-      console.error(err);
-    }
-  };
-
-  const handleUpdateIngredient = (
-    msgIndex: number,
-    ingIndex: number,
-    updates: Record<string, unknown>
-  ) => {
-    const updatedHistory = [...chatHistory];
-    const msg = { ...updatedHistory[msgIndex] };
-    if (msg.recipeData) {
-      const recipe = { ...msg.recipeData };
-      const ingredients = [...(recipe.ingredients || [])];
-      ingredients[ingIndex] = { ...ingredients[ingIndex], ...updates };
-      recipe.ingredients = ingredients;
-      msg.recipeData = recipe;
-      updatedHistory[msgIndex] = msg;
-      setChatHistory(updatedHistory);
-    }
-  };
-
-  const handleSaveRecipe = async (recipe: RecipeExtractionDTO) => {
-    try {
-      const res = await fetch("/api/recipes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipe: {
-            title: recipe.recipeName || "Untitled Recipe",
-            yieldCount: recipe.yieldAmount || 1,
-            yieldUnit: recipe.yieldUnit || "pieces",
-            instructions: recipe.instructions.map((text, idx) => ({
-              text,
-              stepNumber: idx + 1,
-              timerDurationSeconds: null,
-            })),
-            status: "APPROVED",
-          },
-          recipeIngredients: recipe.ingredients.map((ing) => ({
-            masterIngredientId: ing.itemId,
-            calculationType: "fixed_weight",
-            baseCalculationGroup: false,
-            amount: ing.quantity || 1,
-            unit: ing.unit || "EACH",
-            rawName: ing.rawString,
-            prepNotes: ing.preparationNote || null,
-          })),
-        }),
-      });
-
-      if (!res.ok) {
-        let details = "";
-        try {
-          const body = await res.json();
-          details = body.message || body.error || JSON.stringify(body);
-        } catch {
-          details = `Status ${res.status}`;
-        }
-        throw new Error(details);
-      }
-
-      toast.success("Recipe confirmed and saved successfully!");
-      // Remove message with this recipe from chat history
-      const updatedHistory = chatHistory.filter((m) => m.recipeData !== recipe);
-      setChatHistory(updatedHistory);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      toast.error(`Failed to save recipe: ${msg}`);
-      console.error(err);
-    }
-  };
+  const {
+    handleConfirmAlias,
+    handleUpdateIngredient,
+    handleUpdateInvoiceItem,
+    handleSaveInvoice,
+    handleSaveRecipe,
+  } = useOmniActions();
 
   if (chatHistory.length === 0) return null;
 
-  const hasRecipe = chatHistory.some((m) => !!m.recipeData);
+  const hasRecipeOrInvoice = chatHistory.some((m) => !!m.recipeData || !!m.invoiceData);
 
   return (
     <motion.div
@@ -137,7 +52,7 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
     >
       <div 
         ref={scrollRef}
-        className={`w-full flex flex-col gap-2.5 ${hasRecipe ? 'max-h-[60vh]' : 'max-h-[35vh]'} overflow-y-auto pr-2
+        className={`w-full flex flex-col gap-2.5 ${hasRecipeOrInvoice ? 'max-h-[60vh]' : 'max-h-[35vh]'} overflow-y-auto pr-2
           [&::-webkit-scrollbar]:w-1.5 
           [&::-webkit-scrollbar-track]:bg-transparent 
           [&::-webkit-scrollbar-thumb]:bg-cyan-500/50 
@@ -155,21 +70,31 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               key={msg.id || index}
-              className={`flex flex-col ${msg.recipeData ? 'w-full max-w-none' : 'max-w-[85%]'} ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
+              className={`flex flex-col ${(msg.recipeData || msg.invoiceData) ? 'w-full max-w-none' : 'max-w-[85%]'} ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
             >
               {isAgentStep ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground opacity-70 font-mono bg-card rounded-xl px-3 py-1.5 border border-border">
                   {msg.isLoading !== false && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
                   {msg.content}
                 </div>
-              ) : msg.recipeData ? (
+              ) : (msg.recipeData || msg.invoiceData) ? (
                 <div className="w-full p-2">
-                  <RecipeBentoBox
-                    recipe={msg.recipeData}
+                  <UnifiedReviewPanel
+                    payload={msg.recipeData || msg.invoiceData}
                     masterIngredients={masterIngredients}
-                    onConfirmAlias={(rawString, masterId) => handleConfirmAlias(rawString, masterId, organizationId)}
-                    onUpdateIngredient={(ingIndex, updates) => handleUpdateIngredient(index, ingIndex, updates)}
+                    onConfirmAlias={(rawString, masterId) => handleConfirmAlias(rawString, masterId)}
+                    onUpdateItem={(itemIndex, updates) => {
+                      if (msg.recipeData) {
+                        handleUpdateIngredient(index, itemIndex, updates);
+                      } else {
+                        handleUpdateInvoiceItem(index, itemIndex, updates);
+                      }
+                    }}
                     onSaveRecipe={handleSaveRecipe}
+                    onSaveInvoice={handleSaveInvoice}
+                    onItemCreated={(newItem) => {
+                      setMasterIngredients((prev) => [...prev, newItem]);
+                    }}
                   />
                 </div>
               ) : (
@@ -178,12 +103,24 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
                     ? 'bg-primary/10 border border-primary/20 text-foreground rounded-tr-sm' 
                     : 'bg-card border border-border text-foreground rounded-tl-sm'
                 }`}>
-                  {msg.content.match(/https?:\/\/[^\s]+/) ? (
-                    <motion.div layoutId={`file-${msg.id}`} className="w-48 h-32 rounded-xl overflow-hidden border border-border relative">
-                      <img src={msg.content.match(/https?:\/\/[^\s]+/)![0]} alt="Uploaded file" className="w-full h-full object-cover" />
+                  {msg.content.match(/(https?|blob|data):[^\s]+/) ? (
+                    <motion.div layoutId={`active-task-container-${msg.id}`} className="w-48 h-32 rounded-xl overflow-hidden border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)] relative">
+                      <img src={msg.content.match(/(https?|blob|data):[^\s]+/)![0]} alt="Uploaded file" className="w-full h-full object-cover" />
                     </motion.div>
                   ) : null}
-                  <span>{msg.content.replace(/https?:\/\/[^\s]+/, '')}</span>
+                  <span>
+                    {msg.content.split(/(\[[^\]]+\]\([^)]+\))/g).map((part, i) => {
+                      const match = part.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                      if (match) {
+                        return (
+                          <Link key={i} href={match[2]} className="text-cyan-400 hover:underline font-medium">
+                            {match[1]}
+                          </Link>
+                        );
+                      }
+                      return <span key={i}>{part.replace(/(https?|blob|data):[^\s]+/, '')}</span>;
+                    })}
+                  </span>
                 </div>
               )}
             </motion.div>

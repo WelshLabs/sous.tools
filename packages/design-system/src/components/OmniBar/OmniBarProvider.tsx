@@ -15,9 +15,11 @@ import { toast } from "sonner";
 export function OmniBarProvider({
   children,
   token,
+  apiClient,
 }: {
   children?: any;
   token?: string;
+  apiClient?: typeof fetch;
 }) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
@@ -34,7 +36,15 @@ export function OmniBarProvider({
     inputText,
     setInputText,
     setIsGoogleDriveConnected,
+    setApiClient,
+    apiClient: ctxApiClient,
   } = useOmnibarContext();
+
+  useEffect(() => {
+    if (apiClient && apiClient !== ctxApiClient) {
+      setApiClient(apiClient);
+    }
+  }, [apiClient, setApiClient, ctxApiClient]);
 
   const { socket, errorMessage, setErrorMessage, isListening, setIsListening } =
     useOmniSocket(token);
@@ -45,7 +55,8 @@ export function OmniBarProvider({
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch("/api/integrations/status");
+        const fetcher = apiClient || fetch;
+        const res = await fetcher("/api/integrations/status");
         if (res.ok) {
           const payload = await res.json();
           const list = Array.isArray(payload) ? payload : payload.data || [];
@@ -57,7 +68,7 @@ export function OmniBarProvider({
       }
     };
     fetchStatus();
-  }, [setIsGoogleDriveConnected]);
+  }, [setIsGoogleDriveConnected, apiClient]);
 
   // Global Drag Listeners
   useEffect(() => {

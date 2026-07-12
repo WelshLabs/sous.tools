@@ -10,7 +10,7 @@ import { NutritionService } from "./nutrition.service";
 import { LabelRendererService } from "./label-renderer.service";
 import { UsdaResolverService } from "./usda-resolver.service";
 import type { Recipe, RecipeNutritionCache } from "@soustools/api-types";
-import { createAdminClient } from "@soustools/supabase";
+import { createAdminClient } from "../../lib/supabase";
 
 @Controller("recipes")
 export class NutritionController {
@@ -47,7 +47,7 @@ export class NutritionController {
           recipe_ingredients(
             amount,
             unit,
-            master_ingredient:master_ingredients(
+            master_ingredient:master_items(
               id,
               name,
               nutrition_macros,
@@ -116,7 +116,7 @@ export class NutritionController {
           recipe_ingredients(
             amount,
             unit,
-            master_ingredient:master_ingredients(
+            master_ingredient:master_items(
               id,
               name,
               nutrition_macros,

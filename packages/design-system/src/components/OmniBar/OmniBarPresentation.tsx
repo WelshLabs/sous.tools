@@ -50,7 +50,7 @@ export function OmniBarPresentation({
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [chatHistory, isOpen]);
+  }, [chatHistory.length, isOpen]);
 
   return (
     <>
@@ -75,7 +75,11 @@ export function OmniBarPresentation({
 
       {/* Global Anchored Container */}
       {mounted && !isFocusPage && createPortal(
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-60 flex flex-col items-center justify-end w-full max-w-3xl pointer-events-none gap-4">
+        <motion.div 
+          layout
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed inset-0 z-60 flex flex-col items-center justify-center w-full max-w-3xl mx-auto px-4 pointer-events-none gap-4"
+        >
           <AnimatePresence mode="wait">
             {!isOpen ? (
               <motion.div
@@ -95,9 +99,10 @@ export function OmniBarPresentation({
                 <Mic className="w-5 h-5" />
               </motion.div>
             ) : (
-              <div
+              <motion.div
                 key="expanded"
-                className="w-full flex flex-col gap-4 pointer-events-none"
+                layout
+                className="w-full flex flex-col gap-4 pointer-events-auto"
               >
                 <OmniChatWindow chatHistory={chatHistory} scrollRef={scrollRef} />
                 <OmniInputPill
@@ -113,17 +118,21 @@ export function OmniBarPresentation({
                   isDragging={isDragging}
                   stagedFiles={stagedFiles}
                 />
-              </div>
+              </motion.div>
             )}
           </AnimatePresence>
-        </div>,
+        </motion.div>,
         document.body
       )}
 
       {/* Focus Page (Inline) */}
       {isFocusPage && (
-        <div className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50">
-          <div className="w-full max-w-3xl flex flex-col justify-center px-4 gap-4 pointer-events-none">
+        <motion.div 
+          layout
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
+        >
+          <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
             <OmniChatWindow chatHistory={chatHistory} scrollRef={scrollRef} />
             <OmniInputPill
               inputText={inputText}
@@ -137,8 +146,8 @@ export function OmniBarPresentation({
               isDragging={isDragging}
               stagedFiles={stagedFiles}
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </>
   );

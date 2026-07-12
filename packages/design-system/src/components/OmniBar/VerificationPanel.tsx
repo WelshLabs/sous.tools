@@ -23,7 +23,9 @@ export function VerificationPanel({
           CHEF?
         </span>
         <span className="text-muted-foreground text-xs leading-normal">
-          Found a document. How should we process it?
+          {stagedFiles.length > 0 && stagedFiles[0].file 
+            ? `I see "${stagedFiles[0].file.name}". Should I process this as a Recipe or an Invoice?`
+            : "Found a document. How should we process it?"}
         </span>
       </div>
 
@@ -32,7 +34,7 @@ export function VerificationPanel({
         {stagedFiles.map((file) => (
           <motion.div
             key={file.id}
-            layoutId={`file-${file.id}`}
+            layoutId={`active-task-container-${file.id}`}
             className="relative w-40 shrink-0"
           >
             <div className="relative overflow-hidden flex items-center justify-center w-full h-28 rounded-2xl bg-card border border-border shadow-md">
@@ -50,13 +52,11 @@ export function VerificationPanel({
                   <div className="absolute inset-[2px] bg-background z-10 rounded-2xl" />
                 </>
               )}
-              {file.url ? (
-                <motion.img
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  src={file.url}
+              {file.url || file.file ? (
+                <img
+                  src={file.url || (file.file ? URL.createObjectURL(file.file) : undefined)}
                   alt="Staged Upload"
-                  className="w-full h-full object-cover relative z-20"
+                  className="w-full h-full object-cover relative z-20 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)] rounded-2xl animate-fadeIn"
                 />
               ) : (
                 <FileImage className="w-8 h-8 text-muted-foreground relative z-20" />
@@ -81,14 +81,14 @@ export function VerificationPanel({
           <button
             type="button"
             onClick={() => onAction("Extract Invoice", stagedFiles[0])}
-            className="w-full py-2 bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-200 font-medium text-xs rounded-xl border border-cyan-500/30 transition-all shadow-[0_0_12px_rgba(6,182,212,0.1)] active:scale-98 cursor-pointer animate-fadeIn"
+            className="w-full py-2 bg-glass-panel text-glass-accent font-medium text-xs rounded-xl border border-cyan-500/30 transition-all shadow-[0_0_12px_rgba(6,182,212,0.1)] hover:bg-cyan-500/20 active:scale-98 cursor-pointer animate-fadeIn"
           >
             Extract Invoice
           </button>
           <button
             type="button"
             onClick={() => onAction("Parse Recipe", stagedFiles[0])}
-            className="w-full py-2 bg-muted/50 hover:bg-muted text-foreground font-medium text-xs rounded-xl border border-border transition-all active:scale-98 cursor-pointer animate-fadeIn"
+            className="w-full py-2 bg-glass-panel text-glass-accent font-medium text-xs rounded-xl border border-border transition-all hover:bg-muted active:scale-98 cursor-pointer animate-fadeIn"
           >
             Parse Recipe
           </button>

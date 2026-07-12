@@ -18,6 +18,9 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse } from "@nestjs/swagger";
+
+@ApiTags("items")
 @Controller("items")
 export class ItemsController {
   private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
@@ -25,6 +28,7 @@ export class ItemsController {
   constructor(private readonly service: ItemsService) {}
 
   @Get()
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
   async findAll(
     @Query("search") search?: string,
   ): Promise<ApiResponse<unknown>> {
@@ -55,6 +59,40 @@ export class ItemsController {
   }
 
   @Post()
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        category: { type: "string", nullable: true },
+        purchase_unit: { type: "string", nullable: true },
+        units_per_case: { type: "number", nullable: true },
+        each_weight_g: { type: "number", nullable: true },
+        density_g_ml: { type: "number", nullable: true },
+        shelf_life_days: { type: "number", nullable: true },
+      },
+      required: ["name"]
+    }
+  })
+  @NestjsApiResponse({
+    status: 201,
+    description: "Success",
+    schema: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        data: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            category: { type: "string" },
+          }
+        },
+        timestamp: { type: "string" }
+      }
+    }
+  })
   async create(@Body() dto: CreateItemDto): Promise<ApiResponse<unknown>> {
     try {
       const data = await this.service.create(this.defaultOrgId, dto);
