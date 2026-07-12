@@ -88,8 +88,8 @@ export class NormalizationService {
    */
   async normalizeInvoiceItems(
     organizationId: string,
-    vendorName: string,
-    items: Array<{ rawName: string; quantity: number; pricePerUnit: number; [key: string]: any }>
+    vendorName: string | null | undefined,
+    items: Array<{ rawName?: string; baseIngredient?: string; [key: string]: any }>
   ): Promise<any[]> {
     await this.ensureEmbeddings(organizationId);
 
@@ -123,7 +123,7 @@ export class NormalizationService {
     const normalizedItems = [];
 
     for (const item of items) {
-      const rawName = (item.rawName || "").trim();
+      const rawName = (item.rawName || item.baseIngredient || "").trim();
       if (!rawName) {
         normalizedItems.push(item);
         continue;

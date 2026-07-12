@@ -6,7 +6,10 @@ import {
   Get,
   Delete,
   UsePipes,
+  Inject,
 } from "@nestjs/common";
+import { type IVisionService } from "./IVisionService";
+import { NormalizationService } from "./normalization.service";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { ApiResponse, type IngestionPayload,
@@ -26,6 +29,8 @@ export class IngestionController {
     private readonly inventoryService: InventoryService,
     private readonly priceHistoryService: PriceHistoryService,
     private readonly whiteboardService: WhiteboardService,
+    @Inject("IVisionService") private readonly visionService: IVisionService,
+    private readonly normalizationService: NormalizationService,
   ) {}
 
   @Get()
@@ -412,6 +417,50 @@ export class IngestionController {
 
       if (error) throw new Error(error.message);
       return data;
+    });
+  }
+
+  @Post("recipe")
+  async extractRecipe(
+    @Body() body: {
+      organizationId: string;
+      imageBase64?: string;
+      rawText?: string;
+    }
+  ): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      const { organizationId, imageBase64, rawText } = body;
+      if (!organizationId) {
+        throw new Error("Missing organizationId");
+      }
+
+      let buffer: Buffer | undefined;
+      let mimeType: string | undefined;
+
+      if (imageBase64) {
+        const match = imageBase64.match(/^data:(.+?);base64,(.+)$/);
+        mimeType = match ? match[1] : "image/jpeg";
+        const rawB64 = match ? match[2] : imageBase64;
+        buffer = Buffer.from(rawB64, "base64");
+      }
+
+      // 1. Extract recipe structured JSON from VisionService
+      const extracted = await this.visionService.extractRecipe(
+        buffer,
+        rawText,
+        mimeType
+      );
+
+      // 2. Pass extracted ingredients through NormalizationService
+      if (extracted && extracted.ingredients && Array.isArray(extracted.ingredients)) {
+        extracted.ingredients = await this.normalizationService.normalizeInvoiceItems(
+          organizationId,
+          null, // No vendor context for recipes
+          extracted.ingredients
+        );
+      }
+
+      return extracted;
     });
   }
 }

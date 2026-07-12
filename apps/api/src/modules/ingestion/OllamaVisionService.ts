@@ -81,6 +81,33 @@ ${rawText ? `Additional extracted text context: ${rawText}` : ""}`;
     return this.queryOllama(prompt, imageBuffer, _mimeType);
   }
 
+  async extractRecipe(imageBuffer?: Buffer, rawText?: string, _mimeType?: string): Promise<any> {
+    const prompt = `You are an expert culinary AI. Extract structured recipe data from the provided document.
+Return a JSON object strictly following this structure:
+{
+  "recipeName": "string",
+  "yieldAmount": 12, // number
+  "yieldUnit": "pieces/servings",
+  "prepTimeMinutes": 15,
+  "ingredients": [
+    {
+      "rawString": "1 cup finely chopped onions",
+      "baseIngredient": "onion",
+      "preparationNote": "finely chopped",
+      "quantity": 1,
+      "unit": "cup"
+    }
+  ],
+  "instructions": [
+    "Step 1 text",
+    "Step 2 text"
+  ]
+}
+${rawText ? `Additional extracted text context: ${rawText}` : ""}`;
+
+    return this.queryOllama(prompt, imageBuffer, _mimeType);
+  }
+
   private async queryOllama(prompt: string, imageBuffer?: Buffer, _mimeType?: string): Promise<any> {
     let host = config.OLLAMA_HOST;
     if (!host.endsWith("/api/generate")) {

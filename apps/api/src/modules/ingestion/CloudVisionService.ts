@@ -104,6 +104,35 @@ const invoiceSchema = {
   required: ["vendorName", "items"]
 };
 
+const recipeExtractionSchema = {
+  type: Type.OBJECT,
+  properties: {
+    recipeName: { type: Type.STRING },
+    yieldAmount: { type: Type.NUMBER },
+    yieldUnit: { type: Type.STRING },
+    prepTimeMinutes: { type: Type.NUMBER },
+    ingredients: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          rawString: { type: Type.STRING, description: "The original complete text line of the ingredient as listed in the recipe, e.g., '1 cup finely chopped onions'" },
+          baseIngredient: { type: Type.STRING, description: "The isolated primary ingredient itself, removing any prep descriptors or quantities. e.g. 'Yellow Onion', 'Unsalted Butter', 'AP Flour'" },
+          preparationNote: { type: Type.STRING, description: "All descriptors relating to prep state, cut type, temp, or divisions. e.g., 'diced, divided', 'melted', 'room temperature', 'sifted'" },
+          quantity: { type: Type.NUMBER, description: "The numerical quantity extracted. Convert fractions to decimals." },
+          unit: { type: Type.STRING, description: "The unit of measurement. e.g., 'cup', 'g', 'oz', 'piece', 'tbsp'" }
+        },
+        required: ["rawString", "baseIngredient"]
+      }
+    },
+    instructions: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING }
+    }
+  },
+  required: ["recipeName", "ingredients", "instructions"]
+};
+
 @Injectable()
 export class CloudVisionService implements IVisionService {
   private readonly ai: GoogleGenAI;
@@ -118,6 +147,58 @@ export class CloudVisionService implements IVisionService {
 
   async processInvoice(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any> {
     return this.processDocument("invoice", imageBuffer, rawText, mimeType);
+  }
+
+  async extractRecipe(imageBuffer?: Buffer, rawText?: string, mimeType?: string): Promise<any> {
+    const inlineDataParts: any[] = [];
+
+    if (imageBuffer) {
+      inlineDataParts.push({
+        inlineData: {
+          mimeType: mimeType || "image/jpeg",
+          data: imageBuffer.toString("base64")
+        }
+      });
+    }
+
+    const genConfig = {
+      responseMimeType: "application/json",
+      responseSchema: recipeExtractionSchema,
+      systemInstruction: `You are an expert culinary data-entry clerk. Extract a single structured recipe from the provided document.
+Your job is to read the recipe text or image and extract a structured JSON payload conforming to the provided schema.
+Pay extremely close attention to the ingredient parsing:
+- 'rawString' must be the exact raw text line of the ingredient.
+- 'baseIngredient' must be the isolated food substance (e.g. 'Yellow Onion', 'Unsalted Butter', 'AP Flour'). Intelligently split out preparation modifiers.
+- 'preparationNote' must contain all preparation and state instructions (e.g., 'diced, divided', 'melted', 'room temp', 'sifted').
+- 'quantity' must be the numeric amount (e.g., '1 1/2' becomes 1.5).
+- 'unit' must be the unit of measurement (e.g. 'cup', 'tbsp', 'g').`
+    };
+
+    let responseText = "";
+
+    if (inlineDataParts.length > 0) {
+      const contents: any[] = [...inlineDataParts];
+      if (rawText) contents.push({ text: rawText });
+      contents.push({ text: "Extract the single recipe data from this document." });
+      
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents,
+        config: genConfig
+      });
+      responseText = response.text || "{}";
+    } else if (rawText) {
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: rawText,
+        config: genConfig
+      });
+      responseText = response.text || "{}";
+    } else {
+      return {};
+    }
+
+    return JSON.parse(responseText);
   }
 
   private async processDocument(

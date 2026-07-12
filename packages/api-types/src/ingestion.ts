@@ -176,3 +176,24 @@ export const OcrInvoiceIngestionPayloadSchema = z
 export type OcrInvoiceIngestionPayload = z.infer<
   typeof OcrInvoiceIngestionPayloadSchema
 >;
+
+export const RecipeExtractionDTOSchema = z.object({
+  recipeName: z.string(),
+  yieldAmount: z.number().nullable().optional(),
+  yieldUnit: z.string().nullable().optional(),
+  prepTimeMinutes: z.number().nullable().optional(),
+  ingredients: z.array(
+    z.object({
+      rawString: z.string(),
+      baseIngredient: z.string(),
+      preparationNote: z.string().nullable().optional(),
+      quantity: z.number().nullable().optional(),
+      unit: z.string().nullable().optional(),
+      itemId: z.string().uuid().nullable().optional(),
+      confidence: z.number().nullable().optional(),
+    })
+  ),
+  instructions: z.array(z.string()),
+});
+
+export type RecipeExtractionDTO = z.infer<typeof RecipeExtractionDTOSchema>;
