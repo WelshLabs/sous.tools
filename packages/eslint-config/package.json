@@ -20,6 +20,8 @@
   },
   "devDependencies": {
     "@soustools/tsconfig": "workspace:*",
-    "eslint-plugin-prettier": "latest"
+    "eslint-plugin-prettier": "latest",
+    "eslint-config-prettier": "latest",
+    "prettier": "latest"
   }
 }
