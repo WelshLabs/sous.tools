@@ -6,7 +6,7 @@ import { useOmnibarContext, type StagedFile } from "@soustools/design-system";
 import { toast } from "sonner";
 
 export function GoogleDriveBrowserWrapper() {
-  const { showGoogleDriveBrowser, setShowGoogleDriveBrowser, setStagedFiles, executeBackgroundCommand } = useOmnibarContext();
+  const { showGoogleDriveBrowser, setShowGoogleDriveBrowser, setStagedFiles } = useOmnibarContext();
 
   const handleDriveSearch = async (query: string, folderId?: string) => {
     try {
@@ -48,9 +48,6 @@ export function GoogleDriveBrowserWrapper() {
         );
         
         toast.success(`Successfully imported ${name} from Google Drive!`);
-        
-        // Trigger background analysis
-        executeBackgroundCommand(`[SYSTEM: User uploaded a file at ${url}. Quickly analyze the image. If it is an invoice/receipt, ask if they want to ingest it. If it's a recipe, ask if they want to save it. Adjust your response based on the image content. Use your gritty line-cook persona.]`);
       } catch (err) {
         console.error(err);
         setStagedFiles((prev: StagedFile[]) =>

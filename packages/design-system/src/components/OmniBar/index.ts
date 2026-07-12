@@ -6,3 +6,5 @@ export { useOmnibarContext } from "./OmniBarContext";
 export { AttachmentFlyout } from "./AttachmentFlyout";
 export type { AttachmentFlyoutProps } from "./AttachmentFlyout";
 export type { StagedFile } from "./OmniBarContext";
+export { VerificationPanel } from "./VerificationPanel";
+export type { VerificationPanelProps } from "./VerificationPanel";

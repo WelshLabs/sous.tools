@@ -79,8 +79,8 @@ export type { SidebarLayoutProps } from "./components/SidebarLayout";
 
 export { useSidebarStore } from "./store/sidebarStore";
 
-export { OmniBar, OmniBarProvider, OmniBarPresentation, FloatingOmniTrigger, useOmnibarContext, AttachmentFlyout } from "./components/OmniBar";
-export type { OmniBarPresentationProps, AttachmentFlyoutProps, StagedFile } from "./components/OmniBar";
+export { OmniBar, OmniBarProvider, OmniBarPresentation, FloatingOmniTrigger, useOmnibarContext, AttachmentFlyout, VerificationPanel } from "./components/OmniBar";
+export type { OmniBarPresentationProps, AttachmentFlyoutProps, StagedFile, VerificationPanelProps } from "./components/OmniBar";
 
 export { GlobalAppBar, GlobalAppBarPresentation } from "./components/GlobalAppBar";
 export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";

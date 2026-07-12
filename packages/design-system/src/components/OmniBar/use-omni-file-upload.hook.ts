@@ -49,9 +49,6 @@ export function useOmniFileUpload() {
         prev.map((f) => (f.id === fileId ? { ...f, url: publicUrl, status: 'complete' } : f))
       );
 
-      // Trigger background analysis
-      executeBackgroundCommand(`[SYSTEM: User uploaded a file at ${publicUrl}. Quickly analyze the image. If it is an invoice/receipt, ask if they want to ingest it. If it's a recipe, ask if they want to save it. Adjust your response based on the image content. Use your gritty line-cook persona.]`);
-
     } catch (error) {
       console.error("Upload failed:", error);
       setStagedFiles((prev) =>
@@ -73,7 +70,7 @@ export function useOmniFileUpload() {
     }
   };
 
-  const handleActionChip = (action: string, file: StagedFile) => {
+  const handleActionChip = (action: "Extract Invoice" | "Parse Recipe", file: StagedFile) => {
     setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
     
     // Convert to a user chat message with layoutId for teleportation
