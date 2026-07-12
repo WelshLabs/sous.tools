@@ -2,6 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { api } from "@soustools/api-client";
 
+export const dynamic = 'force-dynamic';
+
 export default async function IngestionsPage() {
   const { data, error } = await api.GET("/ingestion");
 

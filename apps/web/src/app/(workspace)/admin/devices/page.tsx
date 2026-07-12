@@ -2,6 +2,8 @@ import React from "react";
 import { config } from "@soustools/config";
 import { DevicesClientWrapper } from "./devices-client-wrapper";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * DevicesPage mounts the signage physical displays pairing and status manager.
  */

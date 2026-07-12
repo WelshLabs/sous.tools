@@ -4,6 +4,8 @@ import React, { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { PrimaryLogo, useOmnibarContext } from "@soustools/design-system";
 
+export const dynamic = 'force-dynamic';
+
 function ShareTargetHandler() {
   const searchParams = useSearchParams();
   const { setInputText, setIsOpen } = useOmnibarContext();

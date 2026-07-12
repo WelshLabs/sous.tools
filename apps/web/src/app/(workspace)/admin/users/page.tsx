@@ -1,6 +1,8 @@
 import React from "react";
 import { TwoToneHeader } from "@soustools/design-system";
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminUsersPage() {
   return (
     <div className="p-8 max-w-6xl mx-auto w-full h-full">
