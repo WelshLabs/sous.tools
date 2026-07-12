@@ -16,6 +16,10 @@ import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
 import { GoogleDriveService } from "./google-drive.service";
 
+function getOrgId(orgId?: string): string {
+  return !orgId || orgId === "default" ? "d0000000-0000-0000-0000-000000000000" : orgId;
+}
+
 @Controller("integrations")
 export class IntegrationsController {
   constructor(
@@ -29,7 +33,7 @@ export class IntegrationsController {
     @Query("orgId") orgId: string,
     @Res() res: Response,
   ): void {
-    const url = this.service.getOAuthUrl(provider, orgId);
+    const url = this.service.getOAuthUrl(provider, getOrgId(orgId));
     res.redirect(url);
   }
 
@@ -41,7 +45,7 @@ export class IntegrationsController {
     @Res() res: Response,
   ): Promise<void> {
     try {
-      const orgId = state || "d0000000-0000-0000-0000-000000000000";
+      const orgId = getOrgId(state);
       if (provider === "google") {
         await this.service.handleGoogleCallback(code, orgId);
       } else if (provider === "square") {
@@ -65,8 +69,7 @@ export class IntegrationsController {
     @Query("orgId") orgId?: string,
   ): Promise<ApiResponse<IntegrationStatus[]>> {
     return runControllerAction(async () => {
-      const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
-      return this.service.getIntegrationStatus(targetOrgId);
+      return this.service.getIntegrationStatus(getOrgId(orgId));
     });
   }
 
@@ -76,24 +79,21 @@ export class IntegrationsController {
     @Query("orgId") orgId?: string,
   ): Promise<ApiResponse<void>> {
     return runControllerAction(async () => {
-      const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
-      await this.service.disconnect(provider, targetOrgId);
+      await this.service.disconnect(provider, getOrgId(orgId));
     });
   }
 
   @Post("square/sync")
   async syncSquare(@Query("orgId") orgId?: string): Promise<ApiResponse<void>> {
     return runControllerAction(async () => {
-      const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
-      await this.service.syncSquareCatalog(targetOrgId);
+      await this.service.syncSquareCatalog(getOrgId(orgId));
     });
   }
 
   @Post("square/seed")
   async seedSquare(@Query("orgId") orgId?: string): Promise<ApiResponse<void>> {
     return runControllerAction(async () => {
-      const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
-      await this.service.seedSquareCatalog(targetOrgId);
+      await this.service.seedSquareCatalog(getOrgId(orgId));
     });
   }
 
@@ -103,8 +103,7 @@ export class IntegrationsController {
     @Query("folderId") folderId?: string,
     @Query("orgId") orgId?: string,
   ) {
-    const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
-    return this.driveService.listFiles(targetOrgId, query, folderId);
+    return this.driveService.listFiles(getOrgId(orgId), query, folderId);
   }
 
   @Post("google/import-file")
@@ -112,9 +111,8 @@ export class IntegrationsController {
     @Body() body: { fileId: string; orgId?: string },
   ) {
     return runControllerAction(async () => {
-      const targetOrgId = body.orgId || "d0000000-0000-0000-0000-000000000000";
       const reviewId = randomUUID();
-      const result = await this.driveService.processDriveFile(body.fileId, targetOrgId, reviewId);
+      const result = await this.driveService.processDriveFile(body.fileId, getOrgId(body.orgId), reviewId);
       if (!result.sourceDocumentUrl) {
         throw new Error("Failed to process Google Drive file");
       }
@@ -128,8 +126,7 @@ export class IntegrationsController {
   @Post("checkout")
   async checkout(@Body() body: { orgId: string; orderData: any }) {
     return runControllerAction(async () => {
-      const orgId = body.orgId || "d0000000-0000-0000-0000-000000000000";
-      return this.service.checkout(orgId, body.orderData);
+      return this.service.checkout(getOrgId(body.orgId), body.orderData);
     });
   }
 }

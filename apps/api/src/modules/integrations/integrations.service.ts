@@ -16,7 +16,7 @@ export class IntegrationsService {
     return this.squareDriver.createOrder(orgId, orderData);
   }
   getOAuthUrl(provider: string, orgId?: string): string {
-    const state = orgId || "d0000000-0000-0000-0000-000000000000";
+    const state = !orgId || orgId === "default" ? "d0000000-0000-0000-0000-000000000000" : orgId;
     if (provider === "square") {
       const baseUrl = "https://connect.squareup.com";
       const scope =
