@@ -22,7 +22,12 @@ const unifiedExtractionSchema = {
           category: { type: Type.STRING, enum: ["INGREDIENT", "PACKAGING", "CLEANING", "SMALLWARES", "FEE", "OTHER"] },
           amount: { type: Type.NUMBER, description: "The quantity or amount of this item." },
           unit: { type: Type.STRING, description: "The unit of measurement (e.g., LBS, CASE, CUP, G, EACH)." },
-          price: { type: Type.NUMBER, description: "The unit price or line price if applicable. Default to 0 if not present (like in recipes)." }
+          price: { type: Type.NUMBER, description: "The unit price or line price if applicable. Default to 0 if not present (like in recipes)." },
+          boundingBox: {
+            type: Type.ARRAY,
+            items: { type: Type.NUMBER },
+            description: "Normalized bounding box coordinates [ymin, xmin, ymax, xmax] between 0.0 and 1.0 representing where this item was found on the document image."
+          }
         },
         required: ["rawName", "suggestedInternalName", "category", "amount", "unit", "price"]
       }
@@ -111,6 +116,7 @@ Perform the following for the 'lineItems' array:
    - 'amount': The numerical quantity/amount (e.g. 2 for 2.0, 1.5 for 1-1/2).
    - 'unit': The unit of measurement (e.g., LBS, CASE, CUP, G, EACH).
    - 'price': For invoices, extract the unit price or line price. For recipes, set to 0.
+   - 'boundingBox': Detect the visual location of the item line text on the document. Return [ymin, xmin, ymax, xmax] as values from 0.0 to 1.0 representing percentages of the overall image height and width.
 
 CRITICAL: Extract ALL other document-level fields (e.g., vendor name, vendor address/phone/email, invoice/PO numbers, recipe yields/servings, prep/cook times, past due balances, dates, notes, author) into the open-ended 'extractedMetadata' object. Capture as much detail as possible. Do not put line items inside extractedMetadata.`
     };

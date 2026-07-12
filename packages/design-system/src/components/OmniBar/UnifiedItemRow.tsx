@@ -1,5 +1,6 @@
+/* eslint-disable max-lines */
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Check, ChevronDown, Plus, Loader2 } from "lucide-react";
 import { api } from "@soustools/api-client";
 
@@ -13,6 +14,8 @@ export interface UnifiedItemRowProps {
   onConfirmAlias?: (rawString: string, masterId: string) => void;
   onUpdateItem?: (index: number, updates: Partial<UnifiedLineItem>) => void;
   onItemCreated?: (newItem: { id: string; name: string }) => void;
+  isHovered?: boolean;
+  onHoverChange?: (hovered: boolean) => void;
 }
 
 export function UnifiedItemRow({
@@ -23,14 +26,44 @@ export function UnifiedItemRow({
   onConfirmAlias,
   onUpdateItem,
   onItemCreated,
+  isHovered = false,
+  onHoverChange,
 }: UnifiedItemRowProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [localItems, setLocalItems] = useState<Array<{ id: string; name: string }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  
   const isExact = item.confidence === 1.0;
-  const currentSelected = masterIngredients.find((o) => o.id === item.itemId);
 
+  // Local fetch to ensure the items are fully loaded inside the row
+  useEffect(() => {
+    const fetchLocalItems = async () => {
+      try {
+        const { data, error } = await api.GET("/items", { params: { query: { search: "" } } });
+        if (!error && data && data.data) {
+          setLocalItems(data.data as Array<{ id: string; name: string }>);
+        }
+      } catch (err) {
+        console.error("Failed to load local items in UnifiedItemRow", err);
+      }
+    };
+    fetchLocalItems();
+  }, []);
+
+  // Merge parent-drilled masterIngredients and localItems
+  const mergedIngredients = useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>();
+    masterIngredients.forEach((i) => map.set(i.id, i));
+    localItems.forEach((i) => map.set(i.id, i));
+    return Array.from(map.values());
+  }, [masterIngredients, localItems]);
+
+  const currentSelected = mergedIngredients.find((o) => o.id === item.itemId);
+  const selectedSuggestion = item.suggestions?.find((s) => s.itemId === item.itemId);
+
+  // Auto-select logic for high confidence matches
   useEffect(() => {
     if (!item.itemId && !item.isNonInventoryExpense && item.suggestions?.length) {
       const top = item.suggestions[0];
@@ -49,7 +82,7 @@ export function UnifiedItemRow({
   }, []);
 
   const hasHigh = item.suggestions?.some((s) => s.similarity >= 0.90);
-  const filtered = masterIngredients.filter((opt) => 
+  const filtered = mergedIngredients.filter((opt) => 
     opt.name.toLowerCase().includes(search.toLowerCase()) && 
     !item.suggestions?.some((s) => s.itemId === opt.id)
   );
@@ -85,7 +118,15 @@ export function UnifiedItemRow({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 dark:bg-black/20 border border-white/10 dark:border-zinc-800/80 text-left">
+    <div 
+      onMouseEnter={() => onHoverChange?.(true)}
+      onMouseLeave={() => onHoverChange?.(false)}
+      className={`flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-150 ${
+        isHovered
+          ? "bg-cyan-500/5 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
+          : "bg-white/5 dark:bg-black/20 border-white/10 dark:border-zinc-800/80"
+      }`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col flex-1 min-w-[200px]">
           <span className="font-semibold text-sm text-foreground">{item.rawName}</span>
@@ -160,7 +201,7 @@ export function UnifiedItemRow({
                     <div className="px-3 py-2 text-zinc-500 italic">No master items found</div>
                   )}
 
-                  {search.trim() !== "" && !masterIngredients.some((o) => o.name.toLowerCase() === search.trim().toLowerCase()) && (
+                  {search.trim() !== "" && !mergedIngredients.some((o) => o.name.toLowerCase() === search.trim().toLowerCase()) && (
                     <div
                       onClick={() => handleCreate(search.trim())}
                       className="px-3 py-2 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white font-semibold cursor-pointer border-t border-slate-100 dark:border-zinc-900 flex items-center gap-1.5"
@@ -173,6 +214,11 @@ export function UnifiedItemRow({
               </div>
             )}
           </div>
+          {item.itemId && !item.isNonInventoryExpense && selectedSuggestion && (
+            <div className={`flex items-center justify-center px-1.5 py-1 rounded border flex-shrink-0 ${getB(selectedSuggestion.matchColor)}`} title={`${Math.round(selectedSuggestion.similarity * 100)}% Match`}>
+              <span className="text-[9px] font-mono font-semibold">{Math.round(selectedSuggestion.similarity * 100)}%</span>
+            </div>
+          )}
           {isExact && item.itemId && !item.isNonInventoryExpense && (
             <div className="flex items-center justify-center bg-emerald-500/10 text-emerald-500 p-1.5 rounded-lg border border-emerald-500/20">
               <Check className="w-3.5 h-3.5" />

@@ -1,5 +1,6 @@
 "use client";
-import React, { useMemo } from "react";
+
+import React, { useMemo, useState } from "react";
 import { Receipt, BookOpen } from "lucide-react";
 import { UnifiedItemRow } from "./UnifiedItemRow";
 import { DocumentViewer } from "./DocumentViewer";
@@ -15,6 +16,7 @@ export interface UnifiedLineItem {
   itemId?: string | null;
   confidence?: number | null;
   isNonInventoryExpense?: boolean;
+  boundingBox?: number[] | null;
   suggestions?: Array<{
     itemId: string;
     name: string;
@@ -70,6 +72,8 @@ export function UnifiedReviewPanel({
   const isInvoice = documentType === "INVOICE";
   const sourceUrl = extractedMetadata?.sourceUrl as string | undefined;
 
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const isSaveDisabled = useMemo(() => {
     if (!lineItems || lineItems.length === 0) return true;
     return lineItems.some((item) => !item.itemId && !item.isNonInventoryExpense);
@@ -111,7 +115,7 @@ export function UnifiedReviewPanel({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full text-left max-h-[80vh] overflow-y-auto pr-1">
       {/* Left Pane: Zoomable Document Viewer */}
-      <DocumentViewer sourceUrl={sourceUrl} />
+      <DocumentViewer sourceUrl={sourceUrl} lineItems={lineItems} hoveredIndex={hoveredIndex} />
 
       {/* Right Pane: Mapping Rows and Details */}
       <div className="flex flex-col gap-4">
@@ -143,6 +147,8 @@ export function UnifiedReviewPanel({
                   onConfirmAlias={onConfirmAlias}
                   onUpdateItem={onUpdateItem}
                   onItemCreated={onItemCreated}
+                  isHovered={hoveredIndex === index}
+                  onHoverChange={(hovered) => setHoveredIndex(hovered ? index : null)}
                 />
               ))
             ) : (

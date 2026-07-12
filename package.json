@@ -1,22 +1,23 @@
 {
-  "name": "sous",
+  "name": "sous.tools",
   "private": true,
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "test": "turbo test",
+    "test": "INFISICAL_MOCK=true turbo test",
     "knip": "knip",
-    "db:start": "docker compose -f supabase/docker/docker-compose.yml up -d",
-    "db:stop": "docker compose -f supabase/docker/docker-compose.yml down",
-    "db:restart": "pnpm db:stop && pnpm db:start",
-    "db:generate": "pnpm -F supabase supabase:generate",
-    "db:push": "pnpm -F supabase supabase:push",
-    "db:reset": "pnpm -F supabase supabase:reset",
-    "db:seed": "pnpm -F supabase supabase:seed",
-    "db:studio": "pnpm -F supabase supabase:studio",
-    "prepare": "husky"
+    "prepare": "husky",
+    "secrets:sync": "pnpm --filter @soustools/config secrets:sync",
+    "audit:secrets": "npx tsx scripts/audit-secrets.ts",
+    "clean:all": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist packages/*/dist .turbo apps/*/.turbo packages/*/.turbo && pnpm install",
+    "clean:dockerimages": "sudo bash -c 'rm -rf node_modules apps/*/node_modules packages/*/node_modules .pnpm-store'",
+    "push:all": "git push origin HEAD:main HEAD:staging",
+    "build:packages": "pnpm --filter './packages/**' build",
+    "prompt:setup": "cat .agents/setup-prompt.txt | xclip -selection clipboard && echo '✅ Setup prompt copied to clipboard!'",
+    "prompt:teardown": "cat .agents/teardown-prompt.txt | xclip -selection clipboard && echo '✅ Teardown prompt copied!'"
   },
   "devDependencies": {
     "@eslint/js": "^9.2.0",
@@ -29,15 +30,16 @@
     "husky": "^9.0.11",
     "knip": "^5.12.0",
     "lint-staged": "^15.2.2",
+    "repomix": "^1.16.0",
     "prettier": "^3.2.5",
     "turbo": "latest",
     "typescript": "^5.4.5",
     "typescript-eslint": "^7.8.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.22.0"
   },
-  "packageManager": "pnpm@9.1.0",
+  "packageManager": "pnpm@11.5.2",
   "dependencies": {
     "eslint-plugin-react": "^7.34.1"
   },

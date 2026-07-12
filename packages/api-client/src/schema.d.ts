@@ -1433,6 +1433,8 @@ export interface components {
             price: number;
             itemId: string | null;
             confidence: number | null;
+            /** @description Normalized bounding box coordinates [ymin, xmin, ymax, xmax] between 0.0 and 1.0 */
+            boundingBox?: number[] | null;
             suggestions: components["schemas"]["IngestionSuggestionDto"][];
         };
         PolymorphicExtractionResponseDto: {

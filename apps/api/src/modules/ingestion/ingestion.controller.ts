@@ -56,6 +56,9 @@ export class IngestionLineItemDto {
   @ApiProperty({ type: Number, nullable: true })
   confidence?: number | null;
 
+  @ApiProperty({ type: [Number], nullable: true, required: false, description: "Normalized bounding box coordinates [ymin, xmin, ymax, xmax] between 0.0 and 1.0" })
+  boundingBox?: number[] | null;
+
   @ApiProperty({ type: [IngestionSuggestionDto] })
   suggestions!: IngestionSuggestionDto[];
 }

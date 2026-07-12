@@ -5,9 +5,8 @@ import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, X, UploadCloud } from "lucide-react";
 import { useOmniFileUpload } from "./use-omni-file-upload.hook";
-import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
+import { useOmnibarContext } from "./OmniBarContext";
 import { AttachmentFlyout } from "./AttachmentFlyout";
-import { VerificationPanel } from "./VerificationPanel";
 
 export interface OmniInputPillProps {
   inputText: string;
@@ -20,7 +19,6 @@ export interface OmniInputPillProps {
   onToggle?: () => void;
   showClose?: boolean;
   isDragging?: boolean;
-  stagedFiles?: StagedFile[];
 }
 
 export function OmniInputPill({
@@ -33,15 +31,14 @@ export function OmniInputPill({
   onMicClick,
   onToggle,
   showClose = true,
-  isDragging = false,
-  stagedFiles = []
+  isDragging = false
 }: OmniInputPillProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
 
-  const { onFileSelect, handleDrop, handleActionChip, handleFileUpload } = useOmniFileUpload();
-  const { setShowGoogleDriveBrowser, setStagedFiles } = useOmnibarContext();
+  const { onFileSelect, handleDrop, handleFileUpload } = useOmniFileUpload();
+  const { setShowGoogleDriveBrowser } = useOmnibarContext();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -76,7 +73,7 @@ export function OmniInputPill({
         droplet: { width: "380px", minHeight: "300px", borderRadius: "24px", backgroundColor: "var(--color-card)", borderStyle: "solid" },
       }}
       initial="idle"
-      animate={isDragging ? "dragging" : (stagedFiles.length > 0 ? "droplet" : "idle")}
+      animate={isDragging ? "dragging" : "idle"}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       onDrop={handleDrop}
       className="border border-[var(--color-border)] p-2 pointer-events-auto flex flex-col justify-center overflow-hidden relative mx-auto max-w-[92vw] sm:max-w-full"
@@ -88,7 +85,7 @@ export function OmniInputPill({
       <input type="file" ref={fileInputRef} onChange={onFileSelect} className="hidden" accept="image/*,application/pdf" />
       
       <AnimatePresence>
-        {isDragging && stagedFiles.length === 0 && (
+        {isDragging && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -101,15 +98,8 @@ export function OmniInputPill({
         )}
       </AnimatePresence>
 
-      <div className={`w-full flex flex-col gap-4 px-2 z-10 ${isDragging && stagedFiles.length === 0 ? 'opacity-0' : 'opacity-100'}`}>
-        {stagedFiles.length > 0 && !isDragging ? (
-          <VerificationPanel
-            stagedFiles={stagedFiles}
-            onRemoveFile={(id) => setStagedFiles((prev) => prev.filter((f) => f.id !== id))}
-            onAction={handleActionChip}
-          />
-        ) : (
-          <div className="flex items-center gap-4">
+      <div className={`w-full flex flex-col gap-4 px-2 z-10 ${isDragging ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="flex items-center gap-4">
             <button onClick={onMicClick} type="button" className="focus:outline-none flex-shrink-0 transition-transform hover:scale-110 ml-2" disabled={isProcessing}>
               <Mic className={`w-5 h-5 ${isListening ? 'text-primary' : 'text-muted-foreground'}`} />
             </button>
@@ -158,7 +148,6 @@ export function OmniInputPill({
               </button>
             )}
           </div>
-        )}
       </div>
       <AnimatePresence>
         {errorMessage && (

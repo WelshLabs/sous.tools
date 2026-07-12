@@ -9,7 +9,12 @@ export function useOmniFileUpload() {
   const handleFileUpload = async (file: File) => {
     const fileId = crypto.randomUUID();
     const newStagedFile: StagedFile = { id: fileId, url: null, status: 'complete', file };
+    
+    // Immediately stage file
     setStagedFiles((prev) => [...prev, newStagedFile]);
+
+    // Immediately trigger unified extraction
+    await handleAutoExtract(newStagedFile);
   };
 
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,14 +30,12 @@ export function useOmniFileUpload() {
     }
   };
 
-  const handleParseRecipe = async (file: StagedFile) => {
-    setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
-
+  const handleAutoExtract = async (file: StagedFile) => {
     const imageUrl = file.file ? URL.createObjectURL(file.file) : file.url;
     const userMsg: OmniMessage = {
       id: file.id,
       role: 'user',
-      content: `Parse Recipe: ${imageUrl || "Image"}`,
+      content: `Extract Document: ${imageUrl || "Image"}`,
       timestamp: new Date()
     };
 
@@ -40,12 +43,14 @@ export function useOmniFileUpload() {
     const pendingMsg: OmniMessage = {
       id: loadingMessageId,
       role: 'agent_step',
-      content: "Yes Chef, parsing recipe...",
+      content: "Analyzing document...",
       isLoading: true,
       timestamp: new Date()
     };
 
+    // Show loading state right away and remove staged file from input queue
     setChatHistory([...chatHistory, userMsg, pendingMsg]);
+    setStagedFiles([]);
 
     try {
       let publicUrl: string | undefined;
@@ -55,75 +60,7 @@ export function useOmniFileUpload() {
 
       const orgId = (contextPayload.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
 
-      const { data, error } = await api.POST("/ingestion/recipe", {
-        body: {
-          organizationId: orgId,
-          sourceUrl: publicUrl,
-          sourceName: file.file?.name,
-        },
-      });
-
-      if (error) throw new Error("Failed to parse recipe");
-
-      const recipeData = (data.data || data) as { ingredients?: unknown[]; recipeName?: string; extractedMetadata?: Record<string, unknown> };
-      if (recipeData) {
-        if (!recipeData.extractedMetadata) recipeData.extractedMetadata = {};
-        recipeData.extractedMetadata.sourceUrl = imageUrl;
-      }
-
-      const recipeMsg: OmniMessage = {
-        id: loadingMessageId,
-        role: 'model',
-        content: "Heard, Chef! I've extracted the recipe details. Please verify the ingredient mappings below:",
-        recipeData,
-        timestamp: new Date()
-      };
-
-      setChatHistory([...chatHistory, userMsg, recipeMsg]);
-    } catch (err) {
-      console.error(err);
-      // Reset staged file gracefully
-      setStagedFiles((prev) => [...prev, file]);
-      const errorMsg: OmniMessage = {
-        id: loadingMessageId,
-        role: 'model',
-        content: "Sorry Chef, I encountered an error while parsing the recipe.",
-        timestamp: new Date()
-      };
-      setChatHistory([...chatHistory, userMsg, errorMsg]);
-    }
-  };
-
-  const handleExtractInvoice = async (file: StagedFile) => {
-    setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
-
-    const imageUrl = file.file ? URL.createObjectURL(file.file) : file.url;
-    const userMsg: OmniMessage = {
-      id: file.id,
-      role: 'user',
-      content: `Extract Invoice: ${imageUrl || "Image"}`,
-      timestamp: new Date()
-    };
-
-    const loadingMessageId = crypto.randomUUID();
-    const pendingMsg: OmniMessage = {
-      id: loadingMessageId,
-      role: 'agent_step',
-      content: "Extracting invoice...",
-      isLoading: true,
-      timestamp: new Date()
-    };
-
-    setChatHistory([...chatHistory, userMsg, pendingMsg]);
-
-    try {
-      let publicUrl: string | undefined;
-      if (file.file) {
-        publicUrl = await uploadFile(file.file);
-      }
-
-      const orgId = (contextPayload.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
-
+      // Call the unified extraction endpoint (which is polymorphic)
       const { data, error } = await api.POST("/ingestion/invoice", {
         body: {
           organizationId: orgId,
@@ -132,46 +69,43 @@ export function useOmniFileUpload() {
         },
       });
 
-      if (error) throw new Error("Failed to extract invoice");
+      if (error) throw new Error("Failed to extract document");
 
-      const extractedData = (data.data || data) as { items?: unknown[]; vendorName?: string; extractedMetadata?: Record<string, unknown> };
-      if (extractedData) {
-        if (!extractedData.extractedMetadata) extractedData.extractedMetadata = {};
+      const extractedData = (data.data || data) as {
+        documentType?: string;
+        lineItems?: unknown[];
+        extractedMetadata?: Record<string, unknown>;
+      };
+      
+      if (extractedData && extractedData.extractedMetadata) {
         extractedData.extractedMetadata.sourceUrl = imageUrl;
       }
 
+      const isRecipe = extractedData?.documentType === "RECIPE";
+      
       const successMsg: OmniMessage = {
         id: loadingMessageId,
         role: 'model',
-        content: `Invoice extracted successfully! Found ${extractedData?.items?.length || 0} items from ${extractedData?.vendorName || "Vendor"}. Please verify the ingredient mappings below:`,
-        invoiceData: extractedData,
+        content: isRecipe 
+          ? "Heard, Chef! I've extracted the recipe details. Please verify the ingredient mappings below:"
+          : `Invoice extracted successfully! Found ${extractedData?.lineItems?.length || 0} items. Please verify the mappings below:`,
+        invoiceData: !isRecipe ? extractedData : undefined,
+        recipeData: isRecipe ? extractedData : undefined,
         timestamp: new Date()
       };
 
       setChatHistory([...chatHistory, userMsg, successMsg]);
     } catch (err) {
       console.error(err);
-      // Reset staged file gracefully
-      setStagedFiles((prev) => [...prev, file]);
       const errorMsg: OmniMessage = {
         id: loadingMessageId,
         role: 'model',
-        content: "Sorry, I encountered an error while extracting the invoice.",
+        content: "Sorry Chef, I encountered an error while analyzing the document.",
         timestamp: new Date()
       };
       setChatHistory([...chatHistory, userMsg, errorMsg]);
     }
   };
 
-  const handleActionChip = (action: "Extract Invoice" | "Parse Recipe", file: StagedFile) => {
-    if (action === "Parse Recipe") {
-      handleParseRecipe(file);
-      return;
-    } else if (action === "Extract Invoice") {
-      handleExtractInvoice(file);
-      return;
-    }
-  };
-
-  return { onFileSelect, handleDrop, handleActionChip, handleFileUpload };
+  return { onFileSelect, handleDrop, handleFileUpload };
 }

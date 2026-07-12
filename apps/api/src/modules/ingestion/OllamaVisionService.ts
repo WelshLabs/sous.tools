@@ -33,7 +33,8 @@ Return a JSON object conforming to the following structure:
       "category": "INGREDIENT" | "PACKAGING" | "CLEANING" | "SMALLWARES" | "FEE" | "OTHER",
       "amount": 2.5, // number
       "unit": "string (e.g. lbs, cup, g, each)",
-      "price": 10.50 // price per unit or line price, default to 0
+      "price": 10.50, // price per unit or line price, default to 0
+      "boundingBox": [0.1, 0.1, 0.2, 0.9] // optional [ymin, xmin, ymax, xmax] coordinates as 0.0-1.0 percentages
     }
   ],
   "extractedMetadata": {
