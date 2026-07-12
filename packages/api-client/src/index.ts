@@ -1,6 +1,6 @@
 import createClient from "openapi-fetch";
 import { io, type Socket } from "socket.io-client";
-import type { paths } from "./schema";
+import type { paths } from "./schema.js";
 import { config } from "@soustools/config";
 
 export const createApiClient = (options: { baseUrl?: string } = {}) => {
