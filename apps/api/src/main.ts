@@ -48,8 +48,10 @@ async function bootstrap(): Promise<void> {
     .setVersion("1.0")
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  fs.writeFileSync("openapi.json", JSON.stringify(document));
-
+  if (process.env.NODE_ENV !== 'production') {
+    fs.writeFileSync('openapi.json', JSON.stringify(document));
+  }
+  
   const port = config.PORT;
   await app.listen(config.PORT, "0.0.0.0");
   console.log(`Application is running on: http://0.0.0.0:${port}`);
