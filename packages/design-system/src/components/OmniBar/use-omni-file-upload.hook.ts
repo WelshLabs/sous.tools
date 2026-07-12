@@ -22,7 +22,14 @@ export function useOmniFileUpload() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to retrieve signed upload URL from API");
+        let details = "";
+        try {
+          const body = await res.json();
+          details = body.message || body.error || JSON.stringify(body);
+        } catch {
+          details = `Status ${res.status}`;
+        }
+        throw new Error(`Failed to retrieve signed upload URL from API: ${details}`);
       }
 
       const payload = await res.json();
