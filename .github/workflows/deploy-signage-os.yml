@@ -35,9 +35,10 @@ jobs:
           echo "ENABLE_SSH=1" >> config
           echo "FIRST_USER_NAME=sous" >> config
           echo "FIRST_USER_PASS=bootstrap123" >> config
-
+          echo "CONTINUE=1" >> config
+          
           # 2. Recreate the directories we explicitly purged in the pre-checkout step
-          mkdir -p deploy work
+          # mkdir -p deploy work
 
           # 3. Execute the Dockerized build
           sudo ./build-docker.sh
