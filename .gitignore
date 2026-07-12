@@ -53,7 +53,7 @@ ssh-key.key
 ssh-key.pub
 
 # Repomix Context Files (Massive Markdown files)
-.context/
+# .context/
 
 # Playwright Test Results & Error Traces
 apps/web/test-results/
