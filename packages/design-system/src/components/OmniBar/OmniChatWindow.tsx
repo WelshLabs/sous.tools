@@ -1,9 +1,10 @@
-"use client";
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { type OmniMessage } from "@soustools/api-types";
+import { RecipeBentoBox } from "./RecipeBentoBox";
+import { useOmnibarContext } from "./OmniBarContext";
+import { toast } from "sonner";
 
 export interface OmniChatWindowProps {
   chatHistory: OmniMessage[];
@@ -11,6 +12,67 @@ export interface OmniChatWindowProps {
 }
 
 export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) {
+  const { setChatHistory, contextPayload } = useOmnibarContext();
+  const [masterIngredients, setMasterIngredients] = useState<Array<{ id: string; name: string }>>([]);
+
+  const organizationId = (contextPayload?.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await fetch("/api/items");
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data) {
+            setMasterIngredients(payload.data.map((d: { id: string; name: string }) => ({ id: d.id, name: d.name })));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load items in OmniChatWindow", err);
+      }
+    };
+    fetchItems();
+  }, []);
+
+  const handleConfirmAlias = async (rawName: string, itemId: string, orgId: string) => {
+    try {
+      const res = await fetch("/api/ingestion/alias", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId: orgId,
+          vendorName: "Internal Ingredients", // No vendor context for recipes
+          vendorItemString: rawName,
+          masterIngredientId: itemId,
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to save alias mapping");
+      toast.success(`Saved alias mapping for "${rawName}"`);
+    } catch (err) {
+      toast.error("Failed to save alias mapping");
+      console.error(err);
+    }
+  };
+
+  const handleUpdateIngredient = (
+    msgIndex: number,
+    ingIndex: number,
+    updates: Record<string, unknown>
+  ) => {
+    const updatedHistory = [...chatHistory];
+    const msg = { ...updatedHistory[msgIndex] };
+    if (msg.recipeData) {
+      const recipe = { ...msg.recipeData };
+      const ingredients = [...(recipe.ingredients || [])];
+      ingredients[ingIndex] = { ...ingredients[ingIndex], ...updates };
+      recipe.ingredients = ingredients;
+      msg.recipeData = recipe;
+      updatedHistory[msgIndex] = msg;
+      setChatHistory(updatedHistory);
+    }
+  };
+
   if (chatHistory.length === 0) return null;
 
   return (
@@ -40,12 +102,21 @@ export function OmniChatWindow({ chatHistory, scrollRef }: OmniChatWindowProps) 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               key={msg.id || index}
-              className={`flex flex-col max-w-[85%] ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
+              className={`flex flex-col ${msg.recipeData ? 'w-full max-w-full' : 'max-w-[85%]'} ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
             >
               {isAgentStep ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground opacity-70 font-mono bg-card rounded-xl px-3 py-1.5 border border-border">
                   {msg.isLoading !== false && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
                   {msg.content}
+                </div>
+              ) : msg.recipeData ? (
+                <div className="w-full p-2">
+                  <RecipeBentoBox
+                    recipe={msg.recipeData}
+                    masterIngredients={masterIngredients}
+                    onConfirmAlias={(rawString, masterId) => handleConfirmAlias(rawString, masterId, organizationId)}
+                    onUpdateIngredient={(ingIndex, updates) => handleUpdateIngredient(index, ingIndex, updates)}
+                  />
                 </div>
               ) : (
                 <div className={`px-4 py-2 rounded-2xl flex flex-col gap-1.5 ${

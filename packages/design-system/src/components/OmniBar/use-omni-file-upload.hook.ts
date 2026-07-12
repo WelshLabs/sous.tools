@@ -3,7 +3,7 @@ import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
 import { type OmniMessage } from "@soustools/api-types";
 
 export function useOmniFileUpload() {
-  const { setStagedFiles, executeBackgroundCommand, chatHistory, setChatHistory } = useOmnibarContext();
+  const { setStagedFiles, executeBackgroundCommand, chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
 
   const handleFileUpload = async (file: File) => {
     const fileId = crypto.randomUUID();
@@ -70,7 +70,81 @@ export function useOmniFileUpload() {
     }
   };
 
+  const handleParseRecipe = async (file: StagedFile) => {
+    setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
+
+    const userMsg: OmniMessage = {
+      id: file.id,
+      role: 'user',
+      content: `Parse Recipe: ${file.url || file.file?.name || "Image"}`,
+      timestamp: new Date()
+    };
+
+    const loadingMessageId = crypto.randomUUID();
+    const pendingMsg: OmniMessage = {
+      id: loadingMessageId,
+      role: 'agent_step',
+      content: "Yes Chef, parsing recipe...",
+      isLoading: true,
+      timestamp: new Date()
+    };
+
+    setChatHistory([...chatHistory, userMsg, pendingMsg]);
+
+    try {
+      let base64: string | undefined;
+      if (file.file) {
+        base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file.file!);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (err) => reject(err);
+        });
+      }
+
+      const orgId = contextPayload.organizationId || "d0000000-0000-0000-0000-000000000000";
+
+      const res = await fetch("/api/ingestion/recipe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId: orgId,
+          imageBase64: base64,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to parse recipe");
+
+      const payload = await res.json();
+      const recipeData = payload.data || payload;
+
+      const recipeMsg: OmniMessage = {
+        id: loadingMessageId,
+        role: 'model',
+        content: "Heard, Chef! I've extracted the recipe details. Please verify the ingredient mappings below:",
+        recipeData,
+        timestamp: new Date()
+      };
+
+      setChatHistory([...chatHistory, userMsg, recipeMsg]);
+    } catch (err) {
+      console.error(err);
+      const errorMsg: OmniMessage = {
+        id: loadingMessageId,
+        role: 'model',
+        content: "Sorry Chef, I encountered an error while parsing the recipe.",
+        timestamp: new Date()
+      };
+      setChatHistory([...chatHistory, userMsg, errorMsg]);
+    }
+  };
+
   const handleActionChip = (action: "Extract Invoice" | "Parse Recipe", file: StagedFile) => {
+    if (action === "Parse Recipe") {
+      handleParseRecipe(file);
+      return;
+    }
+
     setStagedFiles((prev) => prev.filter(f => f.id !== file.id));
     
     // Convert to a user chat message with layoutId for teleportation
