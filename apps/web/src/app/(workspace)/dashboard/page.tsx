@@ -11,6 +11,8 @@ import {
 import type { RevenueData, TicketTimeData } from "@soustools/design-system";
 import { Activity, CircleDollarSign, Clock, Users } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 interface DashboardStats {
   revenue: RevenueData[];
   ticketTimes: TicketTimeData[];

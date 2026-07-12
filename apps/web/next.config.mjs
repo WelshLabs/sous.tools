@@ -15,7 +15,9 @@ const nextConfig = {
     "@soustools/domain-recipes", 
     "@soustools/domain-signage",
     "@soustools/domain-inventory",
-    "@soustools/domain-settings"
+    "@soustools/domain-settings",
+    '@soustools/config',
+    '@soustools/api-client'
   ],
   experimental: {
     optimizePackageImports: ["lucide-react"],
