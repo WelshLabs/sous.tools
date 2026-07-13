@@ -178,8 +178,11 @@ async function run() {
     shell: process.platform === "win32",
   });
 
-  child.on("close", (code) => {
-    process.exit(code ?? 1);
+  child.on("close", (code, signal) => {
+    if (signal) {
+      console.error(`\n[FATAL CRASH] Child process violently killed by OS signal: ${signal}`);
+    }
+    process.exit(code !== null ? code : 1);
   });
 
   ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
