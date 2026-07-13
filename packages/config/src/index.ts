@@ -31,7 +31,7 @@ export const config = {
     NEW_RELIC_APP_NAME,
     GEMINI_API_KEY,
     NEXT_PUBLIC_API_URL,
-    IS_PRODUCTION: process.env.NODE_ENV === 'production',
+    IS_SECURE_ENV: process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'staging',
     API_BASE_URL: process.env.API_BASE_URL || NEXT_PUBLIC_API_URL,
     APP_BASE_URL: process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL,
     TV_BASE_URL: process.env.TV_BASE_URL || process.env.NEXT_PUBLIC_TV_BASE_URL,

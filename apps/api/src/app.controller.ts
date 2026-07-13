@@ -9,7 +9,7 @@ const COOKIE_NAME = "sb-session-token";
 const COOKIE_OPTIONS = {
   httpOnly: true,
   // Only enforce Secure in production — local dev/testing uses plain HTTP
-  secure: config.IS_PRODUCTION,
+  secure: config.IS_SECURE_ENV,
   sameSite: "lax" as const,
   maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
   path: "/",

@@ -19,7 +19,7 @@ const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 
 const getCookieOptions = () => ({
   httpOnly: true,
-  secure: config.IS_PRODUCTION,
+  secure: config.IS_SECURE_ENV,
   sameSite: "lax" as const,
   path: "/",
 });
