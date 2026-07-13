@@ -6,6 +6,7 @@ on:
     paths:
       - "deploy/pi/**"
       - "deploy/ansible/**"
+      - ".github/workflows/deploy-signage-os.yml"
   workflow_dispatch:
 
 permissions:
