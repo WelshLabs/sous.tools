@@ -10,7 +10,7 @@ export interface ApiClientOptions {
 export type ExtendedApiClient = ReturnType<typeof createClient<paths>>;
 
 export const createApiClient = (options: ApiClientOptions = {}) => {
-  const baseUrl = options.baseUrl || config.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const baseUrl = options.baseUrl || config.NEXT_PUBLIC_API_URL;
   
   const client = createClient<paths>({ 
     baseUrl,
