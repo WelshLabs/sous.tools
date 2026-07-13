@@ -34,14 +34,12 @@ jobs:
           echo "IMG_NAME=soustools-signage" > config
           echo "TARGET_HOSTNAME=signage" >> config
 
-          # Force 64-bit build for Raspberry Pi 5 (using both standard variable names)
+          # Force 64-bit build for Raspberry Pi 5
           echo "TARGET_ARCH=arm64" >> config
           echo "ARCH=arm64" >> config
 
-          # SSH & User Setup
+          # Enable SSH and continue (Removed FIRST_USER variables, we handle this manually now)
           echo "ENABLE_SSH=1" >> config
-          echo "FIRST_USER_NAME=sous" >> config
-          echo "FIRST_USER_PASS=bootstrap123" >> config
           echo "CONTINUE=1" >> config
           
           # 2. Restore the lost executable flags for EVERY internal script
@@ -49,7 +47,25 @@ jobs:
           sudo find . -type f -name "*.sh" -exec chmod +x {} +
           sudo chmod +x stage*/prerun.sh || true
 
-          # 3. Execute the Dockerized build
+          # 3. THE FIX: Inject a chroot script to hard-bake the user & kill the setup wizards
+          echo "Injecting enterprise kiosk user configurations..."
+          cat << 'EOF' > stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
+          #!/bin/bash
+          
+          # A. Hard-bake the 'sous' user directly into the filesystem
+          if ! id -u sous >/dev/null 2>&1; then
+            useradd -m -s /bin/bash -G sudo,video,audio,plugdev,input,render,netdev,gpio,i2c,spi sous
+            echo "sous:bootstrap123" | chpasswd
+          fi
+          
+          # B. Mask the first-boot blue screen (userconfig) and the desktop setup wizard (piwiz)
+          systemctl mask userconfig.service || true
+          systemctl mask piwiz.service || true
+          EOF
+          
+          sudo chmod +x stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
+
+          # 4. Execute the Dockerized build
           sudo ./build-docker.sh
 
       - name: Fetch Infisical Secrets
