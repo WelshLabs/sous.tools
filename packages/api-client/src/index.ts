@@ -32,7 +32,11 @@ export const createApiClient = (options: ApiClientOptions = {}) => {
     },
     onResponse: async ({ response, request }) => {
       // If we got a 401 and the request wasn't already trying to refresh the session
-      if (response.status === 401 && !request.url.includes("/auth/refresh")) {
+      if (
+        response.status === 401 &&
+        !request.url.includes("/auth/refresh") &&
+        !request.url.includes("/auth/login")
+      ) {
         try {
           // Attempt silent refresh using the strongly typed client
           const refreshRes = await client.POST("/auth/refresh");
