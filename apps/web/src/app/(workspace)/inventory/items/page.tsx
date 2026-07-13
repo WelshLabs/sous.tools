@@ -5,7 +5,7 @@ import { ItemsLedgerClient } from "./items-ledger-client";
 export const dynamic = 'force-dynamic';
 
 export default async function ItemsLedgerPage() {
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  const baseUrl = config.API_BASE_URL;
   let items = [];
 
   try {

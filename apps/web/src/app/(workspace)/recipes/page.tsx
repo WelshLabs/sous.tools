@@ -4,7 +4,7 @@ import { RecipesClientPage } from "./RecipesClientPage";
 export const dynamic = 'force-dynamic';
 
 export default async function RecipesPage() {
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  const baseUrl = config.API_BASE_URL;
 
   let recipes = [];
   try {

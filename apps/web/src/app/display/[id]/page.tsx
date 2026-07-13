@@ -11,7 +11,7 @@ export interface DisplayPageProps {
 export default async function DisplayPage({ params }: DisplayPageProps) {
   const resolvedParams = await params;
   const displayId = resolvedParams.id;
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  const baseUrl = config.API_BASE_URL;
 
   let initialDisplay = null;
   let initialLayout = null;

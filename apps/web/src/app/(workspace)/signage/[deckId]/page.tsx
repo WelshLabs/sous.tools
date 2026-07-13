@@ -8,7 +8,7 @@ interface PageProps {
 
 export default async function TVSignageEditorPage({ params }: PageProps) {
   const { deckId } = await params;
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  const baseUrl = config.API_BASE_URL;
 
   // Removed unused cookieStore
   let deck = null;

@@ -7,7 +7,7 @@ interface RecipePageProps {
 
 export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  const baseUrl = config.API_BASE_URL;
   
   let recipe = null;
   let vessels = [];

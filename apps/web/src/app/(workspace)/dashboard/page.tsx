@@ -26,7 +26,7 @@ interface DashboardStats {
 }
 
 async function getDashboardStats(): Promise<DashboardStats> {
-  const baseUrl = config.API_BASE_URL || 'http://localhost:6001';
+  const baseUrl = config.API_BASE_URL;
   try {
     const res = await fetch(`${baseUrl}/dashboard/stats`, {
       cache: "no-store",
