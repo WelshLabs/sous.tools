@@ -3,17 +3,28 @@ import { io, type Socket } from "socket.io-client";
 import type { paths } from "./schema.js";
 import { config } from "@soustools/config";
 
-export const createApiClient = (options: { baseUrl?: string } = {}) => {
+export interface ApiClientOptions {
+  baseUrl?: string;
+}
+
+export type ExtendedApiClient = ReturnType<typeof createClient<paths>>;
+
+export const createApiClient = (options: ApiClientOptions = {}) => {
   const baseUrl = options.baseUrl || config.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   
-  const client = createClient<paths>({ baseUrl });
+  const client = createClient<paths>({ 
+    baseUrl,
+    credentials: "include", // Ensure cookies are passed by default in openapi-fetch
+  });
 
   client.use({
-    onRequest: ({ request }) => {
-      // Ensure all requests include credentials for cookie passing
-      const nextRequest = request.credentials !== "include" 
-        ? new Request(request, { credentials: "include" })
-        : request;
+    onRequest: async ({ request }) => {
+      let nextRequest = request;
+
+      // Ensure credentials include for cookie passing
+      if (nextRequest.credentials !== "include") {
+        nextRequest = new Request(nextRequest, { credentials: "include" });
+      }
         
       // Clone the request before it gets consumed by fetch() so we can replay it on 401
       (nextRequest as any)._retryClone = nextRequest.clone();
@@ -26,12 +37,27 @@ export const createApiClient = (options: { baseUrl?: string } = {}) => {
           // Attempt silent refresh using the strongly typed client
           const refreshRes = await client.POST("/auth/refresh");
 
+          if (refreshRes.response.status === 401 || refreshRes.response.status === 403) {
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
+            }
+            throw new Error("SessionExpiredError");
+          }
+
           if (!refreshRes.error) {
-            // Retry the original request using the unconsumed clone
-            const retryReq = (request as any)._retryClone || request.clone();
+            let retryReq = (request as any)._retryClone || request.clone();
+            
+            // Ensure credentials is set on retry
+            if (retryReq.credentials !== "include") {
+              retryReq = new Request(retryReq, { credentials: "include" });
+            }
+
             return await fetch(retryReq);
           }
         } catch (err) {
+          if (err instanceof Error && err.message === "SessionExpiredError") {
+            throw err;
+          }
           // Fallthrough: If refresh fails, we just return the original 401
           console.error("Session refresh interceptor caught an error:", err);
         }
@@ -54,7 +80,9 @@ export const socket: Socket = io(defaultBaseUrl, {
   autoConnect: false,
 });
 
-export async function uploadFile(file: File): Promise<string> {
+export async function uploadFile(
+  file: File
+): Promise<string> {
   let attempt = 0;
   const maxAttempts = 2;
 
@@ -86,8 +114,17 @@ export async function uploadFile(file: File): Promise<string> {
     if (uploadRes.status === 401 && attempt < maxAttempts - 1) {
       attempt++;
       try {
-        await api.POST("/auth/refresh");
+        const refreshRes = await api.POST("/auth/refresh");
+        if (refreshRes.response.status === 401 || refreshRes.response.status === 403) {
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          throw new Error("SessionExpiredError");
+        }
       } catch (refreshErr) {
+        if (refreshErr instanceof Error && refreshErr.message === "SessionExpiredError") {
+          throw refreshErr;
+        }
         console.error("Token refresh failed during file upload retry:", refreshErr);
       }
       continue;

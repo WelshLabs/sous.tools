@@ -5,7 +5,7 @@ import './globals.css';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from '../components/theme-provider';
-import { LoggerInitializer } from '../components/LoggerInitializer';
+import { ClientInitializersWrapper } from '../components/ClientInitializersWrapper';
 
 export default function RootLayout({
   children,
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <LoggerInitializer />
+        <ClientInitializersWrapper />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

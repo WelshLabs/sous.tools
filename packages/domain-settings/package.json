@@ -32,8 +32,6 @@
     "@soustools/api-types": "workspace:*",
     "@soustools/design-system": "workspace:*",
     "lucide-react": "^0.300.0",
-    "next": "^14.0.0",
-    "next-themes": "^0.2.1",
     "react-hook-form": "^7.80.0",
     "sonner": "^2.0.7",
     "zod": "^3.25.76"

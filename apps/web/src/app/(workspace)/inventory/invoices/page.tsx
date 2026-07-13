@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Camera, FileText, HardDrive, PlusCircle, ArrowRight, ChevronDown } from "lucide-react";
 import { TwoToneHeader } from "@soustools/design-system";
-import { GoogleDriveBrowser } from "@soustools/domain-settings";
+// import { GoogleDriveBrowser } from "@soustools/domain-settings";
 import { toast } from "sonner";
 
 export const dynamic = 'force-dynamic';
@@ -56,7 +56,7 @@ function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "
 }
 
 export default function InvoicesHubPage() {
-  const [showDriveBrowser, setShowDriveBrowser] = useState(false);
+  // const [showDriveBrowser, setShowDriveBrowser] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   
@@ -65,7 +65,7 @@ export default function InvoicesHubPage() {
 
   const handleImportSelect = (type: "upload" | "camera" | "drive") => {
     if (type === "drive") {
-      setShowDriveBrowser(true);
+      // setShowDriveBrowser(true);
     } else if (type === "upload") {
       fileInputRef.current?.click();
     } else if (type === "camera") {
@@ -124,6 +124,7 @@ export default function InvoicesHubPage() {
     e.target.value = "";
   };
 
+  /*
   const handleDriveImport = async (fileIds: string[], documentType: string) => {
     setIsSubmitting(true);
     await submitIngestionPayload({
@@ -134,7 +135,9 @@ export default function InvoicesHubPage() {
       fileIds
     });
   };
+  */
 
+  /*
   const handleDriveSearch = async (query: string, folderId?: string) => {
     try {
       const res = await fetch(`/api/integrations/google-drive/search?q=${encodeURIComponent(query)}&folderId=${folderId || ""}`);
@@ -147,6 +150,7 @@ export default function InvoicesHubPage() {
       return [];
     }
   };
+  */
 
   return (
     <div className="flex-1 bg-background p-8 min-h-screen">
@@ -215,13 +219,13 @@ export default function InvoicesHubPage() {
         </div>
       )}
 
-      <GoogleDriveBrowser
+      {/* <GoogleDriveBrowser
         isOpen={showDriveBrowser}
         onClose={() => setShowDriveBrowser(false)}
         documentType="INVOICE"
         onSearch={handleDriveSearch}
         onImport={handleDriveImport}
-      />
+      /> */}
     </div>
   );
 }

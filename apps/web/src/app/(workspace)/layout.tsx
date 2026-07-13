@@ -19,7 +19,10 @@ export default async function WorkspaceLayout({
       const payload = await res.json();
       notifications = payload.data || [];
     }
-  } catch (error) {
+  } catch (error: any) {
+    if (error && (error.digest === 'DYNAMIC_SERVER_USAGE' || error.message?.includes('Dynamic server usage') || error.message?.includes('dynamic-server-error'))) {
+      throw error;
+    }
     console.error("Failed to fetch notifications:", error);
   }
 
