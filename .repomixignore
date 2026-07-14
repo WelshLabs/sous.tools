@@ -1,2 +1,7 @@
-.context/
-*-snapshot.md
+**/.next/**
+**/dist/**
+**/out/**
+**/*.tsbuildinfo
+deploy/pi/**/files/**
+**/node_modules/**
+**/.turbo/**
