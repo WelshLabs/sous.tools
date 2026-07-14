@@ -5,3 +5,10 @@
 deploy/pi/**/files/**
 **/node_modules/**
 **/.turbo/**
+docs/context/**
+.context/**
+.agents
+.idea
+.turbo
+.vercel
+node_modules
