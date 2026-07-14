@@ -25,7 +25,10 @@
     "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "eslint": "^9.39.5",
+    "eslint-plugin-boundaries": "^7.0.2",
+    "eslint-plugin-project-structure": "^3.14.3",
     "eslint-plugin-react-hooks": "rc",
+    "eslint-plugin-tailwindcss": "^4.2.0",
     "globals": "^15.15.0",
     "husky": "^9.1.7",
     "knip": "^5.88.1",
@@ -44,5 +47,14 @@
   "packageManager": "pnpm@11.5.2",
   "dependencies": {
     "eslint-plugin-react": "^7.37.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml}": [
+      "prettier --write"
+    ]
   }
 }
