@@ -443,41 +443,49 @@ $ tsc
 cache miss, executing b8a729a6185a9344
 $ eslint . --max-warnings 0
 ::endgroup::
+::group::@soustools/api-client:lint
+cache miss, executing 3fd9ac411fa5bdfa
+$ eslint . --max-warnings 0
+::endgroup::
 ::group::@soustools/supabase:lint
 cache miss, executing e151b1cdde3484cd
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing 5ba7fa50f45540dc
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/logger:lint
 cache miss, executing 74f25dd65c52305f
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/config:lint
-cache miss, executing ee7005b3aff0072a
+::group::@soustools/domain-settings:lint
+cache miss, executing b72abd2114152748
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing 3fd9ac411fa5bdfa
+::group::@soustools/config:lint
+cache miss, executing ee7005b3aff0072a
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::cli:lint
 cache miss, executing 044e20785a664cae
 $ eslint . --max-warnings 0
-(node:6654) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784045229042 is not specified and it doesn't parse as CommonJS.
+(node:6622) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784045967637 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
-::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing 5ba7fa50f45540dc
-$ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-inventory:lint
 cache miss, executing fb5f27e89f9b2404
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing 2ba186eaa18dce2d
+::group::api:lint
+cache miss, executing 710d75cb707a014e
 $ eslint . --max-warnings 0
+(node:6593) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784045967631 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 [;31m@soustools/design-system:lint[;0m
 cache miss, executing da9b88cc2ea5a066
@@ -492,13 +500,8 @@ $ eslint . --max-warnings 0
 ✖ 2 problems (2 errors, 0 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
-::group::pos-simulator:lint
-cache miss, executing 27a0f330fdf2b918
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::web:lint
-cache miss, executing 186c987085b05503
+::group::@soustools/domain-recipes:lint
+cache miss, executing 2ba186eaa18dce2d
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -507,31 +510,27 @@ cache miss, executing 6e346ed98c3253a6
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing b72abd2114152748
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::@soustools/setup-portal:lint
 cache miss, executing e15563eeb394dc98
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::api:lint
-cache miss, executing 710d75cb707a014e
+::group::web:lint
+cache miss, executing 186c987085b05503
 $ eslint . --max-warnings 0
-(node:6694) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784045229038 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 27a0f330fdf2b918
+$ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::error::command (/home/runner/work/sous.tools/sous.tools/packages/design-system) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
 @soustools/design-system#lint:  ERROR  command (/home/runner/work/sous.tools/sous.tools/packages/design-system) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
 
- Tasks:    12 successful, 19 total
+ Tasks:    13 successful, 19 total
 Cached:    3 cached, 19 total
-  Time:    12.428s 
+  Time:    14.819s 
 Failed:    @soustools/design-system#lint
 
  ERROR  run failed: command  exited (1)
@@ -554,21 +553,21 @@ https://turborepo.dev/docs/telemetry
    • Running typecheck in 17 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:build
-cache miss, executing 4c87102127af7e4d
-$ tsc
-::endgroup::
 ::group::@soustools/api-types:typecheck
 cache miss, executing 744ae067b2047c05
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/config:build
-cache miss, executing a08f58aa5411caac
+::group::@soustools/api-types:build
+cache miss, executing 4c87102127af7e4d
 $ tsc
 ::endgroup::
 ::group::@soustools/config:typecheck
 cache miss, executing b554e4db69dd32d1
 $ tsc --noEmit
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing a08f58aa5411caac
+$ tsc
 ::endgroup::
 ::group::@soustools/api-client:typecheck
 cache miss, executing da2c57ea96fc0534
@@ -598,16 +597,16 @@ $ tsc --noEmit
 cache miss, executing 738018b19ca91546
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 884d6901265ad54c
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing 5430722c824e8f79
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-recipes:typecheck
 cache miss, executing 9385355dc818813d
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 884d6901265ad54c
 $ tsc --noEmit
 ::endgroup::
 ::group::pos-simulator:typecheck
@@ -629,7 +628,7 @@ $ tsc --noEmit
 
  Tasks:    18 successful, 18 total
 Cached:    0 cached, 18 total
-  Time:    44.313s 
+  Time:    48.233s 
 
 
 ```
@@ -676,7 +675,7 @@ cli#test:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/cli) /ho
 
  Tasks:    3 successful, 5 total
 Cached:    0 cached, 5 total
-  Time:    4.99s 
+  Time:    5.346s 
 Failed:    cli#test
 
  ERROR  run failed: command  exited (1)
