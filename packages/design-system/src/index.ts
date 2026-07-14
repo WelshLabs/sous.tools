@@ -125,11 +125,29 @@ export type {
 export { calculateRecipeScale } from "./utils/scaling";
 export type { ScaledIngredientResult } from "./utils/scaling";
 
-export { setFaviconStatus } from "./utils/favicon-status";
-export type { FaviconStatus } from "./utils/favicon-status";
+export {
+  resetFaviconStatus,
+  setFaviconStatus,
+  type FaviconStatus,
+} from "./utils/favicon-status";
 
-export { PrimaryLogo } from "./components/logos/PrimaryLogo";
-export { MicroIcon } from "./components/logos/MicroIcon";
-export { Lettermark } from "./components/logos/Lettermark";
+export { Chip, type ChipProps } from "./components/Chip";
+
+// export { PrimaryLogo } from "./components/logos/PrimaryLogo";
+// export { MicroIcon } from "./components/logos/MicroIcon";
+// export { Lettermark } from "./components/logos/Lettermark";
+export { PrimaryLogo, MicroIcon, Lettermark } from "./components/logos/Logo";
 export { RevenueChart, TicketTimeChart } from "./components/DashboardCharts";
 export type { RevenueData, TicketTimeData } from "./components/DashboardCharts";
+
+export { AuroraBackground } from "./components/AuroraBackground";
+
+export { cn } from "./utils/cn";
+
+export {
+  BrandLoader,
+  Spinner,
+  DotsLoader,
+  ProgressBar,
+  TopProgress,
+} from "./components/Loader";

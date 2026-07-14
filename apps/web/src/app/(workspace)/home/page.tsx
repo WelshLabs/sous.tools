@@ -2,7 +2,11 @@
 
 import React, { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { PrimaryLogo, useOmnibarContext } from "@soustools/design-system";
+import {
+  AuroraBackground,
+  PrimaryLogo,
+  useOmnibarContext,
+} from "@soustools/design-system";
 
 export const dynamic = "force-dynamic";
 
@@ -37,10 +41,11 @@ function ShareTargetHandler() {
 export default function HomePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4">
+      <AuroraBackground />
       <Suspense fallback={null}>
         <ShareTargetHandler />
       </Suspense>
-      <PrimaryLogo className="h-24 w-auto mb-8" />
+      <PrimaryLogo gradient className="h-24 w-auto mb-8" />
     </div>
   );
 }

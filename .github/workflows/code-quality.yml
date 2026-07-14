@@ -110,9 +110,9 @@ jobs:
           name: aggregated-code-quality-reports
           if-no-files-found: ignore
           path: |
-            .reports/**
-            coverage/**
-            playwright-report/**
+            .reports
+            coverage
+            playwright-report
 
       # --- THE QUALITY GATE ---
       # This checks the outcome of every single step above.

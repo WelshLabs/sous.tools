@@ -1,129 +1,70 @@
 import * as React from "react";
+import { cn } from "../utils/cn";
 
-/* ─── Card ─────────────────────────────────────────────────────────────────── */
-
-export type CardProps = React.HTMLAttributes<HTMLDivElement>;
-
-/**
- * Root container for the Neon-Glass Card component.
- *
- * Renders a `glass-card` surface — `bg-card backdrop-blur-md border
- * border-border` — consistent with the v2 glassmorphism aesthetic.
- * Compose with `CardHeader`, `CardTitle`, `CardContent`, and `CardFooter`.
- *
- * @tenant-docs-export
- * # Card
- * ```tsx
- * import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@soustools/design-system";
- *
- * <Card>
- *   <CardHeader>
- *     <CardTitle>Daily Revenue</CardTitle>
- *   </CardHeader>
- *   <CardContent>$4,320.00</CardContent>
- *   <CardFooter>Updated 2 min ago</CardFooter>
- * </Card>
- * ```
- */
-export function Card({ className = "", children, ...props }: CardProps) {
+export function Card({
+  className,
+  glass = true,
+  glow = false,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { glass?: boolean; glow?: boolean }) {
   return (
     <div
-      className={`bg-card/90 backdrop-blur-2xl border border-border text-card-foreground rounded-3xl shadow-sm ${className}`}
+      className={cn(
+        "rounded-[var(--radius-lg)] p-6",
+        glass ? "ds-glass" : "border border-border bg-card",
+        glow && "shadow-glow-sm",
+        className,
+      )}
       {...props}
-    >
-      {children}
-    </div>
+    />
   );
 }
 
-/* ─── CardHeader ───────────────────────────────────────────────────────────── */
-
-export type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
-
-/**
- * Header region of a Card. Provides consistent padding and a bottom border
- * separator to visually anchor the card title.
- */
 export function CardHeader({
-  className = "",
-  children,
+  className,
   ...props
-}: CardHeaderProps) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={`flex flex-col gap-1.5 px-6 py-5 ${className}`}
-      style={{ borderBottom: "1px solid var(--color-border)" }}
-      {...props}
-    >
-      {children}
-    </div>
+    <div className={cn("mb-4 flex flex-col gap-1.5", className)} {...props} />
   );
 }
 
-/* ─── CardTitle ────────────────────────────────────────────────────────────── */
-
-export type CardTitleProps = React.HTMLAttributes<HTMLHeadingElement>;
-
-/**
- * Title element within a CardHeader. Renders as `<h3>` with bold tight
- * tracking — consistent with the Industrial Minimal brand voice.
- */
 export function CardTitle({
-  className = "",
-  children,
+  className,
   ...props
-}: CardTitleProps) {
+}: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={`text-lg font-bold tracking-tight leading-none ${className}`}
-      style={{ color: "var(--color-card-foreground)" }}
+      className={cn(
+        "font-display text-lg font-semibold tracking-tight text-foreground",
+        className,
+      )}
       {...props}
-    >
-      {children}
-    </h3>
+    />
   );
 }
 
-/* ─── CardContent ──────────────────────────────────────────────────────────── */
+export function CardDescription({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+  );
+}
 
-export type CardContentProps = React.HTMLAttributes<HTMLDivElement>;
-
-/**
- * Main content area of a Card. Provides standard padding and removes top
- * padding when immediately following a `CardHeader`.
- */
 export function CardContent({
-  className = "",
-  children,
+  className,
   ...props
-}: CardContentProps) {
-  return (
-    <div className={`px-6 py-5 ${className}`} {...props}>
-      {children}
-    </div>
-  );
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("flex flex-col gap-3", className)} {...props} />;
 }
 
-/* ─── CardFooter ───────────────────────────────────────────────────────────── */
-
-export type CardFooterProps = React.HTMLAttributes<HTMLDivElement>;
-
-/**
- * Footer region of a Card. Flex-row layout for action buttons or metadata.
- * Provides a top border separator.
- */
 export function CardFooter({
-  className = "",
-  children,
+  className,
   ...props
-}: CardFooterProps) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={`flex items-center px-6 py-4 ${className}`}
-      style={{ borderTop: "1px solid var(--color-border)" }}
-      {...props}
-    >
-      {children}
-    </div>
+    <div className={cn("mt-5 flex items-center gap-3", className)} {...props} />
   );
 }

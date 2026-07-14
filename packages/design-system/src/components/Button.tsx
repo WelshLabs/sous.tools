@@ -1,135 +1,68 @@
+"use client";
+
 import * as React from "react";
+import { motion, type HTMLMotionProps } from "framer-motion";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../utils/cn";
 
-/** Visual variant styles for the Button component. */
-export type ButtonVariant = "default" | "secondary" | "outline" | "ghost";
-
-/** Size scale for the Button component. */
-export type ButtonSize = "sm" | "md" | "lg";
-
-/**
- * Props for the Button component.
- */
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /**
-   * Visual variant controlling background, border, and text treatment.
-   * - `default`   — Neon-Glass cyan (#4cc9f0) filled primary action.
-   * - `secondary` — Muted zinc-800 surface for secondary actions.
-   * - `outline`   — Transparent with cyan border; hover fills glass-card.
-   * - `ghost`     — Fully transparent; hover reveals subtle surface.
-   * @default "default"
-   */
-  variant?: ButtonVariant;
-  /**
-   * Scale size of the button. `lg` enforces a minimum 48 px touch target
-   * for Kitchen Mode / gloved-hand usability.
-   * @default "md"
-   */
-  size?: ButtonSize;
-}
-
-/**
- * Atomic Button component for the Neon-Glass design system.
- *
- * Provides tactile `active:scale-95` press feedback and a `focus-visible`
- * ring in the brand cyan. The `lg` size enforces Kitchen Mode touch targets.
- *
- * @tenant-docs-export
- * # Button
- * ```tsx
- * import { Button } from "@soustools/design-system";
- *
- * <Button variant="default" size="lg" onClick={handleSubmit}>
- *   Submit Order
- * </Button>
- * ```
- */
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className = "",
-      variant = "default",
-      size = "md",
-      children,
-      disabled,
-      ...props
+const buttonVariants = cva(
+  "group relative inline-flex min-h-10 select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-[var(--radius-md)] border font-medium tracking-tight outline-none transition-[color,background-color,border-color,box-shadow] duration-[--ds-duration] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45",
+  {
+    variants: {
+      variant: {
+        gradient:
+          "border-primary/70 bg-[linear-gradient(135deg,var(--primary),color-mix(in_srgb,var(--primary)_76%,var(--accent)))] text-primary-foreground shadow-[0_10px_26px_-18px_var(--primary)] hover:border-primary hover:brightness-110",
+        primary:
+          "border-primary/65 bg-primary text-primary-foreground shadow-[0_10px_26px_-18px_var(--primary)] hover:border-primary hover:bg-[color-mix(in_srgb,var(--primary)_90%,white)]",
+        secondary:
+          "border-border/80 bg-secondary/70 text-secondary-foreground backdrop-blur-xl hover:border-primary/30 hover:bg-secondary",
+        outline:
+          "border-border/80 bg-card/35 text-foreground backdrop-blur-xl hover:border-primary/40 hover:bg-card/65",
+        glass:
+          "border-[var(--ds-glass-border)] bg-[var(--ds-glass-fill)] text-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] backdrop-blur-xl hover:border-primary/35 hover:bg-[var(--ds-glass-fill-strong)]",
+        ghost:
+          "border-transparent bg-transparent text-muted-foreground hover:bg-card/55 hover:text-foreground",
+        destructive:
+          "border-destructive/55 bg-destructive/90 text-destructive-foreground shadow-[0_10px_26px_-18px_var(--destructive)] hover:bg-destructive",
+      },
+      size: {
+        sm: "h-9 px-3.5 text-sm",
+        md: "h-11 px-5 text-sm",
+        lg: "h-12 px-6 text-base",
+        icon: "h-11 w-11 p-0",
+      },
     },
-    ref,
-  ) => {
-    const base = [
-      "inline-flex items-center justify-center gap-2",
-      "font-sans font-semibold rounded-lg",
-      "transition-all duration-150 ease-in-out",
-      "active:scale-95",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-      "disabled:opacity-50 disabled:pointer-events-none select-none",
-    ].join(" ");
-
-    const variantStyles: Record<ButtonVariant, string> = {
-      default: [
-        "bg-primary",
-        "text-primary-foreground",
-        "shadow-md",
-      ].join(" "),
-      secondary: [
-        "text-secondary-foreground",
-      ].join(" "),
-      outline: [
-        "bg-transparent",
-        "text-primary",
-        "border border-primary",
-      ].join(" "),
-      ghost: [
-        "bg-transparent",
-        "text-foreground",
-      ].join(" "),
-    };
-
-    const sizeStyles: Record<ButtonSize, string> = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-4 py-2 text-base",
-      lg: "px-6 py-3 text-lg min-h-[48px]",  // Kitchen Mode touch target
-    };
-
-    // Inline styles for semantic token values (avoids Tailwind purge issues
-    // with dynamic CSS variable references in a library context)
-    const variantInlineStyle: Record<ButtonVariant, React.CSSProperties> = {
-      default: {
-        backgroundColor: "var(--color-primary)",
-        color: "var(--color-primary-foreground)",
-      },
-      secondary: {
-        backgroundColor: "var(--color-secondary)",
-        color: "var(--color-secondary-foreground)",
-      },
-      outline: {
-        backgroundColor: "transparent",
-        borderColor: "var(--color-primary)",
-        color: "var(--color-primary)",
-      },
-      ghost: {
-        backgroundColor: "transparent",
-        color: "var(--color-foreground)",
-      },
-    };
-
-    const focusRingStyle: React.CSSProperties = {
-      // --tw-ring-color maps to --color-ring in the @theme
-      outlineColor: "var(--color-ring)",
-    };
-
-    return (
-      <button
-        ref={ref}
-        disabled={disabled}
-        className={`${base} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-        style={{ ...variantInlineStyle[variant], ...focusRingStyle }}
-        {...props}
-      >
-        {children}
-      </button>
-    );
+    defaultVariants: { variant: "primary", size: "md" },
   },
 );
 
+export interface ButtonProps
+  extends
+    Omit<HTMLMotionProps<"button">, "ref" | "children">,
+    VariantProps<typeof buttonVariants> {
+  accent?: boolean;
+  children?: React.ReactNode;
+}
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, accent = true, children, ...props }, ref) => {
+    const tone = variant ?? "primary";
+    return (
+      <motion.button
+        ref={ref}
+        whileHover={{ y: -1 }}
+        whileTap={{ scale: 0.975, y: 0 }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className={cn(buttonVariants({ variant: tone, size }), className)}
+        {...props}
+      >
+        <span className="relative z-10 inline-flex items-center gap-2">
+          {children}
+        </span>
+      </motion.button>
+    );
+  },
+);
 Button.displayName = "Button";
+
+export { buttonVariants };
