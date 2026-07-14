@@ -1,3 +1,10 @@
+### #67: convert to drizzle??
+**Labels:** enhancement, question, backend, database
+
+should we convert the sql to use drizzle or is that too much at this point?
+
+---
+
 ### #66: agent skills
 **Labels:** backend
 
