@@ -11,7 +11,7 @@ on:
 
 jobs:
   compile-and-sync:
-    # Run this regardless of whether Code Quality passed or failed, 
+    # Run this regardless of whether Code Quality passed or failed,
     # so we ALWAYS get updated reports and a CTO Summary of the failures!
     runs-on: ubuntu-latest
     permissions:
@@ -34,14 +34,14 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 11 
+          version: 11
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
-      
+          node-version: "22"
+          cache: "pnpm"
+
       - name: Setup turbo, and repomix
         run: npm install -g turbo repomix
 
@@ -55,7 +55,7 @@ jobs:
       - name: Download Code Quality Artifacts
         uses: actions/download-artifact@v4
         # Only attempt download if triggered by the Code Quality workflow
-        if: github.event_name == 'workflow_run' 
+        if: github.event_name == 'workflow_run'
         with:
           name: aggregated-code-quality-reports
           path: docs/reports
@@ -81,7 +81,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue list --state open --limit 50 --json number,title,body,labels | jq -r '.[] | "### #\(.number): \(.title)\n**Labels:** \([.labels[].name] | join(", "))\n\n\(.body)\n\n---\n"' > docs/context/notebooklm-issues.md || true
-      
+
       - name: Fetch GitHub Project Kanban State
         env:
           # Use your PAT here so the CLI can "see" outside the repo to your user-level project board
@@ -111,13 +111,13 @@ jobs:
           # Configure the GitHub Actions bot
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Stage ONLY the generated NotebookLM context files
           git add docs/context/notebooklm-*.md
-          
+
           # Commit the files. We use [skip ci] so this automated commit doesn't trigger an infinite loop of CI actions!
           git commit -m "chore(ai): auto-update AI context reports [skip ci]" || true
-          
+
           # Push back to the main branch
           git push
 
@@ -129,5 +129,6 @@ jobs:
             "run_id": "${{ github.run_id }}", 
             "quality_status": "${{ github.event.workflow_run.conclusion }}"
           }' \
-          ${{ env.N8N_CTO_WEBHOOK_URL }}
+          https://n8n.sous.tools/webhook-test/cto-summary
         continue-on-error: true
+        # ${{ env.N8N_CTO_WEBHOOK_URL }}
