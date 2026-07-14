@@ -45,14 +45,14 @@ fs.writeFileSync(
 );
 
 // --- 3. SPRINT STATE (GITHUB ISSUES) ---
-const openIssues = fs.readFileSync(
-  path.join(__dirname, "../docs/context/open-issues.txt"),
-  "utf-8",
-);
-fs.writeFileSync(
-  path.join(__dirname, "../docs/context/notebooklm-issues.md"),
-  `# Open GitHub Issues & Sprint State\n\n${openIssues}`,
-);
+// const openIssues = fs.readFileSync(
+//   path.join(__dirname, "../docs/context/open-issues.txt"),
+//   "utf-8",
+// );
+// fs.writeFileSync(
+//   path.join(__dirname, "../docs/context/notebooklm-issues.md"),
+//   `# Open GitHub Issues & Sprint State\n\n${openIssues}`,
+// );
 
 // --- 4. QUALITY & TEST REPORTS ---
 // GitHub preserves the directory structure, so we look inside the nested quality-reports folder
