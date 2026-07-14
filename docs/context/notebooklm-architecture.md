@@ -1,74 +1,74 @@
 # sous.tools Workspace Architecture
 
 ### 📦 sous.tools
-- **Location:** sous.tools
+- **Location:** Root (sous.tools)
 - **Private:** Yes
 
 ### 📦 api
-- **Location:** /home/runner/work/sous.tools/sous.tools/apps/api
+- **Location:** apps/api
 - **Private:** Yes
 
 ### 📦 cli
-- **Location:** /home/runner/work/sous.tools/sous.tools/apps/cli
+- **Location:** apps/cli
 - **Private:** Yes
 
 ### 📦 pos-simulator
-- **Location:** /home/runner/work/sous.tools/sous.tools/apps/pos-simulator
+- **Location:** apps/pos-simulator
 - **Private:** Yes
 
 ### 📦 @soustools/setup-portal
-- **Location:** /home/runner/work/sous.tools/sous.tools/apps/setup-portal
+- **Location:** apps/setup-portal
 - **Private:** Yes
 
 ### 📦 web
-- **Location:** /home/runner/work/sous.tools/sous.tools/apps/web
+- **Location:** apps/web
 - **Private:** Yes
 
 ### 📦 @soustools/api-client
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/api-client
+- **Location:** packages/api-client
 - **Private:** Yes
 
 ### 📦 @soustools/api-types
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/api-types
+- **Location:** packages/api-types
 - **Private:** Yes
 
 ### 📦 @soustools/config
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/config
+- **Location:** packages/config
 - **Private:** Yes
 
 ### 📦 @soustools/design-system
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/design-system
+- **Location:** packages/design-system
 - **Private:** Yes
 
 ### 📦 @soustools/domain-inventory
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/domain-inventory
+- **Location:** packages/domain-inventory
 - **Private:** Yes
 
 ### 📦 @soustools/domain-recipes
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/domain-recipes
+- **Location:** packages/domain-recipes
 - **Private:** Yes
 
 ### 📦 @soustools/domain-settings
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/domain-settings
+- **Location:** packages/domain-settings
 - **Private:** Yes
 
 ### 📦 @soustools/domain-signage
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/domain-signage
+- **Location:** packages/domain-signage
 - **Private:** Yes
 
 ### 📦 @soustools/eslint-config
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/eslint-config
+- **Location:** packages/eslint-config
 - **Private:** Yes
 
 ### 📦 @soustools/logger
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/logger
+- **Location:** packages/logger
 - **Private:** Yes
 
 ### 📦 @soustools/supabase
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/supabase
+- **Location:** packages/supabase
 - **Private:** Yes
 
 ### 📦 @soustools/tsconfig
-- **Location:** /home/runner/work/sous.tools/sous.tools/packages/tsconfig
+- **Location:** packages/tsconfig
 - **Private:** Yes
 
