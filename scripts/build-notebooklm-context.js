@@ -35,11 +35,6 @@ try {
   console.error("Error parsing workspace graph:", error.message);
 }
 
-fs.writeFileSync(
-  path.join(__dirname, "../docs/context/notebooklm-architecture.md"),
-  architectureText,
-);
-
 // --- 3. SPRINT STATE (GITHUB ISSUES) ---
 // const openIssues = fs.readFileSync(
 //   path.join(__dirname, "../docs/context/open-issues.txt"),
