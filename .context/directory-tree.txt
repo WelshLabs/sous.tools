@@ -1,0 +1,1073 @@
+.
+├── Dockerfile.editor
+├── README.md
+├── agents.json
+├── apps
+│   ├── api
+│   │   ├── Dockerfile
+│   │   ├── apps
+│   │   │   └── api
+│   │   │       └── src
+│   │   │           └── schema.gql
+│   │   ├── eslint.config.js
+│   │   ├── nest-cli.json
+│   │   ├── openapi.json
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── app.controller.spec.ts
+│   │   │   ├── app.controller.ts
+│   │   │   ├── app.module.ts
+│   │   │   ├── app.service.ts
+│   │   │   ├── common
+│   │   │   │   ├── guards
+│   │   │   │   │   └── admin.guard.ts
+│   │   │   │   └── pipes
+│   │   │   │       └── zod-validation.pipe.ts
+│   │   │   ├── filters
+│   │   │   │   └── all-exceptions.filter.ts
+│   │   │   ├── graphql
+│   │   │   │   └── graphql.module.ts
+│   │   │   ├── health
+│   │   │   │   ├── health.controller.ts
+│   │   │   │   ├── health.module.ts
+│   │   │   │   ├── health.resolver.ts
+│   │   │   │   └── health.types.ts
+│   │   │   ├── lib
+│   │   │   │   ├── supabase-auth.guard.ts
+│   │   │   │   ├── supabase.ts
+│   │   │   │   └── ws-supabase-auth.guard.ts
+│   │   │   ├── main.ts
+│   │   │   ├── modules
+│   │   │   │   ├── auth
+│   │   │   │   │   ├── auth.controller.ts
+│   │   │   │   │   └── auth.module.ts
+│   │   │   │   ├── commands
+│   │   │   │   │   ├── commands-ollama.helper.ts
+│   │   │   │   │   ├── commands-tools.ts
+│   │   │   │   │   ├── commands.controller.ts
+│   │   │   │   │   ├── commands.gateway.ts
+│   │   │   │   │   ├── commands.module.ts
+│   │   │   │   │   └── commands.service.ts
+│   │   │   │   ├── dashboard
+│   │   │   │   │   ├── dashboard.controller.ts
+│   │   │   │   │   └── dashboard.module.ts
+│   │   │   │   ├── devices
+│   │   │   │   │   ├── devices.controller.ts
+│   │   │   │   │   ├── devices.module.ts
+│   │   │   │   │   ├── devices.service.ts
+│   │   │   │   │   └── devices.spec.ts
+│   │   │   │   ├── ingestion
+│   │   │   │   │   ├── CloudVisionService.ts
+│   │   │   │   │   ├── IVisionService.ts
+│   │   │   │   │   ├── OllamaVisionService.ts
+│   │   │   │   │   ├── ingestion.controller.ts
+│   │   │   │   │   ├── ingestion.gateway.ts
+│   │   │   │   │   ├── ingestion.module.ts
+│   │   │   │   │   ├── ingestion.processor.ts
+│   │   │   │   │   └── normalization.service.ts
+│   │   │   │   ├── integrations
+│   │   │   │   │   ├── drivers
+│   │   │   │   │   │   ├── base.driver.ts
+│   │   │   │   │   │   └── square.driver.ts
+│   │   │   │   │   ├── google-drive.service.ts
+│   │   │   │   │   ├── integrations.controller.ts
+│   │   │   │   │   ├── integrations.module.ts
+│   │   │   │   │   ├── integrations.service.ts
+│   │   │   │   │   ├── integrations.spec.ts
+│   │   │   │   │   ├── pos-sync.processor.ts
+│   │   │   │   │   ├── square-client.helper.ts
+│   │   │   │   │   ├── square-mapper.helper.ts
+│   │   │   │   │   ├── square-seed-types.ts
+│   │   │   │   │   ├── square-seed.helper.ts
+│   │   │   │   │   ├── square-sync.helper.ts
+│   │   │   │   │   ├── webhooks.controller.ts
+│   │   │   │   │   └── webhooks.spec.ts
+│   │   │   │   ├── items
+│   │   │   │   │   ├── inventory.controller.ts
+│   │   │   │   │   ├── inventory.service.ts
+│   │   │   │   │   ├── items-query.helper.ts
+│   │   │   │   │   ├── items.controller.ts
+│   │   │   │   │   ├── items.module.ts
+│   │   │   │   │   ├── items.service.ts
+│   │   │   │   │   ├── price-history.controller.ts
+│   │   │   │   │   ├── price-history.service.ts
+│   │   │   │   │   ├── purchase-orders.controller.ts
+│   │   │   │   │   ├── purchase-orders.service.ts
+│   │   │   │   │   ├── vendors.controller.ts
+│   │   │   │   │   ├── vendors.service.ts
+│   │   │   │   │   ├── wastage.controller.ts
+│   │   │   │   │   ├── wastage.service.ts
+│   │   │   │   │   ├── whiteboard.controller.ts
+│   │   │   │   │   └── whiteboard.service.ts
+│   │   │   │   ├── metrics
+│   │   │   │   │   ├── metrics.controller.ts
+│   │   │   │   │   └── metrics.module.ts
+│   │   │   │   ├── nutrition
+│   │   │   │   │   ├── dietary-classifier.service.ts
+│   │   │   │   │   ├── label-renderer.service.ts
+│   │   │   │   │   ├── nutrition.controller.ts
+│   │   │   │   │   ├── nutrition.module.ts
+│   │   │   │   │   ├── nutrition.service.ts
+│   │   │   │   │   └── usda-resolver.service.ts
+│   │   │   │   ├── pos
+│   │   │   │   │   ├── pos-links.service.ts
+│   │   │   │   │   ├── pos-transactions.service.ts
+│   │   │   │   │   ├── pos.controller.ts
+│   │   │   │   │   └── pos.module.ts
+│   │   │   │   ├── pos-simulator
+│   │   │   │   │   ├── pos-simulator.controller.ts
+│   │   │   │   │   ├── pos-simulator.helpers.ts
+│   │   │   │   │   ├── pos-simulator.mock.ts
+│   │   │   │   │   ├── pos-simulator.module.ts
+│   │   │   │   │   └── pos-simulator.spec.ts
+│   │   │   │   ├── recipe
+│   │   │   │   │   ├── ingredients.controller.ts
+│   │   │   │   │   ├── ingredients.service.ts
+│   │   │   │   │   ├── recipe-cost.service.ts
+│   │   │   │   │   ├── recipe-meta.controller.ts
+│   │   │   │   │   ├── recipe-meta.service.ts
+│   │   │   │   │   ├── recipe-versions.controller.ts
+│   │   │   │   │   ├── recipe.module.ts
+│   │   │   │   │   ├── recipe.spec.ts
+│   │   │   │   │   ├── recipes.controller.ts
+│   │   │   │   │   ├── recipes.mapper.ts
+│   │   │   │   │   ├── recipes.service.ts
+│   │   │   │   │   ├── vessels.controller.ts
+│   │   │   │   │   └── vessels.service.ts
+│   │   │   │   ├── signage
+│   │   │   │   │   ├── displays.controller.ts
+│   │   │   │   │   ├── displays.helpers.ts
+│   │   │   │   │   ├── displays.service.ts
+│   │   │   │   │   ├── displays.spec.ts
+│   │   │   │   │   ├── layouts.controller.ts
+│   │   │   │   │   ├── layouts.service.ts
+│   │   │   │   │   ├── layouts.spec.ts
+│   │   │   │   │   ├── response.helper.ts
+│   │   │   │   │   ├── signage.gateway.ts
+│   │   │   │   │   └── signage.module.ts
+│   │   │   │   ├── storage
+│   │   │   │   │   ├── storage.controller.ts
+│   │   │   │   │   └── storage.module.ts
+│   │   │   │   └── users
+│   │   │   │       ├── users.controller.ts
+│   │   │   │       └── users.module.ts
+│   │   │   └── pre-bootstrap.ts
+│   │   └── tsconfig.json
+│   ├── cli
+│   │   ├── README.md
+│   │   ├── eslint.config.js
+│   │   ├── eslint.config.mjs
+│   │   ├── nest-cli.json
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── app.module.ts
+│   │   │   ├── commands
+│   │   │   │   ├── commands.module.ts
+│   │   │   │   ├── import-textbook.command.ts
+│   │   │   │   ├── import.command.ts
+│   │   │   │   └── parse-textbook.command.ts
+│   │   │   ├── ingestion
+│   │   │   │   ├── gemini-parser.schemas.ts
+│   │   │   │   ├── gemini-parser.service.ts
+│   │   │   │   ├── ingestion.module.ts
+│   │   │   │   ├── ingestion.service.ts
+│   │   │   │   ├── playwright-flipper.service.ts
+│   │   │   │   └── prompt-templates.ts
+│   │   │   └── main.ts
+│   │   ├── test
+│   │   │   ├── app.e2e-spec.ts
+│   │   │   └── jest-e2e.json
+│   │   ├── tsconfig.build.json
+│   │   └── tsconfig.json
+│   ├── pos-simulator
+│   │   ├── eslint.config.js
+│   │   ├── next-env.d.ts
+│   │   ├── next.config.mjs
+│   │   ├── package.json
+│   │   ├── postcss.config.mjs
+│   │   ├── src
+│   │   │   ├── app
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── global-error.tsx
+│   │   │   │   ├── globals.css
+│   │   │   │   ├── layout.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── test
+│   │   │   │       └── page.tsx
+│   │   │   ├── components
+│   │   │   │   ├── LoggerInitializer.tsx
+│   │   │   │   ├── PosItemCard.tsx
+│   │   │   │   ├── PosSimulator.tsx
+│   │   │   │   ├── StockPromptModal.tsx
+│   │   │   │   └── helpers.ts
+│   │   │   └── instrumentation.ts
+│   │   └── tsconfig.json
+│   ├── setup-portal
+│   │   ├── eslint.config.js
+│   │   ├── next-env.d.ts
+│   │   ├── next.config.mjs
+│   │   ├── package.json
+│   │   ├── postcss.config.mjs
+│   │   ├── src
+│   │   │   ├── app
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── global-error.tsx
+│   │   │   │   ├── globals.css
+│   │   │   │   ├── layout.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── components
+│   │   │   │   └── LoggerInitializer.tsx
+│   │   │   └── instrumentation.ts
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
+│   ├── wearos
+│   │   ├── app
+│   │   │   ├── build.gradle.kts
+│   │   │   ├── lint.xml
+│   │   │   ├── proguard-rules.pro
+│   │   │   └── src
+│   │   │       └── main
+│   │   │           ├── AndroidManifest.xml
+│   │   │           ├── ic_launcher-playstore.png
+│   │   │           ├── java
+│   │   │           │   └── com
+│   │   │           │       └── sous
+│   │   │           │           └── wearos
+│   │   │           │               ├── complication
+│   │   │           │               │   ├── DailySalesComplicationService.kt
+│   │   │           │               │   ├── TicketTimeComplicationService.kt
+│   │   │           │               │   └── VoiceCommandComplicationService.kt
+│   │   │           │               ├── network
+│   │   │           │               │   ├── ApiClient.kt
+│   │   │           │               │   └── TokenManager.kt
+│   │   │           │               ├── presentation
+│   │   │           │               │   ├── MainActivity.kt
+│   │   │           │               │   ├── PairingScreen.kt
+│   │   │           │               │   ├── SettingsActivity.kt
+│   │   │           │               │   └── theme
+│   │   │           │               │       └── Theme.kt
+│   │   │           │               └── tile
+│   │   │           │                   └── MainTileService.kt
+│   │   │           └── res
+│   │   │               ├── drawable
+│   │   │               │   ├── ic_chef_hat.xml
+│   │   │               │   ├── ic_launcher_background.xml
+│   │   │               │   ├── ic_launcher_foreground.xml
+│   │   │               │   ├── ic_mic.xml
+│   │   │               │   ├── splash_icon.xml
+│   │   │               │   └── tile_preview.png
+│   │   │               ├── drawable-round
+│   │   │               │   └── tile_preview.png
+│   │   │               ├── mipmap-anydpi-v26
+│   │   │               │   ├── ic_launcher.xml
+│   │   │               │   └── ic_launcher_round.xml
+│   │   │               ├── mipmap-hdpi
+│   │   │               │   ├── ic_launcher.webp
+│   │   │               │   └── ic_launcher_round.webp
+│   │   │               ├── mipmap-mdpi
+│   │   │               │   ├── ic_launcher.webp
+│   │   │               │   └── ic_launcher_round.webp
+│   │   │               ├── mipmap-xhdpi
+│   │   │               │   ├── ic_launcher.webp
+│   │   │               │   └── ic_launcher_round.webp
+│   │   │               ├── mipmap-xxhdpi
+│   │   │               │   ├── ic_launcher.webp
+│   │   │               │   └── ic_launcher_round.webp
+│   │   │               ├── mipmap-xxxhdpi
+│   │   │               │   ├── ic_launcher.webp
+│   │   │               │   └── ic_launcher_round.webp
+│   │   │               ├── values
+│   │   │               │   ├── ic_launcher_background.xml
+│   │   │               │   ├── strings.xml
+│   │   │               │   └── styles.xml
+│   │   │               └── values-round
+│   │   │                   └── strings.xml
+│   │   ├── build.gradle.kts
+│   │   ├── gradle
+│   │   │   ├── libs.versions.toml
+│   │   │   └── wrapper
+│   │   │       ├── gradle-wrapper.jar
+│   │   │       └── gradle-wrapper.properties
+│   │   ├── gradle.properties
+│   │   ├── gradlew
+│   │   ├── gradlew.bat
+│   │   └── settings.gradle.kts
+│   └── web
+│       ├── e2e
+│       │   ├── recipe.spec.ts
+│       │   └── signage.spec.ts
+│       ├── eslint.config.js
+│       ├── next-env.d.ts
+│       ├── next.config.mjs
+│       ├── package.json
+│       ├── playwright.config.ts
+│       ├── postcss.config.mjs
+│       ├── public
+│       │   ├── favicon-dev.svg
+│       │   ├── favicon-prod.svg
+│       │   ├── favicon-staging.svg
+│       │   └── sw.js
+│       ├── src
+│       │   ├── app
+│       │   │   ├── (fullscreen)
+│       │   │   │   ├── kds
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── layout.tsx
+│       │   │   │   ├── pos
+│       │   │   │   │   └── page.tsx
+│       │   │   │   └── recipes
+│       │   │   │       └── [id]
+│       │   │   │           └── kitchen
+│       │   │   │               ├── KitchenClientPage.tsx
+│       │   │   │               └── page.tsx
+│       │   │   ├── (workspace)
+│       │   │   │   ├── @modal
+│       │   │   │   │   ├── (.)ingestion
+│       │   │   │   │   │   └── review
+│       │   │   │   │   │       └── [id]
+│       │   │   │   │   │           └── page.tsx
+│       │   │   │   │   ├── default.tsx
+│       │   │   │   │   └── signage
+│       │   │   │   │       └── [deckId]
+│       │   │   │   │           ├── page.tsx
+│       │   │   │   │           └── preview
+│       │   │   │   │               └── page.tsx
+│       │   │   │   ├── admin
+│       │   │   │   │   ├── devices
+│       │   │   │   │   │   ├── devices-client-wrapper.tsx
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── layout.tsx
+│       │   │   │   │   └── users
+│       │   │   │   │       └── page.tsx
+│       │   │   │   ├── catalog
+│       │   │   │   │   ├── CatalogView.tsx
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── dashboard
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── home
+│       │   │   │   │   ├── components
+│       │   │   │   │   │   ├── FinancialPulse.tsx
+│       │   │   │   │   │   ├── MenuProfitability.tsx
+│       │   │   │   │   │   ├── PurchasingAlerts.tsx
+│       │   │   │   │   │   └── SystemHealth.tsx
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── ingestion
+│       │   │   │   │   └── review
+│       │   │   │   │       └── [id]
+│       │   │   │   │           ├── creatable-select.tsx
+│       │   │   │   │           ├── fix_vb.py
+│       │   │   │   │           ├── invoice-item-row.tsx
+│       │   │   │   │           ├── page-header.tsx
+│       │   │   │   │           ├── page.tsx
+│       │   │   │   │           ├── recipe-ingredient-row.tsx
+│       │   │   │   │           ├── recipe-section.tsx
+│       │   │   │   │           ├── use-auto-mapping.ts
+│       │   │   │   │           ├── use-visual-builder-data.ts
+│       │   │   │   │           ├── vendor-section.tsx
+│       │   │   │   │           ├── visual-builder.tsx
+│       │   │   │   │           └── visual-builder.types.ts
+│       │   │   │   ├── ingestions
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── inventory
+│       │   │   │   │   ├── @modal
+│       │   │   │   │   │   ├── (.)vendors
+│       │   │   │   │   │   │   └── add
+│       │   │   │   │   │   │       └── page.tsx
+│       │   │   │   │   │   └── default.tsx
+│       │   │   │   │   ├── invoices
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── items
+│       │   │   │   │   │   ├── items-ledger-client.tsx
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── layout.tsx
+│       │   │   │   │   ├── orders
+│       │   │   │   │   │   ├── OrdersClient.tsx
+│       │   │   │   │   │   ├── [id]
+│       │   │   │   │   │   │   └── shop
+│       │   │   │   │   │   │       └── page.tsx
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   └── vendors
+│       │   │   │   │       ├── actions.ts
+│       │   │   │   │       ├── add
+│       │   │   │   │       │   └── page.tsx
+│       │   │   │   │       ├── page.tsx
+│       │   │   │   │       └── vendors-client.tsx
+│       │   │   │   ├── layout.tsx
+│       │   │   │   ├── pos-orders
+│       │   │   │   │   ├── PosOrdersView.tsx
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── recipes
+│       │   │   │   │   ├── RecipeBuilderClient.tsx
+│       │   │   │   │   ├── RecipesClientPage.tsx
+│       │   │   │   │   ├── [id]
+│       │   │   │   │   │   ├── RecipeViewerClient.tsx
+│       │   │   │   │   │   ├── edit
+│       │   │   │   │   │   │   └── page.tsx
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── new
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── settings
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   └── settings-client.tsx
+│       │   │   │   ├── signage
+│       │   │   │   │   ├── [deckId]
+│       │   │   │   │   │   ├── page.tsx
+│       │   │   │   │   │   ├── preview
+│       │   │   │   │   │   │   └── page.tsx
+│       │   │   │   │   │   └── tv-signage-editor-client.tsx
+│       │   │   │   │   ├── decks-list-client.tsx
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── team
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── transactions
+│       │   │   │   │   ├── TransactionsView.tsx
+│       │   │   │   │   └── page.tsx
+│       │   │   │   └── vendors
+│       │   │   │       └── page.tsx
+│       │   │   ├── actions
+│       │   │   │   └── auth.ts
+│       │   │   ├── display
+│       │   │   │   ├── [id]
+│       │   │   │   │   ├── block-renderer.tsx
+│       │   │   │   │   ├── blocks
+│       │   │   │   │   │   ├── callout-block.tsx
+│       │   │   │   │   │   ├── category-header-block.tsx
+│       │   │   │   │   │   ├── exploded-item-block.tsx
+│       │   │   │   │   │   ├── media-carousel-block.tsx
+│       │   │   │   │   │   ├── menu-list-block.tsx
+│       │   │   │   │   │   ├── modifier-group-block.tsx
+│       │   │   │   │   │   ├── nested-item-block.tsx
+│       │   │   │   │   │   └── pos-item-block.tsx
+│       │   │   │   │   ├── column-layout-renderer.tsx
+│       │   │   │   │   ├── display-player.tsx
+│       │   │   │   │   ├── helpers.ts
+│       │   │   │   │   ├── menu-item-card.tsx
+│       │   │   │   │   ├── menu-item-style-utils.ts
+│       │   │   │   │   ├── menu-slide-renderer.tsx
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   ├── pairing-screen.tsx
+│       │   │   │   │   ├── scale-wrapper.tsx
+│       │   │   │   │   ├── single-column.tsx
+│       │   │   │   │   ├── slide-carousel.tsx
+│       │   │   │   │   ├── slide-renderer.tsx
+│       │   │   │   │   ├── types.ts
+│       │   │   │   │   └── use-display-player.ts
+│       │   │   │   └── page.tsx
+│       │   │   ├── error.tsx
+│       │   │   ├── global-error.tsx
+│       │   │   ├── globals.css
+│       │   │   ├── layout.tsx
+│       │   │   ├── login
+│       │   │   │   └── page.tsx
+│       │   │   ├── manifest.ts
+│       │   │   ├── page.tsx
+│       │   │   └── privacy-policy
+│       │   │       └── page.tsx
+│       │   ├── components
+│       │   │   ├── ClientInitializers.tsx
+│       │   │   ├── ClientInitializersWrapper.tsx
+│       │   │   ├── GoogleDriveBrowserWrapper.tsx
+│       │   │   ├── LoggerInitializer.tsx
+│       │   │   ├── layout
+│       │   │   │   ├── app-bar.tsx
+│       │   │   │   ├── bottom-nav.tsx
+│       │   │   │   ├── hamburger.tsx
+│       │   │   │   ├── sidebar.tsx
+│       │   │   │   └── theme-toggle.tsx
+│       │   │   ├── theme-provider.tsx
+│       │   │   └── ui
+│       │   │       └── confirm-modal.tsx
+│       │   ├── instrumentation-client.tsx
+│       │   ├── instrumentation.ts
+│       │   ├── proxy.ts
+│       │   └── sw.ts
+│       └── tsconfig.json
+├── deploy
+│   ├── ansible
+│   │   ├── README.md
+│   │   ├── ansible.cfg
+│   │   ├── group_vars
+│   │   │   └── all
+│   │   │       ├── vars.yml
+│   │   │       └── vault.yml.tpl
+│   │   ├── inventory.ini.tpl
+│   │   ├── playbook.yml
+│   │   └── roles
+│   │       ├── config
+│   │       │   ├── files
+│   │       │   │   ├── kiosk.sh
+│   │       │   │   ├── labwc-rc.xml
+│   │       │   │   ├── sync-watchtower.js
+│   │       │   │   ├── tv-sleep.sh
+│   │       │   │   └── tv-wake.sh
+│   │       │   └── tasks
+│   │       │       └── main.yml
+│   │       ├── secrets_bootstrap
+│   │       │   └── tasks
+│   │       │       └── main.yml
+│   │       ├── services
+│   │       │   ├── handlers
+│   │       │   │   └── main.yml
+│   │       │   ├── tasks
+│   │       │   │   └── main.yml
+│   │       │   └── templates
+│   │       │       ├── signage-ansible-update.service.j2
+│   │       │       ├── signage-app.service.j2
+│   │       │       ├── signage-deps-install.service.j2
+│   │       │       ├── signage-kiosk.service.j2
+│   │       │       └── signage-sync.service.j2
+│   │       ├── system
+│   │       │   └── tasks
+│   │       │       └── main.yml
+│   │       └── user
+│   │           └── tasks
+│   │               └── main.yml
+│   ├── pi
+│   │   ├── README.md
+│   │   └── pi-gen
+│   │       ├── Dockerfile
+│   │       ├── LICENSE
+│   │       ├── README.md
+│   │       ├── build-docker.sh
+│   │       ├── build.sh
+│   │       ├── depends
+│   │       ├── export-image
+│   │       │   ├── 00-allow-rerun
+│   │       │   │   └── 00-run.sh
+│   │       │   ├── 01-user-rename
+│   │       │   │   ├── 00-packages
+│   │       │   │   └── 01-run.sh
+│   │       │   ├── 02-set-sources
+│   │       │   │   └── 01-run.sh
+│   │       │   ├── 03-network
+│   │       │   │   ├── 01-run.sh
+│   │       │   │   └── files
+│   │       │   │       └── resolv.conf
+│   │       │   ├── 04-set-partuuid
+│   │       │   │   └── 00-run.sh
+│   │       │   ├── 05-finalise
+│   │       │   │   └── 01-run.sh
+│   │       │   └── prerun.sh
+│   │       ├── export-noobs
+│   │       │   ├── 00-release
+│   │       │   │   ├── 00-run.sh
+│   │       │   │   └── files
+│   │       │   │       ├── OS.png
+│   │       │   │       ├── marketing
+│   │       │   │       │   └── slides_vga
+│   │       │   │       │       ├── A.png
+│   │       │   │       │       ├── B.png
+│   │       │   │       │       ├── C.png
+│   │       │   │       │       ├── D.png
+│   │       │   │       │       ├── E.png
+│   │       │   │       │       ├── F.png
+│   │       │   │       │       └── G.png
+│   │       │   │       ├── os.json
+│   │       │   │       ├── partition_setup.sh
+│   │       │   │       ├── partitions.json
+│   │       │   │       └── release_notes.txt
+│   │       │   └── prerun.sh
+│   │       ├── scripts
+│   │       │   ├── common
+│   │       │   ├── dependencies_check
+│   │       │   └── remove-comments.sed
+│   │       ├── stage0
+│   │       │   ├── 00-configure-apt
+│   │       │   │   ├── 00-run.sh
+│   │       │   │   ├── 01-packages
+│   │       │   │   └── files
+│   │       │   │       ├── 51cache
+│   │       │   │       ├── raspberrypi.gpg.key
+│   │       │   │       ├── raspi.list
+│   │       │   │       └── sources.list
+│   │       │   ├── 01-locale
+│   │       │   │   ├── 00-debconf
+│   │       │   │   └── 00-packages
+│   │       │   ├── 02-firmware
+│   │       │   │   ├── 01-packages
+│   │       │   │   └── 02-run.sh
+│   │       │   ├── files
+│   │       │   │   └── raspberrypi.gpg
+│   │       │   └── prerun.sh
+│   │       ├── stage1
+│   │       │   ├── 00-boot-files
+│   │       │   │   ├── 00-run.sh
+│   │       │   │   └── files
+│   │       │   │       ├── cmdline.txt
+│   │       │   │       └── config.txt
+│   │       │   ├── 01-sys-tweaks
+│   │       │   │   ├── 00-packages
+│   │       │   │   ├── 00-patches
+│   │       │   │   │   ├── 01-bashrc.diff
+│   │       │   │   │   └── series
+│   │       │   │   ├── 00-run.sh
+│   │       │   │   └── files
+│   │       │   │       └── fstab
+│   │       │   ├── 02-net-tweaks
+│   │       │   │   ├── 00-packages
+│   │       │   │   └── 00-run.sh
+│   │       │   ├── 03-install-packages
+│   │       │   │   └── 00-packages
+│   │       │   └── prerun.sh
+│   │       ├── stage2
+│   │       │   ├── 00-copies-and-fills
+│   │       │   │   ├── 01-packages
+│   │       │   │   └── 02-run.sh
+│   │       │   ├── 01-sys-tweaks
+│   │       │   │   ├── 00-debconf
+│   │       │   │   ├── 00-packages
+│   │       │   │   ├── 00-packages-nr
+│   │       │   │   ├── 00-patches
+│   │       │   │   │   ├── 01-useradd.diff
+│   │       │   │   │   ├── 02-swap.diff
+│   │       │   │   │   ├── 04-inputrc.diff
+│   │       │   │   │   ├── 05-path.diff
+│   │       │   │   │   ├── 07-resize-init.diff
+│   │       │   │   │   └── series
+│   │       │   │   ├── 01-run.sh
+│   │       │   │   └── files
+│   │       │   │       ├── 50raspi
+│   │       │   │       ├── 90-qemu.rules
+│   │       │   │       ├── console-setup
+│   │       │   │       └── resize2fs_once
+│   │       │   ├── 02-net-tweaks
+│   │       │   │   ├── 00-packages
+│   │       │   │   └── 01-run.sh
+│   │       │   ├── 03-accept-mathematica-eula
+│   │       │   │   └── 00-debconf
+│   │       │   ├── 03-set-timezone
+│   │       │   │   └── 02-run.sh
+│   │       │   ├── EXPORT_IMAGE
+│   │       │   └── prerun.sh
+│   │       ├── stage3
+│   │       │   ├── 00-install-packages
+│   │       │   │   ├── 00-packages
+│   │       │   │   ├── 00-packages-nr
+│   │       │   │   └── 01-run.sh
+│   │       │   └── prerun.sh
+│   │       ├── stage4
+│   │       │   ├── 00-install-packages
+│   │       │   │   ├── 00-debconf
+│   │       │   │   ├── 00-packages
+│   │       │   │   ├── 00-packages-nr
+│   │       │   │   └── 02-packages
+│   │       │   ├── 00-soustools
+│   │       │   │   ├── 00-run.sh
+│   │       │   │   └── files
+│   │       │   │       ├── kiosk.sh
+│   │       │   │       ├── labwc-rc.xml
+│   │       │   │       ├── setup-portal
+│   │       │   │       │   ├── 404.html
+│   │       │   │       │   ├── _next
+│   │       │   │       │   │   └── static
+│   │       │   │       │   │       ├── 1ritC_oROEimO1yQVoOsD
+│   │       │   │       │   │       │   ├── _buildManifest.js
+│   │       │   │       │   │       │   └── _ssgManifest.js
+│   │       │   │       │   │       ├── chunks
+│   │       │   │       │   │       │   ├── 129-e7dcd12a6b7986ed.js
+│   │       │   │       │   │       │   ├── 534-69d1f770703ac5ba.js
+│   │       │   │       │   │       │   ├── 6be5ad14-5821b2ec090de3a7.js
+│   │       │   │       │   │       │   ├── app
+│   │       │   │       │   │       │   │   ├── _not-found
+│   │       │   │       │   │       │   │   │   └── page-37601a944f4ecc34.js
+│   │       │   │       │   │       │   │   ├── layout-681b759604b74c0e.js
+│   │       │   │       │   │       │   │   └── page-d85e0c0dca457916.js
+│   │       │   │       │   │       │   ├── framework-bef83a85c94ff7de.js
+│   │       │   │       │   │       │   ├── main-a66769ee43b44f7d.js
+│   │       │   │       │   │       │   ├── main-app-7c335b626b20bdbc.js
+│   │       │   │       │   │       │   ├── pages
+│   │       │   │       │   │       │   │   ├── _app-bfbb8a212bda494d.js
+│   │       │   │       │   │       │   │   └── _error-1f179d5a7d2f3703.js
+│   │       │   │       │   │       │   ├── polyfills-42372ed130431b0a.js
+│   │       │   │       │   │       │   └── webpack-9ffafb80d002d0d8.js
+│   │       │   │       │   │       └── css
+│   │       │   │       │   │           └── 448363942be82282.css
+│   │       │   │       │   ├── index.html
+│   │       │   │       │   └── index.txt
+│   │       │   │       └── signage-kiosk.service
+│   │       │   ├── 01-console-autologin
+│   │       │   │   └── 00-run.sh
+│   │       │   ├── 02-extras
+│   │       │   │   └── 00-run.sh
+│   │       │   ├── 03-bookshelf
+│   │       │   │   ├── 00-run.sh
+│   │       │   │   └── files
+│   │       │   ├── 04-enable-xcompmgr
+│   │       │   │   └── 00-run.sh
+│   │       │   ├── 05-print-support
+│   │       │   │   ├── 00-packages
+│   │       │   │   └── 01-run.sh
+│   │       │   ├── 06-enable-wayland
+│   │       │   │   └── 00-run.sh
+│   │       │   ├── EXPORT_IMAGE
+│   │       │   ├── SKIP
+│   │       │   ├── SKIP_IMAGES
+│   │       │   └── prerun.sh
+│   │       └── stage5
+│   │           ├── 00-install-extras
+│   │           │   └── 00-packages
+│   │           ├── 00-install-libreoffice
+│   │           │   └── 00-packages
+│   │           ├── EXPORT_IMAGE
+│   │           ├── SKIP
+│   │           ├── SKIP_IMAGES
+│   │           └── prerun.sh
+│   └── vercel-setup.md
+├── deploy.sh
+├── docker-compose.dev.yml
+├── docker-compose.yml
+├── docs
+│   └── wiki
+│       ├── AGENTS.md
+│       ├── Active_Roadmap.md
+│       ├── BACKLOG.md
+│       ├── Master_Tasklist.md
+│       ├── Master_Vision.md
+│       ├── Overall_Vision.md
+│       ├── Phase 4 Master Vision.md
+│       ├── ROADMAP.md
+│       ├── VISION.md
+│       └── skills
+│           ├── design-system
+│           │   └── SKILL.md
+│           ├── formula-math
+│           │   └── SKILL.md
+│           ├── migrations
+│           │   └── SKILL.md
+│           ├── nestjs-patterns
+│           │   └── SKILL.md
+│           ├── nextjs-patterns
+│           │   └── SKILL.md
+│           ├── quality-enforcement
+│           │   └── SKILL.md
+│           ├── supabase-client
+│           │   └── SKILL.md
+│           └── wsl-execution
+│               └── SKILL.md
+├── ecosystem.config.js
+├── eslint.config.mjs
+├── knip.jsonc
+├── litellm_config.yaml
+├── package.json
+├── packages
+│   ├── api-client
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── index.ts
+│   │   │   └── schema.d.ts
+│   │   └── tsconfig.json
+│   ├── api-types
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── auth.ts
+│   │   │   ├── common.ts
+│   │   │   ├── index.ts
+│   │   │   ├── ingestion.ts
+│   │   │   ├── omnibar.ts
+│   │   │   ├── purchasing.ts
+│   │   │   ├── recipes.ts
+│   │   │   ├── signage-base.ts
+│   │   │   ├── signage-blocks.ts
+│   │   │   ├── signage-content-blocks.ts
+│   │   │   ├── signage-entities.ts
+│   │   │   └── signage.ts
+│   │   └── tsconfig.json
+│   ├── config
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── cli.ts
+│   │   │   └── index.ts
+│   │   └── tsconfig.json
+│   ├── design-system
+│   │   ├── eslint.config.js
+│   │   ├── index.css
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── components
+│   │   │   │   ├── AppBar.tsx
+│   │   │   │   ├── AppBar.types.ts
+│   │   │   │   ├── AppBarNotifDropdown.tsx
+│   │   │   │   ├── AppBarProfileDropdown.tsx
+│   │   │   │   ├── BottomNav.tsx
+│   │   │   │   ├── Button.tsx
+│   │   │   │   ├── Card.tsx
+│   │   │   │   ├── ConfirmModal.tsx
+│   │   │   │   ├── DashboardCharts.tsx
+│   │   │   │   ├── GlobalAppBar
+│   │   │   │   │   ├── GlobalAppBarContainer.tsx
+│   │   │   │   │   ├── GlobalAppBarPresentation.tsx
+│   │   │   │   │   ├── WaffleMenuDropdown.tsx
+│   │   │   │   │   └── index.ts
+│   │   │   │   ├── Hamburger.tsx
+│   │   │   │   ├── Input.tsx
+│   │   │   │   ├── InsightsSidebar.tsx
+│   │   │   │   ├── Label.tsx
+│   │   │   │   ├── OmniBar
+│   │   │   │   │   ├── AttachmentFlyout.tsx
+│   │   │   │   │   ├── CreatableSelect.tsx
+│   │   │   │   │   ├── DocumentViewer.tsx
+│   │   │   │   │   ├── FloatingOmniTrigger.tsx
+│   │   │   │   │   ├── OmniBarContext.ts
+│   │   │   │   │   ├── OmniBarPresentation.tsx
+│   │   │   │   │   ├── OmniBarProvider.tsx
+│   │   │   │   │   ├── OmniChatWindow.tsx
+│   │   │   │   │   ├── OmniInputPill.tsx
+│   │   │   │   │   ├── UnifiedItemRow.tsx
+│   │   │   │   │   ├── UnifiedReviewPanel.tsx
+│   │   │   │   │   ├── VerificationPanel.tsx
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── use-omni-actions.hook.ts
+│   │   │   │   │   ├── use-omni-file-upload.hook.ts
+│   │   │   │   │   ├── use-omni-socket.hook.test.ts
+│   │   │   │   │   └── use-omni-socket.hook.ts
+│   │   │   │   ├── PinInput.tsx
+│   │   │   │   ├── QuickAddBar.tsx
+│   │   │   │   ├── Sidebar.tsx
+│   │   │   │   ├── SidebarLayout.tsx
+│   │   │   │   ├── SupplierHeader.tsx
+│   │   │   │   ├── SupplierLineItem.tsx
+│   │   │   │   ├── SupplierOrderGroup.tsx
+│   │   │   │   ├── SupplierOrderGroup.types.ts
+│   │   │   │   ├── Table.tsx
+│   │   │   │   ├── ThemeToggle.tsx
+│   │   │   │   ├── TwoToneHeader.tsx
+│   │   │   │   └── logos
+│   │   │   │       ├── Lettermark.tsx
+│   │   │   │       ├── MicroIcon.tsx
+│   │   │   │       ├── PrimaryLogo.tsx
+│   │   │   │       └── index.ts
+│   │   │   ├── index.ts
+│   │   │   ├── store
+│   │   │   │   └── sidebarStore.ts
+│   │   │   └── utils
+│   │   │       ├── scaling.test.ts
+│   │   │       └── scaling.ts
+│   │   └── tsconfig.json
+│   ├── domain-inventory
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── draft-po-modal.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── item-editor-form-fields.tsx
+│   │   │   ├── item-editor-modal.tsx
+│   │   │   ├── item-editor-usda-box.tsx
+│   │   │   ├── items-ledger-table.tsx
+│   │   │   ├── orders-history-tab.tsx
+│   │   │   ├── orders-list-tab.tsx
+│   │   │   ├── orders-panel.tsx
+│   │   │   ├── vendor-card-form.tsx
+│   │   │   └── vendors-panel.tsx
+│   │   └── tsconfig.json
+│   ├── domain-recipes
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── ActiveKitchen.tsx
+│   │   │   ├── ActiveKitchenStep.tsx
+│   │   │   ├── ActiveKitchenTimerRow.tsx
+│   │   │   ├── ActiveKitchenTimers.tsx
+│   │   │   ├── ComplianceSearch.tsx
+│   │   │   ├── ComplianceSearchForm.tsx
+│   │   │   ├── ComplianceSearchResultItem.tsx
+│   │   │   ├── RecipeBatchSummary.tsx
+│   │   │   ├── RecipeBuilder.tsx
+│   │   │   ├── RecipeBuilderFormFields.tsx
+│   │   │   ├── RecipeBuilderIngredientRow.tsx
+│   │   │   ├── RecipeBuilderIngredients.tsx
+│   │   │   ├── RecipeBuilderInstructions.tsx
+│   │   │   ├── RecipeCard.tsx
+│   │   │   ├── RecipeCostPanel.tsx
+│   │   │   ├── RecipeCostTable.tsx
+│   │   │   ├── RecipeDietaryBadges.tsx
+│   │   │   ├── RecipeFilter.tsx
+│   │   │   ├── RecipeIngredientsTable.tsx
+│   │   │   ├── RecipeList.tsx
+│   │   │   ├── RecipeNutritionPanel.tsx
+│   │   │   ├── RecipeScalingPanel.tsx
+│   │   │   ├── RecipeViewer.tsx
+│   │   │   ├── RecipeViewerHeader.tsx
+│   │   │   ├── VersionHistoryDrawer.tsx
+│   │   │   ├── VesselDialog.tsx
+│   │   │   ├── VesselDialogForm.tsx
+│   │   │   ├── VesselManager.tsx
+│   │   │   ├── VesselManagerHeader.tsx
+│   │   │   ├── WastageEntryForm.tsx
+│   │   │   ├── WastageEntryModal.tsx
+│   │   │   ├── index.ts
+│   │   │   └── types.ts
+│   │   └── tsconfig.json
+│   ├── domain-settings
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── downloads-panel.tsx
+│   │   │   ├── general-settings.tsx
+│   │   │   ├── global-styling-settings.tsx
+│   │   │   ├── google-drive-browser.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── integration-card.tsx
+│   │   │   ├── integrations-panel.tsx
+│   │   │   ├── styling-colors-section.tsx
+│   │   │   └── styling-typography-section.tsx
+│   │   └── tsconfig.json
+│   ├── domain-signage
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── add-blocks-palette.tsx
+│   │   │   ├── atom-editor-controls.tsx
+│   │   │   ├── atom-editor-popover.tsx
+│   │   │   ├── atom-editor-settings.tsx
+│   │   │   ├── block-children.tsx
+│   │   │   ├── block-config-data.tsx
+│   │   │   ├── block-config-modal.tsx
+│   │   │   ├── block-configs
+│   │   │   │   ├── callout-block-config.tsx
+│   │   │   │   ├── category-header-block-config.tsx
+│   │   │   │   ├── image-block-config.tsx
+│   │   │   │   ├── media-carousel-block-config.tsx
+│   │   │   │   ├── menu-list-block-config.tsx
+│   │   │   │   ├── modifier-group-block-config.tsx
+│   │   │   │   ├── nested-item-block-config.tsx
+│   │   │   │   ├── timeline-block-config.tsx
+│   │   │   │   └── video-block-config.tsx
+│   │   │   ├── block-editor-node.tsx
+│   │   │   ├── block-node-utils.ts
+│   │   │   ├── block-palette-items.ts
+│   │   │   ├── block-settings-panel.tsx
+│   │   │   ├── block-tree-utils.ts
+│   │   │   ├── block-type-config-fields.tsx
+│   │   │   ├── body-portal.tsx
+│   │   │   ├── canvas-column-count-bar.tsx
+│   │   │   ├── column-content-view.tsx
+│   │   │   ├── column-empty-view.tsx
+│   │   │   ├── column-popover-editor.tsx
+│   │   │   ├── config-migration.ts
+│   │   │   ├── content-config-fields.tsx
+│   │   │   ├── css-editor-modal.tsx
+│   │   │   ├── css-helper.tsx
+│   │   │   ├── css-reference-data.ts
+│   │   │   ├── css-reference-panel.tsx
+│   │   │   ├── deck-card.tsx
+│   │   │   ├── device-settings-dialog.tsx
+│   │   │   ├── device-settings-form.tsx
+│   │   │   ├── display-card.tsx
+│   │   │   ├── display-manager.tsx
+│   │   │   ├── display-picker.tsx
+│   │   │   ├── display-utils.ts
+│   │   │   ├── editor-controls
+│   │   │   │   ├── BackgroundControls.tsx
+│   │   │   │   ├── BorderControls.tsx
+│   │   │   │   ├── LayoutControls.tsx
+│   │   │   │   └── TypographyControls.tsx
+│   │   │   ├── editor-top-bar-actions.tsx
+│   │   │   ├── editor-top-bar.tsx
+│   │   │   ├── font-picker-popover.tsx
+│   │   │   ├── fonts.ts
+│   │   │   ├── index.ts
+│   │   │   ├── layers-tree.tsx
+│   │   │   ├── layout-builder.tsx
+│   │   │   ├── layout-drag-logic.ts
+│   │   │   ├── layout-icons.tsx
+│   │   │   ├── layout-preview.tsx
+│   │   │   ├── menu-item-preview-card.tsx
+│   │   │   ├── menu-item-selector.tsx
+│   │   │   ├── menu-item-style-modal.tsx
+│   │   │   ├── menu-item-style-utils.ts
+│   │   │   ├── menu-item-styles-inspector.tsx
+│   │   │   ├── menu-list-modifier-settings.tsx
+│   │   │   ├── mock-data.ts
+│   │   │   ├── modal-shell.tsx
+│   │   │   ├── modifier-group-settings.tsx
+│   │   │   ├── overlay-item.tsx
+│   │   │   ├── pair-display-dialog.tsx
+│   │   │   ├── pos-item-card.tsx
+│   │   │   ├── pos-item-picker.tsx
+│   │   │   ├── preview-block-renderer.tsx
+│   │   │   ├── preview-callout.tsx
+│   │   │   ├── preview-category-header.tsx
+│   │   │   ├── preview-column-editor.tsx
+│   │   │   ├── preview-column-layout.tsx
+│   │   │   ├── preview-column-renderers.tsx
+│   │   │   ├── preview-content-blocks.tsx
+│   │   │   ├── preview-media-carousel.tsx
+│   │   │   ├── preview-menu-list.tsx
+│   │   │   ├── preview-menu-renderer.tsx
+│   │   │   ├── preview-modifier-group.tsx
+│   │   │   ├── preview-nested-exploded.tsx
+│   │   │   ├── preview-pos-item.tsx
+│   │   │   ├── preview-timeline.tsx
+│   │   │   ├── preview-utils.ts
+│   │   │   ├── right-side-panel.tsx
+│   │   │   ├── slide-filmstrip-card.tsx
+│   │   │   ├── slide-filmstrip.tsx
+│   │   │   ├── slide-renderer.tsx
+│   │   │   ├── state-tab-bar.tsx
+│   │   │   ├── stock-prompt-modal.tsx
+│   │   │   ├── styles-panel.tsx
+│   │   │   ├── typography-sample.tsx
+│   │   │   ├── use-layout-draft.ts
+│   │   │   └── use-save-state.ts
+│   │   └── tsconfig.json
+│   ├── eslint-config
+│   │   ├── base.js
+│   │   ├── nestjs.js
+│   │   ├── next.js
+│   │   └── package.json
+│   ├── logger
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── browser.ts
+│   │   │   ├── index.ts
+│   │   │   └── server.ts
+│   │   └── tsconfig.json
+│   ├── supabase
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   ├── schema.sql
+│   │   ├── src
+│   │   │   └── index.ts
+│   │   └── tsconfig.json
+│   └── tsconfig
+│       ├── base.json
+│       ├── nestjs.json
+│       ├── nextjs.json
+│       ├── package.json
+│       └── react-library.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── project-state.md
+├── repomix.config.json
+├── run.sh
+├── scripts
+│   ├── audit-secrets.ts
+│   ├── build-app.sh
+│   ├── create-index.js
+│   ├── create-signage-stubs.js
+│   ├── fix_seed.mjs
+│   ├── install-pnpm.sh
+│   ├── run-pnpm.sh
+│   └── seed-globalmaster-staples.ts
+├── stack.json
+├── supabase
+│   ├── config.toml
+│   ├── migrations
+│   │   ├── 00000000000000_init_schema.sql
+│   │   ├── 20260707000000_update_po_status.sql
+│   │   ├── 20260711000000_square_integration.sql
+│   │   ├── 20260712000000_vendor_item_aliases.sql
+│   │   ├── 20260712010000_pgvector_setup.sql
+│   │   └── 20260712020000_rename_master_ingredients.sql
+│   ├── seed.sql
+│   └── snippets
+│       └── Untitled query 242.sql
+└── turbo.json
+
+260 directories, 811 files
