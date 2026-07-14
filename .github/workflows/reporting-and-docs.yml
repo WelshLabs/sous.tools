@@ -85,7 +85,7 @@ jobs:
       - name: Fetch GitHub Project Kanban State
         env:
           # Use your PAT here so the CLI can "see" outside the repo to your user-level project board
-          GH_TOKEN: ${{ secrets.GITHUB_PAT }}
+          GH_TOKEN: ${{ env.GITHUB_PAT }}
         run: |
           gh project item-list 2 --owner conarwelsh --limit 100 --format=json | jq -r '.items[] | "### \(.title)\n**Status:** \(.status)\n**Assignees:** \(.assignees)\n---"' > docs/context/notebooklm-project.md || true
       # --- 4. Generate Context ---

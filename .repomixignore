@@ -16,3 +16,5 @@ node_modules
 **/openapi.json
 package-lock.json
 **/*.sql
+docs/reports/**
+**/*.txt
