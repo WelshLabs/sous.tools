@@ -9,14 +9,27 @@ fs.writeFileSync(
 );
 
 // --- 2. ARCHITECTURE GRAPH ---
-const turboGraphRaw = fs.readFileSync(path.join(__dirname, '../docs/context/turbo-graph.json'), 'utf-8');
-const turboGraph = JSON.parse(turboGraphRaw);
 let graphText = "# Turborepo Architecture & Dependencies\n\n";
-if(turboGraph.tasks) {
-    turboGraph.tasks.forEach(task => {
-        graphText += `- **${task.taskId}**: Depends on [${task.dependencies.join(', ')}]\n`;
-    });
+
+try {
+    const turboGraphRaw = fs.readFileSync(path.join(__dirname, '../docs/context/turbo-graph.json'), 'utf-8');
+    
+    // Check if the file is empty before trying to parse
+    if (turboGraphRaw.trim() !== '') {
+        const turboGraph = JSON.parse(turboGraphRaw);
+        if (turboGraph.tasks) {
+            turboGraph.tasks.forEach(task => {
+                graphText += `- **${task.taskId}**: Depends on [${task.dependencies.join(', ')}]\n`;
+            });
+        }
+    } else {
+        graphText += "Turbo graph generated an empty file.\n";
+    }
+} catch (error) {
+    console.log("⚠️ Could not parse turbo-graph.json. Skipping graph generation.");
+    graphText += "Architecture graph could not be generated during this run (JSON Parse Error).\n";
 }
+
 fs.writeFileSync(path.join(__dirname, '../docs/context/notebooklm-architecture.md'), graphText);
 
 // --- 3. SPRINT STATE (GITHUB ISSUES) ---
