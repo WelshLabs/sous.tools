@@ -55,8 +55,8 @@ fs.writeFileSync(
 );
 
 // --- 4. QUALITY & TEST REPORTS ---
-// GitHub preserves the directory structure, so we look inside the nested .reports folder
-const reportsDir = path.join(__dirname, "../docs/reports/.reports");
+// GitHub preserves the directory structure, so we look inside the nested quality-reports folder
+const reportsDir = path.join(__dirname, "../docs/reports/quality-reports");
 let reportsText = "# Code Quality Gauntlet Reports\n\n";
 
 if (fs.existsSync(reportsDir)) {
