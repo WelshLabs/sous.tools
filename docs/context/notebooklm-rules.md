@@ -2,7 +2,6 @@
 
 # Antigravity/Cursor Architectural Rules
 
-
 ## 1. Domain-Driven Design (DDD) & Infrastructure
 
 - **Strict Boundaries:** Next.js apps (`apps/*`) and domain packages (`packages/domain-*`) are strictly forbidden from importing anything from `packages/infrastructure`. This is physically enforced by `eslint-plugin-boundaries`.
