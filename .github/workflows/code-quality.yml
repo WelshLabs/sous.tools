@@ -11,6 +11,15 @@ jobs:
   code-quality:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch Production Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
