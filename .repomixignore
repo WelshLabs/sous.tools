@@ -18,3 +18,4 @@ package-lock.json
 **/*.sql
 docs/reports/**
 **/*.txt
+deploy/pi/pi-gen/README.md

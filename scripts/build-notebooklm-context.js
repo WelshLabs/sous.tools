@@ -11,32 +11,28 @@ fs.writeFileSync(
   `# sous.tools AI System Rules\n\n${cursorRules}`,
 );
 
-// --- 2. ARCHITECTURE GRAPH ---
-let graphText = "# Turborepo Architecture & Dependencies\n\n";
-
+// --- 2. WORKSPACE ARCHITECTURE (From pnpm ls) ---
 try {
-  const turboGraphRaw = fs.readFileSync(
-    path.join(__dirname, "../docs/context/turbo-graph.json"),
-    "utf-8",
-  );
+  const workspaceGraphRaw = fs.readFileSync(path.join(__dirname, '../docs/context/turbo-graph.json'), 'utf8');
+  
+  // pnpm ls outputs a raw array of packages, not an object with a 'tasks' property
+  const workspaces = JSON.parse(workspaceGraphRaw); 
+  
+  let architectureText = "# sous.tools Workspace Architecture\n\n";
+  
+  workspaces.forEach(pkg => {
+    // Attempt to split the absolute path so it just shows the relative repo path (e.g., apps/web)
+    const relativePath = pkg.path.split('sous.tools/')[1] || pkg.path;
+    
+    architectureText += `### 📦 ${pkg.name}\n`;
+    architectureText += `- **Location:** ${relativePath}\n`;
+    architectureText += `- **Private:** ${pkg.private ? 'Yes' : 'No'}\n\n`;
+  });
 
-  // Check if the file is empty before trying to parse
-  if (turboGraphRaw.trim() !== "") {
-    const turboGraph = JSON.parse(turboGraphRaw);
-    if (turboGraph.tasks) {
-      turboGraph.tasks.forEach((task) => {
-        graphText += `- **${task.taskId}**: Depends on [${task.dependencies.join(", ")}]\n`;
-      });
-    }
-  } else {
-    graphText += "Turbo graph generated an empty file.\n";
-  }
+  fs.writeFileSync(path.join(__dirname, '../docs/context/notebooklm-architecture.md'), architectureText);
+  console.log("✔ Successfully generated notebooklm-architecture.md");
 } catch (error) {
-  console.log(
-    "⚠️ Could not parse turbo-graph.json. Skipping graph generation.",
-  );
-  graphText +=
-    "Architecture graph could not be generated during this run (JSON Parse Error).\n";
+  console.error("Error parsing workspace graph:", error.message);
 }
 
 fs.writeFileSync(
