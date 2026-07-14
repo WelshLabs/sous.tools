@@ -21,8 +21,16 @@ try {
   let architectureText = "# sous.tools Workspace Architecture\n\n";
   
   workspaces.forEach(pkg => {
-    // Attempt to split the absolute path so it just shows the relative repo path (e.g., apps/web)
-    const relativePath = pkg.path.split('sous.tools/')[1] || pkg.path;
+    let relativePath = pkg.path;
+    
+    // Cleanly extract just the relative path based on your Turborepo structure
+    if (pkg.path.includes('/apps/')) {
+      relativePath = 'apps/' + pkg.path.split('/apps/').pop();
+    } else if (pkg.path.includes('/packages/')) {
+      relativePath = 'packages/' + pkg.path.split('/packages/').pop();
+    } else {
+      relativePath = 'Root (sous.tools)';
+    }
     
     architectureText += `### 📦 ${pkg.name}\n`;
     architectureText += `- **Location:** ${relativePath}\n`;

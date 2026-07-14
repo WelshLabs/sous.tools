@@ -19,3 +19,4 @@ package-lock.json
 docs/reports/**
 **/*.txt
 deploy/pi/pi-gen/README.md
+deploy/pi/pi-gen/**
