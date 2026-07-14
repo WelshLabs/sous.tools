@@ -136,9 +136,7 @@ export function ConfirmModal({
               backgroundColor: isDestructive
                 ? "rgb(244 63 94 / 0.15)" // --color-destructive @ 15%
                 : "rgb(245 158 11 / 0.15)", // amber warning @ 15%
-              color: isDestructive
-                ? "var(--color-destructive)"
-                : "#f59e0b", // amber-500 from sous-theme.kdl `yellow`
+              color: isDestructive ? "var(--color-destructive)" : "#f59e0b", // amber-500 from sous-theme.kdl `yellow`
             }}
           >
             <AlertTriangle className="w-8 h-8" />
@@ -151,7 +149,10 @@ export function ConfirmModal({
             {title}
           </h2>
 
-          <p className="text-sm" style={{ color: "var(--color-muted-foreground)" }}>
+          <p
+            className="text-sm"
+            style={{ color: "var(--color-muted-foreground)" }}
+          >
             {message}
           </p>
         </div>
@@ -168,7 +169,7 @@ export function ConfirmModal({
           </Button>
 
           <Button
-            variant={isDestructive ? "default" : "default"}
+            variant={isDestructive ? "destructive" : "primary"}
             className="flex-1"
             onClick={handleConfirm}
             disabled={loading}

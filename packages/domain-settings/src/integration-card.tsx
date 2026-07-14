@@ -51,7 +51,9 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {displayName}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-md">{desc}</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md">
+              {desc}
+            </p>
           </div>
           {status.connected ? (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-900/50">
@@ -120,7 +122,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({
           </>
         ) : (
           <Button
-            variant="default"
+            variant="primary"
             size="sm"
             onClick={onConnect}
             disabled={isActionLoading}

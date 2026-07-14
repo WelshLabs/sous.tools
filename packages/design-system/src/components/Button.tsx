@@ -45,7 +45,7 @@ export interface ButtonProps
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, accent = true, children, ...props }, ref) => {
+  ({ className, variant, size, children, ...props }, ref) => {
     const tone = variant ?? "primary";
     return (
       <motion.button

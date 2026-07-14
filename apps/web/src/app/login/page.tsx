@@ -2,13 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button, PrimaryLogo } from "@soustools/design-system";
-import { KeyRound, Mail } from "lucide-react";
+import {
+  Button,
+  PrimaryLogo,
+  Input,
+  GoogleIcon,
+  GitHubIcon,
+  LoginButton,
+  type LoginState,
+  AuroraBackground,
+} from "@soustools/design-system";
 import { api } from "@soustools/api-client";
+import { motion } from "framer-motion";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("conar@dtown.cafe");
-  const [password, setPassword] = useState("password");
+  const [state, setState] = React.useState<LoginState>("idle");
+  const [showPw, setShowPw] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(true);
@@ -34,7 +46,10 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
+    if (loading) return;
+
     setError("");
+    setState("loading");
     setLoading(true);
 
     try {
@@ -68,14 +83,17 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-background">
-      {/* Background Neon Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 blur-[120px] rounded-full animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/20 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: "6s" }} />
+    <motion.div
+      initial={{ opacity: 0, y: 24, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden bg-background"
+    >
+      <AuroraBackground />
 
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-border shadow-2xl relative z-[var(--z-overlay)]">
         <div className="flex flex-col items-center mb-8">
-          <PrimaryLogo className="h-16 w-auto text-primary mb-4" />
+          <PrimaryLogo gradient className="h-16 w-auto mb-4" />
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight text-center">
             Sous Tools Login
           </h1>
@@ -88,41 +106,83 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5" /> Email Address
+          <Input
+            label="Email"
+            type="email"
+            autoComplete="email"
+            icon={<Mail className="h-4 w-4" />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Input
+            label="Password"
+            type={showPw ? "text" : "password"}
+            autoComplete="current-password"
+            icon={<Lock className="h-4 w-4" />}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            trailing={
+              <button
+                type="button"
+                aria-label={showPw ? "Hide password" : "Show password"}
+                onClick={() => setShowPw((s) => !s)}
+                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {showPw ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            }
+          />
+
+          <div className="flex items-center justify-between text-sm">
+            <label className="inline-flex cursor-pointer items-center gap-2 text-muted-foreground">
+              <input
+                type="checkbox"
+                className="accent-[color:var(--primary)]"
+              />
+              Remember me
             </label>
-            <input
-              type="email"
-              placeholder="name@dtown.cafe"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-            />
+            <a
+              href="#"
+              className="text-primary transition-opacity hover:opacity-80"
+            >
+              Forgot password?
+            </a>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5" /> Password
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full bg-input/50 border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-            />
-          </div>
-
-          <div className="pt-2">
-            <Button disabled={loading} className="w-full justify-center py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-lg shadow-primary/20">
-              {loading ? "Signing In..." : "Access Control"}
-            </Button>
-          </div>
+          <LoginButton state={state} />
         </form>
+
+        <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          OR
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <div className="flex gap-3">
+          <Button type="button" variant="glass" className="flex-1">
+            <GoogleIcon className="h-[18px] w-[18px]" />
+            Google
+          </Button>
+          <Button type="button" variant="glass" className="flex-1">
+            <GitHubIcon className="h-[18px] w-[18px]" />
+            GitHub
+          </Button>
+        </div>
+
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          New here?{" "}
+          <a
+            href="#"
+            className="text-primary transition-opacity hover:opacity-80"
+          >
+            Create an account
+          </a>
+        </p>
       </div>
-    </main>
+    </motion.div>
   );
 }

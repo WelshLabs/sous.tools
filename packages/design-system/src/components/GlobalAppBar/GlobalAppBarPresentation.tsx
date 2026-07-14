@@ -54,9 +54,9 @@ export function GlobalAppBarPresentation({
     <header className="sticky top-0 z-[var(--z-appbar)] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">
       {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself (z-auto or 0) but sits under z-modal */}
       {isAnyMenuOpen && (
-        <div 
-          className="fixed inset-0 z-[var(--z-overlay)]" 
-          onClick={onCloseMenus} 
+        <div
+          className="fixed inset-0 z-[var(--z-overlay)]"
+          onClick={onCloseMenus}
         />
       )}
 
@@ -74,13 +74,16 @@ export function GlobalAppBarPresentation({
             onClick={toggleExpanded}
             className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity focus:outline-none"
           >
-            <PrimaryLogo className="hidden md:block h-12 w-auto text-[var(--color-primary)]" />
-            <Lettermark className="block md:hidden h-10 w-10 text-[var(--color-primary)]" />
+            <PrimaryLogo className="hidden md:block h-12 w-auto text-foreground" />
+            <Lettermark className="block md:hidden h-10 w-10 text-foreground" />
           </button>
         ) : (
-          <Link href="/home" className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity">
-            <PrimaryLogo className="hidden md:block h-12 w-auto text-[var(--color-primary)]" />
-            <Lettermark className="block md:hidden h-10 w-10 text-[var(--color-primary)]" />
+          <Link
+            href="/home"
+            className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <PrimaryLogo className="hidden md:block h-12 w-auto text-foreground" />
+            <Lettermark className="block md:hidden h-10 w-10 text-foreground" />
           </Link>
         )}
       </div>
@@ -96,9 +99,9 @@ export function GlobalAppBarPresentation({
 
         {/* Notifications */}
         <div className="relative">
-          <button 
+          <button
             onClick={onToggleNotifications}
-            className={`relative p-2 transition-colors rounded-full focus:outline-none outline-none ${isNotificationsOpen ? 'bg-white/10 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-card'}`}
+            className={`relative p-2 transition-colors rounded-full focus:outline-none outline-none ${isNotificationsOpen ? "bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-card"}`}
           >
             <Bell className="w-5 h-5" />
             {notifications.length > 0 && (
@@ -107,13 +110,18 @@ export function GlobalAppBarPresentation({
               </span>
             )}
           </button>
-          
+
           {isNotificationsOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)]">
               <div className="px-4 py-2 border-b border-border flex justify-between items-center">
-                <span className="text-sm font-semibold text-foreground">Notifications</span>
+                <span className="text-sm font-semibold text-foreground">
+                  Notifications
+                </span>
                 {notifications.length > 0 && (
-                  <button onClick={onMarkAllAsRead} className="text-xs text-[var(--color-primary)] flex items-center gap-1 cursor-pointer hover:underline focus:outline-none transition-colors">
+                  <button
+                    onClick={onMarkAllAsRead}
+                    className="text-xs text-[var(--color-primary)] flex items-center gap-1 cursor-pointer hover:underline focus:outline-none transition-colors"
+                  >
                     <Check className="w-3 h-3" />
                     Mark all read
                   </button>
@@ -126,9 +134,16 @@ export function GlobalAppBarPresentation({
                   </div>
                 ) : (
                   notifications.map((n) => (
-                    <div key={n.id} className="p-4 border-b border-white/5 hover:bg-card transition-colors cursor-pointer text-left">
-                      <p className="text-sm font-medium text-foreground">{n.title}</p>
-                      <p className="text-xs text-[var(--color-muted-foreground)] mt-1 line-clamp-2">{n.message}</p>
+                    <div
+                      key={n.id}
+                      className="p-4 border-b border-white/5 hover:bg-card transition-colors cursor-pointer text-left"
+                    >
+                      <p className="text-sm font-medium text-foreground">
+                        {n.title}
+                      </p>
+                      <p className="text-xs text-[var(--color-muted-foreground)] mt-1 line-clamp-2">
+                        {n.message}
+                      </p>
                     </div>
                   ))
                 )}
@@ -139,13 +154,13 @@ export function GlobalAppBarPresentation({
 
         {/* Waffle Menu */}
         <div className="relative">
-          <button 
+          <button
             onClick={onToggleWaffle}
-            className={`p-2 transition-colors rounded-full focus:outline-none outline-none ${isWaffleOpen ? 'bg-white/10 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-card'}`}
+            className={`p-2 transition-colors rounded-full focus:outline-none outline-none ${isWaffleOpen ? "bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-card"}`}
           >
             <LayoutGrid className="w-5 h-5" />
           </button>
-          
+
           {isWaffleOpen && (
             <WaffleMenuDropdown onCloseMenus={onCloseMenus} isAdmin={isAdmin} />
           )}
@@ -153,21 +168,28 @@ export function GlobalAppBarPresentation({
 
         {/* User Profile Avatar / Dropdown */}
         <div className="relative">
-          <button 
+          <button
             onClick={onToggleProfile}
-            className={`w-8 h-8 rounded-full bg-[var(--color-primary)] text-zinc-950 font-bold flex items-center justify-center ml-2 transition-transform focus:outline-none outline-none ${isProfileOpen ? 'scale-110 ring-2 ring-[var(--color-primary)] ring-offset-2 ring-offset-zinc-950' : 'hover:scale-105'}`}
+            className={`w-8 h-8 rounded-full bg-[var(--color-primary)] text-zinc-950 font-bold flex items-center justify-center ml-2 transition-transform focus:outline-none outline-none ${isProfileOpen ? "scale-110 ring-2 ring-[var(--color-primary)] ring-offset-2 ring-offset-zinc-950" : "hover:scale-105"}`}
           >
             CW
           </button>
 
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-1 z-[var(--z-modal)]">
-              <Link href="/settings" onClick={onCloseMenus} className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-muted-foreground hover:bg-card transition-colors">
+              <Link
+                href="/settings"
+                onClick={onCloseMenus}
+                className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-muted-foreground hover:bg-card transition-colors"
+              >
                 <Settings className="w-4 h-4" />
                 Settings
               </Link>
-              <button 
-                onClick={() => { onCloseMenus(); onLogout(); }}
+              <button
+                onClick={() => {
+                  onCloseMenus();
+                  onLogout();
+                }}
                 className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-[var(--color-destructive)] hover:bg-[var(--color-destructive)]/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />

@@ -19,11 +19,7 @@ export { TwoToneHeader } from "./components/TwoToneHeader";
 export type { TwoToneHeaderProps } from "./components/TwoToneHeader";
 
 export { Button } from "./components/Button";
-export type {
-  ButtonProps,
-  ButtonVariant,
-  ButtonSize,
-} from "./components/Button";
+export type { ButtonProps, buttonVariants } from "./components/Button";
 
 export { PinInput } from "./components/PinInput";
 export type { PinInputProps } from "./components/PinInput";
@@ -34,13 +30,6 @@ export {
   CardTitle,
   CardContent,
   CardFooter,
-} from "./components/Card";
-export type {
-  CardProps,
-  CardHeaderProps,
-  CardTitleProps,
-  CardContentProps,
-  CardFooterProps,
 } from "./components/Card";
 
 export { Input } from "./components/Input";
@@ -151,3 +140,6 @@ export {
   ProgressBar,
   TopProgress,
 } from "./components/Loader";
+
+export { GoogleIcon, GitHubIcon } from "./components/BrandIcons";
+export { LoginButton, type LoginState } from "./components/LoginButton";
