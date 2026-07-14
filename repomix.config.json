@@ -18,7 +18,8 @@
       "**/*.jpg",
       "**/*.jpeg",
       "**/*.svg",
-      "**/*.ico"
+      "**/*.ico",
+      "apps/web/public/sw.js"
     ]
   }
 }
