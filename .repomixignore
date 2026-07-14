@@ -11,3 +11,7 @@ docs/context/**
 .turbo
 .vercel
 node_modules
+**/*.d.ts
+**/*.json
+**/openapi.json
+package-lock.json

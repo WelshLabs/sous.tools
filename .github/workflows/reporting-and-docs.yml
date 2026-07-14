@@ -57,9 +57,9 @@ jobs:
       - name: Generate Turborepo Dependency Graph
         run: npx turbo ls --format=json > docs/context/turbo-graph.json || true
 
-      - name: Generate Codebase Directory Tree
-        # Ignores node_modules, build outputs, and git files
-        run: tree -I 'node_modules|.git|.next|dist|out|.turbo' > docs/context/directory-tree.txt || true
+      # - name: Generate Codebase Directory Tree
+      #   # Ignores node_modules, build outputs, and git files
+      #   run: tree -I 'node_modules|.git|.next|dist|out|.turbo' > docs/context/directory-tree.txt || true
 
       - name: Generate Repomix Snapshot
         # Creates a packed XML of the codebase for AI ingestion
@@ -71,6 +71,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue list --state open --limit 50 --json number,title,body,labels | jq -r '.[] | "### #\(.number): \(.title)\n**Labels:** \([.labels[].name] | join(", "))\n\n\(.body)\n\n---\n"' > docs/context/notebooklm-issues.md || true
+      
+      - name: Fetch GitHub Project Kanban State
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh project item-list 2 --owner conarwelsh --limit 100 --format=json | jq -r '.items[] | "### \(.title)\n**Status:** \(.status)\n**Assignees:** \(.assignees)\n---"' > docs/context/notebooklm-project.md || true
 
       # --- 4. Generate Context ---
       - name: Convert JSON/Configs to NotebookLM Markdown
