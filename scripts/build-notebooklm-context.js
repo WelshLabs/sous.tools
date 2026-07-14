@@ -37,7 +37,7 @@ try {
 
 fs.writeFileSync(
   path.join(__dirname, "../docs/context/notebooklm-architecture.md"),
-  graphText,
+  architectureText,
 );
 
 // --- 3. SPRINT STATE (GITHUB ISSUES) ---
