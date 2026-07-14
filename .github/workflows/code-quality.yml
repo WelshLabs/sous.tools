@@ -40,6 +40,11 @@ jobs:
       - name: Prepare Reports Directory
         run: mkdir -p .reports
 
+      - name: Build Web App
+        id: build
+        run: pnpm build --filter=web
+        continue-on-error: true
+
       # --- THE GAUNTLET (All steps use continue-on-error so the workflow doesn't stop) ---
 
       - name: Typecheck
@@ -68,14 +73,22 @@ jobs:
         run: pnpm exec playwright test > .reports/e2e-test-report.txt 2>&1
         continue-on-error: true
 
+      - name: Start Web App & Wait
+        # Only try to start if the build actually succeeded
+        if: steps.build.outcome == 'success'
+        run: |
+          pnpm start --filter=web &
+          npx wait-on -t 60000 http://127.0.0.1:3000
+        continue-on-error: true
+
       - name: Lighthouse CI
         id: lighthouse
+        if: steps.build.outcome == 'success'
         uses: treosh/lighthouse-ci-action@v12
         with:
+          # Use 127.0.0.1 instead of localhost to prevent IPv6 resolution bugs in GitHub runners
           urls: |
-            http://localhost:3000 
-          buildRecipe: pnpm build --filter=web
-          startRecipe: pnpm start --filter=web
+            http://127.0.0.1:3000 
           uploadArtifacts: true 
           temporaryPublicStorage: true
         continue-on-error: true
