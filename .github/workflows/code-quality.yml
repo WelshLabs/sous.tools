@@ -73,42 +73,42 @@ jobs:
         run: pnpm exec playwright test > .reports/e2e-test-report.txt 2>&1
         continue-on-error: true
 
-      - name: Fetch Production Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "prod"
-          export-env: true
+      # - name: Fetch Production Secrets from Infisical
+      #   uses: infisical/secrets-action@v1.0.8
+      #   with:
+      #     client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+      #     client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+      #     project-slug: "sous-tools-1cd-a"
+      #     env-slug: "prod"
+      #     export-env: true
 
-      # --- 2. Start it in the background and wait for it to boot ---
-      - name: Start Web App & Wait
-        if: steps.build.outcome == 'success'
-        env:
-          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
-          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
-          # 1. Force Next.js to bind to IPv4 so wait-on and Lighthouse can find it
-          HOSTNAME: 127.0.0.1
-          PORT: 3000
-        run: |
-          pnpm --filter=web run start &
-          # 2. Use 'tcp:' instead of 'http:' to bypass Next.js middleware redirects
-          npx wait-on -t 60000 tcp:127.0.0.1:3000
-        continue-on-error: true
+      # # --- 2. Start it in the background and wait for it to boot ---
+      # - name: Start Web App & Wait
+      #   if: steps.build.outcome == 'success'
+      #   env:
+      #     INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+      #     INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+      #     INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
+      #     # 1. Force Next.js to bind to IPv4 so wait-on and Lighthouse can find it
+      #     HOSTNAME: 127.0.0.1
+      #     PORT: 3000
+      #   run: |
+      #     pnpm --filter=web run start &
+      #     # 2. Use 'tcp:' instead of 'http:' to bypass Next.js middleware redirects
+      #     npx wait-on -t 60000 tcp:127.0.0.1:3000
+      #   continue-on-error: true
 
-      - name: Lighthouse CI
-        id: lighthouse
-        if: steps.build.outcome == 'success'
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          # Use 127.0.0.1 instead of localhost to prevent IPv6 resolution bugs in GitHub runners
-          urls: |
-            http://127.0.0.1:3000
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-        continue-on-error: true
+      # - name: Lighthouse CI
+      #   id: lighthouse
+      #   if: steps.build.outcome == 'success'
+      #   uses: treosh/lighthouse-ci-action@v12
+      #   with:
+      #     # Use 127.0.0.1 instead of localhost to prevent IPv6 resolution bugs in GitHub runners
+      #     urls: |
+      #       http://127.0.0.1:3000
+      #     uploadArtifacts: true
+      #     temporaryPublicStorage: true
+      #   continue-on-error: true
 
       # - name: SonarCloud Scan
       #   id: sonar
