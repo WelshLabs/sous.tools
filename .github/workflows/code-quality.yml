@@ -1,0 +1,177 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for SonarCloud
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Setup pnpm and turbo
+        run: npm install -g pnpm turbo
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Prepare Reports Directory
+        run: mkdir -p .reports
+
+      # --- THE GAUNTLET (All steps use continue-on-error so the workflow doesn't stop) ---
+
+      - name: Typecheck
+        id: typecheck
+        run: pnpm typecheck > .reports/typecheck-report.txt 2>&1
+        continue-on-error: true
+
+      - name: Lint
+        id: lint
+        run: pnpm lint > .reports/lint-report.txt 2>&1
+        continue-on-error: true
+
+      - name: Knip (Dead Code)
+        id: knip
+        run: pnpm run knip > .reports/knip-report.txt 2>&1
+        continue-on-error: true
+
+      - name: Unit Tests & Coverage
+        id: unit-test
+        # Ensure your package.json test script is configured to output coverage
+        run: pnpm test -- --coverage > .reports/unit-test-report.txt 2>&1
+        continue-on-error: true
+
+      - name: E2E Tests (Playwright)
+        id: e2e-test
+        run: pnpm exec playwright test > .reports/e2e-test-report.txt 2>&1
+        continue-on-error: true
+
+      - name: Lighthouse CI
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:3000 
+          buildRecipe: pnpm build --filter=web
+          startRecipe: pnpm start --filter=web
+          uploadArtifacts: true 
+          temporaryPublicStorage: true
+        continue-on-error: true
+
+      - name: SonarCloud Scan
+        id: sonar
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+      # --- ARTIFACT UPLOAD ---
+      # This runs `always()` to ensure reports are saved even if the code is a mess
+      - name: Upload All Quality Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregated-code-quality-reports
+          path: |
+            .reports/
+            coverage/
+            playwright-report/
+
+      # --- THE QUALITY GATE ---
+      # This checks the outcome of every single step above. 
+      # If any of them failed, it physically fails the GitHub Action right here.
+      # Because this step fails, Action #3 (Deploy) will NOT trigger.
+      - name: Quality Gate Evaluation
+        if: always()
+        run: |
+          echo "Evaluating Gauntlet Results..."
+          FAILURES=0
+          
+          if [ "${{ steps.typecheck.outcome }}" == "failure" ]; then echo "❌ Typecheck failed"; FAILURES=1; fi
+          if [ "${{ steps.lint.outcome }}" == "failure" ]; then echo "❌ Lint failed"; FAILURES=1; fi
+          if [ "${{ steps.knip.outcome }}" == "failure" ]; then echo "❌ Knip failed"; FAILURES=1; fi
+          if [ "${{ steps.unit-test.outcome }}" == "failure" ]; then echo "❌ Unit tests failed"; FAILURES=1; fi
+          if [ "${{ steps.e2e-test.outcome }}" == "failure" ]; then echo "❌ E2E tests failed"; FAILURES=1; fi
+          if [ "${{ steps.lighthouse.outcome }}" == "failure" ]; then echo "❌ Lighthouse failed"; FAILURES=1; fi
+          if [ "${{ steps.sonar.outcome }}" == "failure" ]; then echo "❌ SonarCloud failed"; FAILURES=1; fi
+          
+          if [ $FAILURES -ne 0 ]; then
+            echo "🚨 ONE OR MORE QUALITY CHECKS FAILED!"
+            echo "Download the 'aggregated-code-quality-reports' artifact to view your complete Battle Plan."
+            exit 1
+          else
+            echo "✅ ALL CHECKS PASSED! Ready for deployment."
+          fi
+
+
+# name: Generate AI Context (Knip & Architecture)
+
+# on:
+#   schedule:
+#     - cron: '0 0 * * *' # Runs daily at midnight
+#   workflow_dispatch: # Allows you to click a "Run" button in GitHub manually
+
+# permissions:
+#   contents: write
+
+# jobs:
+#   build-context:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+        
+#       - name: Setup Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '22'
+
+#       - name: Setup pnpm and turbo
+#         run: npm install -g pnpm turbo
+
+#       - name: Install Dependencies
+#         run: pnpm install
+
+#       - name: Prepare Context Directory
+#         run: mkdir -p .context
+
+#       - name: Generate Knip Tech Debt Report
+#         run: |
+#           # Run Knip and pipe the output to a text file. 
+#           # The '|| true' prevents the action from failing/crashing if tech debt is found.
+#           pnpm run knip > .context/knip-report.txt || true
+
+#       - name: Generate Turborepo Dependency Graph
+#         run: |
+#           # Tells NotebookLM exactly how your packages and apps depend on each other
+#           npx turbo graph > .context/turbo-graph.txt || true
+
+#       - name: Generate Codebase Directory Tree
+#         run: |
+#           # Creates a map of the file structure without dumping 14,000 lines of code
+#           tree -I 'node_modules|.git|.next|dist|out|.turbo|.context' > .context/directory-tree.txt || true
+
+#       - name: Commit and Push Context Files
+#         run: |
+#           git config --global user.name "github-actions[bot]"
+#           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+#           git add .context/
+#           git commit -m "chore(ai): auto-update knip and architecture context files" || echo "No changes to commit"
+#           git push

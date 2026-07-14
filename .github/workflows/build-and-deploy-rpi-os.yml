@@ -1,4 +1,4 @@
-name: Build and Release Signage OS Image
+name: Build and Release RPi OS Image
 
 on:
   push:

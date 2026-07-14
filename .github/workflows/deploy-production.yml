@@ -1,45 +1,73 @@
-name: Deploy Production API to Oracle Cloud Native
+name: Deploy to Prod
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Code Quality"] # Strictly waits for the gauntlet to finish
+    types:
+      - completed
     branches:
       - main
+  workflow_dispatch: # Manual override
 
 jobs:
-  validate:
+  deploy-and-migrate:
+    # THE QUALITY GATE: Only run if Code Quality passed, or if triggered manually
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 11
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Run linting
-        run: pnpm run lint
-      - name: Run typecheck
-        run: pnpm run typecheck
-      # - name: Run knip
-      #   run: pnpm run knip
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-  deploy:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fetch Infisical Secrets
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # --- 1. STAGING PHASE ---
+      - name: Fetch Staging Secrets from Infisical
         uses: infisical/secrets-action@v1.0.8
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: "prod"
           project-slug: "sous-tools-1cd-a"
+          env-slug: "staging"
+          export-env: true
 
+      - name: Run Staging Supabase Migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "Error: Missing required staging environment variables from Infisical."
+            exit 1
+          fi
+          supabase link --project-ref $SUPABASE_PROJECT_ID
+          supabase db push
+
+      # --- 2. PRODUCTION PHASE ---
+      # Fetching prod secrets overwrites the staging env vars in the runner
+      - name: Fetch Production Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
+      - name: Run Production Supabase Migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "Error: Missing required production environment variables from Infisical."
+            exit 1
+          fi
+          supabase link --project-ref $SUPABASE_PROJECT_ID
+          supabase db push
+
+      # --- 3. HARDWARE DEPLOYMENT ---
+      # Uses the ORACLE_HOST and ORACLE_SSH_KEY fetched during the Prod Infisical step
       - name: Trigger Native Hardware Build via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:

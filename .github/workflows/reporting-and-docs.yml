@@ -1,0 +1,96 @@
+name: Reporting and Docs
+
+on:
+  workflow_run:
+    workflows: ["Code Quality"] # Waits for the gauntlet to finish generating reports
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch: # Manual override
+
+jobs:
+  compile-and-sync:
+    # Run this regardless of whether Code Quality passed or failed, 
+    # so we ALWAYS get updated reports and a CTO Summary of the failures!
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read # Required to fetch the open GitHub issues
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm, turbo, and repomix
+        run: npm install -g pnpm turbo repomix
+
+      - name: Prepare Docs Directory
+        run: mkdir -p docs/reports docs/context
+
+      # --- 1. GATHER THE QUALITY REPORTS ---
+      - name: Download Code Quality Artifacts
+        uses: actions/download-artifact@v4
+        # Only attempt download if triggered by the Code Quality workflow
+        if: github.event_name == 'workflow_run' 
+        with:
+          name: aggregated-code-quality-reports
+          path: docs/reports
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true # Failsafe in case the artifact upload hiccupped
+
+      # --- 2. GENERATE ARCHITECTURAL CONTEXT ---
+      - name: Generate Turborepo Dependency Graph
+        run: npx turbo graph --format=json > docs/context/turbo-graph.json || true
+
+      - name: Generate Codebase Directory Tree
+        # Ignores node_modules, build outputs, and git files
+        run: tree -I 'node_modules|.git|.next|dist|out|.turbo' > docs/context/directory-tree.txt || true
+
+      - name: Generate Repomix Snapshot
+        # Creates a packed XML of the codebase for AI ingestion
+        run: npx repomix --output docs/context/repomix-output.xml || true
+
+      # --- 3. GATHER KANBAN & ISSUE STATE ---
+      - name: Export Open GitHub Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue list --state open --limit 100 > docs/context/open-issues.txt || true
+
+      - name: Convert JSON/Configs to NotebookLM Markdown
+        run: node scripts/build-notebooklm-context.js
+
+      - name: Sync Docs to Wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        with:
+          path: docs/
+          strategy: clone
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- 5. TRIGGER n8n CTO SUMMARY ---
+      - name: Fetch Infisical Webhook Secret
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
+      - name: Fire Webhook to n8n
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{
+            "repository": "${{ github.repository }}", 
+            "run_id": "${{ github.run_id }}", 
+            "quality_status": "${{ github.event.workflow_run.conclusion }}"
+          }' \
+          ${{ env.N8N_CTO_WEBHOOK_URL }}
+        continue-on-error: true
