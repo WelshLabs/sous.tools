@@ -73,11 +73,11 @@ jobs:
         run: pnpm exec playwright test > .reports/e2e-test-report.txt 2>&1
         continue-on-error: true
 
+      # --- 2. Start it in the background and wait for it to boot ---
       - name: Start Web App & Wait
-        # Only try to start if the build actually succeeded
         if: steps.build.outcome == 'success'
         run: |
-          pnpm start --filter=web &
+          pnpm --filter=web run start &
           npx wait-on -t 60000 http://127.0.0.1:3000
         continue-on-error: true
 
