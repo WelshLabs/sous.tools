@@ -4,7 +4,7 @@ import React, { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { PrimaryLogo, useOmnibarContext } from "@soustools/design-system";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 function ShareTargetHandler() {
   const searchParams = useSearchParams();
@@ -24,7 +24,9 @@ function ShareTargetHandler() {
         .filter(Boolean)
         .join("\n");
 
-      setInputText(`I shared this with you:\n${shareContent}\n\nCan you analyze it?`);
+      setInputText(
+        `I shared this with you:\n${shareContent}\n\nCan you analyze it?`,
+      );
       setIsOpen(true);
     }
   }, [searchParams, setInputText, setIsOpen]);
@@ -38,7 +40,7 @@ export default function HomePage() {
       <Suspense fallback={null}>
         <ShareTargetHandler />
       </Suspense>
-      <PrimaryLogo className="text-sky-400 h-24 w-auto mb-8" />
+      <PrimaryLogo className="h-24 w-auto mb-8" />
     </div>
   );
 }

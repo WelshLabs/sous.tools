@@ -19,7 +19,11 @@ export { TwoToneHeader } from "./components/TwoToneHeader";
 export type { TwoToneHeaderProps } from "./components/TwoToneHeader";
 
 export { Button } from "./components/Button";
-export type { ButtonProps, ButtonVariant, ButtonSize } from "./components/Button";
+export type {
+  ButtonProps,
+  ButtonVariant,
+  ButtonSize,
+} from "./components/Button";
 
 export { PinInput } from "./components/PinInput";
 export type { PinInputProps } from "./components/PinInput";
@@ -79,20 +83,50 @@ export type { SidebarLayoutProps } from "./components/SidebarLayout";
 
 export { useSidebarStore } from "./store/sidebarStore";
 
-export { OmniBar, OmniBarProvider, OmniBarPresentation, FloatingOmniTrigger, useOmnibarContext, AttachmentFlyout, VerificationPanel, CreatableSelect, UnifiedReviewPanel } from "./components/OmniBar";
-export type { OmniBarPresentationProps, AttachmentFlyoutProps, StagedFile, VerificationPanelProps, CreatableSelectProps, CreatableSelectOption, UnifiedReviewPanelProps } from "./components/OmniBar";
+export {
+  OmniBar,
+  OmniBarProvider,
+  OmniBarPresentation,
+  FloatingOmniTrigger,
+  useOmnibarContext,
+  AttachmentFlyout,
+  VerificationPanel,
+  CreatableSelect,
+  UnifiedReviewPanel,
+} from "./components/OmniBar";
+export type {
+  OmniBarPresentationProps,
+  AttachmentFlyoutProps,
+  StagedFile,
+  VerificationPanelProps,
+  CreatableSelectProps,
+  CreatableSelectOption,
+  UnifiedReviewPanelProps,
+} from "./components/OmniBar";
 
-export { GlobalAppBar, GlobalAppBarPresentation } from "./components/GlobalAppBar";
+export {
+  GlobalAppBar,
+  GlobalAppBarPresentation,
+} from "./components/GlobalAppBar";
 export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";
 
 export { InsightsSidebar } from "./components/InsightsSidebar";
 export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar";
 export type { QuickAddSuggestion } from "./components/QuickAddBar";
-export { SupplierOrderGroup, EmptyOrderList } from "./components/SupplierOrderGroup";
-export type { OrderLineItem, OrderSupplier } from "./components/SupplierOrderGroup";
+export {
+  SupplierOrderGroup,
+  EmptyOrderList,
+} from "./components/SupplierOrderGroup";
+export type {
+  OrderLineItem,
+  OrderSupplier,
+} from "./components/SupplierOrderGroup";
 
 export { calculateRecipeScale } from "./utils/scaling";
 export type { ScaledIngredientResult } from "./utils/scaling";
+
+export { setFaviconStatus } from "./utils/favicon-status";
+export type { FaviconStatus } from "./utils/favicon-status";
 
 export { PrimaryLogo } from "./components/logos/PrimaryLogo";
 export { MicroIcon } from "./components/logos/MicroIcon";

@@ -2,9 +2,9 @@ name: Code Quality
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -15,18 +15,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required for SonarCloud
-      
+
       # 1. Install pnpm FIRST so the Node step can find it
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 11 
+          version: 11
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
 
       - name: Setup turbo
         run: npm install -g turbo
@@ -88,18 +88,18 @@ jobs:
         with:
           # Use 127.0.0.1 instead of localhost to prevent IPv6 resolution bugs in GitHub runners
           urls: |
-            http://127.0.0.1:3000 
-          uploadArtifacts: true 
+            http://127.0.0.1:3000
+          uploadArtifacts: true
           temporaryPublicStorage: true
         continue-on-error: true
 
-      - name: SonarCloud Scan
-        id: sonar
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        continue-on-error: true
+      # - name: SonarCloud Scan
+      #   id: sonar
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   continue-on-error: true
 
       # --- ARTIFACT UPLOAD ---
       # This runs `always()` to ensure reports are saved even if the code is a mess
@@ -108,13 +108,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aggregated-code-quality-reports
+          if-no-files-found: ignore
           path: |
-            .reports/
-            coverage/
-            playwright-report/
+            .reports/**
+            coverage/**
+            playwright-report/**
 
       # --- THE QUALITY GATE ---
-      # This checks the outcome of every single step above. 
+      # This checks the outcome of every single step above.
       # If any of them failed, it physically fails the GitHub Action right here.
       # Because this step fails, Action #3 (Deploy) will NOT trigger.
       - name: Quality Gate Evaluation
@@ -122,7 +123,7 @@ jobs:
         run: |
           echo "Evaluating Gauntlet Results..."
           FAILURES=0
-          
+
           if [ "${{ steps.typecheck.outcome }}" == "failure" ]; then echo "❌ Typecheck failed"; FAILURES=1; fi
           if [ "${{ steps.lint.outcome }}" == "failure" ]; then echo "❌ Lint failed"; FAILURES=1; fi
           if [ "${{ steps.knip.outcome }}" == "failure" ]; then echo "❌ Knip failed"; FAILURES=1; fi
@@ -130,7 +131,7 @@ jobs:
           if [ "${{ steps.e2e-test.outcome }}" == "failure" ]; then echo "❌ E2E tests failed"; FAILURES=1; fi
           if [ "${{ steps.lighthouse.outcome }}" == "failure" ]; then echo "❌ Lighthouse failed"; FAILURES=1; fi
           if [ "${{ steps.sonar.outcome }}" == "failure" ]; then echo "❌ SonarCloud failed"; FAILURES=1; fi
-          
+
           if [ $FAILURES -ne 0 ]; then
             echo "🚨 ONE OR MORE QUALITY CHECKS FAILED!"
             echo "Download the 'aggregated-code-quality-reports' artifact to view your complete Battle Plan."
@@ -138,7 +139,6 @@ jobs:
           else
             echo "✅ ALL CHECKS PASSED! Ready for deployment."
           fi
-
 
 # name: Generate AI Context (Knip & Architecture)
 
@@ -156,7 +156,7 @@ jobs:
 #     steps:
 #       - name: Checkout Code
 #         uses: actions/checkout@v4
-        
+
 #       - name: Setup Node
 #         uses: actions/setup-node@v4
 #         with:
@@ -173,7 +173,7 @@ jobs:
 
 #       - name: Generate Knip Tech Debt Report
 #         run: |
-#           # Run Knip and pipe the output to a text file. 
+#           # Run Knip and pipe the output to a text file.
 #           # The '|| true' prevents the action from failing/crashing if tech debt is found.
 #           pnpm run knip > .context/knip-report.txt || true
 

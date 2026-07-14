@@ -30,8 +30,10 @@
     "husky": "^9.1.7",
     "knip": "^5.88.1",
     "lint-staged": "^15.5.2",
+    "png-to-ico": "^3.0.2",
     "prettier": "^3.9.5",
     "repomix": "^1.16.1",
+    "sharp": "^0.35.3",
     "turbo": "latest",
     "typescript": "^5.9.3",
     "typescript-eslint": "^7.18.0"
