@@ -11,15 +11,6 @@ jobs:
   code-quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Production Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "prod"
-          export-env: true
-
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
@@ -82,9 +73,23 @@ jobs:
         run: pnpm exec playwright test > .reports/e2e-test-report.txt 2>&1
         continue-on-error: true
 
+      - name: Fetch Production Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
       # --- 2. Start it in the background and wait for it to boot ---
       - name: Start Web App & Wait
         if: steps.build.outcome == 'success'
+        env:
+          # Explicitly pass the Infisical credentials to your CLI wrapper
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }} # If this isn't a secret, you can hardcode the string here
         run: |
           pnpm --filter=web run start &
           npx wait-on -t 60000 http://127.0.0.1:3000
