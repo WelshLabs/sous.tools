@@ -7,7 +7,6 @@ deploy/pi/**/files/**
 **/.turbo/**
 docs/context/**
 .context/**
-.agents
 .idea
 .turbo
 .vercel
