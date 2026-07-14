@@ -18,6 +18,16 @@ jobs:
       contents: write
       issues: read # Required to fetch the open GitHub issues
     steps:
+      # --- 7. TRIGGER n8n CTO SUMMARY ---
+      - name: Fetch Infisical Webhook Secret
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -74,10 +84,10 @@ jobs:
       
       - name: Fetch GitHub Project Kanban State
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use your PAT here so the CLI can "see" outside the repo to your user-level project board
+          GH_TOKEN: ${{ secrets.GITHUB_PAT }}
         run: |
           gh project item-list 2 --owner conarwelsh --limit 100 --format=json | jq -r '.items[] | "### \(.title)\n**Status:** \(.status)\n**Assignees:** \(.assignees)\n---"' > docs/context/notebooklm-project.md || true
-
       # --- 4. Generate Context ---
       - name: Convert JSON/Configs to NotebookLM Markdown
         run: node scripts/build-notebooklm-context.js
@@ -110,16 +120,6 @@ jobs:
           
           # Push back to the main branch
           git push
-
-      # --- 7. TRIGGER n8n CTO SUMMARY ---
-      - name: Fetch Infisical Webhook Secret
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "prod"
-          export-env: true
 
       - name: Fire Webhook to n8n
         run: |
