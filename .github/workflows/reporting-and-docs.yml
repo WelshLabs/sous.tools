@@ -55,7 +55,7 @@ jobs:
 
       # --- 2. GENERATE ARCHITECTURAL CONTEXT ---
       - name: Generate Turborepo Dependency Graph
-        run: npx turbo graph --format=json > docs/context/turbo-graph.json || true
+        run: npx turbo ls --format=json > docs/context/turbo-graph.json || true
 
       - name: Generate Codebase Directory Tree
         # Ignores node_modules, build outputs, and git files
@@ -70,7 +70,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue list --state open --limit 100 > docs/context/open-issues.txt || true
+          gh issue list --state open --limit 50 --json number,title,body,labels | jq -r '.[] | "### #\(.number): \(.title)\n**Labels:** \([.labels[].name] | join(", "))\n\n\(.body)\n\n---\n"' > docs/context/notebooklm-issues.md || true
 
       # --- 4. Generate Context ---
       - name: Convert JSON/Configs to NotebookLM Markdown
