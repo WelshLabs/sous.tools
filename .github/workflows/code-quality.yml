@@ -86,13 +86,16 @@ jobs:
       - name: Start Web App & Wait
         if: steps.build.outcome == 'success'
         env:
-          # Explicitly pass the Infisical credentials to your CLI wrapper
           INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
           INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }} # If this isn't a secret, you can hardcode the string here
+          INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
+          # 1. Force Next.js to bind to IPv4 so wait-on and Lighthouse can find it
+          HOSTNAME: 127.0.0.1
+          PORT: 3000
         run: |
           pnpm --filter=web run start &
-          npx wait-on -t 60000 http://127.0.0.1:3000
+          # 2. Use 'tcp:' instead of 'http:' to bypass Next.js middleware redirects
+          npx wait-on -t 60000 tcp:127.0.0.1:3000
         continue-on-error: true
 
       - name: Lighthouse CI
