@@ -77,9 +77,9 @@ jobs:
 
       - name: Dump Database Schema
         env:
-          DATABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
         run: |
-          pg_dump $DATABASE_URL --schema-only > docs/context/notebooklm-full_schema.txt || true
+          pg_dump $SUPABASE_URL --schema-only > docs/context/notebooklm-full_schema.txt || true
 
       # --- 3. GATHER KANBAN & ISSUE STATE ---
       - name: Export Open GitHub Issues
