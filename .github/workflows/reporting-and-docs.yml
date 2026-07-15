@@ -80,9 +80,9 @@ jobs:
         env:
           SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
         run: |
-          pg_dump $SUPABASE_POOLER_URL --schema-only > docs/context/notebooklm-full_schema.txt || true
+          docker run --rm postgres:17-alpine pg_dump "$SUPABASE_POOLER_URL" --schema-only > docs/context/notebooklm-full_schema.txt || true
 
-      # --- 3. GATHER KANBAN & ISSUE STATE ---
+          # --- 3. GATHER KANBAN & ISSUE STATE ---
       - name: Export Open GitHub Issues
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

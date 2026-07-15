@@ -1,9 +1,10 @@
 # sous.tools AI System Rules
 
 ## 1. Domain-Driven Design (DDD) & Infrastructure
-- **Strict Boundaries:** Next.js apps (`apps/*`) and domain packages (`packages/domain-*`) are strictly forbidden from importing anything from `packages/infrastructure`. 
+- **Strict Boundaries:** Next.js apps (e.g., `apps/web`, `apps/pos-simulator`) and domain packages (`packages/domain-*`) are strictly forbidden from importing database clients. 
+- **The Supabase Firewall:** NO CLIENT OR UI APP is allowed to access Supabase. Absolutely no one outside of `apps/api` should have access to or knowledge of Supabase.
 - **API First & Network Fetching:** ALL network requests must go exclusively through our unified `packages/api-client`. Native `fetch()`, `axios`, or direct endpoint calls outside of `api-client` are strictly forbidden.
-- **Server-Side Supremacy:** Next.js functions strictly as a routing and data orchestration layer. Server Components are the default. Client-side Supabase data fetching inside `apps/*` is forbidden.
+- **Server-Side Supremacy:** Next.js functions strictly as a routing and data orchestration layer. Server Components are the default. 
 - **Config Lockdown:** `process.env` is strictly forbidden outside of `@soustools/config`. All apps must import the type-safe, validated `config` object.
 - **Secrets SSOT:** Infisical is the Single Source of Truth for all environment variables.
 - **TSConfig Management:** All `tsconfig.json` files must extend from the shared `packages/tsconfig`. No relative paths (e.g., `../../../`) are allowed.
@@ -26,3 +27,8 @@
 - **Issue Triage & Diagnostics:** Before writing code to fix a bug, you MUST read the diagnostic comments inside `docs/context/notebooklm-issues.md` to leverage previous junior-agent research.
 - **Debt Audits:** When refactoring, you MUST review the reports in `docs/context/` and `docs/audits/` (such as `knip-report.txt` and `lint-report.txt`) to ensure you are not duplicating tech debt.
 - **Boot Sequence:** Before executing any task, you MUST silently read `.agents/AGENTS.md`, `docs/context/notebooklm-project.md` (Kanban State), and `docs/context/notebooklm-architecture.md` (Workspace Graph) to understand the current architecture and sprint goals.
+
+## 5. Continuous X-Ray Sync (NotebookLM / CTO Directive)
+- **Living Document:** This `.cursorrules` file is a living document.
+- **CTO Oversight:** During architectural planning sessions, the AI CTO (NotebookLM) is explicitly instructed to monitor for any new conventions, UI decisions, or workflow changes.
+- **Auto-Correction:** If a conversation dictates a change in our strategy (e.g., swapping a tool, changing a naming convention, or adjusting the CI/CD pipeline), NotebookLM MUST conclude its response by providing a formatted update block to append to or modify this `.cursorrules` file. 
