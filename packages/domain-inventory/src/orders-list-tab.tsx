@@ -2,13 +2,17 @@
 
 import {
   QuickAddBar,
-  SupplierOrderGroup,
-  EmptyOrderList,
   InsightsSidebar,
   type QuickAddSuggestion,
-  type OrderLineItem,
-  type OrderSupplier,
 } from "@soustools/design-system";
+import {
+  SupplierOrderGroup,
+  EmptyOrderList,
+} from "./components/Supplier/SupplierOrderGroup";
+import type {
+  OrderLineItem,
+  OrderSupplier,
+} from "./components/Supplier/SupplierOrderGroup.types";
 
 interface ListTabProps {
   items: OrderLineItem[];

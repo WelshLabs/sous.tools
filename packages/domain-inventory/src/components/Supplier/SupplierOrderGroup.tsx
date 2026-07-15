@@ -66,11 +66,11 @@ export function SupplierOrderGroup({
 
 export function EmptyOrderList() {
   return (
-    <div className="p-20 bg-muted/40 dark:bg-card/40 border border-border dark:border-border border-dashed flex flex-col items-center justify-center rounded-[2.5rem]">
-      <div className="w-24 h-24 rounded-full bg-muted dark:bg-zinc-800/40 flex items-center justify-center mb-6">
+    <div className="p-20 bg-muted/40 dark:bg-card/40 border border-border border-dashed flex flex-col items-center justify-center rounded-[2.5rem]">
+      <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-6">
         <ShoppingBag
           size={48}
-          className="text-muted-foreground/30 dark:text-zinc-700"
+          className="text-muted-foreground/30 dark:text-muted-foreground/20"
         />
       </div>
       <p className="text-muted-foreground font-black uppercase text-xs tracking-widest mb-2">

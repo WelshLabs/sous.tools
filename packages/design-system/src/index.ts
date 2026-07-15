@@ -102,15 +102,6 @@ export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";
 export { InsightsSidebar } from "./components/InsightsSidebar";
 export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar";
 export type { QuickAddSuggestion } from "./components/QuickAddBar";
-export {
-  SupplierOrderGroup,
-  EmptyOrderList,
-} from "./components/SupplierOrderGroup";
-export type {
-  OrderLineItem,
-  OrderSupplier,
-} from "./components/SupplierOrderGroup";
-
 export { calculateRecipeScale } from "./utils/scaling";
 export type { ScaledIngredientResult } from "./utils/scaling";
 
@@ -140,6 +131,6 @@ export {
   ProgressBar,
   TopProgress,
 } from "./components/Loader";
-
 export { GoogleIcon, GitHubIcon } from "./components/BrandIcons";
 export { LoginButton, type LoginState } from "./components/LoginButton";
+

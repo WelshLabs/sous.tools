@@ -28,10 +28,10 @@ export function OrderItemRow({
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-card/60 border border-border dark:border-border hover:border-primary/30 transition-all flex flex-row items-center justify-between rounded-2xl group/item">
+    <div className="p-4 bg-card/60 border border-border hover:border-primary/30 transition-all flex flex-row items-center justify-between rounded-2xl group/item">
       {/* Left: icon + name */}
       <div className="flex flex-row items-center gap-4 flex-1 min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-muted dark:bg-zinc-800/60 flex items-center justify-center border border-border dark:border-zinc-700 group-hover/item:bg-primary/5 transition-colors shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center border border-border group-hover/item:bg-primary/5 transition-colors shrink-0">
           <Package
             size={16}
             className="text-muted-foreground group-hover/item:text-primary transition-colors"
@@ -42,7 +42,7 @@ export function OrderItemRow({
             {item.rawName}
           </p>
           {item.isSystemSuggestion && (
-            <div className="inline-flex flex-row items-center gap-1 text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 mt-0.5">
+            <div className="inline-flex flex-row items-center gap-1 text-warning bg-warning/10 px-2 py-0.5 rounded-full border border-warning/20 mt-0.5">
               <Zap size={7} fill="currentColor" />
               <span className="text-[7px] font-black uppercase tracking-widest">
                 AI Suggested
@@ -54,7 +54,7 @@ export function OrderItemRow({
 
       {/* Right: qty + supplier + remove */}
       <div className="flex flex-row items-center gap-3 shrink-0">
-        <div className="flex flex-row items-center gap-1 bg-muted dark:bg-zinc-800/60 p-1 rounded-xl border border-border dark:border-zinc-700/60">
+        <div className="flex flex-row items-center gap-1 bg-secondary p-1 rounded-xl border border-border">
           <input
             type="number"
             value={qty}
@@ -64,7 +64,7 @@ export function OrderItemRow({
             onBlur={commitQty}
             className="w-12 bg-transparent text-center font-black text-sm outline-none text-foreground"
           />
-          <span className="text-[10px] font-black uppercase text-muted-foreground pr-3 border-l border-border dark:border-zinc-700/60 pl-2">
+          <span className="text-[10px] font-black uppercase text-muted-foreground pr-3 border-l border-border pl-2">
             {item.unit}
           </span>
         </div>
@@ -74,7 +74,7 @@ export function OrderItemRow({
           onChange={(e) =>
             onChangeSupplier(item.id, e.target.value || null)
           }
-          className="bg-muted dark:bg-zinc-800/60 border border-border dark:border-zinc-700 rounded-xl px-3 h-10 text-[10px] font-black uppercase appearance-none text-foreground min-w-[130px] outline-none focus:border-primary/50 transition-colors"
+          className="bg-secondary border border-border rounded-xl px-3 h-10 text-[10px] font-black uppercase appearance-none text-foreground min-w-[130px] outline-none focus:border-primary/50 transition-colors"
         >
           <option value="">Move to...</option>
           {suppliers.map((s) => (

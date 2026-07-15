@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Truck, Calendar, Check, ShoppingBag } from "lucide-react";
 import type { OrderSupplier, OrderLineItem } from "./SupplierOrderGroup.types";
 
@@ -40,10 +41,10 @@ export function SupplierHeader({
       <div className="flex flex-row items-center gap-4">
         <div
           className={[
-            "w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0",
+            "w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0 transition-all",
             isUnassigned
-              ? "bg-muted dark:bg-zinc-800/40 border-border dark:border-zinc-700"
-              : "bg-sky-500/10 border-sky-500/20 shadow-[0_0_20px_rgba(14,165,233,0.1)]",
+              ? "bg-muted dark:bg-secondary border-border"
+              : "bg-accent/10 border-accent/20 shadow-glow-accent",
           ].join(" ")}
         >
           <Truck
@@ -51,7 +52,7 @@ export function SupplierHeader({
             className={
               isUnassigned
                 ? "text-muted-foreground"
-                : "text-sky-500 dark:text-sky-400"
+                : "text-accent"
             }
           />
         </div>
@@ -83,7 +84,7 @@ export function SupplierHeader({
           {onShopOrder && (
             <button
               onClick={onShopOrder}
-              className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground h-12 px-6 rounded-2xl flex items-center gap-2 group transition-colors border border-border dark:border-zinc-700"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground h-12 px-6 rounded-2xl flex items-center gap-2 group transition-colors border border-border"
             >
               <ShoppingBag
                 size={16}
@@ -97,7 +98,7 @@ export function SupplierHeader({
           <button
             onClick={onPlaceOrder}
             disabled={isPlacingOrder}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 px-8 rounded-2xl shadow-xl shadow-primary/20 flex items-center gap-3 group transition-colors"
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 px-8 rounded-2xl shadow-glow-sm flex items-center gap-3 group transition-colors"
           >
             <Check
               size={16}
