@@ -1,3 +1,69 @@
+### #69: Native Apps
+
+**Labels:** enhancement, question, devops, design-system, frontent
+
+**Description:**
+Especially considering we are making the nextjs apps be simple thin routing and datafetching shells. We should have a bunch of optoins when it comes to making native apps... we need to research the best way for us to release native apps. In the past we have tried React Native, but ran into troubles because we were using new versions of React and Tailwind, and this is a damned shame because my gut tells me that this is actually the best approach... maybe they have released a new version that actually works with our libraries??? What other methods do we have available to us to make this a beautiful native app, but hopefully not duplicating code wherever possible?? My dream is that it could be similar to nextjs in the sense that we design a thin routing and data fetching shell in a native app and load in all of our domain components and design-system, etc. Also for a native app i am not sure the best method is to pack it all into a single app... maybe its better if POS was one app, KDS another, and have an Admin/Manager app as an umbrella app for the admin/dashboard interface and configuration screens, etc.
+
+**Comments:**
+
+> **sous-tools**: This issue focuses on researching and implementing the optimal strategy for developing native applications, aiming for maximum code reuse from our existing Next.js frontend, including domain components and the design system. We need to re-evaluate React Native's compatibility with current React and Tailwind versions, given its past challenges and continued potential. Additionally, we must explore other native app development methods and decide whether to release a single monolithic app or specialized applications for functions like POS, KDS, and administration.
+
+> **sous-tools**: ### Diagnosis Report
+>
+> This issue addresses a significant architectural decision regarding the development of native applications and their integration with our existing Next.js ecosystem. The core challenges involve re-evaluating React Native's compatibility with our current React and Tailwind CSS versions, maximizing code reuse from our `packages/design-system` and `packages/domain-*` components, and structuring potential multiple native applications (POS, KDS, Admin).
+>
+> Here are the key files that will be central to diagnosing and addressing these architectural and logic changes:
+>
+> - **`apps/web/package.json`**: This file defines the primary React and Tailwind CSS versions for our main web application. A thorough review is needed to determine the compatibility of these versions with the latest React Native framework, informing potential upgrades or alternative strategies for shared UI components.
+> - **`apps/pos-simulator/package.json`**: As another Next.js application, its React and Tailwind CSS dependencies require evaluation for seamless integration into a proposed native POS application. This assessment will highlight any version mismatches or necessary adjustments for shared frontend libraries.
+> - **`packages/design-system/package.json`**: This critical file governs the dependencies for our reusable UI components. It needs updating to include React Native-compatible styling solutions (e.g., Nativewind) and potentially new build scripts to support conditional component rendering across web and native platforms.
+> - **`packages/design-system/src/index.ts`**: The main entry point for the design system components, this file will require architectural changes to conditionally export web-specific and native-specific implementations of components. This ensures maximum code reuse while accommodating platform differences.
+> - **`turbo.json`**: To integrate new native applications (e.g., `apps/native-pos`, `apps/native-kds`) into our monorepo, this configuration file will need updates. It will define new pipelines for building, testing, and linting these native projects, aligning them with our existing development workflows.
+> - **`pnpm-workspace.yaml`**: This file defines the root of our monorepo workspaces. New native application directories will need to be added here to ensure they are properly managed by pnpm, allowing for efficient dependency handling and shared scripts across all projects.
+
+---
+
+### #68: thin routing layer
+
+**Labels:** enhancement, frontent
+
+**Description:**
+we need to make sure that the nextjs apps are merely simple thin routing shells. The only things happening in the nextjs apps should be routing and data fetching. Even data fetching should be done via packages. So the nextjs apps shouldnt really have to do anything other than orchestrate other packages and make them accessible via different routes.
+
+**Comments:**
+
+> **sous-tools**: This issue advocates for structuring Next.js applications as minimal routing shells. The primary goal is to confine application-specific logic to routing and the orchestration of data fetching, while encapsulating all actual data fetching and business logic within shared, reusable packages. This architecture fosters a more modular and maintainable system, positioning the Next.js app as a lightweight orchestrator that exposes pre-packaged functionalities through defined routes. It promotes clarity and reusability by centralizing core logic outside the application layer.
+
+> **sous-tools**: ### Diagnosis Report
+>
+> The issue "thin routing layer" identifies a need to refactor Next.js applications to serve purely as routing and orchestration layers, with all core business logic and data fetching implementations encapsulated within shared packages. Based on the provided file structure, several files within the `apps/web`, `apps/pos-simulator`, and `apps/setup-portal` Next.js applications are likely candidates for refactoring. These files are currently performing more than just orchestration, often directly implementing data fetching or complex business logic.
+>
+> - **`apps/pos-simulator/src/app/page.tsx`**
+>   This file likely contains direct data fetching for POS item data or includes significant simulation business logic. This logic should be extracted into a `packages/domain-pos-simulator` or `packages/api-client` for data retrieval.
+> - **`apps/pos-simulator/src/components/PosSimulator.tsx`**
+>   As the core simulator component, this file is prone to holding substantial business logic for simulation state management and data interaction. This logic should be moved to a dedicated domain package.
+> - **`apps/web/src/app/actions/auth.ts`**
+>   This file, containing Next.js Server Actions for authentication, likely implements authentication logic directly. This logic should be abstracted into a common authentication package or directly call functions from `packages/api-client`.
+> - **`apps/web/src/app/(workspace)/ingestion/review/[id]/page.tsx`**
+>   This page for reviewing ingested data likely integrates complex data fetching, transformation, and business rules for the review process. These operations should be delegated to `packages/domain-ingestion` or similar.
+> - **`apps/web/src/app/(workspace)/ingestion/review/[id]/use-auto-mapping.ts`**
+>   This custom hook probably encapsulates intricate auto-mapping business logic and data fetching for the ingestion review process. Its functionality should be migrated to `packages/domain-ingestion`.
+> - **`apps/web/src/app/(workspace)/inventory/vendors/actions.ts`**
+>   Similar to authentication actions, this file likely contains direct business logic for vendor management via Server Actions. This logic should be moved to a `packages/domain-inventory` package.
+> - **`apps/web/src/app/(workspace)/recipes/[id]/kitchen/page.tsx`**
+>   The kitchen view for recipes undoubtedly includes active recipe execution logic, timer management, and real-time updates. This core functionality should reside within `packages/domain-recipes`.
+> - **`apps/web/src/app/(workspace)/signage/[deckId]/tv-signage-editor-client.tsx`**
+>   As a rich client-side editor, this component is highly likely to contain extensive state management, data fetching for signage elements, and business logic for layout editing. This complex logic should be extracted into `packages/domain-signage`.
+> - **`apps/web/src/app/display/[id]/page.tsx`**
+>   This page, which serves as the signage display player, is responsible for fetching and dynamically rendering content. The detailed data processing and presentation logic for the display should be moved to `packages/domain-signage`.
+> - **`apps/web/src/app/display/[id]/use-display-player.ts`**
+>   This custom hook likely centralizes the core data fetching, state management, and display logic for the signage player. This functionality is a prime candidate for extraction into `packages/domain-signage`.
+> - **`apps/web/src/components/GoogleDriveBrowserWrapper.tsx`**
+>   This wrapper component probably handles direct integration logic, including data fetching and interaction with the Google Drive API. This integration-specific logic should be moved to a dedicated package or service.
+
+---
+
 ### #67: convert to drizzle??
 
 **Labels:** enhancement, question, backend, database

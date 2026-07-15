@@ -11,6 +11,7 @@
 - **Config Lockdown:** `process.env` is strictly forbidden outside of `@soustools/config`. All apps must import the type-safe, validated `config` object.
 - **Secrets SSOT:** Infisical is the Single Source of Truth for all environment variables.
 - **TSConfig Management:** All `tsconfig.json` files must extend from the shared `packages/tsconfig`. No relative paths (e.g., `../../../`) are allowed.
+- **Thin App Router Shells:** `apps/*` directories must remain as hollow as possible. Next.js `page.tsx` files should act strictly as Server Component entry points that import their corresponding Containers or Views from `@soustools/domain-*` packages. Building complex `components/` directories inside the Next.js `apps/*` router is forbidden.
 
 ## 2. Component Architecture & Folder Structure
 
