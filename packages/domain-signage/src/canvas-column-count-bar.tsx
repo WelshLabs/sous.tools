@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Minus, Plus } from "lucide-react";
 
 export interface CanvasColumnCountBarProps {

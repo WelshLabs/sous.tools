@@ -1,13 +1,7 @@
 "use client";
 
-import React from "react";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@soustools/design-system";
+
+import { Button, Card } from "@soustools/design-system";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import { type CartItem } from "../pos.types";
 

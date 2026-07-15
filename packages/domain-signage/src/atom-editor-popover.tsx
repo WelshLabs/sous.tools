@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { X } from "lucide-react";
 import { type MenuItemStateStyle } from "@soustools/api-types";
 import {

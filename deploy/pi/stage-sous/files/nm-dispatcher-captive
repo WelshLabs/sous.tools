@@ -1,0 +1,91 @@
+#!/bin/bash
+# =============================================================================
+# nm-dispatcher-captive  (installed to /etc/NetworkManager/dispatcher.d/90-captive-portal)
+#
+# NetworkManager dispatcher script. Fires on every interface event.
+# Logic:
+#   - If a WiFi interface comes UP with no internet → enable AP fallback
+#   - If internet is confirmed → disable AP and trigger bootstrap
+#   - Runs bootstrap.sh asynchronously (fire-and-forget) so NM isn't blocked
+#
+# NM passes: $1 = interface name, $2 = action (up, down, connectivity-change…)
+# =============================================================================
+
+IFACE="$1"
+ACTION="$2"
+
+BOOTSTRAP_SCRIPT="/usr/local/bin/bootstrap.sh"
+BOOTSTRAP_LOG="/var/log/sous-bootstrap.log"
+BOOTSTRAP_LOCK="/var/run/sous-bootstrap.lock"
+AP_CONN="Sous-Signage-Setup"
+CONNECTIVITY_CHECK_URL="http://connectivity-check.ubuntu.com"
+BOOTSTRAP_DONE_FLAG="/etc/sous/.bootstrap-done"
+
+log() {
+  echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) [nm-dispatcher] $*" >> "${BOOTSTRAP_LOG}"
+}
+
+log "Event: iface=${IFACE} action=${ACTION}"
+
+case "${ACTION}" in
+  up|connectivity-change)
+    # Skip loopback and the AP interface itself
+    if echo "${IFACE}" | grep -qE '^(lo|ap)'; then
+      exit 0
+    fi
+
+    # Check for real internet (max 5s timeout)
+    if curl -sf --max-time 5 "${CONNECTIVITY_CHECK_URL}" > /dev/null 2>&1; then
+      log "Internet confirmed on ${IFACE}"
+
+      # Bring down the setup AP if it's active
+      if nmcli connection show --active | grep -q "${AP_CONN}"; then
+        log "Deactivating AP: ${AP_CONN}"
+        nmcli connection down "${AP_CONN}" 2>/dev/null || true
+      fi
+
+      # Run bootstrap only once (lockfile + done-flag)
+      if [ -f "${BOOTSTRAP_DONE_FLAG}" ]; then
+        log "Bootstrap already complete — skipping"
+        exit 0
+      fi
+
+      if [ -f "${BOOTSTRAP_LOCK}" ]; then
+        log "Bootstrap already running — skipping"
+        exit 0
+      fi
+
+      log "Triggering bootstrap..."
+      touch "${BOOTSTRAP_LOCK}"
+      # Run async so this dispatcher returns immediately to NM
+      (
+        "${BOOTSTRAP_SCRIPT}" >> "${BOOTSTRAP_LOG}" 2>&1
+        touch "${BOOTSTRAP_DONE_FLAG}"
+        rm -f "${BOOTSTRAP_LOCK}"
+        log "Bootstrap finished"
+      ) &
+      disown
+
+    else
+      log "No internet on ${IFACE} — checking if AP is needed"
+
+      # If no active non-AP WiFi connection, bring up setup AP
+      if ! nmcli connection show --active | grep -qv "${AP_CONN}"; then
+        log "No upstream WiFi — activating AP: ${AP_CONN}"
+        nmcli connection up "${AP_CONN}" 2>/dev/null || true
+      fi
+    fi
+    ;;
+
+  down)
+    log "Interface down: ${IFACE}"
+    # If all upstream connections drop, re-activate the AP
+    sleep 10
+    if ! nmcli connection show --active | grep -qv "${AP_CONN}"; then
+      log "All connections down — re-activating AP"
+      nmcli connection up "${AP_CONN}" 2>/dev/null || true
+    fi
+    ;;
+esac
+
+exit 0

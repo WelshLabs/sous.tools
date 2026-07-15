@@ -1,6 +1,6 @@
 "use client";
+import * as React from "react";
 
-import React from "react";
 import { X, Settings, LayoutTemplate, Layers, SlidersHorizontal } from "lucide-react";
 import {
   type SignageLayoutConfig,

@@ -100,6 +100,9 @@ export {
 export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";
 
 export { InsightsSidebar } from "./components/InsightsSidebar";
+export type { InsightsSidebarProps } from "./components/InsightsSidebar";
+export type { OrderSupplier, OrderLineItem } from "./types/order-types";
+
 export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar";
 export type { QuickAddSuggestion } from "./components/QuickAddBar";
 export { calculateRecipeScale } from "./utils/scaling";

@@ -27,7 +27,7 @@ android {
         if (localPropertiesFile.exists()) {
             properties.load(FileInputStream(localPropertiesFile))
         }
-        val localApiUrl = properties.getProperty("API_URL") ?: "\"http://10.0.2.2:6001\""
+        val localApiUrl = properties.getProperty("API_URL") ?: "\"http://10.0.2.2:3001\""
 
         debug {
             applicationIdSuffix = ".debug"

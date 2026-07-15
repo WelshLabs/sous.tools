@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useState } from "react";
 import { type MenuItemStateStyle, type MenuItemBadge } from "@soustools/api-types";
 import { FontPickerPopover } from "./font-picker-popover";

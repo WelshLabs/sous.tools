@@ -1,0 +1,44 @@
+[Unit]
+Description=Sous Signage Wayland Compositor (Sway)
+Documentation=https://swaywm.org
+# Requires logind for DRM/KMS ACLs on /dev/dri/* devices
+After=systemd-logind.service dbus.socket graphical.target
+Requires=dbus.socket
+Wants=graphical.target
+
+[Service]
+Type=simple
+User=sous
+Group=sous
+
+# PAMName=login combined with TTYPath gives logind-managed session ownership
+# over DRM devices — essential for Wayland to render without root.
+PAMName=login
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+
+# Wayland runtime environment
+Environment=WAYLAND_DISPLAY=wayland-1
+Environment=XDG_SESSION_TYPE=wayland
+Environment=XDG_SESSION_CLASS=user
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Pi 5 specifics: use DRM backend, disable atomic for stability
+Environment=WLR_BACKENDS=drm
+Environment=WLR_DRM_NO_ATOMIC=1
+Environment=WLR_LIBINPUT_NO_DEVICES=0
+
+# Step 1: select the correct config (setup vs kiosk) based on kiosk-mode file
+ExecStartPre=/usr/local/bin/sous-sway-config-select.sh
+
+# Step 2: launch sway with the symlinked config
+ExecStart=/usr/bin/sway --config /etc/sway/config
+
+Restart=always
+RestartSec=5s
+TimeoutStopSec=10s
+
+[Install]
+WantedBy=graphical.target

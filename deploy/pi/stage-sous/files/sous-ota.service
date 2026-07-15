@@ -1,0 +1,26 @@
+[Unit]
+Description=Sous Signage OTA Update (triggered by sous-ota.timer)
+Documentation=https://sous.tools
+After=network-online.target
+Wants=network-online.target
+# Never run during active kiosk hours — the timer enforces maintenance_window
+
+[Service]
+Type=oneshot
+User=sous
+Group=sous
+
+# Environment for git/pnpm/ansible
+Environment=HOME=/home/sous
+Environment=PATH=/home/sous/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=GIT_SSH_COMMAND=ssh -i /home/sous/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new
+
+ExecStart=/usr/local/bin/maintenance-ota.sh
+
+# Allow up to 20 minutes for a full OTA cycle (git pull + pnpm build + ansible)
+TimeoutStartSec=1200
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

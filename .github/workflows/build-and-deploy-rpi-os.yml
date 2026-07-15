@@ -6,7 +6,8 @@ on:
     paths:
       - "deploy/pi/**"
       - "deploy/ansible/**"
-      - ".github/workflows/deploy-signage-os.yml"
+      - "apps/setup-portal/**"
+      - ".github/workflows/build-and-deploy-rpi-os.yml"
   workflow_dispatch:
 
 permissions:
@@ -21,54 +22,13 @@ jobs:
 
       - name: Purge root-owned workspace files (Pre-checkout)
         run: |
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work   || true
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy || true
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build OS Image with pi-gen
-        run: |
-          cd deploy/pi/pi-gen
-
-          # 1. Scaffold the mandatory config file that git ignores
-          echo "IMG_NAME=soustools-signage" > config
-          echo "TARGET_HOSTNAME=signage" >> config
-
-          # Force 64-bit build for Raspberry Pi 5
-          echo "TARGET_ARCH=arm64" >> config
-          echo "ARCH=arm64" >> config
-
-          # Enable SSH and continue (Removed FIRST_USER variables, we handle this manually now)
-          echo "ENABLE_SSH=1" >> config
-          echo "CONTINUE=1" >> config
-          
-          # 2. Restore the lost executable flags for EVERY internal script
-          echo "Restoring lost +x permissions to all pi-gen scripts..."
-          sudo find . -type f -name "*.sh" -exec chmod +x {} +
-          sudo chmod +x stage*/prerun.sh || true
-
-          # 3. THE FIX: Inject a chroot script to hard-bake the user & kill the setup wizards
-          echo "Injecting enterprise kiosk user configurations..."
-          cat << 'EOF' > stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
-          #!/bin/bash
-          
-          # A. Hard-bake the 'sous' user directly into the filesystem
-          if ! id -u sous >/dev/null 2>&1; then
-            useradd -m -s /bin/bash -G sudo,video,audio,plugdev,input,render,netdev,gpio,i2c,spi sous
-            echo "sous:bootstrap123" | chpasswd
-          fi
-          
-          # B. Mask the first-boot blue screen (userconfig) and the desktop setup wizard (piwiz)
-          systemctl mask userconfig.service || true
-          systemctl mask piwiz.service || true
-          EOF
-          
-          sudo chmod +x stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
-
-          # 4. Execute the Dockerized build
-          sudo ./build-docker.sh
-
+      # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
       - name: Fetch Infisical Secrets
         uses: infisical/secrets-action@v1.0.8
         with:
@@ -77,7 +37,71 @@ jobs:
           env-slug: "prod"
           project-slug: "sous-tools-1cd-a"
 
-      - name: Release to GitHub
+      - name: Inject static deploy key into stage-sous/files/
+        run: |
+          # Write the Ed25519 read-only deploy key from Infisical.
+          # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
+          # with chmod 600 inside the chroot. The file is scrubbed after build.
+          printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
+            > deploy/pi/stage-sous/files/signage-deploy-key
+          chmod 600 deploy/pi/stage-sous/files/signage-deploy-key
+
+      - name: Stage stage-sous inside pi-gen (runtime injection)
+        run: |
+          # pi-gen expects custom stages to live alongside stage0–stage5.
+          # We keep ours in deploy/pi/stage-sous/ and copy at CI time so
+          # it never pollutes the upstream pi-gen checkout.
+          cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
+
+      - name: Build OS Image with pi-gen
+        run: |
+          cd deploy/pi/pi-gen
+
+          # 1. Scaffold the mandatory config file that git ignores
+          cat > config <<'EOCFG'
+IMG_NAME=soustools-signage
+TARGET_HOSTNAME=signage
+TARGET_ARCH=arm64
+ARCH=arm64
+ENABLE_SSH=1
+CONTINUE=1
+# Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
+STAGE_LIST="stage0 stage1 stage2 stage-sous"
+EOCFG
+
+          # 2. Restore executable flags (git strips them on checkout)
+          echo "Restoring +x permissions to all pi-gen scripts..."
+          sudo find . -type f -name "*.sh" -exec chmod +x {} +
+          sudo chmod +x stage*/prerun.sh             || true
+          sudo chmod +x stage-sous/*.sh              || true
+          sudo chmod +x stage-sous/files/*.sh        || true
+
+          # 3. Hard-bake the 'sous' user and kill first-boot wizards
+          cat << 'EOF' > stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
+#!/bin/bash
+# A. Create the kiosk service account
+if ! id -u sous >/dev/null 2>&1; then
+  useradd -m -s /bin/bash \
+    -G sudo,video,audio,plugdev,input,render,netdev,gpio,i2c,spi \
+    sous
+  echo "sous:bootstrap123" | chpasswd
+fi
+# B. Mask interactive first-boot screens
+systemctl mask userconfig.service || true
+systemctl mask piwiz.service      || true
+EOF
+          sudo chmod +x stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
+
+          # 4. Run the Dockerized pi-gen build
+          sudo ./build-docker.sh
+
+      - name: Scrub deploy key from workspace (security)
+        if: always()
+        run: |
+          rm -f deploy/pi/stage-sous/files/signage-deploy-key           || true
+          rm -f deploy/pi/pi-gen/stage-sous/files/signage-deploy-key    || true
+
+      - name: Release image to GitHub (conarwelsh/signage-os)
         uses: softprops/action-gh-release@v2
         env:
           ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
@@ -89,9 +113,10 @@ jobs:
           files: deploy/pi/pi-gen/deploy/*.zip
           make_latest: true
 
-      - name: Cleanup Root-Owned Docker Files
+      - name: Cleanup root-owned Docker artefacts
         if: always()
         run: |
-          echo "Wiping pi-gen directories to prevent root permission locks..."
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy || true
+          echo "Wiping pi-gen work directories to prevent root permission locks..."
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work       || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy     || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true

@@ -1,6 +1,6 @@
 "use client";
+import * as React from "react";
 
-import React from "react";
 import { type SignageBlock, type PosItem, type MenuItemStyles } from "@soustools/api-types";
 import { Rows, Columns, LayoutGrid, GripVertical } from "lucide-react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";

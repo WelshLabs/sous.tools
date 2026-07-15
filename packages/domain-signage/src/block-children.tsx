@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import * as React from "react";
 import type { SignageBlock, MenuItemStyles, PosItem } from "@soustools/api-types";
 
 import { Rows, Columns, LayoutGrid } from "lucide-react";

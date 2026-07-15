@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
 import { CssReferencePanel } from "./css-reference-panel";
 

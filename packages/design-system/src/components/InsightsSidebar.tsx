@@ -1,6 +1,6 @@
 
 import { Clock, Zap, Plus } from "lucide-react";
-import type { OrderSupplier } from "./SupplierOrderGroup";
+import type { OrderSupplier } from "../types/order-types";
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 

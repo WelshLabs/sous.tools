@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useState } from "react";
 import { type MenuItemStyles, type MenuItemStateStyle } from "@soustools/api-types";
 import { StateTabBar, type ItemState } from "./state-tab-bar";

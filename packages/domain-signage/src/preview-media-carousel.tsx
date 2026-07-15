@@ -1,6 +1,6 @@
 "use client";
+import * as React from "react";
 
-import React from "react";
 
 export const PreviewMediaCarousel = ({ block }: { block: any }) => {
   const [activeIndex, setActiveIndex] = React.useState(0);

@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Trash2 } from "lucide-react";
 import type { SignageSlide, ColumnLayoutSlide } from "@soustools/api-types";
 

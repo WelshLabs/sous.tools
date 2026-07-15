@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useRef } from "react";
 import { Copy, Sparkles, BookOpen, ChevronDown } from "lucide-react";
 

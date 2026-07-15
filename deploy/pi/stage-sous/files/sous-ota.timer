@@ -1,0 +1,17 @@
+[Unit]
+Description=Sous Signage OTA Update Timer
+Documentation=https://sous.tools
+# The actual schedule is dynamically computed from maintenance_window JSON
+# by sous-ota-scheduler.sh and written as a drop-in override at boot.
+
+[Timer]
+# Fallback default: 02:00 daily (overridden by scheduler dropin at runtime)
+OnCalendar=*-*-* 02:00:00
+# Fire once immediately if we missed the window (e.g. device was powered off)
+Persistent=true
+# Random jitter up to 5 minutes to prevent fleet-wide thundering herd
+RandomizedDelaySec=300
+Unit=sous-ota.service
+
+[Install]
+WantedBy=timers.target

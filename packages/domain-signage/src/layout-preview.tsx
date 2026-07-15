@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useRef, useState, useEffect } from "react";
 import { type SignageLayoutConfig, type PosItem, type SignageBlock } from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";

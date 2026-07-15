@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Play, Pause, ChevronLeft, ChevronRight, Copy, Check, ExternalLink } from "lucide-react";
 import { useSaveState } from "./use-save-state";
 import { EditorTopBarActions } from "./editor-top-bar-actions";

@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { type SignageLayoutConfig, type RawSignageLayoutConfig, type SignageSlide, type PosItem, type SignageBlock } from "@soustools/api-types";
 import { EditorTopBar } from "./editor-top-bar";

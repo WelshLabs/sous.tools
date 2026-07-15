@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@soustools/design-system";
 import { X, Loader2 } from "lucide-react";

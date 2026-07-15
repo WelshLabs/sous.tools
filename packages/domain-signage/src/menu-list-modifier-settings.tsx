@@ -1,4 +1,3 @@
-import React from "react";
 import { type PosItem, type ItemModifierOverride } from "@soustools/api-types";
 import { Layers } from "lucide-react";
 

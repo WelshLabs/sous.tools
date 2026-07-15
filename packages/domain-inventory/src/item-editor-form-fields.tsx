@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Loader2 } from "lucide-react";
 
 /** Nutritional macro data shape (per 100g). */

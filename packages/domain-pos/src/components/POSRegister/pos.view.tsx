@@ -46,4 +46,3 @@ export function POSRegisterView({
   );
 }
 POSRegisterView.displayName = "POSRegisterView";
-"

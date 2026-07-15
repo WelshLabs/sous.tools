@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useState, useCallback } from "react";
 import { type ColumnConfig } from "@soustools/api-types";
 import { Plus } from "lucide-react";

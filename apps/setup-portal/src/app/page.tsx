@@ -1,7 +1,9 @@
+import { SetupWizard } from '../components/SetupWizard';
+
 export default function Page() {
-    return (
-        <main>
-        <h1>Setup Portal</h1>
-        </main>
-    );
+  return (
+    <main>
+      <SetupWizard />
+    </main>
+  );
 }

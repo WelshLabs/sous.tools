@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { type SignageBlock, type PosItem } from "@soustools/api-types";
 import { PosItemPicker } from "./pos-item-picker";
 

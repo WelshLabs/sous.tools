@@ -1,0 +1,27 @@
+[connection]
+id=Sous-Signage-Setup
+uuid=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+type=wifi
+autoconnect=false
+# Do NOT autoconnect — only activated by nm-dispatcher-captive when no internet
+
+[wifi]
+mode=ap
+ssid=Sous-Signage-Setup
+band=bg
+channel=6
+
+[wifi-security]
+key-mgmt=wpa-psk
+psk=SousSetup2025!
+
+[ipv4]
+method=shared
+address1=192.168.4.1/24,192.168.4.1
+# 192.168.4.1 is the gateway and captive portal address
+# NetworkManager's 'shared' method enables dnsmasq DHCP for clients
+
+[ipv6]
+method=disabled
+
+[proxy]
