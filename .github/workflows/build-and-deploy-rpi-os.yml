@@ -54,20 +54,33 @@ jobs:
           cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
 
       - name: Build OS Image with pi-gen
+        env:
+          PI_GEN_CONFIG: |
+            IMG_NAME=soustools-signage
+            TARGET_HOSTNAME=signage
+            TARGET_ARCH=arm64
+            ARCH=arm64
+            ENABLE_SSH=1
+            CONTINUE=1
+            # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
+            STAGE_LIST="stage0 stage1 stage2 stage-sous"
+          CHROOT_SCRIPT: |
+            #!/bin/bash
+            # A. Create the kiosk service account
+            if ! id -u sous >/dev/null 2>&1; then
+              useradd -m -s /bin/bash \
+                -G sudo,video,audio,plugdev,input,render,netdev,gpio,i2c,spi \
+                sous
+              echo "sous:bootstrap123" | chpasswd
+            fi
+            # B. Mask interactive first-boot screens
+            systemctl mask userconfig.service || true
+            systemctl mask piwiz.service      || true
         run: |
           cd deploy/pi/pi-gen
 
           # 1. Scaffold the mandatory config file that git ignores
-          cat > config <<'EOCFG'
-IMG_NAME=soustools-signage
-TARGET_HOSTNAME=signage
-TARGET_ARCH=arm64
-ARCH=arm64
-ENABLE_SSH=1
-CONTINUE=1
-# Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
-STAGE_LIST="stage0 stage1 stage2 stage-sous"
-EOCFG
+          echo "$PI_GEN_CONFIG" > config
 
           # 2. Restore executable flags (git strips them on checkout)
           echo "Restoring +x permissions to all pi-gen scripts..."
@@ -77,19 +90,7 @@ EOCFG
           sudo chmod +x stage-sous/files/*.sh        || true
 
           # 3. Hard-bake the 'sous' user and kill first-boot wizards
-          cat << 'EOF' > stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
-#!/bin/bash
-# A. Create the kiosk service account
-if ! id -u sous >/dev/null 2>&1; then
-  useradd -m -s /bin/bash \
-    -G sudo,video,audio,plugdev,input,render,netdev,gpio,i2c,spi \
-    sous
-  echo "sous:bootstrap123" | chpasswd
-fi
-# B. Mask interactive first-boot screens
-systemctl mask userconfig.service || true
-systemctl mask piwiz.service      || true
-EOF
+          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
           sudo chmod +x stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
 
           # 4. Run the Dockerized pi-gen build

@@ -82,3 +82,5 @@ packages/.secrets.cache.json
 newrelic_agent.log
 
 .continue/
+
+signage_deploy_key*
