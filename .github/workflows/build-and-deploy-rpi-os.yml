@@ -90,8 +90,8 @@ jobs:
           sudo chmod +x stage-sous/files/*.sh        || true
 
           # 3. Hard-bake the 'sous' user and kill first-boot wizards
-          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
-          sudo chmod +x stage2/01-sys-tweaks/99-kill-wizards-chroot.sh
+          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
+          sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
 
           # 4. Run the Dockerized pi-gen build
           sudo ./build-docker.sh
