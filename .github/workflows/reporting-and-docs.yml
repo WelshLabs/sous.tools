@@ -74,12 +74,13 @@ jobs:
       - name: Generate Repomix Snapshot
         # Creates a packed XML of the codebase for AI ingestion
         run: npx repomix --output docs/context/repomix-output.xml || true
-
+      
+      # Full DB Schema Dump
       - name: Dump Database Schema
         env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_POOLER_URL: ${{ env.SUPABASE_POOLER_URL }}
         run: |
-          pg_dump $SUPABASE_URL --schema-only > docs/context/notebooklm-full_schema.txt || true
+          pg_dump $SUPABASE_POOLER_URL --schema-only > docs/context/notebooklm-full_schema.txt || true
 
       # --- 3. GATHER KANBAN & ISSUE STATE ---
       - name: Export Open GitHub Issues
