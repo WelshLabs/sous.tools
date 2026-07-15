@@ -208,6 +208,16 @@ but most all of the components need to be refactored to follow the correct struc
 
 > **conarwelsh**: this also remains true for our packages/domain-* packages, they have the same issues
 
+> **conarwelsh**: Successfully refactored the supplier-related design-system components as requested:
+>
+> - Created proper folder structure: `src/components/molecules` and `src/components/organisms`.
+> - Moved and refactored `SupplierHeader.tsx` and `SupplierLineItem.tsx` into `molecules/`.
+> - Moved and refactored `SupplierOrderGroup.tsx` and `SupplierOrderGroup.types.ts` into `organisms/`.
+> - Eradicated all hardcoded Tailwind colors, zinc/slate references, and margins/paddings from Tailwind classes across these files, replacing them with semantic design tokens (e.g., `bg-secondary`, `bg-card/60`, `border-border`, `shadow-glow-accent`, `shadow-glow-sm`, etc.).
+> - Ensured file sizes do not exceed 200 lines.
+> - Cleaned up old supplier components from the root components folder.
+> - Updated all package exports in `packages/design-system/src/index.ts` and verified successful typechecking and linting.
+
 ---
 
 ### #62: omnibar merge
