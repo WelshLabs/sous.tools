@@ -74,7 +74,7 @@ jobs:
       - name: Generate Repomix Snapshot
         # Creates a packed XML of the codebase for AI ingestion
         run: npx repomix --output docs/context/repomix-output.xml || true
-      
+
       # Full DB Schema Dump
       - name: Dump Database Schema
         env:
@@ -136,6 +136,7 @@ jobs:
             "run_id": "${{ github.run_id }}", 
             "quality_status": "${{ github.event.workflow_run.conclusion }}"
           }' \
-          https://n8n.sous.tools/webhook-test/cto-summary
+          ${{ env.N8N_CTO_WEBHOOK_URL }}
         continue-on-error: true
         # ${{ env.N8N_CTO_WEBHOOK_URL }}
+        # https://n8n.sous.tools/webhook-test/cto-summary
