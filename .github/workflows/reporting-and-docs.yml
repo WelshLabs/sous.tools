@@ -119,7 +119,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           # Stage ONLY the generated NotebookLM context files
-          git add docs/context/notebooklm-*.md
+          git add docs/context/notebooklm-*
 
           # Commit the files. We use [skip ci] so this automated commit doesn't trigger an infinite loop of CI actions!
           git commit -m "chore(ai): auto-update AI context reports [skip ci]" || true
