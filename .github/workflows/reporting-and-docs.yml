@@ -75,12 +75,18 @@ jobs:
         # Creates a packed XML of the codebase for AI ingestion
         run: npx repomix --output docs/context/repomix-output.xml || true
 
+      - name: Dump Database Schema
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          pg_dump $DATABASE_URL --schema-only > docs/context/notebooklm-full_schema.txt || true
+
       # --- 3. GATHER KANBAN & ISSUE STATE ---
       - name: Export Open GitHub Issues
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue list --state open --limit 50 --json number,title,body,labels,comments | jq -r '.[] | "### #\(.number): \(.title)\n**Labels:** \([.labels[].name] | join(", "))\n\n\(.body)\n\n---\n"' > docs/context/notebooklm-issues.md || true
+          gh issue list --state open --limit 50 --json number,title,body,labels,comments | jq -r '.[] | "### #\(.number): \(.title)\n**Labels:** \([.labels[].name] | join(", "))\n\n**Description:**\n\(.body)\n\n**Comments:**\n\([.comments[]? | "> **\(.author.login)**: \(.body | gsub("\n"; "\n> "))"] | join("\n\n"))\n\n---\n"' > docs/context/notebooklm-issues.md || true
 
       - name: Fetch GitHub Project Kanban State
         env:
