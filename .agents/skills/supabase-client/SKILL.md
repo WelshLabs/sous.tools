@@ -16,15 +16,15 @@ Always obtain clients from the shared `@soustools/supabase` package — never in
 
 ```ts
 // ✅ Server Component / Server Action / Route Handler
-import { createServerClient } from '@soustools/supabase/server';
+import { createServerClient } from "@soustools/supabase/server";
 const supabase = createServerClient(); // reads cookies via next/headers
 
 // ✅ NestJS service (via shared package)
-import { SupabaseService } from '@soustools/supabase/nestjs';
+import { SupabaseService } from "@soustools/supabase/nestjs";
 
 // ❌ FORBIDDEN anywhere in apps/app (except real-time exception)
-import { createBrowserClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 ```
 
 ## Real-Time Exception (Narrow & Documented)
@@ -47,12 +47,12 @@ Client-side Supabase channels are permitted **only** in a dedicated `"use client
 ```ts
 // ✅ Belt-and-suspenders org scoping in Server Component
 const { data } = await supabase
-  .from('recipes')
-  .select('*')
-  .eq('organization_id', session.user.organizationId);
+  .from("recipes")
+  .select("*")
+  .eq("organization_id", session.user.organizationId);
 
 // ❌ FORBIDDEN — no org scoping, relying on RLS alone
-const { data } = await supabase.from('recipes').select('*');
+const { data } = await supabase.from("recipes").select("*");
 ```
 
 ## Typing
@@ -61,7 +61,7 @@ const { data } = await supabase.from('recipes').select('*');
 - Re-generate types with `supabase gen types typescript` after every migration and commit the result.
 
 ```ts
-import type { Database } from '@soustools/api-types';
+import type { Database } from "@soustools/api-types";
 const supabase = createServerClient<Database>();
 ```
 
@@ -71,21 +71,22 @@ const supabase = createServerClient<Database>();
 > **Database mutations from `"use client"` components are absolutely forbidden.**
 >
 > All `INSERT`, `UPDATE`, `DELETE` operations must go through:
+>
 > 1. **Next.js Server Actions** (preferred for form mutations).
 > 2. **NestJS API endpoints** at `apps/api` (preferred for complex business logic).
 
 ```ts
 // ✅ Server Action mutation
-'use server';
+"use server";
 export async function createRecipe(input: CreateRecipeDto) {
   const supabase = createServerClient();
-  return supabase.from('recipes').insert(input);
+  return supabase.from("recipes").insert(input);
 }
 
 // ❌ FORBIDDEN — client-side mutation
-'use client';
+("use client");
 const handleSubmit = async () => {
-  await supabase.from('recipes').insert(data); // BANNED
+  await supabase.from("recipes").insert(data); // BANNED
 };
 ```
 

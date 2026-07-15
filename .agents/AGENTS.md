@@ -111,4 +111,3 @@ Operational stability in a kitchen takes precedence over feature velocity. If a 
 - **Phase X (Targeted Semantic Purge & UI Injection)**: Active - Fixing Light Mode contrast, injecting TwoToneHeader into domain routes, and targeted purging of border and background anti-patterns.
 - **Phase X (Infisical Universal Auth & Docker Secrets)**: Active - Acknowledged Oracle Cloud (GHCR) as the production deployment target and updated docker-compose.yml to inject Infisical Machine Identity credentials into the API container to prevent boot crash loops.
 - **Phase XI (Visual Builder UX Sprint)**: Active - Resolving left panel image rendering (preserving URLs in BullMQ ingestion processor), fixing light mode contrast on selectors, and implementing the inline Creatable Select component with API item creation and weight warning triggers.
-

@@ -13,12 +13,12 @@ description: Rules for @soustools/design-system — Neon-Glass Tailwind v4 token
 
 ## Package Identity
 
-| Property | Value |
-|---|---|
-| Package name | `@soustools/design-system` |
-| CSS entry | `packages/design-system/index.css` |
+| Property        | Value                                 |
+| --------------- | ------------------------------------- |
+| Package name    | `@soustools/design-system`            |
+| CSS entry       | `packages/design-system/index.css`    |
 | Component entry | `packages/design-system/src/index.ts` |
-| Token source | `v2-snapshot.md` → `sous-theme.kdl` |
+| Token source    | `v2-snapshot.md` → `sous-theme.kdl`   |
 
 ---
 
@@ -26,18 +26,18 @@ description: Rules for @soustools/design-system — Neon-Glass Tailwind v4 token
 
 All color values are sourced **exclusively** from the v2 `sous-theme.kdl` terminal theme file.
 
-| Token | Hex | Role |
-|---|---|---|
-| `--color-primary` | `#4cc9f0` | Neon cyan — primary interactive accent |
-| `--color-background` | `#0f172a` | Page backdrop (slate-900) |
-| `--color-card` | `#1e293b` | Elevated surface (slate-800) |
-| `--color-foreground` | `#f8fafc` | Primary text (slate-50) |
-| `--color-accent` | `#f72585` | Neon pink — secondary accent (magenta) |
-| `--color-destructive` | `#f43f5e` | Error / danger (rose-500) |
-| `--color-secondary` | `#334155` | Muted surface (slate-700) |
-| `--color-muted-foreground` | `#94a3b8` | De-emphasized text (slate-400) |
-| `--color-border` | `#334155` | Structural borders (slate-700) |
-| `--color-ring` | `#4cc9f0` | Focus ring — matches primary |
+| Token                      | Hex       | Role                                   |
+| -------------------------- | --------- | -------------------------------------- |
+| `--color-primary`          | `#4cc9f0` | Neon cyan — primary interactive accent |
+| `--color-background`       | `#0f172a` | Page backdrop (slate-900)              |
+| `--color-card`             | `#1e293b` | Elevated surface (slate-800)           |
+| `--color-foreground`       | `#f8fafc` | Primary text (slate-50)                |
+| `--color-accent`           | `#f72585` | Neon pink — secondary accent (magenta) |
+| `--color-destructive`      | `#f43f5e` | Error / danger (rose-500)              |
+| `--color-secondary`        | `#334155` | Muted surface (slate-700)              |
+| `--color-muted-foreground` | `#94a3b8` | De-emphasized text (slate-400)         |
+| `--color-border`           | `#334155` | Structural borders (slate-700)         |
+| `--color-ring`             | `#4cc9f0` | Focus ring — matches primary           |
 
 ---
 
@@ -67,15 +67,15 @@ All color values are sourced **exclusively** from the v2 `sous-theme.kdl` termin
 
 Use the predefined utility classes from `index.css`. Do not re-implement them inline.
 
-| Class | Use Case |
-|---|---|
-| `.glass-panel` / `.st-glass-panel` | KDS/POS primary frosted surface |
-| `.glass-card` | Secondary elevated card with inner glow |
-| `.st-glass-pill` | Rounded pill shape (nav chips, badges) |
-| `.neon-glow` | Cyan box-shadow glow on focused/active elements |
-| `.neon-glow-lg` | Stronger glow for primary CTAs |
-| `.neon-glow-pink` | Magenta accent glow |
-| `.neon-border` | Cyan inset + outset border glow |
+| Class                              | Use Case                                        |
+| ---------------------------------- | ----------------------------------------------- |
+| `.glass-panel` / `.st-glass-panel` | KDS/POS primary frosted surface                 |
+| `.glass-card`                      | Secondary elevated card with inner glow         |
+| `.st-glass-pill`                   | Rounded pill shape (nav chips, badges)          |
+| `.neon-glow`                       | Cyan box-shadow glow on focused/active elements |
+| `.neon-glow-lg`                    | Stronger glow for primary CTAs                  |
+| `.neon-glow-pink`                  | Magenta accent glow                             |
+| `.neon-border`                     | Cyan inset + outset border glow                 |
 
 ---
 
@@ -83,13 +83,13 @@ Use the predefined utility classes from `index.css`. Do not re-implement them in
 
 All components are **presentation-only**. They accept data via props and emit events via callbacks. No data fetching, no Supabase, no server calls.
 
-| Component | File | Export |
-|---|---|---|
-| `TwoToneHeader` | `src/components/TwoToneHeader.tsx` | Named |
-| `Button` | `src/components/Button.tsx` | Named + forwardRef |
-| `Card` (+ sub-components) | `src/components/Card.tsx` | Named family |
-| `Input` | `src/components/Input.tsx` | Named + forwardRef |
-| `Label` | `src/components/Label.tsx` | Named |
+| Component                 | File                               | Export             |
+| ------------------------- | ---------------------------------- | ------------------ |
+| `TwoToneHeader`           | `src/components/TwoToneHeader.tsx` | Named              |
+| `Button`                  | `src/components/Button.tsx`        | Named + forwardRef |
+| `Card` (+ sub-components) | `src/components/Card.tsx`          | Named family       |
+| `Input`                   | `src/components/Input.tsx`         | Named + forwardRef |
+| `Label`                   | `src/components/Label.tsx`         | Named              |
 
 ### Button Variant Naming (shadcn-style)
 

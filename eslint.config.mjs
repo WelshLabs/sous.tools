@@ -5,7 +5,6 @@ import boundaries from "eslint-plugin-boundaries";
 import tailwindcss from "eslint-plugin-tailwindcss";
 
 export default [
-  // test
   // Global ignores — files that should never be linted
   {
     ignores: [

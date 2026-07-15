@@ -15,6 +15,7 @@ Run this checklist against every file you generate or modify **before** presenti
 > **Any `"use client"` file that performs a direct database mutation is a critical violation.**
 
 **Trigger pattern** — flag if a file contains ALL of the following:
+
 - Line 1 is `'use client';` or `"use client";`
 - AND any of: `.from(`, `.insert(`, `.update(`, `.delete(`, `.upsert(`
 - AND the import source is `@supabase/`, `@soustools/supabase/browser`, or `createBrowserClient`
@@ -23,13 +24,13 @@ Run this checklist against every file you generate or modify **before** presenti
 
 ```ts
 // ❌ VIOLATION — triggers Check 1
-'use client';
-import { createBrowserClient } from '@soustools/supabase/browser';
-const handleDelete = () => supabase.from('recipes').delete().eq('id', id);
+"use client";
+import { createBrowserClient } from "@soustools/supabase/browser";
+const handleDelete = () => supabase.from("recipes").delete().eq("id", id);
 
 // ✅ COMPLIANT — mutation routed to Server Action
-'use client';
-import { deleteRecipe } from '@/actions/recipes'; // Server Action
+("use client");
+import { deleteRecipe } from "@/actions/recipes"; // Server Action
 const handleDelete = () => deleteRecipe(id);
 ```
 
@@ -42,12 +43,14 @@ const handleDelete = () => deleteRecipe(id);
 > **`@soustools/ui` is deprecated.** Any import from `@soustools/ui` in new code is a violation.
 
 **Trigger pattern** — flag if a file in `apps/app` contains:
+
 - A JSX element (`<Button>`, `<Card>`, `<Input>`, `<Badge>`, etc.) **not** imported from `@soustools/design-system`
 - OR an import from `@soustools/ui` (deprecated package — must migrate)
 - OR an import of a component from a relative path within `apps/app` (e.g., `../../components/Button`)
 - OR an inline `style={{}}` prop on any element
 
 **Required action**:
+
 1. Check `packages/design-system/src/index.ts` — does the component exist?
    - **YES** → replace the local/relative/deprecated import with `import { ComponentName } from '@soustools/design-system'`.
    - **NO** → add it to `packages/design-system` first, export it, then import it.
@@ -55,15 +58,15 @@ const handleDelete = () => deleteRecipe(id);
 
 ```tsx
 // ❌ VIOLATION — triggers Check 2 (deprecated import + inline style)
-import { Button } from '@soustools/ui'; // deprecated package
-<Button style={{ color: 'red' }}>Save</Button>
+import { Button } from "@soustools/ui"; // deprecated package
+<Button style={{ color: "red" }}>Save</Button>;
 
 // ❌ VIOLATION — triggers Check 2 (local component)
-import { Button } from '../../components/Button';
+import { Button } from "../../components/Button";
 
 // ✅ COMPLIANT
-import { Button } from '@soustools/design-system';
-<Button variant="destructive">Save</Button>
+import { Button } from "@soustools/design-system";
+<Button variant="destructive">Save</Button>;
 ```
 
 ---
@@ -74,6 +77,7 @@ import { Button } from '@soustools/design-system';
 > Hydration mismatches are caused by server/client rendering divergence. Flag any pattern that creates server-client inconsistency.
 
 **Trigger patterns**:
+
 - `typeof window !== 'undefined'` checks used to conditionally render JSX (causes hydration mismatch).
 - `Math.random()` or `Date.now()` called during render in a Server Component.
 - `useLayoutEffect` in a file without `"use client"`.
@@ -86,6 +90,7 @@ import { Button } from '@soustools/design-system';
 ## Check 4 — TypeScript Strictness
 
 **Trigger patterns** — flag any:
+
 - `any` type (explicit or implicit via untyped function return).
 - `// @ts-ignore` or `// @ts-nocheck` comments.
 - `as unknown as X` double-cast patterns.
@@ -101,6 +106,7 @@ import { Button } from '@soustools/design-system';
 > **Circular correction loops are forbidden.**
 >
 > If any check above triggers a violation that cannot be resolved in a single, clean edit:
+>
 > 1. **STOP generating code.**
 > 2. Surface the exact violation and file location to the user.
 > 3. Wait for explicit user instruction before continuing.
@@ -111,10 +117,10 @@ import { Button } from '@soustools/design-system';
 
 ## Quick Reference Matrix
 
-| Check | Trigger | Action |
-|---|---|---|
-| 1 — Client DB Mutation | `"use client"` + `.from().insert/update/delete` | Route via Server Action / NestJS API |
-| 2 — UI System | Component not from `@soustools/design-system`, import from `@soustools/ui`, or `style={{}}` | Add to `packages/design-system`, re-import |
-| 3 — Hydration | `typeof window` in render, non-deterministic render values | Move to `useEffect` or SSR-safe pattern |
-| 4 — TypeScript | `any`, `@ts-ignore`, double-cast | Proper types from `@soustools/api-types` |
-| 5 — HALT | Unresolvable violation | STOP and surface to user |
+| Check                  | Trigger                                                                                     | Action                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| 1 — Client DB Mutation | `"use client"` + `.from().insert/update/delete`                                             | Route via Server Action / NestJS API       |
+| 2 — UI System          | Component not from `@soustools/design-system`, import from `@soustools/ui`, or `style={{}}` | Add to `packages/design-system`, re-import |
+| 3 — Hydration          | `typeof window` in render, non-deterministic render values                                  | Move to `useEffect` or SSR-safe pattern    |
+| 4 — TypeScript         | `any`, `@ts-ignore`, double-cast                                                            | Proper types from `@soustools/api-types`   |
+| 5 — HALT               | Unresolvable violation                                                                      | STOP and surface to user                   |

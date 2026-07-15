@@ -80,7 +80,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue list --state open --limit 50 --json number,title,body,labels | jq -r '.[] | "### #\(.number): \(.title)\n**Labels:** \([.labels[].name] | join(", "))\n\n\(.body)\n\n---\n"' > docs/context/notebooklm-issues.md || true
+          gh issue list --state open --limit 50 --json number,title,body,labels,comments | jq -r '.[] | "### #\(.number): \(.title)\n**Labels:** \([.labels[].name] | join(", "))\n\n\(.body)\n\n---\n"' > docs/context/notebooklm-issues.md || true
 
       - name: Fetch GitHub Project Kanban State
         env:
