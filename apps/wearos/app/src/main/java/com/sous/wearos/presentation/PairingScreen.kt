@@ -14,15 +14,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.Text
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
+import com.sous.wearos.complication.DailySalesComplicationService
+import com.sous.wearos.complication.TicketTimeComplicationService
+import com.sous.wearos.complication.VoiceCommandComplicationService
 import com.sous.wearos.network.ApiClient
 import com.sous.wearos.network.PairInitRequest
 import com.sous.wearos.network.TokenManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun PairingScreen(onPaired: () -> Unit) {
@@ -49,11 +53,36 @@ fun PairingScreen(onPaired: () -> Unit) {
                 }
             } else {
                 try {
-                    val statusResponse = withTimeout(5000) { ApiClient.apiService.checkPairingStatus(currentCode) }
+                    val statusResponse = withTimeout(5000) {
+                        ApiClient.apiService.checkPairingStatus(currentCode)
+                    }
                     if (statusResponse.success && statusResponse.data?.token != null) {
                         withContext(Dispatchers.IO) {
                             TokenManager.saveToken(context, statusResponse.data.token)
                         }
+
+                        // -------------------------------------------------------
+                        // COMPLICATION WAKE-UP: force all stale complications to
+                        // immediately re-render and fetch live data now that a
+                        // valid token exists in DataStore.
+                        // -------------------------------------------------------
+                        coroutineScope.launch(Dispatchers.Main) {
+                            listOf(
+                                DailySalesComplicationService::class.java,
+                                TicketTimeComplicationService::class.java,
+                                VoiceCommandComplicationService::class.java
+                            ).forEach { serviceClass ->
+                                try {
+                                    ComplicationDataSourceUpdateRequester
+                                        .create(context, android.content.ComponentName(context, serviceClass))
+                                        .requestUpdateAll()
+                                    Log.d("SousComplication", "Requested update for ${serviceClass.simpleName}")
+                                } catch (ex: Exception) {
+                                    Log.e("SousComplication", "Failed to request update for ${serviceClass.simpleName}", ex)
+                                }
+                            }
+                        }
+
                         onPaired()
                         break
                     }

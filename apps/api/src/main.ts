@@ -26,6 +26,15 @@ import * as express from "express";
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
+  /**
+   * Trust the first proxy hop (Traefik) so that Express reads
+   * X-Forwarded-Proto and considers the request HTTPS. Without this,
+   * Express refuses to set Secure cookies because it thinks the
+   * connection is plain HTTP.
+   */
+  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
+  expressApp.set('trust proxy', 1);
+
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ limit: "2mb", extended: true }));
 
@@ -35,9 +44,22 @@ async function bootstrap(): Promise<void> {
   // Use global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Enable CORS for frontend integration (allow credentials for cookie-based auth)
+  // Allow credentials for cookie-based auth.
+  // In production we restrict origins to known frontends; in dev we reflect
+  // the request origin so any localhost port works.
+  const allowedOrigins = config.IS_PRODUCTION
+    ? [
+        'https://sous.tools',
+        'https://app.sous.tools',
+        'https://pos.sous.tools',
+        'https://tv.sous.tools',
+        'https://setup.sous.tools',
+        'https://editor.sous.tools',
+      ]
+    : true; // reflect origin in dev
+
   app.enableCors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
   });
 

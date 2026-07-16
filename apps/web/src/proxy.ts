@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { config as appConfig } from "@soustools/config";
 
-// @todo this should be a constant somewhere because it is used in multiple places (frontend and backend) and should be consistent
-const SESSION_COOKIE = "sb-session-token";
+// Must match ACCESS_TOKEN_COOKIE in apps/api/src/modules/auth/auth.controller.ts
+// @todo: extract to a shared @soustools/auth-constants package
+const SESSION_COOKIE = "sb-access-token";
 
 /**
  * Middleware proxy that enforces authentication for protected routes.

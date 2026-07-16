@@ -17,11 +17,23 @@ import { config } from "@soustools/config";
 const ACCESS_TOKEN_COOKIE = "sb-access-token";
 const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 
+/**
+ * Returns cookie options appropriate for the current environment.
+ *
+ * KEY RULE: `clearCookie` MUST be called with the same `domain`, `path`,
+ * `secure`, and `sameSite` values that were used when the cookie was set,
+ * otherwise the browser will not match and delete the cookie.
+ *
+ * In production (behind Traefik on *.sous.tools) we set `Domain: .sous.tools`
+ * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
+ * In development we omit `domain` so the cookie is scoped to localhost.
+ */
 const getCookieOptions = () => ({
   httpOnly: true,
   secure: config.IS_SECURE_ENV,
   sameSite: "lax" as const,
   path: "/",
+  ...(config.IS_PRODUCTION ? { domain: ".sous.tools" } : {}),
 });
 
 class LoginDto {
@@ -112,10 +124,28 @@ export class AuthController {
   @Post("logout")
   @HttpCode(200)
   @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  logout(@Res({ passthrough: true }) res: Response): ApiResponse<null> {
+  async logout(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<null>> {
+    // Attempt to invalidate the Supabase session server-side using the
+    // access token stored in the HttpOnly cookie.
+    const accessToken = req.cookies?.[ACCESS_TOKEN_COOKIE];
+    if (accessToken) {
+      try {
+        await supabase.auth.admin.signOut(accessToken);
+      } catch {
+        // Non-fatal: the tokens may already be expired. We still clear the cookies.
+      }
+    }
+
+    // IMPORTANT: clearCookie MUST receive the exact same domain, path, secure,
+    // and sameSite attributes as the original Set-Cookie call. If any attribute
+    // differs, the browser will not find a matching cookie to delete.
     const options = getCookieOptions();
-    res.clearCookie(ACCESS_TOKEN_COOKIE, { path: options.path });
-    res.clearCookie(REFRESH_TOKEN_COOKIE, { path: options.path });
+    res.clearCookie(ACCESS_TOKEN_COOKIE, options);
+    res.clearCookie(REFRESH_TOKEN_COOKIE, options);
+
     return {
       success: true,
       data: null,

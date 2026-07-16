@@ -9,32 +9,34 @@ import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
 import com.sous.wearos.network.ApiClient
 import com.sous.wearos.network.TokenManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.Dispatchers
 
 class TicketTimeComplicationService : SuspendingComplicationDataSourceService() {
+
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
         if (type != ComplicationType.SHORT_TEXT) return null
         return createComplicationData("12m", "Ticket Time")
     }
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
-        var value = "Error"
-        try {
-            val token = withContext(Dispatchers.IO) { TokenManager.getToken(this@TicketTimeComplicationService).firstOrNull() }
-            if (token != null) {
-                val response = withTimeout(5000) { ApiClient.apiService.getTicketTimeMetrics("Bearer $token") }
-                value = response.value
-            } else {
-                value = "Pair"
-            }
-        } catch (e: Exception) {
-            Log.e("SousNetwork", "API Call Failed", e)
-            e.printStackTrace()
+        val token = withContext(Dispatchers.IO) {
+            TokenManager.getToken(this@TicketTimeComplicationService).firstOrNull()
         }
-        return createComplicationData(value, "Ticket Time")
+        if (token == null) {
+            return createComplicationData("Pair", "Ticket Time")
+        }
+
+        return try {
+            // AuthInterceptor automatically injects the Bearer header
+            val response = withTimeout(5000) { ApiClient.apiService.getTicketTimeMetrics() }
+            createComplicationData(response.value, "Ticket Time")
+        } catch (e: Exception) {
+            Log.e("SousComplication", "TicketTime fetch failed", e)
+            createComplicationData("Err", "Ticket Time")
+        }
     }
 
     private fun createComplicationData(text: String, contentDescription: String) =

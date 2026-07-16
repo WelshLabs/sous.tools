@@ -27,11 +27,11 @@ android {
         if (localPropertiesFile.exists()) {
             properties.load(FileInputStream(localPropertiesFile))
         }
-        val localApiUrl = properties.getProperty("API_URL") ?: "\"http://10.0.2.2:3001\""
+        val localApiUrl = properties.getProperty("API_BASE_URL") ?: "\"http://10.0.2.2:3001\""
 
         debug {
             applicationIdSuffix = ".debug"
-            buildConfigField("String", "API_URL", localApiUrl)
+            buildConfigField("String", "API_BASE_URL", localApiUrl)
         }
         release {
             isMinifyEnabled = false
@@ -39,7 +39,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "API_URL", "\"https://api.sous.tools\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://api.sous.tools\"")
         }
     }
     compileOptions {
@@ -74,6 +74,8 @@ dependencies {
     androidTestImplementation(libs.ui.test.junit4)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)

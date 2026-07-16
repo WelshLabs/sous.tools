@@ -71,30 +71,10 @@ jobs:
             # B. Mask interactive first-boot screens
             systemctl mask userconfig.service || true
             systemctl mask piwiz.service      || true
-        # env:
-        #   PI_GEN_CONFIG: |
-        #     IMG_NAME=soustools-signage
-        #     TARGET_HOSTNAME=signage
-        #     TARGET_ARCH=arm64
-        #     ARCH=arm64
-        #     ENABLE_SSH=1
-        #     CONTINUE=1
-        #     # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
-        #     STAGE_LIST="stage0 stage1 stage2 stage-sous"
-        #   CHROOT_SCRIPT: |
-        #     #!/bin/bash
-        #     # A. Create the kiosk service account
-        #     if ! id -u sous >/dev/null 2>&1; then
-        #       useradd -m -s /bin/bash \
-        #         -G sudo,video,audio,plugdev,input,render,netdev,gpio,i2c,spi \
-        #         sous
-        #       echo "sous:bootstrap123" | chpasswd
-        #     fi
-        #     # B. Mask interactive first-boot screens
-        #     systemctl mask userconfig.service || true
-        #     systemctl mask piwiz.service      || true
         run: |
           cd deploy/pi/pi-gen
+          cp -r ../stage-sous ./stage-sous
+          touch stage-sous/EXPORT_IMAGE
 
           # 1. Scaffold the mandatory config file that git ignores
           echo "$PI_GEN_CONFIG" > config

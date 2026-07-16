@@ -1,7 +1,11 @@
 package com.sous.wearos.presentation
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.util.Log
 import android.os.Bundle
 import android.speech.RecognizerIntent
@@ -24,17 +28,35 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.Icon
+import com.sous.wearos.network.ACTION_SESSION_EXPIRED
 import com.sous.wearos.network.ApiClient
 import com.sous.wearos.network.CommandRequest
 import com.sous.wearos.network.TokenManager
 import com.sous.wearos.presentation.theme.SousToolsWearTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.Dispatchers
 
 class MainActivity : ComponentActivity() {
+
+    // -----------------------------------------------------------------------
+    // 401 Broadcast Receiver — registered/unregistered with the activity
+    // lifecycle to avoid leaks. On SESSION_EXPIRED the router will bounce
+    // back to PairingScreen by clearing the local isPaired flag.
+    // -----------------------------------------------------------------------
+    private val sessionExpiredReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == ACTION_SESSION_EXPIRED) {
+                Log.w("SousAuth", "SESSION_EXPIRED broadcast received — navigating to PairingScreen")
+                // Restart the activity so MainAppRouter re-reads the (now null) token
+                // and naturally falls into the PairingScreen branch.
+                recreate()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -45,25 +67,37 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(ACTION_SESSION_EXPIRED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(sessionExpiredReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(sessionExpiredReceiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(sessionExpiredReceiver)
+    }
 }
 
 @Composable
 fun MainAppRouter() {
     val context = LocalContext.current
     var isPaired by remember { mutableStateOf<Boolean?>(null) }
-    
+
     LaunchedEffect(Unit) {
         val token = withContext(Dispatchers.IO) { TokenManager.getToken(context).firstOrNull() }
         isPaired = token != null
     }
 
-    if (isPaired == true) {
-        WearApp()
-    } else if (isPaired == false) {
-        PairingScreen(onPaired = { isPaired = true })
-    } else {
-        // Loading state (black screen)
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black))
+    when (isPaired) {
+        true  -> WearApp()
+        false -> PairingScreen(onPaired = { isPaired = true })
+        null  -> Box(modifier = Modifier.fillMaxSize().background(Color.Black)) // Loading
     }
 }
 
@@ -72,7 +106,7 @@ fun WearApp() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000)), // Dark background for Neon-Glass aesthetic
+            .background(Color(0xFF000000)),
         contentAlignment = Alignment.Center
     ) {
         VoiceTriggerButton()
@@ -83,14 +117,14 @@ fun WearApp() {
 fun VoiceTriggerButton() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     val speechRecognizerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val data = result.data
-            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-            val spokenText = results?.get(0)
+            val spokenText = result.data
+                ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                ?.firstOrNull()
             if (!spokenText.isNullOrEmpty()) {
                 coroutineScope.launch {
                     sendToApi(context, spokenText)
@@ -106,9 +140,9 @@ fun VoiceTriggerButton() {
             }
             speechRecognizerLauncher.launch(intent)
         },
-        modifier = Modifier.size(120.dp), // Massive circular button for "Dirty Hands" tap
+        modifier = Modifier.size(120.dp),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = Color(0xFF00FFFF), // Cyan accents
+            backgroundColor = Color(0xFF00FFFF),
             contentColor = Color(0xFF000000)
         )
     ) {
@@ -120,26 +154,41 @@ fun VoiceTriggerButton() {
     }
 }
 
-suspend fun sendToApi(context: android.content.Context, text: String) {
+// ---------------------------------------------------------------------------
+// sendToApi — now uses the global AuthInterceptor; no manual token injection.
+// Handles network failures gracefully (logs, no crash).
+// A 401 is handled upstream by UnauthorizedAuthenticator and the broadcast
+// receiver in MainActivity; we only need to guard against generic exceptions.
+// ---------------------------------------------------------------------------
+suspend fun sendToApi(context: Context, text: String) {
+    // Verify we are actually paired before attempting the call
+    val token = withContext(Dispatchers.IO) {
+        TokenManager.getToken(context).firstOrNull()
+    }
+    if (token == null) {
+        Log.w("SousCommand", "Skipping command — device is not paired")
+        return
+    }
+
     try {
-        val token = withContext(Dispatchers.IO) { TokenManager.getToken(context).firstOrNull() }
-        if (token != null) {
-            val response = withTimeout(5000) {
-                ApiClient.apiService.sendCommand(
-                    authHeader = "Bearer $token",
-                    request = CommandRequest(command = text, source = "wearos")
-                )
-            }
-            if (response.success) {
-                println("NestJS Command Success: ${response.data?.success}")
-            } else {
-                println("NestJS Command Failed: ${response.error}")
-            }
-        } else {
-            println("Cannot send command: Unpaired.")
+        val response = withTimeout(10_000) {
+            ApiClient.apiService.sendCommand(
+                request = CommandRequest(command = text, source = "wearos")
+            )
         }
+        if (response.success) {
+            Log.i("SousCommand", "Command accepted: ${response.data?.success}")
+        } else {
+            Log.w("SousCommand", "Command rejected by server: ${response.error}")
+        }
+    } catch (e: retrofit2.HttpException) {
+        // Non-2xx response that isn't a 401 (401 is handled by the Authenticator)
+        Log.e("SousCommand", "HTTP error ${e.code()}: ${e.message()}", e)
+    } catch (e: java.net.SocketTimeoutException) {
+        Log.e("SousCommand", "Command timed out — network may be unavailable", e)
+    } catch (e: java.io.IOException) {
+        Log.e("SousCommand", "Network error sending command", e)
     } catch (e: Exception) {
-        Log.e("SousNetwork", "API Call Failed", e)
-        e.printStackTrace()
+        Log.e("SousCommand", "Unexpected error sending command", e)
     }
 }

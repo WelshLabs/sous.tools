@@ -9,32 +9,34 @@ import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
 import com.sous.wearos.network.ApiClient
 import com.sous.wearos.network.TokenManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.Dispatchers
 
 class DailySalesComplicationService : SuspendingComplicationDataSourceService() {
+
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
         if (type != ComplicationType.SHORT_TEXT) return null
         return createComplicationData("$1.2k", "Daily Sales")
     }
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
-        var value = "Error"
-        try {
-            val token = withContext(Dispatchers.IO) { TokenManager.getToken(this@DailySalesComplicationService).firstOrNull() }
-            if (token != null) {
-                val response = withTimeout(5000) { ApiClient.apiService.getSalesMetrics("Bearer $token") }
-                value = response.value
-            } else {
-                value = "Pair"
-            }
-        } catch (e: Exception) {
-            Log.e("SousNetwork", "API Call Failed", e)
-            e.printStackTrace()
+        val token = withContext(Dispatchers.IO) {
+            TokenManager.getToken(this@DailySalesComplicationService).firstOrNull()
         }
-        return createComplicationData(value, "Daily Sales")
+        if (token == null) {
+            return createComplicationData("Pair", "Daily Sales")
+        }
+
+        return try {
+            // AuthInterceptor automatically injects the Bearer header
+            val response = withTimeout(5000) { ApiClient.apiService.getSalesMetrics() }
+            createComplicationData(response.value, "Daily Sales")
+        } catch (e: Exception) {
+            Log.e("SousComplication", "DailySales fetch failed", e)
+            createComplicationData("Err", "Daily Sales")
+        }
     }
 
     private fun createComplicationData(text: String, contentDescription: String) =

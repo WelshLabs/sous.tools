@@ -1,17 +1,38 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 export async function logoutAction() {
-  // Hit the NestJS API to securely destroy the session on the server
+  // Forward the user's HttpOnly session cookies to the NestJS API so it can
+  // identify and invalidate the correct Supabase session server-side.
+  // Without this, the fetch call is anonymous and clearCookie is a no-op.
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+
   try {
-    await fetch(`${process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/auth/logout`, {
-      method: "POST",
-    });
+    await fetch(
+      `${
+        process.env.API_BASE_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        "http://localhost:3001"
+      }/auth/logout`,
+      {
+        method: "POST",
+        headers: {
+          // Pass the browser cookies so NestJS can read and clear them.
+          Cookie: cookieHeader,
+        },
+      },
+    );
   } catch (error) {
-    console.error("Logout API failed", error);
+    // Non-fatal — still redirect to login so the user is not stuck.
+    console.error("Logout API call failed", error);
   }
 
-  // Redirect to login regardless
+  // Redirect to login regardless of API outcome.
   redirect("/login");
 }
