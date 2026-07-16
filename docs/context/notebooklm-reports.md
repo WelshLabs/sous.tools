@@ -195,7 +195,6 @@ TypeError: Cannot read properties of undefined (reading 'config')
 ```text
 $ knip
 [93m[4mUnused files[24m[39m (32)
-apps/web/public/sw.js
 apps/web/src/app/(workspace)/home/components/FinancialPulse.tsx
 apps/web/src/app/(workspace)/home/components/MenuProfitability.tsx
 apps/web/src/app/(workspace)/home/components/PurchasingAlerts.tsx
@@ -226,27 +225,28 @@ scripts/create-index.js
 scripts/create-signage-stubs.js
 scripts/fix_seed.mjs
 scripts/generate-icons.mjs
+scripts/scan-violations.js
 scripts/seed-globalmaster-staples.ts
 [93m[4mUnused dependencies[24m[39m (20)
 @as-integrations/express4  apps/api/package.json:20:6
 @nestjs/platform-express   apps/cli/package.json:25:6
 @soustools/api-types       apps/cli/package.json:26:6
 @soustools/logger          apps/cli/package.json:28:6
-@soustools/config          apps/pos-simulator/package.json:14:6
-@supabase/supabase-js      apps/pos-simulator/package.json:16:6
+@soustools/config          apps/pos-simulator/package.json:15:6
+@supabase/supabase-js      apps/pos-simulator/package.json:17:6
 @hello-pangea/dnd          apps/web/package.json:14:6
 @hookform/resolvers        apps/web/package.json:15:6
 @supabase/supabase-js      apps/web/package.json:21:6
 react-hook-form            apps/web/package.json:34:6
 recharts                   apps/web/package.json:35:6
 serwist                    apps/web/package.json:36:6
+zod                        apps/web/package.json:39:6
 eslint-plugin-react        package.json:49:6
 @infisical/sdk             packages/config/package.json:14:6
 dotenv                     packages/config/package.json:15:6
 zod                        packages/config/package.json:16:6
 @radix-ui/react-tooltip    packages/design-system/package.json:38:6
 @soustools/api-types       packages/domain-pos/package.json:31:6
-sonner                     packages/domain-pos/package.json:34:6
 sonner                     packages/domain-settings/package.json:36:6
 [93m[4mUnused devDependencies[24m[39m (29)
 @types/supertest        apps/api/package.json:62:6
@@ -263,7 +263,7 @@ webpack-node-externals  apps/api/package.json:74:6
 source-map-support      apps/cli/package.json:45:6
 supertest               apps/cli/package.json:46:6
 ts-loader               apps/cli/package.json:48:6
-tailwindcss             apps/pos-simulator/package.json:32:6
+tailwindcss             apps/pos-simulator/package.json:33:6
 autoprefixer            apps/setup-portal/package.json:28:6
 tailwindcss             apps/setup-portal/package.json:31:6
 tailwindcss             apps/web/package.json:52:6
@@ -278,13 +278,15 @@ eslint-plugin-prettier  packages/eslint-config/package.json:23:6
 eslint-config-prettier  packages/eslint-config/package.json:24:6
 prettier                packages/eslint-config/package.json:25:6
 pino-pretty             packages/logger/package.json:34:6
-[93m[4mUnlisted dependencies[24m[39m (2)
+[93m[4mUnlisted dependencies[24m[39m (4)
 [90m[39m[97meslint-plugin-prettier[39m[90m/recommended[39m  apps/cli/eslint.config.mjs:3:46
 @tailwindcss/postcss                apps/setup-portal/postcss.config.mjs
+@soustools/domain-pos               apps/web/src/app/(fullscreen)/pos/page.tsx:2:39
+@soustools/api-client               packages/domain-pos/src/components/POSRegister/pos.container.tsx:7:22
 [93m[4mUnlisted binaries[24m[39m (2)
 tsx    package.json
 xclip  package.json
-[93m[4mUnused exports[24m[39m (24)
+[93m[4mUnused exports[24m[39m (25)
 SupabaseClientWrapper                    class     apps/api/src/lib/supabase.ts:20:14
 addToPurchaseOrderTool                             apps/api/src/modules/commands/commands-tools.ts:3:14
 addToWhiteboardTool                                apps/api/src/modules/commands/commands-tools.ts:18:14
@@ -306,10 +308,11 @@ preprocessArray                                    apps/cli/src/ingestion/gemini
 preprocessStringArray                              apps/cli/src/ingestion/gemini-parser.schemas.ts:25:14
 contentBlockSchema                                 apps/cli/src/ingestion/gemini-parser.schemas.ts:35:14
 default                                            apps/cli/src/ingestion/prompt-templates.ts:55:16
-default                                            apps/pos-simulator/src/components/PosSimulator.tsx:132:16
+default                                            apps/pos-simulator/src/components/PosSimulator.container.tsx:105:16
+default                                            apps/pos-simulator/src/components/PosSimulator.tsx:70:16
 CardDescription                          function  packages/design-system/src/components/Card.tsx:47:17
 BLOCK_GROUPS                                       packages/domain-signage/src/block-palette-items.ts:31:14
-[93m[4mUnused exported types[24m[39m (72)
+[93m[4mUnused exported types[24m[39m (75)
 SquareCatalogObject             interface  apps/api/src/modules/integrations/square-client.helper.ts:3:18
 POSCategoryUpsert               interface  apps/api/src/modules/integrations/square-mapper.helper.ts:74:18
 POSDiscountUpsert               interface  apps/api/src/modules/integrations/square-mapper.helper.ts:82:18
@@ -338,6 +341,7 @@ CostIngredient                  interface  apps/api/src/modules/recipe/recipe-co
 RecipeCost                      interface  apps/api/src/modules/recipe/recipe-cost.service.ts:11:18
 ApiResponse                     interface  apps/api/src/modules/recipe/recipe-versions.controller.ts:4:18
 PosItemCardProps                interface  apps/pos-simulator/src/components/PosItemCard.tsx:7:18
+PosSimulatorProps               interface  apps/pos-simulator/src/components/PosSimulator.tsx:9:18
 PosItem                         interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:8:18
 PosCategory                     interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:17:18
 PosModifierGroup                interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:23:18
@@ -353,12 +357,14 @@ PosOrder                        interface  apps/web/src/app/(workspace)/pos-orde
 RecipeViewerClientProps         interface  apps/web/src/app/(workspace)/recipes/[id]/RecipeViewerClient.tsx:9:18
 RecipeBuilderClientProps        interface  apps/web/src/app/(workspace)/recipes/RecipeBuilderClient.tsx:9:18
 SettingsClientProps             interface  apps/web/src/app/(workspace)/settings/settings-client.tsx:16:18
+TeamPortalViewProps             interface  apps/web/src/app/(workspace)/team/team.view.tsx:7:18
 Transaction                     interface  apps/web/src/app/(workspace)/transactions/TransactionsView.tsx:21:18
 MenuItemCardProps               interface  apps/web/src/app/display/[id]/menu-item-card.tsx:14:18
 ConfirmModalProps               type       apps/web/src/components/ui/confirm-modal.tsx:7:15
 AppBarNotifDropdownProps        interface  packages/design-system/src/components/AppBarNotifDropdown.tsx:7:18
 AppBarProfileDropdownProps      interface  packages/design-system/src/components/AppBarProfileDropdown.tsx:7:18
 GlobalAppBarContainerProps      interface  …ges/design-system/src/components/GlobalAppBar/GlobalAppBarContainer.tsx:5:18
+OrderSupplier                   interface  packages/design-system/src/components/InsightsSidebar.tsx:3:18
 DocumentViewerProps             interface  packages/design-system/src/components/OmniBar/DocumentViewer.tsx:8:18
 OmniBarState                    interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:11:18
 OmniChatWindowProps             interface  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:10:18
@@ -382,19 +388,20 @@ VesselManagerHeaderProps        interface  packages/domain-recipes/src/VesselMan
 WastageEntryFormProps           interface  packages/domain-recipes/src/WastageEntryForm.tsx:7:18
 BlockSettingsPanelProps         interface  packages/domain-signage/src/block-settings-panel.tsx:13:18
 BlockTypeConfigFieldsProps      interface  packages/domain-signage/src/block-type-config-fields.tsx:21:18
-[93m[4mDuplicate exports[24m[39m (9)
-GEMINI_SPREAD_PROMPT|default  apps/cli/src/ingestion/prompt-templates.ts
-PosSimulator|default          apps/pos-simulator/src/components/PosSimulator.tsx
-DisplayManager|default        packages/domain-signage/src/display-manager.tsx
-EditorTopBar|default          packages/domain-signage/src/editor-top-bar.tsx
-LayoutBuilder|default         packages/domain-signage/src/layout-builder.tsx
-LayoutPreview|default         packages/domain-signage/src/layout-preview.tsx
-baseConfig|default            packages/eslint-config/base.js
-nestjsConfig|default          packages/eslint-config/nestjs.js
-nextConfig|default            packages/eslint-config/next.js
+[93m[4mDuplicate exports[24m[39m (10)
+GEMINI_SPREAD_PROMPT|default   apps/cli/src/ingestion/prompt-templates.ts
+PosSimulatorContainer|default  apps/pos-simulator/src/components/PosSimulator.container.tsx
+PosSimulator|default           apps/pos-simulator/src/components/PosSimulator.tsx
+DisplayManager|default         packages/domain-signage/src/display-manager.tsx
+EditorTopBar|default           packages/domain-signage/src/editor-top-bar.tsx
+LayoutBuilder|default          packages/domain-signage/src/layout-builder.tsx
+LayoutPreview|default          packages/domain-signage/src/layout-preview.tsx
+baseConfig|default             packages/eslint-config/base.js
+nestjsConfig|default           packages/eslint-config/nestjs.js
+nextConfig|default             packages/eslint-config/next.js
 [33m[4mConfiguration hints[24m (33)[39m
-apps/web                                  …p.jsonc  [90mAdd [97mentry[90m and/or refine [97mproject[90m files in [97mworkspaces["apps/web"][90m (23…[39m
-. [90m(root)[39m                                  …p.jsonc  [90mAdd [97mentry[90m and/or refine [97mproject[90m files in [97mworkspaces["."][90m (6 unused …[39m
+apps/web                                  …p.jsonc  [90mAdd [97mentry[90m and/or refine [97mproject[90m files in [97mworkspaces["apps/web"][90m (22…[39m
+. [90m(root)[39m                                  …p.jsonc  [90mAdd [97mentry[90m and/or refine [97mproject[90m files in [97mworkspaces["."][90m (7 unused …[39m
 …ages/design-system                       …p.jsonc  [90mAdd [97mentry[90m and/or refine [97mproject[90m files in [97mworkspaces["packages/desig[90m…[39m
 **/*.spec.{ts,tsx}                        …p.jsonc  [90mRemove from [97mignore[90m[39m
 **/*.e2e-spec.ts                          …p.jsonc  [90mRemove from [97mignore[90m[39m
@@ -445,111 +452,107 @@ $ tsc
 cache miss, executing 2798371b72e32f7b
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing 0d6be077400ac2f2
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/config:lint
 cache miss, executing a0e43c477fc0e8b9
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing e4aa12eb60bf2594
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/supabase:lint
-cache miss, executing 655f3e0fc301cae7
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing fea87e1e1db3f520
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:lint
 cache miss, executing ab85f319b864b352
 $ eslint . --max-warnings 0
 ::endgroup::
+::group::@soustools/supabase:lint
+cache miss, executing 655f3e0fc301cae7
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-client:lint
+cache miss, executing 0d6be077400ac2f2
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing fea87e1e1db3f520
+$ eslint . --max-warnings 0
+::endgroup::
 ::group::cli:lint
 cache miss, executing f93ac97ed90bcdaf
 $ eslint . --max-warnings 0
-(node:6685) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784156435777 is not specified and it doesn't parse as CommonJS.
+(node:6735) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784205245943 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing 39135ad8d70e0228
+::group::@soustools/domain-recipes:lint
+cache miss, executing 2e1a3dabb0cd2ab2
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing 80b6e9fc04ec90d1
+::group::@soustools/design-system:lint
+cache miss, executing f6187ea8fe2536ed
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing 78c72b7f0c567076
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::api:lint
 cache miss, executing 87b48fbeee86b28e
 $ eslint . --max-warnings 0
-(node:6630) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784156435770 is not specified and it doesn't parse as CommonJS.
+(node:6811) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784205245936 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing f78868a50e91ef1b
+[;31mpos-simulator:lint[;0m
+cache miss, executing ac4dfda00024c03f
 $ eslint . --max-warnings 0
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing cd86479452e18510
-$ eslint . --max-warnings 0
-(node:6965) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784156435778 is not specified and it doesn't parse as CommonJS.
+(node:7005) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784205245944 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
-::endgroup::
-[;31m@soustools/setup-portal:lint[;0m
-cache miss, executing dc6981a8f39291d3
-$ eslint . --max-warnings 0
+ESLint found too many warnings (maximum: 0).
 
-/home/runner/work/sous.tools/sous.tools/apps/setup-portal/src/app/api/progress/route.ts
-  52:9   warning  Unexpected console statement. Only these console methods are allowed: error, warn  no-console
-  55:18  error    'e' is defined but never used. Allowed unused caught errors must match /^_/u       @typescript-eslint/no-unused-vars
-  63:9   warning  Unexpected console statement. Only these console methods are allowed: error, warn  no-console
+/home/runner/work/sous.tools/sous.tools/apps/pos-simulator/src/components/PosSimulator.container.tsx
+  24:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
-/home/runner/work/sous.tools/sous.tools/apps/setup-portal/src/app/api/wifi/route.ts
-  39:49  error  Unnecessary escape character: \.  no-useless-escape
-
-/home/runner/work/sous.tools/sous.tools/apps/setup-portal/src/components/SetupWizard.tsx
-  100:7  warning  Unexpected console statement. Only these console methods are allowed: error, warn  no-console
-  247:1  error    File has too many lines (211). Maximum allowed is 200                              max-lines
-
-✖ 6 problems (3 errors, 3 warnings)
+✖ 3 problems (0 errors, 3 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/domain-recipes:lint
-cache miss, executing 2c62c0389122d21a
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 5865057ce641fa8e
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::web:lint
-cache miss, executing 49adf74f4334f364
+cache miss, executing edeec57b700e2337
 $ eslint . --max-warnings 0
-(node:7013) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784156435783 is not specified and it doesn't parse as CommonJS.
+(node:7087) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784205245950 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::error::command (/home/runner/work/sous.tools/sous.tools/apps/setup-portal) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
-@soustools/setup-portal#lint:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/setup-portal) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
+::group::@soustools/domain-settings:lint
+cache miss, executing f662af748d1cad9d
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing 063409b3b6c176a8
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:lint
+cache miss, executing ed34cb00968aa8c0
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 34c082130032277a
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::error::command (/home/runner/work/sous.tools/sous.tools/apps/pos-simulator) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
+pos-simulator#lint:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/pos-simulator) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
 
- Tasks:    16 successful, 20 total
+ Tasks:    14 successful, 20 total
 Cached:    3 cached, 20 total
-  Time:    19.672s
-Failed:    @soustools/setup-portal#lint
+  Time:    19.374s
+Failed:    pos-simulator#lint
 
  ERROR  run failed: command  exited (1)
 [ELIFECYCLE] Command failed with exit code 1.
@@ -572,13 +575,13 @@ https://turborepo.dev/docs/telemetry
    • Running typecheck in 18 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:typecheck
-cache miss, executing 58fccc65a224b629
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing fe63bff9d5ecbea1
 $ tsc
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing 58fccc65a224b629
+$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:build
 cache miss, executing e03a7a788b75a11f
@@ -592,13 +595,13 @@ $ tsc --noEmit
 cache miss, executing b8f0580ca2b5b2f4
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 88ead55ab70e20a4
-$ tsc
-::endgroup::
 ::group::@soustools/logger:typecheck
 cache miss, executing ede241e0958061b3
 $ tsc --noEmit
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 88ead55ab70e20a4
+$ tsc
 ::endgroup::
 ::group::@soustools/supabase:typecheck
 cache miss, executing 44a852ec9b931816
@@ -609,50 +612,66 @@ cache miss, executing 7562462bca73bf3c
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/design-system:typecheck
-cache miss, executing 7f242f1440ea6207
+cache miss, executing 289112e88771069d
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-inventory:typecheck
-cache miss, executing 02f7db4bfb2167ee
+cache miss, executing a18d102e673fb384
+$ tsc --noEmit
+::endgroup::
+[;31m@soustools/domain-pos:typecheck[;0m
+cache miss, executing 53aac8262591b0a5
+$ tsc --noEmit
+src/components/POSRegister/components/pos-modifiers-modal.tsx(3,8): error TS6133: 'React' is declared but its value is never read.
+src/components/POSRegister/components/pos-tender-modal.tsx(3,8): error TS6133: 'React' is declared but its value is never read.
+src/components/POSRegister/pos.container.tsx(3,8): error TS6133: 'React' is declared but its value is never read.
+src/components/POSRegister/pos.container.tsx(7,21): error TS2307: Cannot find module '@soustools/api-client' or its corresponding type declarations.
+src/components/POSRegister/pos.container.tsx(165,39): error TS6133: 'paymentType' is declared but its value is never read.
+src/components/POSRegister/pos.container.tsx(165,60): error TS6133: 'amountTendered' is declared but its value is never read.
+[ELIFECYCLE] Command failed with exit code 2.
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 837f1afbfaff8cd5
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-recipes:typecheck
-cache miss, executing 9453589ff28a07be
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing fdf5f98e7327604a
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 45f01873bab91b34
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 2f6d1599f12ae801
+cache miss, executing 35f7202362354a0f
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/setup-portal:typecheck
-cache miss, executing c618d795144eda97
+cache miss, executing 019f15f3a97c0bd9
 $ tsc --noEmit
-::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 6748d106d85bd62c
-$ tsc --noEmit
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::web:typecheck
-cache miss, executing d8f41c70392e1440
+cache miss, executing ceda97081ce4c548
 $ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 742734b952ec83b4
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing 672fea219229a939
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::api:typecheck
 cache miss, executing 3bdb32a5b3cad76e
 $ tsc --noEmit
+[ELIFECYCLE] Command failed.
 ::endgroup::
+::error::command (/home/runner/work/sous.tools/sous.tools/packages/domain-pos) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run typecheck exited (2)
+@soustools/domain-pos#typecheck:  ERROR  command (/home/runner/work/sous.tools/sous.tools/packages/domain-pos) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run typecheck exited (2)
 
- Tasks:    19 successful, 19 total
+ Tasks:    11 successful, 19 total
 Cached:    0 cached, 19 total
-  Time:    55.438s
+  Time:    41.744s
+Failed:    @soustools/domain-pos#typecheck
 
+ ERROR  run failed: command  exited (2)
+[ELIFECYCLE] Command failed with exit code 2.
 
 ```
 
@@ -699,7 +718,7 @@ cli#test:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/cli) /ho
 
  Tasks:    3 successful, 5 total
 Cached:    0 cached, 5 total
-  Time:    5.627s
+  Time:    5.559s
 Failed:    cli#test
 
  ERROR  run failed: command  exited (1)
