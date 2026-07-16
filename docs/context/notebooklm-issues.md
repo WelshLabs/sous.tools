@@ -506,7 +506,7 @@ now that we have a packages/api-client in place... should packages/api-types sti
 
 ### #59: scaling helpers
 
-**Labels:** enhancement, design-system
+**Labels:** enhancement, design-system, agent:research
 
 **Description:**
 currently the recipe scaling utils are located in the design-system package, but this is most certainly domain-recipes logic and does not belong in design-system
@@ -514,40 +514,6 @@ currently the recipe scaling utils are located in the design-system package, but
 **Comments:**
 
 > **sous-tools**: The recipe scaling utility functions are currently located in the `design-system` package. This is a misplacement, as these utilities are specific to recipe domain logic and should reside within a `domain-recipes` package or similar, separate from UI components. Relocating these functions will improve code organization, adhere to domain boundaries, and ensure the `design-system` package remains focused purely on UI concerns.
-
-> **sous-tools**: ### Diagnosis Report
->
-> The core issue is the misplacement of recipe scaling utility functions within the `design-system` package, which should exclusively house UI components. These utilities are domain-specific to recipes and need to be relocated to the `domain-recipes` package for better code organization and adherence to domain boundaries.
->
-> - **`packages/design-system/src/utils/scaling.ts`**
->   This file currently contains the recipe scaling logic and should be moved out of the `design-system` package into the `domain-recipes` package.
->
-> - **`packages/design-system/src/utils/scaling.test.ts`**
->   The test file for the recipe scaling utilities must be moved alongside its corresponding implementation to maintain proper testing scope.
->
-> - **`packages/design-system/src/index.ts`**
->   Any export of the `scaling` utilities from this package's entry point should be removed to prevent their exposure from the `design-system`.
->
-> - **`packages/domain-recipes/src/utils/scaling.ts`**
->   A new file should be created here, serving as the correct home for the relocated recipe scaling utility functions, aligning them with `domain-recipes` logic.
->
-> - **`packages/domain-recipes/src/utils/scaling.test.ts`**
->   A new test file should be created here to contain the tests for the relocated recipe scaling utilities.
->
-> - **`packages/domain-recipes/src/index.ts`**
->   The newly added `scaling` utilities within the `domain-recipes` package should be exported from this file to make them accessible to other parts of the application.
->
-> - **`packages/domain-recipes/src/RecipeScalingPanel.tsx`**
->   This component likely uses the recipe scaling utilities and will require its import statements to be updated to reflect their new location within the `domain-recipes` package.
->
-> - **`apps/web/src/app/(workspace)/recipes/RecipeBuilderClient.tsx`**
->   This client-side recipe builder component may utilize the scaling helpers, so its import paths for these utilities will need to be updated.
->
-> - **`apps/web/src/app/(workspace)/recipes/[id]/RecipeViewerClient.tsx`**
->   The recipe viewer might display scaled recipe information, necessitating an update to its import statements for the relocated scaling utilities.
->
-> - **`apps/api/src/modules/recipe/recipes.service.ts`**
->   If this backend service currently consumes the recipe scaling utilities, its import paths will need to be updated to point to the new location within `packages/domain-recipes`.
 
 ---
 
