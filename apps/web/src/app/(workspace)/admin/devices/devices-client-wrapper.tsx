@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { DisplayManager } from "@soustools/domain-signage";
 import { type SignageDisplay } from "@soustools/api-types";
+import { api } from "@soustools/api-client";
 
 interface DevicesClientWrapperProps {
   displays: SignageDisplay[];
@@ -19,54 +20,53 @@ export function DevicesClientWrapper({
   const router = useRouter();
 
   const handleAddBrowserDisplay = async (name: string) => {
-    await fetch("/api/signage/displays", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+    await (api as any).POST("/signage/displays", {
+      body: { name },
     });
     router.refresh();
   };
 
   const handleDeleteDisplay = async (id: string) => {
-    await fetch(`/api/signage/displays/${id}`, { method: "DELETE" });
+    await api.DELETE("/signage/displays/{id}", {
+      params: { path: { id } },
+    });
     router.refresh();
   };
 
   const handleAssignDeck = async (displayId: string, deckId: string | null) => {
-    await fetch(`/api/signage/displays/${displayId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ deckId }),
+    await (api as any).PUT("/signage/displays/{id}", {
+      params: { path: { id: displayId } },
+      body: { deckId: deckId || undefined },
     });
     router.refresh();
   };
 
   const handlePairDisplay = async (code: string) => {
-    await fetch("/api/signage/displays/pair/confirm", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pairingCode: code, name: "New TV Display" }),
+    await (api as any).POST("/signage/displays/pair/confirm", {
+      body: { pairingCode: code, name: "New TV Display" },
     });
     router.refresh();
   };
 
   const handleSaveDevice = async (deviceId: string, payload: any) => {
-    await fetch(`/api/signage/devices/${deviceId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+    await (api as any).PUT("/devices/{deviceId}", {
+      params: { path: { deviceId } },
+      body: payload,
     });
     router.refresh();
   };
 
   const handleFetchDevice = async (deviceId: string) => {
-    const res = await fetch(`/api/signage/devices/${deviceId}`);
-    const data = await res.json();
-    return data.data;
+    const { data } = await api.GET("/devices/{deviceId}", {
+      params: { path: { deviceId } },
+    });
+    return (data as any)?.data;
   };
 
   const handleRevokeDevice = async (id: string) => {
-    await fetch(`/api/devices/${id}/revoke`, { method: "POST" });
+    await api.POST("/devices/{id}/revoke", {
+      params: { path: { id } },
+    });
     router.refresh();
   };
 
@@ -129,3 +129,4 @@ export function DevicesClientWrapper({
     </div>
   );
 }
+

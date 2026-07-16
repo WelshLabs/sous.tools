@@ -1,7 +1,10 @@
-
 import { Clock, Zap, Plus } from "lucide-react";
-import type { OrderSupplier } from "../types/order-types";
 
+export interface OrderSupplier {
+  id: string;
+  name: string;
+  deliveryDays: number[];
+}
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
 function getNextDelivery(deliveryDays: number[]): string {
@@ -116,3 +119,4 @@ export function InsightsSidebar({
     </div>
   );
 }
+

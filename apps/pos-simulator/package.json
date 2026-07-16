@@ -10,6 +10,7 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@soustools/api-client": "workspace:*",
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
     "@soustools/design-system": "workspace:*",
@@ -39,3 +40,4 @@
     "node": ">=22.22.0"
   }
 }
+

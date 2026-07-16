@@ -1,5 +1,5 @@
 import React from "react";
-import { PosSimulator } from "../components/PosSimulator";
+import { PosSimulatorContainer } from "../components/PosSimulator.container";
 
 /**
  * PosSimulatorPage mounts the interactive Toast/Square webhook and inventory simulator.
@@ -18,9 +18,10 @@ export default function PosSimulatorPage() {
           </p>
         </div>
 
-        <PosSimulator />
+        <PosSimulatorContainer />
       </div>
     </main>
   );
 }
 // Force rebuild 1
+

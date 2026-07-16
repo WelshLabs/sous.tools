@@ -1,0 +1,142 @@
+$ turbo build
+• turbo 2.10.5
+
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, web
+   • Running build in 18 packages
+   • Remote caching disabled
+
+@soustools/config:build: cache miss, executing e03a7a788b75a11f
+@soustools/api-types:build: cache miss, executing fe63bff9d5ecbea1
+@soustools/api-types:build: $ tsc
+@soustools/config:build: $ tsc
+@soustools/supabase:build: cache miss, executing cc3b600c9474a9e8
+@soustools/logger:build: cache miss, executing 88ead55ab70e20a4
+@soustools/logger:build: $ tsc
+@soustools/supabase:build: $ tsc
+api:build: cache miss, executing 9cc062cf37b7f041
+@soustools/setup-portal:build: cache miss, executing 2fdc90ac1a15c04c
+pos-simulator:build: cache miss, executing ba13103cf9177075
+cli:build: cache miss, executing 9bb655e69befbf3c
+web:build: cache miss, executing 9bb824b174649a55
+@soustools/setup-portal:build: $ next build
+pos-simulator:build: $ node ../../packages/config/dist/cli.js next build
+api:build: $ nest build
+cli:build: $ nest build
+web:build: $ node ../../packages/config/dist/cli.js next build --webpack
+@soustools/setup-portal:build:   ▲ Next.js 14.2.35
+@soustools/setup-portal:build:   - Experiments (use with caution):
+@soustools/setup-portal:build:     · instrumentationHook
+@soustools/setup-portal:build: 
+@soustools/setup-portal:build:    Creating an optimized production build ...
+pos-simulator:build: ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+web:build: ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+pos-simulator:build: Attention: Next.js now collects completely anonymous telemetry regarding usage.
+pos-simulator:build: This information is used to shape Next.js' roadmap and prioritize features.
+pos-simulator:build: You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+pos-simulator:build: https://nextjs.org/telemetry
+pos-simulator:build: 
+pos-simulator:build: ▲ Next.js 16.2.10 (Turbopack)
+pos-simulator:build: 
+pos-simulator:build:   Creating an optimized production build ...
+web:build: Attention: Next.js now collects completely anonymous telemetry regarding usage.
+web:build: This information is used to shape Next.js' roadmap and prioritize features.
+web:build: You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+web:build: https://nextjs.org/telemetry
+web:build: 
+web:build: ▲ Next.js 16.2.10 (webpack)
+web:build: - Experiments (use with caution):
+web:build:   · optimizePackageImports
+web:build: 
+web:build:   Creating an optimized production build ...
+web:build: ✓ (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
+pos-simulator:build: ✓ Compiled successfully in 17.7s
+pos-simulator:build:   Running TypeScript ...
+@soustools/setup-portal:build:  ✓ Compiled successfully
+@soustools/setup-portal:build:    Linting and checking validity of types ...
+pos-simulator:build:   Finished TypeScript in 11.9s ...
+pos-simulator:build:   Collecting page data using 3 workers ...
+@soustools/setup-portal:build:    Collecting page data ...
+pos-simulator:build:   Generating static pages using 3 workers (0/4) ...
+pos-simulator:build:   Generating static pages using 3 workers (1/4) 
+pos-simulator:build:   Generating static pages using 3 workers (2/4) 
+pos-simulator:build:   Generating static pages using 3 workers (3/4) 
+pos-simulator:build: ✓ Generating static pages using 3 workers (4/4) in 486ms
+pos-simulator:build:   Finalizing page optimization ...
+pos-simulator:build: 
+pos-simulator:build: Route (app)
+pos-simulator:build: ┌ ○ /
+pos-simulator:build: ├ ○ /_not-found
+pos-simulator:build: └ ○ /test
+pos-simulator:build: 
+pos-simulator:build: 
+pos-simulator:build: ○  (Static)  prerendered as static content
+pos-simulator:build: 
+@soustools/setup-portal:build:    Generating static pages (0/4) ...
+@soustools/setup-portal:build:    Generating static pages (1/4) 
+@soustools/setup-portal:build:    Generating static pages (2/4) 
+@soustools/setup-portal:build:    Generating static pages (3/4) 
+@soustools/setup-portal:build:  ✓ Generating static pages (4/4)
+@soustools/setup-portal:build:    Finalizing page optimization ...
+@soustools/setup-portal:build:    Collecting build traces ...
+@soustools/setup-portal:build: 
+@soustools/setup-portal:build: Route (app)                              Size     First Load JS
+@soustools/setup-portal:build: ┌ ○ /                                    138 B          87.5 kB
+@soustools/setup-portal:build: └ ○ /_not-found                          871 B          88.2 kB
+@soustools/setup-portal:build: + First Load JS shared by all            87.3 kB
+@soustools/setup-portal:build:   ├ chunks/3f26617e-a0f0fcd454305d4a.js  53.6 kB
+@soustools/setup-portal:build:   ├ chunks/469-211912f1e6dea58a.js       31.8 kB
+@soustools/setup-portal:build:   └ other shared chunks (total)          1.86 kB
+@soustools/setup-portal:build: 
+@soustools/setup-portal:build: 
+@soustools/setup-portal:build: ○  (Static)  prerendered as static content
+@soustools/setup-portal:build: 
+api:build: webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 51519 ms
+web:build: Failed to compile.
+web:build: 
+web:build: ../../packages/domain-pos/src/components/POSRegister/pos.view.tsx
+web:build: Error:   x Unterminated string constant
+web:build:     ,-[/workspace/packages/domain-pos/src/components/POSRegister/pos.view.tsx:49:1]
+web:build:  46 |   );
+web:build:  47 | }
+web:build:  48 | POSRegisterView.displayName = "POSRegisterView";
+web:build:  49 | "
+web:build:     : ^
+web:build:     `----
+web:build: 
+web:build: Caused by:
+web:build:     Syntax Error
+web:build: 
+web:build: Import trace for requested module:
+web:build: ../../packages/domain-pos/src/components/POSRegister/pos.view.tsx
+web:build: ../../packages/domain-pos/src/components/POSRegister/pos.container.tsx
+web:build: 
+web:build: ../../packages/domain-pos/src/components/POSRegister/pos.view.tsx
+web:build: Error:   x Unterminated string constant
+web:build:     ,-[/workspace/packages/domain-pos/src/components/POSRegister/pos.view.tsx:49:1]
+web:build:  46 |   );
+web:build:  47 | }
+web:build:  48 | POSRegisterView.displayName = "POSRegisterView";
+web:build:  49 | "
+web:build:     : ^
+web:build:     `----
+web:build: 
+web:build: Caused by:
+web:build:     Syntax Error
+web:build: 
+web:build: Import trace for requested module:
+web:build: ../../packages/domain-pos/src/components/POSRegister/pos.view.tsx
+web:build: ../../packages/domain-pos/src/index.ts
+web:build: ./src/app/(fullscreen)/pos/page.tsx
+web:build: 
+web:build: 
+web:build: > Build failed because of webpack errors
+web:build: [ELIFECYCLE] Command failed with exit code 1.
+web#build:  ERROR  command (/workspace/apps/web) /workspace/.pnpm-store/v11/links/@/pnpm/11.5.2/9f408053e4328ebac2f958340f1854324c63e346e6a6b953bbbf787d006f70a1/bin/pnpm run build exited (1)
+
+ Tasks:    8 successful, 9 total
+Cached:    0 cached, 9 total
+  Time:    1m6.124s 
+Failed:    web#build
+
+ ERROR  run failed: command  exited (1)
+[ELIFECYCLE] Command failed with exit code 1.

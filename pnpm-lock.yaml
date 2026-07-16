@@ -344,6 +344,9 @@ importers:
 
   apps/pos-simulator:
     dependencies:
+      '@soustools/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@soustools/api-types':
         specifier: workspace:*
         version: link:../../packages/api-types
