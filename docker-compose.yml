@@ -229,7 +229,7 @@ services:
     volumes:
       # Mount the exact same workspace as your code-server
       - /home/ubuntu/dev.sous.tools/:/workspace
-      - agent_data:/home/agentuser/.claude
+      - agent_data:/home/agentuser
     environment:
       # Trick the Claude CLI into routing through LiteLLM
       - ANTHROPIC_BASE_URL=http://litellm:4000
