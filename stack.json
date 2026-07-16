@@ -2,17 +2,15 @@
   "project": "sous.tools",
   "architecture": "Turborepo Monorepo",
   "environments": {
-    "home_dev": "Windows WSL2, Local Supabase Docker, Redis + Ollama Docker",
+    "home_dev": "Windows, Antigravity 2.0 (Google One Pro)",
     "work_dev": "Oracle VPS (24GB ARM64), Code-server, Redis, LiteLLM, n8n, Ollama, Docker",
-    "production": "Vercel (Next.js), Oracle VPS (NestJS API, Redis, LiteLLM, Traefik, n8n), Hosted Supabase"
+    "production": "Vercel (Next.js), Oracle VPS (NestJS API, Traefik), Hosted Supabase"
   },
   "core_stack": {
     "frontend": "Next.js 16 (React, Server Components)",
     "styling": "Tailwind CSS v4 (Semantic Tokens, @theme), Shadcn/Radix UI",
     "backend": "NestJS",
     "database": "Supabase PostgreSQL (Strict RLS Enforced)",
-    "queue_cache": "Redis, BullMQ",
-    "ai_orchestration": "LiteLLM, n8n, Ollama, Gemini"
-  },
-  "boundaries": "Strict DDD. UIs in @soustools/ui. No direct DB access from frontend. No process.env outside @soustools/config."
+    "ai_orchestration": "LiteLLM, n8n, Ollama, Gemini (via MCP & Claude CLI)"
+  }
 }
