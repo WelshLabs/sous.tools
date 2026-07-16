@@ -1,3 +1,21 @@
+### thin routing layer
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### design-system cleanup
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### Tech Debt: Upgrade setup-portal to Next.js 16
+
+**Status:** In progress
+**Assignees:** null
+---
+
 ### Square Integration
 
 **Status:** In review
@@ -12,19 +30,25 @@
 
 ### omnibar uploads
 
-**Status:** In review
+**Status:** Done
 **Assignees:** null
 ---
 
 ### light mode colors
 
+**Status:** Done
+**Assignees:** null
+---
+
+### staging site redirect loop
+
 **Status:** In review
 **Assignees:** null
 ---
 
-### design-system cleanup
+### Native Apps
 
-**Status:** In review
+**Status:** Done
 **Assignees:** null
 ---
 
@@ -234,13 +258,7 @@
 
 ### Logo / Branding
 
-**Status:** Backlog
-**Assignees:** null
----
-
-### Tech Debt: Upgrade setup-portal to Next.js 16
-
-**Status:** Backlog
+**Status:** Done
 **Assignees:** null
 ---
 
@@ -310,12 +328,6 @@
 **Assignees:** null
 ---
 
-### login page
-
-**Status:** Backlog
-**Assignees:** null
----
-
 ### waffle menu
 
 **Status:** Ready
@@ -334,9 +346,15 @@
 **Assignees:** null
 ---
 
-### logos
+### login page
 
 **Status:** Ready
+**Assignees:** null
+---
+
+### logos
+
+**Status:** Done
 **Assignees:** null
 ---
 
@@ -352,15 +370,9 @@
 **Assignees:** null
 ---
 
-### staging site redirect loop
-
-**Status:** Ready
-**Assignees:** null
----
-
 ### agent skills
 
-**Status:** Ready
+**Status:** Done
 **Assignees:** null
 ---
 
@@ -370,14 +382,32 @@
 **Assignees:** null
 ---
 
-### thin routing layer
+### tech debt
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### wearos
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### rpi os image
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### favicon
 
 **Status:** Ready
 **Assignees:** null
 ---
 
-### Native Apps
+### disabling rules
 
-**Status:** Backlog
+**Status:** Ready
 **Assignees:** null
 ---
