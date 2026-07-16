@@ -222,11 +222,11 @@ services:
 
   agent-runner:
     build:
-      context: ./agent-runner # Path to the folder containing your new Dockerfile
-      dockerfile: Dockerfile
+      context: . # Path to the folder containing your new Dockerfile
+      dockerfile: Dockerfile.agentRunner
       args:
-        - PUID=1000 # Match your code-server PUID
-        - PGID=1000 # Match your code-server PGID
+        - PUID=1001
+        - PGID=1001
     container_name: agent-runner
     volumes:
       # Mount the exact same workspace as your code-server
