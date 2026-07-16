@@ -6,12 +6,15 @@ assignees: ''
 ---
 
 ## Objective
+
 [Brainstormed idea from mobile webhook goes here]
 
 ## Agent Definition of Done (DoD)
+
 Before opening a Pull Request, the executing agent MUST complete the following:
+
 - [ ] Create a new feature branch (`feature/issue-[id]`).
-- [ ] Write the code conforming to `.cursorrules` and `docs/ARCHITECTURAL_PROTOCOL.md`.
+- [ ] Write the code conforming to `.cursorrules` and `docs/AGENTS.md`.
 - [ ] Run `pnpm turbo lint` and ensure 0 errors.
 - [ ] Run `pnpm turbo typecheck` and ensure perfect compilation.
 - [ ] Push the branch and open a PR.

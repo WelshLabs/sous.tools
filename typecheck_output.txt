@@ -1,7 +1,0 @@
-$ tsc --noEmit
-src/app/(fullscreen)/pos/page.tsx(2,38): error TS2307: Cannot find module '@soustools/domain-pos' or its corresponding type declarations.
-../../packages/domain-inventory/src/orders-panel.tsx(7,8): error TS2305: Module '"@soustools/design-system"' has no exported member 'OrderLineItem'.
-../../packages/domain-inventory/src/orders-panel.tsx(8,8): error TS2305: Module '"@soustools/design-system"' has no exported member 'OrderSupplier'.
-/workspace/apps/web:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] web@0.1.0 typecheck: `tsc --noEmit`
-Exit status 2
