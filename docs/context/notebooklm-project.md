@@ -1,18 +1,60 @@
+### staging site redirect loop
+
+**Status:** Ready
+**Assignees:** null
+---
+
+### wearos
+
+**Status:** Ready
+**Assignees:** null
+---
+
+### omnibar merge
+
+**Status:** Ready
+**Assignees:** null
+---
+
+### disabling rules
+
+**Status:** Ready
+**Assignees:** null
+---
+
+### favicon
+
+**Status:** Ready
+**Assignees:** null
+---
+
 ### thin routing layer
 
-**Status:** In progress
+**Status:** Ready
 **Assignees:** null
 ---
 
-### design-system cleanup
+### omnibutton
 
-**Status:** In progress
+**Status:** Ready
 **Assignees:** null
 ---
 
-### Tech Debt: Upgrade setup-portal to Next.js 16
+### scaling helpers
 
-**Status:** In progress
+**Status:** Ready
+**Assignees:** null
+---
+
+### Storybook
+
+**Status:** Ready
+**Assignees:** null
+---
+
+### waffle menu
+
+**Status:** Ready
 **Assignees:** null
 ---
 
@@ -37,12 +79,6 @@
 ### light mode colors
 
 **Status:** Done
-**Assignees:** null
----
-
-### staging site redirect loop
-
-**Status:** In review
 **Assignees:** null
 ---
 
@@ -256,6 +292,24 @@
 **Assignees:** null
 ---
 
+### convert to drizzle??
+
+**Status:** Backlog
+**Assignees:** null
+---
+
+### login page
+
+**Status:** Backlog
+**Assignees:** null
+---
+
+### packages/api-types
+
+**Status:** Backlog
+**Assignees:** null
+---
+
 ### Logo / Branding
 
 **Status:** Done
@@ -268,7 +322,19 @@
 **Assignees:** null
 ---
 
+### design-system cleanup
+
+**Status:** Backlog
+**Assignees:** null
+---
+
 ### Recipes Page
+
+**Status:** Backlog
+**Assignees:** null
+---
+
+### Tech Debt: Upgrade setup-portal to Next.js 16
 
 **Status:** Backlog
 **Assignees:** null
@@ -322,33 +388,15 @@
 **Assignees:** null
 ---
 
-### omnibutton
+### tech debt
 
-**Status:** Ready
+**Status:** Backlog
 **Assignees:** null
 ---
 
-### waffle menu
+### rpi os image
 
-**Status:** Ready
-**Assignees:** null
----
-
-### scaling helpers
-
-**Status:** Ready
-**Assignees:** null
----
-
-### packages/api-types
-
-**Status:** Ready
-**Assignees:** null
----
-
-### login page
-
-**Status:** Ready
+**Status:** Backlog
 **Assignees:** null
 ---
 
@@ -358,56 +406,20 @@
 **Assignees:** null
 ---
 
-### omnibar merge
-
-**Status:** Ready
-**Assignees:** null
----
-
-### Storybook
-
-**Status:** Ready
-**Assignees:** null
----
-
 ### agent skills
 
 **Status:** Done
 **Assignees:** null
 ---
 
-### convert to drizzle??
+### Tech Debt: Audit and Purge Unused Code (Knip)
 
-**Status:** Ready
+**Status:** Backlog
 **Assignees:** null
 ---
 
-### tech debt
+### Tech Debt: Fix Failing Test Suites & Achieve Coverage
 
-**Status:** In progress
-**Assignees:** null
----
-
-### wearos
-
-**Status:** In progress
-**Assignees:** null
----
-
-### rpi os image
-
-**Status:** In progress
-**Assignees:** null
----
-
-### favicon
-
-**Status:** Ready
-**Assignees:** null
----
-
-### disabling rules
-
-**Status:** Ready
+**Status:** Backlog
 **Assignees:** null
 ---

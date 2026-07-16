@@ -1,75 +1,68 @@
-### #74: disabling rules
+### #76: Tech Debt: Fix Failing Test Suites & Achieve Coverage
+
+**Labels:** tech debt
+
+**Description:**
+Our unit test suites for api and cli are currently crashing or reporting "No tests found", and our domain packages lack coverage. Objective: Fix the test runners and expand coverage.
+
+Agent Instructions:
+
+- Fix the Jest configuration in apps/cli so it actually detects and runs its tests
+- Fix the NestJS tests in apps/api.
+- Once the runners are green, begin generating unit tests for all components in @soustools/domain-* ensuring we adhere to the Container/View testing philosophy.
+
+**Comments:**
+
+---
+
+### #75: Tech Debt: Audit and Purge Unused Code (Knip)
+
+**Labels:** tech debt
+
+**Description:**
+According to our knip-report.txt, we have dozens of unused files, exports, and dependencies. Objective: Safely audit the dead code.
+
+Agent Instructions: DO NOT ARBITRARILY DELETE FILES.
+
+- Read docs/audits/knip-report.txt
+- Audit the listed "unused files" (like the display blocks and home dashboard components).
+- Post a comment on this issue categorizing what is genuinely dead legacy code vs. what is newly written code that just hasn't been wired into a Next.js route yet. Stop and wait for my human approval before deleting anything.
+
+**Comments:**
+
+---
+
+### #74: Tech Debt: Eradicate eslint-disable Bypasses
 
 **Labels:** bug, enhancement
 
 **Description:**
-currently i have noticed places where the agents have gotten lazy and disabled the eslint rules to bypass typechecks and lint checks, we need to go back and remove these disabling comments and actually fix the problem not be lazy.
+We have a strict "Zero Tech Debt" policy. Bypassing linting or type rules is forbidden. Objective: Hunt down and remove all eslint-disable comments.
+
+Agent Instructions:
+
+- Scan the entire Turborepo (especially packages/domain-pos and apps/api) for // eslint-disable-next-line or /* eslint-disable */
+- Remove the comments.
+- Properly fix the underlying TypeScript any types, missing dependencies, or architectural violations that the comment was hiding. Do not use shortcuts.
 
 **Comments:**
-
-> **sous-tools**: A concerning trend has emerged where developers are disabling ESLint rules, bypassing critical type and lint checks, leading to a degradation of code quality and increased technical debt. This practice allows potential bugs to go unnoticed and prevents adherence to established coding standards. We need to actively identify and remove these disabling comments across the codebase. The underlying issues must be properly addressed and fixed instead of being lazily circumvented to maintain code integrity and reliability.
-
-> **sous-tools**: ### Diagnosis Report
->
-> The issue highlights a critical lapse in code quality control due to the pervasive use of ESLint rule disabling comments. This practice bypasses essential type and lint checks, introducing potential bugs and increasing technical debt. To address this, we must systematically identify and remove these comments, and more importantly, fix the underlying code issues that prompted their disabling.
->
-> Here are the files identified as most relevant for inspection and modification:
->
-> - **eslint.config.mjs**
->   - Diagnosis: This root ESLint configuration file should be reviewed for any overly broad `ignorePatterns` or global rule `overrides` that might be unintentionally allowing developers to bypass checks. The goal is to tighten global enforcement and ensure consistent linting across the entire repository.
-> - **apps/api/eslint.config.js**
->   - Diagnosis: Inspect this application-specific ESLint configuration for any direct rule disabling or `overrides` targeting specific files within the API codebase. All such disabling entries need to be removed to restore full linting and type-checking enforcement for the backend services.
-> - **apps/cli/eslint.config.js**
->   - Diagnosis: Examine this configuration file for the CLI application for any explicit rule disabling or file-specific `overrides`. Removing these will ensure that command-line tools adhere to the defined code quality standards.
-> - **apps/web/eslint.config.js**
->   - Diagnosis: Review this client-side application's ESLint configuration for any disabled rules or `overrides`. Eliminating these will reinstate strict linting for the web application's components and logic, improving maintainability and reducing UI-related bugs.
-> - **packages/design-system/eslint.config.js**
->   - Diagnosis: This shared design system's configuration is crucial for maintaining consistent UI component quality. Any disabled rules here must be removed, and the underlying code issues resolved to ensure robust and reusable components.
-> - **apps/api/src/modules/commands/commands.service.ts**
->   - Diagnosis: This is a representative example of a backend source file that likely contains inline `// eslint-disable-next-line` or `/* eslint-disable */` comments. These comments must be removed, and the code refactored to properly resolve any linting or type errors they were circumventing.
-> - **apps/web/src/app/(workspace)/ingestion/review/[id]/visual-builder.tsx**
->   - Diagnosis: As a complex UI component, this file is a high-probability target for inline ESLint disabling comments. These comments need to be removed, and the component's code updated to comply with all relevant ESLint and TypeScript rules.
-> - **packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts**
->   - Diagnosis: This utility hook is a critical piece of shared functionality. Any inline `eslint-disable` comments within it must be removed, and the associated code fixed to ensure reliability and adherence to coding standards for a core feature.
-> - **packages/supabase/src/index.ts**
->   - Diagnosis: This file likely defines core interactions with the Supabase client. Any `eslint-disable` comments found here should be removed, with the underlying code issues being addressed to maintain data integrity and API interaction robustness.
 
 ---
 
-### #73: favicon
+### #73: Environment-Aware Transparent Favicons
 
-**Labels:** bug, enhancement, devops, design-system, frontent
+**Labels:** bug, enhancement, devops, design-system
 
 **Description:**
-right now the favicon has a black background when it should be transparent. Also it would be nice to get the proper coloring of the icon itself to work with our environments (green = dev, orange = staging, prod = normal gradient).
+Our current favicons render with a black background instead of transparency, and we cannot easily differentiate between our environments. Objective: Fix the background transparency and wire up environment colors.
 
-This same logic applies to all of our app icons. There is an icon generator script that we use that should be added to the package.json scripts and should be modifier to work with our dev/staging/prod color logic and fixed to have a transparent background (for the icons that support it).
+Agent Instructions:
+
+- Refactor scripts/generate-icons.mjs to ensure the generated PNG/ICO/SVG files have strict transparent backgrounds
+- Add logic to the script (or packages/design-system/src/utils/favicon-canvas.ts) to apply environment colors: Green for Dev, Orange for Staging, standard gradient for Prod
+- Ensure apps/web/src/app/layout.tsx dynamically loads the correct generated icon based on process.env.NODE_ENV
 
 **Comments:**
-
-> **sous-tools**: The current favicons and application icons incorrectly display with a black background instead of being transparent, which needs to be corrected. Additionally, an enhancement is required to implement environment-specific coloring for these icons, displaying green for development, orange for staging, and the standard gradient for production. The existing icon generator script must be updated to support both transparent backgrounds and this new color logic. Finally, this improved script should be added to the package.json scripts for streamlined asset generation and consistent icon management across environments.
-
-> **sous-tools**: ### Diagnosis Report
->
-> The issue describes two main problems: incorrect black backgrounds on favicons and application icons, and the absence of environment-specific coloring for these assets. The solution involves modifying the existing icon generator script to address these concerns and integrating it into the build process.
->
-> - **`scripts/generate-icons.mjs`**
->   This script is the primary candidate for modification. It needs to be updated to generate icons with transparent backgrounds and incorporate logic to apply environment-specific colors (green for dev, orange for staging, standard gradient for prod) based on configuration or environment variables.
->
-> - **`package.json`**
->   A new script command should be added to the root `package.json` to easily execute the updated `scripts/generate-icons.mjs` script, allowing for streamlined icon generation across different environments.
->
-> - **`packages/design-system/src/utils/favicon-canvas.ts`**
->   This utility likely handles the low-level rendering of favicons onto a canvas. It needs to be reviewed and adjusted to explicitly draw a transparent background and accept parameters to apply the correct environment-specific colors or gradients.
->
-> - **`packages/design-system/src/utils/favicon-status.ts`**
->   This file, which possibly dictates favicon appearance based on status, should be enhanced or refactored to define and manage the color mapping for different environments (dev, staging, prod), making this logic reusable by the `favicon-canvas.ts` or the generator script.
->
-> - **`apps/web/src/app/layout.tsx`**
->   This file is responsible for embedding favicon links in the Next.js application. It must be updated to conditionally load the appropriate environment-specific favicon (e.g., `favicon-dev.svg`, `favicon-staging.svg`, `favicon-prod.svg`) based on the detected environment.
->
-> - **`apps/web/src/app/manifest.ts`**
->   The web app manifest defines PWA icons. This file needs to be updated to correctly reference the newly generated, transparent, and environment-colored PWA icons, potentially by using dynamic paths or environment-specific icon sets.
 
 ---
 
@@ -123,49 +116,22 @@ need to get a properly working rpi os image built and deployed so it can be used
 
 ---
 
-### #71: wearos
+### #71: Feature: WearOS App Functionality & Sideload Deployment
 
 **Labels:** bug, enhancement, devops, frontend
 
 **Description:**
-get the wearos app fully functional, and deploying sucessfully to both dev and prod (via sideloading)
+The WearOS application needs its final polish so we can sideload it to the physical watches in dev and prod.
+
+Objective: Ensure core watch functionalities are wired to the backend API and build variants are configured.
+
+Agent Instructions:
+
+- Verify ApiClient.kt correctly pulls environment-specific endpoints via Infisical secrets for dev/prod
+- Ensure VoiceCommandComplicationService.kt and MainTileService.kt are correctly routing their payloads to the NestJS backend
+- Verify the build.gradle.kts is properly configured to output signed APKs for both environments
 
 **Comments:**
-
-> **sous-tools**: This issue addresses the complete process of bringing a WearOS application to a fully functional state, which includes implementing any missing features, resolving existing bugs, and ensuring comprehensive testing. A critical component is establishing a reliable deployment pipeline that successfully allows for sideloading the application to both development and production environments. This ensures the app can be effectively distributed, tested, and released across all stages.
-
-> **sous-tools**: ## Diagnosis Report: WearOS App Functionality and Deployment
->
-> The WearOS issue requires improvements across the application's core logic, build configurations, and integration with the deployment pipeline and backend API to ensure full functionality and successful sideloading to both development and production environments.
->
-> - **apps/wearos/app/src/main/java/com/sous/wearos/network/ApiClient.kt**
->   This file likely needs modifications to correctly configure API endpoints for both development and production environments, and ensure robust error handling and network resilience specific to WearOS constraints.
-> - **apps/wearos/app/src/main/java/com/sous/wearos/network/TokenManager.kt**
->   Authentication logic and token persistence need to be fully implemented and secured, ensuring the WearOS app can reliably authenticate with the backend across different environments.
-> - **apps/wearos/app/src/main/java/com/sous/wearos/presentation/MainActivity.kt**
->   The primary activity needs to be fully developed to orchestrate the main user interface, integrate all required features, and handle navigation and state management effectively.
-> - **apps/wearos/app/src/main/java/com/sous/wearos/presentation/PairingScreen.kt**
->   This screen is crucial for the initial setup and secure pairing of the WearOS device with a user account or an external device (e.g., the setup portal), requiring robust connection and authentication flows.
-> - **apps/wearos/app/src/main/java/com/sous/wearos/complication/VoiceCommandComplicationService.kt**
->   The implementation of voice command recognition and processing needs to be completed, including integration with the backend API for command execution and feedback.
-> - **apps/wearos/app/src/main/java/com/sous/wearos/tile/MainTileService.kt**
->   The main tile functionality requires full implementation to provide quick, glanceable information and actions, ensuring it leverages WearOS UI best practices.
-> - **apps/wearos/app/src/main/AndroidManifest.xml**
->   This manifest file must be updated to correctly declare all necessary permissions, services, activities, and features (like complications and tiles) for the WearOS application to function as intended.
-> - **apps/wearos/app/build.gradle.kts**
->   This build script needs configuration for different build types (dev/prod), signing credentials, and potentially product flavors to generate environment-specific APKs or AABs for sideloading.
-> - **deploy.sh**
->   The main deployment script for the monorepo needs to be extended to include specific steps for building, signing, and preparing the WearOS application for sideloading into both development and production environments.
-> - **turbo.json**
->   This configuration file should include new tasks for building and deploying the WearOS application within the Turborepo monorepo, ensuring it integrates seamlessly into the overall project's build system.
-> - **.infisical.json**
->   Environment-specific secrets and configurations, such as API base URLs or keys for dev and prod, need to be managed and injected into the WearOS application build process via Infisical.
-> - **apps/api/src/modules/auth/auth.controller.ts**
->   The API's authentication controller might require adjustments or new endpoints to support the WearOS application's specific authentication flows and device types.
-> - **apps/api/src/modules/devices/devices.service.ts**
->   New logic needs to be implemented within this service to register, track, and manage WearOS devices, including their pairing status and any device-specific data.
-> - **apps/api/src/modules/commands/commands.controller.ts**
->   If the WearOS app sends voice commands or other specific commands to the backend, this API controller will need to be developed or extended to receive and process these requests.
 
 ---
 
@@ -207,43 +173,18 @@ get all our tech debt monitoring tools to be green lit across the entire repo
 
 ---
 
-### #68: thin routing layer
+### #68: Refactor: Thin Next.js Routing Shells & Domain Extraction
 
-**Labels:** enhancement, frontent
+**Labels:** enhancement, refactor
 
 **Description:**
-we need to make sure that the nextjs apps are merely simple thin routing shells. The only things happening in the nextjs apps should be routing and data fetching. Even data fetching should be done via packages. So the nextjs apps shouldnt really have to do anything other than orchestrate other packages and make them accessible via different routes.
+Next.js apps (apps/web, apps/pos-simulator) must act purely as routing and orchestration shells. Objective: Strip domain-specific business logic out of the router. Agent Instructions: Data fetching inside Next.js Server Components is allowed and encouraged. However, domain-specific knowledge, heavy data transformations, and complex UI state must be extracted.
+
+- Audit files like apps/pos-simulator/src/app/page.tsx and apps/web/src/app/(workspace)/recipes/[id]/kitchen/page.tsx
+- Move core business logic and heavy container setups into their respective packages/domain-* packages.
+- Ensure Next.js pages only contain minimal instructions specific to routing and invoking those domain packages.
 
 **Comments:**
-
-> **sous-tools**: This issue advocates for structuring Next.js applications as minimal routing shells. The primary goal is to confine application-specific logic to routing and the orchestration of data fetching, while encapsulating all actual data fetching and business logic within shared, reusable packages. This architecture fosters a more modular and maintainable system, positioning the Next.js app as a lightweight orchestrator that exposes pre-packaged functionalities through defined routes. It promotes clarity and reusability by centralizing core logic outside the application layer.
-
-> **sous-tools**: ### Diagnosis Report
->
-> The issue "thin routing layer" identifies a need to refactor Next.js applications to serve purely as routing and orchestration layers, with all core business logic and data fetching implementations encapsulated within shared packages. Based on the provided file structure, several files within the `apps/web`, `apps/pos-simulator`, and `apps/setup-portal` Next.js applications are likely candidates for refactoring. These files are currently performing more than just orchestration, often directly implementing data fetching or complex business logic.
->
-> - **`apps/pos-simulator/src/app/page.tsx`**
->   This file likely contains direct data fetching for POS item data or includes significant simulation business logic. This logic should be extracted into a `packages/domain-pos-simulator` or `packages/api-client` for data retrieval.
-> - **`apps/pos-simulator/src/components/PosSimulator.tsx`**
->   As the core simulator component, this file is prone to holding substantial business logic for simulation state management and data interaction. This logic should be moved to a dedicated domain package.
-> - **`apps/web/src/app/actions/auth.ts`**
->   This file, containing Next.js Server Actions for authentication, likely implements authentication logic directly. This logic should be abstracted into a common authentication package or directly call functions from `packages/api-client`.
-> - **`apps/web/src/app/(workspace)/ingestion/review/[id]/page.tsx`**
->   This page for reviewing ingested data likely integrates complex data fetching, transformation, and business rules for the review process. These operations should be delegated to `packages/domain-ingestion` or similar.
-> - **`apps/web/src/app/(workspace)/ingestion/review/[id]/use-auto-mapping.ts`**
->   This custom hook probably encapsulates intricate auto-mapping business logic and data fetching for the ingestion review process. Its functionality should be migrated to `packages/domain-ingestion`.
-> - **`apps/web/src/app/(workspace)/inventory/vendors/actions.ts`**
->   Similar to authentication actions, this file likely contains direct business logic for vendor management via Server Actions. This logic should be moved to a `packages/domain-inventory` package.
-> - **`apps/web/src/app/(workspace)/recipes/[id]/kitchen/page.tsx`**
->   The kitchen view for recipes undoubtedly includes active recipe execution logic, timer management, and real-time updates. This core functionality should reside within `packages/domain-recipes`.
-> - **`apps/web/src/app/(workspace)/signage/[deckId]/tv-signage-editor-client.tsx`**
->   As a rich client-side editor, this component is highly likely to contain extensive state management, data fetching for signage elements, and business logic for layout editing. This complex logic should be extracted into `packages/domain-signage`.
-> - **`apps/web/src/app/display/[id]/page.tsx`**
->   This page, which serves as the signage display player, is responsible for fetching and dynamically rendering content. The detailed data processing and presentation logic for the display should be moved to `packages/domain-signage`.
-> - **`apps/web/src/app/display/[id]/use-display-player.ts`**
->   This custom hook likely centralizes the core data fetching, state management, and display logic for the signage player. This functionality is a prime candidate for extraction into `packages/domain-signage`.
-> - **`apps/web/src/components/GoogleDriveBrowserWrapper.tsx`**
->   This wrapper component probably handles direct integration logic, including data fetching and interaction with the Google Drive API. This integration-specific logic should be moved to a dedicated package or service.
 
 ---
 
@@ -276,70 +217,43 @@ should we convert the sql to use drizzle or is that too much at this point?
 
 ---
 
-### #65: staging site redirect loop
+### #65: Staging Environment Infinite Redirect Loop
 
 **Labels:** bug, backend, devops
 
 **Description:**
-currently the staging site gets in a never ending redirect loop and we have tried all kinds of ways to diagnose it but nothing has fixed it yet
+ur staging environment is currently inaccessible due to an infinite redirect loop. Objective: Diagnose and fix the loop. Agent Instructions:
+Check deploy/ansible/group_vars/all/vars.yml for malformed APP_URL, API_URL, or HTTPS enforcement variables
+.
+Audit apps/web/next.config.mjs for rogue redirects arrays that mishandle protocol or staging subdomains
+.
+Audit apps/api/src/main.ts for any global middleware or Traefik trust-proxy mismatches causing HTTP/HTTPS ping-ponging
+. Fix the configuration so the staging site loads without looping.
 
 **Comments:**
-
-> **sous-tools**: The staging environment is currently experiencing a persistent and unresolved redirect loop, making it inaccessible for testing and development. Despite multiple diagnostic efforts, the root cause of the endless redirection remains elusive. This issue critically impacts our ability to validate new features and bug fixes before production deployment. Further investigation into server configurations, DNS settings, or application-level redirect rules is urgently required to restore staging site functionality.
-
-> **sous-tools**: ## Diagnosis Report: Staging Site Redirect Loop
->
-> The persistent redirect loop on the staging site points to a configuration conflict or incorrect redirection logic, likely spanning both infrastructure and application layers. The issue critically impacts testing and development, requiring urgent investigation into environment variables, application-level routing, and server-side redirect rules.
->
-> ### Files Requiring Modification:
->
-> - **`deploy/ansible/group_vars/all/vars.yml`**
->   - **Diagnosis**: This file defines environment-specific variables, including base URLs and protocol settings. A redirect loop can occur if `APP_URL`, `API_URL`, or HTTP/HTTPS enforcement variables are misconfigured for the staging domain, leading to conflicting redirects.
->   - **Changes**: Verify and correct the `APP_URL`, `API_URL`, and any related HTTP/HTTPS configuration to accurately reflect the staging environment's desired domain and protocol, ensuring no circular redirects are implicitly created.
-> - **`apps/web/next.config.mjs`**
->   - **Diagnosis**: This Next.js configuration file can define `redirects` rules or `basePath`/`assetPrefix` settings. An incorrectly configured permanent redirect or a base path that doesn't align with the actual staging URL can cause the browser to enter a redirect loop.
->   - **Changes**: Review the `redirects` array for any rules that might be unintentionally creating a loop, particularly those that do not correctly differentiate between staging and production environments or mishandle protocol/subdomain variations. Check `basePath` and `assetPrefix` as well.
-> - **`apps/web/src/app/layout.tsx`**
->   - **Diagnosis**: As a root layout component in the Next.js application, this file may contain client-side or server-side logic that performs redirects (e.g., for authentication, environment checks, or dynamic routing). If this logic unconditionally redirects or targets an incorrect URL, it will create a loop.
->   - **Changes**: Investigate any `redirect()` calls or similar logic within this file that might be causing an unconditional or circular redirect, especially those related to authentication status, `process.env` variables, or URL construction.
-> - **`apps/api/src/main.ts`**
->   - **Diagnosis**: This is the entry point for the NestJS API, where global middleware, interceptors, or guards are registered. If the API is performing global redirects (e.g., enforcing HTTPS or redirecting unauthenticated users) and the frontend or a proxy also redirects, a loop can form.
->   - **Changes**: Examine any global middleware (`app.use(...)`), interceptors, or guards that perform HTTP redirects (e.g., to HTTPS or login pages) to ensure they are configured correctly for the staging environment and do not conflict with upstream proxies or frontend redirect logic.
-> - **`deploy/ansible/roles/services/tasks/main.yml`**
->   - **Diagnosis**: This Ansible playbook configures and deploys server services, likely including the web server (e.g., Nginx, Caddy) that serves the staging site. Misconfigured server-level redirect rules (e.g., HTTP to HTTPS, non-www to www, or incorrect proxy settings) are a very common cause of redirect loops.
->   - **Changes**: Review the tasks that configure the web server for the staging environment (e.g., tasks deploying Nginx/Caddy configurations or templates). Ensure that any redirect directives are correctly applied for the staging domain and protocol, and do not introduce circular redirects with the application.
 
 ---
 
-### #64: Storybook
+### #64: Tooling: Scaffold Storybook for Design System
 
-**Labels:** enhancement, design-system, frontent
+**Labels:** enhancement, design-system, tooling
 
 **Description:**
-It would be nice, to have a Storybook setup, to be able to interact with our View components to be able to adjust designs and functionality in isolation
+We need to view and interact with our UI components in strict isolation. Objective: Integrate Storybook exclusively into the design-system package.
+
+Agent Instructions:
+
+- Install and configure Storybook strictly inside packages/design-system
+- Update packages/design-system/package.json with the required build/start scripts
+- Update turbo.json at the root to recognize and cache the new Storybook tasks
 
 **Comments:**
-
-> **sous-tools**: The request proposes integrating Storybook into the project to enhance the development and iteration of View components. Storybook would provide an isolated environment, allowing developers and designers to interact with components independently, adjust designs, and refine functionality. This setup aims to streamline the component development workflow, improve consistency, and facilitate easier testing of UI elements.
-
-> **sous-tools**: ### Diagnosis Report
->
-> The request proposes integrating Storybook into the project, specifically for the `packages/design-system` to facilitate isolated development and interaction with UI components. This setup involves adding Storybook as a development tool, which will necessitate modifications to existing configuration files within the `design-system` package and the monorepo's task runner.
->
-> - **`packages/design-system/package.json`**
->   This file needs to be updated to include Storybook as a development dependency and to define scripts for starting and building the Storybook instance for the design system components.
-> - **`packages/design-system/eslint.config.js`**
->   The ESLint configuration might require updates to properly lint Storybook-specific files (e.g., `.stories.tsx`) and to configure any Storybook-related ESLint plugins or rules.
-> - **`packages/design-system/tsconfig.json`**
->   This TypeScript configuration file may need adjustments to include the new Storybook configuration files and `.stories.tsx` files, ensuring they are correctly type-checked.
-> - **`turbo.json`**
->   As this is a monorepo managed by Turborepo, the `turbo.json` file needs to be updated to define new tasks for Storybook (e.g., `storybook`, `build-storybook`) within the `design-system` package, integrating it into the monorepo's build and development workflow.
 
 ---
 
 ### #63: design-system cleanup
 
-**Labels:** documentation, enhancement, design-system, frontent
+**Labels:** documentation, enhancement, design-system
 
 **Description:**
 we need to ensure that our packages/design-system is cleaned up, and properly following the atom/molecule/organism/container design philosophy. Currently almost all components are just single files instead of folders, and none of them have tests written for them.
@@ -438,38 +352,20 @@ but most all of the components need to be refactored to follow the correct struc
 
 ---
 
-### #62: omnibar merge
+### #62: Merge v0 Omnibar Visual Design
 
 **Labels:** enhancement, frontend, design-system
 
 **Description:**
-we need to merge the new omnibar design from the v0 package
+We have a new visually upgraded Omnibar design generated via v0 that needs to be permanently merged. Objective: Apply the new Neon-Glass UI to the Omnibar.
+
+Agent Instructions:
+
+- Refactor OmniBarPresentation.tsx and AttachmentFlyout.tsx to match the new v0 design specifications
+- Strictly enforce our "Neon-Glass" aesthetic. Use ONLY semantic Tailwind tokens (bg-secondary, border-border, etc.) from our design system.
+- Retain the Framer Motion architecture (springs, layout, and layoutId props) to ensure it morphs between the pill, circle, and droplet smoothly
 
 **Comments:**
-
-> **sous-tools**: This task involves merging the newly designed omnibar into the current application. The updated design originates from the 'v0 package', signifying an integration from our core design system. This merge is an enhancement aimed at improving the user interface and overall user experience. It will require focused frontend development to ensure a seamless and pixel-perfect integration of the component.
-
-> **sous-tools**: ### Diagnosis Report: omnibar merge
->
-> This task primarily involves updating the visual and interactive aspects of the omnibar component, which resides in the `packages/design-system` and is consumed by the `apps/web` application. The "v0 package" refers to the core design system where the updated component's source will be found.
->
-> - **`packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx`**
->   This file is the core UI component for the omnibar. It will require significant modifications to implement the new visual design and layout from the v0 package, ensuring a pixel-perfect match with the new specifications.
->
-> - **`packages/design-system/src/components/OmniBar/AttachmentFlyout.tsx`**
->   As a sub-component of the omnibar, this file will need updates to its styling and potentially its internal layout or functionality to align with the new omnibar design. Other related sub-components like `CreatableSelect.tsx`, `OmniChatWindow.tsx`, and `FloatingOmniTrigger.tsx` will also need similar review and updates.
->
-> - **`packages/design-system/src/components/OmniBar/OmniBarProvider.tsx`**
->   If the new omnibar design introduces changes to its internal state, context, or prop requirements, this provider file will need adjustments to accommodate the new data flow or configuration.
->
-> - **`apps/web/src/app/(workspace)/layout.tsx`**
->   This is a primary layout for the web application where the omnibar component is likely consumed. It will need to be updated to integrate the new version of the `OmniBar` component from the `design-system`, potentially handling new props or layout requirements.
->
-> - **`apps/web/src/components/layout/app-bar.tsx`**
->   Given that an app bar often contains or is closely related to search/omnibar functionality, this file will likely require updates to correctly render and interact with the newly designed omnibar component.
->
-> - **`packages/api-types/src/omnibar.ts`**
->   If the new omnibar design introduces new data structures, command types, or interaction patterns that affect the API interface, this file will need updates to reflect the revised type definitions.
 
 ---
 
@@ -504,34 +400,37 @@ now that we have a packages/api-client in place... should packages/api-types sti
 
 ---
 
-### #59: scaling helpers
+### #59: Refactor: Move Recipe Scaling Logic to Domain Package
 
-**Labels:** enhancement, design-system, agent:research
+**Labels:** enhancement, design-system, refactor
 
 **Description:**
-currently the recipe scaling utils are located in the design-system package, but this is most certainly domain-recipes logic and does not belong in design-system
+The recipe scaling logic currently lives in the design system, which is a severe Domain-Driven Design (DDD) violation. Objective: Relocate the logic to the correct domain.
+
+Agent Instructions:
+
+- Move packages/design-system/src/utils/scaling.ts and its associated .test.ts file to packages/domain-recipes/src/utils/
+- Remove the export from the design-system index file
+- Update all import references across apps/web and apps/api to pull from @soustools/domain-recipes instead
 
 **Comments:**
 
-> **sous-tools**: The recipe scaling utility functions are currently located in the `design-system` package. This is a misplacement, as these utilities are specific to recipe domain logic and should reside within a `domain-recipes` package or similar, separate from UI components. Relocating these functions will improve code organization, adhere to domain boundaries, and ensure the `design-system` package remains focused purely on UI concerns.
-
 ---
 
-### #58: waffle menu
+### #58: Bug: Waffle Menu Click-Outside Bounding Box
 
 **Labels:** bug, frontend
 
 **Description:**
-when clickout outside of the menu i would expect it to close, but it only does so if you click on the app bar. I think there is an invisible click target underneath the waffle menu, but i think its being confined to the appbar instead of covering the whole screen.
+The Waffle Menu currently only closes if you click specifically on the app bar. The invisible click target is constrained. Objective: Expand the click-out overlay.
+
+Agent Instructions:
+
+- Locate WaffleMenuDropdown.tsx in the design system
+- Fix the invisible overlay element or document click listener so that it spans 100vw and 100vh
+- Ensure the z-index of the overlay sits perfectly behind the menu but above the rest of the app, ensuring any click outside the menu triggers the close function.
 
 **Comments:**
-
-> **sous-tools**: The waffle menu exhibits unexpected behavior where it only closes when a click occurs on the app bar, rather than anywhere outside the menu's boundaries. This suggests a problem with the click-outside-to-close mechanism, likely due to an invisible click target being incorrectly confined to the app bar area instead of covering the entire screen. This oversight negatively impacts user experience and violates common UI interaction patterns.
-
-> **sous-tools**: ### Diagnosis Report:
->
-> - **packages/design-system/src/components/GlobalAppBar/WaffleMenuDropdown.tsx**
->   This file likely contains the logic for the waffle menu dropdown, including its open/close state and the click-outside-to-close mechanism. The issue suggests that an invisible overlay element, or a `document` click listener intended to cover the entire screen for closing the menu, is either incorrectly sized, positioned, or scoped, causing it to only register clicks within the app bar's boundaries. The implementation needs to be reviewed to ensure any click-catching element or event listener correctly covers the full viewport when the menu is open.
 
 ---
 
@@ -569,31 +468,20 @@ can we add remember me, forgot password, and login with google or github buttons
 
 ---
 
-### #56: omnibutton
+### #56: Omnibutton Reverts to Square / Center Screen
 
 **Labels:** bug, frontend, design-system
 
 **Description:**
-sometimes, especially after its been focused and closed, the omni button appears as a square instead of a circle.
+After being focused and closed, the floating Omnibutton loses its shape (becomes a square) and teleports to the center of the screen instead of returning to its bottom-right FAB position. Objective: Fix the reset state of the Omni trigger.
 
-it is also showing up in the center of the screen now when it should actually be a FAB in the bottom right corner
+Agent Instructions:
+
+- Audit FloatingOmniTrigger.tsx and OmniBarProvider.tsx
+- Ensure that when the OmniBar's active state is toggled to false, the component correctly re-applies its full border-radius (circle) and fixed bottom/right positioning
+- Prevent any state remnants from forcing it into a centered modal configuration.
 
 **Comments:**
-
-> **sous-tools**: The omnibutton is exhibiting two distinct rendering issues: it incorrectly appears as a square instead of a circle, and its position defaults to the center of the screen rather than its designated Floating Action Button (FAB) location in the bottom-right corner. This buggy behavior is consistently observed after the button has been focused and subsequently closed. The problem points to a frontend rendering or state management defect, indicating a deviation from its intended design specifications.
-
-> **sous-tools**: ## Diagnosis Report
->
-> The omnibutton is experiencing frontend rendering and positioning issues, specifically appearing as a square instead of a circle and incorrectly placed in the center of the screen, particularly after being focused and closed. This points to defects in component styling, conditional rendering logic, or state management within the OmniBar components.
->
-> - **`packages/design-system/src/components/OmniBar/FloatingOmniTrigger.tsx`**
->   This component's internal styling or conditional class application logic is likely failing to consistently re-apply the correct circular shape (`border-radius`) and fixed bottom-right positioning after the omni bar has been closed. Investigate its CSS properties, especially `border-radius`, `position`, `bottom`, and `right`, and any state-dependent class toggles that might be misbehaving.
->
-> - **`packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx`**
->   This wrapper component might not be correctly controlling the `FloatingOmniTrigger`'s props or rendering its container in a way that allows the trigger to maintain its intended FAB styles and position upon closure. Review how it handles the transition between the active OmniBar and the passive FAB state, ensuring appropriate props or parent container styles are applied.
->
-> - **`packages/design-system/src/components/OmniBar/OmniBarProvider.tsx`**
->   The state managed by this provider, specifically related to the OmniBar's open/closed/focused status, might not be resetting correctly upon closure, leading to a persistent unintended state that influences the `FloatingOmniTrigger`'s misrendering. Verify that the state variables controlling the trigger's appearance are reset to their default FAB-intended values when the OmniBar is closed.
 
 ---
 
@@ -813,7 +701,7 @@ We need to add a tutorial system to the app, hovers and popovers and whatnot ins
 
 ### #43: Tech Debt: Upgrade setup-portal to Next.js 16
 
-**Labels:** enhancement, frontent
+**Labels:** enhancement
 
 **Description:**
 The setup-portal application is currently running on Next.js 14. We need to upgrade it to Next.js 16 to align with the monorepo standards and remove the experimental instrumentationHook workaround.
@@ -839,7 +727,7 @@ The setup-portal application is currently running on Next.js 14. We need to upgr
 
 ### #40: KDS Functionality
 
-**Labels:** bug, enhancement, backend, frontent
+**Labels:** bug, enhancement, backend
 
 **Description:**
 
@@ -882,7 +770,7 @@ The setup-portal application is currently running on Next.js 14. We need to upgr
 
 ### #39: POS Functionality
 
-**Labels:** enhancement, backend, design-system, frontent, database
+**Labels:** enhancement, backend, design-system, database
 
 **Description:**
 
@@ -933,7 +821,7 @@ The setup-portal application is currently running on Next.js 14. We need to upgr
 
 ### #12: Square Integration
 
-**Labels:** bug, enhancement, backend, frontent
+**Labels:** bug, enhancement, backend
 
 **Description:**
 
