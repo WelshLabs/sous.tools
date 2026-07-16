@@ -114,6 +114,7 @@ services:
     image: n8nio/n8n:latest
     container_name: n8n
     restart: unless-stopped
+    user: "root"
     ports:
       - "5678:5678"
     environment:
@@ -126,6 +127,7 @@ services:
     volumes:
       - ./n8n_data:/home/node/.n8n
       - /home/ubuntu/dev.sous.tools:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - traefik_public
     labels:
@@ -218,6 +220,28 @@ services:
 
         echo "All models verified and ready!"
 
+  agent-runner:
+    build:
+      context: ./agent-runner # Path to the folder containing your new Dockerfile
+      dockerfile: Dockerfile
+      args:
+        - PUID=1000 # Match your code-server PUID
+        - PGID=1000 # Match your code-server PGID
+    container_name: agent-runner
+    volumes:
+      # Mount the exact same workspace as your code-server
+      - /home/ubuntu/dev.sous.tools/:/workspace
+      # Persist Claude's auth state and memory
+      - agent_data:/home/agentuser/.claude
+    environment:
+      # Trick the Claude CLI into routing through LiteLLM
+      - ANTHROPIC_BASE_URL=http://litellm:4000
+      - ANTHROPIC_API_KEY=sk-1234 # Your LiteLLM Master Key
+      - GITHUB_TOKEN=${GITHUB_TOKEN} # For the GitHub MCP Server
+    networks:
+      - traefik_public
+    restart: unless-stopped
+
   # ollama-pull:
   #   image: ollama/ollama:latest
   #   container_name: ollama-pull
@@ -234,6 +258,8 @@ volumes:
   letsencrypt:
   redis_data:
   ollama_data:
+  n8n_data:
+  agent_data:
 
 networks:
   traefik_public:

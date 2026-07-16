@@ -18,6 +18,7 @@
     "@soustools/api-types": "workspace:*",
     "@soustools/design-system": "workspace:*",
     "@soustools/domain-inventory": "workspace:*",
+    "@soustools/domain-pos": "workspace:*",
     "@supabase/supabase-js": "^2.43.0",
     "@soustools/domain-recipes": "workspace:*",
     "@soustools/domain-settings": "workspace:*",
@@ -57,3 +58,4 @@
     "node": ">=22.22.0"
   }
 }
+

@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Res, HttpCode, UnauthorizedException, Req 
 import type { Response } from "express";
 import { AppService } from "./app.service";
 import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/api-types";
-import { config } from "@soustools/config";
 import { supabase } from "./lib/supabase";
 
 const COOKIE_NAME = "sb-access-token";

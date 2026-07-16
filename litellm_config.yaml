@@ -35,5 +35,18 @@ model_list:
       model: gemini/gemini-2.5-flash
       api_key: os.environ/GEMINI_API_KEY
 
+  # === THE CLAUDE CLI ALIASES ===
+  # The Claude CLI hardcodes requests for these model names. 
+  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: gemini/gemini-3.1-pro
+      api_key: os.environ/GEMINI_API_KEY
+      
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
 general_settings:
   master_key: sk-1234

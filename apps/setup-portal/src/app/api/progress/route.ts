@@ -44,15 +44,14 @@ export async function GET(req: Request) {
         }
       });
 
-      tail.stderr.on('data', (data: Buffer) => {
-        console.error('[/api/progress] tail stderr:', data.toString('utf8'));
+      tail.stderr.on('data', () => {
+        // Log removed
       });
 
-      tail.on('close', (code) => {
-        console.log(`[/api/progress] tail process exited with code ${code}`);
+      tail.on('close', () => {
         try {
           controller.close();
-        } catch (e) {
+        } catch {
           // ignore stream already closed errors
         }
       });
@@ -60,7 +59,6 @@ export async function GET(req: Request) {
       // Cleanup on client disconnect
       req.signal.addEventListener('abort', () => {
         tail.kill();
-        console.log('[/api/progress] Client disconnected, tail killed');
       });
     },
   });
@@ -73,3 +71,4 @@ export async function GET(req: Request) {
     },
   });
 }
+

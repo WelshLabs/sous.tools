@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   // Sanitise inputs — reject any shell metacharacters
-  const safeSsid = ssid.replace(/[^a-zA-Z0-9 _\-\.@]/g, '');
+  const safeSsid = ssid.replace(/[^a-zA-Z0-9 _\-.@]/g, '');
   const safePassword = password.replace(/'/g, "'\\''"); // escape for single-quote context
 
   try {

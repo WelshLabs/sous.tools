@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, LayoutGrid, LogOut, Settings, Check } from "lucide-react";
-import { PrimaryLogo } from "../logos/PrimaryLogo";
+import { PrimaryLogo, Lettermark } from "../logos/Logo";
 import { OmniBar } from "../OmniBar";
 import { ThemeToggle } from "../ThemeToggle";
 import { Hamburger } from "../Hamburger";
-import { Lettermark } from "../logos/Lettermark";
 import { useSidebarStore } from "../../store/sidebarStore";
 import { WaffleMenuDropdown } from "./WaffleMenuDropdown";
 
