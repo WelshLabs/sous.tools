@@ -5,11 +5,11 @@ import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/ap
 import { config } from "@soustools/config";
 import { supabase } from "./lib/supabase";
 
-const COOKIE_NAME = "sb-session-token";
+const COOKIE_NAME = "sb-access-token";
 const COOKIE_OPTIONS = {
   httpOnly: true,
   // Only enforce Secure in production — local dev/testing uses plain HTTP
-  secure: config.IS_SECURE_ENV,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
   path: "/",
@@ -114,7 +114,7 @@ export class AppController {
   }
 
   /**
-   * Returns current session information by validating the sb-session-token cookie.
+   * Returns current session information by validating the sb-access-token cookie.
    */
   @Get("auth/session")
   async getSession(@Req() req: any): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {

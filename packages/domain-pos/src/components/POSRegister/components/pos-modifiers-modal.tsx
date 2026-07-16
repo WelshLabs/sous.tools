@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, cn } from "@soustools/design-system";
 import { X, Check } from "lucide-react";
 import { type CatalogItem } from "../pos.types";

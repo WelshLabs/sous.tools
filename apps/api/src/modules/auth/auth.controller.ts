@@ -30,7 +30,7 @@ const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
  */
 const getCookieOptions = () => ({
   httpOnly: true,
-  secure: config.IS_SECURE_ENV,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   path: "/",
   ...(config.IS_PRODUCTION ? { domain: ".sous.tools" } : {}),

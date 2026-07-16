@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, cn } from "@soustools/design-system";
-import { X, CreditCard, DollarSign, Gift, QrCode, Delete } from "lucide-react";
+import { X, CreditCard } from "lucide-react";
+import { PAYMENT_METHODS, getQuickCashOptions, getUpdatedTenderedBuffer } from "./pos-tender-utils";
+import { POSTenderKeypad } from "./pos-tender-keypad";
 
 export interface POSTenderModalProps {
   isOpen: boolean;
@@ -11,12 +13,7 @@ export interface POSTenderModalProps {
   onSubmit: (paymentType: string, amountTendered: number) => void;
 }
 
-const PAYMENT_METHODS = [
-  { id: "cash", label: "Cash", icon: DollarSign },
-  { id: "card", label: "Card", icon: CreditCard },
-  { id: "gift_card", label: "Gift Card", icon: Gift },
-  { id: "mobile_pay", label: "Mobile Pay", icon: QrCode },
-];
+
 
 export function POSTenderModal({
   isOpen,
@@ -45,39 +42,10 @@ export function POSTenderModal({
 
   const handleKeypadPress = (val: string) => {
     if (selectedMethod !== "cash") return;
-
-    if (val === "C") {
-      setTenderedBuffer("");
-      return;
-    }
-    if (val === "⌫") {
-      setTenderedBuffer((prev) => prev.slice(0, -1));
-      return;
-    }
-    if (val === "." && tenderedBuffer.includes(".")) return;
-    
-    setTenderedBuffer((prev) => (prev === "0" && val !== "." ? val : prev + val));
+    setTenderedBuffer((prev) => getUpdatedTenderedBuffer(prev, val));
   };
 
-  const getQuickCashOptions = (due: number) => {
-    const options = new Set<number>();
-    options.add(due);
 
-    const ceilDue = Math.ceil(due);
-    if (ceilDue > due) options.add(ceilDue);
-
-    const nextFive = Math.ceil(due / 5) * 5;
-    if (nextFive >= due) options.add(nextFive);
-
-    const nextTen = Math.ceil(due / 10) * 10;
-    if (nextTen >= due) options.add(nextTen);
-
-    [20, 50, 100].forEach((bill) => {
-      if (bill >= due) options.add(bill);
-    });
-
-    return Array.from(options).slice(0, 4);
-  };
 
   const quickCashOptions = getQuickCashOptions(amountDue);
 
@@ -193,25 +161,7 @@ export function POSTenderModal({
                 </div>
 
                 {/* Keypad */}
-                <div className="grid grid-cols-3 gap-1.5 pt-2">
-                  {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "⌫"].map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => handleKeypadPress(key)}
-                      className="h-12 text-sm font-bold rounded-[var(--radius-sm)] border border-border/50 bg-card/30 hover:bg-card/70 text-foreground cursor-pointer flex items-center justify-center transition-all"
-                    >
-                      {key === "⌫" ? <Delete className="h-4 w-4 text-muted-foreground" /> : key}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => handleKeypadPress("C")}
-                    className="col-span-3 h-10 text-xs font-bold rounded-[var(--radius-sm)] border border-border/50 bg-destructive/10 text-destructive hover:bg-destructive/20 cursor-pointer flex items-center justify-center transition-all mt-1"
-                  >
-                    Clear Input
-                  </button>
-                </div>
+                <POSTenderKeypad onPress={handleKeypadPress} />
               </>
             ) : (
               <div className="flex h-full min-h-[220px] flex-col items-center justify-center text-center p-6 border border-dashed border-border/60 rounded-[var(--radius-sm)] bg-card/5">

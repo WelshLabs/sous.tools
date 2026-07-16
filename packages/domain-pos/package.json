@@ -28,6 +28,7 @@
     "typescript-eslint": "^8"
   },
   "dependencies": {
+    "@soustools/api-client": "workspace:*",
     "@soustools/api-types": "workspace:*",
     "@soustools/design-system": "workspace:*",
     "lucide-react": "^0.300.0",

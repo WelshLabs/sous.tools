@@ -17,7 +17,7 @@ export class WsSupabaseAuthGuard implements CanActivate {
     }
 
     if (!token && client.handshake?.headers?.cookie) {
-      const match = client.handshake.headers.cookie.match(/sb-session-token=([^;]+)/);
+      const match = client.handshake.headers.cookie.match(/sb-access-token=([^;]+)/);
       if (match) {
         token = match[1];
       }

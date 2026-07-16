@@ -6,12 +6,12 @@ import {
 } from "@nestjs/common";
 import { supabase } from "./supabase";
 
-const COOKIE_NAME = "sb-session-token";
+const COOKIE_NAME = "sb-access-token";
 
 /**
  * Guard that validates a Supabase JWT from either:
  *  1. The `Authorization: Bearer <token>` header (API-to-API or mobile clients)
- *  2. The `sb-session-token` HttpOnly cookie (browser clients)
+ *  2. The `sb-access-token` HttpOnly cookie (browser clients)
  *
  * On success, populates `request.user` with the authenticated Supabase user.
  */
