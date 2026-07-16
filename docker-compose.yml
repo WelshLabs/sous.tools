@@ -236,21 +236,10 @@ services:
       - ANTHROPIC_BASE_URL=http://litellm:4000
       - ANTHROPIC_API_KEY=sk-1234 # Your LiteLLM Master Key
       - GITHUB_TOKEN=${GITHUB_TOKEN} # For the GitHub MCP Server
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
     networks:
       - traefik_public
     restart: unless-stopped
-
-  # ollama-pull:
-  #   image: ollama/ollama:latest
-  #   container_name: ollama-pull
-  #   depends_on:
-  #     - ollama
-  #   environment:
-  #     - OLLAMA_HOST=http://ollama:11434
-  #   # 1. Override the default Ollama binary entrypoint
-  #   entrypoint: /bin/sh
-  #   # 2. Pass the shell command directly without the YAML '>' block scalar
-  #   command: -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision"
 
 volumes:
   letsencrypt:
