@@ -402,7 +402,7 @@ now that we have a packages/api-client in place... should packages/api-types sti
 
 ### #59: Refactor: Move Recipe Scaling Logic to Domain Package
 
-**Labels:** enhancement, design-system, refactor
+**Labels:** enhancement, design-system, agent:research, refactor
 
 **Description:**
 The recipe scaling logic currently lives in the design system, which is a severe Domain-Driven Design (DDD) violation. Objective: Relocate the logic to the correct domain.
