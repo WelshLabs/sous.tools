@@ -1,0 +1,32 @@
+name: Agent Task
+description: Template for autonomous AI agent execution
+title: "Task: "
+labels: ["backlog"]
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What is the brainstormed idea or bug that needs fixing?
+    validations:
+      required: true
+  - type: checkboxes
+    id: dod
+    attributes:
+      label: Agent Definition of Done (DoD)
+      description: The executing agent MUST complete the following before opening a Pull Request.
+      options:
+        - label: Create a new feature branch (`feature/issue-[id]`).
+          required: true
+        - label: Write the code strictly conforming to `.cursorrules` and `docs/ARCHITECTURAL_PROTOCOL.md`.
+          required: true
+        - label: Run `pnpm turbo lint` and ensure 0 errors.
+          required: true
+        - label: Run `pnpm turbo typecheck` and ensure perfect compilation.
+          required: true
+        - label: Push the branch and open a PR.
+          required: true
+        - label: The PR body MUST include the raw output of the lint and typecheck commands to prove verification.
+          required: true
+        - label: Post a comment on this issue linking to the PR.
+          required: true

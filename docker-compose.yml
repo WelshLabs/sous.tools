@@ -114,7 +114,6 @@ services:
     image: n8nio/n8n:latest
     container_name: n8n
     restart: unless-stopped
-    user: "root"
     ports:
       - "5678:5678"
     environment:
@@ -125,17 +124,16 @@ services:
       - WEBHOOK_URL=https://n8n.sous.tools
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
     volumes:
-      - ./n8n_data:/home/node/.n8n
-      - /home/ubuntu/dev.sous.tools:/workspace
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Using the named volume you declared at the bottom of the file
+      - n8n_data:/home/node/.n8n
     networks:
       - traefik_public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
       - "traefik.http.routers.n8n.entrypoints=websecure"
-      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt" # <--- THIS IS THE MISSING MAGIC
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678" # (Ensure this matches n8n's internal port)
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
 
   editor:
     build:
