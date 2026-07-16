@@ -452,80 +452,27 @@ $ tsc
 cache miss, executing 2798371b72e32f7b
 $ eslint . --max-warnings 0
 ::endgroup::
-[;31mpos-simulator:lint[;0m
-cache miss, executing ac4dfda00024c03f
+::group::@soustools/api-client:lint
+cache miss, executing 0d6be077400ac2f2
 $ eslint . --max-warnings 0
-(node:6672) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784205357707 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-
-/home/runner/work/sous.tools/sous.tools/apps/pos-simulator/src/components/PosSimulator.container.tsx
-  24:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  53:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  53:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-✖ 3 problems (0 errors, 3 warnings)
-
-ESLint found too many warnings (maximum: 0).
-[ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/domain-signage:lint
-cache miss, executing 78c72b7f0c567076
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing f662af748d1cad9d
-::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing 2e1a3dabb0cd2ab2
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 34c082130032277a
-::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing 063409b3b6c176a8
-::endgroup::
-::group::web:lint
-cache miss, executing edeec57b700e2337
-::endgroup::
-::group::@soustools/config:lint
-cache miss, executing a0e43c477fc0e8b9
+::group::@soustools/supabase:lint
+cache miss, executing 655f3e0fc301cae7
 $ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::api:lint
-cache miss, executing 87b48fbeee86b28e
-$ eslint . --max-warnings 0
-(node:6761) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784205357699 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::cli:lint
-cache miss, executing f93ac97ed90bcdaf
-$ eslint . --max-warnings 0
-(node:6770) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784205357706 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing f6187ea8fe2536ed
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/logger:lint
 cache miss, executing fea87e1e1db3f520
 $ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing 0d6be077400ac2f2
+::group::@soustools/config:lint
+cache miss, executing a0e43c477fc0e8b9
 $ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/setup-portal:lint
+::group::@soustools/api-types:lint
+cache miss, executing ab85f319b864b352
+$ eslint . --max-warnings 0
+::endgroup::
+[;31m@soustools/setup-portal:lint[;0m
 cache miss, executing ed34cb00968aa8c0
 $ eslint . --max-warnings 0
 
@@ -543,25 +490,61 @@ $ eslint . --max-warnings 0
 
 ✖ 6 problems (3 errors, 3 warnings)
 
-[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed with exit code 1.
+::group::web:lint
+cache miss, executing fd10e40aab45fe2e
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing ab85f319b864b352
+::group::@soustools/domain-inventory:lint
+cache miss, executing 34c082130032277a
+::endgroup::
+::group::cli:lint
+cache miss, executing f93ac97ed90bcdaf
+$ eslint . --max-warnings 0
+(node:6738) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784209392327 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing f662af748d1cad9d
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/supabase:lint
-cache miss, executing 655f3e0fc301cae7
+::group::@soustools/domain-recipes:lint
+cache miss, executing 2e1a3dabb0cd2ab2
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing 78c72b7f0c567076
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing ac4dfda00024c03f
+::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing 063409b3b6c176a8
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::error::command (/home/runner/work/sous.tools/sous.tools/apps/pos-simulator) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
-pos-simulator#lint:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/pos-simulator) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
+::group::api:lint
+cache miss, executing cf79b9802733a12f
+$ eslint . --max-warnings 0
+(node:6711) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784209392319 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing f6187ea8fe2536ed
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::error::command (/home/runner/work/sous.tools/sous.tools/apps/setup-portal) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
+@soustools/setup-portal#lint:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/setup-portal) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
 
- Tasks:    4 successful, 20 total
+ Tasks:    9 successful, 20 total
 Cached:    3 cached, 20 total
-  Time:    9.711s
-Failed:    pos-simulator#lint
+  Time:    11.462s
+Failed:    @soustools/setup-portal#lint
 
  ERROR  run failed: command  exited (1)
 [ELIFECYCLE] Command failed with exit code 1.
@@ -592,21 +575,21 @@ $ tsc --noEmit
 cache miss, executing fe63bff9d5ecbea1
 $ tsc
 ::endgroup::
-::group::@soustools/config:typecheck
-cache miss, executing c1d6b409462fb3f2
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/config:build
 cache miss, executing e03a7a788b75a11f
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 88ead55ab70e20a4
-$ tsc
+::group::@soustools/config:typecheck
+cache miss, executing c1d6b409462fb3f2
+$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-client:typecheck
 cache miss, executing b8f0580ca2b5b2f4
 $ tsc --noEmit
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 88ead55ab70e20a4
+$ tsc
 ::endgroup::
 ::group::@soustools/logger:typecheck
 cache miss, executing ede241e0958061b3
@@ -616,20 +599,20 @@ $ tsc --noEmit
 cache miss, executing 44a852ec9b931816
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/design-system:typecheck
-cache miss, executing 289112e88771069d
-$ tsc --noEmit
-::endgroup::
 ::group::cli:typecheck
 cache miss, executing 7562462bca73bf3c
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing a18d102e673fb384
+::group::@soustools/design-system:typecheck
+cache miss, executing 289112e88771069d
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 35f7202362354a0f
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 837f1afbfaff8cd5
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing a18d102e673fb384
 $ tsc --noEmit
 ::endgroup::
 [;31m@soustools/domain-pos:typecheck[;0m
@@ -643,7 +626,7 @@ src/components/POSRegister/pos.container.tsx(165,39): error TS6133: 'paymentType
 src/components/POSRegister/pos.container.tsx(165,60): error TS6133: 'amountTendered' is declared but its value is never read.
 [ELIFECYCLE] Command failed with exit code 2.
 ::group::web:typecheck
-cache miss, executing ceda97081ce4c548
+cache miss, executing aec9e463e1587aa5
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -652,23 +635,23 @@ cache miss, executing 672fea219229a939
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 019f15f3a97c0bd9
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 742734b952ec83b4
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::api:typecheck
-cache miss, executing 3bdb32a5b3cad76e
+cache miss, executing 7b50098a630d11fd
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 837f1afbfaff8cd5
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 35f7202362354a0f
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 742734b952ec83b4
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 019f15f3a97c0bd9
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -677,7 +660,7 @@ $ tsc --noEmit
 
  Tasks:    12 successful, 19 total
 Cached:    0 cached, 19 total
-  Time:    38.821s
+  Time:    38.184s
 Failed:    @soustools/domain-pos#typecheck
 
  ERROR  run failed: command  exited (2)
@@ -719,7 +702,7 @@ In /home/runner/work/sous.tools/sous.tools/apps/cli/src
 Pattern:  - 0 matches
 [ELIFECYCLE] Test failed. See above for more details.
 ::group::api:test
-cache miss, executing 70ca5d4f064f70b1
+cache miss, executing 54a22c9579b63dab
 $ jest --coverage
 [ELIFECYCLE] Test failed. See above for more details.
 ::endgroup::
@@ -728,7 +711,7 @@ cli#test:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/cli) /ho
 
  Tasks:    3 successful, 5 total
 Cached:    0 cached, 5 total
-  Time:    5.324s
+  Time:    5.279s
 Failed:    cli#test
 
  ERROR  run failed: command  exited (1)
