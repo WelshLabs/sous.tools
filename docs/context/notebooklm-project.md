@@ -1,28 +1,28 @@
-### Tech Debt: Fix Failing Test Suites & Achieve Coverage
+### Tech Debt: Upgrade setup-portal to Next.js 16
 
-**Status:** Ready
+**Status:** In review
+**Assignees:** null
+---
+
+### omnibar merge
+
+**Status:** Done
+**Assignees:** null
+---
+
+### omnibutton
+
+**Status:** Done
 **Assignees:** null
 ---
 
 ### scaling helpers
 
-**Status:** In progress
+**Status:** Done
 **Assignees:** null
 ---
 
 ### disabling rules
-
-**Status:** In progress
-**Assignees:** null
----
-
-### Tech Debt: Upgrade setup-portal to Next.js 16
-
-**Status:** In progress
-**Assignees:** null
----
-
-### tech debt
 
 **Status:** In progress
 **Assignees:** null
@@ -40,12 +40,6 @@
 **Assignees:** null
 ---
 
-### omnibar merge
-
-**Status:** Ready
-**Assignees:** null
----
-
 ### favicon
 
 **Status:** Ready
@@ -53,12 +47,6 @@
 ---
 
 ### thin routing layer
-
-**Status:** Ready
-**Assignees:** null
----
-
-### omnibutton
 
 **Status:** Ready
 **Assignees:** null
@@ -73,18 +61,6 @@
 ### waffle menu
 
 **Status:** Ready
-**Assignees:** null
----
-
-### Square Integration
-
-**Status:** In review
-**Assignees:** null
----
-
-### Square Integration
-
-**Status:** In review
 **Assignees:** null
 ---
 
@@ -426,6 +402,36 @@
 
 ### Task: eslint and typecheck
 
+**Status:** Done
+**Assignees:** null
+---
+
+### Square Integration
+
 **Status:** In progress
+**Assignees:** null
+---
+
+### Square Integration
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### tech debt
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### Tech Debt: Fix Failing Test Suites & Achieve Coverage
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### Omnibar: Defer File Upload Submission, Add Staging Thumbnails & Clipboard Paste
+
+**Status:** Ready
 **Assignees:** null
 ---

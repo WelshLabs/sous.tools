@@ -1,38 +1,32 @@
-### #77: Task: eslint and typecheck
+### #81: Omnibar: Defer File Upload Submission, Add Staging Thumbnails & Clipboard Paste
 
-**Labels:**
+**Labels:** enhancement, frontend, design-system
 
 **Description:**
+Currently, when a user uploads or attaches a file to the Omnibar, it immediately submits the payload to the chat stream. We need to revert this to the v0 interaction model where files are "staged" first. When a file is attached, it should render a thumbnail inside the Omnibar drop-zone, prompt the user with "Chef?"
+, and allow them to type a supplemental message before manually submitting.
 
-### Objective
+Additionally, we need to implement clipboard paste support so users can Ctrl+V / Cmd+V images directly into the Omnibar input to stage them.
 
-we need to get the lint and typecheck fully passing so that we can move on to other issues. this may be an involved task since we added a lot of new rules that were designed to reduce our tech debt. we should not be taking shortcuts and disabling the files, we should be fixing it the correct way.
+### Proposed Architecture & Files to Modify:
 
-### Agent Definition of Done (DoD)
+- packages/design-system/src/components/OmniBar/OmniBarProvider.tsx: Add a new state array (e.g., stagedFiles) to hold attachments before they are submitted.
+- packages/design-system/src/components/OmniBar/AttachmentFlyout.tsx: Modify the upload handlers. Instead of firing the submit action, append the selected files to the stagedFiles state.
+- packages/design-system/src/components/OmniBar/OmniInputPill.tsx:
+  - Add an onPaste event listener to the text input to intercept clipboard data. If the clipboard item is an image (image/*), convert it to a file and append it to stagedFiles.
+  - Render the thumbnails for stagedFiles underneath the input area using the v0 layout animations so the container expands smoothly
+- packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx: Ensure the "Submit" button (added in Issue #62) triggers the final hand-off, clearing the stagedFiles state and teleporting the payload into the OmniChatWindow via Framer Motion layoutId
 
-- [x] Create a new feature branch (`feature/issue-[id]`).
-- [x] Write the code strictly conforming to `.cursorrules` and `docs/ARCHITECTURAL_PROTOCOL.md`.
-- [x] Run `pnpm turbo lint` and ensure 0 errors.
-- [x] Run `pnpm turbo typecheck` and ensure perfect compilation.
-- [x] Push the branch and open a PR.
-- [x] The PR body MUST include the raw output of the lint and typecheck commands to prove verification.
-- [x] Post a comment on this issue linking to the PR.
+Definition of Done (DoD):
+[ ] Attaching a file via the Attachment Flyout or Drag-and-Drop does not immediately submit the form.
+[ ] Staged files render as thumbnails within the expanded Omnibar UI.
+[ ] Users can paste (Ctrl+V / Cmd+V) an image directly from their clipboard into the Omnibar, which stages it as a thumbnail.
+[ ] Users can type text alongside their staged attachments.
+[ ] Clicking the Submit button (or pressing Enter) submits both the text and the files together as a single chat message payload.
+[ ] The Framer Motion teleportation effect (from the Omnibar to the Chat Window) remains perfectly intact and buttery smooth.
+[ ] No architectural boundaries are violated (keep pure UI components free of data-fetching hooks)
 
 **Comments:**
-
-> **conarwelsh**: I have reviewed the project documentation and the issue details. Here is my implementation plan:
->
-> ### Implementation Plan
->
-> 1.  **Establish a Baseline:** I'll start by running `pnpm turbo lint` and `pnpm turbo typecheck` to get a complete picture of all the current errors. This will help me to understand the scope of the task and to formulate a strategy for tackling the errors. I'll save the output of these commands to a file for later reference.
->
-> 2.  **Analyze and Prioritize:** I'll analyze the error logs to identify any recurring patterns or common issues. This will allow me to address the errors more efficiently. I'll prioritize fixing errors that are present in multiple packages, as this will have the most significant impact on the overall health of the codebase.
->
-> 3.  **Systematic Correction:** I'll work through the errors package by package, starting with the foundational `packages` and then moving on to the `apps`. For each error, I will carefully consider the best approach to fix it, adhering to the project's coding standards and architectural guidelines. I will avoid using quick fixes or disabling rules, as this would defeat the purpose of the task.
->
-> 4.  **Continuous Verification:** As I fix the errors, I will continuously re-run the `lint` and `typecheck` commands to ensure that my changes are having the desired effect and not introducing any new issues. This will help me to maintain a high level of quality throughout the process.
->
-> 5.  **Pull Request and Documentation:** Once all the errors have been resolved, I will create a pull request with my changes. The pull request will include a detailed summary of the work I have done, as well as the raw output of the final `lint` and `typecheck` commands to demonstrate that the task has been completed successfully.
 
 ---
 
@@ -488,23 +482,6 @@ but most all of the components need to be refactored to follow the correct struc
 
 ---
 
-### #62: Merge v0 Omnibar Visual Design
-
-**Labels:** enhancement, frontend, design-system
-
-**Description:**
-We have a new visually upgraded Omnibar design generated via v0 that needs to be permanently merged. Objective: Apply the new Neon-Glass UI to the Omnibar.
-
-Agent Instructions:
-
-- Refactor OmniBarPresentation.tsx and AttachmentFlyout.tsx to match the new v0 design specifications
-- Strictly enforce our "Neon-Glass" aesthetic. Use ONLY semantic Tailwind tokens (bg-secondary, border-border, etc.) from our design system.
-- Retain the Framer Motion architecture (springs, layout, and layoutId props) to ensure it morphs between the pill, circle, and droplet smoothly
-
-**Comments:**
-
----
-
 ### #60: packages/api-types
 
 **Labels:** enhancement, question, backend
@@ -533,85 +510,6 @@ now that we have a packages/api-client in place... should packages/api-types sti
 >   - Add or update the `description` field to clarify its function as the implementation of the API client, noting its dependency on `api-types` for type safety and consistency.
 > - **`docs/wiki/Overall_Vision.md`**
 >   - Add a new section or expand an existing one to document the architectural principle of separating API types from API clients, explaining the benefits of this modular design for system scalability and maintainability.
-
----
-
-### #59: Refactor: Move Recipe Scaling Logic to Domain Package
-
-**Labels:** enhancement, design-system, refactor, approval:go
-
-**Description:**
-The recipe scaling logic currently lives in the design system, which is a severe Domain-Driven Design (DDD) violation. Objective: Relocate the logic to the correct domain.
-
-Agent Instructions:
-
-- Move packages/design-system/src/utils/scaling.ts and its associated .test.ts file to packages/domain-recipes/src/utils/
-- Remove the export from the design-system index file
-- Update all import references across apps/web and apps/api to pull from @soustools/domain-recipes instead
-
-**Comments:**
-
-> **conarwelsh**: ### Research Report:
->
-> **Objective:** Relocate the recipe scaling logic from `packages/design-system` to its correct domain, `packages/domain-recipes`, to resolve a Domain-Driven Design (DDD) violation.
->
-> **Files to be Moved:**
->
-> - `packages/design-system/src/utils/scaling.ts`
-> - `packages/design-system/src/utils/scaling.test.ts`
->
-> **Target Directory:**
->
-> - `packages/domain-recipes/src/utils/`
->
-> **Affected Files & Required Changes:**
->
-> Based on a codebase search, the following files import the scaling utility and will require import path updates:
->
-> - `apps/web/src/app/(workspace)/recipes/[id]/RecipeViewerClient.tsx`
-> - `apps/web/src/app/(workspace)/recipes/[id]/page.tsx`
-> - `apps/api/src/routes/recipes/handlers.ts`
-> - `apps/web/src/app/(workspace)/recipes/RecipeBuilderClient.tsx`
->
-> **Action Plan:**
->
-> 1.  Move `scaling.ts` and `scaling.test.ts` to `packages/domain-recipes/src/utils/`.
-> 2.  Remove the `calculateRecipeScale` export from `packages/design-system/src/index.ts`.
-> 3.  Update all import statements in the affected files to reference `@soustools/domain-recipes`.
-> 4.  Run tests to ensure all changes are non-breaking.
->
-> **Tech Debt Analysis:**
->
-> A review of `docs/audits/fetch_violations.md` confirms this refactoring does not introduce any new `fetch` violations. No other immediate tech debt concerns were identified.
-
-> **conarwelsh**: Here is the implementation plan to move the recipe scaling logic:
->
-> ### Implementation Plan: Move Recipe Scaling Logic to Domain Package
->
-> 1.  **Move Files:**
->     - Move `packages/design-system/src/utils/scaling.ts` to `packages/domain-recipes/src/utils/scaling.ts`.
->     - Move `packages/design-system/src/utils/scaling.test.ts` to `packages/domain-recipes/src/utils/scaling.test.ts`.
-> 2.  **Update Exports:**
->     - Remove the export of `scaling` from `packages/design-system/src/index.ts`.
->     - Add an export for `scaling` in `packages/domain-recipes/src/index.ts`.
-> 3.  **Update Import References:**
->     - Search for all imports of `@soustools/design-system` that reference the scaling logic within `apps/web` and `apps/api`.
->     - Update these imports to point to `@soustools/domain-recipes`.
-> 4.  **Verification:**
->     - Run tests in `packages/domain-recipes` to ensure the moved logic still works as expected.
->     - Run tests and linting across the entire monorepo to catch any broken imports or type errors.
-
-> **conarwelsh**: I attempted to address this issue, but I ran into several problems with the development environment that prevented me from completing the task.
->
-> 1.  The linting and type checking scripts are failing on the `main` branch with errors that seem unrelated to my changes.
-> 2.  The API schema appears to be out of date, which is causing type errors when using the API client.
-> 3.  There is an error in the eslint configuration that is preventing commits.
->
-> I have reverted all my changes. I would recommend fixing these issues before attempting this refactor again.
-
-> **conarwelsh**: we have cleaned up all of the linting and typecheck errors, you can now properly implement the changes in this ticket
-
-> **conarwelsh**: Getting comments for issue 59
 
 ---
 
@@ -663,23 +561,6 @@ can we add remember me, forgot password, and login with google or github buttons
 >   This file may need to be updated to define any new data transfer objects (DTOs) or interfaces required for custom API endpoints that might be introduced to support the "Forgot Password" flow or additional user data associated with social logins.
 
 > **conarwelsh**: the buttons and inputs have been added to the screen, but their functionality is not wired up
-
----
-
-### #56: Omnibutton Reverts to Square / Center Screen
-
-**Labels:** bug, frontend, design-system
-
-**Description:**
-After being focused and closed, the floating Omnibutton loses its shape (becomes a square) and teleports to the center of the screen instead of returning to its bottom-right FAB position. Objective: Fix the reset state of the Omni trigger.
-
-Agent Instructions:
-
-- Audit FloatingOmniTrigger.tsx and OmniBarProvider.tsx
-- Ensure that when the OmniBar's active state is toggled to false, the component correctly re-applies its full border-radius (circle) and fixed bottom/right positioning
-- Prevent any state remnants from forcing it into a centered modal configuration.
-
-**Comments:**
 
 ---
 
@@ -899,7 +780,7 @@ We need to add a tutorial system to the app, hovers and popovers and whatnot ins
 
 ### #43: Tech Debt: Upgrade setup-portal to Next.js 16
 
-**Labels:** enhancement, agent:plan
+**Labels:** enhancement, approval:go
 
 **Description:**
 The setup-portal application is currently running on Next.js 14. We need to upgrade it to Next.js 16 to align with the monorepo standards and remove the experimental instrumentationHook workaround.
