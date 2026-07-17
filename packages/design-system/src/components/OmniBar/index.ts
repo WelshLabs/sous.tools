@@ -1,6 +1,7 @@
 export { OmniBarProvider, OmniBarProvider as OmniBar } from "./OmniBarProvider";
 export { OmniBarPresentation } from "./OmniBarPresentation";
 export type { OmniBarPresentationProps } from "./OmniBarPresentation";
+export type { OmniMetric, OmniChatWindowProps } from "./OmniChatWindow";
 export { FloatingOmniTrigger } from "./FloatingOmniTrigger";
 export { useOmnibarContext } from "./OmniBarContext";
 export { AttachmentFlyout } from "./AttachmentFlyout";
@@ -12,3 +13,4 @@ export { CreatableSelect } from "./CreatableSelect";
 export type { CreatableSelectProps, CreatableSelectOption } from "./CreatableSelect";
 export { UnifiedReviewPanel } from "./UnifiedReviewPanel";
 export type { UnifiedReviewPanelProps } from "./UnifiedReviewPanel";
+export { OmnibarPerimeterView } from "./OmnibarPerimeterView";

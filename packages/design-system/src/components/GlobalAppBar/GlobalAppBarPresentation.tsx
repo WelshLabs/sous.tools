@@ -73,7 +73,10 @@ export function GlobalAppBarPresentation({
             onClick={toggleExpanded}
             className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity focus:outline-none"
           >
-            <PrimaryLogo className="hidden md:block h-12 w-auto text-foreground" />
+            <PrimaryLogo
+              gradient
+              className="hidden md:block h-12 w-auto text-foreground"
+            />
             <Lettermark className="block md:hidden h-10 w-10 text-foreground" />
           </button>
         ) : (
@@ -81,16 +84,17 @@ export function GlobalAppBarPresentation({
             href="/home"
             className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity"
           >
-            <PrimaryLogo className="hidden md:block h-12 w-auto text-foreground" />
+            <PrimaryLogo
+              gradient
+              className="hidden md:block h-12 w-auto text-foreground"
+            />
             <Lettermark className="block md:hidden h-10 w-10 text-foreground" />
           </Link>
         )}
       </div>
 
-      {/* Center/Right-Align: OmniBar (Mounts here, handles its own positioning via Framer Motion) */}
-      <div className="flex-1 flex justify-end mr-4 relative z-10">
-        {!isFocusPage && <OmniBar />}
-      </div>
+      {/* Center/Right-Align: OmniBar mounts at the layout level and uses Portals, so we don't render it here */}
+      <div className="flex-1 flex justify-end mr-4 relative z-10"></div>
 
       {/* Right: Action Group - Elevated above the overlay */}
       <div className="flex items-center gap-2 md:gap-4 relative z-[var(--z-modal)]">

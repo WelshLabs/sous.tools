@@ -21,6 +21,9 @@ const GoogleDriveIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const iconButtonClass =
+  "text-muted-foreground hover:text-primary p-1.5 hover:bg-muted rounded-full transition-colors";
+
 export function AttachmentFlyout({
   isOpen,
   onToggle,
@@ -28,6 +31,7 @@ export function AttachmentFlyout({
   onCameraClick,
   onGoogleDriveClick,
 }: AttachmentFlyoutProps) {
+  // ── Capability checks (preserved — DO NOT REMOVE) ──────────────────────
   const { isGoogleDriveConnected } = useOmnibarContext();
   const [hasCamera, setHasCamera] = useState(false);
 
@@ -44,6 +48,7 @@ export function AttachmentFlyout({
         });
     }
   }, []);
+  // ──────────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -53,48 +58,58 @@ export function AttachmentFlyout({
             initial={{ opacity: 0, x: 20, scale: 0.8 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.8 }}
-            className="flex items-center gap-1.5 bg-[var(--color-popover)] border border-[var(--color-border)] px-2 py-1 rounded-full shadow-lg"
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="flex items-center gap-1.5 ds-glass px-2 py-1 rounded-full shadow-glow-accent"
           >
-            <button
+            <motion.button
               type="button"
               onClick={onUploadClick}
-              className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
+              className={iconButtonClass}
               title="Upload File"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
             >
               <UploadCloud className="w-4 h-4" />
-            </button>
-            
+            </motion.button>
+
+            {/* Only rendered when device has a camera */}
             {hasCamera && (
-              <button
+              <motion.button
                 type="button"
                 onClick={onCameraClick}
-                className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors"
+                className={iconButtonClass}
                 title="Use Camera"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <Camera className="w-4 h-4" />
-              </button>
+              </motion.button>
             )}
 
+            {/* Only rendered when Google Drive integration is connected */}
             {isGoogleDriveConnected && (
-              <button
+              <motion.button
                 type="button"
                 onClick={onGoogleDriveClick}
-                className="text-muted-foreground hover:text-primary p-1.5 hover:bg-card rounded-full transition-colors flex items-center justify-center"
+                className={`${iconButtonClass} flex items-center justify-center`}
                 title="Google Drive"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <GoogleDriveIcon className="w-4 h-4" />
-              </button>
+              </motion.button>
             )}
           </motion.div>
         )}
       </AnimatePresence>
+
       <button
         type="button"
         onClick={onToggle}
         className={`p-2 rounded-full transition-colors flex-shrink-0 ${
           isOpen
-            ? "bg-primary/20 text-primary"
-            : "text-muted-foreground hover:text-primary hover:bg-card"
+            ? "bg-primary/15 text-primary"
+            : "text-muted-foreground hover:text-primary hover:bg-muted"
         }`}
       >
         <Paperclip className="w-5 h-5" />
@@ -102,4 +117,3 @@ export function AttachmentFlyout({
     </div>
   );
 }
-

@@ -46,6 +46,13 @@ export default function HomePage() {
         <ShareTargetHandler />
       </Suspense>
       <PrimaryLogo gradient className="h-24 w-auto mb-8" />
+      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        Your <span className="ds-text-neon">sous chef</span> for every shift
+      </h1>
+      <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
+        Ask questions, upload invoices and recipes, review metrics, and control
+        your restaurant—all from one conversation.
+      </p>
     </div>
   );
 }

@@ -38,9 +38,12 @@ export function OmniBarProvider({
     inputText,
     setInputText,
     setIsGoogleDriveConnected,
+    setChatHistory,
     setApiClient,
     apiClient: ctxApiClient,
   } = useOmnibarContext();
+
+  const handleClearHistory = () => setChatHistory([]);
 
   useEffect(() => {
     if (apiClient && apiClient !== ctxApiClient) {
@@ -101,7 +104,7 @@ export function OmniBarProvider({
     setInputText(e.target.value);
   };
 
-  const { handleKeyDown } = useOmniBarHotkeys({ socket, isFocusPage, pathname, setErrorMessage });
+  const { handleKeyDown, handleSubmit } = useOmniBarHotkeys({ socket, isFocusPage, pathname, setErrorMessage });
   const { isListening, handleMicClick } = useSpeechRecognition({ onTranscript: setInputText });
 
   // Global escape listener for when textarea is not focused
@@ -125,10 +128,10 @@ export function OmniBarProvider({
             animate={{ width: "80%", opacity: 1 }}
             exit={{ width: "100%", opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="fixed top-0 left-0 h-[2px] bg-[var(--color-primary)] z-[100000]"
+            className="fixed top-0 left-0 h-[2px] bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-pulse z-[100000]"
             style={{
               boxShadow:
-                "0 0 10px var(--color-primary), 0 0 20px var(--color-primary)",
+                "0 0 10px var(--color-primary), 0 0 20px var(--color-accent)",
             }}
           />
         )}
@@ -147,6 +150,8 @@ export function OmniBarProvider({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onMicClick={handleMicClick}
+        onSubmit={handleSubmit}
+        onClearHistory={handleClearHistory}
       />
     </>
   );

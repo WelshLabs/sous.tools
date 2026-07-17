@@ -3,12 +3,22 @@
 import { Edit, Trash2 } from "lucide-react";
 
 
+export interface LedgerItem {
+  id: string;
+  name: string;
+  category: string;
+  purchase_unit: string;
+  density_g_ml: number | string;
+  allergens?: string[] | null;
+}
+
 export interface ItemsLedgerTableProps {
-  items: any[];
+  items: LedgerItem[];
   loading: boolean;
-  onEdit: (item: any) => void;
+  onEdit: (item: LedgerItem) => void;
   onDelete: (id: string) => void;
 }
+
 
 export function ItemsLedgerTable({
   items,
@@ -46,7 +56,7 @@ export function ItemsLedgerTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
-          {items.map((item: any) => (
+          {items.map((item: LedgerItem) => (
             <tr
               key={item.id}
               className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"

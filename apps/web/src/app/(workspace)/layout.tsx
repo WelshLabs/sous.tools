@@ -1,5 +1,5 @@
 import React from "react";
-import { GlobalAppBar, OmniBarProvider, OmniBar } from "@soustools/design-system";
+import { GlobalAppBar, OmniBarProvider } from "@soustools/design-system";
 import { logoutAction } from "@/app/actions/auth";
 import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
 
@@ -38,7 +38,6 @@ export default async function WorkspaceLayout({
           {children}
           {modal}
           <GoogleDriveBrowserWrapper />
-          <OmniBar />
         </OmniBarProvider>
       </main>
     </div>

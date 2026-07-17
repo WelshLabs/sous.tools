@@ -80,6 +80,7 @@ export function useOmniSocket(token?: string): {
             token,
           },
           transports: ["websocket"],
+          withCredentials: true,
         });
 
         // Listen for standard chat stream
@@ -138,10 +139,32 @@ export function useOmniSocket(token?: string): {
 
         socket?.on("exception", (error) => {
           console.error("NestJS Guard/Pipe Exception:", error);
+          setErrorMessage(error.message || "A server error occurred.");
+          setIsProcessing(false);
+          markLoadingComplete();
         });
 
         socket?.on("error", (error) => {
           console.error("Socket Error:", error);
+          setErrorMessage("A network error occurred.");
+          setIsProcessing(false);
+          markLoadingComplete();
+        });
+
+        socket?.on("connect_error", (error) => {
+          console.error("Socket Connect Error:", error);
+          setErrorMessage("Failed to connect to the server.");
+          setIsProcessing(false);
+          markLoadingComplete();
+        });
+
+        socket?.on("disconnect", (reason) => {
+          console.warn("Socket Disconnected:", reason);
+          if (reason !== "io client disconnect") {
+            setErrorMessage("Lost connection to the server.");
+            setIsProcessing(false);
+            markLoadingComplete();
+          }
         });
 
         socket?.emit("executeCommand", {

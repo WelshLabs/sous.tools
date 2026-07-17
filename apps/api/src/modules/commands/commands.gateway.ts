@@ -12,6 +12,10 @@ import { type OmnibarCommandPayload,
   OmnibarCommandPayloadSchema, type OmniMessage,
 } from "@soustools/api-types";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { UseFilters } from "@nestjs/common";
+import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter";
+
+@UseFilters(new AllWsExceptionsFilter())
 
 @WebSocketGateway({
   namespace: "/commands",

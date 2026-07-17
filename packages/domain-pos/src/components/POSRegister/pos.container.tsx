@@ -102,9 +102,11 @@ export function POSRegisterContainer() {
     };
 
     try {
-      const { error } = await api.POST("/integrations/checkout", {
+      const { error } = await (
+        api.POST as (path: string, options: unknown) => Promise<{ error?: unknown }>
+      )("/integrations/checkout", {
         body: { orgId: "d0000000-0000-0000-0000-000000000000", orderData },
-      } as any);
+      });
 
       if (error) {
         throw new Error(typeof error === "string" ? error : JSON.stringify(error));
