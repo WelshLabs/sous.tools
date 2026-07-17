@@ -104,7 +104,7 @@ export function POSRegisterContainer() {
     try {
       const { error } = await api.POST("/integrations/checkout", {
         body: { orgId: "d0000000-0000-0000-0000-000000000000", orderData },
-      });
+      } as any);
 
       if (error) {
         throw new Error(typeof error === "string" ? error : JSON.stringify(error));
@@ -115,8 +115,9 @@ export function POSRegisterContainer() {
       toast.success("Order processed successfully. Synced to Square POS API.");
       setCart([]);
       setIsTenderOpen(false);
-    } catch (e: any) {
-      toast.error(`Checkout failed: ${e.message}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(`Checkout failed: ${message}`);
     } finally {
       setIsCheckingOut(false);
     }

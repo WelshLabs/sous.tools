@@ -11,7 +11,7 @@ export function NonInventoryExpenseCheckbox({
   disabled,
   checked,
   onChange,
-  itemId,
+  itemId: _itemId,
 }: NonInventoryExpenseCheckboxProps) {
   return (
     <div className="flex items-center gap-2 mt-1.5">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { type Recipe, type VesselProfile, type MasterIngredient, type RecipeInstruction, type RecipeNutritionCache } from "@soustools/api-types";
+import { type Recipe, type VesselProfile, type MasterIngredient, type RecipeNutritionCache } from "@soustools/api-types";
 import { RecipeViewerHeader } from "./RecipeViewerHeader";
 import { RecipeScalingPanel, type CustomWeightOpts } from "./RecipeScalingPanel";
 import { RecipeNutritionPanel } from "./RecipeNutritionPanel";

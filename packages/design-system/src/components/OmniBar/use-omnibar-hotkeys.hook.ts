@@ -8,17 +8,18 @@ export function useOmniBarHotkeys({
   socket,
   isFocusPage,
   pathname,
+  setErrorMessage,
 }: {
   socket: Socket | null;
   isFocusPage: boolean;
   pathname: string;
+  setErrorMessage: (msg: string | null) => void;
 }) {
   const {
     isProcessing,
     inputText,
     setInputText,
     setIsProcessing,
-    setErrorMessage,
     setIsOpen,
     chatHistory,
     setChatHistory,

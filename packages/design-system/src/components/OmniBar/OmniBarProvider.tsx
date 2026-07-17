@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
@@ -10,8 +10,6 @@ import { useSpeechRecognition } from "./use-speech-recognition.hook";
 import { useGlobalDrag } from "./use-global-drag.hook";
 import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
-import { type OmniMessage } from "@soustools/api-types";
-import { toast } from "sonner";
 
 
 interface IntegrationStatus {
@@ -32,13 +30,10 @@ export function OmniBarProvider({
   const isFocusPage = pathname === "/home";
 
   const {
-    contextPayload,
     chatHistory,
     isOpen,
     isProcessing,
     setIsOpen,
-    setIsProcessing,
-    setChatHistory,
     setIsDragging,
     inputText,
     setInputText,
@@ -53,7 +48,7 @@ export function OmniBarProvider({
     }
   }, [apiClient, setApiClient, ctxApiClient]);
 
-  const { socket, errorMessage, setErrorMessage, isListening, setIsListening } =
+  const { socket, errorMessage, setErrorMessage } =
     useOmniSocket(token);
 
   
@@ -106,7 +101,7 @@ export function OmniBarProvider({
     setInputText(e.target.value);
   };
 
-  const { handleKeyDown } = useOmniBarHotkeys({ socket, isFocusPage, pathname });
+  const { handleKeyDown } = useOmniBarHotkeys({ socket, isFocusPage, pathname, setErrorMessage });
   const { isListening, handleMicClick } = useSpeechRecognition({ onTranscript: setInputText });
 
   // Global escape listener for when textarea is not focused

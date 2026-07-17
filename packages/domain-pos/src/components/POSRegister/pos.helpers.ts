@@ -74,7 +74,7 @@ export function getFilteredItems(items: CatalogItem[], searchQuery: string, sele
     price: Number(item.price),
     category: getCategory(item.name),
     description: item.description || undefined,
-    isSoldOut: item.is_sold_out || false,
+    isSoldOut: item.isSoldOut || false,
     image: item.image || undefined,
   }));
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { type Recipe, type KitchenTimerState, type RecipeInstruction } from "@soustools/api-types";
+import { type Recipe, type KitchenTimerState } from "@soustools/api-types";
 import { ArrowLeft, Sun } from "lucide-react";
 import Link from "next/link";
 import { ActiveKitchenTimers } from "./ActiveKitchenTimers";
@@ -60,7 +60,7 @@ export function ActiveKitchen({
       if ("wakeLock" in navigator) {
         try {
           const wl = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<unknown> } }).wakeLock.request("screen");
-          setWakeLock(wl);
+          setWakeLock(wl as WakeLockSentinel);
           setWakeLockActive(true);
         } catch (err) {
           console.warn("Wake lock request failed", err);

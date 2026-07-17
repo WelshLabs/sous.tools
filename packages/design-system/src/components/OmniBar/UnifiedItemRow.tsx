@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Check, ChevronDown, Plus, Loader2 } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { api } from "@soustools/api-client";
 import { CreateItemButton } from "./CreateItemButton";
-import { NonInventoryExpenseCheckbox } from "./NonInventoryExpenseCheckbox";
 import { ItemSelectionDropdown } from "./ItemSelectionDropdown";
 import { type UnifiedLineItem } from "./UnifiedReviewPanel";
 export interface UnifiedItemRowProps {
@@ -120,6 +119,7 @@ export function UnifiedItemRow({
               AI Suggestion: <strong className="text-cyan-400/80 font-medium not-italic">"{item.suggestedInternalName}"</strong> ({item.category})
             </span>
           )}
+        </div>
         <div className="flex items-center gap-2 min-w-[240px] max-w-[320px] relative" ref={containerRef}>
           <div className="flex-1 relative">
             <div
@@ -138,7 +138,7 @@ export function UnifiedItemRow({
                 filteredItems={filtered}
                 onSelectItem={selectItem}
                 onCreateItem={handleCreate}
-                currentItemId={item.itemId}
+                currentItemId={item.itemId ?? null}
               />
             )}
           </div>

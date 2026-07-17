@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { BootstrapStep } from './BootstrapStep';
 
 type Phase = 'wifi' | 'bootstrap' | 'pairing' | 'done';
 
@@ -97,7 +98,7 @@ export function SetupWizard() {
 
     eventSource.onerror = () => {
       // Stream might drop momentarily if the server restarts during bootstrap
-      console.log('SSE connection lost, reconnecting...');
+      console.warn('SSE connection lost, reconnecting...');
     };
 
     return () => eventSource.close();
@@ -206,21 +207,7 @@ export function SetupWizard() {
 
         {/* Phase: Bootstrap Terminal */}
         {phase === 'bootstrap' && (
-          <div className="p-0">
-            <div className="bg-zinc-950 p-6 h-[400px] overflow-y-auto font-mono text-sm leading-relaxed text-zinc-400">
-              {logs.length === 0 && <div className="animate-pulse">Waiting for bootstrap logs...</div>}
-              {logs.map((log, i) => (
-                <div key={i} className={`${log.includes('✓') ? 'text-emerald-400' : log.includes('✗') || log.includes('WARN') ? 'text-amber-400' : ''}`}>
-                  {log}
-                </div>
-              ))}
-              <div ref={logEndRef} />
-            </div>
-            <div className="p-4 border-t border-zinc-800 bg-zinc-900 flex items-center justify-center gap-3">
-              <div className="w-4 h-4 rounded-full border-2 border-[#00FFFF] border-t-transparent animate-spin" />
-              <span className="text-sm text-zinc-300">Provisioning device... do not power off.</span>
-            </div>
-          </div>
+          <BootstrapStep logs={logs} logEndRef={logEndRef} />
         )}
 
         {/* Phase: Pairing Code */}

@@ -37,7 +37,7 @@ export function useSpeechRecognition({
   const [isListening, setIsListening] = useState(false);
 
   const handleMicClick = () => {
-    const SpeechRecognition = (window as WindowWithSpeechRecognition).SpeechRecognition || (window as WindowWithSpeechRecognition).webkitSpeechRecognition;
+    const SpeechRecognition = (window as unknown as WindowWithSpeechRecognition).SpeechRecognition || (window as unknown as WindowWithSpeechRecognition).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast.error("Speech recognition is not supported in this browser.");
       return;

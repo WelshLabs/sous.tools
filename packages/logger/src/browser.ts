@@ -81,9 +81,9 @@ const initializeBrowserLogger = () => {
       try {
         const pinoLevel = level === 'log' ? 'info' : level;
         if (typeof firstArg === 'string') {
-          pinoBrowser[pinoLevel](firstArg, ...restArgs);
+          (pinoBrowser[pinoLevel] as (...args: unknown[]) => void)(firstArg, ...restArgs);
         } else {
-          pinoBrowser[pinoLevel](firstArg, '', ...restArgs);
+          (pinoBrowser[pinoLevel] as (...args: unknown[]) => void)(firstArg, '', ...restArgs);
         }
       } catch (_err) {
         // Fallback
@@ -96,3 +96,4 @@ const initializeBrowserLogger = () => {
 };
 
 export default initializeBrowserLogger;
+
