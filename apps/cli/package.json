@@ -21,7 +21,7 @@
   "dependencies": {
     "@google/genai": "^2.9.0",
     "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/core": "^11.1.18",
     "@nestjs/platform-express": "^10.0.0",
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
