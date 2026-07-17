@@ -1,6 +1,6 @@
 ### #77: Task: eslint and typecheck
 
-**Labels:** approval:go
+**Labels:**
 
 **Description:**
 
@@ -608,6 +608,10 @@ Agent Instructions:
 > 3.  There is an error in the eslint configuration that is preventing commits.
 >
 > I have reverted all my changes. I would recommend fixing these issues before attempting this refactor again.
+
+> **conarwelsh**: we have cleaned up all of the linting and typecheck errors, you can now properly implement the changes in this ticket
+
+> **conarwelsh**: Getting comments for issue 59
 
 ---
 
