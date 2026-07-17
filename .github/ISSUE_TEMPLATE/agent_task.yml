@@ -18,7 +18,7 @@ body:
       options:
         - label: Create a new feature branch (`feature/issue-[id]`).
           required: true
-        - label: Write the code strictly conforming to `.cursorrules` and `docs/ARCHITECTURAL_PROTOCOL.md`.
+        - label: Write the code strictly conforming to `.cursorrules`.
           required: true
         - label: Run `pnpm turbo lint` and ensure 0 errors.
           required: true

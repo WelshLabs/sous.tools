@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { OmniBarPresentation } from "./OmniBarPresentation";
 import { useOmnibarContext } from "./OmniBarContext";
+import { useGlobalDrag } from "./use-global-drag.hook";
 import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
@@ -225,28 +226,18 @@ export function OmniBarProvider({
     }
 
     setIsListening(true);
-    const SpeechRecognitionConstructor = SpeechRecognition as unknown as {
-      new (): {
-        continuous: boolean;
-        interimResults: boolean;
-        onresult: (e: { results: Iterable<{ transcript: string }[]> }) => void;
-        onerror: (e: { error: unknown }) => void;
-        onend: () => void;
-        start: () => void;
-      };
-    };
-    const recognition = new SpeechRecognitionConstructor();
+    const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
-        .map((result: any) => result[0]?.transcript ?? "")
+        .map((result) => result[0]?.transcript ?? "")
         .join("");
       setInputText(transcript);
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech recognition error", event);
       setIsListening(false);
     };
