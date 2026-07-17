@@ -1,14 +1,13 @@
 "use client";
 
 import { Edit, Trash2 } from "lucide-react";
+import { MasterIngredient } from "@soustools/api-types";
 
 
 export interface ItemsLedgerTableProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  items: any[];
+  items: MasterIngredient[];
   loading: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onEdit: (item: any) => void;
+  onEdit: (item: MasterIngredient) => void;
   onDelete: (id: string) => void;
 }
 
@@ -48,8 +47,7 @@ export function ItemsLedgerTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {items.map((item: any) => (
+          {items.map((item: MasterIngredient) => (
             <tr
               key={item.id}
               className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
