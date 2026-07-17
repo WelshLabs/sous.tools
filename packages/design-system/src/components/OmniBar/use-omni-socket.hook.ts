@@ -187,6 +187,8 @@ export function useOmniSocket(token?: string): {
     setExecuteBackgroundCommand,
     setChatHistory,
     setIsProcessing,
+    setErrorMessage,
+    markLoadingComplete,
   ]);
 
   return { socket, errorMessage, setErrorMessage, isListening, setIsListening };

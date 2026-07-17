@@ -170,6 +170,14 @@ async function run() {
 
   const [cmd, ...cmdArgs] = args;
 
+  if (cmdArgs.includes("build") || cmdArgs.includes("start")) {
+    childEnv.NODE_ENV = "production";
+  } else if (!childEnv.NODE_ENV) {
+    childEnv.NODE_ENV = "development";
+  }
+
+  console.log(`[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}" (host process.env.NODE_ENV="${process.env.NODE_ENV}")`);
+
   // Secrets are passed directly into the spawned process environment — never written
   // to disk, never shared through the filesystem.
   const child = spawn(cmd, cmdArgs, {

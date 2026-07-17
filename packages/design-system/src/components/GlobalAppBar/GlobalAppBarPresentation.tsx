@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Bell, LayoutGrid, LogOut, Settings, Check } from "lucide-react";
 import { PrimaryLogo, Lettermark } from "../logos/Logo";
-import { OmniBar } from "../OmniBar";
 import { ThemeToggle } from "../ThemeToggle";
 import { Hamburger } from "../Hamburger";
 import { useSidebarStore } from "../../store/sidebarStore";
@@ -46,8 +44,6 @@ export function GlobalAppBarPresentation({
 }: GlobalAppBarPresentationProps) {
   const { hasSidebar, isExpanded, toggleExpanded } = useSidebarStore();
   const isAnyMenuOpen = isProfileOpen || isNotificationsOpen || isWaffleOpen;
-  const pathname = usePathname();
-  const isFocusPage = pathname === "/home";
 
   return (
     <header className="sticky top-0 z-[var(--z-appbar)] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">

@@ -191,7 +191,11 @@ export function OmniChatWindow({
                             );
                           })}
                       </span>
-                      {(msg as any).createdAt && <span className="mt-1.5 block text-[10px] uppercase tracking-[.16em] text-muted-foreground">{(msg as any).createdAt as string}</span>}
+                      {msg.timestamp && (
+                        <span className="mt-1.5 block text-[10px] uppercase tracking-[.16em] text-muted-foreground">
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
