@@ -829,6 +829,8 @@ The setup-portal application is currently running on Next.js 14. We need to upgr
 > Best,
 > Lead Product Manager
 
+> **conarwelsh**: there are no feature or database changes to take place, we just need it upgraded to modern standards
+
 ---
 
 ### #40: KDS Functionality
