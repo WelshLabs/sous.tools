@@ -12,12 +12,43 @@ import { motion, AnimatePresence } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
 import { toast } from "sonner";
 
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+  start: () => void;
+}
+
+interface SpeechRecognitionStatic {
+  new(): SpeechRecognition;
+}
+
+interface WindowWithSpeechRecognition extends Window {
+  SpeechRecognition: SpeechRecognitionStatic;
+  webkitSpeechRecognition: SpeechRecognitionStatic;
+}
+
+interface IntegrationStatus {
+  provider: string;
+  connected: boolean;
+}
+
 export function OmniBarProvider({
   children,
   token,
   apiClient,
 }: {
-  children?: any;
+  children?: React.ReactNode;
   token?: string;
   apiClient?: typeof fetch;
 }) {
@@ -58,9 +89,9 @@ export function OmniBarProvider({
         const fetcher = apiClient || fetch;
         const res = await fetcher("/api/integrations/status");
         if (res.ok) {
-          const payload = await res.json();
-          const list = Array.isArray(payload) ? payload : payload.data || [];
-          const google = list.find((item: any) => item.provider === "GOOGLE");
+          const payload = await res.json() as { data: IntegrationStatus[] } | IntegrationStatus[];
+          const list: IntegrationStatus[] = Array.isArray(payload) ? payload : payload.data || [];
+          const google = list.find((item) => item.provider === "GOOGLE");
           setIsGoogleDriveConnected(!!google?.connected);
         }
       } catch (err) {
@@ -187,10 +218,7 @@ export function OmniBarProvider({
   };
 
   const handleMicClick = () => {
-    const SpeechRecognition =
-      (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition: unknown })
-        .webkitSpeechRecognition;
+    const SpeechRecognition = (window as WindowWithSpeechRecognition).SpeechRecognition || (window as WindowWithSpeechRecognition).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast.error("Speech recognition is not supported in this browser.");
       return;
