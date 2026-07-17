@@ -1,3 +1,41 @@
+### #77: Task: eslint and typecheck
+
+**Labels:** approval:go
+
+**Description:**
+
+### Objective
+
+we need to get the lint and typecheck fully passing so that we can move on to other issues. this may be an involved task since we added a lot of new rules that were designed to reduce our tech debt. we should not be taking shortcuts and disabling the files, we should be fixing it the correct way.
+
+### Agent Definition of Done (DoD)
+
+- [x] Create a new feature branch (`feature/issue-[id]`).
+- [x] Write the code strictly conforming to `.cursorrules` and `docs/ARCHITECTURAL_PROTOCOL.md`.
+- [x] Run `pnpm turbo lint` and ensure 0 errors.
+- [x] Run `pnpm turbo typecheck` and ensure perfect compilation.
+- [x] Push the branch and open a PR.
+- [x] The PR body MUST include the raw output of the lint and typecheck commands to prove verification.
+- [x] Post a comment on this issue linking to the PR.
+
+**Comments:**
+
+> **conarwelsh**: I have reviewed the project documentation and the issue details. Here is my implementation plan:
+>
+> ### Implementation Plan
+>
+> 1.  **Establish a Baseline:** I'll start by running `pnpm turbo lint` and `pnpm turbo typecheck` to get a complete picture of all the current errors. This will help me to understand the scope of the task and to formulate a strategy for tackling the errors. I'll save the output of these commands to a file for later reference.
+>
+> 2.  **Analyze and Prioritize:** I'll analyze the error logs to identify any recurring patterns or common issues. This will allow me to address the errors more efficiently. I'll prioritize fixing errors that are present in multiple packages, as this will have the most significant impact on the overall health of the codebase.
+>
+> 3.  **Systematic Correction:** I'll work through the errors package by package, starting with the foundational `packages` and then moving on to the `apps`. For each error, I will carefully consider the best approach to fix it, adhering to the project's coding standards and architectural guidelines. I will avoid using quick fixes or disabling rules, as this would defeat the purpose of the task.
+>
+> 4.  **Continuous Verification:** As I fix the errors, I will continuously re-run the `lint` and `typecheck` commands to ensure that my changes are having the desired effect and not introducing any new issues. This will help me to maintain a high level of quality throughout the process.
+>
+> 5.  **Pull Request and Documentation:** Once all the errors have been resolved, I will create a pull request with my changes. The pull request will include a detailed summary of the work I have done, as well as the raw output of the final `lint` and `typecheck` commands to demonstrate that the task has been completed successfully.
+
+---
+
 ### #76: Tech Debt: Fix Failing Test Suites & Achieve Coverage
 
 **Labels:** tech debt
@@ -34,7 +72,7 @@ Agent Instructions: DO NOT ARBITRARILY DELETE FILES.
 
 ### #74: Tech Debt: Eradicate eslint-disable Bypasses
 
-**Labels:** bug, enhancement
+**Labels:** bug, enhancement, agent:plan
 
 **Description:**
 We have a strict "Zero Tech Debt" policy. Bypassing linting or type rules is forbidden. Objective: Hunt down and remove all eslint-disable comments.
@@ -46,6 +84,42 @@ Agent Instructions:
 - Properly fix the underlying TypeScript any types, missing dependencies, or architectural violations that the comment was hiding. Do not use shortcuts.
 
 **Comments:**
+
+> **conarwelsh**: Here is my plan to address the issue:
+>
+> **Step 1: Locate all `eslint-disable` comments**
+>
+> I will perform a global search across the entire monorepo to find every instance of `// eslint-disable-next-line` and `/* eslint-disable */`. I will pay special attention to `packages/domain-pos` and `apps/api` as instructed.
+>
+> **Step 2: Analyze and categorize each violation**
+>
+> For each located comment, I will:
+>
+> 1.  Temporarily remove the `eslint-disable` comment.
+> 2.  Run the linter to understand the specific rule being violated.
+> 3.  Categorize the violation (e.g., `any` type usage, missing dependency, incorrect import path, architectural rule break).
+>
+> **Step 3: Fix the underlying code issue**
+>
+> Based on the violation category, I will implement the correct fix in accordance with the project's `.cursorrules`. This may involve:
+>
+> - Adding proper TypeScript types to replace `any`.
+> - Installing missing dependencies in the correct `package.json`.
+> - Refactoring code to comply with the established container/view pattern.
+> - Ensuring all database access is properly isolated within `apps/api`.
+> - Moving domain-specific components out of the generic design system.
+>
+> **Step 4: Verify the fix**
+>
+> After applying the fix, I will run the linter and type-checker again to confirm that the original error is resolved and no new errors have been introduced.
+>
+> **Step 5: Commit and document**
+>
+> I will commit each fix individually with a clear message explaining the violation and the solution.
+>
+> **Step 6: Update GitHub Issue**
+>
+> Once all `eslint-disable` comments have been removed and the underlying issues fixed, I will post my final comment on the issue.
 
 ---
 
@@ -137,7 +211,7 @@ Agent Instructions:
 
 ### #70: tech debt
 
-**Labels:** enhancement, devops
+**Labels:** enhancement, devops, agent:plan
 
 **Description:**
 get all our tech debt monitoring tools to be green lit across the entire repo
@@ -170,6 +244,68 @@ get all our tech debt monitoring tools to be green lit across the entire repo
 >   - For the Wear OS application, this Android Lint configuration needs to be verified and potentially expanded to enforce Android-specific best practices and detect common mobile development technical debt. This ensures platform-specific code quality is monitored.
 > - **`.agents/skills/quality-enforcement/SKILL.md`**
 >   - The definition of the `quality-enforcement` agent skill should be reviewed to align its capabilities with the goal of "green lighting" tech debt tools. This involves integrating the agent's logic to leverage the configured monitoring tools and report on their status and findings.
+
+> **conarwelsh**: I have mistakenly tried to read the comments for a pull request instead of the issue. I will now read the comments for issue #70.
+
+> **conarwelsh**: alright, I will read the comments on the issue now and then create a plan to post on the issue.
+
+> **conarwelsh**: Here is a step-by-step implementation plan to systematically address the tech debt within the `sous.tools` repository and achieve a "green" status across all our monitoring tools, in compliance with our established architecture.
+>
+> ### **Phase 1: Comprehensive Diagnostics & Baseline**
+>
+> First, we need to fully understand the scope of the problem.
+>
+> 1.  **Linting Audit:** Run a global `eslint` check across the entire monorepo to capture all current violations.
+> 2.  **Dead Code Analysis:** Execute `knip` to generate a complete report of all unused files, exports, and dependencies.
+> 3.  **Type-Safety Check:** Run `tsc --noEmit` within each workspace to identify all TypeScript errors.
+> 4.  **Consolidated Report:** Collate all findings into a single report. This document will be our baseline and guide for the next phases.
+>
+> ### **Phase 2: Code Style & Linting Compliance**
+>
+> Next, we'll bring the codebase into alignment with our style guide.
+>
+> 1.  **Eliminate `eslint-disable`:** Search and destroy all instances of `eslint-disable`. Each instance must be replaced with a proper code fix.
+> 2.  **Automated Fixes:** Run `eslint --fix` to resolve all auto-fixable issues.
+> 3.  **Manual Correction:** Manually address the remaining, more complex linting violations.
+>
+> ### **Phase 3: Dead Code Removal**
+>
+> With a clean slate from linting, we can now safely remove unused code.
+>
+> 1.  **File Deletion:** Based on the `knip` report, delete all identified unused files.
+> 2.  **Dependency Pruning:** Remove all unused dependencies from the root and workspace `package.json` files.
+> 3.  **Export Removal:** Eliminate all unused exports to tighten our module APIs.
+>
+> ### **Phase 4: Enhancing Type Safety**
+>
+> Now, we will focus on strengthening our TypeScript implementation.
+>
+> 1.  **Error Resolution:** Go through each workspace and fix all TypeScript errors reported by `tsc`.
+> 2.  **Stricter Typing:** Identify and refactor any usage of `any` or areas with weak type definitions to improve overall type safety.
+>
+> ### **Phase 5: Architectural Integrity Refactoring**
+>
+> This is the most critical phase, where we enforce our core architectural principles.
+>
+> 1.  **Enforce DDD Boundaries:**
+>     - Audit `apps/*` and `packages/domain-*` to ensure no direct database client imports.
+>     - Verify all network requests are exclusively handled by `packages/api-client`.
+> 2.  **Thin Server Components:**
+>     - Refactor Next.js pages to be minimal entry points, moving all significant logic and UI to the appropriate `packages/domain-*` packages.
+> 3.  **Centralized Configuration:**
+>     - Scan for any usage of `process.env` outside of `@soustools/config` and refactor to import the typed `config` object.
+> 4.  **Unified `tsconfig.json`:**
+>     - Ensure every `tsconfig.json` correctly extends our base configuration from `packages/tsconfig`.
+> 5.  **Container/View Pattern Adherence:**
+>     - Review and refactor components to strictly enforce the separation of concerns between presentation (`*.tsx`) and logic (`*.container.tsx`).
+> 6.  **Design System Compliance:**
+>     - Audit our styling to eliminate hardcoded colors and values, enforcing the use of semantic CSS variables and our "Midnight Slate" palette.
+>
+> ### **Final Verification**
+>
+> Upon completion of all phases, we will re-run all our tech debt monitoring tools (`eslint`, `knip`, `tsc`) to confirm that the entire repository is "green".
+>
+> This plan will guide our efforts to systematically eliminate tech debt and improve the overall quality and maintainability of our codebase. Let's begin with Phase 1.
 
 ---
 
@@ -402,7 +538,7 @@ now that we have a packages/api-client in place... should packages/api-types sti
 
 ### #59: Refactor: Move Recipe Scaling Logic to Domain Package
 
-**Labels:** enhancement, design-system, agent:research, refactor
+**Labels:** enhancement, design-system, refactor, approval:go
 
 **Description:**
 The recipe scaling logic currently lives in the design system, which is a severe Domain-Driven Design (DDD) violation. Objective: Relocate the logic to the correct domain.
@@ -414,6 +550,64 @@ Agent Instructions:
 - Update all import references across apps/web and apps/api to pull from @soustools/domain-recipes instead
 
 **Comments:**
+
+> **conarwelsh**: ### Research Report:
+>
+> **Objective:** Relocate the recipe scaling logic from `packages/design-system` to its correct domain, `packages/domain-recipes`, to resolve a Domain-Driven Design (DDD) violation.
+>
+> **Files to be Moved:**
+>
+> - `packages/design-system/src/utils/scaling.ts`
+> - `packages/design-system/src/utils/scaling.test.ts`
+>
+> **Target Directory:**
+>
+> - `packages/domain-recipes/src/utils/`
+>
+> **Affected Files & Required Changes:**
+>
+> Based on a codebase search, the following files import the scaling utility and will require import path updates:
+>
+> - `apps/web/src/app/(workspace)/recipes/[id]/RecipeViewerClient.tsx`
+> - `apps/web/src/app/(workspace)/recipes/[id]/page.tsx`
+> - `apps/api/src/routes/recipes/handlers.ts`
+> - `apps/web/src/app/(workspace)/recipes/RecipeBuilderClient.tsx`
+>
+> **Action Plan:**
+>
+> 1.  Move `scaling.ts` and `scaling.test.ts` to `packages/domain-recipes/src/utils/`.
+> 2.  Remove the `calculateRecipeScale` export from `packages/design-system/src/index.ts`.
+> 3.  Update all import statements in the affected files to reference `@soustools/domain-recipes`.
+> 4.  Run tests to ensure all changes are non-breaking.
+>
+> **Tech Debt Analysis:**
+>
+> A review of `docs/audits/fetch_violations.md` confirms this refactoring does not introduce any new `fetch` violations. No other immediate tech debt concerns were identified.
+
+> **conarwelsh**: Here is the implementation plan to move the recipe scaling logic:
+>
+> ### Implementation Plan: Move Recipe Scaling Logic to Domain Package
+>
+> 1.  **Move Files:**
+>     - Move `packages/design-system/src/utils/scaling.ts` to `packages/domain-recipes/src/utils/scaling.ts`.
+>     - Move `packages/design-system/src/utils/scaling.test.ts` to `packages/domain-recipes/src/utils/scaling.test.ts`.
+> 2.  **Update Exports:**
+>     - Remove the export of `scaling` from `packages/design-system/src/index.ts`.
+>     - Add an export for `scaling` in `packages/domain-recipes/src/index.ts`.
+> 3.  **Update Import References:**
+>     - Search for all imports of `@soustools/design-system` that reference the scaling logic within `apps/web` and `apps/api`.
+>     - Update these imports to point to `@soustools/domain-recipes`.
+> 4.  **Verification:**
+>     - Run tests in `packages/domain-recipes` to ensure the moved logic still works as expected.
+>     - Run tests and linting across the entire monorepo to catch any broken imports or type errors.
+
+> **conarwelsh**: I attempted to address this issue, but I ran into several problems with the development environment that prevented me from completing the task.
+>
+> 1.  The linting and type checking scripts are failing on the `main` branch with errors that seem unrelated to my changes.
+> 2.  The API schema appears to be out of date, which is causing type errors when using the API client.
+> 3.  There is an error in the eslint configuration that is preventing commits.
+>
+> I have reverted all my changes. I would recommend fixing these issues before attempting this refactor again.
 
 ---
 
@@ -701,7 +895,7 @@ We need to add a tutorial system to the app, hovers and popovers and whatnot ins
 
 ### #43: Tech Debt: Upgrade setup-portal to Next.js 16
 
-**Labels:** enhancement
+**Labels:** enhancement, agent:plan
 
 **Description:**
 The setup-portal application is currently running on Next.js 14. We need to upgrade it to Next.js 16 to align with the monorepo standards and remove the experimental instrumentationHook workaround.
@@ -722,6 +916,20 @@ The setup-portal application is currently running on Next.js 14. We need to upgr
 >   The TypeScript configuration might need adjustments to compiler options or type declarations to ensure full compatibility with Next.js 16 and its ecosystem.
 > - **`apps/setup-portal/eslint.config.js`**
 >   ESLint rules and plugins should be reviewed and updated to reflect any changes in Next.js 16's recommended linting practices or new features.
+
+> **conarwelsh**: ### Implementation Plan: Upgrade `setup-portal` to Next.js 16
+>
+> 1.  **Update Dependencies:**
+>     - Navigate to `apps/setup-portal/package.json`.
+>     - Upgrade the `next` dependency to the latest version of Next.js 16.
+>     - Update any other related `@types/next`, `react`, and `react-dom` packages to ensure compatibility.
+> 2.  **Remove Instrumentation Hook:**
+>     - Open `apps/setup-portal/next.config.mjs`.
+>     - Remove the `experimental: { instrumentationHook: true }` configuration object, as this is no longer needed in Next.js 16.
+>     - Delete the corresponding `instrumentation.ts` (or `.js`) file from the `apps/setup-portal` directory.
+> 3.  **Install & Verify:**
+>     - From the root of the monorepo, run `pnpm install` to apply the dependency changes.
+>     - Run `pnpm dev` within the `setup-portal` workspace to ensure the application builds and runs without errors after the upgrade.
 
 ---
 

@@ -312,7 +312,7 @@ default                                            apps/cli/src/ingestion/prompt
 default                                            apps/pos-simulator/src/components/PosSimulator.container.tsx:105:16
 default                                            apps/pos-simulator/src/components/PosSimulator.tsx:70:16
 CardDescription                          function  packages/design-system/src/components/Card.tsx:47:17
-getCategory                                        packages/domain-pos/src/components/POSRegister/pos.helpers.ts:32:14
+getCategory                                        packages/domain-pos/src/components/POSRegister/pos.helpers.ts:31:14
 BLOCK_GROUPS                                       packages/domain-signage/src/block-palette-items.ts:31:14
 [93m[4mUnused exported types[24m[39m (75)
 SquareCatalogObject             interface  apps/api/src/modules/integrations/square-client.helper.ts:3:18
@@ -371,7 +371,7 @@ DocumentViewerProps             interface  packages/design-system/src/components
 OmniBarState                    interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:11:18
 OmniChatWindowProps             interface  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:10:18
 OmniInputPillProps              interface  packages/design-system/src/components/OmniBar/OmniInputPill.tsx:12:18
-UnifiedItemRowProps             interface  packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx:10:18
+UnifiedItemRowProps             interface  packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx:9:18
 QuickAddBarProps                interface  packages/design-system/src/components/QuickAddBar.tsx:14:18
 SupplierHeaderProps             interface  packages/domain-inventory/src/components/Supplier/SupplierHeader.tsx:6:18
 OrderItemRowProps               interface  packages/domain-inventory/src/components/Supplier/SupplierLineItem.tsx:7:18
@@ -382,7 +382,7 @@ ComplianceSearchFormProps       interface  packages/domain-recipes/src/Complianc
 ComplianceSearchResultItemPro…  interface  packages/domain-recipes/src/ComplianceSearchResultItem.tsx:5:18
 RecipeBatchSummaryProps         interface  packages/domain-recipes/src/RecipeBatchSummary.tsx:8:18
 RecipeBuilderFormFieldsProps    interface  packages/domain-recipes/src/RecipeBuilderFormFields.tsx:6:18
-RecipeBuilderIngredientRowPro…  interface  packages/domain-recipes/src/RecipeBuilderIngredientRow.tsx:9:18
+RecipeBuilderIngredientRowPro…  interface  packages/domain-recipes/src/RecipeBuilderIngredientRow.tsx:8:18
 RecipeCostTableProps            interface  packages/domain-recipes/src/RecipeCostTable.tsx:5:18
 RecipeViewerHeaderProps         interface  packages/domain-recipes/src/RecipeViewerHeader.tsx:7:18
 VesselDialogFormProps           interface  packages/domain-recipes/src/VesselDialogForm.tsx:6:18
@@ -438,117 +438,91 @@ $ turbo lint
    • Running lint in 18 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:build
-cache hit, replaying logs fe63bff9d5ecbea1
-$ tsc
-::endgroup::
 ::group::@soustools/config:build
 cache hit, replaying logs e03a7a788b75a11f
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache hit, replaying logs 88ead55ab70e20a4
+::group::@soustools/api-types:build
+cache hit, replaying logs 7b86875be91c5429
 $ tsc
 ::endgroup::
 ::group::@soustools/eslint-config:lint
 cache miss, executing 2798371b72e32f7b
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/supabase:lint
-cache miss, executing 655f3e0fc301cae7
-$ eslint . --max-warnings 0
-::endgroup::
-[;31mpos-simulator:lint[;0m
-cache miss, executing 2f583feb6c89a69e
-$ eslint . --max-warnings 0
-(node:6674) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784240297773 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-
-ESLint found too many warnings (maximum: 0).
-/home/runner/work/sous.tools/sous.tools/apps/pos-simulator/src/components/PosSimulator.container.tsx
-  24:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  53:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  53:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-✖ 3 problems (0 errors, 3 warnings)
-
-[ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/domain-settings:lint
-cache miss, executing 97a9f15aa27c86fc
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing b81a42e882686ad8
-::endgroup::
+[;31m@soustools/logger:build[;0m
+cache miss, executing ff1bac799f1e4121
+$ tsc
+src/browser.ts(83,42): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+src/server.ts(30,41): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+[ELIFECYCLE] Command failed with exit code 2.
 ::group::@soustools/domain-signage:lint
-cache miss, executing 2f73971da37b62d6
+cache miss, executing a44a0a78d5e7fda9
+::endgroup::
+::group::@soustools/domain-recipes:lint
+cache miss, executing 208fee2c1dd239a6
 ::endgroup::
 ::group::@soustools/domain-pos:lint
-cache miss, executing e3cab8410ead8b55
-::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing fe73f0632ab2fc09
+cache miss, executing 36d36678b96abc4f
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing ab85f319b864b352
+::group::@soustools/logger:lint
+cache miss, executing 5a0a8d4f47f02e93
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 44a0ba98a504a3b4
+::endgroup::
+::group::@soustools/supabase:lint
+cache miss, executing 655f3e0fc301cae7
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing 825be0dcaf3b03c9
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing 690b57aaa25ec1db
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/config:lint
 cache miss, executing a0e43c477fc0e8b9
 $ eslint . --max-warnings 0
-::endgroup::
-::group::api:lint
-cache miss, executing 2fcac998a5639fb3
-$ eslint . --max-warnings 0
-(node:6652) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784240297765 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing cb02eeefdb54dd77
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing fea87e1e1db3f520
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::cli:lint
-cache miss, executing f93ac97ed90bcdaf
-$ eslint . --max-warnings 0
-(node:6665) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784240297772 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing a40723211aa0aff3
+::group::@soustools/api-types:lint
+cache miss, executing 46ff6054237c1a34
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/api-client:lint
-cache miss, executing 0d6be077400ac2f2
+cache miss, executing 5bb8d8980b21dd88
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::error::command (/home/runner/work/sous.tools/sous.tools/apps/pos-simulator) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
-pos-simulator#lint:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/pos-simulator) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run lint exited (1)
+::error::command (/home/runner/work/sous.tools/sous.tools/packages/logger) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run build exited (2)
+@soustools/logger#build:  ERROR  command (/home/runner/work/sous.tools/sous.tools/packages/logger) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run build exited (2)
 
- Tasks:    5 successful, 19 total
-Cached:    3 cached, 19 total
-  Time:    12.371s
-Failed:    pos-simulator#lint
+ Tasks:    3 successful, 15 total
+Cached:    2 cached, 15 total
+  Time:    6.426s
+Failed:    @soustools/logger#build
 
- ERROR  run failed: command  exited (1)
-[ELIFECYCLE] Command failed with exit code 1.
+ ERROR  run failed: command  exited (2)
+[ELIFECYCLE] Command failed with exit code 2.
 
 ```
 
@@ -569,11 +543,11 @@ https://turborepo.dev/docs/telemetry
    • Remote caching disabled
 
 ::group::@soustools/api-types:typecheck
-cache miss, executing 58fccc65a224b629
+cache miss, executing c555b2d5fee9b99f
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing fe63bff9d5ecbea1
+cache miss, executing 7b86875be91c5429
 $ tsc
 ::endgroup::
 ::group::@soustools/config:typecheck
@@ -585,82 +559,90 @@ cache miss, executing e03a7a788b75a11f
 $ tsc
 ::endgroup::
 ::group::@soustools/api-client:typecheck
-cache miss, executing b8f0580ca2b5b2f4
+cache miss, executing 41c0c92cea4cd82f
 $ tsc --noEmit
+::endgroup::
+[;31m@soustools/domain-settings:typecheck[;0m
+cache miss, executing 7e5c4a88e15381f7
+$ tsc --noEmit
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(107,6): error TS17008: JSX element 'div' has no corresponding closing tag.
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(167,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(168,1): error TS1005: '</' expected.
+[ELIFECYCLE] Command failed with exit code 2.
+::group::@soustools/logger:typecheck
+cache miss, executing 1a23dd2cbdc78b75
+$ tsc --noEmit
+src/browser.ts(83,42): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+src/server.ts(30,41): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+[ELIFECYCLE] Command failed with exit code 2.
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 88ead55ab70e20a4
+cache miss, executing ff1bac799f1e4121
 $ tsc
-::endgroup::
-::group::@soustools/logger:typecheck
-cache miss, executing ede241e0958061b3
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/supabase:typecheck
-cache miss, executing 44a852ec9b931816
-$ tsc --noEmit
-::endgroup::
-::group::cli:typecheck
-cache miss, executing 7562462bca73bf3c
-$ tsc --noEmit
-::endgroup::
-[;31m@soustools/design-system:typecheck[;0m
-cache miss, executing 7f149ca6984f2de0
-$ tsc --noEmit
-src/components/logos/index.ts(1,15): error TS2307: Cannot find module './Lettermark' or its corresponding type declarations.
-src/components/logos/index.ts(2,15): error TS2307: Cannot find module './MicroIcon' or its corresponding type declarations.
-src/components/logos/index.ts(3,15): error TS2307: Cannot find module './PrimaryLogo' or its corresponding type declarations.
+src/browser.ts(83,42): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+src/server.ts(30,41): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
 [ELIFECYCLE] Command failed with exit code 2.
-::group::web:typecheck
-cache miss, executing 63750c7ff99532b1
 ::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing dd6ad8eb45bdaf68
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing d8e65e696262350d
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(107,6): error TS17008: JSX element 'div' has no corresponding closing tag.
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(167,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(168,1): error TS1005: '</' expected.
+src/RecipeScalingPanel.tsx(245,1): error TS1005: ')' expected.
+[ELIFECYCLE] Command failed with exit code 2.
 ::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing 8803da4392ea883a
+::group::@soustools/design-system:typecheck
+cache miss, executing 65b1f49d5eb8823c
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
-cache miss, executing 56415d61a3bd131e
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing c8a804aac094cf9a
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 87fdd10237cb9e01
+cache miss, executing 6601e9489e84e6b7
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-pos:typecheck
-cache miss, executing c15867b7bbe75111
+cache miss, executing d113a856553385e5
+$ tsc --noEmit
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(107,6): error TS17008: JSX element 'div' has no corresponding closing tag.
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(167,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+../design-system/src/components/OmniBar/UnifiedItemRow.tsx(168,1): error TS1005: '</' expected.
+[ELIFECYCLE] Command failed with exit code 2.
+::endgroup::
+::group::@soustools/supabase:typecheck
+cache miss, executing 44a852ec9b931816
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 8a28dc30c3a0efed
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing b4393a7238af880a
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::api:typecheck
-cache miss, executing d3ae566158fe3b44
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::error::command (/home/runner/work/sous.tools/sous.tools/packages/design-system) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run typecheck exited (2)
-@soustools/design-system#typecheck:  ERROR  command (/home/runner/work/sous.tools/sous.tools/packages/design-system) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run typecheck exited (2)
+::error::command (/home/runner/work/sous.tools/sous.tools/packages/domain-settings) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run typecheck exited (2)
+@soustools/domain-settings#typecheck:  ERROR  command (/home/runner/work/sous.tools/sous.tools/packages/domain-settings) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run typecheck exited (2)
 
- Tasks:    9 successful, 19 total
-Cached:    0 cached, 19 total
-  Time:    38.135s
-Failed:    @soustools/design-system#typecheck
+ Tasks:    5 successful, 14 total
+Cached:    0 cached, 14 total
+  Time:    15.167s
+Failed:    @soustools/domain-settings#typecheck
 
  ERROR  run failed: command  exited (2)
 [ELIFECYCLE] Command failed with exit code 2.
@@ -677,43 +659,36 @@ $ INFISICAL_MOCK=true turbo test -- --coverage
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing 0ad0cc808757acd1
+cache miss, executing a8205d97d64274bc
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
 cache miss, executing 2081cae84a6b2554
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 16c22feada2cdeca
+[;31m@soustools/logger:build[;0m
+cache miss, executing 05744cb21c5382f5
 $ tsc
-::endgroup::
-[;31mcli:test[;0m
-cache miss, executing 3010851716d98ae6
-$ jest --coverage
-No tests found, exiting with code 1
-Run with `--passWithNoTests` to exit with code 0
-In /home/runner/work/sous.tools/sous.tools/apps/cli/src
-  12 files checked.
-  testMatch:  - 0 matches
-  testPathIgnorePatterns: /node_modules/ - 12 matches
-  testRegex: .*\.spec\.ts$ - 0 matches
-Pattern:  - 0 matches
-[ELIFECYCLE] Test failed. See above for more details.
-::group::api:test
-cache miss, executing afa34a52924d9eb8
-$ jest --coverage
-[ELIFECYCLE] Test failed. See above for more details.
-::endgroup::
-::error::command (/home/runner/work/sous.tools/sous.tools/apps/cli) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run test --coverage exited (1)
-cli#test:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/cli) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run test --coverage exited (1)
+src/browser.ts(83,42): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+src/server.ts(30,41): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+[ELIFECYCLE] Command failed with exit code 2.
+::error::command (/home/runner/work/sous.tools/sous.tools/packages/logger) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run build exited (2)
+@soustools/logger#build:  ERROR  command (/home/runner/work/sous.tools/sous.tools/packages/logger) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run build exited (2)
 
- Tasks:    3 successful, 5 total
-Cached:    0 cached, 5 total
-  Time:    5.548s
-Failed:    cli#test
+ Tasks:    2 successful, 3 total
+Cached:    0 cached, 3 total
+  Time:    4.216s
+Failed:    @soustools/logger#build
 
- ERROR  run failed: command  exited (1)
+ ERROR  run failed: command  exited (2)
 [ELIFECYCLE] Test failed. See above for more details.
 
 ```

@@ -1,3 +1,33 @@
+### Tech Debt: Fix Failing Test Suites & Achieve Coverage
+
+**Status:** Ready
+**Assignees:** null
+---
+
+### scaling helpers
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### disabling rules
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### Tech Debt: Upgrade setup-portal to Next.js 16
+
+**Status:** In progress
+**Assignees:** null
+---
+
+### tech debt
+
+**Status:** In progress
+**Assignees:** null
+---
+
 ### staging site redirect loop
 
 **Status:** Ready
@@ -16,12 +46,6 @@
 **Assignees:** null
 ---
 
-### disabling rules
-
-**Status:** Ready
-**Assignees:** null
----
-
 ### favicon
 
 **Status:** Ready
@@ -35,12 +59,6 @@
 ---
 
 ### omnibutton
-
-**Status:** Ready
-**Assignees:** null
----
-
-### scaling helpers
 
 **Status:** Ready
 **Assignees:** null
@@ -334,12 +352,6 @@
 **Assignees:** null
 ---
 
-### Tech Debt: Upgrade setup-portal to Next.js 16
-
-**Status:** Backlog
-**Assignees:** null
----
-
 ### omnibar chat window
 
 **Status:** Done
@@ -388,12 +400,6 @@
 **Assignees:** null
 ---
 
-### tech debt
-
-**Status:** Backlog
-**Assignees:** null
----
-
 ### rpi os image
 
 **Status:** Backlog
@@ -418,8 +424,8 @@
 **Assignees:** null
 ---
 
-### Tech Debt: Fix Failing Test Suites & Achieve Coverage
+### Task: eslint and typecheck
 
-**Status:** Backlog
+**Status:** In progress
 **Assignees:** null
 ---
