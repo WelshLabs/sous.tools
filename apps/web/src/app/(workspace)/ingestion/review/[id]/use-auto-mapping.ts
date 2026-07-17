@@ -74,6 +74,5 @@ export function useAutoMapping({
     if (modified) {
       onChange(JSON.stringify(newData, null, 2));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, disabled, onChange, parseError]);
+    }, [items, disabled, onChange, parseError, parsed]);
 }

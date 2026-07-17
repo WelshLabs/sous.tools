@@ -75,9 +75,7 @@ export function RecipeScalingPanel({
     if (scaleMode === "yield") {
       onScaleChange(targetYield / recipe.yieldCount);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetYield, scaleMode]);
-
+    
   useEffect(() => {
     if (scaleMode === "vessel" && selectedVesselId) {
       const currentVessel = vessels.find((v) => v.id === recipe.vesselId);
@@ -86,9 +84,7 @@ export function RecipeScalingPanel({
         onScaleChange(targetVessel.volumeMl / currentVessel.volumeMl);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedVesselId, scaleMode]);
-
+    
   const handleWeightChange = (val: string) => {
     setTargetWeight(val);
     const weightNum = parseFloat(val) || 0;

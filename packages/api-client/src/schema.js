@@ -1,0 +1,1 @@
+// This file is intentionally left blank. It's needed to resolve the types from schema.d.ts.

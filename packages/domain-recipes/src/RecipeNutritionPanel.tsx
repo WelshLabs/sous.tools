@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { RecipeDietaryBadges } from "./RecipeDietaryBadges";
@@ -86,7 +85,7 @@ export function RecipeNutritionPanel({
     );
   }
 
-  const macros: any = nutrition.perServingNutrition;
+  const macros = nutrition.perServingNutrition;
 
 
   return (

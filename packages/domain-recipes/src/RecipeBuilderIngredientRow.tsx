@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type React from "react";
@@ -97,7 +96,7 @@ export function RecipeBuilderIngredientRow({
           value={line.calculationType}
           onChange={(e) =>
             handleUpdateLine(idx, {
-              calculationType: e.target.value as any,
+              calculationType: e.target.value as "fixed_weight" | "bakers_percentage",
 
             })
           }

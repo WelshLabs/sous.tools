@@ -41,10 +41,18 @@ export interface MasterIngredient {
   updatedAt: string;
 }
 
+export interface PerServingNutrition {
+  calories?: number;
+  total_fat_g?: number;
+  total_carbohydrate_g?: number;
+  protein_g?: number;
+  [key: string]: unknown;
+}
+
 export interface RecipeNutritionCache {
   recipeId: string;
   servings: number;
-  perServingNutrition: Record<string, unknown>;
+  perServingNutrition: PerServingNutrition;
   per100gNutrition: Record<string, unknown>;
   dietaryFlags: Record<string, boolean>;
   computedAt: string | null;

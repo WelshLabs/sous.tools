@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -19,7 +18,7 @@ import { MOCK_BURGER_MODIFIERS, CATEGORIES, playSuccessSound, getFilteredItems, 
 
 
 export function POSRegisterContainer() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -36,7 +35,7 @@ export function POSRegisterContainer() {
       setLoading(true);
       try {
         const targetOrgId = "d0000000-0000-0000-0000-000000000000";
-        const { data, error } = await (api as any).GET("/pos-simulator/items", {
+        const { data, error } = await api.GET("/pos-simulator/items", {
           params: { query: { organizationId: targetOrgId } },
         });
 
@@ -44,8 +43,9 @@ export function POSRegisterContainer() {
           throw new Error(typeof error === "string" ? error : JSON.stringify(error));
         }
         if (data) setItems(data);
-      } catch (e: any) {
-        toast.error(`Failed to load POS catalog: ${e.message}`);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        toast.error(`Failed to load POS catalog: ${message}`);
       } finally {
         setLoading(false);
       }
@@ -102,7 +102,7 @@ export function POSRegisterContainer() {
     };
 
     try {
-      const { error } = await (api as any).POST("/integrations/checkout", {
+      const { error } = await api.POST("/integrations/checkout", {
         body: { orgId: "d0000000-0000-0000-0000-000000000000", orderData },
       });
 

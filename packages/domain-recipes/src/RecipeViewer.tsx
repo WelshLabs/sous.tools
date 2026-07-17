@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
-import { type Recipe, type VesselProfile, type MasterIngredient, type RecipeInstruction } from "@soustools/api-types";
+import { type Recipe, type VesselProfile, type MasterIngredient, type RecipeInstruction, type RecipeNutritionCache } from "@soustools/api-types";
 import { RecipeViewerHeader } from "./RecipeViewerHeader";
 import { RecipeScalingPanel, type CustomWeightOpts } from "./RecipeScalingPanel";
 import { RecipeNutritionPanel } from "./RecipeNutritionPanel";
@@ -30,7 +29,7 @@ export interface RecipeViewerProps {
   /** Cost data pre-fetched. */
   costData: RecipeCostData | null;
   /** Nutrition data pre-fetched. */
-  nutritionData: any; // Mapped to the RecipeNutritionPanel
+  nutritionData: RecipeNutritionCache | null | undefined;
 
   /** Version history pre-fetched. */
   versionHistory: VersionRow[];
@@ -46,7 +45,7 @@ export interface RecipeViewerProps {
   onDownloadLabel: () => void;
   
   /** Wastage actions */
-  onSearchItems: (query: string) => Promise<any[]>;
+  onSearchItems: (query: string) => Promise<MasterIngredient[]>;
 
   onSubmitWastage: (payload: unknown) => Promise<boolean>;
 
@@ -144,8 +143,7 @@ export function RecipeViewer({
               </h3>
               <div className="space-y-3">
                 {recipe.instructions.map((step, idx) => {
-                  const stepText =
-                    typeof step === "string" ? step : (step as unknown as RecipeInstruction).text;
+                  const stepText = step.text;
                   return (
                     <div
                       key={idx}

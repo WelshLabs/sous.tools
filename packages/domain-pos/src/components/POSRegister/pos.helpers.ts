@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type ModifierGroup, type ModifierOption } from "./components/pos-modifiers-modal";
 import { type CatalogItem, type CartItem } from "./pos.types";
 
@@ -45,9 +44,13 @@ export const getCategory = (itemName: string): string => {
 
 export const CATEGORIES = ["Mains", "Sides/Salads", "Beverages", "Other"];
 
+interface WindowWithAudioContext extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 export function playSuccessSound() {
   try {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioCtx = new (window.AudioContext || (window as WindowWithAudioContext).webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
@@ -64,7 +67,7 @@ export function playSuccessSound() {
   }
 }
 
-export function getFilteredItems(items: any[], searchQuery: string, selectedCategory: string): CatalogItem[] {
+export function getFilteredItems(items: CatalogItem[], searchQuery: string, selectedCategory: string): CatalogItem[] {
   const mapped: CatalogItem[] = items.map((item) => ({
     id: item.id,
     name: item.name,

@@ -6,6 +6,5 @@ import { config } from "@soustools/config";
  * and configuration errors during local development.
  */
 if (config.NEW_RELIC_ENABLED) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require("newrelic");
+  import("newrelic");
 }

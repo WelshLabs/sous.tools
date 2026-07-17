@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { type VesselProfile, type MasterIngredient, type Recipe } from "@soustools/api-types";
+import { type VesselProfile, type MasterIngredient, type Recipe, type RecipeIngredient, type RecipeInstruction } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
 import { ChefHat, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -90,7 +89,7 @@ export function RecipeBuilder({
       setYieldUnit(initialData.yieldUnit || "Portions");
       setVesselId(initialData.vesselId || "");
       setIngredients(
-        (initialData.recipeIngredients || []).map((ri: any) => ({
+        (initialData.recipeIngredients || []).map((ri: RecipeIngredient) => ({
           masterIngredientId: ri.masterIngredientId,
           amount: ri.amount,
           unit: ri.unit,
@@ -101,7 +100,7 @@ export function RecipeBuilder({
         }))
       );
       setSteps(
-        (initialData.instructions || []).map((step: any) => ({
+        (initialData.instructions || []).map((step: RecipeInstruction) => ({
           stepNumber: step.stepNumber,
           text: step.text,
           timerDurationSeconds: step.timerDurationSeconds,

@@ -53,8 +53,7 @@ export function TopProgress({
     }
 
     return clearTrickle;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+      }, [active, visible]);
 
   return (
     <AnimatePresence>
