@@ -287,14 +287,7 @@ pino-pretty             packages/logger/package.json:34:6
 [93m[4mUnlisted binaries[24m[39m (2)
 tsx    package.json
 xclip  package.json
-[93m[4mUnresolved imports[24m[39m (6)
-../../common/filters/ws-exception.filter  apps/api/src/modules/commands/commands.gateway.ts:16:40
-./OmnibarPerimeterView                    packages/design-system/src/components/OmniBar/index.ts:16:39
-./OmnibarPerimeterView                    packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx:10:39
-./OmniChatAtoms                           packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:14:9
-./OmnibarPerimeterView                    packages/design-system/src/components/OmniBar/OmniInputPill.tsx:9:39
-./PillActions                             packages/design-system/src/components/OmniBar/OmniInputPill.tsx:10:30
-[93m[4mUnused exports[24m[39m (27)
+[93m[4mUnused exports[24m[39m (28)
 SupabaseClientWrapper                    class     apps/api/src/lib/supabase.ts:20:14
 addToPurchaseOrderTool                             apps/api/src/modules/commands/commands-tools.ts:3:14
 addToWhiteboardTool                                apps/api/src/modules/commands/commands-tools.ts:18:14
@@ -320,6 +313,7 @@ default                                            apps/pos-simulator/src/compon
 default                                            apps/pos-simulator/src/components/PosSimulator.tsx:70:16
 CardDescription                          function  packages/design-system/src/components/Card.tsx:47:17
 OmnibarPerimeterView                               packages/design-system/src/components/OmniBar/index.ts:16:10
+MetricCard                               function  packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx:66:17
 getCategory                                        packages/domain-pos/src/components/POSRegister/pos.helpers.ts:31:14
 BLOCK_GROUPS                                       packages/domain-signage/src/block-palette-items.ts:31:14
 [93m[4mUnused exported types[24m[39m (78)
@@ -450,12 +444,12 @@ $ turbo lint
    • Running lint in 18 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:build
-cache hit, replaying logs 853580a84eb6a026
-$ tsc
-::endgroup::
 ::group::@soustools/config:build
 cache hit, replaying logs e03a7a788b75a11f
+$ tsc
+::endgroup::
+::group::@soustools/api-types:build
+cache hit, replaying logs 853580a84eb6a026
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
@@ -466,40 +460,40 @@ $ tsc
 cache miss, executing 2798371b72e32f7b
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/supabase:lint
-cache miss, executing 655f3e0fc301cae7
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/logger:lint
 cache miss, executing 2c8141e6afc677de
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/supabase:lint
+cache miss, executing 655f3e0fc301cae7
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-client:lint
 cache miss, executing 5bb8d8980b21dd88
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/config:lint
-cache miss, executing a0e43c477fc0e8b9
+::group::cli:lint
+cache miss, executing 1322a522eb156b10
 $ eslint . --max-warnings 0
+(node:6769) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784318081486 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 ::group::@soustools/api-types:lint
 cache miss, executing 0a9faf4051ff13e8
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::cli:lint
-cache miss, executing 1322a522eb156b10
+::group::@soustools/config:lint
+cache miss, executing a0e43c477fc0e8b9
 $ eslint . --max-warnings 0
-(node:6623) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784317978000 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing 45e73ce6597c82cd
+::group::@soustools/setup-portal:lint
+cache miss, executing 95f84112a865e057
 $ eslint . --max-warnings 0
 ::endgroup::
 [;31m@soustools/design-system:lint[;0m
-cache miss, executing 3130a29523ec4fcb
+cache miss, executing bd5acb65eed54460
 $ eslint . --max-warnings 0
 
 /home/runner/work/sous.tools/sous.tools/packages/design-system/src/components/GlobalAppBar/GlobalAppBarPresentation.tsx
@@ -516,33 +510,45 @@ $ eslint . --max-warnings 0
 ✖ 5 problems (2 errors, 3 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
+::group::@soustools/domain-recipes:lint
+cache miss, executing 84221893a454ac5d
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::@soustools/domain-pos:lint
-cache miss, executing 0cb7d6fae36d19a3
-::endgroup::
-::group::web:lint
-cache miss, executing 285d4bc75dca40a2
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 2fce1428aa5e6b5e
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing 94302c98f82d69af
-::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing 3497bec367490672
+cache miss, executing 7a83fc0cd195fe8a
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-settings:lint
-cache miss, executing 483f57b0f6afd0b1
+cache miss, executing c02585696e6ab431
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 550a860f57007b1d
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::web:lint
+cache miss, executing 71f254a147af9ea2
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 4e40f83ecbcc5a2d
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-signage:lint
-cache miss, executing 5069f04e757a0448
+cache miss, executing 9ce95a7c5fce0f5d
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::api:lint
-cache miss, executing 18377fa5de349354
+cache miss, executing 733231d861e962dd
 $ eslint . --max-warnings 0
-(node:6643) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784317977993 is not specified and it doesn't parse as CommonJS.
+(node:6672) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784318081479 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -553,7 +559,7 @@ To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/
 
  Tasks:    11 successful, 20 total
 Cached:    3 cached, 20 total
-  Time:    12.666s
+  Time:    15.302s
 Failed:    @soustools/design-system#lint
 
  ERROR  run failed: command  exited (1)
@@ -577,13 +583,13 @@ https://turborepo.dev/docs/telemetry
    • Running typecheck in 18 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:typecheck
-cache miss, executing a1303c93179e1735
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing 853580a84eb6a026
 $ tsc
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing a1303c93179e1735
+$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:build
 cache miss, executing e03a7a788b75a11f
@@ -593,17 +599,17 @@ $ tsc
 cache miss, executing c1d6b409462fb3f2
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/api-client:typecheck
-cache miss, executing 41c0c92cea4cd82f
-$ tsc --noEmit
+::group::@soustools/logger:build
+cache miss, executing d3cde73e33d3b422
+$ tsc
 ::endgroup::
 ::group::@soustools/logger:typecheck
 cache miss, executing 72db9674f54923f4
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing d3cde73e33d3b422
-$ tsc
+::group::@soustools/api-client:typecheck
+cache miss, executing 41c0c92cea4cd82f
+$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/supabase:typecheck
 cache miss, executing 44a852ec9b931816
@@ -614,65 +620,53 @@ cache miss, executing 1916cba34d53bd12
 $ tsc --noEmit
 ::endgroup::
 [;31m@soustools/design-system:typecheck[;0m
-cache miss, executing 14870550a2a6c33a
+cache miss, executing 0f71cad9e2fcd08b
 $ tsc --noEmit
 src/components/GlobalAppBar/GlobalAppBarPresentation.tsx(7,1): error TS6133: 'OmniBar' is declared but its value is never read.
 src/components/GlobalAppBar/GlobalAppBarPresentation.tsx(50,9): error TS6133: 'isFocusPage' is declared but its value is never read.
-src/components/OmniBar/OmniBarPresentation.tsx(10,38): error TS2307: Cannot find module './OmnibarPerimeterView' or its corresponding type declarations.
-src/components/OmniBar/OmniChatWindow.tsx(14,8): error TS2307: Cannot find module './OmniChatAtoms' or its corresponding type declarations.
-src/components/OmniBar/OmniChatWindow.tsx(16,33): error TS2307: Cannot find module './OmniChatAtoms' or its corresponding type declarations.
-src/components/OmniBar/OmniInputPill.tsx(9,38): error TS2307: Cannot find module './OmnibarPerimeterView' or its corresponding type declarations.
-src/components/OmniBar/OmniInputPill.tsx(10,29): error TS2307: Cannot find module './PillActions' or its corresponding type declarations.
-src/components/OmniBar/index.ts(16,38): error TS2307: Cannot find module './OmnibarPerimeterView' or its corresponding type declarations.
 [ELIFECYCLE] Command failed with exit code 2.
+::group::@soustools/domain-signage:typecheck
+cache miss, executing b9189e6e51d8e873
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::web:typecheck
-cache miss, executing 496d343c42d84a70
+cache miss, executing cc5f41a6ff4db6b0
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-settings:typecheck
-cache miss, executing de42d4566553e7ac
+cache miss, executing 9a7196cf777f214d
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 749b58c63e3ef0a5
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-pos:typecheck
-cache miss, executing 88d8ca006080bd88
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing fa34b0038530f489
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing b55280e461c2d89f
-$ tsc --noEmit
-../design-system/src/components/GlobalAppBar/GlobalAppBarPresentation.tsx(7,1): error TS6133: 'OmniBar' is declared but its value is never read.
-../design-system/src/components/GlobalAppBar/GlobalAppBarPresentation.tsx(50,9): error TS6133: 'isFocusPage' is declared but its value is never read.
-../design-system/src/components/OmniBar/OmniBarPresentation.tsx(10,38): error TS2307: Cannot find module './OmnibarPerimeterView' or its corresponding type declarations.
-../design-system/src/components/OmniBar/OmniChatWindow.tsx(14,8): error TS2307: Cannot find module './OmniChatAtoms' or its corresponding type declarations.
-../design-system/src/components/OmniBar/OmniChatWindow.tsx(16,33): error TS2307: Cannot find module './OmniChatAtoms' or its corresponding type declarations.
-../design-system/src/components/OmniBar/OmniInputPill.tsx(9,38): error TS2307: Cannot find module './OmnibarPerimeterView' or its corresponding type declarations.
-../design-system/src/components/OmniBar/OmniInputPill.tsx(10,29): error TS2307: Cannot find module './PillActions' or its corresponding type declarations.
-../design-system/src/components/OmniBar/index.ts(16,38): error TS2307: Cannot find module './OmnibarPerimeterView' or its corresponding type declarations.
-[ELIFECYCLE] Command failed with exit code 2.
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 14266f5c03607e90
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing d949bf17b7edb1bc
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::api:typecheck
-cache miss, executing 403012bd12ca9d90
+cache miss, executing 17aeb2f4f579d95b
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::pos-simulator:typecheck
-cache miss, executing f3a24b5c0a188c68
+cache miss, executing dde2b007fadf6e17
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::api:typecheck
+cache miss, executing 64d34f3c318c2206
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 036e8ab6984fff8e
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing cf068cececbd733b
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -681,7 +675,7 @@ $ tsc --noEmit
 
  Tasks:    9 successful, 19 total
 Cached:    0 cached, 19 total
-  Time:    37.426s
+  Time:    39.712s
 Failed:    @soustools/design-system#typecheck
 
  ERROR  run failed: command  exited (2)
@@ -723,7 +717,7 @@ In /home/runner/work/sous.tools/sous.tools/apps/cli/src
 Pattern:  - 0 matches
 [ELIFECYCLE] Test failed. See above for more details.
 ::group::api:test
-cache miss, executing 37aa35bc6404b0f4
+cache miss, executing f5435c4121a6cfc5
 $ jest --coverage
 [ELIFECYCLE] Test failed. See above for more details.
 ::endgroup::
@@ -732,7 +726,7 @@ cli#test:  ERROR  command (/home/runner/work/sous.tools/sous.tools/apps/cli) /ho
 
  Tasks:    3 successful, 5 total
 Cached:    0 cached, 5 total
-  Time:    5.437s
+  Time:    6.202s
 Failed:    cli#test
 
  ERROR  run failed: command  exited (1)
