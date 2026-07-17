@@ -1,13 +1,12 @@
 "use client";
 
 import { Edit, Trash2 } from "lucide-react";
-import { MasterIngredient } from "@soustools/api-types";
 
 
 export interface ItemsLedgerTableProps {
-  items: MasterIngredient[];
+  items: any[];
   loading: boolean;
-  onEdit: (item: MasterIngredient) => void;
+  onEdit: (item: any) => void;
   onDelete: (id: string) => void;
 }
 
@@ -47,7 +46,7 @@ export function ItemsLedgerTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
-          {items.map((item: MasterIngredient) => (
+          {items.map((item: any) => (
             <tr
               key={item.id}
               className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"

@@ -27,7 +27,11 @@ const initializeServerLogger = () => {
       isLogging = true;
       try {
         const pinoLevel = level === 'log' ? 'info' : level;
-        pinoServer[pinoLevel](firstArg, ...restArgs);
+        if (typeof firstArg === 'string') {
+          (pinoServer[pinoLevel] as (...args: unknown[]) => void)(firstArg, ...restArgs);
+        } else {
+          (pinoServer[pinoLevel] as (...args: unknown[]) => void)(firstArg, '', ...restArgs);
+        }
       } catch (_err) {
         // ignore
       } finally {
@@ -39,3 +43,4 @@ const initializeServerLogger = () => {
 };
 
 export default initializeServerLogger;
+

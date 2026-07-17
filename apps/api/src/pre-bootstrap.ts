@@ -6,5 +6,6 @@ import { config } from "@soustools/config";
  * and configuration errors during local development.
  */
 if (config.NEW_RELIC_ENABLED) {
+  // @ts-expect-error - newrelic lacks type definitions in local compilation scope
   import("newrelic");
 }

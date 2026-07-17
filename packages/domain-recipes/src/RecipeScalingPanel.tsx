@@ -75,7 +75,8 @@ export function RecipeScalingPanel({
     if (scaleMode === "yield") {
       onScaleChange(targetYield / recipe.yieldCount);
     }
-    
+  }, [scaleMode, targetYield, recipe.yieldCount, onScaleChange]);
+
   useEffect(() => {
     if (scaleMode === "vessel" && selectedVesselId) {
       const currentVessel = vessels.find((v) => v.id === recipe.vesselId);
@@ -84,7 +85,8 @@ export function RecipeScalingPanel({
         onScaleChange(targetVessel.volumeMl / currentVessel.volumeMl);
       }
     }
-    
+  }, [scaleMode, selectedVesselId, vessels, recipe.vesselId, onScaleChange]);
+
   const handleWeightChange = (val: string) => {
     setTargetWeight(val);
     const weightNum = parseFloat(val) || 0;

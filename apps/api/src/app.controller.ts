@@ -3,12 +3,13 @@ import type { Response } from "express";
 import { AppService } from "./app.service";
 import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/api-types";
 import { supabase } from "./lib/supabase";
+import { config } from "@soustools/config";
 
 const COOKIE_NAME = "sb-access-token";
 const COOKIE_OPTIONS = {
   httpOnly: true,
   // Only enforce Secure in production — local dev/testing uses plain HTTP
-  secure: process.env.NODE_ENV === "production",
+  secure: config.IS_PRODUCTION,
   sameSite: "lax" as const,
   maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
   path: "/",

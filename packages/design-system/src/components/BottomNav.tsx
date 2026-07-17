@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -28,7 +27,7 @@ export interface BottomNavProps {
    * The center logo/icon element rendered as the brand home button.
    * Pass the `<MicroIcon>` (or equivalent) from your logo package.
    */
-  centerIcon?: any;
+  centerIcon?: React.ReactNode;
   /**
    * Navigation items to render on either side of the center icon.
    * Defaults to Dashboard, Recipes, Orders if omitted.

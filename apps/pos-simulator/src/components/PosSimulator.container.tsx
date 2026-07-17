@@ -15,16 +15,19 @@ export const PosSimulatorContainer: React.FC = () => {
   const fetchItems = async (): Promise<void> => {
     setLoading(true);
     try {
-      const { data: payload, error } = (await api.GET("/pos-simulator/items", {
+      const result = (await api.GET("/pos-simulator/items", {
         params: {
           query: {
             organizationId: "d0000000-0000-0000-0000-000000000000",
           },
         },
-      })) as any;
+      })) as unknown as { data?: { success?: boolean; data?: RawDbPosItem[] }; error?: unknown };
+
+      const payload = result?.data;
+      const error = result?.error;
 
       if (!error && payload?.success && payload.data) {
-        const mapped = (payload.data as RawDbPosItem[]).map(mapDbItemToPosItem);
+        const mapped = payload.data.map(mapDbItemToPosItem);
         setItems(mapped);
         return;
       }
@@ -48,9 +51,12 @@ export const PosSimulatorContainer: React.FC = () => {
   ): Promise<void> => {
     setUpdatingId(itemId);
     try {
-      const { data: payload, error } = (await api.POST("/pos-simulator/items/toggle-sold-out", {
+      const result = (await api.POST("/pos-simulator/items/toggle-sold-out", {
         body: { itemId, isSoldOut, quantity, unlimited },
-      } as any)) as any;
+      } as never)) as unknown as { data?: { success?: boolean }; error?: unknown };
+
+      const payload = result?.data;
+      const error = result?.error;
 
       if (!error && payload?.success) {
         setItems((prev) =>
