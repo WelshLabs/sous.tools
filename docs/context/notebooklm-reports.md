@@ -287,6 +287,8 @@ pino-pretty             packages/logger/package.json:34:6
 [93m[4mUnlisted binaries[24m[39m (2)
 tsx    package.json
 xclip  package.json
+[93m[4mUnresolved imports[24m[39m (1)
+./use-global-drag.hook  packages/design-system/src/components/OmniBar/OmniBarProvider.tsx:10:32
 [93m[4mUnused exports[24m[39m (26)
 SupabaseClientWrapper                    class     apps/api/src/lib/supabase.ts:20:14
 addToPurchaseOrderTool                             apps/api/src/modules/commands/commands-tools.ts:3:14
@@ -465,16 +467,28 @@ src/server.ts(30,41): error TS2769: No overload matches this call.
     Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
 [ELIFECYCLE] Command failed with exit code 2.
 ::group::@soustools/domain-signage:lint
-cache miss, executing 3a1130223ab7f2f1
+cache miss, executing 583085905276e603
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing e97e7ddfe07111e7
+cache miss, executing 1a69f9ad3d6dba45
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing 42747251dbc20f1c
+::group::@soustools/api-types:lint
+cache miss, executing 46ff6054237c1a34
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing d113d21ef502d50f
+::group::@soustools/domain-inventory:lint
+cache miss, executing 7dc41491e50b878a
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing 5a0a8d4f47f02e93
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing fd684c7909a009e4
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -488,18 +502,13 @@ cache miss, executing a0e43c477fc0e8b9
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 5a0a8d4f47f02e93
+::group::@soustools/domain-pos:lint
+cache miss, executing c4ef5ae8be68e7d4
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing 46ff6054237c1a34
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 958c568cf6973cc0
+::group::@soustools/domain-settings:lint
+cache miss, executing c4866dbd7eaf2a73
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -508,17 +517,12 @@ cache miss, executing 655f3e0fc301cae7
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing ce4cc74c0708d6f1
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::error::command (/home/runner/work/sous.tools/sous.tools/packages/logger) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run build exited (2)
 @soustools/logger#build:  ERROR  command (/home/runner/work/sous.tools/sous.tools/packages/logger) /home/runner/setup-pnpm/node_modules/.bin/store/v11/links/@/pnpm/11.5.2/7be71a39f9a4ef59fa66a6737cd4d82e3e986d07d701d1922a727d1fa4113eff/bin/pnpm run build exited (2)
 
  Tasks:    3 successful, 15 total
 Cached:    2 cached, 15 total
-  Time:    7.915s
+  Time:    8.173s
 Failed:    @soustools/logger#build
 
  ERROR  run failed: command  exited (2)
@@ -542,21 +546,21 @@ https://turborepo.dev/docs/telemetry
    • Running typecheck in 18 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:typecheck
-cache miss, executing c555b2d5fee9b99f
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing 7b86875be91c5429
 $ tsc
 ::endgroup::
-::group::@soustools/config:build
-cache miss, executing e03a7a788b75a11f
-$ tsc
+::group::@soustools/api-types:typecheck
+cache miss, executing c555b2d5fee9b99f
+$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
 cache miss, executing c1d6b409462fb3f2
 $ tsc --noEmit
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing e03a7a788b75a11f
+$ tsc
 ::endgroup::
 ::group::@soustools/api-client:typecheck
 cache miss, executing 41c0c92cea4cd82f
@@ -576,43 +580,53 @@ src/server.ts(30,41): error TS2769: No overload matches this call.
   Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
     Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
 [ELIFECYCLE] Command failed with exit code 2.
+::group::@soustools/logger:typecheck
+cache miss, executing 1a23dd2cbdc78b75
+$ tsc --noEmit
+src/browser.ts(83,42): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+src/server.ts(30,41): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(obj: unknown, msg?: string | undefined): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  Overload 2 of 3, '(obj: unknown, msg?: string | undefined, ...args: unknown[]): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+[ELIFECYCLE] Command failed with exit code 2.
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing e13dafb4e27304be
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 2aff0cfcd51607aa
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 40974b946ca9f640
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/design-system:typecheck
+cache miss, executing 5d117afa7381d684
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 298d4d21774498b5
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::@soustools/supabase:typecheck
 cache miss, executing 44a852ec9b931816
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing e03d9f96a16677c8
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing bba7ec54279799ad
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/design-system:typecheck
-cache miss, executing c9c594246d043628
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/logger:typecheck
-cache miss, executing 1a23dd2cbdc78b75
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing ffb93a712bb5a3fe
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing fd36e00df04cadf3
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::@soustools/domain-inventory:typecheck
-cache miss, executing 153dacc70c627143
+cache miss, executing 2cfda07526922a18
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -621,7 +635,7 @@ $ tsc --noEmit
 
  Tasks:    5 successful, 14 total
 Cached:    0 cached, 14 total
-  Time:    14.159s
+  Time:    15.784s
 Failed:    @soustools/logger#build
 
  ERROR  run failed: command  exited (2)
@@ -665,7 +679,7 @@ src/server.ts(30,41): error TS2769: No overload matches this call.
 
  Tasks:    2 successful, 3 total
 Cached:    0 cached, 3 total
-  Time:    4.471s
+  Time:    4.485s
 Failed:    @soustools/logger#build
 
  ERROR  run failed: command  exited (2)
