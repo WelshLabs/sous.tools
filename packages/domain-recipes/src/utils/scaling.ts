@@ -242,7 +242,7 @@ export function calculateRecipeScale(
       originalUnit: ing.unit,
       scaledAmount,
       scaledUnit,
-      calculationType: ing.calculationType,
+      calculationType: ing.calculationType as "fixed_weight" | "bakers_percentage",
       baseCalculationGroup: ing.baseCalculationGroup,
       percentageOfBase,
       weightInGrams,

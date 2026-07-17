@@ -21,3 +21,6 @@ export * from "./RecipeBuilder";
 export * from "./WastageEntryModal";
 export * from "./VersionHistoryDrawer";
 export * from "./RecipeViewer";
+
+// Export scaling utilities
+export * from "./utils/scaling";

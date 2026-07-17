@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { RecipeViewer, type CustomWeightOpts } from "@soustools/domain-recipes";
+import { RecipeViewer, type CustomWeightOpts, calculateRecipeScale } from "@soustools/domain-recipes";
 import { type Recipe, type VesselProfile } from "@soustools/api-types";
 import { toast } from "sonner";
-import { calculateRecipeScale } from "@soustools/design-system";
 
 export interface RecipeViewerClientProps {
   recipe: Recipe;

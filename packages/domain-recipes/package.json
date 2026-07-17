@@ -25,6 +25,43 @@
     "typescript": "^5.3.3",
     "@soustools/eslint-config": "workspace:*",
     "eslint": "^9",
+    "typescript-eslint": "^8",
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+// ... rest of code ...// ... existing code ...
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "next": ">=14.0.0"
+  },
+  "devDependencies": {
+    "@soustools/tsconfig": "workspace:*",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.3.3",
+    "@soustools/eslint-config": "workspace:*",
+    "eslint": "^9",
+    "typescript-eslint": "^8",
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+// ... rest of code ...
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "next": ">=14.0.0"
+  },
+  "devDependencies": {
+    "@soustools/tsconfig": "workspace:*",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.3.3",
+    "@soustools/eslint-config": "workspace:*",
+    "eslint": "^9",
     "typescript-eslint": "^8"
   },
   "dependencies": {

@@ -105,8 +105,7 @@ export type { OrderSupplier, OrderLineItem } from "./types/order-types";
 
 export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar";
 export type { QuickAddSuggestion } from "./components/QuickAddBar";
-export { calculateRecipeScale } from "./utils/scaling";
-export type { ScaledIngredientResult } from "./utils/scaling";
+
 
 export {
   resetFaviconStatus,
