@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -53,7 +52,7 @@ export function ActiveKitchen({
   backHref = "/recipes",
 }: ActiveKitchenProps) {
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({});
-  const [wakeLock, setWakeLock] = useState<unknown>(null);
+  const [wakeLock, setWakeLock] = useState<WakeLockSentinel | null>(null);
   const [wakeLockActive, setWakeLockActive] = useState(false);
 
   useEffect(() => {
@@ -71,12 +70,10 @@ export function ActiveKitchen({
     requestWakeLock();
     return () => {
       if (wakeLock) {
-        (wakeLock as any).release().then(() => setWakeLock(null));
-
+        wakeLock.release().then(() => setWakeLock(null));
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [wakeLock]);
 
   const handleStartStepTimer = (stepIndex: number, durationSeconds: number) => {
     const timerId = `${recipe.id}-${stepIndex}`;
@@ -168,7 +165,7 @@ export function ActiveKitchen({
           return (
             <ActiveKitchenStep
               key={step.stepNumber}
-              step={step as unknown as RecipeInstruction}
+              step={step}
               isChecked={isChecked}
               onToggleCheck={toggleStepCheck}
               onStartTimer={handleStartStepTimer}
