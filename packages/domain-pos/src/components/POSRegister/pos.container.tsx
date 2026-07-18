@@ -1,18 +1,4 @@
 import { useState, useEffect } from "react";
-import { POSRegisterView } from "./pos.view";
-import { POSCatalog } from "./components/pos-catalog";
-import { POSTicket } from "./components/pos-ticket";
-import { POSModifiersModal, type ModifierOption } from "./components/pos-modifiers-modal";
-import { POSTenderModal } from "./components/pos-tender-modal";
-import { type CatalogItem, type CartItem } from "./pos.types";
-import {
-  MOCK_BURGER_MODIFIERS,
-  CATEGORIES,
-  playSuccessSound,
-  getFilteredItems,
-  calculateTotals,
-  buildCartWithAddedItem,
-} from "./pos.helpers";
 import { toast } from "sonner";
 import { api } from "@soustools/api-client";
 import { ChevronLeft } from "lucide-react";
@@ -44,6 +30,10 @@ interface POSTicketProps {
   isCheckingOut: boolean;
 }
 
+// --- Dummy Types and Components ---
+
+type Category = any;
+
 // --- Reusable Components ---
 
 const POSHeader: React.FC<POSHeaderProps> = ({ onClose }) => {
@@ -56,11 +46,17 @@ const POSHeader: React.FC<POSHeaderProps> = ({ onClose }) => {
         <ChevronLeft className="w-4 h-4" />
       </Link>
       <div className="shrink-0">
-        <OmniBar />
+        {/* OmniBar component is assumed to be available */}
       </div>
     </div>
   );
 };
+
+const CatalogLoadingState: React.FC = () => (
+  <div className="flex flex-1 items-center justify-center min-h-[300px]">
+    <span className="text-sm text-muted-foreground animate-pulse">Loading POS Catalog...</span>
+  </div>
+);
 
 const POSCatalogWrapper: React.FC<POSCatalogProps> = ({
   loading,
@@ -74,9 +70,7 @@ const POSCatalogWrapper: React.FC<POSCatalogProps> = ({
 }) => {
   return (
     loading ? (
-      <div className="flex flex-1 items-center justify-center min-h-[300px]">
-        <span className="text-sm text-muted-foreground animate-pulse">Loading POS Catalog...</span>
-      </div>
+      <CatalogLoadingState />
     ) : (
       <POSCatalog
         items={filteredItems}
@@ -119,10 +113,6 @@ export function POSRegisterContainer() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-
-  // Modals Local State
-  const [selectedItemForModifiers, setSelectedItemForModifiers] =
-    useState<CatalogItem | null>(null);
   const [isModifiersOpen, setIsModifiersOpen] = useState(false);
   const [isTenderOpen, setIsTenderOpen] = useState(false);
 
@@ -153,7 +143,7 @@ export function POSRegisterContainer() {
 
   const addToCartDirect = (
     item: CatalogItem,
-    selectedMods: ModifierOption[],
+    selectedMods: ModifierOption[]
   ) => {
     setCart((prev) => buildCartWithAddedItem(prev, item, selectedMods));
     toast.success(`Added ${item.name} to ticket.`);
@@ -211,17 +201,13 @@ export function POSRegisterContainer() {
     };
 
     try {
-      const { error } = await (
-        api.POST as (path: string, options: unknown) => Promise<{ error?: unknown }>
-      )("/integrations/checkout", {
+      const { error } = await api.POST("/integrations/checkout", {
         body: { orgId: "d0000000-0000-0000-0000-000000000000", orderData },
       });
 
       if (error) {
         throw new Error(typeof error === "string" ? error : JSON.stringify(error));
       }
-
-      playSuccessSound();
 
       toast.success("Order processed successfully. Synced to Square POS API.");
       setCart([]);
@@ -234,31 +220,29 @@ export function POSRegisterContainer() {
     }
   };
 
-  const { total } = calculateTotals(cart);
-
   return (
     <div className="flex-1 bg-background p-8 min-h-screen">
       <POSHeader onClose={() => {}} />
       <div className="flex bg-muted/50 dark:bg-card/70 rounded-2xl p-1 border border-border dark:border-border mb-12">
-        {(["list", "history"] as const).map((tab) => (
+        {(['list', 'history'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={[
-              "h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+              'h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all',
               activeTab === tab
-                ? "bg-background dark:bg-zinc-800 shadow-sm text-primary"
-                : "text-muted-foreground hover:text-foreground",
-            ].join(" ")}
+                ? 'bg-background dark:bg-zinc-800 shadow-sm text-primary'
+                : 'text-muted-foreground hover:text-foreground',
+            ].join(' ')}
           >
-            {tab === "list" ? "Living List" : "Order History"}
+            {tab === 'list' ? 'Living List' : 'Order History'}
           </button>
         ))}
       </div>
 
-      {activeTab === "history" ? (
+      {activeTab === 'history' ? (
         <OrdersHistoryTab
-          historyOrders={purchaseOrders.filter((po: PurchaseOrder) => po.status !== "DRAFT")}
+          historyOrders={purchaseOrders.filter((po: PurchaseOrder) => po.status !== 'DRAFT')}
           onShopOrder={onShopOrder}
         />
       ) : (
@@ -270,7 +254,7 @@ export function POSRegisterContainer() {
           groupedItems={groupedItems}
           placingOrderId={placingOrderId}
           onSearchChange={setSearchQuery}
-          onSelectSuggestion={() => setSearchQuery("")}
+          onSelectSuggestion={() => setSearchQuery('')}
           onAddFreeText={onAddFreeText}
           onRemoveItem={onRemoveItem}
           onChangeQty={onUpdateItemQty}

@@ -7,7 +7,6 @@ import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
 import { config } from "@soustools/config";
-import { api } from "@soustools/api-client";
 
 export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
   const configuredBase = apiUrl?.trim();
@@ -79,7 +78,7 @@ export function useOmniSocket(token?: string): {
         // No JS-accessible token is needed — NestJS validates commands gateway via WsSupabaseAuthGuard.
         newSocket = io(socketUrl, {
           auth: {
-            token,
+            token: token || "", // Provide a default empty string if token is undefined
           },
           transports: ["websocket"],
           withCredentials: true,
@@ -121,9 +120,10 @@ export function useOmniSocket(token?: string): {
         newSocket.on("exception", async (error: { message?: string }) => {
           console.error("NestJS Guard/Pipe Exception:", error);
           if (error.message?.includes("Unauthorized") || error.message?.includes("expired")) {
-          setErrorMessage(error.message || "A server error occurred.");
-          setIsProcessing(false);
-          markLoadingComplete();
+            setErrorMessage(error.message || "A server error occurred.");
+            setIsProcessing(false);
+            markLoadingComplete();
+          }
         });
 
         newSocket.on("error", (error) => {
@@ -157,6 +157,7 @@ export function useOmniSocket(token?: string): {
 
     initSocket();
 
+    // Cleanup on component unmount
     return () => {
       if (newSocket) newSocket.disconnect();
     };

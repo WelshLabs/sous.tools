@@ -2,14 +2,10 @@ import React from "react";
 
 interface AutoCalculateButtonProps {
   onAutoCalculate: () => void;
-  labelStyle: React.CSSProperties;
-  inputStyle: React.CSSProperties;
 }
 
 export const AutoCalculateButton: React.FC<AutoCalculateButtonProps> = ({
   onAutoCalculate,
-  labelStyle,
-  inputStyle,
 }) => {
   return (
     <button

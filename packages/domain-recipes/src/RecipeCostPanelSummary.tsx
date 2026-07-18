@@ -1,5 +1,4 @@
 import React from 'react';
-import { DollarSign } from 'lucide-react';
 
 interface RecipeCostTileProps {
   label: string;
@@ -31,12 +30,10 @@ const RecipeCostTile: React.FC<RecipeCostTileProps> = ({
 
 interface RecipeCostPanelSummaryProps {
   costData: RecipeCostData;
-  tileStyle: React.CSSProperties;
 }
 
 export function RecipeCostPanelSummary({
   costData,
-  tileStyle,
 }: RecipeCostPanelSummaryProps) {
   const {
     totalCostUsd,
@@ -46,7 +43,9 @@ export function RecipeCostPanelSummary({
     suggestedSalePrice,
   } = costData;
 
-  const marginColor: string =
+  const marginColor:
+    | string
+    | undefined =
     marginPct === undefined
       ? "var(--color-destructive)"
       : marginPct > 30

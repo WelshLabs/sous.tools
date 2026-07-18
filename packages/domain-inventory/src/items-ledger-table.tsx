@@ -1,15 +1,5 @@
-import { Button, Card, CardContent, CardHeader, CardTitle, CardFooter, Progress, ProgressProps, cn } from "@soustools/design-system";
+import { Button } from "@soustools/design-system";
 import { Edit, Trash2 } from "lucide-react";
-
-// Define specific types for item properties to replace 'any'
-interface Item {
-  id: string;
-  name: string;
-  category: string;
-  purchase_unit: string;
-  density_g_ml: number;
-  allergens: string[];
-}
 
 export interface LedgerItem {
   id: string;
