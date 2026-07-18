@@ -1,0 +1,9 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "pnpm --filter web start",
+      "url": ["http://localhost:3000"],
+      "numberOfRuns": 1
+    }
+  }
+}

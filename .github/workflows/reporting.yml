@@ -51,7 +51,7 @@ jobs:
           pnpm turbo typecheck > docs/audits/typecheck-report.txt || true
 
       - name: Run Unit Tests & Check Coverage
-        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage > docs/audits/unit-test-coverage.txt || true
+        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage --passWithNoTests > docs/audits/unit-test-coverage.txt || true
 
       - name: Install Playwright Browsers (For E2E)
         run: npx playwright install --with-deps
@@ -68,6 +68,9 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       #   continue-on-error: true
+
+      - name: Build Applications (Required for Lighthouse)
+        run: pnpm turbo build
 
       - name: Run Lighthouse (PWA Metrics)
         run: |
