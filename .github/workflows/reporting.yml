@@ -101,8 +101,8 @@ jobs:
           # Pulls the GITHUB_PAT we fetched from Infisical into the environment
           GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
         run: |
-          gh issue list --state open --limit 100 > docs/context/notebooklm-issues.md || true
-          gh project item-list <YOUR_PROJECT_ID> --owner conarwelsh --format markdown > docs/context/notebooklm-project.md || true
+          gh issue list --state open --limit 100 > docs/context/issues.md || true
+          gh project item-list 2 --owner conarwelsh --format markdown > docs/context/project.md || true
 
       # ==========================================
       # 4. SYNC TO REPO, WIKI, & TRIGGER AGENTS
