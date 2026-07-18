@@ -1,7 +1,15 @@
-"use client";
-
+import { Button, Card, CardContent, CardHeader, CardTitle, CardFooter, Progress, ProgressProps, cn } from "@soustools/design-system";
 import { Edit, Trash2 } from "lucide-react";
 
+// Define specific types for item properties to replace 'any'
+interface Item {
+  id: string;
+  name: string;
+  category: string;
+  purchase_unit: string;
+  density_g_ml: number;
+  allergens: string[];
+}
 
 export interface LedgerItem {
   id: string;
@@ -75,7 +83,7 @@ export function ItemsLedgerTable({
               </td>
               <td className="px-6 py-4">
                 <div className="flex gap-1 flex-wrap">
-                  {(item.allergens || []).map((alg: string) => (
+                  {(item.allergens || []).map((alg) => (
                     <span
                       key={alg}
                       className="px-2 py-1 bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20 rounded-md text-xs"
@@ -92,18 +100,22 @@ export function ItemsLedgerTable({
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-8 h-8 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 dark:hover:text-sky-400 bg-slate-100 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-sky-900/30 rounded-lg transition-colors"
                     onClick={() => onEdit(item)}
-                    className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 dark:hover:text-sky-400 bg-slate-100 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-sky-900/30 rounded-lg transition-colors"
                   >
                     <Edit size={16} />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-8 h-8 text-zinc-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                     onClick={() => onDelete(item.id)}
-                    className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                   >
                     <Trash2 size={16} />
-                  </button>
+                  </Button>
                 </div>
               </td>
             </tr>
@@ -113,3 +125,4 @@ export function ItemsLedgerTable({
     </div>
   );
 }
+ItemsLedgerTable.displayName = "ItemsLedgerTable";
