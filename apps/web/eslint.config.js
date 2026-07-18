@@ -10,5 +10,5 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
-  { ignores: [".next/**", "node_modules/**", "public/**"] },
+  { ignores: [".next/**", "node_modules/**", "public/**", "next-env.d.ts"] },
 ];

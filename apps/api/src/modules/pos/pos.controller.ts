@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { supabase } from '../../lib/supabase';
 import { runControllerAction } from '../signage/response.helper';
 import { ApiResponse } from '@soustools/api-types';
@@ -62,6 +62,56 @@ export class PosController {
         .select('*')
         .eq('organization_id', targetOrgId)
         .order('created_at', { ascending: false });
+
+      if (error) throw new Error(error.message);
+      return data || [];
+    });
+  }
+
+  @Post('transactions/bulk')
+  async createTransactionsBulk(
+    @Body() transactions: Array<{
+      organization_id: string;
+      pos_item_id?: string | null;
+      quantity_sold: number;
+      gross_revenue: number;
+      transaction_time: string;
+      source?: string;
+    }>,
+  ): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      const { data, error } = await supabase
+        .from('pos_transactions')
+        .insert(transactions)
+        .select();
+
+      if (error) throw new Error(error.message);
+      return data || [];
+    });
+  }
+
+  @Get('modifier-groups/:id')
+  async getModifierGroup(@Param('id') id: string): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      const { data, error } = await supabase
+        .from('pos_modifier_groups')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    });
+  }
+
+  @Get('modifier-groups/:id/options')
+  async getModifierGroupOptions(@Param('id') id: string): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      const { data, error } = await supabase
+        .from('pos_modifier_options')
+        .select('*')
+        .eq('modifier_group_id', id)
+        .order('name');
 
       if (error) throw new Error(error.message);
       return data || [];

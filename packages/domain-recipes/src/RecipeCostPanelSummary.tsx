@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import { type RecipeCostData } from "./types";
 
 interface RecipeCostTileProps {
   label: string;
@@ -43,9 +44,7 @@ export function RecipeCostPanelSummary({
     suggestedSalePrice,
   } = costData;
 
-  const marginColor:
-    | string
-    | undefined =
+  const marginColor: string | undefined =
     marginPct === undefined
       ? "var(--color-destructive)"
       : marginPct > 30
@@ -56,39 +55,35 @@ export function RecipeCostPanelSummary({
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 text-center">
-      {
-        [
-          {
-            label: "Batch Cost",
-            value: `$${totalCostUsd.toFixed(2)}`,
-            color: "var(--color-foreground)",
-          },
-          {
-            label: "Plate Cost",
-            value: `$${costPerServingUsd.toFixed(2)}`,
-            color: "var(--color-foreground)",
-          },
-          {
-            label: "Sug. Sale Price",
-            value: suggestedSalePrice
-              ? `$${suggestedSalePrice.toFixed(2)}`
-              : "—",
-            color: "#4cc9f0",
-          },
-          {
-            label: "Linked POS",
-            value: linkedSalePrice ? `$${linkedSalePrice.toFixed(2)}` : "—",
-            color: "var(--color-foreground)",
-          },
-          {
-            label: "Margin",
-            value: marginPct !== undefined ? `${marginPct.toFixed(1)}%` : "—",
-            color: marginColor,
-          },
-        ].map(({ label, value, color }) => (
-          <RecipeCostTile key={label} label={label} value={value} color={color} />
-        ))
-      }
+      {[
+        {
+          label: "Batch Cost",
+          value: `$${totalCostUsd.toFixed(2)}`,
+          color: "var(--color-foreground)",
+        },
+        {
+          label: "Plate Cost",
+          value: `$${costPerServingUsd.toFixed(2)}`,
+          color: "var(--color-foreground)",
+        },
+        {
+          label: "Sug. Sale Price",
+          value: suggestedSalePrice ? `$${suggestedSalePrice.toFixed(2)}` : "—",
+          color: "#4cc9f0",
+        },
+        {
+          label: "Linked POS",
+          value: linkedSalePrice ? `$${linkedSalePrice.toFixed(2)}` : "—",
+          color: "var(--color-foreground)",
+        },
+        {
+          label: "Margin",
+          value: marginPct !== undefined ? `${marginPct.toFixed(1)}%` : "—",
+          color: marginColor,
+        },
+      ].map(({ label, value, color }) => (
+        <RecipeCostTile key={label} label={label} value={value} color={color} />
+      ))}
     </div>
   );
 }

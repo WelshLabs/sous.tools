@@ -2,7 +2,9 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
+  Param,
   Query,
   NotFoundException,
 } from "@nestjs/common";
@@ -141,6 +143,48 @@ export class PosSimulatorController {
               typeof this.gateway.broadcastDeckUpdate
             >[1],
           );
+          this.gateway.broadcastItemsUpdate(deck.id as string, allItems || []);
+        }
+      }
+
+      return data;
+    });
+  }
+
+  @Put('items/:id')
+  async updateItem(
+    @Param('id') id: string,
+    @Body() body: { name?: string; description?: string | null; price?: number; is_sold_out?: boolean },
+  ): Promise<ApiResponse<unknown>> {
+    return runControllerAction(async () => {
+      const { data, error } = await supabase
+        .from('pos_items')
+        .update({
+          ...body,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error || !data) {
+        throw new NotFoundException(error?.message || 'Item not found');
+      }
+
+      // Broadcast updated items to all signage decks so they hot-reload
+      const { data: allItems } = await supabase
+        .from('pos_items')
+        .select('*')
+        .eq('organization_id', (data as any).organization_id)
+        .eq('pos_provider', 'SQUARE');
+
+      const { data: decks } = await supabase
+        .from('signage_decks')
+        .select('id, config')
+        .eq('organization_id', (data as any).organization_id);
+
+      if (decks) {
+        for (const deck of decks) {
           this.gateway.broadcastItemsUpdate(deck.id as string, allItems || []);
         }
       }

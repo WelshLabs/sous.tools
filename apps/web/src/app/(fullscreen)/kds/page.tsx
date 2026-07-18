@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { api } from "@soustools/api-client";
 import { Button, OmniBar } from "@soustools/design-system";
 import { 
   Settings, 
@@ -37,7 +38,7 @@ interface KDSTicket {
 export default function KDSPage() {
   const [tickets, setTickets] = useState<KDSTicket[]>([]);
   const [posItems, setPosItems] = useState<any[]>([]);
-  const [orgId, setOrgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
+  const [orgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
   const [loading, setLoading] = useState(true);
   const [viewFilter, setViewFilter] = useState<"OPEN" | "CLOSED">("OPEN");
 
@@ -84,35 +85,17 @@ export default function KDSPage() {
 
   // Load configuration, mock tickets, database items
   useEffect(() => {
-    // 1. Fetch organization ID
-    const fetchOrg = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/organizations?limit=1`);
-        if (res.ok) {
-          const payload = await res.json();
-          if (payload.data && payload.data.length > 0) {
-            setOrgId(payload.data[0].id);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch org", err);
-      }
-    };
-
-    // 2. Fetch POS items to enable 86'ing
+    // 1. Fetch POS items to enable 86'ing
     const fetchItems = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos-items`);
-        if (res.ok) {
-          const payload = await res.json();
-          if (payload.data) setPosItems(payload.data);
-        }
+        const { data, error } = await api.GET("/pos-simulator/items", { params: { query: { organizationId: orgId } } });
+        if (!error && data) setPosItems((data as any).data || []);
       } catch (err) {
         console.error("Failed to fetch pos items", err);
       }
     };
 
-    // 3. Setup settings from localStorage
+    // 2. Setup settings from localStorage
     if (typeof window !== "undefined") {
       const savedText = localStorage.getItem("kds_text_size") as any;
       const savedDensity = localStorage.getItem("kds_density") as any;
@@ -124,12 +107,12 @@ export default function KDSPage() {
       if (savedVol) setSoundVolume(parseFloat(savedVol));
     }
 
-    // 4. Fetch POS orders to seed tickets
+    // 3. Fetch POS orders to seed tickets
     const fetchOrders = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos/orders`);
-        if (res.ok) {
-          const payload = await res.json();
+        const { data, error } = await api.GET("/pos/orders", { params: { query: { orgId } } });
+        if (!error && data) {
+          const payload = (data as any).data || data;
           if (Array.isArray(payload)) {
             setTickets(payload.map((o: any) => ({
               id: o.id,
@@ -147,8 +130,8 @@ export default function KDSPage() {
       }
     };
 
-    Promise.all([fetchOrg(), fetchItems(), fetchOrders()]).then(() => setLoading(false));
-  }, []);
+    Promise.all([fetchItems(), fetchOrders()]).then(() => setLoading(false));
+  }, [orgId]);
 
   // Save settings helpers
   const saveTextSize = (sz: "sm" | "md" | "lg") => {
@@ -186,24 +169,22 @@ export default function KDSPage() {
       const transactionsToInsert = t.items.map(item => {
         // Look up corresponding POS item in DB
         const match = posItems.find(
-          dbItem => dbItem.name.toLowerCase() === item.name.toLowerCase()
+          (dbItem: any) => dbItem.name.toLowerCase() === item.name.toLowerCase()
         );
         return {
           organization_id: orgId,
-          pos_item_id: match ? match.id : null,
+          pos_item_id: match ? (match as any).id : null,
           quantity_sold: item.qty,
-          gross_revenue: match ? Number(match.price) * item.qty : 15.00 * item.qty, // fallback price
+          gross_revenue: match ? Number((match as any).price) * item.qty : 15.00 * item.qty, // fallback price
           transaction_time: new Date().toISOString(),
           source: "kds"
         };
       });
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos-transactions/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(transactionsToInsert)
+      const { error: txError } = await api.POST("/pos/transactions/bulk", {
+        body: transactionsToInsert as any,
       });
-      if (!res.ok) throw new Error("Failed to sync transactions");
+      if (txError) throw new Error("Failed to sync transactions");
 
       toast.success(`Ticket #${t.ticketNumber} completed and synced to shadow DB.`);
     } catch (err: any) {
@@ -216,16 +197,14 @@ export default function KDSPage() {
   const handleToggleSoldOut = async (itemId: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/pos-items/${itemId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_sold_out: nextStatus })
+      const { error } = await api.POST("/pos-simulator/items/toggle-sold-out", {
+        body: { itemId, isSoldOut: nextStatus } as any,
       });
 
-      if (!res.ok) throw new Error("Failed to update item");
+      if (error) throw new Error("Failed to update item");
 
       setPosItems(prev =>
-        prev.map(item => (item.id === itemId ? { ...item, is_sold_out: nextStatus } : item))
+        prev.map((item: any) => (item.id === itemId ? { ...item, is_sold_out: nextStatus } : item))
       );
       toast.success(`Updated item availability.`);
     } catch (err: any) {

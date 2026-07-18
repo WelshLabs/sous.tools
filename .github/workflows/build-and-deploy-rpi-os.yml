@@ -20,11 +20,6 @@ jobs:
       - name: Who am I?
         run: whoami
 
-      - name: Purge root-owned workspace files (Pre-checkout)
-        run: |
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work   || true
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy || true
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -53,7 +48,10 @@ jobs:
           # it never pollutes the upstream pi-gen checkout.
           cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
 
-      - name: Build OS Image with pi-gen
+      - name: Install native pi-gen dependencies
+        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted qemu-user-static debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
+
+      - name: Build OS Image natively with pi-gen
         env:
           PI_GEN_CONFIG: |
             IMG_NAME=soustools-signage
@@ -90,8 +88,8 @@ jobs:
           echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
           sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
 
-          # 4. Run the Dockerized pi-gen build
-          sudo ./build-docker.sh
+          # 4. Run the NATIVE pi-gen build (Bypassing Docker)
+          sudo ./build.sh
 
       - name: Scrub deploy key from workspace (security)
         if: always()
@@ -111,10 +109,17 @@ jobs:
           files: deploy/pi/pi-gen/deploy/*.zip
           make_latest: true
 
-      - name: Cleanup root-owned Docker artefacts
+      # THE ARMOR: Forcefully detach all system mounts BEFORE wiping the work directory
+      - name: Cleanup and Protect Host Mounts
         if: always()
         run: |
-          echo "Wiping pi-gen work directories to prevent root permission locks..."
+          echo "Detaching any lingering pi-gen bind mounts..."
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/sys || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/proc || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
+
+          echo "Wiping pi-gen work directories safely..."
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work       || true
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy     || true
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true

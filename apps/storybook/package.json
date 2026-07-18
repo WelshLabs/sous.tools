@@ -1,0 +1,26 @@
+{
+  "name": "storybook",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@soustools/design-system": "workspace:*",
+    "next": "^15.5.18",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "8.6.18",
+    "@storybook/addon-interactions": "8.6.18",
+    "@storybook/react-vite": "8.6.18",
+    "@storybook/react": "8.6.18",
+    "@soustools/eslint-config": "workspace:*",
+    "@soustools/tsconfig": "workspace:*",
+    "eslint": "^9",
+    "storybook": "8.6.18",
+    "typescript": "^5.4.0"
+  }
+}

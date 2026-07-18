@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node ../../packages/config/dist/cli.js next dev -H 0.0.0.0 -p 3003",
-    "build": "node ../../packages/config/dist/cli.js next build --webpack",
+    "build": "node ../../packages/config/dist/cli.js next build",
     "start": "node ../../packages/config/dist/cli.js next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0"

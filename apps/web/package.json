@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node ../../packages/config/dist/cli.js next dev -p 3000 --webpack",
-    "build": "node ../../packages/config/dist/cli.js next build --webpack",
+    "dev": "node ../../packages/config/dist/cli.js next dev -p 3000",
+    "build": "node ../../packages/config/dist/cli.js next build",
     "start": "node ../../packages/config/dist/cli.js next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",

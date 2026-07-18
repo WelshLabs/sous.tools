@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Search, Edit3, X, Save, Image, DollarSign } from "lucide-react";
 import { Button } from "@soustools/design-system";
 import { toast } from "sonner";
+import { api } from "@soustools/api-client";
 
 export interface PosItem {
   id: string;
@@ -71,18 +72,17 @@ export function CatalogView({ initialItems, categories, modifierGroups, discount
 
     setSaving(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-simulator/items/${editingItem.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { error } = await api.PUT("/pos-simulator/items/{id}", {
+        params: { path: { id: editingItem.id } },
+        body: {
           name: editName,
           description: editDesc || null,
           price: parseFloat(editPrice) || 0,
           is_sold_out: editSoldOut,
-        }),
+        },
       });
 
-      if (!res.ok) throw new Error("Failed to update item");
+      if (error) throw new Error("Failed to update item");
 
       toast.success("Catalog item updated successfully!");
       setEditingItem(null);

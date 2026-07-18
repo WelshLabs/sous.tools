@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { type PurchaseOrder, type PurchaseOrderItem, type Vendor } from "@soustools/api-types";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Circle } from "lucide-react";
+import { api } from "@soustools/api-client";
 
 type PopulatedPO = PurchaseOrder & {
   vendors: Vendor;
@@ -20,13 +21,11 @@ export default function SelfShopPage() {
   useEffect(() => {
     const fetchPO = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/purchase-orders/${id}`,
-        );
-        if (res.ok) {
-          const payload = await res.json();
-          if (payload.data) {
-            setPo(payload.data);
+        const { data, error } = await (api.GET as any)(`/purchase-orders/${id}`);
+        if (!error && data) {
+          const payload = (data as any).data;
+          if (payload) {
+            setPo(payload);
             // Load offline cached state
             const cached = localStorage.getItem(`shop-checked-${id}`);
             if (cached) setCheckedItems(new Set(JSON.parse(cached)));
@@ -39,6 +38,7 @@ export default function SelfShopPage() {
     };
     fetchPO();
   }, [id]);
+
 
   const toggleCheck = (itemId: string) => {
     const next = new Set(checkedItems);

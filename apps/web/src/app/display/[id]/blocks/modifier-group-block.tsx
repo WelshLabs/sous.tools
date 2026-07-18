@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { api } from "@soustools/api-client";
 import { type MenuItemStyles, type PosItem } from "@soustools/api-types";
 import { resolveItemState, buildTitleStyle, buildPriceStyle } from "@/app/display/[id]/menu-item-style-utils";
 
@@ -40,19 +41,18 @@ export function ModifierGroupBlock({
 
       try {
         // Resolve group
-        const resGrp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-modifier-groups/${modifierGroupId}`);
-        if (!resGrp.ok) throw new Error();
-        const grpData = await resGrp.json();
+        const { data: grpData, error: grpError } = await (api.GET as any)(`/pos/modifier-groups/${modifierGroupId}`);
+        if (grpError) throw new Error();
         
         if (grpData) {
-          setGroup(grpData);
+          setGroup((grpData as any).data || grpData);
         }
 
         // Fetch options linked to this group
-        const resOpts = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos-modifier-groups/${modifierGroupId}/options`);
-        const optsData = resOpts.ok ? await resOpts.json() : [];
-        if (optsData) {
-          setOptions(optsData as ModifierOption[]);
+        const { data: optsData, error: optsError } = await (api.GET as any)(`/pos/modifier-groups/${modifierGroupId}/options`);
+        const opts = !optsError && optsData ? ((optsData as any).data || optsData) : [];
+        if (opts) {
+          setOptions(opts as ModifierOption[]);
         }
       } catch (err) {
         console.error("Failed to load modifier group data", err);

@@ -1,5 +1,6 @@
 import React from "react";
 import { TransactionsView } from "./TransactionsView";
+import { api } from "@soustools/api-client";
 
 export const dynamic = "force-dynamic";
 
@@ -7,9 +8,9 @@ export default async function TransactionsPage() {
   let initialTransactions = [];
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:6001"}/pos/transactions`, { cache: 'no-store' });
-    if (res.ok) {
-      initialTransactions = await res.json();
+    const { data, error } = await (api.GET as any)("/pos/transactions", { cache: "no-store" });
+    if (!error && data) {
+      initialTransactions = (data as any).data || data;
     }
   } catch (err) {
     console.error("Failed to fetch transactions:", err);

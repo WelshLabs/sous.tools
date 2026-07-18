@@ -1,17 +1,15 @@
 import { config } from "@soustools/config";
 import { SettingsClient } from "./settings-client";
+import { api } from "@soustools/api-client";
 
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-  const baseUrl = config.API_BASE_URL;
-  
   let integrations = [];
   try {
-    const res = await fetch(`${baseUrl}/integrations/status`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      integrations = data.data || [];
+    const { data, error } = await (api.GET as any)("/integrations/status", { cache: "no-store" });
+    if (!error && data) {
+      integrations = (data as any).data || [];
     }
   } catch (err) {
     console.error("Failed to load integrations status", err);
@@ -19,6 +17,7 @@ export default async function SettingsPage() {
 
   // Stub data for global styling tokens and user profile
   // In a real app, these would be fetched from the API as well
+
   const initialTokens = {};
   const userProfile = {
     name: "Admin User",
@@ -26,7 +25,7 @@ export default async function SettingsPage() {
     role: "admin",
   };
 
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = config.NODE_ENV === "development";
 
   return (
     <SettingsClient

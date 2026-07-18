@@ -38,7 +38,14 @@ data class PairInitRequest(val deviceType: String = "wearos")
 data class PairInitResponse(val code: String)
 data class PairStatusResponse(val status: String, val token: String?)
 
-data class CommandRequest(val command: String, val source: String = "wearos")
+data class OmniMessage(
+    val id: String,
+    val role: String,
+    val content: String,
+    val timestamp: String
+)
+
+data class CommandRequest(val chatHistory: List<OmniMessage>, val source: String = "wearos")
 data class CommandResponse(val success: Boolean)
 
 // ---------------------------------------------------------------------------
@@ -58,7 +65,7 @@ interface ApiService {
     @GET("/api/devices/pair/status/{code}")
     suspend fun checkPairingStatus(@Path("code") code: String): ApiResponse<PairStatusResponse>
 
-    @POST("/api/commands")
+    @POST("/commands/execute")
     suspend fun sendCommand(@Body request: CommandRequest): ApiResponse<CommandResponse>
 }
 

@@ -2,6 +2,7 @@ import React from "react";
 import { GlobalAppBar, OmniBarProvider } from "@soustools/design-system";
 import { logoutAction } from "@/app/actions/auth";
 import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
+import { api } from "@soustools/api-client";
 
 export default async function WorkspaceLayout({ 
   children,
@@ -12,12 +13,11 @@ export default async function WorkspaceLayout({
 }) {
   let notifications = [];
   try {
-    const res = await fetch(`${process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'}/notifications/unread`, {
+    const { data, error } = await api.GET("/notifications/unread", {
       cache: "no-store",
     });
-    if (res.ok) {
-      const payload = await res.json();
-      notifications = payload.data || [];
+    if (!error && data) {
+      notifications = (data as any).data || [];
     }
   } catch (error: any) {
     if (error && (error.digest === 'DYNAMIC_SERVER_USAGE' || error.message?.includes('Dynamic server usage') || error.message?.includes('dynamic-server-error'))) {

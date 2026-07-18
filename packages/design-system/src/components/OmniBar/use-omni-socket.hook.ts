@@ -119,7 +119,10 @@ export function useOmniSocket(token?: string): {
         // Global socket error & exception handlers
         newSocket.on("exception", async (error: { message?: string }) => {
           console.error("NestJS Guard/Pipe Exception:", error);
-          if (error.message?.includes("Unauthorized") || error.message?.includes("expired")) {
+          if (
+            error.message?.includes("Unauthorized") ||
+            error.message?.includes("expired")
+          ) {
             setErrorMessage(error.message || "A server error occurred.");
             setIsProcessing(false);
             markLoadingComplete();

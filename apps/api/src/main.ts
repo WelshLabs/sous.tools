@@ -55,6 +55,8 @@ async function bootstrap(): Promise<void> {
         'https://tv.sous.tools',
         'https://setup.sous.tools',
         'https://editor.sous.tools',
+        'android-app://com.sous.wearos',
+        'app://com.sous.wearos'
       ]
     : true; // reflect origin in dev
 

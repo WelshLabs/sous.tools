@@ -2,5 +2,5 @@
 import { nextConfig } from "@soustools/eslint-config/next";
 export default [
   ...nextConfig,
-  { ignores: [".next/**", "out/**", "node_modules/**"] },
+  { ignores: [".next/**", "out/**", "node_modules/**", "next-env.d.ts"] },
 ];

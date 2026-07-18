@@ -173,7 +173,17 @@ suspend fun sendToApi(context: Context, text: String) {
     try {
         val response = withTimeout(10_000) {
             ApiClient.apiService.sendCommand(
-                request = CommandRequest(command = text, source = "wearos")
+                request = CommandRequest(
+                    chatHistory = listOf(
+                        com.sous.wearos.network.OmniMessage(
+                            id = java.util.UUID.randomUUID().toString(),
+                            role = "user",
+                            content = text,
+                            timestamp = java.time.Instant.now().toString()
+                        )
+                    ),
+                    source = "wearos"
+                )
             )
         }
         if (response.success) {
