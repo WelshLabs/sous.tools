@@ -1,3 +1,0 @@
-BOOT SEQUENCE: Silently read .cursorrules to review our strict coding boundaries.
-THEN: Use your bash tool to run "pnpm knip" to find dead code and unused exports, and "pnpm turbo lint" to find boundary violations. Choose exactly ONE file with an error, refactor it into compliance, and commit the fix to a new branch named "audit/fix-{ISSUE_NUMBER}". Push the branch.
-CRITICAL INSTRUCTION: You MUST use your GitHub MCP tools to open a Pull Request in "conarwelsh/sous.tools". UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. DO NOT output conversational text in the terminal. DO NOT converse. Stop after opening the PR for the single fixed file.

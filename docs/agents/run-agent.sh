@@ -1,9 +1,11 @@
 #!/bin/bash
-# Usage: bash .github/agents/run-agent.sh <label_type> <issue_number>
-# Example: bash .github/agents/run-agent.sh agent:plan 88
+# Usage: bash docs/agents/run-agent.sh <label_type> <issue_number>
+# Example: bash docs/agents/run-agent.sh agent:plan 88
 
 # 1. Source the environment to get the GitHub PAT
+set -a
 source /workspace/.env
+set +a
 
 LABEL=$1
 ISSUE=$2
@@ -34,7 +36,7 @@ fi
 PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")
 
 # 7. Execute Claude with the safety wrapper, piping all output to the log
-timeout 15m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" >> "$LOG_FILE" 2>&1
+timeout 15m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" < /dev/null >> "$LOG_FILE" 2>&1
 
 # 8. Check exit status and execute the curl fail-safe
 if [ $? -ne 0 ]; then
