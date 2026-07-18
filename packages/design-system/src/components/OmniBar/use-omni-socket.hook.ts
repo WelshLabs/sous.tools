@@ -121,20 +121,6 @@ export function useOmniSocket(token?: string): {
         newSocket.on("exception", async (error: { message?: string }) => {
           console.error("NestJS Guard/Pipe Exception:", error);
           if (error.message?.includes("Unauthorized") || error.message?.includes("expired")) {
-            console.warn("Unauthorized socket error. Attempting token refresh...");
-            try {
-              const refreshRes = await api.POST("/auth/refresh");
-              if (!refreshRes.error) {
-                console.log("Token refreshed. Retrying last socket command...");
-                if (lastPayloadRef.current) {
-                  newSocket?.emit("executeCommand", lastPayloadRef.current);
-                  return; // prevent setting error message and clearing loading state
-                }
-              }
-            } catch (refreshErr) {
-              console.error("Failed to refresh token during socket exception:", refreshErr);
-            }
-          }
           setErrorMessage(error.message || "A server error occurred.");
           setIsProcessing(false);
           markLoadingComplete();

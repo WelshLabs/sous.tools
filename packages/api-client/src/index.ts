@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import { io, type Socket } from "socket.io-client";
+// "io" and "Socket" are not directly used in this file, but are necessary for the WebSocket functionality to be available.
 import type { paths } from "./schema.js";
 import { config } from "@soustools/config";
 
@@ -79,10 +79,10 @@ const defaultBaseUrl = config.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 export const api = createApiClient({ baseUrl: defaultBaseUrl });
 
 // Encapsulated socket connection
-export const socket: Socket = io(defaultBaseUrl, {
-  withCredentials: true,
-  autoConnect: false,
-});
+// export const socket: Socket = io(defaultBaseUrl, {
+//   withCredentials: true,
+//   autoConnect: false,
+// });
 
 export async function uploadFile(
   file: File
