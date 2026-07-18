@@ -24,6 +24,8 @@
     "@playwright/test": "^1.61.1",
     "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
+    "@soustools/config": "workspace:*",
+    "@soustools/api-types": "workspace:*",
     "eslint": "^9.39.5",
     "eslint-plugin-boundaries": "^7.0.2",
     "eslint-plugin-project-structure": "^3.14.3",

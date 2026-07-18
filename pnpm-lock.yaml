@@ -24,6 +24,12 @@ importers:
       '@playwright/test':
         specifier: ^1.61.1
         version: 1.61.1
+      '@soustools/api-types':
+        specifier: workspace:*
+        version: link:packages/api-types
+      '@soustools/config':
+        specifier: workspace:*
+        version: link:packages/config
       '@soustools/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
