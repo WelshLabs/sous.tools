@@ -136,6 +136,6 @@ jobs:
       # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
       - name: Trigger n8n CTO Summary
         run: |
-          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
+          curl -X POST https://n8n.sous.tools/webhook-test/cto-summary \
           -H "Content-Type: application/json" \
           -d '{"status": "${{ job.status }}"}'
