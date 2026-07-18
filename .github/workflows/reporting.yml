@@ -11,13 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: read # Required to fetch issues
-      project: read # Required to fetch Kanban state
+      issues: read # Required to fetch issues (project: read has been removed)
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # CRITICAL: Required for SonarCloud analysis
+
+      # --- FETCH SECRETS EARLY SO ALL STEPS CAN USE THEM ---
+      - name: Fetch Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -86,7 +95,8 @@ jobs:
 
       - name: Fetch GitHub State (Issues & Kanban)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
         run: |
           gh issue list --state open --limit 100 > docs/context/notebooklm-issues.md || true
           gh project item-list <YOUR_PROJECT_ID> --owner conarwelsh --format markdown > docs/context/notebooklm-project.md || true
@@ -104,12 +114,11 @@ jobs:
 
       - name: Sync docs/wiki to GitHub Wiki Repository
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
         run: |
-          # Clone the specific Wiki repository
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
           if [ -d "/tmp/wiki" ]; then
-            # Copy our local wiki docs to the remote wiki repository
             cp -R docs/wiki/* /tmp/wiki/ || true
             cd /tmp/wiki
             git config --global user.name "github-actions[bot]"
@@ -121,8 +130,9 @@ jobs:
             echo "Wiki repository not found. Ensure the Wiki feature is enabled in GitHub settings and initialized."
           fi
 
+      # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
       - name: Trigger n8n CTO Summary
         run: |
-          curl -X POST https://n8n.sous.tools/webhook-test/cto-summary \
+          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
           -H "Content-Type: application/json" \
           -d '{"status": "${{ job.status }}"}'
