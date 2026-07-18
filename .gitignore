@@ -84,3 +84,4 @@ newrelic_agent.log
 .continue/
 
 signage_deploy_key*
+.claude
