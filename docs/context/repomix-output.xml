@@ -57481,148 +57481,6 @@ export function RecipeViewer({
 }
 ````
 
-## File: .github/workflows/reporting.yml
-````yaml
-name: Reporting
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-  workflow_dispatch:
-
-jobs:
-  master-gauntlet:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: read # Required to fetch issues (project: read has been removed)
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # CRITICAL: Required for SonarCloud analysis
-
-      # --- FETCH SECRETS EARLY SO ALL STEPS CAN USE THEM ---
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "prod"
-          export-env: true
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Setup pnpm and turbo
-        run: npm install -g pnpm turbo
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Prepare Docs Directories
-        run: mkdir -p docs/audits docs/context docs/wiki
-
-      # ==========================================
-      # 1. THE CODE QUALITY GAUNTLET (Tests & Lint)
-      # ==========================================
-      - name: Run Linters & Typecheck
-        run: |
-          pnpm turbo lint > docs/audits/lint-report.txt || true
-          pnpm turbo typecheck > docs/audits/typecheck-report.txt || true
-
-      - name: Run Unit Tests & Check Coverage
-        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage > docs/audits/unit-test-coverage.txt || true
-
-      - name: Install Playwright Browsers (For E2E)
-        run: npx playwright install --with-deps
-
-      - name: Run E2E Tests
-        run: INFISICAL_MOCK=true pnpm turbo e2e > docs/audits/e2e-test-report.txt || true
-
-      # ==========================================
-      # 2. EXTERNAL SCANNERS (SonarCloud & Lighthouse)
-      # ==========================================
-      # - name: Run SonarCloud Scan
-      #   uses: SonarSource/sonarcloud-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   continue-on-error: true
-
-      - name: Run Lighthouse (PWA Metrics)
-        run: |
-          npm install -g @lhci/cli
-          lhci autorun > docs/audits/lighthouse-report.txt || true
-
-      # ==========================================
-      # 3. AI CONTEXT GENERATION (Architecture & State)
-      # ==========================================
-      - name: Generate Tech Debt, Graph Context & Rules
-        run: |
-          pnpm run knip > docs/audits/knip-report.txt || true
-          npx turbo graph > docs/context/turbo-graph.txt || true
-          tree -I 'node_modules|.git|.next|dist|out|.turbo|docs' > docs/context/directory-tree.txt || true
-
-          # CRITICAL: Copy .cursorrules to a markdown file for NotebookLM
-          cat .cursorrules > docs/context/cursorrules.md || true
-
-      - name: Run Repomix (Full Codebase Snapshot)
-        run: npx repomix --output docs/context/repomix-output.xml || true
-
-      - name: Dump Database Schema
-        run: |
-          cat packages/supabase/schema.sql > docs/context/db-schema.sql || true
-
-      - name: Fetch GitHub State (Issues & Kanban)
-        env:
-          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
-          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-        run: |
-          gh issue list --state open --limit 100 > docs/context/notebooklm-issues.md || true
-          gh project item-list <YOUR_PROJECT_ID> --owner conarwelsh --format markdown > docs/context/notebooklm-project.md || true
-
-      # ==========================================
-      # 4. SYNC TO REPO, WIKI, & TRIGGER AGENTS
-      # ==========================================
-      - name: Commit and Push Docs and Context to Main Repo
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          git commit -m "chore(ai): auto-update tech debt, architecture, rules, and kanban states [skip ci]" || echo "No changes to commit"
-          git push
-
-      - name: Sync docs/wiki to GitHub Wiki Repository
-        env:
-          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
-          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-        run: |
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
-          if [ -d "/tmp/wiki" ]; then
-            cp -R docs/wiki/* /tmp/wiki/ || true
-            cd /tmp/wiki
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git add .
-            git commit -m "chore(docs): sync wiki from main repo [skip ci]" || echo "No changes to commit"
-            git push origin HEAD:master || git push origin HEAD:main || true
-          else
-            echo "Wiki repository not found. Ensure the Wiki feature is enabled in GitHub settings and initialized."
-          fi
-
-      # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
-      - name: Trigger n8n CTO Summary
-        run: |
-          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
-          -H "Content-Type: application/json" \
-          -d '{"status": "${{ job.status }}"}'
-````
-
 ## File: apps/api/src/modules/auth/auth.controller.ts
 ````typescript
 import {
@@ -58792,6 +58650,151 @@ const initializeServerLogger = () => {
 };
 
 export default initializeServerLogger;
+````
+
+## File: .github/workflows/reporting.yml
+````yaml
+name: Reporting
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  master-gauntlet:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read # Required to fetch issues (project: read has been removed)
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # CRITICAL: Required for SonarCloud analysis
+
+      # --- FETCH SECRETS EARLY SO ALL STEPS CAN USE THEM ---
+      - name: Fetch Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm and turbo
+        run: npm install -g pnpm turbo
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Prepare Docs Directories
+        run: mkdir -p docs/audits docs/context docs/wiki
+
+      # ==========================================
+      # 1. THE CODE QUALITY GAUNTLET (Tests & Lint)
+      # ==========================================
+      - name: Run Linters & Typecheck
+        run: |
+          pnpm turbo lint > docs/audits/lint-report.txt || true
+          pnpm turbo typecheck > docs/audits/typecheck-report.txt || true
+
+      - name: Run Unit Tests & Check Coverage
+        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage --passWithNoTests > docs/audits/unit-test-coverage.txt || true
+
+      - name: Install Playwright Browsers (For E2E)
+        run: npx playwright install --with-deps
+
+      - name: Run E2E Tests
+        run: INFISICAL_MOCK=true pnpm turbo e2e > docs/audits/e2e-test-report.txt || true
+
+      # ==========================================
+      # 2. EXTERNAL SCANNERS (SonarCloud & Lighthouse)
+      # ==========================================
+      # - name: Run SonarCloud Scan
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   continue-on-error: true
+
+      - name: Build Applications (Required for Lighthouse)
+        run: pnpm turbo build
+
+      - name: Run Lighthouse (PWA Metrics)
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun > docs/audits/lighthouse-report.txt || true
+
+      # ==========================================
+      # 3. AI CONTEXT GENERATION (Architecture & State)
+      # ==========================================
+      - name: Generate Tech Debt, Graph Context & Rules
+        run: |
+          pnpm run knip > docs/audits/knip-report.txt || true
+          npx turbo graph > docs/context/turbo-graph.txt || true
+          tree -I 'node_modules|.git|.next|dist|out|.turbo|docs' > docs/context/directory-tree.txt || true
+
+          # CRITICAL: Copy .cursorrules to a markdown file for NotebookLM
+          cat .cursorrules > docs/context/cursorrules.md || true
+
+      - name: Run Repomix (Full Codebase Snapshot)
+        run: npx repomix --output docs/context/repomix-output.xml || true
+
+      - name: Dump Database Schema
+        run: |
+          cat packages/supabase/schema.sql > docs/context/db-schema.sql || true
+
+      - name: Fetch GitHub State (Issues & Kanban)
+        env:
+          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+        run: |
+          gh issue list --state open --limit 100 > docs/context/notebooklm-issues.md || true
+          gh project item-list <YOUR_PROJECT_ID> --owner conarwelsh --format markdown > docs/context/notebooklm-project.md || true
+
+      # ==========================================
+      # 4. SYNC TO REPO, WIKI, & TRIGGER AGENTS
+      # ==========================================
+      - name: Commit and Push Docs and Context to Main Repo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "chore(ai): auto-update tech debt, architecture, rules, and kanban states [skip ci]" || echo "No changes to commit"
+          git push
+
+      - name: Sync docs/wiki to GitHub Wiki Repository
+        env:
+          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+        run: |
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
+          if [ -d "/tmp/wiki" ]; then
+            cp -R docs/wiki/* /tmp/wiki/ || true
+            cd /tmp/wiki
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(docs): sync wiki from main repo [skip ci]" || echo "No changes to commit"
+            git push origin HEAD:master || git push origin HEAD:main || true
+          else
+            echo "Wiki repository not found. Ensure the Wiki feature is enabled in GitHub settings and initialized."
+          fi
+
+      # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
+      - name: Trigger n8n CTO Summary
+        run: |
+          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
+          -H "Content-Type: application/json" \
+          -d '{"status": "${{ job.status }}"}'
 ````
 
 ## File: eslint.config.mjs

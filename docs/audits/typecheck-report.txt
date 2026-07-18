@@ -47,28 +47,28 @@ $ tsc --noEmit
 cache miss, executing f77ac69c5c069ee2
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing c8999c76a93c3e9f
-$ tsc --noEmit
-::endgroup::
 ::group::pos-simulator:typecheck
 cache miss, executing d3be84082edcda75
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 247b5d795436e44f
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
 cache miss, executing c28ddf3a763781d4
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 4d619399ba2d75b5
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing 1b5286151e0fbee3
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 247b5d795436e44f
+::group::@soustools/domain-pos:typecheck
+cache miss, executing c8999c76a93c3e9f
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 4d619399ba2d75b5
 $ tsc --noEmit
 ::endgroup::
 ::group::api:typecheck
@@ -82,5 +82,5 @@ $ tsc --noEmit
 
  Tasks:    19 successful, 19 total
 Cached:    3 cached, 19 total
-  Time:    50.448s 
+  Time:    51.332s 
 

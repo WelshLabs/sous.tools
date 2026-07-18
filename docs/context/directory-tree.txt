@@ -8,6 +8,175 @@
 │   │   │   └── api
 │   │   │       └── src
 │   │   │           └── schema.gql
+│   │   ├── coverage
+│   │   │   ├── clover.xml
+│   │   │   ├── coverage-final.json
+│   │   │   ├── lcov-report
+│   │   │   │   ├── base.css
+│   │   │   │   ├── block-navigation.js
+│   │   │   │   ├── favicon.png
+│   │   │   │   ├── index.html
+│   │   │   │   ├── prettify.css
+│   │   │   │   ├── prettify.js
+│   │   │   │   ├── sort-arrow-sprite.png
+│   │   │   │   ├── sorter.js
+│   │   │   │   └── src
+│   │   │   │       ├── app.controller.ts.html
+│   │   │   │       ├── app.module.ts.html
+│   │   │   │       ├── app.service.ts.html
+│   │   │   │       ├── common
+│   │   │   │       │   ├── filters
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   └── ws-exception.filter.ts.html
+│   │   │   │       │   ├── guards
+│   │   │   │       │   │   ├── admin.guard.ts.html
+│   │   │   │       │   │   └── index.html
+│   │   │   │       │   └── pipes
+│   │   │   │       │       ├── index.html
+│   │   │   │       │       └── zod-validation.pipe.ts.html
+│   │   │   │       ├── filters
+│   │   │   │       │   ├── all-exceptions.filter.ts.html
+│   │   │   │       │   └── index.html
+│   │   │   │       ├── graphql
+│   │   │   │       │   ├── graphql.module.ts.html
+│   │   │   │       │   └── index.html
+│   │   │   │       ├── health
+│   │   │   │       │   ├── health.controller.ts.html
+│   │   │   │       │   ├── health.module.ts.html
+│   │   │   │       │   ├── health.resolver.ts.html
+│   │   │   │       │   ├── health.types.ts.html
+│   │   │   │       │   └── index.html
+│   │   │   │       ├── index.html
+│   │   │   │       ├── lib
+│   │   │   │       │   ├── index.html
+│   │   │   │       │   ├── supabase-auth.guard.ts.html
+│   │   │   │       │   ├── supabase.ts.html
+│   │   │   │       │   └── ws-supabase-auth.guard.ts.html
+│   │   │   │       ├── main.ts.html
+│   │   │   │       ├── modules
+│   │   │   │       │   ├── auth
+│   │   │   │       │   │   ├── auth.controller.ts.html
+│   │   │   │       │   │   ├── auth.module.ts.html
+│   │   │   │       │   │   └── index.html
+│   │   │   │       │   ├── commands
+│   │   │   │       │   │   ├── commands-ollama.helper.ts.html
+│   │   │   │       │   │   ├── commands-tools.ts.html
+│   │   │   │       │   │   ├── commands.controller.ts.html
+│   │   │   │       │   │   ├── commands.gateway.ts.html
+│   │   │   │       │   │   ├── commands.module.ts.html
+│   │   │   │       │   │   ├── commands.service.ts.html
+│   │   │   │       │   │   └── index.html
+│   │   │   │       │   ├── dashboard
+│   │   │   │       │   │   ├── dashboard.controller.ts.html
+│   │   │   │       │   │   ├── dashboard.module.ts.html
+│   │   │   │       │   │   └── index.html
+│   │   │   │       │   ├── devices
+│   │   │   │       │   │   ├── devices.controller.ts.html
+│   │   │   │       │   │   ├── devices.module.ts.html
+│   │   │   │       │   │   ├── devices.service.ts.html
+│   │   │   │       │   │   └── index.html
+│   │   │   │       │   ├── ingestion
+│   │   │   │       │   │   ├── CloudVisionService.ts.html
+│   │   │   │       │   │   ├── OllamaVisionService.ts.html
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── ingestion.controller.ts.html
+│   │   │   │       │   │   ├── ingestion.gateway.ts.html
+│   │   │   │       │   │   ├── ingestion.module.ts.html
+│   │   │   │       │   │   ├── ingestion.processor.ts.html
+│   │   │   │       │   │   └── normalization.service.ts.html
+│   │   │   │       │   ├── integrations
+│   │   │   │       │   │   ├── drivers
+│   │   │   │       │   │   │   ├── base.driver.ts.html
+│   │   │   │       │   │   │   ├── index.html
+│   │   │   │       │   │   │   └── square.driver.ts.html
+│   │   │   │       │   │   ├── google-drive.service.ts.html
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── integrations.controller.ts.html
+│   │   │   │       │   │   ├── integrations.module.ts.html
+│   │   │   │       │   │   ├── integrations.service.ts.html
+│   │   │   │       │   │   ├── pos-sync.processor.ts.html
+│   │   │   │       │   │   ├── square-client.helper.ts.html
+│   │   │   │       │   │   ├── square-mapper.helper.ts.html
+│   │   │   │       │   │   ├── square-seed-types.ts.html
+│   │   │   │       │   │   ├── square-seed.helper.ts.html
+│   │   │   │       │   │   ├── square-sync.helper.ts.html
+│   │   │   │       │   │   └── webhooks.controller.ts.html
+│   │   │   │       │   ├── items
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── inventory.controller.ts.html
+│   │   │   │       │   │   ├── inventory.service.ts.html
+│   │   │   │       │   │   ├── items-query.helper.ts.html
+│   │   │   │       │   │   ├── items.controller.ts.html
+│   │   │   │       │   │   ├── items.module.ts.html
+│   │   │   │       │   │   ├── items.service.ts.html
+│   │   │   │       │   │   ├── price-history.controller.ts.html
+│   │   │   │       │   │   ├── price-history.service.ts.html
+│   │   │   │       │   │   ├── purchase-orders.controller.ts.html
+│   │   │   │       │   │   ├── purchase-orders.service.ts.html
+│   │   │   │       │   │   ├── vendors.controller.ts.html
+│   │   │   │       │   │   ├── vendors.service.ts.html
+│   │   │   │       │   │   ├── wastage.controller.ts.html
+│   │   │   │       │   │   ├── wastage.service.ts.html
+│   │   │   │       │   │   ├── whiteboard.controller.ts.html
+│   │   │   │       │   │   └── whiteboard.service.ts.html
+│   │   │   │       │   ├── metrics
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── metrics.controller.ts.html
+│   │   │   │       │   │   └── metrics.module.ts.html
+│   │   │   │       │   ├── nutrition
+│   │   │   │       │   │   ├── dietary-classifier.service.ts.html
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── label-renderer.service.ts.html
+│   │   │   │       │   │   ├── nutrition.controller.ts.html
+│   │   │   │       │   │   ├── nutrition.module.ts.html
+│   │   │   │       │   │   ├── nutrition.service.ts.html
+│   │   │   │       │   │   └── usda-resolver.service.ts.html
+│   │   │   │       │   ├── pos
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── pos-links.service.ts.html
+│   │   │   │       │   │   ├── pos-transactions.service.ts.html
+│   │   │   │       │   │   ├── pos.controller.ts.html
+│   │   │   │       │   │   └── pos.module.ts.html
+│   │   │   │       │   ├── pos-simulator
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── pos-simulator.controller.ts.html
+│   │   │   │       │   │   ├── pos-simulator.helpers.ts.html
+│   │   │   │       │   │   ├── pos-simulator.mock.ts.html
+│   │   │   │       │   │   └── pos-simulator.module.ts.html
+│   │   │   │       │   ├── recipe
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── ingredients.controller.ts.html
+│   │   │   │       │   │   ├── ingredients.service.ts.html
+│   │   │   │       │   │   ├── recipe-cost.service.ts.html
+│   │   │   │       │   │   ├── recipe-meta.controller.ts.html
+│   │   │   │       │   │   ├── recipe-meta.service.ts.html
+│   │   │   │       │   │   ├── recipe-versions.controller.ts.html
+│   │   │   │       │   │   ├── recipe.module.ts.html
+│   │   │   │       │   │   ├── recipes.controller.ts.html
+│   │   │   │       │   │   ├── recipes.mapper.ts.html
+│   │   │   │       │   │   ├── recipes.service.ts.html
+│   │   │   │       │   │   ├── vessels.controller.ts.html
+│   │   │   │       │   │   └── vessels.service.ts.html
+│   │   │   │       │   ├── signage
+│   │   │   │       │   │   ├── displays.controller.ts.html
+│   │   │   │       │   │   ├── displays.helpers.ts.html
+│   │   │   │       │   │   ├── displays.service.ts.html
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── layouts.controller.ts.html
+│   │   │   │       │   │   ├── layouts.service.ts.html
+│   │   │   │       │   │   ├── response.helper.ts.html
+│   │   │   │       │   │   ├── signage.gateway.ts.html
+│   │   │   │       │   │   └── signage.module.ts.html
+│   │   │   │       │   ├── storage
+│   │   │   │       │   │   ├── index.html
+│   │   │   │       │   │   ├── storage.controller.ts.html
+│   │   │   │       │   │   └── storage.module.ts.html
+│   │   │   │       │   └── users
+│   │   │   │       │       ├── index.html
+│   │   │   │       │       ├── users.controller.ts.html
+│   │   │   │       │       └── users.module.ts.html
+│   │   │   │       └── pre-bootstrap.ts.html
+│   │   │   └── lcov.info
 │   │   ├── eslint.config.js
 │   │   ├── nest-cli.json
 │   │   ├── openapi.json
@@ -156,6 +325,19 @@
 │   │   └── tsconfig.json
 │   ├── cli
 │   │   ├── README.md
+│   │   ├── coverage
+│   │   │   ├── clover.xml
+│   │   │   ├── coverage-final.json
+│   │   │   ├── lcov-report
+│   │   │   │   ├── base.css
+│   │   │   │   ├── block-navigation.js
+│   │   │   │   ├── favicon.png
+│   │   │   │   ├── index.html
+│   │   │   │   ├── prettify.css
+│   │   │   │   ├── prettify.js
+│   │   │   │   ├── sort-arrow-sprite.png
+│   │   │   │   └── sorter.js
+│   │   │   └── lcov.info
 │   │   ├── eslint.config.js
 │   │   ├── eslint.config.mjs
 │   │   ├── nest-cli.json
@@ -789,6 +971,7 @@
 ├── ecosystem.config.js
 ├── eslint.config.mjs
 ├── knip.jsonc
+├── lighthouserc.json
 ├── litellm_config.yaml
 ├── package.json
 ├── packages
@@ -1145,4 +1328,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-268 directories, 878 files
+298 directories, 1031 files

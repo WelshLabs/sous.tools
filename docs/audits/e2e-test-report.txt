@@ -1,0 +1,189 @@
+
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, web
+   • Running e2e in 18 packages
+   • Remote caching disabled
+
+::group::@soustools/api-types:build
+cache miss, executing c7d276d5dcf21ce4
+$ tsc
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing 1311a8e328c8a564
+$ tsc
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 2adfbddb3bd6940a
+$ tsc
+::endgroup::
+::group::@soustools/supabase:build
+cache miss, executing 7bc2803a75287f16
+$ tsc
+::endgroup::
+::group::cli:build
+cache miss, executing 666ec9dcc02b10a7
+$ nest build
+::endgroup::
+::group::api:build
+cache miss, executing 6d90dfe9991acd3f
+$ nest build
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 49953 ms
+::endgroup::
+::group::pos-simulator:build
+cache miss, executing 8da434663657e813
+$ node ../../packages/config/dist/cli.js next build --webpack
+[@soustools/config] INFISICAL_MOCK detected. Using defaults.
+[@soustools/config] Spawning command "next build --webpack" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.2.10 (webpack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 35.4s
+  Running TypeScript ...
+  Finished TypeScript in 13.1s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/4) ...
+  Generating static pages using 3 workers (1/4) 
+  Generating static pages using 3 workers (2/4) 
+  Generating static pages using 3 workers (3/4) 
+✓ Generating static pages using 3 workers (4/4) in 520ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ○ /test
+
+
+○  (Static)  prerendered as static content
+
+::endgroup::
+::group::@soustools/setup-portal:build
+cache miss, executing c9594ed8f996d7d3
+$ next build
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+  ▲ Next.js 14.2.35
+  - Experiments (use with caution):
+    · instrumentationHook
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/4) ...
+   Generating static pages (1/4) 
+   Generating static pages (2/4) 
+   Generating static pages (3/4) 
+ ✓ Generating static pages (4/4)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    2.4 kB         89.7 kB
+├ ○ /_not-found                          871 B          88.1 kB
+├ ƒ /api/finalize                        0 B                0 B
+├ ƒ /api/pairing                         0 B                0 B
+├ ƒ /api/progress                        0 B                0 B
+└ ƒ /api/wifi                            0 B                0 B
++ First Load JS shared by all            87.3 kB
+  ├ chunks/3f26617e-5cbcf102e33a0989.js  53.6 kB
+  ├ chunks/469-5bff815fb0778025.js       31.7 kB
+  └ other shared chunks (total)          1.9 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+::endgroup::
+::group::web:build
+cache miss, executing 33d4ff487df7f173
+$ node ../../packages/config/dist/cli.js next build --webpack
+[@soustools/config] INFISICAL_MOCK detected. Using defaults.
+[@soustools/config] Spawning command "next build --webpack" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.2.10 (webpack)
+- Experiments (use with caution):
+  · optimizePackageImports
+
+  Creating an optimized production build ...
+[32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
+✓ Compiled successfully in 77s
+  Running TypeScript ...
+  Finished TypeScript in 12.7s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/17) ...
+  Generating static pages using 3 workers (4/17) 
+  Generating static pages using 3 workers (8/17) 
+  Generating static pages using 3 workers (12/17) 
+✓ Generating static pages using 3 workers (17/17) in 674ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /(.)ingestion/review/[id]
+├ ƒ /admin/devices
+├ ƒ /admin/users
+├ ƒ /catalog
+├ ƒ /dashboard
+├ ○ /display
+├ ƒ /display/[id]
+├ ƒ /home
+├ ƒ /ingestion/review/[id]
+├ ƒ /ingestions
+├ ƒ /inventory
+├ ƒ /inventory/(.)vendors/add
+├ ƒ /inventory/invoices
+├ ƒ /inventory/items
+├ ƒ /inventory/orders
+├ ƒ /inventory/orders/[id]/shop
+├ ƒ /inventory/vendors
+├ ƒ /inventory/vendors/add
+├ ○ /kds
+├ ○ /login
+├ ○ /manifest.webmanifest
+├ ○ /pos
+├ ƒ /pos-orders
+├ ○ /privacy-policy
+├ ƒ /recipes
+├ ƒ /recipes/[id]
+├ ƒ /recipes/[id]/edit
+├ ƒ /recipes/[id]/kitchen
+├ ƒ /recipes/new
+├ ƒ /settings
+├ ○ /showcase
+├ ƒ /signage
+├ ƒ /signage/[deckId]
+├ ƒ /signage/[deckId]/preview
+├ ƒ /team
+├ ƒ /transactions
+└ ƒ /vendors
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+::endgroup::
+
+ Tasks:    9 successful, 9 total
+Cached:    0 cached, 9 total
+  Time:    1m56.227s 
+

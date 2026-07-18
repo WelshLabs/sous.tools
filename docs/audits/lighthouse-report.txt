@@ -1,5 +1,6 @@
 ✅  .lighthouseci/ directory writable
-⚠️   Configuration file not found
+✅  Configuration file found
 ✅  Chrome installation found
 Healthcheck passed!
+
 
