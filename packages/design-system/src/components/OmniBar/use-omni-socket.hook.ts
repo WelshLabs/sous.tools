@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { io, type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
 import { config } from "@soustools/config";
+import { api } from "@soustools/api-client";
 
 export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
   const configuredBase = apiUrl?.trim();
@@ -52,6 +53,7 @@ export function useOmniSocket(token?: string): {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const pathname = usePathname();
+  const lastPayloadRef = useRef<Record<string, unknown> | null>(null);
 
   const {
     contextPayload,
@@ -83,6 +85,16 @@ export function useOmniSocket(token?: string): {
           withCredentials: true,
         });
 
+        // Capture outgoing executeCommand payloads for silent retries on token expiration
+        const originalEmit = newSocket.emit.bind(newSocket);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        newSocket.emit = (event: string, ...args: any[]) => {
+          if (event === "executeCommand") {
+            lastPayloadRef.current = args[0] as Record<string, unknown>;
+          }
+          return originalEmit(event, ...args);
+        };
+
         // Listen for standard chat stream
         newSocket.on("chat_message", (message: OmniMessage) => {
           addMessage(message);
@@ -104,6 +116,52 @@ export function useOmniSocket(token?: string): {
             }
           },
         );
+
+        // Global socket error & exception handlers
+        newSocket.on("exception", async (error: { message?: string }) => {
+          console.error("NestJS Guard/Pipe Exception:", error);
+          if (error.message?.includes("Unauthorized") || error.message?.includes("expired")) {
+            console.warn("Unauthorized socket error. Attempting token refresh...");
+            try {
+              const refreshRes = await api.POST("/auth/refresh");
+              if (!refreshRes.error) {
+                console.log("Token refreshed. Retrying last socket command...");
+                if (lastPayloadRef.current) {
+                  newSocket?.emit("executeCommand", lastPayloadRef.current);
+                  return; // prevent setting error message and clearing loading state
+                }
+              }
+            } catch (refreshErr) {
+              console.error("Failed to refresh token during socket exception:", refreshErr);
+            }
+          }
+          setErrorMessage(error.message || "A server error occurred.");
+          setIsProcessing(false);
+          markLoadingComplete();
+        });
+
+        newSocket.on("error", (error) => {
+          console.error("Socket Error:", error);
+          setErrorMessage("A network error occurred.");
+          setIsProcessing(false);
+          markLoadingComplete();
+        });
+
+        newSocket.on("connect_error", (error) => {
+          console.error("Socket Connect Error:", error);
+          setErrorMessage("Failed to connect to the server.");
+          setIsProcessing(false);
+          markLoadingComplete();
+        });
+
+        newSocket.on("disconnect", (reason) => {
+          console.warn("Socket Disconnected:", reason);
+          if (reason !== "io client disconnect") {
+            setErrorMessage("Lost connection to the server.");
+            setIsProcessing(false);
+            markLoadingComplete();
+          }
+        });
 
         setSocket(newSocket);
       } catch (err: unknown) {
@@ -137,36 +195,6 @@ export function useOmniSocket(token?: string): {
           socket?.connect();
         }
 
-        socket?.on("exception", (error) => {
-          console.error("NestJS Guard/Pipe Exception:", error);
-          setErrorMessage(error.message || "A server error occurred.");
-          setIsProcessing(false);
-          markLoadingComplete();
-        });
-
-        socket?.on("error", (error) => {
-          console.error("Socket Error:", error);
-          setErrorMessage("A network error occurred.");
-          setIsProcessing(false);
-          markLoadingComplete();
-        });
-
-        socket?.on("connect_error", (error) => {
-          console.error("Socket Connect Error:", error);
-          setErrorMessage("Failed to connect to the server.");
-          setIsProcessing(false);
-          markLoadingComplete();
-        });
-
-        socket?.on("disconnect", (reason) => {
-          console.warn("Socket Disconnected:", reason);
-          if (reason !== "io client disconnect") {
-            setErrorMessage("Lost connection to the server.");
-            setIsProcessing(false);
-            markLoadingComplete();
-          }
-        });
-
         socket?.emit("executeCommand", {
           chatHistory: updatedHistory,
           source: "omnibar",
@@ -187,8 +215,6 @@ export function useOmniSocket(token?: string): {
     setExecuteBackgroundCommand,
     setChatHistory,
     setIsProcessing,
-    setErrorMessage,
-    markLoadingComplete,
   ]);
 
   return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
