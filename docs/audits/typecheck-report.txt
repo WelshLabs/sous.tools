@@ -1,0 +1,86 @@
+
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, web
+   • Running typecheck in 18 packages
+   • Remote caching disabled
+
+::group::@soustools/api-types:build
+cache hit, replaying logs 853580a84eb6a026
+$ tsc
+::endgroup::
+::group::@soustools/config:build
+cache hit, replaying logs dac5cc3f9079f98f
+$ tsc
+::endgroup::
+::group::@soustools/logger:build
+cache hit, replaying logs f61f55b4abc763c1
+$ tsc
+::endgroup::
+::group::@soustools/api-client:typecheck
+cache miss, executing 6d99f584ad619aaa
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/logger:typecheck
+cache miss, executing 3aef99c978b1e7c9
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing a1303c93179e1735
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/supabase:typecheck
+cache miss, executing 0e2bebd4da56eaec
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/config:typecheck
+cache miss, executing 50fbadf8ee781152
+$ tsc --noEmit
+::endgroup::
+::group::cli:typecheck
+cache miss, executing 27abf2c5a2038de4
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing fb058ae0c8660f59
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/design-system:typecheck
+cache miss, executing f77ac69c5c069ee2
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing c8999c76a93c3e9f
+$ tsc --noEmit
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing d3be84082edcda75
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing c28ddf3a763781d4
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 4d619399ba2d75b5
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing 1b5286151e0fbee3
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 247b5d795436e44f
+$ tsc --noEmit
+::endgroup::
+::group::api:typecheck
+cache miss, executing 0e4770503800675b
+$ tsc --noEmit
+::endgroup::
+::group::web:typecheck
+cache miss, executing d5e7813365562331
+$ tsc --noEmit
+::endgroup::
+
+ Tasks:    19 successful, 19 total
+Cached:    3 cached, 19 total
+  Time:    50.448s 
+
