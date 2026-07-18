@@ -17,7 +17,7 @@
 47 OPEN Square Integration enhancement, backend, devops, database 2026-07-11T21:45:30Z
 45 OPEN Tutorial system enhancement, frontend, design-system 2026-07-11T21:35:54Z
 44 OPEN Recipes Page enhancement, backend, frontend, design-system, database 2026-07-11T21:35:28Z
-43 OPEN Tech Debt: Upgrade setup-portal to Next.js 16 enhancement 2026-07-18T09:10:00Z
+43 OPEN Tech Debt: Upgrade setup-portal to Next.js 16 enhancement 2026-07-18T10:54:17Z
 40 OPEN KDS Functionality bug, enhancement, backend 2026-07-16T20:11:27Z
 39 OPEN POS Functionality enhancement, backend, design-system, database 2026-07-16T20:11:28Z
 12 OPEN Square Integration bug, enhancement, backend 2026-07-16T20:11:29Z

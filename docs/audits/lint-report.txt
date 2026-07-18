@@ -11,96 +11,96 @@ $ eslint . --max-warnings 0
 cache miss, executing 853580a84eb6a026
 $ tsc
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing 0a9faf4051ff13e8
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/config:lint
 cache miss, executing dc944b5ef2c956bb
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing 0a9faf4051ff13e8
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
 cache miss, executing dac5cc3f9079f98f
 $ tsc
 ::endgroup::
-::group::@soustools/supabase:lint
-cache miss, executing 6e2442727c672480
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing 94b08e4fc95288ea
-$ eslint . --max-warnings 0
+::group::@soustools/logger:build
+cache miss, executing f61f55b4abc763c1
+$ tsc
 ::endgroup::
 ::group::@soustools/logger:lint
 cache miss, executing f12e828b5458e92a
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing f61f55b4abc763c1
-$ tsc
+::group::@soustools/supabase:lint
+cache miss, executing 6e2442727c672480
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing 90b6b6f8c06e742a
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing cf728654360895fc
+$ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-client:lint
 cache miss, executing df5203b0005584b2
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing d40cca71c286d291
+::group::@soustools/domain-inventory:lint
+cache miss, executing a535228f8e7b94c8
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing 687b9d8ae968b6ac
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing a7eca4f7d707236e
+cache miss, executing d29cf4f4025bd372
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/design-system:lint
-cache miss, executing c510b560ecbfc913
+cache miss, executing 7018b0d9724c7543
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-signage:lint
-cache miss, executing c02802d192706a97
+cache miss, executing 9b899d3d5a7ef072
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/setup-portal:lint
+cache miss, executing de201a67a63651ae
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::cli:lint
 cache miss, executing 05d53554595b6a84
 $ eslint . --max-warnings 0
-(node:3373) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784371698955 is not specified and it doesn't parse as CommonJS.
+(node:3231) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784373866558 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 ::group::pos-simulator:lint
-cache miss, executing 424546de30ad95e9
+cache miss, executing ffb4b52e3c0384aa
 $ eslint . --max-warnings 0
-(node:3399) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784371698956 is not specified and it doesn't parse as CommonJS.
+(node:3218) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784373866559 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing e9b8d4e88dbe8e1f
+::group::web:lint
+cache miss, executing 291a5e148084c913
 $ eslint . --max-warnings 0
+(node:3156) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784373866563 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 ::group::api:lint
 cache miss, executing 5b5c88ecebeb41af
 $ eslint . --max-warnings 0
-(node:3360) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784371698951 is not specified and it doesn't parse as CommonJS.
+(node:3205) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784373866553 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-::endgroup::
-::group::web:lint
-cache miss, executing 7a85dacbe5a2460f
-$ eslint . --max-warnings 0
-(node:3381) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784371698960 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 
  Tasks:    20 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    19.035s 
+  Time:    17.347s 
 

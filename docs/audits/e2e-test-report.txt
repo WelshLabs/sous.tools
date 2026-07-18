@@ -26,10 +26,10 @@ $ nest build
 ::group::api:build
 cache miss, executing 6d90dfe9991acd3f
 $ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 42340 ms
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 38464 ms
 ::endgroup::
 ::group::pos-simulator:build
-cache miss, executing 8da434663657e813
+cache miss, executing 575130cfc2d4236b
 $ node ../../packages/config/dist/cli.js next build --webpack
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build --webpack" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -42,15 +42,15 @@ https://nextjs.org/telemetry
 ▲ Next.js 16.2.10 (webpack)
 
   Creating an optimized production build ...
-✓ Compiled successfully in 29.6s
+✓ Compiled successfully in 26.5s
   Running TypeScript ...
-  Finished TypeScript in 10.7s ...
+  Finished TypeScript in 9.8s ...
   Collecting page data using 3 workers ...
   Generating static pages using 3 workers (0/4) ...
   Generating static pages using 3 workers (1/4) 
   Generating static pages using 3 workers (2/4) 
   Generating static pages using 3 workers (3/4) 
-✓ Generating static pages using 3 workers (4/4) in 331ms
+✓ Generating static pages using 3 workers (4/4) in 345ms
   Finalizing page optimization ...
   Collecting build traces ...
 
@@ -64,7 +64,7 @@ Route (app)
 
 ::endgroup::
 ::group::@soustools/setup-portal:build
-cache miss, executing c9594ed8f996d7d3
+cache miss, executing c54a03cde6f2da4c
 $ next build
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
@@ -106,7 +106,7 @@ Route (app)                              Size     First Load JS
 
 ::endgroup::
 ::group::web:build
-cache miss, executing 33d4ff487df7f173
+cache miss, executing fc92062137e3eb33
 $ node ../../packages/config/dist/cli.js next build --webpack
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build --webpack" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -122,15 +122,15 @@ https://nextjs.org/telemetry
 
   Creating an optimized production build ...
 [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
-✓ Compiled successfully in 63s
+✓ Compiled successfully in 58s
   Running TypeScript ...
-  Finished TypeScript in 10.6s ...
+  Finished TypeScript in 9.4s ...
   Collecting page data using 3 workers ...
   Generating static pages using 3 workers (0/17) ...
   Generating static pages using 3 workers (4/17) 
   Generating static pages using 3 workers (8/17) 
   Generating static pages using 3 workers (12/17) 
-✓ Generating static pages using 3 workers (17/17) in 566ms
+✓ Generating static pages using 3 workers (17/17) in 572ms
   Finalizing page optimization ...
   Collecting build traces ...
 
@@ -185,5 +185,5 @@ Route (app)
 
  Tasks:    9 successful, 9 total
 Cached:    0 cached, 9 total
-  Time:    1m35.741s 
+  Time:    1m28.038s 
 
