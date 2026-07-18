@@ -51,7 +51,6 @@ FAIL src/modules/integrations/webhooks.spec.ts
 
       at Object.<anonymous> (modules/integrations/webhooks.spec.ts:102:20)
 
-PASS src/modules/pos-simulator/pos-simulator.spec.ts
 FAIL src/modules/recipe/recipe.spec.ts
   ● Recipe Module Controllers › should list vessels successfully
 
@@ -173,6 +172,7 @@ FAIL src/modules/recipe/recipe.spec.ts
       at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
       at Object.<anonymous> (modules/recipe/recipe.spec.ts:29:35)
 
+PASS src/modules/pos-simulator/pos-simulator.spec.ts
 PASS src/modules/devices/devices.spec.ts
 PASS src/modules/signage/displays.spec.ts
 PASS src/modules/signage/layouts.spec.ts
@@ -497,12 +497,12 @@ All files                         |   11.07 |    10.45 |    8.76 |   10.57 |
 Test Suites: 4 failed, 4 passed, 8 total
 Tests:       8 failed, 11 passed, 19 total
 Snapshots:   0 total
-Time:        7.506 s
+Time:        9.407 s
 Ran all test suites.
 [ELIFECYCLE] Test failed. See above for more details.
 
  Tasks:    4 successful, 5 total
 Cached:    0 cached, 5 total
-  Time:    11.59s 
+  Time:    14.656s 
 Failed:    api#test
 

@@ -996,6 +996,11 @@ export ANTHROPIC_BASE_URL="https://ai.sous.tools"
 export ANTHROPIC_API_KEY="sk-1234"
 ````
 
+## File: .husky/pre-commit
+````
+npx lint-staged
+````
+
 ## File: apps/api/apps/api/src/schema.gql
 ````graphql
 # ------------------------------------------------------
@@ -43630,11 +43635,6 @@ jobs:
             # 3. Make sure the script is executable and run it!
             chmod +x deploy.sh
             ./deploy.sh
-````
-
-## File: .husky/pre-commit
-````
-npx lint-staged
 ````
 
 ## File: apps/api/src/common/filters/ws-exception.filter.ts
