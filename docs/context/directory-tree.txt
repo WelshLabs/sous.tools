@@ -516,6 +516,8 @@
 │   │   ├── gradlew.bat
 │   │   └── settings.gradle.kts
 │   └── web
+│       ├── cache
+│       │   └── config.json
 │       ├── e2e
 │       │   ├── recipe.spec.ts
 │       │   └── signage.spec.ts
@@ -1364,4 +1366,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-303 directories, 1062 files
+304 directories, 1063 files

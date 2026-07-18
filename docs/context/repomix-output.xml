@@ -588,15 +588,16 @@ docs/
   agents/
     logs/
       .gitkeep
-    audit.md
-    implement.md
-    plan.md
-    research.md
-    review.md
+    prompts/
+      audit.md
+      implement.md
+      plan.md
+      research.md
+      review.md
+      spec.md
+      test.md
+      ui.md
     run-agent.sh
-    spec.md
-    test.md
-    ui.md
   wiki/
     _Footer.md
     _Sidebar.md
@@ -29055,6 +29056,215 @@ export default [
 }
 ````
 
+## File: packages/domain-inventory/src/components/Supplier/SupplierLineItem.tsx
+````typescript
+"use client";
+
+import * as React from "react";
+import { Package, Zap, Trash2 } from "lucide-react";
+import type { OrderLineItem, OrderSupplier } from "./SupplierOrderGroup.types";
+
+export interface OrderItemRowProps {
+  item: OrderLineItem;
+  suppliers: OrderSupplier[];
+  onRemove: (id: string) => void;
+  onChangeQty: (id: string, qty: number) => void;
+  onChangeSupplier: (id: string, supplierId: string | null) => void;
+}
+
+export function OrderItemRow({
+  item,
+  suppliers,
+  onRemove,
+  onChangeQty,
+  onChangeSupplier,
+}: OrderItemRowProps) {
+  const [qty, setQty] = React.useState(String(item.quantity));
+
+  const commitQty = () => {
+    const parsed = parseFloat(qty);
+    if (!isNaN(parsed) && parsed > 0) onChangeQty(item.id, parsed);
+    else setQty(String(item.quantity));
+  };
+
+  return (
+    <div className="p-4 bg-card/60 border border-border hover:border-primary/30 transition-all flex flex-row items-center justify-between rounded-2xl group/item">
+      {/* Left: icon + name */}
+      <div className="flex flex-row items-center gap-4 flex-1 min-w-0">
+        <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center border border-border group-hover/item:bg-primary/5 transition-colors shrink-0">
+          <Package
+            size={16}
+            className="text-muted-foreground group-hover/item:text-primary transition-colors"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-black uppercase text-sm tracking-tight text-foreground truncate">
+            {item.rawName}
+          </p>
+          {item.isSystemSuggestion && (
+            <div className="inline-flex flex-row items-center gap-1 text-warning bg-warning/10 px-2 py-0.5 rounded-full border border-warning/20 mt-0.5">
+              <Zap size={7} fill="currentColor" />
+              <span className="text-[7px] font-black uppercase tracking-widest">
+                AI Suggested
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right: qty + supplier + remove */}
+      <div className="flex flex-row items-center gap-3 shrink-0">
+        <div className="flex flex-row items-center gap-1 bg-secondary p-1 rounded-xl border border-border">
+          <input
+            type="number"
+            value={qty}
+            min={0}
+            step={0.5}
+            onChange={(e) => setQty(e.target.value)}
+            onBlur={commitQty}
+            className="w-12 bg-transparent text-center font-black text-sm outline-none text-foreground"
+          />
+          <span className="text-[10px] font-black uppercase text-muted-foreground pr-3 border-l border-border pl-2">
+            {item.unit}
+          </span>
+        </div>
+
+        <select
+          value={item.supplier?.id ?? ""}
+          onChange={(e) =>
+            onChangeSupplier(item.id, e.target.value || null)
+          }
+          className="bg-secondary border border-border rounded-xl px-3 h-10 text-[10px] font-black uppercase appearance-none text-foreground min-w-[130px] outline-none focus:border-primary/50 transition-colors"
+        >
+          <option value="">Move to...</option>
+          {suppliers.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={() => onRemove(item.id)}
+          aria-label={`Remove ${item.rawName}`}
+          className="h-10 w-10 p-0 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive text-muted-foreground flex items-center justify-center"
+        >
+          <Trash2 size={15} />
+        </button>
+      </div>
+    </div>
+  );
+}
+````
+
+## File: packages/domain-inventory/src/components/Supplier/SupplierOrderGroup.tsx
+````typescript
+"use client";
+
+import { Loader2, ShoppingBag } from "lucide-react";
+import { SupplierHeader } from "./SupplierHeader";
+import { OrderItemRow } from "./SupplierLineItem";
+import type { OrderSupplier, OrderLineItem } from "./SupplierOrderGroup.types";
+
+export type { OrderSupplier, OrderLineItem };
+
+export interface SupplierOrderGroupProps {
+  supplier: OrderSupplier | null;
+  items: OrderLineItem[];
+  allSuppliers: OrderSupplier[];
+  isPlacingOrder: boolean;
+  onPlaceOrder: () => void;
+  onRemoveItem: (id: string) => void;
+  onChangeQty: (id: string, qty: number) => void;
+  onChangeSupplier: (id: string, supplierId: string | null) => void;
+  onShopOrder?: () => void;
+}
+
+export function SupplierOrderGroup({
+  supplier,
+  items,
+  allSuppliers,
+  isPlacingOrder,
+  onPlaceOrder,
+  onRemoveItem,
+  onChangeQty,
+  onChangeSupplier,
+  onShopOrder,
+}: SupplierOrderGroupProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <SupplierHeader
+        supplier={supplier}
+        items={items}
+        isPlacingOrder={isPlacingOrder}
+        onPlaceOrder={onPlaceOrder}
+        onShopOrder={onShopOrder}
+      />
+      {isPlacingOrder ? (
+        <div className="flex items-center justify-center py-10 text-primary gap-3">
+          <Loader2 size={26} className="animate-spin" />
+          <span className="text-xs font-black uppercase tracking-widest">
+            Placing Order…
+          </span>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {items.map((item) => (
+            <OrderItemRow
+              key={item.id}
+              item={item}
+              suppliers={allSuppliers}
+              onRemove={onRemoveItem}
+              onChangeQty={onChangeQty}
+              onChangeSupplier={onChangeSupplier}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function EmptyOrderList() {
+  return (
+    <div className="p-20 bg-muted/40 dark:bg-card/40 border border-border border-dashed flex flex-col items-center justify-center rounded-[2.5rem]">
+      <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-6">
+        <ShoppingBag
+          size={48}
+          className="text-muted-foreground/30 dark:text-muted-foreground/20"
+        />
+      </div>
+      <p className="text-muted-foreground font-black uppercase text-xs tracking-widest mb-2">
+        Everything looks good
+      </p>
+      <p className="text-muted-foreground/60 text-sm max-w-xs text-center">
+        Your living order list is empty. Add items as you notice they are low,
+        or wait for system suggestions.
+      </p>
+    </div>
+  );
+}
+````
+
+## File: packages/domain-inventory/src/components/Supplier/SupplierOrderGroup.types.ts
+````typescript
+export interface OrderSupplier {
+  id: string;
+  name: string;
+  deliveryDays: number[];
+  cutoffTime: string;
+}
+
+export interface OrderLineItem {
+  id: string;
+  rawName: string;
+  quantity: number;
+  unit: string;
+  isSystemSuggestion: boolean;
+  supplier: OrderSupplier | null;
+}
+````
+
 ## File: packages/domain-inventory/src/draft-po-modal.tsx
 ````typescript
 "use client";
@@ -29196,6 +29406,17 @@ export function DraftPoModal({
 }
 ````
 
+## File: packages/domain-inventory/src/index.ts
+````typescript
+export * from "./item-editor-modal";
+export * from "./items-ledger-table";
+export * from "./draft-po-modal";
+export * from "./orders-panel";
+export * from "./vendors-panel";
+export * from "./components/Supplier/SupplierOrderGroup";
+export * from "./components/Supplier/SupplierOrderGroup.types";
+````
+
 ## File: packages/domain-inventory/src/item-editor-usda-box.tsx
 ````typescript
 "use client";
@@ -29310,6 +29531,99 @@ export function OrdersHistoryTab({ historyOrders, onShopOrder }: HistoryTabProps
           </div>
         );
       })}
+    </div>
+  );
+}
+````
+
+## File: packages/domain-inventory/src/orders-list-tab.tsx
+````typescript
+"use client";
+
+import {
+  QuickAddBar,
+  InsightsSidebar,
+  type QuickAddSuggestion,
+} from "@soustools/design-system";
+import {
+  SupplierOrderGroup,
+  EmptyOrderList,
+} from "./components/Supplier/SupplierOrderGroup";
+import type {
+  OrderLineItem,
+  OrderSupplier,
+} from "./components/Supplier/SupplierOrderGroup.types";
+
+interface ListTabProps {
+  items: OrderLineItem[];
+  searchQuery: string;
+  suggestions: QuickAddSuggestion[];
+  suppliers: OrderSupplier[];
+  groupedItems: Record<string, OrderLineItem[]>;
+  placingOrderId: string | null;
+  onSearchChange: (v: string) => void;
+  onSelectSuggestion: (s: QuickAddSuggestion) => void;
+  onAddFreeText: (rawName: string) => Promise<void>;
+  onRemoveItem: (id: string) => Promise<void>;
+  onChangeQty: (id: string, qty: number) => Promise<void>;
+  onChangeSupplier: (id: string, supplierId: string | null) => Promise<void>;
+  onPlaceOrder: (supplierId: string) => Promise<void>;
+  onShopOrder: (supplierId: string) => void;
+}
+
+/** Presentational: Active living order list tab with QuickAddBar + grouped supplier rows. */
+export function OrdersListTab({
+  items,
+  searchQuery,
+  suggestions,
+  suppliers,
+  groupedItems,
+  placingOrderId,
+  onSearchChange,
+  onSelectSuggestion,
+  onAddFreeText,
+  onRemoveItem,
+  onChangeQty,
+  onChangeSupplier,
+  onPlaceOrder,
+  onShopOrder,
+}: ListTabProps) {
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="flex-[3] flex flex-col gap-8 min-w-0">
+        <QuickAddBar
+          value={searchQuery}
+          onChange={onSearchChange}
+          suggestions={suggestions}
+          onSelectSuggestion={onSelectSuggestion}
+          onAddFreeText={onAddFreeText}
+        />
+
+        {items.length === 0 ? (
+          <EmptyOrderList />
+        ) : (
+          <div className="flex flex-col gap-12">
+            {Object.entries(groupedItems).map(([supplierId, groupItems]) => (
+              <SupplierOrderGroup
+                key={supplierId}
+                supplier={suppliers.find((s) => s.id === supplierId) ?? null}
+                items={groupItems}
+                allSuppliers={suppliers}
+                isPlacingOrder={placingOrderId === supplierId}
+                onPlaceOrder={() => onPlaceOrder(supplierId)}
+                onRemoveItem={onRemoveItem}
+                onChangeQty={onChangeQty}
+                onChangeSupplier={onChangeSupplier}
+                onShopOrder={() => onShopOrder(supplierId)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="w-full lg:flex-1 lg:min-w-[240px] lg:max-w-[320px] sticky top-8">
+        <InsightsSidebar suppliers={suppliers} />
+      </div>
     </div>
   );
 }
@@ -29778,6 +30092,54 @@ export function VendorsPanel({ vendors, onSave, onDelete, onAddVendorClick }: Ve
 ````
 
 ## File: packages/domain-inventory/eslint.config.js
+````javascript
+import { baseConfig } from "@soustools/eslint-config";
+
+export default [
+  ...baseConfig,
+  { ignores: ["dist/**", "node_modules/**"] },
+];
+````
+
+## File: packages/domain-pos/src/components/POSRegister/pos.types.ts
+````typescript
+import { z } from "zod";
+
+export const CartItemModifierSchema = z.object({
+  id: z.string(),
+  external_id: z.string().nullable(),
+  name: z.string(),
+  price: z.number()
+});
+
+export const CartItemSchema = z.object({
+  id: z.string(),
+  external_id: z.string().nullable(),
+  name: z.string(),
+  price: z.number(),
+  quantity: z.number().min(1),
+  modifiers: z.array(CartItemModifierSchema)
+});
+
+export const CartSchema = z.array(CartItemSchema);
+
+export const CatalogItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  price: z.number(),
+  category: z.string(),
+  image: z.string().optional(),
+  isSoldOut: z.boolean().optional(),
+  description: z.string().optional()
+});
+
+export type CartItemModifier = z.infer<typeof CartItemModifierSchema>;
+export type CartItem = z.infer<typeof CartItemSchema>;
+export type Cart = z.infer<typeof CartSchema>;
+export type CatalogItem = z.infer<typeof CatalogItemSchema>;
+````
+
+## File: packages/domain-pos/eslint.config.js
 ````javascript
 import { baseConfig } from "@soustools/eslint-config";
 
@@ -45467,132 +45829,120 @@ echo "=== [stage-sous chroot] Configuration complete ==="
 
 ````
 
-## File: docs/agents/audit.md
+## File: docs/agents/prompts/audit.md
 ````markdown
-BOOT SEQUENCE: Silently read .cursorrules to review our strict coding boundaries.
-THEN: Use your bash tool to run "pnpm knip" to find dead code and unused exports, and "pnpm turbo lint" to find boundary violations. Choose exactly ONE file with an error, refactor it into compliance, and commit the fix to a new branch named "audit/fix-{ISSUE_NUMBER}". Push the branch.
-CRITICAL INSTRUCTION: You MUST use your GitHub MCP tools to open a Pull Request in "conarwelsh/sous.tools". UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. DO NOT output conversational text in the terminal. DO NOT converse. Stop after opening the PR for the single fixed file.
+<!--
+File: /workspace/docs/agents/prompts/audit.md
+Usage: Triggered by n8n when the label "agent:audit" is applied, or run on a daily schedule.
+Purpose: Acts as the Janitor/Refactoring Agent. Runs codebase analysis tools (Knip, ESLint), picks one specific violation to fix, and opens a PR.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
+
+THEN: Run "pnpm knip" to find dead code and unused exports, and "pnpm turbo lint" to find boundary violations. 
+
+Choose exactly ONE file with an error and refactor it into compliance. Commit the fix to a new branch named "audit/fix-{ISSUE_NUMBER}" and push the branch. Then open a Pull Request in the "conarwelsh/sous.tools" repository using the Github MCP Server. DO NOT output conversational text in the terminal. DO NOT converse. Execute the tools and stop.
 ````
 
-## File: docs/agents/implement.md
+## File: docs/agents/prompts/implement.md
 ````markdown
-BOOT SEQUENCE: Silently read .cursorrules to review our strict coding boundaries.
-THEN: Review your available GitHub MCP server tools to read Issue #{ISSUE_NUMBER} in "conarwelsh/sous.tools" to find the approved plan.
-CRITICAL GUIDANCE: This is an Issue, NOT a Pull Request. You must select the tool specifically for reading issues.
-Create a new git branch named "feature/issue-{ISSUE_NUMBER}". Execute the code changes. Once complete, use your bash tool to run "pnpm turbo lint" and "pnpm turbo typecheck". Commit changes and push the branch.
-CRITICAL EXECUTION RULE: You are running in a headless CI/CD container. You MUST use the `-y` or `--yes` flags for all `npx` commands and bypass all interactive prompts.
-CRITICAL INSTRUCTION: You MUST use your MCP tools to open a Pull Request with the terminal output in the description. UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub.
-CONDITIONAL INSTRUCTION: ONLY IF the PR is successfully opened, use your MCP tools to post it is resolved, and close the issue. IF the push or PR fails, DO NOT close the issue. Instead, use your MCP tools to detail the exact error in a comment. DO NOT output terminal text. DO NOT converse. Execute and stop.
+<!--
+File: /workspace/docs/agents/prompts/implement.md
+Usage: Triggered by n8n when the label "agent:implement" is applied to a GitHub Issue.
+Purpose: Acts as the Senior Developer. Reads the approved plan on the issue, writes the code, runs typechecks/linting, and opens a PR.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
+
+THEN: You MUST use your Github MCP Server tools to fetch the data for Issue #{ISSUE_NUMBER} and its comments from the remote "conarwelsh/sous.tools" GitHub repository. 
+
+Create a new git branch named "feature/issue-{ISSUE_NUMBER}" and execute the code changes. You are running in a headless CI/CD container, so you MUST use the `-y` or `--yes` flags for all `npx` commands. 
+
+Once complete, run "pnpm turbo lint" and "pnpm turbo typecheck". IF the linter or typechecker fails, you MUST attempt to read the errors, fix the code, and re-run the checks before proceeding. 
+
+Commit changes and push the branch. Then, MUST use your Github MCP Server tools to open a Pull Request with the terminal output in the description. IF the PR is successfully opened, use the Github MCP Server to post a comment that it is resolved and close the issue. IF you cannot fix the lint/type errors or the push fails, DO NOT close the issue; instead, use the Github MCP Server to post a comment detailing the exact error. DO NOT use the bash tool to attempt to run or install the `gh` CLI. DO NOT output terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
-## File: docs/agents/plan.md
+## File: docs/agents/prompts/plan.md
 ````markdown
-BOOT SEQUENCE: Silently read .cursorrules, docs/context/project.md, and docs/context/directory-tree.txt.
-THEN: Review your available GitHub MCP server tools to read Issue #{ISSUE_NUMBER} in "conarwelsh/sous.tools".
-CRITICAL GUIDANCE: This is an Issue, NOT a Pull Request. You must select the tool specifically for reading issues.
-Write a step-by-step implementation plan compliant with our architecture. DO NOT write any code.
-CRITICAL INSTRUCTION: You MUST use your MCP tools to physically post your final plan as a comment on the issue. DO NOT output your comment as terminal text. DO NOT converse. UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. Execute the tools and stop.
+<!--
+File: /workspace/docs/agents/prompts/plan.md
+Usage: Triggered by n8n when the label "agent:plan" is applied to a GitHub Issue.
+Purpose: Acts as a Software Architect. Reads the issue spec/research and writes a step-by-step implementation plan that strictly adheres to the project's architectural rules, then posts it as a comment.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
+
+THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
+
+Write a step-by-step implementation plan compliant with our architecture. DO NOT write or modify any code. Then post your final plan as a comment on the issue. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
-## File: docs/agents/research.md
+## File: docs/agents/prompts/research.md
 ````markdown
-BOOT SEQUENCE: Silently read .cursorrules, docs/context/project.md, and docs/context/directory-tree.txt.
-THEN: Review your available GitHub MCP server tools to read Issue #{ISSUE_NUMBER} in "conarwelsh/sous.tools" to gather context.
-CRITICAL GUIDANCE: This is an Issue, NOT a Pull Request. You must select the tool specifically for reading issues.
-Search the codebase locally to locate all relevant files.
-CRITICAL INSTRUCTION: You MUST use your MCP tools to physically post a detailed research report as a comment on the issue including the exact file paths involved, current tech debt, and your diagnosis. DO NOT write any code. DO NOT output your comment as terminal text. DO NOT converse. UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. Execute the tools and stop.
+<!--
+File: /workspace/docs/agents/prompts/research.md
+Usage: Triggered by n8n when the label "agent:research" is applied to a GitHub Issue.
+Purpose: Acts as a Principal Engineer. Reads the issue, searches the local codebase to map out dependencies, and posts a detailed research report/diagnosis as a comment on the issue before code is written.
+-->
+BOOT SEQUENCE: Silently read .cursorrules, docs/context/project.md, and docs/context/directory-tree.txt. 
+
+THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
+
+Search the codebase locally to locate all relevant files. Then post a detailed research report as a comment on the issue including the exact file paths involved, current tech debt, and your diagnosis. DO NOT write any code. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
-## File: docs/agents/review.md
+## File: docs/agents/prompts/review.md
 ````markdown
-BOOT SEQUENCE: Silently read .cursorrules to review our strict coding boundaries.
-THEN: Review your available GitHub MCP server tools to review the Pull Request associated with Issue #{ISSUE_NUMBER} in "conarwelsh/sous.tools".
-CRITICAL GUIDANCE: You must select the tool specifically for reading Pull Requests for this task.
-Check the diff strictly against our architectural rules. If any apps/web component imports a database client, or if there are hardcoded hex colors or Tailwind sizes instead of design tokens, you MUST use your MCP tools to reject the PR by commenting on the exact line of code that violated the rule. If it passes all rules, approve it via the MCP tool.
-CRITICAL INSTRUCTION: DO NOT output your comment as terminal text. DO NOT converse. UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. Execute the tools and stop.
+<!--
+File: /workspace/docs/agents/prompts/review.md
+Usage: Triggered by n8n when the label "agent:review" is applied to a GitHub Issue linked to a Pull Request.
+Purpose: Acts as the Strict Code Reviewer. Audits a Pull Request against architectural boundaries (e.g., no DB clients in UI, no hardcoded Tailwind colors) and approves or rejects it.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
+
+THEN: Fetch the Pull Request associated with Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
+
+Check the diff strictly against our architectural rules. If any apps/web component imports a database client, or if there are hardcoded hex colors or Tailwind sizes instead of design tokens, reject the PR by commenting on the exact line of code that violated the rule. If it passes all rules, approve it. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
-## File: docs/agents/run-agent.sh
-````bash
-#!/bin/bash
-# Usage: bash .github/agents/run-agent.sh <label_type> <issue_number>
-# Example: bash .github/agents/run-agent.sh agent:plan 88
+## File: docs/agents/prompts/spec.md
+````markdown
+<!--
+File: /workspace/docs/agents/prompts/spec.md
+Usage: Triggered by n8n when the label "agent:spec" is applied to a GitHub Issue.
+Purpose: Acts as the CTO. Reads a raw brainstorming issue and rewrites the description into a structured Technical Specification with Acceptance Criteria and a required file checklist.
+-->
+BOOT SEQUENCE: Silently read .cursorrules and docs/context/project.md. 
 
-# 1. Source the environment to get the GitHub PAT
-source /workspace/.env
+THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
 
-LABEL=$1
-ISSUE=$2
-LOG_FILE="/workspace/docs/agents/logs/agent-run-${ISSUE}.log"
-
-# 2. Strip the 'agent:' prefix from the label to get the exact filename
-# (e.g., "agent:plan" becomes "plan", "agent:ui" becomes "ui")
-FILE_NAME=${LABEL#*:}
-PROMPT_FILE="/workspace/docs/agents/prompts/${FILE_NAME}.md"
-
-echo "Booting Agent for Issue $ISSUE with label $LABEL..." > "$LOG_FILE"
-
-# 3. Force headless environment to prevent zombie terminal prompts
-export CI=true
-export FORCE_COLOR=0
-
-# 4. Inject global Git authentication so agents can push branches
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
-
-# 5. Verify the prompt file exists before running
-if [ ! -f "$PROMPT_FILE" ]; then
-  echo "Error: Prompt file $PROMPT_FILE not found!" >> "$LOG_FILE"
-  exit 1
-fi
-
-# 6. Inject the dynamic issue number into the markdown prompt
-PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")
-
-# 7. Execute Claude with the safety wrapper, piping all output to the log
-timeout 15m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" >> "$LOG_FILE" 2>&1
-
-# 8. Check exit status and execute the curl fail-safe
-if [ $? -ne 0 ]; then
-  echo "AGENT FAILED OR TIMED OUT." >> "$LOG_FILE"
-  
-  # The cURL command to post the failure to the GitHub Issue
-  curl -s -X POST -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/conarwelsh/sous.tools/issues/${ISSUE}/comments" \
-    -d '{
-      "body": "⚠️ **Agent Execution Failed or Timed Out.**\n\nTask: `'"$LABEL"'`\n\nI encountered a critical error or hit my 15-minute execution limit. Please check the logs on the Oracle Server at `'"$LOG_FILE"'` to see what went wrong."
-    }'
-fi
+Rewrite the issue description into a highly structured Technical Spec including a User Story, Acceptance Criteria, and a checklist of exact files in the Turborepo that will need to be created or modified. Then update the issue description directly. DO NOT output the spec as terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
-## File: docs/agents/spec.md
+## File: docs/agents/prompts/test.md
 ````markdown
-BOOT SEQUENCE: Silently read .cursorrules and docs/context/project.md.
-THEN: You are the CTO. Review your available GitHub MCP server tools to read the raw brainstorm in Issue #{ISSUE_NUMBER} in the "conarwelsh/sous.tools" repository.
-CRITICAL GUIDANCE: This is an Issue, NOT a Pull Request. You must select the tool specifically for reading issues and are forbidden from trying to fetch it as a pull request.
-Rewrite the issue description into a highly structured Technical Spec including a User Story, Acceptance Criteria, and a checklist of exact files in the Turborepo that will need to be created or modified.
-CRITICAL INSTRUCTION: You MUST use your available MCP tools to update the issue description directly. DO NOT output the spec as terminal text. DO NOT converse. UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. Execute the MCP tools and stop.
+<!--
+File: /workspace/docs/agents/prompts/test.md
+Usage: Triggered by n8n when the label "agent:test" is applied to a GitHub Issue.
+Purpose: Acts as the QA Engineer. Writes unit and E2E tests for the implemented feature, runs the test suite, and reports coverage back to the issue.
+-->
+BOOT SEQUENCE: Silently read .cursorrules, docs/context/project.md, and docs/context/directory-tree.txt. 
+
+THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
+
+Locate the implemented feature files and write the missing unit tests (.spec.ts) and Playwright E2E tests to achieve 100% coverage. Do not modify the business logic. Run "pnpm turbo test". Then post the test results as a comment on the issue. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
-## File: docs/agents/test.md
+## File: docs/agents/prompts/ui.md
 ````markdown
-BOOT SEQUENCE: Silently read .cursorrules, docs/context/project.md, and docs/context/directory-tree.txt.
-THEN: Review your available GitHub MCP server tools to read Issue #{ISSUE_NUMBER} in "conarwelsh/sous.tools".
-CRITICAL GUIDANCE: This is an Issue, NOT a Pull Request. You must select the tool specifically for reading issues.
-Locate the implemented feature files. Write the missing unit tests (.spec.ts) and Playwright E2E tests to achieve 100% coverage. Do not modify the business logic. Use your bash tool to run "pnpm turbo test".
-CRITICAL INSTRUCTION: You MUST use your MCP tools to physically post the test results as a comment on the issue. DO NOT output your comment as terminal text. DO NOT converse. UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. Execute the tools and stop.
-````
+<!--
+File: /workspace/docs/agents/prompts/ui.md
+Usage: Triggered by n8n when the label "agent:ui" is applied to a GitHub Issue.
+Purpose: Acts as the Lead UI/UX Designer. Generates pure presentational components in the design system, bypasses interactive prompts, sets up Storybook stories, and opens a PR.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
 
-## File: docs/agents/ui.md
-````markdown
-BOOT SEQUENCE: Silently read .cursorrules.
-THEN: You are the Lead UI/UX Architect. Review your available GitHub MCP server tools to read the design request in Issue #{ISSUE_NUMBER} in "conarwelsh/sous.tools".
-CRITICAL GUIDANCE: This is an Issue, NOT a Pull Request. You must select the tool specifically for reading issues.
-Create a pure presentational component (*.tsx) in packages/design-system. You are strictly forbidden from writing data-fetching logic or *.container.tsx files. Exclusively use our semantic Tailwind CSS variables. Add a Storybook .stories.tsx file, commit to a new branch named "ui/issue-{ISSUE_NUMBER}", and push.
-CRITICAL EXECUTION RULE: You are running in a headless CI/CD container. You MUST use the `-y` or `--yes` flags for all `npx` init commands (like `npx shadcn-ui init` or `npx storybook init`) and bypass all interactive prompts.
-CRITICAL INSTRUCTION: You MUST use your MCP tools to open a PR, and post a comment on the issue stating it is done. UNDER NO CIRCUMSTANCES use the bash tool to run gh or curl commands for GitHub. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
+THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
+
+Create a pure presentational component (*.tsx) in packages/design-system using our semantic Tailwind CSS variables. Add a Storybook .stories.tsx file. You are running in a headless CI/CD container, so you MUST use the `-y` or `--yes` flags for all `npx` init commands and bypass all interactive prompts. Commit to a new branch named "ui/issue-{ISSUE_NUMBER}" and push. Then open a Pull Request and post a comment on the original issue stating it is done. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
 ## File: packages/api-client/src/index.ts
@@ -48264,224 +48614,122 @@ export function drawBadge(
 }
 ````
 
-## File: packages/domain-inventory/src/components/Supplier/SupplierLineItem.tsx
+## File: packages/domain-inventory/src/components/Supplier/SupplierHeader.tsx
 ````typescript
 "use client";
 
-import * as React from "react";
-import { Package, Zap, Trash2 } from "lucide-react";
-import type { OrderLineItem, OrderSupplier } from "./SupplierOrderGroup.types";
+import { Truck, Calendar, Check, ShoppingBag } from "lucide-react";
+import type { OrderSupplier, OrderLineItem } from "./SupplierOrderGroup.types";
 
-export interface OrderItemRowProps {
-  item: OrderLineItem;
-  suppliers: OrderSupplier[];
-  onRemove: (id: string) => void;
-  onChangeQty: (id: string, qty: number) => void;
-  onChangeSupplier: (id: string, supplierId: string | null) => void;
+export interface SupplierHeaderProps {
+  supplier: OrderSupplier | null;
+  items: OrderLineItem[];
+  isPlacingOrder: boolean;
+  onPlaceOrder: () => void;
+  onShopOrder?: () => void;
 }
 
-export function OrderItemRow({
-  item,
-  suppliers,
-  onRemove,
-  onChangeQty,
-  onChangeSupplier,
-}: OrderItemRowProps) {
-  const [qty, setQty] = React.useState(String(item.quantity));
+function getNextDelivery(deliveryDays: number[]): string {
+  if (!deliveryDays.length) return "No schedule";
+  const today = new Date().getDay();
+  const sorted = [...deliveryDays].sort((a, b) => a - b);
+  const next = sorted.find((d) => d > today) ?? sorted[0];
+  const daysUntil = next > today ? next - today : 7 - today + next;
+  const date = new Date();
+  date.setDate(date.getDate() + daysUntil);
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
 
-  const commitQty = () => {
-    const parsed = parseFloat(qty);
-    if (!isNaN(parsed) && parsed > 0) onChangeQty(item.id, parsed);
-    else setQty(String(item.quantity));
-  };
+export function SupplierHeader({
+  supplier,
+  items,
+  isPlacingOrder,
+  onPlaceOrder,
+  onShopOrder,
+}: SupplierHeaderProps) {
+  const isUnassigned = !supplier;
 
   return (
-    <div className="p-4 bg-card/60 border border-border hover:border-primary/30 transition-all flex flex-row items-center justify-between rounded-2xl group/item">
-      {/* Left: icon + name */}
-      <div className="flex flex-row items-center gap-4 flex-1 min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center border border-border group-hover/item:bg-primary/5 transition-colors shrink-0">
-          <Package
-            size={16}
-            className="text-muted-foreground group-hover/item:text-primary transition-colors"
+    <div className="flex flex-row items-center justify-between px-2">
+      <div className="flex flex-row items-center gap-4">
+        <div
+          className={[
+            "w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0 transition-all",
+            isUnassigned
+              ? "bg-muted dark:bg-secondary border-border"
+              : "bg-accent/10 border-accent/20 shadow-glow-accent",
+          ].join(" ")}
+        >
+          <Truck
+            size={22}
+            className={
+              isUnassigned
+                ? "text-muted-foreground"
+                : "text-accent"
+            }
           />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-black uppercase text-sm tracking-tight text-foreground truncate">
-            {item.rawName}
+        <div>
+          <p className="font-black uppercase text-xl tracking-tighter text-foreground">
+            {isUnassigned ? "Unassigned Items" : supplier?.name}
           </p>
-          {item.isSystemSuggestion && (
-            <div className="inline-flex flex-row items-center gap-1 text-warning bg-warning/10 px-2 py-0.5 rounded-full border border-warning/20 mt-0.5">
-              <Zap size={7} fill="currentColor" />
-              <span className="text-[7px] font-black uppercase tracking-widest">
-                AI Suggested
-              </span>
+          {!isUnassigned && supplier && (
+            <div className="flex flex-row items-center gap-3 mt-0.5">
+              <div className="flex flex-row items-center gap-1.5 text-primary">
+                <Calendar size={11} />
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  Next: {getNextDelivery(supplier.deliveryDays)}
+                </span>
+              </div>
+              <span className="text-muted-foreground/40 text-[10px]">•</span>
+              <div className="flex flex-row items-center gap-1.5 text-muted-foreground">
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  Cutoff: {supplier.cutoffTime}
+                </span>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Right: qty + supplier + remove */}
-      <div className="flex flex-row items-center gap-3 shrink-0">
-        <div className="flex flex-row items-center gap-1 bg-secondary p-1 rounded-xl border border-border">
-          <input
-            type="number"
-            value={qty}
-            min={0}
-            step={0.5}
-            onChange={(e) => setQty(e.target.value)}
-            onBlur={commitQty}
-            className="w-12 bg-transparent text-center font-black text-sm outline-none text-foreground"
-          />
-          <span className="text-[10px] font-black uppercase text-muted-foreground pr-3 border-l border-border pl-2">
-            {item.unit}
-          </span>
-        </div>
-
-        <select
-          value={item.supplier?.id ?? ""}
-          onChange={(e) =>
-            onChangeSupplier(item.id, e.target.value || null)
-          }
-          className="bg-secondary border border-border rounded-xl px-3 h-10 text-[10px] font-black uppercase appearance-none text-foreground min-w-[130px] outline-none focus:border-primary/50 transition-colors"
-        >
-          <option value="">Move to...</option>
-          {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={() => onRemove(item.id)}
-          aria-label={`Remove ${item.rawName}`}
-          className="h-10 w-10 p-0 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive text-muted-foreground flex items-center justify-center"
-        >
-          <Trash2 size={15} />
-        </button>
-      </div>
-    </div>
-  );
-}
-````
-
-## File: packages/domain-inventory/src/components/Supplier/SupplierOrderGroup.tsx
-````typescript
-"use client";
-
-import { Loader2, ShoppingBag } from "lucide-react";
-import { SupplierHeader } from "./SupplierHeader";
-import { OrderItemRow } from "./SupplierLineItem";
-import type { OrderSupplier, OrderLineItem } from "./SupplierOrderGroup.types";
-
-export type { OrderSupplier, OrderLineItem };
-
-export interface SupplierOrderGroupProps {
-  supplier: OrderSupplier | null;
-  items: OrderLineItem[];
-  allSuppliers: OrderSupplier[];
-  isPlacingOrder: boolean;
-  onPlaceOrder: () => void;
-  onRemoveItem: (id: string) => void;
-  onChangeQty: (id: string, qty: number) => void;
-  onChangeSupplier: (id: string, supplierId: string | null) => void;
-  onShopOrder?: () => void;
-}
-
-export function SupplierOrderGroup({
-  supplier,
-  items,
-  allSuppliers,
-  isPlacingOrder,
-  onPlaceOrder,
-  onRemoveItem,
-  onChangeQty,
-  onChangeSupplier,
-  onShopOrder,
-}: SupplierOrderGroupProps) {
-  return (
-    <div className="flex flex-col gap-6">
-      <SupplierHeader
-        supplier={supplier}
-        items={items}
-        isPlacingOrder={isPlacingOrder}
-        onPlaceOrder={onPlaceOrder}
-        onShopOrder={onShopOrder}
-      />
-      {isPlacingOrder ? (
-        <div className="flex items-center justify-center py-10 text-primary gap-3">
-          <Loader2 size={26} className="animate-spin" />
-          <span className="text-xs font-black uppercase tracking-widest">
-            Placing Order…
-          </span>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {items.map((item) => (
-            <OrderItemRow
-              key={item.id}
-              item={item}
-              suppliers={allSuppliers}
-              onRemove={onRemoveItem}
-              onChangeQty={onChangeQty}
-              onChangeSupplier={onChangeSupplier}
+      {!isUnassigned && (
+        <div className="flex flex-row gap-3">
+          {onShopOrder && (
+            <button
+              onClick={onShopOrder}
+              className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground h-12 px-6 rounded-2xl flex items-center gap-2 group transition-colors border border-border"
+            >
+              <ShoppingBag
+                size={16}
+                className="group-hover:scale-110 transition-transform"
+              />
+              <span className="font-black uppercase text-xs tracking-widest">
+                Shop
+              </span>
+            </button>
+          )}
+          <button
+            onClick={onPlaceOrder}
+            disabled={isPlacingOrder}
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 px-8 rounded-2xl shadow-glow-sm flex items-center gap-3 group transition-colors"
+          >
+            <Check
+              size={16}
+              className="text-primary-foreground group-hover:scale-110 transition-transform"
             />
-          ))}
+            <span className="text-primary-foreground font-black uppercase text-xs tracking-widest">
+              Place Order ({items.length})
+            </span>
+          </button>
         </div>
       )}
     </div>
   );
 }
-
-export function EmptyOrderList() {
-  return (
-    <div className="p-20 bg-muted/40 dark:bg-card/40 border border-border border-dashed flex flex-col items-center justify-center rounded-[2.5rem]">
-      <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-6">
-        <ShoppingBag
-          size={48}
-          className="text-muted-foreground/30 dark:text-muted-foreground/20"
-        />
-      </div>
-      <p className="text-muted-foreground font-black uppercase text-xs tracking-widest mb-2">
-        Everything looks good
-      </p>
-      <p className="text-muted-foreground/60 text-sm max-w-xs text-center">
-        Your living order list is empty. Add items as you notice they are low,
-        or wait for system suggestions.
-      </p>
-    </div>
-  );
-}
-````
-
-## File: packages/domain-inventory/src/components/Supplier/SupplierOrderGroup.types.ts
-````typescript
-export interface OrderSupplier {
-  id: string;
-  name: string;
-  deliveryDays: number[];
-  cutoffTime: string;
-}
-
-export interface OrderLineItem {
-  id: string;
-  rawName: string;
-  quantity: number;
-  unit: string;
-  isSystemSuggestion: boolean;
-  supplier: OrderSupplier | null;
-}
-````
-
-## File: packages/domain-inventory/src/index.ts
-````typescript
-export * from "./item-editor-modal";
-export * from "./items-ledger-table";
-export * from "./draft-po-modal";
-export * from "./orders-panel";
-export * from "./vendors-panel";
-export * from "./components/Supplier/SupplierOrderGroup";
-export * from "./components/Supplier/SupplierOrderGroup.types";
 ````
 
 ## File: packages/domain-inventory/src/item-editor-form-fields.tsx
@@ -48861,97 +49109,125 @@ export function ItemEditorModal({
 }
 ````
 
-## File: packages/domain-inventory/src/orders-list-tab.tsx
+## File: packages/domain-pos/src/components/POSRegister/components/pos-catalog.tsx
 ````typescript
 "use client";
 
-import {
-  QuickAddBar,
-  InsightsSidebar,
-  type QuickAddSuggestion,
-} from "@soustools/design-system";
-import {
-  SupplierOrderGroup,
-  EmptyOrderList,
-} from "./components/Supplier/SupplierOrderGroup";
-import type {
-  OrderLineItem,
-  OrderSupplier,
-} from "./components/Supplier/SupplierOrderGroup.types";
 
-interface ListTabProps {
-  items: OrderLineItem[];
+import {
+  Input,
+  Chip,
+  Card,
+  CardContent,
+  CardTitle,
+} from "@soustools/design-system";
+import { Search } from "lucide-react";
+import { type CatalogItem } from "../pos.types";
+
+export interface POSCatalogProps {
+  items: CatalogItem[];
+  categories: string[];
+  selectedCategory: string;
   searchQuery: string;
-  suggestions: QuickAddSuggestion[];
-  suppliers: OrderSupplier[];
-  groupedItems: Record<string, OrderLineItem[]>;
-  placingOrderId: string | null;
-  onSearchChange: (v: string) => void;
-  onSelectSuggestion: (s: QuickAddSuggestion) => void;
-  onAddFreeText: (rawName: string) => Promise<void>;
-  onRemoveItem: (id: string) => Promise<void>;
-  onChangeQty: (id: string, qty: number) => Promise<void>;
-  onChangeSupplier: (id: string, supplierId: string | null) => Promise<void>;
-  onPlaceOrder: (supplierId: string) => Promise<void>;
-  onShopOrder: (supplierId: string) => void;
+  onSearchChange: (value: string) => void;
+  onCategorySelect: (category: string) => void;
+  onItemClick: (item: CatalogItem) => void;
 }
 
-/** Presentational: Active living order list tab with QuickAddBar + grouped supplier rows. */
-export function OrdersListTab({
+export function POSCatalog({
   items,
+  categories,
+  selectedCategory,
   searchQuery,
-  suggestions,
-  suppliers,
-  groupedItems,
-  placingOrderId,
   onSearchChange,
-  onSelectSuggestion,
-  onAddFreeText,
-  onRemoveItem,
-  onChangeQty,
-  onChangeSupplier,
-  onPlaceOrder,
-  onShopOrder,
-}: ListTabProps) {
+  onCategorySelect,
+  onItemClick,
+}: POSCatalogProps) {
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start">
-      <div className="flex-[3] flex flex-col gap-8 min-w-0">
-        <QuickAddBar
+    <div className="flex flex-col gap-6">
+      {/* Search Bar */}
+      <div className="w-full">
+        <Input
+          placeholder="Search items..."
           value={searchQuery}
-          onChange={onSearchChange}
-          suggestions={suggestions}
-          onSelectSuggestion={onSelectSuggestion}
-          onAddFreeText={onAddFreeText}
+          onChange={(e) => onSearchChange(e.target.value)}
+          icon={<Search className="h-5 w-5 text-muted-foreground" />}
         />
-
-        {items.length === 0 ? (
-          <EmptyOrderList />
-        ) : (
-          <div className="flex flex-col gap-12">
-            {Object.entries(groupedItems).map(([supplierId, groupItems]) => (
-              <SupplierOrderGroup
-                key={supplierId}
-                supplier={suppliers.find((s) => s.id === supplierId) ?? null}
-                items={groupItems}
-                allSuppliers={suppliers}
-                isPlacingOrder={placingOrderId === supplierId}
-                onPlaceOrder={() => onPlaceOrder(supplierId)}
-                onRemoveItem={onRemoveItem}
-                onChangeQty={onChangeQty}
-                onChangeSupplier={onChangeSupplier}
-                onShopOrder={() => onShopOrder(supplierId)}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
-      <div className="w-full lg:flex-1 lg:min-w-[240px] lg:max-w-[320px] sticky top-8">
-        <InsightsSidebar suppliers={suppliers} />
+      {/* Category Pills Slider/Container */}
+      <div className="flex flex-wrap gap-2">
+        <Chip
+          selected={selectedCategory === ""}
+          onClick={() => onCategorySelect("")}
+        >
+          All Items
+        </Chip>
+        {categories.map((category) => (
+          <Chip
+            key={category}
+            selected={selectedCategory === category}
+            onClick={() => onCategorySelect(category)}
+          >
+            {category}
+          </Chip>
+        ))}
+      </div>
+
+      {/* Catalog Grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {items.map((item) => {
+          const isSoldOut = item.isSoldOut ?? false;
+          return (
+            <button
+              key={item.id}
+              disabled={isSoldOut}
+              onClick={() => onItemClick(item)}
+              className="group text-left transition-transform duration-100 hover:scale-[1.01] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+            >
+              <Card className="relative flex h-full flex-col overflow-hidden border border-border bg-card p-4 transition-colors group-hover:border-primary/50">
+                {item.image && (
+                  <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-[var(--radius-sm)] bg-muted">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <CardContent className="flex flex-1 flex-col gap-1 p-0">
+                  <CardTitle className="line-clamp-2 text-base font-semibold text-foreground">
+                    {item.name}
+                  </CardTitle>
+                  {item.description && (
+                    <p className="line-clamp-2 text-xs text-muted-foreground">
+                      {item.description}
+                    </p>
+                  )}
+                  <div className="mt-auto pt-2 flex items-center justify-between">
+                    <span className="text-sm font-bold text-accent">
+                      ${item.price.toFixed(2)}
+                    </span>
+                    {isSoldOut ? (
+                      <span className="rounded-[var(--radius-sm)] border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                        Sold Out
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        {item.category}
+                      </span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
+POSCatalog.displayName = "POSCatalog";
 ````
 
 ## File: packages/domain-pos/src/components/POSRegister/components/pos-tender-keypad.tsx
@@ -49030,52 +49306,242 @@ export function getUpdatedTenderedBuffer(prev: string, val: string): string {
 }
 ````
 
-## File: packages/domain-pos/src/components/POSRegister/pos.types.ts
+## File: packages/domain-pos/src/components/POSRegister/components/pos-ticket.tsx
 ````typescript
-import { z } from "zod";
+"use client";
 
-export const CartItemModifierSchema = z.object({
-  id: z.string(),
-  external_id: z.string().nullable(),
-  name: z.string(),
-  price: z.number()
-});
 
-export const CartItemSchema = z.object({
-  id: z.string(),
-  external_id: z.string().nullable(),
-  name: z.string(),
-  price: z.number(),
-  quantity: z.number().min(1),
-  modifiers: z.array(CartItemModifierSchema)
-});
+import { Button, Card } from "@soustools/design-system";
+import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { type CartItem } from "../pos.types";
 
-export const CartSchema = z.array(CartItemSchema);
+export interface POSTicketProps {
+  items: CartItem[];
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemoveItem: (id: string) => void;
+  onClearCart: () => void;
+  onCheckout: () => void;
+  isCheckingOut?: boolean;
+}
 
-export const CatalogItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  price: z.number(),
-  category: z.string(),
-  image: z.string().optional(),
-  isSoldOut: z.boolean().optional(),
-  description: z.string().optional()
-});
+export function POSTicket({
+  items,
+  onUpdateQuantity,
+  onRemoveItem,
+  onClearCart,
+  onCheckout,
+  isCheckingOut = false,
+}: POSTicketProps) {
+  const subtotal = items.reduce(
+    (sum, item) => sum + (item.price + item.modifiers.reduce((mSum, m) => mSum + m.price, 0)) * item.quantity,
+    0
+  );
+  const tax = subtotal * 0.0825; // Simulated 8.25% sales tax
+  const total = subtotal + tax;
 
-export type CartItemModifier = z.infer<typeof CartItemModifierSchema>;
-export type CartItem = z.infer<typeof CartItemSchema>;
-export type Cart = z.infer<typeof CartSchema>;
-export type CatalogItem = z.infer<typeof CatalogItemSchema>;
+  return (
+    <div className="flex h-full flex-col">
+      {/* Ticket Header */}
+      <div className="flex shrink-0 items-center justify-between border-b border-border/80 p-4 bg-card/10">
+        <div className="flex items-center gap-2">
+          <ShoppingBag className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-bold tracking-tight text-foreground">Current Ticket</h3>
+        </div>
+        {items.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs text-muted-foreground hover:text-destructive"
+            onClick={onClearCart}
+          >
+            Clear
+          </Button>
+        )}
+      </div>
+
+      {/* Ticket Items List */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {items.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center text-center p-6">
+            <div className="rounded-full bg-muted/30 p-4 mb-3">
+              <ShoppingBag className="h-8 w-8 text-muted-foreground/60" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Ticket is empty</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
+              Tap catalog items on the left to add them to this ticket.
+            </p>
+          </div>
+        ) : (
+          items.map((item) => {
+            const itemModifierSum = item.modifiers.reduce((sum, m) => sum + m.price, 0);
+            const unitTotal = item.price + itemModifierSum;
+            const lineTotal = unitTotal * item.quantity;
+
+            return (
+              <Card key={item.id} glass className="p-3 border border-border/50 bg-card/25">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-foreground truncate">
+                      {item.name}
+                    </h4>
+                    {item.modifiers.length > 0 && (
+                      <ul className="mt-1 space-y-0.5">
+                        {item.modifiers.map((modifier) => (
+                          <li
+                            key={modifier.id}
+                            className="text-[11px] text-muted-foreground leading-normal"
+                          >
+                            + {modifier.name} (+${modifier.price.toFixed(2)})
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <p className="text-xs font-semibold text-accent mt-1.5">
+                      ${unitTotal.toFixed(2)} each
+                    </p>
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                    onClick={() => onRemoveItem(item.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between border-t border-border/30 pt-2.5">
+                  {/* Quantity Controls */}
+                  <div className="flex items-center rounded-full border border-border/80 bg-background/50 p-0.5">
+                    <button
+                      type="button"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-90"
+                      onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="w-8 text-center text-xs font-semibold text-foreground">
+                      {item.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-90"
+                      onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+
+                  {/* Line Total */}
+                  <span className="text-sm font-bold text-foreground">
+                    ${lineTotal.toFixed(2)}
+                  </span>
+                </div>
+              </Card>
+            );
+          })
+        )}
+      </div>
+
+      {/* Summary Section */}
+      <div className="shrink-0 border-t border-border bg-card/45 p-4 space-y-3.5">
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Sales Tax (8.25%)</span>
+            <span className="font-medium text-foreground">${tax.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm font-bold text-foreground border-t border-border/30 pt-2">
+            <span>Total</span>
+            <span className="text-accent">${total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        <Button
+          variant="gradient"
+          className="w-full font-bold shadow-glow-sm h-12 text-sm"
+          disabled={items.length === 0 || isCheckingOut}
+          onClick={onCheckout}
+        >
+          {isCheckingOut ? "Processing..." : "Checkout"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+POSTicket.displayName = "POSTicket";
 ````
 
-## File: packages/domain-pos/eslint.config.js
-````javascript
-import { baseConfig } from "@soustools/eslint-config";
+## File: packages/domain-pos/src/components/POSRegister/pos.view.tsx
+````typescript
+"use client";
 
-export default [
-  ...baseConfig,
-  { ignores: ["dist/**", "node_modules/**"] },
-];
+import React from "react";
+import { cn } from "@soustools/design-system";
+
+export interface POSRegisterViewProps {
+  catalog: React.ReactNode;
+  ticket: React.ReactNode;
+  header?: React.ReactNode;
+  className?: string;
+}
+
+export function POSRegisterView({
+  catalog,
+  ticket,
+  header,
+  className,
+}: POSRegisterViewProps) {
+  return (
+    <div
+      className={cn(
+        "flex h-screen w-full flex-col overflow-hidden bg-background font-sans text-foreground",
+        className
+      )}
+    >
+      {/* Top Navigation / Header slot if provided */}
+      {header && (
+        <header className="flex shrink-0 items-center border-b border-border bg-card/40 backdrop-blur-md">
+          {header}
+        </header>
+      )}
+
+      {/* Main Grid: Catalog vs Ticket */}
+      <main className="flex flex-1 overflow-hidden">
+        {/* Left/Main Side: Catalog Area */}
+        <section className="flex flex-1 flex-col overflow-y-auto bg-background p-6">
+          {catalog}
+        </section>
+
+        {/* Right Side: Ticket Area */}
+        <aside className="w-100 shrink-0 border-l border-border bg-card/35 backdrop-blur-xl flex flex-col h-full overflow-hidden">
+          {ticket}
+        </aside>
+      </main>
+    </div>
+  );
+}
+POSRegisterView.displayName = "POSRegisterView";
+````
+
+## File: packages/domain-pos/src/index.ts
+````typescript
+export * from "./components/POSRegister/pos.types";
+export { POSRegisterView } from "./components/POSRegister/pos.view";
+export type { POSRegisterViewProps } from "./components/POSRegister/pos.view";
+export { POSCatalog } from "./components/POSRegister/components/pos-catalog";
+export type { POSCatalogProps } from "./components/POSRegister/components/pos-catalog";
+export { POSTicket } from "./components/POSRegister/components/pos-ticket";
+export type { POSTicketProps } from "./components/POSRegister/components/pos-ticket";
+export { POSModifiersModal } from "./components/POSRegister/components/pos-modifiers-modal";
+export type { POSModifiersModalProps, ModifierOption, ModifierGroup } from "./components/POSRegister/components/pos-modifiers-modal";
+export { POSTenderModal } from "./components/POSRegister/components/pos-tender-modal";
+export type { POSTenderModalProps } from "./components/POSRegister/components/pos-tender-modal";
+export { POSRegisterContainer } from "./components/POSRegister/pos.container";
 ````
 
 ## File: packages/domain-recipes/src/DimensionInputs.tsx
@@ -53825,34 +54291,6 @@ export const TypographySample: React.FC<{
 );
 ````
 
-## File: Dockerfile.agentRunner
-````
-# /home/ubuntu/agent-runner/Dockerfile
-FROM node:22-bullseye-slim
-
-# 1. Install Python, GCC, Make (for node-gyp native dependencies) and Git
-RUN apt-get update && apt-get install -y \
-    python3 \
-    build-essential \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# 2. Install global tools: pnpm, Claude Code CLI, and GitHub MCP server
-RUN npm install -g pnpm @anthropic-ai/claude-code @modelcontextprotocol/server-github
-
-# 3. Setup non-root user to match your code-server PUID/PGID (prevents file permission locks)
-ARG PUID=1000
-ARG PGID=1000
-RUN groupadd -g ${PGID} agentgroup || true && \
-    useradd -u ${PUID} -g ${PGID} -m -s /bin/bash agentuser || true
-
-USER ${PUID}:${PGID}
-WORKDIR /workspace
-
-# 4. Keep container alive indefinitely so n8n can exec into it
-ENTRYPOINT ["tail", "-f", "/dev/null"]
-````
-
 ## File: pnpm-workspace.yaml
 ````yaml
 packages:
@@ -55181,6 +55619,63 @@ export default async function WorkspaceLayout({
 }
 ````
 
+## File: docs/agents/run-agent.sh
+````bash
+#!/bin/bash
+# Usage: bash docs/agents/run-agent.sh <label_type> <issue_number>
+# Example: bash docs/agents/run-agent.sh agent:plan 88
+
+# 1. Source the environment to get the GitHub PAT
+set -a
+source /workspace/.env
+set +a
+
+LABEL=$1
+ISSUE=$2
+LOG_FILE="/workspace/docs/agents/logs/agent-run-${ISSUE}.log"
+
+# 2. Strip the 'agent:' prefix from the label to get the exact filename
+# (e.g., "agent:plan" becomes "plan", "agent:ui" becomes "ui")
+FILE_NAME=${LABEL#*:}
+PROMPT_FILE="/workspace/docs/agents/prompts/${FILE_NAME}.md"
+
+echo "Booting Agent for Issue $ISSUE with label $LABEL..." > "$LOG_FILE"
+
+# 3. Force headless environment to prevent zombie terminal prompts
+export CI=true
+export FORCE_COLOR=0
+
+# 4. Inject global Git authentication so agents can push branches
+git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
+git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+# 5. Verify the prompt file exists before running
+if [ ! -f "$PROMPT_FILE" ]; then
+  echo "Error: Prompt file $PROMPT_FILE not found!" >> "$LOG_FILE"
+  exit 1
+fi
+
+# 6. Inject the dynamic issue number into the markdown prompt
+PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")
+
+# 7. Execute Claude with the safety wrapper, piping all output to the log
+timeout 15m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" < /dev/null >> "$LOG_FILE" 2>&1
+
+# 8. Check exit status and execute the curl fail-safe
+if [ $? -ne 0 ]; then
+  echo "AGENT FAILED OR TIMED OUT." >> "$LOG_FILE"
+  
+  # The cURL command to post the failure to the GitHub Issue
+  curl -s -X POST -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/repos/conarwelsh/sous.tools/issues/${ISSUE}/comments" \
+    -d '{
+      "body": "⚠️ **Agent Execution Failed or Timed Out.**\n\nTask: `'"$LABEL"'`\n\nI encountered a critical error or hit my 15-minute execution limit. Please check the logs on the Oracle Server at `'"$LOG_FILE"'` to see what went wrong."
+    }'
+fi
+````
+
 ## File: packages/design-system/src/components/OmniBar/NonInventoryExpenseCheckbox.tsx
 ````typescript
 "use client";
@@ -55995,243 +56490,145 @@ export function resetFaviconStatus() {
 }
 ````
 
-## File: packages/domain-inventory/src/components/Supplier/SupplierHeader.tsx
+## File: packages/design-system/src/index.ts
 ````typescript
-"use client";
+/**
+ * @soustools/design-system
+ *
+ * The canonical Neon-Glass design system for sous.tools.
+ * This package is the sole UI authority for all @soustools/ workspace consumers.
+ *
+ * Visual identity sourced from v2-snapshot.md (sous-theme.kdl):
+ *   Primary cyan:  #4cc9f0
+ *   Background:    #0f172a (zinc-950)
+ *   Card surface:  #1e293b (zinc-900)
+ *   Neon pink:     #f72585
+ *   Destructive:   #f43f5e
+ *
+ * @see packages/design-system/index.css — Tailwind v4 @theme token dictionary
+ */
 
-import { Truck, Calendar, Check, ShoppingBag } from "lucide-react";
-import type { OrderSupplier, OrderLineItem } from "./SupplierOrderGroup.types";
+// ── Atomic Components ──────────────────────────────────────────────────────
+export { TwoToneHeader } from "./components/TwoToneHeader";
+export type { TwoToneHeaderProps } from "./components/TwoToneHeader";
 
-export interface SupplierHeaderProps {
-  supplier: OrderSupplier | null;
-  items: OrderLineItem[];
-  isPlacingOrder: boolean;
-  onPlaceOrder: () => void;
-  onShopOrder?: () => void;
-}
+export { Button } from "./components/Button";
+export type { ButtonProps, buttonVariants } from "./components/Button";
 
-function getNextDelivery(deliveryDays: number[]): string {
-  if (!deliveryDays.length) return "No schedule";
-  const today = new Date().getDay();
-  const sorted = [...deliveryDays].sort((a, b) => a - b);
-  const next = sorted.find((d) => d > today) ?? sorted[0];
-  const daysUntil = next > today ? next - today : 7 - today + next;
-  const date = new Date();
-  date.setDate(date.getDate() + daysUntil);
-  return date.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
+export { PinInput } from "./components/PinInput";
+export type { PinInputProps } from "./components/PinInput";
 
-export function SupplierHeader({
-  supplier,
-  items,
-  isPlacingOrder,
-  onPlaceOrder,
-  onShopOrder,
-}: SupplierHeaderProps) {
-  const isUnassigned = !supplier;
-
-  return (
-    <div className="flex flex-row items-center justify-between px-2">
-      <div className="flex flex-row items-center gap-4">
-        <div
-          className={[
-            "w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0 transition-all",
-            isUnassigned
-              ? "bg-muted dark:bg-secondary border-border"
-              : "bg-accent/10 border-accent/20 shadow-glow-accent",
-          ].join(" ")}
-        >
-          <Truck
-            size={22}
-            className={
-              isUnassigned
-                ? "text-muted-foreground"
-                : "text-accent"
-            }
-          />
-        </div>
-        <div>
-          <p className="font-black uppercase text-xl tracking-tighter text-foreground">
-            {isUnassigned ? "Unassigned Items" : supplier?.name}
-          </p>
-          {!isUnassigned && supplier && (
-            <div className="flex flex-row items-center gap-3 mt-0.5">
-              <div className="flex flex-row items-center gap-1.5 text-primary">
-                <Calendar size={11} />
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                  Next: {getNextDelivery(supplier.deliveryDays)}
-                </span>
-              </div>
-              <span className="text-muted-foreground/40 text-[10px]">•</span>
-              <div className="flex flex-row items-center gap-1.5 text-muted-foreground">
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                  Cutoff: {supplier.cutoffTime}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {!isUnassigned && (
-        <div className="flex flex-row gap-3">
-          {onShopOrder && (
-            <button
-              onClick={onShopOrder}
-              className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground h-12 px-6 rounded-2xl flex items-center gap-2 group transition-colors border border-border"
-            >
-              <ShoppingBag
-                size={16}
-                className="group-hover:scale-110 transition-transform"
-              />
-              <span className="font-black uppercase text-xs tracking-widest">
-                Shop
-              </span>
-            </button>
-          )}
-          <button
-            onClick={onPlaceOrder}
-            disabled={isPlacingOrder}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 px-8 rounded-2xl shadow-glow-sm flex items-center gap-3 group transition-colors"
-          >
-            <Check
-              size={16}
-              className="text-primary-foreground group-hover:scale-110 transition-transform"
-            />
-            <span className="text-primary-foreground font-black uppercase text-xs tracking-widest">
-              Place Order ({items.length})
-            </span>
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-````
-
-## File: packages/domain-pos/src/components/POSRegister/components/pos-catalog.tsx
-````typescript
-"use client";
-
-
-import {
-  Input,
-  Chip,
+export {
   Card,
-  CardContent,
+  CardHeader,
   CardTitle,
-} from "@soustools/design-system";
-import { Search } from "lucide-react";
-import { type CatalogItem } from "../pos.types";
+  CardContent,
+  CardFooter,
+} from "./components/Card";
 
-export interface POSCatalogProps {
-  items: CatalogItem[];
-  categories: string[];
-  selectedCategory: string;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
-  onCategorySelect: (category: string) => void;
-  onItemClick: (item: CatalogItem) => void;
-}
+export { Input } from "./components/Input";
+export type { InputProps } from "./components/Input";
 
-export function POSCatalog({
-  items,
-  categories,
-  selectedCategory,
-  searchQuery,
-  onSearchChange,
-  onCategorySelect,
-  onItemClick,
-}: POSCatalogProps) {
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Search Bar */}
-      <div className="w-full">
-        <Input
-          placeholder="Search items..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          icon={<Search className="h-5 w-5 text-muted-foreground" />}
-        />
-      </div>
+export { Label } from "./components/Label";
+export type { LabelProps } from "./components/Label";
 
-      {/* Category Pills Slider/Container */}
-      <div className="flex flex-wrap gap-2">
-        <Chip
-          selected={selectedCategory === ""}
-          onClick={() => onCategorySelect("")}
-        >
-          All Items
-        </Chip>
-        {categories.map((category) => (
-          <Chip
-            key={category}
-            selected={selectedCategory === category}
-            onClick={() => onCategorySelect(category)}
-          >
-            {category}
-          </Chip>
-        ))}
-      </div>
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "./components/Table";
 
-      {/* Catalog Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {items.map((item) => {
-          const isSoldOut = item.isSoldOut ?? false;
-          return (
-            <button
-              key={item.id}
-              disabled={isSoldOut}
-              onClick={() => onItemClick(item)}
-              className="group text-left transition-transform duration-100 hover:scale-[1.01] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
-            >
-              <Card className="relative flex h-full flex-col overflow-hidden border border-border bg-card p-4 transition-colors group-hover:border-primary/50">
-                {item.image && (
-                  <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-[var(--radius-sm)] bg-muted">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                    />
-                  </div>
-                )}
-                <CardContent className="flex flex-1 flex-col gap-1 p-0">
-                  <CardTitle className="line-clamp-2 text-base font-semibold text-foreground">
-                    {item.name}
-                  </CardTitle>
-                  {item.description && (
-                    <p className="line-clamp-2 text-xs text-muted-foreground">
-                      {item.description}
-                    </p>
-                  )}
-                  <div className="mt-auto pt-2 flex items-center justify-between">
-                    <span className="text-sm font-bold text-accent">
-                      ${item.price.toFixed(2)}
-                    </span>
-                    {isSoldOut ? (
-                      <span className="rounded-[var(--radius-sm)] border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-                        Sold Out
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">
-                        {item.category}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-POSCatalog.displayName = "POSCatalog";
+// ── Layout & UI Components (Phase 2 Migration) ─────────────────────────────
+export { ConfirmModal } from "./components/ConfirmModal";
+export type { ConfirmModalProps } from "./components/ConfirmModal";
+
+export { Hamburger } from "./components/Hamburger";
+export type { HamburgerProps } from "./components/Hamburger";
+
+export { ThemeToggle } from "./components/ThemeToggle";
+
+export { BottomNav } from "./components/BottomNav";
+export type { BottomNavProps, BottomNavItem } from "./components/BottomNav";
+
+export { AppBar } from "./components/AppBar";
+export type { AppBarProps, AppBarNotification } from "./components/AppBar";
+
+export { Sidebar } from "./components/Sidebar";
+export type { SidebarProps, SidebarNavItem } from "./components/Sidebar";
+
+export { SidebarLayout } from "./components/SidebarLayout";
+export type { SidebarLayoutProps } from "./components/SidebarLayout";
+
+export { useSidebarStore } from "./store/sidebarStore";
+
+export {
+  OmniBar,
+  OmniBarProvider,
+  OmniBarPresentation,
+  FloatingOmniTrigger,
+  useOmnibarContext,
+  AttachmentFlyout,
+  VerificationPanel,
+  CreatableSelect,
+  UnifiedReviewPanel,
+} from "./components/OmniBar";
+export type {
+  OmniBarPresentationProps,
+  AttachmentFlyoutProps,
+  StagedFile,
+  VerificationPanelProps,
+  CreatableSelectProps,
+  CreatableSelectOption,
+  UnifiedReviewPanelProps,
+} from "./components/OmniBar";
+
+export {
+  GlobalAppBar,
+  GlobalAppBarPresentation,
+} from "./components/GlobalAppBar";
+export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";
+
+export { InsightsSidebar } from "./components/InsightsSidebar";
+export type { InsightsSidebarProps } from "./components/InsightsSidebar";
+export type { OrderSupplier, OrderLineItem } from "./types/order-types";
+
+export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar";
+export type { QuickAddSuggestion } from "./components/QuickAddBar";
+
+
+export {
+  resetFaviconStatus,
+  setFaviconStatus,
+  type FaviconStatus,
+} from "./utils/favicon-status";
+
+export { Chip, type ChipProps } from "./components/Chip";
+
+// export { PrimaryLogo } from "./components/logos/PrimaryLogo";
+// export { MicroIcon } from "./components/logos/MicroIcon";
+// export { Lettermark } from "./components/logos/Lettermark";
+export { PrimaryLogo, MicroIcon, Lettermark } from "./components/logos/Logo";
+export { RevenueChart, TicketTimeChart } from "./components/DashboardCharts";
+export type { RevenueData, TicketTimeData } from "./components/DashboardCharts";
+
+export { AuroraBackground } from "./components/AuroraBackground";
+
+export { cn } from "./utils/cn";
+
+export {
+  BrandLoader,
+  Spinner,
+  DotsLoader,
+  ProgressBar,
+  TopProgress,
+} from "./components/Loader";
+export { GoogleIcon, GitHubIcon } from "./components/BrandIcons";
+export { LoginButton, type LoginState } from "./components/LoginButton";
 ````
 
 ## File: packages/domain-pos/src/components/POSRegister/components/pos-modifiers-modal.tsx
@@ -56635,244 +57032,6 @@ export function POSTenderModal({
   );
 }
 POSTenderModal.displayName = "POSTenderModal";
-````
-
-## File: packages/domain-pos/src/components/POSRegister/components/pos-ticket.tsx
-````typescript
-"use client";
-
-
-import { Button, Card } from "@soustools/design-system";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
-import { type CartItem } from "../pos.types";
-
-export interface POSTicketProps {
-  items: CartItem[];
-  onUpdateQuantity: (id: string, quantity: number) => void;
-  onRemoveItem: (id: string) => void;
-  onClearCart: () => void;
-  onCheckout: () => void;
-  isCheckingOut?: boolean;
-}
-
-export function POSTicket({
-  items,
-  onUpdateQuantity,
-  onRemoveItem,
-  onClearCart,
-  onCheckout,
-  isCheckingOut = false,
-}: POSTicketProps) {
-  const subtotal = items.reduce(
-    (sum, item) => sum + (item.price + item.modifiers.reduce((mSum, m) => mSum + m.price, 0)) * item.quantity,
-    0
-  );
-  const tax = subtotal * 0.0825; // Simulated 8.25% sales tax
-  const total = subtotal + tax;
-
-  return (
-    <div className="flex h-full flex-col">
-      {/* Ticket Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border/80 p-4 bg-card/10">
-        <div className="flex items-center gap-2">
-          <ShoppingBag className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-bold tracking-tight text-foreground">Current Ticket</h3>
-        </div>
-        {items.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs text-muted-foreground hover:text-destructive"
-            onClick={onClearCart}
-          >
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Ticket Items List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {items.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center text-center p-6">
-            <div className="rounded-full bg-muted/30 p-4 mb-3">
-              <ShoppingBag className="h-8 w-8 text-muted-foreground/60" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">Ticket is empty</p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
-              Tap catalog items on the left to add them to this ticket.
-            </p>
-          </div>
-        ) : (
-          items.map((item) => {
-            const itemModifierSum = item.modifiers.reduce((sum, m) => sum + m.price, 0);
-            const unitTotal = item.price + itemModifierSum;
-            const lineTotal = unitTotal * item.quantity;
-
-            return (
-              <Card key={item.id} glass className="p-3 border border-border/50 bg-card/25">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-foreground truncate">
-                      {item.name}
-                    </h4>
-                    {item.modifiers.length > 0 && (
-                      <ul className="mt-1 space-y-0.5">
-                        {item.modifiers.map((modifier) => (
-                          <li
-                            key={modifier.id}
-                            className="text-[11px] text-muted-foreground leading-normal"
-                          >
-                            + {modifier.name} (+${modifier.price.toFixed(2)})
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    <p className="text-xs font-semibold text-accent mt-1.5">
-                      ${unitTotal.toFixed(2)} each
-                    </p>
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-                    onClick={() => onRemoveItem(item.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between border-t border-border/30 pt-2.5">
-                  {/* Quantity Controls */}
-                  <div className="flex items-center rounded-full border border-border/80 bg-background/50 p-0.5">
-                    <button
-                      type="button"
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-90"
-                      onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    <span className="w-8 text-center text-xs font-semibold text-foreground">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-90"
-                      onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  </div>
-
-                  {/* Line Total */}
-                  <span className="text-sm font-bold text-foreground">
-                    ${lineTotal.toFixed(2)}
-                  </span>
-                </div>
-              </Card>
-            );
-          })
-        )}
-      </div>
-
-      {/* Summary Section */}
-      <div className="shrink-0 border-t border-border bg-card/45 p-4 space-y-3.5">
-        <div className="space-y-1.5 text-xs text-muted-foreground">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Sales Tax (8.25%)</span>
-            <span className="font-medium text-foreground">${tax.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-bold text-foreground border-t border-border/30 pt-2">
-            <span>Total</span>
-            <span className="text-accent">${total.toFixed(2)}</span>
-          </div>
-        </div>
-
-        <Button
-          variant="gradient"
-          className="w-full font-bold shadow-glow-sm h-12 text-sm"
-          disabled={items.length === 0 || isCheckingOut}
-          onClick={onCheckout}
-        >
-          {isCheckingOut ? "Processing..." : "Checkout"}
-        </Button>
-      </div>
-    </div>
-  );
-}
-POSTicket.displayName = "POSTicket";
-````
-
-## File: packages/domain-pos/src/components/POSRegister/pos.view.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { cn } from "@soustools/design-system";
-
-export interface POSRegisterViewProps {
-  catalog: React.ReactNode;
-  ticket: React.ReactNode;
-  header?: React.ReactNode;
-  className?: string;
-}
-
-export function POSRegisterView({
-  catalog,
-  ticket,
-  header,
-  className,
-}: POSRegisterViewProps) {
-  return (
-    <div
-      className={cn(
-        "flex h-screen w-full flex-col overflow-hidden bg-background font-sans text-foreground",
-        className
-      )}
-    >
-      {/* Top Navigation / Header slot if provided */}
-      {header && (
-        <header className="flex shrink-0 items-center border-b border-border bg-card/40 backdrop-blur-md">
-          {header}
-        </header>
-      )}
-
-      {/* Main Grid: Catalog vs Ticket */}
-      <main className="flex flex-1 overflow-hidden">
-        {/* Left/Main Side: Catalog Area */}
-        <section className="flex flex-1 flex-col overflow-y-auto bg-background p-6">
-          {catalog}
-        </section>
-
-        {/* Right Side: Ticket Area */}
-        <aside className="w-100 shrink-0 border-l border-border bg-card/35 backdrop-blur-xl flex flex-col h-full overflow-hidden">
-          {ticket}
-        </aside>
-      </main>
-    </div>
-  );
-}
-POSRegisterView.displayName = "POSRegisterView";
-````
-
-## File: packages/domain-pos/src/index.ts
-````typescript
-export * from "./components/POSRegister/pos.types";
-export { POSRegisterView } from "./components/POSRegister/pos.view";
-export type { POSRegisterViewProps } from "./components/POSRegister/pos.view";
-export { POSCatalog } from "./components/POSRegister/components/pos-catalog";
-export type { POSCatalogProps } from "./components/POSRegister/components/pos-catalog";
-export { POSTicket } from "./components/POSRegister/components/pos-ticket";
-export type { POSTicketProps } from "./components/POSRegister/components/pos-ticket";
-export { POSModifiersModal } from "./components/POSRegister/components/pos-modifiers-modal";
-export type { POSModifiersModalProps, ModifierOption, ModifierGroup } from "./components/POSRegister/components/pos-modifiers-modal";
-export { POSTenderModal } from "./components/POSRegister/components/pos-tender-modal";
-export type { POSTenderModalProps } from "./components/POSRegister/components/pos-tender-modal";
-export { POSRegisterContainer } from "./components/POSRegister/pos.container";
 ````
 
 ## File: packages/domain-recipes/src/utils/scaling.test.ts
@@ -58049,95 +58208,83 @@ export function RecipeViewer({
 }
 ````
 
-## File: .gitignore
+## File: .cursorrules
 ````
-# Dependency directories
-node_modules/
-jspm_packages/
-web_modules/
+# sous.tools AI System Rules
 
-# Build outputs
-dist/
-build/
-.next/
-out/
-.turbo/
-.nuxt/
-.output/
+## 1. Domain-Driven Design (DDD) & Infrastructure
 
-# IDE files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+- **Strict Boundaries:** Next.js apps (e.g., apps/web, apps/pos-simulator) and domain packages (packages/domain-*) are strictly forbidden from importing database clients.
+- **The Supabase Firewall:** NO CLIENT OR UI APP is allowed to access Supabase. Absolutely no one outside of apps/api should have access to or knowledge of Supabase.
+- **API First & Network Fetching:** ALL network requests must go exclusively through our unified packages/api-client. Native fetch(), axios, or direct endpoint calls outside of api-client are strictly forbidden.
+- **Server-Side Supremacy:** Next.js functions strictly as a routing and data orchestration layer. Server Components are the default.
+- **Config Lockdown:** process.env is strictly forbidden outside of @soustools/config. All apps must import the type-safe, validated config object.
+- **Secrets SSOT:** Infisical is the Single Source of Truth for all environment variables.
+- **TSConfig Management:** All tsconfig.json files must extend from the shared packages/tsconfig. No relative paths (e.g., ../../../) are allowed.
+- **Thin App Router Shells:** apps/* directories must remain as hollow as possible. Next.js page.tsx files should act strictly as Server Component entry points that import their corresponding Containers or Views from @soustools/domain-* packages. Building complex components/ directories inside the Next.js apps/* router is forbidden.
 
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env*.local
+## 2. Component Architecture & Folder Structure
 
-# Logs and databases
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-*.db
-*.sqlite
+- **Feature-Driven Folders:** Do not use atoms/, molecules/, or organisms/ as folder names. Group files by their Feature or Domain (e.g., Supplier/). The Atomic design philosophy (Atoms build Molecules, Molecules build Organisms) dictates _how_ components are composed and imported, not how folders are structured.
+- **Design System vs. Domain Packages:** packages/design-system is strictly reserved for generic, highly reusable UI primitives and theming. Domain-specific UI components (e.g., SupplierOrderGroup, RecipeBuilder) MUST live in their respective packages/domain-* package.
+- **Container/View Pattern:** Pure presentational UI components must live in *.tsx files and are banned from importing data-fetching hooks or infrastructure logic.
+- **Logic Quarantines:** Business logic, API calls, and state management must be strictly quarantined to *.container.tsx files.
+- **Max Lines:** Files must not exceed 200 lines. Refactor logically into smaller compositional units instead of artificially chopping files.
+- **Zero Tech Debt:** Do not use eslint-disable to bypass rules. If a file fails linting or knip dead-code checks, refactor it into compliance.
 
-# Testing coverage
-coverage/
-.nyc_output/
-.vercel
+## 3. soustools design system & Styling
 
-# Ansible secrets — never commit real vault or inventory
-deploy/ansible/group_vars/all/vault.yml
-deploy/ansible/inventory.ini
+- **Tailwind v4:** Use the @theme directive in CSS. No tailwind.config file.
+- **Semantic Variables Only:** Hardcoding legacy Tailwind colors (e.g., slate-_), arbitrary values (e.g., w-[32px], bg-[#123456]), or absolute z-indexes is forbidden. Strictly use semantic CSS variables (e.g., var(--z-overlay)) and the "Midnight Slate" (zinc-_) palette defined in @soustools/design-system.
+- **Opacities:** Use strict Hex codes to allow native color-mix() opacity.
+- **Animations:** Use Framer Motion for micro-animations and spring physics.
 
-mcp_config.bu.json
+## 4. AI Orchestration & Execution
 
-ssh-key.key
-ssh-key.pub
+- **Halt-on-Error:** If a TypeScript, ESLint, Database Migration, Runtime, or Playwright E2E error occurs, STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. Request manual intervention.
+- **Issue Triage & Diagnostics:** Before writing code to fix a bug, you MUST read the diagnostic comments inside docs/context/notebooklm-issues.md to leverage previous junior-agent research.
+- **Debt Audits:** When refactoring, you MUST review the reports in docs/context/ and docs/audits/ (such as knip-report.txt and lint-report.txt) to ensure you are not duplicating tech debt.
+- **Boot Sequence:** Before executing any task, you MUST silently read this `.cursorrules` file, `docs/context/notebooklm-project.md` (Kanban State), and `docs/context/notebooklm-architecture.md` (Workspace Graph) to understand the current architecture and sprint goals.
+- **Direct Execution (No Yapping):** Do not waste output tokens "thinking out loud" or providing lengthy explanations of code or CSS class conversions in the chat window. Analyze silently, and immediately use your file-editing tools to execute the changes.
+- **Task Decomposition:** If a refactor involves moving or rewriting multiple files (e.g., separating an Organism and its Molecules), execute the file creations and edits one by one to avoid context/token exhaustion.
+- **GitHub Issue & Kanban Management (MCP):** You have access to GitHub via an MCP server. When you are assigned a task associated with a GitHub Issue, you must autonomously manage its state using the MCP tool to make real API calls.
+- **Task Completion & Read-Only Context:** Upon completing the code refactor or bug fix for an issue, you MUST use your MCP tools to move the corresponding ticket into the "Review" column on the remote GitHub Projects Kanban board.
+- **CRITICAL:** Do NOT edit the docs/context/notebooklm-project.md or notebooklm-issues.md files to simulate moving a ticket or updating an issue. Those files are READ-ONLY and automatically generated by the CI/CD pipeline. You must interact with the actual GitHub API.
 
-# Repomix Context Files (Massive Markdown files)
-# .context/
+## 5. Continuous X-Ray Sync (NotebookLM / CTO Directive)
 
-# Playwright Test Results & Error Traces
-apps/web/test-results/
-apps/web/playwright-report/
+- **Living Document:** This .cursorrules file is a living document.
+- **CTO Oversight:** During architectural planning sessions, the AI CTO (NotebookLM) is explicitly instructed to monitor for any new conventions, UI decisions, or workflow changes.
+- **Auto-Correction:** If a conversation dictates a change in our strategy (e.g., swapping a tool, changing a naming convention, or adjusting the CI/CD pipeline), NotebookLM MUST conclude its response by providing a formatted update block to append to or modify this .cursorrules file.
+````
 
-# CLI Textbook Parsing Outputs
-apps/cli/output/
-apps/cli/queue/
+## File: Dockerfile.agentRunner
+````
+# /home/ubuntu/agent-runner/Dockerfile
+FROM node:22-bullseye-slim
 
-# Raspberry Pi OS Build Artifacts
-deploy/pi/pi-gen/deploy/
-deploy/pi/pi-gen/work/*.deb
+# 1. Install Python, GCC, Make (for node-gyp native dependencies) and Git
+RUN apt-get update && apt-get install -y \
+    python3 \
+    build-essential \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-*.deb
+# 2. Install global tools: pnpm, Claude Code CLI, and GitHub MCP server
+RUN npm install -g pnpm @anthropic-ai/claude-code @modelcontextprotocol/server-github
 
-# Auto-generated NestJS GraphQL Schema
-apps/api/src/schema.gql
-apps/api/schema.gql
+# 3. Setup non-root user to match your code-server PUID/PGID (prevents file permission locks)
+ARG PUID=1000
+ARG PGID=1000
+RUN groupadd -g ${PGID} agentgroup || true && \
+    useradd -u ${PUID} -g ${PGID} -m -s /bin/bash agentuser || true
 
-# Auto-generated Config Secrets
-packages/config/src/secrets.ts
-packages/.secrets.cache.json
-.secrets.cache.json
+USER ${PUID}:${PGID}
+WORKDIR /workspace
 
-.pnpm-store
-newrelic_agent.log
-
-.continue/
-
-signage_deploy_key*
-.claude
+# 4. Keep container alive indefinitely so n8n can exec into it
+ENTRYPOINT ["tail", "-f", "/dev/null"]
 ````
 
 ## File: apps/api/src/modules/auth/auth.controller.ts
@@ -58777,147 +58924,6 @@ export function useOmniBarHotkeys({
 }
 ````
 
-## File: packages/design-system/src/index.ts
-````typescript
-/**
- * @soustools/design-system
- *
- * The canonical Neon-Glass design system for sous.tools.
- * This package is the sole UI authority for all @soustools/ workspace consumers.
- *
- * Visual identity sourced from v2-snapshot.md (sous-theme.kdl):
- *   Primary cyan:  #4cc9f0
- *   Background:    #0f172a (zinc-950)
- *   Card surface:  #1e293b (zinc-900)
- *   Neon pink:     #f72585
- *   Destructive:   #f43f5e
- *
- * @see packages/design-system/index.css — Tailwind v4 @theme token dictionary
- */
-
-// ── Atomic Components ──────────────────────────────────────────────────────
-export { TwoToneHeader } from "./components/TwoToneHeader";
-export type { TwoToneHeaderProps } from "./components/TwoToneHeader";
-
-export { Button } from "./components/Button";
-export type { ButtonProps, buttonVariants } from "./components/Button";
-
-export { PinInput } from "./components/PinInput";
-export type { PinInputProps } from "./components/PinInput";
-
-export {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "./components/Card";
-
-export { Input } from "./components/Input";
-export type { InputProps } from "./components/Input";
-
-export { Label } from "./components/Label";
-export type { LabelProps } from "./components/Label";
-
-export {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableRow,
-  TableHead,
-  TableCell,
-  TableCaption,
-} from "./components/Table";
-
-// ── Layout & UI Components (Phase 2 Migration) ─────────────────────────────
-export { ConfirmModal } from "./components/ConfirmModal";
-export type { ConfirmModalProps } from "./components/ConfirmModal";
-
-export { Hamburger } from "./components/Hamburger";
-export type { HamburgerProps } from "./components/Hamburger";
-
-export { ThemeToggle } from "./components/ThemeToggle";
-
-export { BottomNav } from "./components/BottomNav";
-export type { BottomNavProps, BottomNavItem } from "./components/BottomNav";
-
-export { AppBar } from "./components/AppBar";
-export type { AppBarProps, AppBarNotification } from "./components/AppBar";
-
-export { Sidebar } from "./components/Sidebar";
-export type { SidebarProps, SidebarNavItem } from "./components/Sidebar";
-
-export { SidebarLayout } from "./components/SidebarLayout";
-export type { SidebarLayoutProps } from "./components/SidebarLayout";
-
-export { useSidebarStore } from "./store/sidebarStore";
-
-export {
-  OmniBar,
-  OmniBarProvider,
-  OmniBarPresentation,
-  FloatingOmniTrigger,
-  useOmnibarContext,
-  AttachmentFlyout,
-  VerificationPanel,
-  CreatableSelect,
-  UnifiedReviewPanel,
-} from "./components/OmniBar";
-export type {
-  OmniBarPresentationProps,
-  AttachmentFlyoutProps,
-  StagedFile,
-  VerificationPanelProps,
-  CreatableSelectProps,
-  CreatableSelectOption,
-  UnifiedReviewPanelProps,
-} from "./components/OmniBar";
-
-export {
-  GlobalAppBar,
-  GlobalAppBarPresentation,
-} from "./components/GlobalAppBar";
-export type { GlobalAppBarPresentationProps } from "./components/GlobalAppBar";
-
-export { InsightsSidebar } from "./components/InsightsSidebar";
-export type { InsightsSidebarProps } from "./components/InsightsSidebar";
-export type { OrderSupplier, OrderLineItem } from "./types/order-types";
-
-export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar";
-export type { QuickAddSuggestion } from "./components/QuickAddBar";
-
-
-export {
-  resetFaviconStatus,
-  setFaviconStatus,
-  type FaviconStatus,
-} from "./utils/favicon-status";
-
-export { Chip, type ChipProps } from "./components/Chip";
-
-// export { PrimaryLogo } from "./components/logos/PrimaryLogo";
-// export { MicroIcon } from "./components/logos/MicroIcon";
-// export { Lettermark } from "./components/logos/Lettermark";
-export { PrimaryLogo, MicroIcon, Lettermark } from "./components/logos/Logo";
-export { RevenueChart, TicketTimeChart } from "./components/DashboardCharts";
-export type { RevenueData, TicketTimeData } from "./components/DashboardCharts";
-
-export { AuroraBackground } from "./components/AuroraBackground";
-
-export { cn } from "./utils/cn";
-
-export {
-  BrandLoader,
-  Spinner,
-  DotsLoader,
-  ProgressBar,
-  TopProgress,
-} from "./components/Loader";
-export { GoogleIcon, GitHubIcon } from "./components/BrandIcons";
-export { LoginButton, type LoginState } from "./components/LoginButton";
-````
-
 ## File: packages/domain-pos/src/components/POSRegister/pos.helpers.ts
 ````typescript
 import { type ModifierGroup, type ModifierOption } from "./components/pos-modifiers-modal";
@@ -59285,6 +59291,98 @@ const initializeServerLogger = () => {
 export default initializeServerLogger;
 ````
 
+## File: .gitignore
+````
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+.nuxt/
+.output/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs and databases
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.db
+*.sqlite
+
+# Testing coverage
+coverage/
+.nyc_output/
+.vercel
+
+# Ansible secrets — never commit real vault or inventory
+deploy/ansible/group_vars/all/vault.yml
+deploy/ansible/inventory.ini
+
+mcp_config.bu.json
+
+ssh-key.key
+ssh-key.pub
+
+# Repomix Context Files (Massive Markdown files)
+# .context/
+
+# Playwright Test Results & Error Traces
+apps/web/test-results/
+apps/web/playwright-report/
+
+# CLI Textbook Parsing Outputs
+apps/cli/output/
+apps/cli/queue/
+
+# Raspberry Pi OS Build Artifacts
+deploy/pi/pi-gen/deploy/
+deploy/pi/pi-gen/work/*.deb
+
+*.deb
+
+# Auto-generated NestJS GraphQL Schema
+apps/api/src/schema.gql
+apps/api/schema.gql
+
+# Auto-generated Config Secrets
+packages/config/src/secrets.ts
+packages/.secrets.cache.json
+.secrets.cache.json
+
+.pnpm-store
+newrelic_agent.log
+
+.continue/
+
+signage_deploy_key*
+.claude
+docs/agents/logs/agent-run-*.log
+````
+
 ## File: packages/design-system/src/components/OmniBar/OmniBarProvider.tsx
 ````typescript
 "use client";
@@ -59567,56 +59665,6 @@ export function ItemsLedgerTable({
   );
 }
 ItemsLedgerTable.displayName = "ItemsLedgerTable";
-````
-
-## File: .cursorrules
-````
-# sous.tools AI System Rules
-
-## 1. Domain-Driven Design (DDD) & Infrastructure
-
-- **Strict Boundaries:** Next.js apps (e.g., apps/web, apps/pos-simulator) and domain packages (packages/domain-*) are strictly forbidden from importing database clients.
-- **The Supabase Firewall:** NO CLIENT OR UI APP is allowed to access Supabase. Absolutely no one outside of apps/api should have access to or knowledge of Supabase.
-- **API First & Network Fetching:** ALL network requests must go exclusively through our unified packages/api-client. Native fetch(), axios, or direct endpoint calls outside of api-client are strictly forbidden.
-- **Server-Side Supremacy:** Next.js functions strictly as a routing and data orchestration layer. Server Components are the default.
-- **Config Lockdown:** process.env is strictly forbidden outside of @soustools/config. All apps must import the type-safe, validated config object.
-- **Secrets SSOT:** Infisical is the Single Source of Truth for all environment variables.
-- **TSConfig Management:** All tsconfig.json files must extend from the shared packages/tsconfig. No relative paths (e.g., ../../../) are allowed.
-- **Thin App Router Shells:** apps/* directories must remain as hollow as possible. Next.js page.tsx files should act strictly as Server Component entry points that import their corresponding Containers or Views from @soustools/domain-* packages. Building complex components/ directories inside the Next.js apps/* router is forbidden.
-
-## 2. Component Architecture & Folder Structure
-
-- **Feature-Driven Folders:** Do not use atoms/, molecules/, or organisms/ as folder names. Group files by their Feature or Domain (e.g., Supplier/). The Atomic design philosophy (Atoms build Molecules, Molecules build Organisms) dictates _how_ components are composed and imported, not how folders are structured.
-- **Design System vs. Domain Packages:** packages/design-system is strictly reserved for generic, highly reusable UI primitives and theming. Domain-specific UI components (e.g., SupplierOrderGroup, RecipeBuilder) MUST live in their respective packages/domain-* package.
-- **Container/View Pattern:** Pure presentational UI components must live in *.tsx files and are banned from importing data-fetching hooks or infrastructure logic.
-- **Logic Quarantines:** Business logic, API calls, and state management must be strictly quarantined to *.container.tsx files.
-- **Max Lines:** Files must not exceed 200 lines. Refactor logically into smaller compositional units instead of artificially chopping files.
-- **Zero Tech Debt:** Do not use eslint-disable to bypass rules. If a file fails linting or knip dead-code checks, refactor it into compliance.
-
-## 3. soustools design system & Styling
-
-- **Tailwind v4:** Use the @theme directive in CSS. No tailwind.config file.
-- **Semantic Variables Only:** Hardcoding legacy Tailwind colors (e.g., slate-_), arbitrary values (e.g., w-[32px], bg-[#123456]), or absolute z-indexes is forbidden. Strictly use semantic CSS variables (e.g., var(--z-overlay)) and the "Midnight Slate" (zinc-_) palette defined in @soustools/design-system.
-- **Opacities:** Use strict Hex codes to allow native color-mix() opacity.
-- **Animations:** Use Framer Motion for micro-animations and spring physics.
-
-## 4. AI Orchestration & Execution
-
-- **Halt-on-Error:** If a TypeScript, ESLint, Database Migration, Runtime, or Playwright E2E error occurs, STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. Request manual intervention.
-- **Issue Triage & Diagnostics:** Before writing code to fix a bug, you MUST read the diagnostic comments inside docs/context/notebooklm-issues.md to leverage previous junior-agent research.
-- **Debt Audits:** When refactoring, you MUST review the reports in docs/context/ and docs/audits/ (such as knip-report.txt and lint-report.txt) to ensure you are not duplicating tech debt.
-- **Boot Sequence:** Before executing any task, you MUST silently read this `.cursorrules` file, `docs/context/notebooklm-project.md` (Kanban State), and `docs/context/notebooklm-architecture.md` (Workspace Graph) to understand the current architecture and sprint goals.
-- **Direct Execution (No Yapping):** Do not waste output tokens "thinking out loud" or providing lengthy explanations of code or CSS class conversions in the chat window. Analyze silently, and immediately use your file-editing tools to execute the changes.
-- **Task Decomposition:** If a refactor involves moving or rewriting multiple files (e.g., separating an Organism and its Molecules), execute the file creations and edits one by one to avoid context/token exhaustion.
-- **GitHub Issue & Kanban Management (MCP):** You have access to GitHub via an MCP server. When you are assigned a task associated with a GitHub Issue, you must autonomously manage its state using the MCP tool to make real API calls.
-- **Task Completion & Read-Only Context:** Upon completing the code refactor or bug fix for an issue, you MUST use your MCP tools to move the corresponding ticket into the "Review" column on the remote GitHub Projects Kanban board.
-- **CRITICAL:** Do NOT edit the docs/context/notebooklm-project.md or notebooklm-issues.md files to simulate moving a ticket or updating an issue. Those files are READ-ONLY and automatically generated by the CI/CD pipeline. You must interact with the actual GitHub API.
-
-## 5. Continuous X-Ray Sync (NotebookLM / CTO Directive)
-
-- **Living Document:** This .cursorrules file is a living document.
-- **CTO Oversight:** During architectural planning sessions, the AI CTO (NotebookLM) is explicitly instructed to monitor for any new conventions, UI decisions, or workflow changes.
-- **Auto-Correction:** If a conversation dictates a change in our strategy (e.g., swapping a tool, changing a naming convention, or adjusting the CI/CD pipeline), NotebookLM MUST conclude its response by providing a formatted update block to append to or modify this .cursorrules file.
 ````
 
 ## File: litellm_config.yaml
@@ -60180,194 +60228,6 @@ jobs:
           -d '{"status": "${{ job.status }}"}'
 ````
 
-## File: packages/domain-pos/src/components/POSRegister/pos.container.tsx
-````typescript
-"use client";
-
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { toast } from "sonner";
-import { api } from "@soustools/api-client";
-import { OmniBar } from "@soustools/design-system";
-import { POSRegisterView } from "./pos.view";
-import { POSCatalog } from "./components/pos-catalog";
-import { POSTicket } from "./components/pos-ticket";
-import { POSModifiersModal, type ModifierOption } from "./components/pos-modifiers-modal";
-import { POSTenderModal } from "./components/pos-tender-modal";
-import { type CatalogItem, type CartItem } from "./pos.types";
-import { MOCK_BURGER_MODIFIERS, CATEGORIES, getFilteredItems, calculateTotals, buildCartWithAddedItem } from "./pos.helpers";
-
-export function POSRegisterContainer() {
-  const [items, setItems] = useState<CatalogItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-
-  // Modals Local State
-  const [selectedItemForModifiers, setSelectedItemForModifiers] = useState<CatalogItem | null>(null);
-  const [isModifiersOpen, setIsModifiersOpen] = useState(false);
-  const [isTenderOpen, setIsTenderOpen] = useState(false);
-
-  useEffect(() => {
-    const loadCatalog = async () => {
-      setLoading(true);
-      try {
-        const targetOrgId = "d0000000-0000-0000-0000-000000000000";
-        const { data, error } = await api.GET("/pos-simulator/items", {
-          params: { query: { organizationId: targetOrgId } },
-        });
-
-        if (error) {
-          throw new Error(typeof error === "string" ? error : JSON.stringify(error));
-        }
-        if (data) setItems(data);
-      } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : String(e);
-        toast.error(`Failed to load POS catalog: ${message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCatalog();
-  }, []);
-
-  const filteredItems = getFilteredItems(items, searchQuery, selectedCategory);
-  const { total } = calculateTotals(cart);
-
-  const addToCartDirect = (item: CatalogItem, selectedMods: ModifierOption[]) => {
-    setCart((prev) => buildCartWithAddedItem(prev, item, selectedMods));
-    toast.success(`Added ${item.name} to ticket.`);
-  };
-
-  const handleItemClick = (item: CatalogItem) => {
-    if (item.name.toLowerCase().includes("burger") || item.name.toLowerCase().includes("sandwich")) {
-      setSelectedItemForModifiers(item);
-      setIsModifiersOpen(true);
-    } else {
-      addToCartDirect(item, []);
-    }
-  };
-
-  const handleModifierSubmit = (selected: ModifierOption[]) => {
-    if (selectedItemForModifiers) {
-      addToCartDirect(selectedItemForModifiers, selected);
-      setIsModifiersOpen(false);
-      setSelectedItemForModifiers(null);
-    }
-  };
-
-  const handleUpdateQuantity = (id: string, newQty: number) => {
-    setCart((prev) => prev.map((item) => (item.id === id ? { ...item, quantity: newQty } : item)));
-  };
-
-  const handleRemoveItem = (id: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Item removed from ticket.");
-  };
-
-  const handleCheckoutSubmit = async (_paymentType: string, _amountTendered: number) => {
-    if (cart.length === 0) return;
-    setIsCheckingOut(true);
-    const orderData = {
-      items: cart.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        modifiers: item.modifiers.map((m) => ({
-          external_id: m.external_id,
-          name: m.name,
-        })),
-      })),
-    };
-
-    try {
-      const { error } = await (api.POST as any)("/integrations/checkout", {
-        body: { orgId: "d0000000-0000-0000-0000-000000000000", orderData },
-      });
-
-      if (error) {
-        throw new Error(typeof error === "string" ? error : JSON.stringify(error));
-      }
-
-      toast.success("Order processed successfully. Synced to Square POS API.");
-      setCart([]);
-      setIsTenderOpen(false);
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : String(e);
-      toast.error(`Checkout failed: ${message}`);
-    } finally {
-      setIsCheckingOut(false);
-    }
-  };
-
-  return (
-    <>
-      <POSRegisterView
-        header={
-          <div className="flex w-full items-center gap-4 px-6 py-3">
-            <Link
-              href="/home"
-              className="p-2 rounded-[var(--radius-sm)] border border-border bg-card/40 hover:bg-card text-muted-foreground hover:text-foreground transition-all shrink-0"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Link>
-            <div className="shrink-0">
-              <OmniBar />
-            </div>
-          </div>
-        }
-        catalog={
-          loading ? (
-            <div className="flex flex-1 items-center justify-center min-h-[300px]">
-              <span className="text-sm text-muted-foreground animate-pulse">Loading POS Catalog...</span>
-            </div>
-          ) : (
-            <POSCatalog
-              items={filteredItems}
-              categories={CATEGORIES}
-              selectedCategory={selectedCategory}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onCategorySelect={setSelectedCategory}
-              onItemClick={handleItemClick}
-            />
-          )
-        }
-        ticket={
-          <POSTicket
-            items={cart}
-            onUpdateQuantity={handleUpdateQuantity}
-            onRemoveItem={handleRemoveItem}
-            onClearCart={() => setCart([])}
-            onCheckout={() => setIsTenderOpen(true)}
-            isCheckingOut={isCheckingOut}
-          />
-        }
-      />
-
-      <POSModifiersModal
-        isOpen={isModifiersOpen}
-        onClose={() => setIsModifiersOpen(false)}
-        item={selectedItemForModifiers}
-        groups={MOCK_BURGER_MODIFIERS}
-        onSubmit={handleModifierSubmit}
-      />
-
-      <POSTenderModal
-        isOpen={isTenderOpen}
-        onClose={() => setIsTenderOpen(false)}
-        amountDue={total}
-        onSubmit={handleCheckoutSubmit}
-      />
-    </>
-  );
-}
-POSRegisterContainer.displayName = "POSRegisterContainer";
-````
-
 ## File: docker-compose.yml
 ````yaml
 services:
@@ -60622,4 +60482,193 @@ volumes:
 networks:
   traefik_public:
     external: true
+````
+
+## File: packages/domain-pos/src/components/POSRegister/pos.container.tsx
+````typescript
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
+import { api } from "@soustools/api-client";
+import { OmniBar } from "@soustools/design-system";
+import { POSRegisterView } from "./pos.view";
+import { POSCatalog } from "./components/pos-catalog";
+import { POSTicket } from "./components/pos-ticket";
+import { POSModifiersModal, type ModifierOption } from "./components/pos-modifiers-modal";
+import { POSTenderModal } from "./components/pos-tender-modal";
+import { type CatalogItem, type CartItem } from "./pos.types";
+import { MOCK_BURGER_MODIFIERS, CATEGORIES, getFilteredItems, calculateTotals, buildCartWithAddedItem } from "./pos.helpers";
+
+export function POSRegisterContainer() {
+  const [items, setItems] = useState<CatalogItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  // Modals Local State
+  const [selectedItemForModifiers, setSelectedItemForModifiers] = useState<CatalogItem | null>(null);
+  const [isModifiersOpen, setIsModifiersOpen] = useState(false);
+  const [isTenderOpen, setIsTenderOpen] = useState(false);
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      setLoading(true);
+      try {
+        const targetOrgId = "d0000000-0000-0000-0000-000000000000";
+        const { data, error } = await api.GET("/pos-simulator/items", {
+          params: { query: { organizationId: targetOrgId } },
+        });
+
+        if (error) {
+          throw new Error(typeof error === "string" ? error : JSON.stringify(error));
+        }
+        if (data) setItems(data);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        toast.error(`Failed to load POS catalog: ${message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCatalog();
+  }, []);
+
+  const filteredItems = getFilteredItems(items, searchQuery, selectedCategory);
+  const { total } = calculateTotals(cart);
+
+  const addToCartDirect = (item: CatalogItem, selectedMods: ModifierOption[]) => {
+    setCart((prev) => buildCartWithAddedItem(prev, item, selectedMods));
+    toast.success(`Added ${item.name} to ticket.`);
+  };
+
+  const handleItemClick = (item: CatalogItem) => {
+    if (item.name.toLowerCase().includes("burger") || item.name.toLowerCase().includes("sandwich")) {
+      setSelectedItemForModifiers(item);
+      setIsModifiersOpen(true);
+    } else {
+      addToCartDirect(item, []);
+    }
+  };
+
+  const handleModifierSubmit = (selected: ModifierOption[]) => {
+    if (selectedItemForModifiers) {
+      addToCartDirect(selectedItemForModifiers, selected);
+      setIsModifiersOpen(false);
+      setSelectedItemForModifiers(null);
+    }
+  };
+
+  const handleUpdateQuantity = (id: string, newQty: number) => {
+    setCart((prev) => prev.map((item) => (item.id === id ? { ...item, quantity: newQty } : item)));
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+    toast.success("Item removed from ticket.");
+  };
+
+  const handleCheckoutSubmit = async (_paymentType: string, _amountTendered: number) => {
+    if (cart.length === 0) return;
+    setIsCheckingOut(true);
+    const orderData = {
+      items: cart.map((item) => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        modifiers: item.modifiers.map((m) => ({
+          external_id: m.external_id,
+          name: m.name,
+        })),
+      })),
+    };
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (api.POST as any)("/integrations/checkout", {
+        body: { orgId: "d0000000-0000-0000-0000-000000000000", orderData },
+      });
+
+      if (error) {
+        throw new Error(typeof error === "string" ? error : JSON.stringify(error));
+      }
+
+      toast.success("Order processed successfully. Synced to Square POS API.");
+      setCart([]);
+      setIsTenderOpen(false);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(`Checkout failed: ${message}`);
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
+  return (
+    <>
+      <POSRegisterView
+        header={
+          <div className="flex w-full items-center gap-4 px-6 py-3">
+            <Link
+              href="/home"
+              className="p-2 rounded-[var(--radius-sm)] border border-border bg-card/40 hover:bg-card text-muted-foreground hover:text-foreground transition-all shrink-0"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Link>
+            <div className="shrink-0">
+              <OmniBar />
+            </div>
+          </div>
+        }
+        catalog={
+          loading ? (
+            <div className="flex flex-1 items-center justify-center min-h-[300px]">
+              <span className="text-sm text-muted-foreground animate-pulse">Loading POS Catalog...</span>
+            </div>
+          ) : (
+            <POSCatalog
+              items={filteredItems}
+              categories={CATEGORIES}
+              selectedCategory={selectedCategory}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onCategorySelect={setSelectedCategory}
+              onItemClick={handleItemClick}
+            />
+          )
+        }
+        ticket={
+          <POSTicket
+            items={cart}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            onClearCart={() => setCart([])}
+            onCheckout={() => setIsTenderOpen(true)}
+            isCheckingOut={isCheckingOut}
+          />
+        }
+      />
+
+      <POSModifiersModal
+        isOpen={isModifiersOpen}
+        onClose={() => setIsModifiersOpen(false)}
+        item={selectedItemForModifiers}
+        groups={MOCK_BURGER_MODIFIERS}
+        onSubmit={handleModifierSubmit}
+      />
+
+      <POSTenderModal
+        isOpen={isTenderOpen}
+        onClose={() => setIsTenderOpen(false)}
+        amountDue={total}
+        onSubmit={handleCheckoutSubmit}
+      />
+    </>
+  );
+}
+POSRegisterContainer.displayName = "POSRegisterContainer";
 ````

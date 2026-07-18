@@ -4,19 +4,19 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing 889836daf0516759
+cache miss, executing f19d67e3117bb6c9
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing bd507539bea68a2b
+cache miss, executing f87b69a2362fcd35
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 7eb7d383d94c14bb
+cache miss, executing c326482ddc29dcd5
 $ tsc
 ::endgroup::
 ::group::cli:test
-cache miss, executing 56192c0fb4137173
+cache miss, executing 2a028f6f2299f267
 $ jest --coverage --passWithNoTests
 PASS src/cli.spec.ts
   CLI
@@ -45,12 +45,13 @@ All files                       |       0 |        0 |       0 |       0 |
 Test Suites: 1 passed, 1 total
 Tests:       1 passed, 1 total
 Snapshots:   0 total
-Time:        3.048 s
+Time:        4.125 s
 Ran all test suites.
 ::endgroup::
 [;31mapi:test[;0m
-cache miss, executing ce9719589d90d615
+cache miss, executing f17aec4bc3dc4ac9
 $ jest --coverage --passWithNoTests
+PASS src/modules/recipe/recipe.spec.ts
 FAIL src/modules/integrations/webhooks.spec.ts
   ● WebhooksController › should queue the sync job and return status queued when integration exists
 
@@ -74,11 +75,9 @@ FAIL src/modules/integrations/webhooks.spec.ts
 
       at Object.<anonymous> (modules/integrations/webhooks.spec.ts:103:20)
 
-PASS src/modules/devices/devices.spec.ts
-PASS src/modules/recipe/recipe.spec.ts
 PASS src/modules/pos-simulator/pos-simulator.spec.ts
 PASS src/modules/signage/displays.spec.ts
-PASS src/modules/signage/layouts.spec.ts
+PASS src/modules/devices/devices.spec.ts
 FAIL src/app.controller.spec.ts
   ● Test suite failed to run
 
@@ -95,6 +94,7 @@ FAIL src/app.controller.spec.ts
       at Resolver._throwModNotFoundError (../../../node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:427:11)
       at Object.<anonymous> (app.controller.spec.ts:7:6)
 
+PASS src/modules/signage/layouts.spec.ts
 FAIL src/modules/integrations/integrations.spec.ts
   ● Integrations › should be defined
 
@@ -395,12 +395,12 @@ All files                         |   12.02 |    12.08 |   10.92 |   11.65 |
 Test Suites: 3 failed, 5 passed, 8 total
 Tests:       5 failed, 14 passed, 19 total
 Snapshots:   0 total
-Time:        8.221 s
+Time:        11.064 s
 Ran all test suites.
 [ELIFECYCLE] Test failed. See above for more details.
 
  Tasks:    4 successful, 5 total
 Cached:    0 cached, 5 total
-  Time:    12.196s 
+  Time:    16.282s 
 Failed:    api#test
 

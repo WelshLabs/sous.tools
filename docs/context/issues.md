@@ -2,6 +2,49 @@
 
 ---
 
+author: conarwelsh
+association: owner
+edited: false
+status: none
+--
+
+Here is the step-by-step implementation plan for refactoring the design system base primitives:
+
+1. **Audit Existing Components:**
+   - Navigate to `packages/design-system/src`.
+   - Thoroughly review all existing custom base components.
+   - Identify components that correspond to standard UI elements such as Buttons, Inputs, Dialogs, and Popovers.
+
+2. **Install Shadcn UI Primitives:**
+   - Use the Shadcn CLI to install the official primitives into the design system.
+   - The target directory for installation should be `packages/design-system/src/components/<primitive-name>/`.
+   - Example command: `npx shadcn-ui@latest add button` (adjust for each primitive).
+
+3. **Apply Neon-Glass Tokens:**
+   - For each installed Shadcn primitive:
+     - Locate the component files within its respective directory.
+     - Modify the component's styling to exclusively utilize the existing Neon-Glass semantic Tailwind tokens.
+     - Ensure consistency with the project's design language.
+
+4. **Enforce Naming and Folder Conventions:**
+   - For each refactored primitive, ensure the following structure and naming:
+     - **Folder Structure:** `packages/design-system/src/components/<ComponentName>/`
+     - **Component File:** `[ComponentName].tsx` (PascalCase)
+     - **Storybook File:** `[ComponentName].stories.tsx` (PascalCase, with basic Storybook implementation)
+     - **Test File:** `[ComponentName].spec.tsx` (PascalCase, with a basic render test)
+
+5. **Cleanup Legacy Components:**
+   - Once all Shadcn primitives are installed, configured, and correctly structured:
+     - Delete the original custom base components that have been replaced.
+
+6. **Verification:**
+   - Run the following commands to ensure all changes are correctly implemented and the project adheres to standards:
+     - `pnpm turbo test` (to execute all unit and integration tests)
+     - `pnpm turbo lint` (to check for code style and quality issues)
+
+This plan ensures that the design system's base primitives are migrated to robust Shadcn equivalents, adhere to the specified naming and folder conventions, and are styled using the project's established tokens, all while maintaining a high standard of code quality and test coverage.
+--
+
 ---
 
 ---

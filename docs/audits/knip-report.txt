@@ -48,7 +48,7 @@ scripts/generate-icons.mjs
 @supabase/supabase-js      apps/pos-simulator/package.json:17:6      
 @hello-pangea/dnd          apps/web/package.json:14:6                
 @hookform/resolvers        apps/web/package.json:15:6                
-@supabase/supabase-js      apps/web/package.json:22:6                
+@supabase/supabase-js      apps/web/package.json:26:6                
 react-hook-form            apps/web/package.json:35:6                
 recharts                   apps/web/package.json:36:6                
 serwist                    apps/web/package.json:37:6                
