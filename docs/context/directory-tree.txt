@@ -1,6 +1,7 @@
 .
 ├── Dockerfile.agentRunner
 ├── Dockerfile.editor
+├── README.md
 ├── apps
 │   ├── api
 │   │   ├── Dockerfile
@@ -336,7 +337,25 @@
 │   │   │   │   ├── prettify.css
 │   │   │   │   ├── prettify.js
 │   │   │   │   ├── sort-arrow-sprite.png
-│   │   │   │   └── sorter.js
+│   │   │   │   ├── sorter.js
+│   │   │   │   └── src
+│   │   │   │       ├── app.module.ts.html
+│   │   │   │       ├── commands
+│   │   │   │       │   ├── commands.module.ts.html
+│   │   │   │       │   ├── import-textbook.command.ts.html
+│   │   │   │       │   ├── import.command.ts.html
+│   │   │   │       │   ├── index.html
+│   │   │   │       │   └── parse-textbook.command.ts.html
+│   │   │   │       ├── index.html
+│   │   │   │       ├── ingestion
+│   │   │   │       │   ├── gemini-parser.schemas.ts.html
+│   │   │   │       │   ├── gemini-parser.service.ts.html
+│   │   │   │       │   ├── index.html
+│   │   │   │       │   ├── ingestion.module.ts.html
+│   │   │   │       │   ├── ingestion.service.ts.html
+│   │   │   │       │   ├── playwright-flipper.service.ts.html
+│   │   │   │       │   └── prompt-templates.ts.html
+│   │   │   │       └── main.ts.html
 │   │   │   └── lcov.info
 │   │   ├── eslint.config.js
 │   │   ├── eslint.config.mjs
@@ -344,6 +363,7 @@
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── app.module.ts
+│   │   │   ├── cli.spec.ts
 │   │   │   ├── commands
 │   │   │   │   ├── commands.module.ts
 │   │   │   │   ├── import-textbook.command.ts
@@ -385,7 +405,8 @@
 │   │   │   │   ├── StockPromptModal.tsx
 │   │   │   │   └── helpers.ts
 │   │   │   └── instrumentation.ts
-│   │   └── tsconfig.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
 │   ├── setup-portal
 │   │   ├── eslint.config.js
 │   │   ├── next-env.d.ts
@@ -417,6 +438,10 @@
 │   │   │   └── instrumentation.ts
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.tsbuildinfo
+│   ├── storybook
+│   │   ├── eslint.config.js
+│   │   ├── package.json
+│   │   └── tsconfig.json
 │   ├── wearos
 │   │   ├── app
 │   │   │   ├── build.gradle.kts
@@ -714,7 +739,8 @@
 │       │   ├── instrumentation.ts
 │       │   ├── proxy.ts
 │       │   └── sw.ts
-│       └── tsconfig.json
+│       ├── tsconfig.json
+│       └── tsconfig.tsbuildinfo
 ├── deploy
 │   ├── ansible
 │   │   ├── README.md
@@ -1008,6 +1034,7 @@
 │   │   │   └── index.ts
 │   │   └── tsconfig.json
 │   ├── design-system
+│   │   ├── components.json
 │   │   ├── eslint.config.js
 │   │   ├── index.css
 │   │   ├── index.v1.css
@@ -1072,9 +1099,11 @@
 │   │   │   │   ├── ThemeToggle.tsx
 │   │   │   │   ├── TopProgress.tsx
 │   │   │   │   ├── TwoToneHeader.tsx
-│   │   │   │   └── logos
-│   │   │   │       ├── Logo.tsx
-│   │   │   │       └── index.ts
+│   │   │   │   ├── logos
+│   │   │   │   │   ├── Logo.tsx
+│   │   │   │   │   └── index.ts
+│   │   │   │   └── ui
+│   │   │   │       └── button.tsx
 │   │   │   ├── index.ts
 │   │   │   ├── store
 │   │   │   │   └── sidebarStore.ts
@@ -1130,13 +1159,16 @@
 │   │   ├── eslint.config.js
 │   │   ├── package.json
 │   │   ├── src
+│   │   │   ├── ActionButtons.tsx
 │   │   │   ├── ActiveKitchen.tsx
 │   │   │   ├── ActiveKitchenStep.tsx
 │   │   │   ├── ActiveKitchenTimerRow.tsx
 │   │   │   ├── ActiveKitchenTimers.tsx
+│   │   │   ├── AutoCalculateButton.tsx
 │   │   │   ├── ComplianceSearch.tsx
 │   │   │   ├── ComplianceSearchForm.tsx
 │   │   │   ├── ComplianceSearchResultItem.tsx
+│   │   │   ├── DimensionInputs.tsx
 │   │   │   ├── RecipeBatchSummary.tsx
 │   │   │   ├── RecipeBuilder.tsx
 │   │   │   ├── RecipeBuilderFormFields.tsx
@@ -1145,6 +1177,7 @@
 │   │   │   ├── RecipeBuilderInstructions.tsx
 │   │   │   ├── RecipeCard.tsx
 │   │   │   ├── RecipeCostPanel.tsx
+│   │   │   ├── RecipeCostPanelSummary.tsx
 │   │   │   ├── RecipeCostTable.tsx
 │   │   │   ├── RecipeDietaryBadges.tsx
 │   │   │   ├── RecipeFilter.tsx
@@ -1159,6 +1192,9 @@
 │   │   │   ├── VesselDialogForm.tsx
 │   │   │   ├── VesselManager.tsx
 │   │   │   ├── VesselManagerHeader.tsx
+│   │   │   ├── VesselNameInput.tsx
+│   │   │   ├── VesselShapeInput.tsx
+│   │   │   ├── VolumeInput.tsx
 │   │   │   ├── WastageEntryForm.tsx
 │   │   │   ├── WastageEntryModal.tsx
 │   │   │   ├── index.ts
@@ -1328,4 +1364,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-298 directories, 1031 files
+303 directories, 1062 files

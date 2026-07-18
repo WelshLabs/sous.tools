@@ -1,32 +1,55 @@
 
-   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, web
-   • Running test in 18 packages
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
+   • Running test in 19 packages
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing a1d28467ca7ea36e
+cache miss, executing 889836daf0516759
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing f8ab61276d416362
+cache miss, executing bd507539bea68a2b
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 7df2ca316a9e847d
+cache miss, executing 7eb7d383d94c14bb
 $ tsc
 ::endgroup::
 ::group::cli:test
-cache miss, executing 6750888c739c57c6
+cache miss, executing 56192c0fb4137173
 $ jest --coverage --passWithNoTests
-No tests found, exiting with code 0
-----------|---------|----------|---------|---------|-------------------
-File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
-----------|---------|----------|---------|---------|-------------------
-All files |       0 |        0 |       0 |       0 |                   
-----------|---------|----------|---------|---------|-------------------
+PASS src/cli.spec.ts
+  CLI
+    ✓ should be instantiable (2 ms)
+
+--------------------------------|---------|----------|---------|---------|-------------------
+File                            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+--------------------------------|---------|----------|---------|---------|-------------------
+All files                       |       0 |        0 |       0 |       0 |                   
+ src                            |       0 |      100 |       0 |       0 |                   
+  app.module.ts                 |       0 |      100 |     100 |       0 | 1-9               
+  main.ts                       |       0 |      100 |       0 |       0 | 1-7               
+ src/commands                   |       0 |        0 |       0 |       0 |                   
+  commands.module.ts            |       0 |      100 |     100 |       0 | 1-11              
+  import-textbook.command.ts    |       0 |        0 |       0 |       0 | 1-70              
+  import.command.ts             |       0 |        0 |       0 |       0 | 1-48              
+  parse-textbook.command.ts     |       0 |        0 |       0 |       0 | 1-43              
+ src/ingestion                  |       0 |        0 |       0 |       0 |                   
+  gemini-parser.schemas.ts      |       0 |        0 |       0 |       0 | 1-95              
+  gemini-parser.service.ts      |       0 |        0 |       0 |       0 | 1-209             
+  ingestion.module.ts           |       0 |      100 |     100 |       0 | 1-10              
+  ingestion.service.ts          |       0 |        0 |       0 |       0 | 1-208             
+  playwright-flipper.service.ts |       0 |        0 |       0 |       0 | 1-78              
+  prompt-templates.ts           |       0 |      100 |     100 |       0 | 1-55              
+--------------------------------|---------|----------|---------|---------|-------------------
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        3.048 s
+Ran all test suites.
 ::endgroup::
 [;31mapi:test[;0m
-cache miss, executing 1c0ff728234564f0
+cache miss, executing ce9719589d90d615
 $ jest --coverage --passWithNoTests
 FAIL src/modules/integrations/webhooks.spec.ts
   ● WebhooksController › should queue the sync job and return status queued when integration exists
@@ -41,166 +64,41 @@ FAIL src/modules/integrations/webhooks.spec.ts
     +   "status": "duplicate_ignored",
       }
 
-    [0m [90m 100 |[39m
-     [90m 101 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m controller[33m.[39mhandleWebhook([32m"square"[39m[33m,[39m [32m"sig"[39m[33m,[39m [32m""[39m[33m,[39m mockReq)[33m;[39m
-    [31m[1m>[22m[39m[90m 102 |[39m     expect(result)[33m.[39mtoEqual({ status[33m:[39m [32m"queued"[39m })[33m;[39m
+    [0m [90m 101 |[39m
+     [90m 102 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m controller[33m.[39mhandleWebhook([32m"square"[39m[33m,[39m [32m"sig"[39m[33m,[39m [32m""[39m[33m,[39m mockReq)[33m;[39m
+    [31m[1m>[22m[39m[90m 103 |[39m     expect(result)[33m.[39mtoEqual({ status[33m:[39m [32m"queued"[39m })[33m;[39m
      [90m     |[39m                    [31m[1m^[22m[39m
-     [90m 103 |[39m     expect(queue[33m.[39madd)[33m.[39mtoHaveBeenCalledWith([32m"pos-sync-job"[39m[33m,[39m {
-     [90m 104 |[39m       orgId[33m:[39m [32m"org-uuid-123"[39m[33m,[39m
-     [90m 105 |[39m       type[33m:[39m [32m"webhook-inventory"[39m[33m,[39m[0m
+     [90m 104 |[39m     expect(queue[33m.[39madd)[33m.[39mtoHaveBeenCalledWith([32m"pos-sync-job"[39m[33m,[39m {
+     [90m 105 |[39m       orgId[33m:[39m [32m"org-uuid-123"[39m[33m,[39m
+     [90m 106 |[39m       type[33m:[39m [32m"webhook-inventory"[39m[33m,[39m[0m
 
-      at Object.<anonymous> (modules/integrations/webhooks.spec.ts:102:20)
-
-PASS src/modules/pos-simulator/pos-simulator.spec.ts
-FAIL src/modules/recipe/recipe.spec.ts
-  ● Recipe Module Controllers › should list vessels successfully
-
-    Nest can't resolve dependencies of the RecipesController (RecipesService, ?). Please make sure that the argument RecipeCostService at index [1] is available in the RootTestModule context.
-
-    Potential solutions:
-    - Is RootTestModule a valid NestJS module?
-    - If RecipeCostService is a provider, is it part of the current RootTestModule?
-    - If RecipeCostService is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing RecipeCostService */ ]
-      })
-
-    [0m [90m 27 |[39m
-     [90m 28 |[39m   beforeEach([36masync[39m () [33m=>[39m {
-    [31m[1m>[22m[39m[90m 29 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
-     [90m    |[39m                                   [31m[1m^[22m[39m
-     [90m 30 |[39m       controllers[33m:[39m [[33mRecipesController[39m[33m,[39m [33mIngredientsController[39m[33m,[39m [33mVesselsController[39m][33m,[39m
-     [90m 31 |[39m       providers[33m:[39m [[33mRecipesService[39m[33m,[39m [33mIngredientsService[39m[33m,[39m [33mVesselsService[39m][33m,[39m
-     [90m 32 |[39m     })[33m.[39mcompile()[33m;[39m[0m
-
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:262:19)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:215:33)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-injector.js:19:45)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:129:38)
-          at async Promise.all (index 1)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:144:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:70:13)
-      at TestingInjector.loadController (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:89:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:68:13
-          at async Promise.all (index 0)
-      at TestingInstanceLoader.createInstancesOfControllers (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:67:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:42:13
-          at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
-      at Object.<anonymous> (modules/recipe/recipe.spec.ts:29:35)
-
-  ● Recipe Module Controllers › should list ingredients successfully
-
-    Nest can't resolve dependencies of the RecipesController (RecipesService, ?). Please make sure that the argument RecipeCostService at index [1] is available in the RootTestModule context.
-
-    Potential solutions:
-    - Is RootTestModule a valid NestJS module?
-    - If RecipeCostService is a provider, is it part of the current RootTestModule?
-    - If RecipeCostService is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing RecipeCostService */ ]
-      })
-
-    [0m [90m 27 |[39m
-     [90m 28 |[39m   beforeEach([36masync[39m () [33m=>[39m {
-    [31m[1m>[22m[39m[90m 29 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
-     [90m    |[39m                                   [31m[1m^[22m[39m
-     [90m 30 |[39m       controllers[33m:[39m [[33mRecipesController[39m[33m,[39m [33mIngredientsController[39m[33m,[39m [33mVesselsController[39m][33m,[39m
-     [90m 31 |[39m       providers[33m:[39m [[33mRecipesService[39m[33m,[39m [33mIngredientsService[39m[33m,[39m [33mVesselsService[39m][33m,[39m
-     [90m 32 |[39m     })[33m.[39mcompile()[33m;[39m[0m
-
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:262:19)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:215:33)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-injector.js:19:45)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:129:38)
-          at async Promise.all (index 1)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:144:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:70:13)
-      at TestingInjector.loadController (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:89:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:68:13
-          at async Promise.all (index 0)
-      at TestingInstanceLoader.createInstancesOfControllers (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:67:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:42:13
-          at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
-      at Object.<anonymous> (modules/recipe/recipe.spec.ts:29:35)
-
-  ● Recipe Module Controllers › should create recipe successfully
-
-    Nest can't resolve dependencies of the RecipesController (RecipesService, ?). Please make sure that the argument RecipeCostService at index [1] is available in the RootTestModule context.
-
-    Potential solutions:
-    - Is RootTestModule a valid NestJS module?
-    - If RecipeCostService is a provider, is it part of the current RootTestModule?
-    - If RecipeCostService is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing RecipeCostService */ ]
-      })
-
-    [0m [90m 27 |[39m
-     [90m 28 |[39m   beforeEach([36masync[39m () [33m=>[39m {
-    [31m[1m>[22m[39m[90m 29 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
-     [90m    |[39m                                   [31m[1m^[22m[39m
-     [90m 30 |[39m       controllers[33m:[39m [[33mRecipesController[39m[33m,[39m [33mIngredientsController[39m[33m,[39m [33mVesselsController[39m][33m,[39m
-     [90m 31 |[39m       providers[33m:[39m [[33mRecipesService[39m[33m,[39m [33mIngredientsService[39m[33m,[39m [33mVesselsService[39m][33m,[39m
-     [90m 32 |[39m     })[33m.[39mcompile()[33m;[39m[0m
-
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:262:19)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:215:33)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-injector.js:19:45)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:129:38)
-          at async Promise.all (index 1)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:144:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:70:13)
-      at TestingInjector.loadController (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:89:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:68:13
-          at async Promise.all (index 0)
-      at TestingInstanceLoader.createInstancesOfControllers (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:67:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:42:13
-          at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
-      at Object.<anonymous> (modules/recipe/recipe.spec.ts:29:35)
+      at Object.<anonymous> (modules/integrations/webhooks.spec.ts:103:20)
 
 PASS src/modules/devices/devices.spec.ts
+PASS src/modules/recipe/recipe.spec.ts
+PASS src/modules/pos-simulator/pos-simulator.spec.ts
 PASS src/modules/signage/displays.spec.ts
 PASS src/modules/signage/layouts.spec.ts
 FAIL src/app.controller.spec.ts
   ● Test suite failed to run
 
-    supabaseUrl is required.
+    Cannot find module '../lib/config' from 'app.controller.spec.ts'
 
-    [0m [90m 3 |[39m
-     [90m 4 |[39m [36mexport[39m [36mfunction[39m createAdminClient()[33m:[39m [33mSupabaseClient[39m {
-    [31m[1m>[22m[39m[90m 5 |[39m   [36mreturn[39m createClient(
-     [90m   |[39m                      [31m[1m^[22m[39m
-     [90m 6 |[39m     config[33m.[39m[33mSUPABASE_URL[39m[33m,[39m
-     [90m 7 |[39m     config[33m.[39m[33mSUPABASE_SERVICE_ROLE_KEY[39m[33m,[39m
-     [90m 8 |[39m     { auth[33m:[39m { autoRefreshToken[33m:[39m [36mfalse[39m[33m,[39m persistSession[33m:[39m [36mfalse[39m } }[0m
+    [0m [90m  5 |[39m [90m// Mock the config module to provide SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY[39m
+     [90m  6 |[39m [90m// Ensure the path to config is correct relative to app.controller.spec.ts[39m
+    [31m[1m>[22m[39m[90m  7 |[39m jest[33m.[39mmock([32m"../lib/config"[39m[33m,[39m () [33m=>[39m ({
+     [90m    |[39m      [31m[1m^[22m[39m
+     [90m  8 |[39m   config[33m:[39m {
+     [90m  9 |[39m     [33mSUPABASE_URL[39m[33m:[39m [32m"http://localhost:54321"[39m[33m,[39m [90m// Dummy URL for testing[39m
+     [90m 10 |[39m     [33mSUPABASE_SERVICE_ROLE_KEY[39m[33m:[39m [32m"dummy-service-role-key"[39m[33m,[39m[0m
 
-      at validateSupabaseUrl (../../../node_modules/.pnpm/@supabase+supabase-js@2.110.2/node_modules/@supabase/supabase-js/src/lib/helpers.ts:111:11)
-      at new SupabaseClient (../../../node_modules/.pnpm/@supabase+supabase-js@2.110.2/node_modules/@supabase/supabase-js/src/SupabaseClient.ts:315:21)
-      at createClient (../../../node_modules/.pnpm/@supabase+supabase-js@2.110.2/node_modules/@supabase/supabase-js/src/index.ts:65:10)
-      at createAdminClient (lib/supabase.ts:5:22)
-      at Object.createAdminClient (lib/supabase.ts:15:41)
-      at Object.require (app.controller.ts:5:1)
-      at Object.<anonymous> (app.controller.spec.ts:2:1)
+      at Resolver._throwModNotFoundError (../../../node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:427:11)
+      at Object.<anonymous> (app.controller.spec.ts:7:6)
 
 FAIL src/modules/integrations/integrations.spec.ts
   ● Integrations › should be defined
 
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule context.
+    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
 
     Potential solutions:
     - Is RootTestModule a valid NestJS module?
@@ -210,6 +108,8 @@ FAIL src/modules/integrations/integrations.spec.ts
         imports: [ /* the Module containing SquareDriver */ ]
       })
 
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
     [0m [90m 20 |[39m
      [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
     [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
@@ -218,29 +118,27 @@ FAIL src/modules/integrations/integrations.spec.ts
      [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
      [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
 
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:262:19)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:215:33)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-injector.js:19:45)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:129:38)
+      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
+      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
           at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:144:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:70:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:98:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
+      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
+      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
           at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:40:13
+      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
           at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
+      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
       at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
 
   ● Integrations › should generate OAuth URLs correctly
 
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule context.
+    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
 
     Potential solutions:
     - Is RootTestModule a valid NestJS module?
@@ -250,6 +148,8 @@ FAIL src/modules/integrations/integrations.spec.ts
         imports: [ /* the Module containing SquareDriver */ ]
       })
 
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
     [0m [90m 20 |[39m
      [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
     [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
@@ -258,29 +158,27 @@ FAIL src/modules/integrations/integrations.spec.ts
      [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
      [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
 
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:262:19)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:215:33)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-injector.js:19:45)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:129:38)
+      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
+      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
           at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:144:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:70:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:98:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
+      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
+      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
           at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:40:13
+      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
           at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
+      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
       at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
 
   ● Integrations › should return integration status correctly
 
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule context.
+    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
 
     Potential solutions:
     - Is RootTestModule a valid NestJS module?
@@ -290,6 +188,8 @@ FAIL src/modules/integrations/integrations.spec.ts
         imports: [ /* the Module containing SquareDriver */ ]
       })
 
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
     [0m [90m 20 |[39m
      [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
     [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
@@ -298,29 +198,27 @@ FAIL src/modules/integrations/integrations.spec.ts
      [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
      [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
 
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:262:19)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:215:33)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-injector.js:19:45)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:129:38)
+      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
+      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
           at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:144:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:70:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:98:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
+      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
+      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
           at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:40:13
+      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
           at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
+      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
       at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
 
   ● Integrations › should disconnect correctly
 
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule context.
+    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
 
     Potential solutions:
     - Is RootTestModule a valid NestJS module?
@@ -330,6 +228,8 @@ FAIL src/modules/integrations/integrations.spec.ts
         imports: [ /* the Module containing SquareDriver */ ]
       })
 
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
     [0m [90m 20 |[39m
      [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
     [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
@@ -338,36 +238,34 @@ FAIL src/modules/integrations/integrations.spec.ts
      [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
      [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
 
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:262:19)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:215:33)
-      at TestingInjector.resolveComponentInstance (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-injector.js:19:45)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:129:38)
+      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
+      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
           at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:144:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:70:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/injector.js:98:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:56:13
+      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
+      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
+      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
           at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:40:13
+      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
           at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_12ce6e97afe637f7183de409e06932fa/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_ad4ba685c60ebcc0759420119ba49847/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
+      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
       at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
 
 A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
 ----------------------------------|---------|----------|---------|---------|------------------------------------------------------------------
 File                              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                
 ----------------------------------|---------|----------|---------|---------|------------------------------------------------------------------
-All files                         |   11.07 |    10.45 |    8.76 |   10.57 |                                                                  
+All files                         |   12.02 |    12.08 |   10.92 |   11.65 |                                                                  
  src                              |       0 |        0 |       0 |       0 |                                                                  
   app.controller.ts               |       0 |        0 |       0 |       0 | 1-139                                                            
   app.module.ts                   |       0 |        0 |       0 |       0 | 1-83                                                             
   app.service.ts                  |       0 |        0 |       0 |       0 | 1-15                                                             
-  main.ts                         |       0 |        0 |       0 |       0 | 1-84                                                             
+  main.ts                         |       0 |        0 |       0 |       0 | 1-86                                                             
   pre-bootstrap.ts                |       0 |        0 |       0 |       0 | 1-10                                                             
  src/common/filters               |       0 |        0 |       0 |       0 |                                                                  
   ws-exception.filter.ts          |       0 |        0 |       0 |       0 | 1-16                                                             
@@ -458,26 +356,26 @@ All files                         |   11.07 |    10.45 |    8.76 |   10.57 |
  src/modules/pos                  |       0 |        0 |       0 |       0 |                                                                  
   pos-links.service.ts            |       0 |        0 |       0 |       0 | 1-40                                                             
   pos-transactions.service.ts     |       0 |        0 |       0 |       0 | 1-53                                                             
-  pos.controller.ts               |       0 |        0 |       0 |       0 | 1-67                                                             
+  pos.controller.ts               |       0 |        0 |       0 |       0 | 1-117                                                            
   pos.module.ts                   |       0 |      100 |     100 |       0 | 1-11                                                             
- src/modules/pos-simulator        |      53 |    40.57 |   54.54 |    52.8 |                                                                  
-  pos-simulator.controller.ts     |   72.91 |     52.5 |   71.42 |   71.73 | 41,49-62,76,94,110-115,121                                       
+ src/modules/pos-simulator        |   48.64 |    38.27 |   46.15 |      48 |                                                                  
+  pos-simulator.controller.ts     |   61.01 |    46.15 |   55.55 |   59.64 | 43,51-64,78,96,112-117,123,159-192                               
   pos-simulator.helpers.ts        |   38.63 |    24.13 |   33.33 |   35.13 | 40-132                                                           
   pos-simulator.mock.ts           |      50 |      100 |       0 |      50 | 12                                                               
   pos-simulator.module.ts         |       0 |      100 |     100 |       0 | 1-9                                                              
- src/modules/recipe               |   14.46 |       18 |    3.84 |   12.85 |                                                                  
-  ingredients.controller.ts       |    37.5 |    52.38 |   16.66 |   33.33 | 21-25,37-41,57-64,77-81,93-97                                    
-  ingredients.service.ts          |   14.28 |        0 |       0 |    12.5 | 8-94                                                             
+ src/modules/recipe               |   22.79 |       28 |      25 |   22.57 |                                                                  
+  ingredients.controller.ts       |   46.87 |    52.38 |   33.33 |   43.33 | 25,37-41,57-64,77-81,93-97                                       
+  ingredients.service.ts          |   25.71 |       56 |   33.33 |   29.16 | 19-80                                                            
   recipe-cost.service.ts          |    7.04 |        0 |       0 |    4.41 | 27-170                                                           
   recipe-meta.controller.ts       |       0 |        0 |       0 |       0 | 1-38                                                             
   recipe-meta.service.ts          |       0 |        0 |       0 |       0 | 1-36                                                             
   recipe-versions.controller.ts   |       0 |        0 |       0 |       0 | 1-105                                                            
   recipe.module.ts                |       0 |      100 |     100 |       0 | 1-18                                                             
-  recipes.controller.ts           |    32.5 |       50 |       0 |   28.94 | 21-25,30-34,48-56,66-70,135-143,161-169,179-183                  
-  recipes.mapper.ts               |    7.14 |        0 |       0 |    7.69 | 8-74                                                             
-  recipes.service.ts              |    8.82 |        0 |       0 |    7.01 | 13-180                                                           
-  vessels.controller.ts           |    37.5 |    52.38 |   16.66 |   33.33 | 21-25,35-39,51-55,68-72,82-86                                    
-  vessels.service.ts              |   12.19 |        0 |       0 |   11.11 | 8-99                                                             
+  recipes.controller.ts           |    47.5 |       50 |   28.57 |   44.73 | 30-34,48-56,66-70,143,161-169,179-183                            
+  recipes.mapper.ts               |   57.14 |    22.97 |   33.33 |   61.53 | 25-54                                                            
+  recipes.service.ts              |   19.11 |       10 |      25 |   19.29 | 13-21,81-98,113-180                                              
+  vessels.controller.ts           |   46.87 |    52.38 |   33.33 |   43.33 | 25,35-39,51-55,68-72,82-86                                       
+  vessels.service.ts              |   21.95 |    22.72 |   33.33 |   25.92 | 19-84                                                            
  src/modules/signage              |   38.97 |    42.77 |   35.48 |   40.18 |                                                                  
   displays.controller.ts          |   56.41 |       75 |   29.41 |   57.14 | 32-42,48-49,55,83,89-91,101-102                                  
   displays.helpers.ts             |   24.24 |     9.52 |      25 |   26.66 | 12,15,27-32,42-62,80-107                                         
@@ -494,15 +392,15 @@ All files                         |   11.07 |    10.45 |    8.76 |   10.57 |
   users.controller.ts             |       0 |        0 |       0 |       0 | 1-31                                                             
   users.module.ts                 |       0 |      100 |     100 |       0 | 1-7                                                              
 ----------------------------------|---------|----------|---------|---------|------------------------------------------------------------------
-Test Suites: 4 failed, 4 passed, 8 total
-Tests:       8 failed, 11 passed, 19 total
+Test Suites: 3 failed, 5 passed, 8 total
+Tests:       5 failed, 14 passed, 19 total
 Snapshots:   0 total
-Time:        9.677 s
+Time:        8.221 s
 Ran all test suites.
 [ELIFECYCLE] Test failed. See above for more details.
 
  Tasks:    4 successful, 5 total
 Cached:    0 cached, 5 total
-  Time:    14.976s 
+  Time:    12.196s 
 Failed:    api#test
 

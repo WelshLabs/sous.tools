@@ -1,70 +1,79 @@
 
-   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, web
-   • Running e2e in 18 packages
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
+   • Running e2e in 19 packages
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing c7d276d5dcf21ce4
+cache miss, executing 7c97acb0f2293423
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing 1311a8e328c8a564
+cache miss, executing 717aa9947198d020
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 2adfbddb3bd6940a
+cache miss, executing 4cf9c36801b04721
 $ tsc
 ::endgroup::
 ::group::@soustools/supabase:build
-cache miss, executing 7bc2803a75287f16
+cache miss, executing 642810e580d1f9ff
 $ tsc
 ::endgroup::
 ::group::cli:build
-cache miss, executing 666ec9dcc02b10a7
+cache miss, executing d727021f1967b8ff
 $ nest build
 ::endgroup::
 ::group::api:build
-cache miss, executing 6d90dfe9991acd3f
+cache miss, executing c92b4a3b79eda23d
 $ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 50095 ms
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 38674 ms
 ::endgroup::
 ::group::pos-simulator:build
-cache miss, executing 575130cfc2d4236b
-$ node ../../packages/config/dist/cli.js next build --webpack
+cache miss, executing 5f37a7d4b6cea18a
+$ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
-[@soustools/config] Spawning command "next build --webpack" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
+[@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
 This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-▲ Next.js 16.2.10 (webpack)
+   ▲ Next.js 15.5.18
 
-  Creating an optimized production build ...
-✓ Compiled successfully in 33.4s
-  Running TypeScript ...
-  Finished TypeScript in 13.5s ...
-  Collecting page data using 3 workers ...
-  Generating static pages using 3 workers (0/4) ...
-  Generating static pages using 3 workers (1/4) 
-  Generating static pages using 3 workers (2/4) 
-  Generating static pages using 3 workers (3/4) 
-✓ Generating static pages using 3 workers (4/4) in 395ms
-  Finalizing page optimization ...
-  Collecting build traces ...
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 25.0s
+   Linting and checking validity of types ...
 
-Route (app)
-┌ ○ /
-├ ○ /_not-found
-└ ○ /test
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+(node:7649) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784412666778 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    80.2 kB         182 kB
+├ ○ /_not-found                            992 B         103 kB
+└ ○ /test                                  122 B         102 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/236-5caa8f56cc2653e3.js         46 kB
+  ├ chunks/c1ced9cb-d98a9da30eb7cdc9.js  54.2 kB
+  └ other shared chunks (total)          1.86 kB
 
 
 ○  (Static)  prerendered as static content
 
 ::endgroup::
 ::group::@soustools/setup-portal:build
-cache miss, executing c54a03cde6f2da4c
+cache miss, executing c20c0cf79ad431ae
 $ next build
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
@@ -72,13 +81,13 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-  ▲ Next.js 14.2.35
-  - Experiments (use with caution):
-    · instrumentationHook
+   ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully
+ ✓ Compiled successfully in 30.7s
    Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
    Collecting page data ...
    Generating static pages (0/4) ...
    Generating static pages (1/4) 
@@ -88,17 +97,17 @@ https://nextjs.org/telemetry
    Finalizing page optimization ...
    Collecting build traces ...
 
-Route (app)                              Size     First Load JS
-┌ ○ /                                    2.4 kB         89.7 kB
-├ ○ /_not-found                          871 B          88.1 kB
-├ ƒ /api/finalize                        0 B                0 B
-├ ƒ /api/pairing                         0 B                0 B
-├ ƒ /api/progress                        0 B                0 B
-└ ƒ /api/wifi                            0 B                0 B
-+ First Load JS shared by all            87.3 kB
-  ├ chunks/3f26617e-5cbcf102e33a0989.js  53.6 kB
-  ├ chunks/469-5bff815fb0778025.js       31.7 kB
-  └ other shared chunks (total)          1.9 kB
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    2.39 kB         105 kB
+├ ○ /_not-found                            995 B         103 kB
+├ ƒ /api/finalize                          134 B         102 kB
+├ ƒ /api/pairing                           134 B         102 kB
+├ ƒ /api/progress                          134 B         102 kB
+└ ƒ /api/wifi                              134 B         102 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/236-6e944717b7d44255.js       46.1 kB
+  ├ chunks/c1ced9cb-e45ce61b6415495d.js  54.2 kB
+  └ other shared chunks (total)          1.88 kB
 
 
 ○  (Static)   prerendered as static content
@@ -106,77 +115,84 @@ Route (app)                              Size     First Load JS
 
 ::endgroup::
 ::group::web:build
-cache miss, executing fc92062137e3eb33
-$ node ../../packages/config/dist/cli.js next build --webpack
+cache miss, executing d4520985135d6493
+$ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
-[@soustools/config] Spawning command "next build --webpack" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
+[@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
 This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-▲ Next.js 16.2.10 (webpack)
-- Experiments (use with caution):
-  · optimizePackageImports
+   ▲ Next.js 15.5.18
+   - Experiments (use with caution):
+     · optimizePackageImports
 
-  Creating an optimized production build ...
-[32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
-✓ Compiled successfully in 73s
-  Running TypeScript ...
-  Finished TypeScript in 12.3s ...
-  Collecting page data using 3 workers ...
-  Generating static pages using 3 workers (0/17) ...
-  Generating static pages using 3 workers (4/17) 
-  Generating static pages using 3 workers (8/17) 
-  Generating static pages using 3 workers (12/17) 
-✓ Generating static pages using 3 workers (17/17) in 734ms
-  Finalizing page optimization ...
-  Collecting build traces ...
+   Creating an optimized production build ...
+ [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
+ ✓ Compiled successfully in 55s
+   Linting and checking validity of types ...
 
-Route (app)
-┌ ○ /
-├ ○ /_not-found
-├ ƒ /(.)ingestion/review/[id]
-├ ƒ /admin/devices
-├ ƒ /admin/users
-├ ƒ /catalog
-├ ƒ /dashboard
-├ ○ /display
-├ ƒ /display/[id]
-├ ƒ /home
-├ ƒ /ingestion/review/[id]
-├ ƒ /ingestions
-├ ƒ /inventory
-├ ƒ /inventory/(.)vendors/add
-├ ƒ /inventory/invoices
-├ ƒ /inventory/items
-├ ƒ /inventory/orders
-├ ƒ /inventory/orders/[id]/shop
-├ ƒ /inventory/vendors
-├ ƒ /inventory/vendors/add
-├ ○ /kds
-├ ○ /login
-├ ○ /manifest.webmanifest
-├ ○ /pos
-├ ƒ /pos-orders
-├ ○ /privacy-policy
-├ ƒ /recipes
-├ ƒ /recipes/[id]
-├ ƒ /recipes/[id]/edit
-├ ƒ /recipes/[id]/kitchen
-├ ƒ /recipes/new
-├ ƒ /settings
-├ ○ /showcase
-├ ƒ /signage
-├ ƒ /signage/[deckId]
-├ ƒ /signage/[deckId]/preview
-├ ƒ /team
-├ ƒ /transactions
-└ ƒ /vendors
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+(node:7814) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784412666783 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18) 
+   Generating static pages (8/18) 
+   Generating static pages (13/18) 
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
 
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    3.19 kB         339 kB
+├ ○ /_not-found                            999 B         109 kB
+├ ƒ /(.)ingestion/review/[id]            2.42 kB         599 kB
+├ ƒ /admin/devices                       1.25 kB         592 kB
+├ ƒ /admin/users                           303 B         332 kB
+├ ƒ /catalog                             3.46 kB         339 kB
+├ ƒ /dashboard                             303 B         332 kB
+├ ○ /display                               825 B         337 kB
+├ ƒ /display/[id]                        4.88 kB         596 kB
+├ ƒ /home                                1.06 kB         337 kB
+├ ƒ /ingestion/review/[id]               3.17 kB         345 kB
+├ ƒ /ingestions                            165 B         111 kB
+├ ƒ /inventory                           2.05 kB         338 kB
+├ ƒ /inventory/(.)vendors/add            1.89 kB         338 kB
+├ ƒ /inventory/invoices                  2.72 kB         338 kB
+├ ƒ /inventory/items                     2.11 kB         347 kB
+├ ƒ /inventory/orders                      958 B         346 kB
+├ ƒ /inventory/orders/[id]/shop          2.96 kB         117 kB
+├ ƒ /inventory/vendors                     683 B         345 kB
+├ ƒ /inventory/vendors/add                  2 kB         338 kB
+├ ○ /kds                                 5.53 kB         341 kB
+├ ○ /login                               2.33 kB         338 kB
+├ ○ /manifest.webmanifest                  139 B         108 kB
+├ ○ /pos                                 7.37 kB         343 kB
+├ ƒ /pos-orders                          1.06 kB         337 kB
+├ ○ /privacy-policy                        317 B         332 kB
+├ ƒ /recipes                               495 B         349 kB
+├ ƒ /recipes/[id]                           1 kB         350 kB
+├ ƒ /recipes/[id]/edit                     739 B         350 kB
+├ ƒ /recipes/[id]/kitchen                  524 B         349 kB
+├ ƒ /recipes/new                           739 B         350 kB
+├ ƒ /settings                            2.06 kB         370 kB
+├ ○ /showcase                            12.2 kB         348 kB
+├ ƒ /signage                             1.67 kB         592 kB
+├ ƒ /signage/[deckId]                    1.38 kB         592 kB
+├ ƒ /signage/[deckId]/preview              939 B         112 kB
+├ ƒ /team                                1.57 kB         337 kB
+├ ƒ /transactions                         2.5 kB         338 kB
+└ ƒ /vendors                             1.53 kB         114 kB
++ First Load JS shared by all             108 kB
+  ├ chunks/5585-8b10fddf9da850e8.js      50.3 kB
+  ├ chunks/c1ced9cb-9608bf2c58bd2ad6.js  54.2 kB
+  └ other shared chunks (total)          3.38 kB
 
-ƒ Proxy (Middleware)
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
@@ -185,5 +201,5 @@ Route (app)
 
  Tasks:    9 successful, 9 total
 Cached:    0 cached, 9 total
-  Time:    1m52.944s 
+  Time:    1m23.472s 
 

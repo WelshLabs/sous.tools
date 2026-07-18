@@ -1,6 +1,8 @@
-[93m[4mUnused files[24m[39m (30)
+[93m[4mUnused files[24m[39m (40)
 apps/setup-portal/src/components/PairingStep.tsx                             
 apps/setup-portal/src/components/WifiStep.tsx                                
+apps/storybook/.storybook/__mocks__/next-link.tsx                            
+apps/storybook/.storybook/__mocks__/next-navigation.ts                       
 apps/web/public/sw.js                                                        
 apps/web/src/app/(workspace)/home/components/FinancialPulse.tsx              
 apps/web/src/app/(workspace)/home/components/MenuProfitability.tsx           
@@ -28,8 +30,16 @@ ecosystem.config.js
 packages/config/src/cli.ts                                                   
 packages/design-system/src/components/logos/index.ts                         
 packages/design-system/src/components/OmniBar/NonInventoryExpenseCheckbox.tsx
+packages/design-system/src/components/ui/button.tsx                          
+packages/domain-recipes/src/ActionButtons.tsx                                
+packages/domain-recipes/src/AutoCalculateButton.tsx                          
+packages/domain-recipes/src/DimensionInputs.tsx                              
+packages/domain-recipes/src/RecipeCostPanelSummary.tsx                       
+packages/domain-recipes/src/VesselNameInput.tsx                              
+packages/domain-recipes/src/VesselShapeInput.tsx                             
+packages/domain-recipes/src/VolumeInput.tsx                                  
 scripts/generate-icons.mjs                                                   
-[93m[4mUnused dependencies[24m[39m (20)
+[93m[4mUnused dependencies[24m[39m (22)
 @as-integrations/express4  apps/api/package.json:20:6                
 @nestjs/platform-express   apps/cli/package.json:25:6                
 @soustools/api-types       apps/cli/package.json:26:6                
@@ -43,14 +53,16 @@ react-hook-form            apps/web/package.json:35:6
 recharts                   apps/web/package.json:36:6                
 serwist                    apps/web/package.json:37:6                
 zod                        apps/web/package.json:40:6                
-eslint-plugin-react        package.json:49:6                         
+eslint-plugin-react        package.json:51:6                         
+socket.io-client           packages/api-client/package.json:15:6     
 @infisical/sdk             packages/config/package.json:14:6         
 dotenv                     packages/config/package.json:15:6         
 zod                        packages/config/package.json:16:6         
-@radix-ui/react-tooltip    packages/design-system/package.json:38:6  
+@radix-ui/react-tooltip    packages/design-system/package.json:44:6  
+radix-ui                   packages/design-system/package.json:53:6  
 @soustools/api-types       packages/domain-pos/package.json:32:6     
 sonner                     packages/domain-settings/package.json:36:6
-[93m[4mUnused devDependencies[24m[39m (29)
+[93m[4mUnused devDependencies[24m[39m (31)
 @types/supertest        apps/api/package.json:62:6              
 source-map-support      apps/api/package.json:65:6              
 supertest               apps/api/package.json:66:6              
@@ -70,11 +82,13 @@ autoprefixer            apps/setup-portal/package.json:28:6
 tailwindcss             apps/setup-portal/package.json:31:6     
 tailwindcss             apps/web/package.json:53:6              
 @soustools/tsconfig     package.json:26:6                       
-png-to-ico              package.json:36:6                       
-sharp                   package.json:39:6                       
+@soustools/config       package.json:27:6                       
+@soustools/api-types    package.json:28:6                       
+png-to-ico              package.json:38:6                       
+sharp                   package.json:41:6                       
 tsx                     packages/config/package.json:21:6       
-autoprefixer            packages/design-system/package.json:26:6
-postcss                 packages/design-system/package.json:29:6
+autoprefixer            packages/design-system/package.json:32:6
+postcss                 packages/design-system/package.json:35:6
 @soustools/tsconfig     packages/eslint-config/package.json:22:6
 eslint-plugin-prettier  packages/eslint-config/package.json:23:6
 eslint-config-prettier  packages/eslint-config/package.json:24:6
@@ -86,7 +100,7 @@ pino-pretty             packages/logger/package.json:34:6
 [93m[4mUnlisted binaries[24m[39m (2)
 tsx    package.json
 xclip  package.json
-[93m[4mUnused exports[24m[39m (28)
+[93m[4mUnused exports[24m[39m (29)
 SupabaseClientWrapper                    class     apps/api/src/lib/supabase.ts:20:14                                   
 addToPurchaseOrderTool                             apps/api/src/modules/commands/commands-tools.ts:3:14                 
 addToWhiteboardTool                                apps/api/src/modules/commands/commands-tools.ts:18:14                
@@ -114,6 +128,7 @@ CardDescription                          function  packages/design-system/src/co
 OmnibarPerimeterView                               packages/design-system/src/components/OmniBar/index.ts:16:10         
 MetricCard                               function  packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx:66:17
 getCategory                                        packages/domain-pos/src/components/POSRegister/pos.helpers.ts:31:14  
+playSuccessSound                         function  packages/domain-pos/src/components/POSRegister/pos.helpers.ts:51:17  
 BLOCK_GROUPS                                       packages/domain-signage/src/block-palette-items.ts:31:14             
 [93m[4mUnused exported types[24m[39m (78)
 SquareCatalogObject             interface  apps/api/src/modules/integrations/square-client.helper.ts:3:18               
@@ -145,10 +160,10 @@ RecipeCost                      interface  apps/api/src/modules/recipe/recipe-co
 ApiResponse                     interface  apps/api/src/modules/recipe/recipe-versions.controller.ts:4:18               
 PosItemCardProps                interface  apps/pos-simulator/src/components/PosItemCard.tsx:7:18                       
 PosSimulatorProps               interface  apps/pos-simulator/src/components/PosSimulator.tsx:9:18                      
-PosItem                         interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:8:18                    
-PosCategory                     interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:17:18                   
-PosModifierGroup                interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:23:18                   
-PosDiscount                     interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:30:18                   
+PosItem                         interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:9:18                    
+PosCategory                     interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:18:18                   
+PosModifierGroup                interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:24:18                   
+PosDiscount                     interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:31:18                   
 InvoiceItemRowProps             interface  apps/web/src/app/(workspace)/ingestion/review/[id]/invoice-item-row.tsx:8:18 
 PageHeaderProps                 interface  apps/web/src/app/(workspace)/ingestion/review/[id]/page-header.tsx:7:18      
 RecipeIngredientRowProps        interface  …web/src/app/(workspace)/ingestion/review/[id]/recipe-ingredient-row.tsx:6:18
@@ -205,5 +220,5 @@ LayoutPreview|default          packages/domain-signage/src/layout-preview.tsx
 baseConfig|default             packages/eslint-config/base.js                              
 nestjsConfig|default           packages/eslint-config/nestjs.js                            
 nextConfig|default             packages/eslint-config/next.js                              
-[33m[4mConfiguration hints[24m (34)[39m
+[33m[4mConfiguration hints[24m (36)[39m
 [ELIFECYCLE] Command failed with exit code 1.
