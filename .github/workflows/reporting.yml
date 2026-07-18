@@ -123,6 +123,6 @@ jobs:
 
       - name: Trigger n8n CTO Summary
         run: |
-          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
+          curl -X POST https://n8n.sous.tools/webhook-test/cto-summary \
           -H "Content-Type: application/json" \
           -d '{"status": "${{ job.status }}"}'
