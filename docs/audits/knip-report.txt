@@ -1,4 +1,4 @@
-[93m[4mUnused files[24m[39m (103)
+[93m[4mUnused files[24m[39m (102)
 apps/setup-portal/src/components/PairingStep.tsx                             
 apps/setup-portal/src/components/WifiStep.tsx                                
 apps/storybook/.storybook/__mocks__/next-link.tsx                            
@@ -100,7 +100,6 @@ packages/domain-signage/src/preview-column-editor.tsx
 packages/domain-signage/src/preview-column-layout.tsx                        
 packages/domain-signage/src/preview-column-renderers.tsx                     
 packages/domain-signage/src/preview-menu-renderer.tsx                        
-phase1.js                                                                    
 scripts/generate-icons.mjs                                                   
 [93m[4mUnused dependencies[24m[39m (24)
 @as-integrations/express4      apps/api/package.json:20:6                
