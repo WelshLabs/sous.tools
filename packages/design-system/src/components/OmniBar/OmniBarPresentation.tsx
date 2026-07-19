@@ -9,7 +9,7 @@ import { OmniChatWindow } from "./OmniChatWindow";
 import { OmniInputPill } from "./OmniInputPill";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { useOmnibarContext } from "./OmniBarContext";
-import { Lettermark } from "../logos/Logo";
+import { Lettermark } from "../Logos/Logo";
 
 export interface OmniBarPresentationProps {
   isOpen: boolean;

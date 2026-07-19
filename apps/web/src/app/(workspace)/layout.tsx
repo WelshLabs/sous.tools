@@ -1,5 +1,5 @@
 import React from "react";
-import { GlobalAppBar, OmniBarProvider } from "@soustools/design-system";
+import { AppBar, OmniBarProvider } from "@soustools/design-system";
 import { logoutAction } from "@/app/actions/auth";
 import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
 import { api } from "@soustools/api-client";
@@ -28,7 +28,7 @@ export default async function WorkspaceLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <GlobalAppBar 
+      <AppBar 
         notifications={notifications || []} 
         onLogoutAction={logoutAction} 
         isAdmin={true}

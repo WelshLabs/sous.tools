@@ -8,7 +8,7 @@ import { useOmniFileUpload } from "./use-omni-file-upload.hook";
 import { useOmnibarContext } from "./OmniBarContext";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { PillActions } from "./PillActions";
-import { Lettermark } from "../logos/Logo";
+import { Lettermark } from "../Logos/Logo";
 import type { StagedFile } from "./OmniBarContext";
 
 export interface OmniInputPillProps {

@@ -36,7 +36,7 @@ fi
 PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")
 
 # 7. Execute Claude with the safety wrapper, piping all output to the log
-timeout 15m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" < /dev/null >> "$LOG_FILE" 2>&1
+timeout 20m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" < /dev/null >> "$LOG_FILE" 2>&1
 
 # 8. Check exit status and execute the curl fail-safe
 if [ $? -ne 0 ]; then
