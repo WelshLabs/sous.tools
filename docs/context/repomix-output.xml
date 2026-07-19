@@ -12667,6 +12667,36 @@ export default function RootLayout({
 }
 ````
 
+## File: apps/pos-simulator/src/app/page.tsx
+````typescript
+import React from "react";
+import { PosSimulatorContainer } from "../components/PosSimulator.container";
+
+/**
+ * PosSimulatorPage mounts the interactive Toast/Square webhook and inventory simulator.
+ * This runs isolated in its own dedicated dev environment.
+ */
+export default function PosSimulatorPage() {
+  return (
+    <main className="flex flex-col items-center justify-center min-h-screen p-8 bg-zinc-950 text-zinc-100">
+      <div className="max-w-4xl w-full p-8 rounded-3xl bg-zinc-900 border border-zinc-850 shadow-2xl space-y-8">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-orange-400 to-rose-400 bg-clip-text text-transparent">
+            POS Simulator Dev Utility
+          </h1>
+          <p className="text-sm text-zinc-400 mt-2">
+            This workspace serves as a dedicated portal for local POS simulation. The backend controller handles mock actions and maps POS items to `pos_items`.
+          </p>
+        </div>
+
+        <PosSimulatorContainer />
+      </div>
+    </main>
+  );
+}
+// Force rebuild 1
+````
+
 ## File: apps/pos-simulator/src/components/helpers.ts
 ````typescript
 import { type PosItem } from "@soustools/api-types";
@@ -12828,6 +12858,80 @@ export const PosItemCard: React.FC<PosItemCardProps> = ({
     </div>
   );
 };
+````
+
+## File: apps/pos-simulator/src/components/PosSimulator.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { type PosItem } from "@soustools/api-types";
+import { RotateCw, AlertTriangle } from "lucide-react";
+import { PosItemCard } from "./PosItemCard";
+import { StockPromptModal } from "./StockPromptModal";
+
+export interface PosSimulatorProps {
+  items: PosItem[];
+  loading: boolean;
+  updatingId: string | null;
+  promptItem: PosItem | null;
+  setPromptItem: (item: PosItem | null) => void;
+  onRefresh: () => Promise<void> | void;
+  onToggleSoldOut: (itemId: string, isSoldOut: boolean) => Promise<void> | void;
+  onConfirmStock: (quantity: number | undefined, unlimited: boolean) => Promise<void> | void;
+}
+
+export const PosSimulator: React.FC<PosSimulatorProps> = ({
+  items,
+  loading,
+  updatingId,
+  promptItem,
+  setPromptItem,
+  onRefresh,
+  onToggleSoldOut,
+  onConfirmStock,
+}) => {
+  return (
+    <div className="space-y-4 bg-zinc-950 p-6 rounded-2xl border border-zinc-900 text-zinc-100 max-w-4xl mx-auto">
+      <header className="flex justify-between items-center pb-3 border-b border-zinc-900">
+        <div>
+          <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-500" /> POS Simulator Panel
+          </h2>
+          <p className="text-xs text-zinc-400">
+            Simulate Point of Sale menu webhook updates. Changes trigger instant socket push updates.
+          </p>
+        </div>
+        <button
+          onClick={onRefresh}
+          className="p-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 cursor-pointer"
+        >
+          <RotateCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+        </button>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {items.map((item) => (
+          <PosItemCard
+            key={item.id}
+            item={item}
+            isUpdating={updatingId === item.id}
+            onToggle={() => onToggleSoldOut(item.id, item.isSoldOut)}
+          />
+        ))}
+      </div>
+
+      <StockPromptModal
+        isOpen={!!promptItem}
+        itemName={promptItem?.name || ""}
+        onClose={() => setPromptItem(null)}
+        onConfirm={onConfirmStock}
+      />
+    </div>
+  );
+};
+
+export default PosSimulator;
 ````
 
 ## File: apps/pos-simulator/src/components/StockPromptModal.tsx
@@ -14407,6 +14511,15 @@ test.describe('TV Signage System E2E', () => {
 });
 ````
 
+## File: apps/web/src/app/(fullscreen)/pos/page.tsx
+````typescript
+import React from "react";
+import { POSRegisterContainer } from "@soustools/domain-pos";
+export default function POSRegisterPage() {
+  return <POSRegisterContainer />;
+}
+````
+
 ## File: apps/web/src/app/(fullscreen)/recipes/[id]/kitchen/KitchenClientPage.tsx
 ````typescript
 "use client";
@@ -15780,6 +15893,182 @@ export default function DeckEditorModalSlot() {
 ````typescript
 export default function ModalDefault() {
   return null;
+}
+````
+
+## File: apps/web/src/app/(workspace)/admin/devices/devices-client-wrapper.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { useRouter } from "next/navigation";
+import { DisplayManager } from "@soustools/domain-signage";
+import { type SignageDisplay } from "@soustools/api-types";
+import { api } from "@soustools/api-client";
+
+interface DevicesClientWrapperProps {
+  displays: SignageDisplay[];
+  layouts: any[];
+  edgeDevices?: any[];
+}
+
+export function DevicesClientWrapper({
+  displays,
+  layouts,
+  edgeDevices,
+}: DevicesClientWrapperProps) {
+  const router = useRouter();
+
+  const handleAddBrowserDisplay = async (name: string) => {
+    await (api as any).POST("/signage/displays", {
+      body: { name },
+    });
+    router.refresh();
+  };
+
+  const handleDeleteDisplay = async (id: string) => {
+    await api.DELETE("/signage/displays/{id}", {
+      params: { path: { id } },
+    });
+    router.refresh();
+  };
+
+  const handleAssignDeck = async (displayId: string, deckId: string | null) => {
+    await (api as any).PUT("/signage/displays/{id}", {
+      params: { path: { id: displayId } },
+      body: { deckId: deckId || undefined },
+    });
+    router.refresh();
+  };
+
+  const handlePairDisplay = async (code: string) => {
+    await (api as any).POST("/signage/displays/pair/confirm", {
+      body: { pairingCode: code, name: "New TV Display" },
+    });
+    router.refresh();
+  };
+
+  const handleSaveDevice = async (deviceId: string, payload: any) => {
+    await (api as any).PUT("/devices/{deviceId}", {
+      params: { path: { deviceId } },
+      body: payload,
+    });
+    router.refresh();
+  };
+
+  const handleFetchDevice = async (deviceId: string) => {
+    const { data } = await api.GET("/devices/{deviceId}", {
+      params: { path: { deviceId } },
+    });
+    return (data as any)?.data;
+  };
+
+  const handleRevokeDevice = async (id: string) => {
+    await api.POST("/devices/{id}/revoke", {
+      params: { path: { id } },
+    });
+    router.refresh();
+  };
+
+  const renderEdgeDevices = () => {
+    const devices = edgeDevices && edgeDevices.length > 0 ? edgeDevices : [
+      { id: "mock-1", name: "Kitchen WearOS", deviceType: "wearos", assignedUser: "Chef Gordon" },
+      { id: "mock-2", name: "Prep RPi", deviceType: "rpi", assignedUser: "Line Cook A" }
+    ];
+
+    return (
+      <div className="mt-12 bg-card text-card-foreground border border-black/5 dark:border-white/10 shadow-sm rounded-2xl p-6">
+        <h2 className="text-xl font-bold tracking-wide mb-4">Edge Devices</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground text-sm">
+                <th className="pb-3 px-4 font-medium">Device Name</th>
+                <th className="pb-3 px-4 font-medium">Type</th>
+                <th className="pb-3 px-4 font-medium">Assigned User</th>
+                <th className="pb-3 px-4 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {devices.map((device: any) => (
+                <tr key={device.id} className="border-b border-border hover:bg-muted/50">
+                  <td className="py-4 px-4 font-medium">{device.name || "Unknown Device"}</td>
+                  <td className="py-4 px-4 text-muted-foreground uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
+                  <td className="py-4 px-4 text-muted-foreground">{device.assignedUser || "Unassigned"}</td>
+                  <td className="py-4 px-4 text-right">
+                    <button 
+                      onClick={() => handleRevokeDevice(device.id)}
+                      className="px-3 py-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-sm font-semibold transition-colors"
+                    >
+                      Revoke Access
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-8 w-full h-full pb-20">
+      <DisplayManager
+        displays={displays}
+        layouts={layouts}
+        onAddBrowserDisplay={handleAddBrowserDisplay}
+        onDeleteDisplay={handleDeleteDisplay}
+        onAssignDeck={handleAssignDeck}
+        onPairDisplay={handlePairDisplay}
+        onSaveDevice={handleSaveDevice}
+        onFetchDevice={handleFetchDevice}
+        onRefreshData={() => router.refresh()}
+      />
+      {renderEdgeDevices()}
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/admin/devices/page.tsx
+````typescript
+import React from "react";
+import { config } from "@soustools/config";
+import { createApiClient } from "@soustools/api-client";
+import { DevicesClientWrapper } from "./devices-client-wrapper";
+
+export const dynamic = 'force-dynamic';
+
+/**
+ * DevicesPage mounts the signage physical displays pairing and status manager.
+ */
+export default async function DevicesPage() {
+  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
+  const serverApi = createApiClient({ baseUrl });
+
+  let displays = [];
+  let layouts = [];
+  const edgeDevices: any[] = []; // Uses fallback mock edge devices since list endpoint is not implemented on API
+
+  try {
+    const [dispRes, layRes] = await Promise.all([
+      (serverApi as any).GET("/signage/displays", { cache: "no-store" }),
+      (serverApi as any).GET("/signage/layouts", { cache: "no-store" }),
+    ]);
+
+    if (dispRes && dispRes.data) {
+      displays = (dispRes.data as any).data || [];
+    }
+
+    if (layRes && layRes.data) {
+      layouts = (layRes.data as any).data || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch signage displays/layouts:", err);
+  }
+
+  return <DevicesClientWrapper displays={displays} layouts={layouts} edgeDevices={edgeDevices} />;
 }
 ````
 
@@ -19836,6 +20125,160 @@ export default async function TVSignageListPage() {
     </div>
   );
 }
+````
+
+## File: apps/web/src/app/(workspace)/team/page.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { TeamPortalContainer } from "./team.container";
+export const dynamic = 'force-dynamic';
+
+export default function TeamPortalPage() {
+  return <TeamPortalContainer />;
+}
+````
+
+## File: apps/web/src/app/(workspace)/team/team.container.tsx
+````typescript
+"use client";
+
+import React, { useState } from "react";
+import { api } from "@soustools/api-client";
+import { TeamPortalView } from "./team.view";
+
+export function TeamPortalContainer() {
+  const [pairingCode, setPairingCode] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "pairing" | "success" | "error"
+  >("idle");
+  const [message, setMessage] = useState("");
+
+  const handlePairWatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pairingCode.length !== 6) return;
+
+    setStatus("pairing");
+    setMessage("Pairing smartwatch...");
+
+    try {
+      const { error } = await (api as any).POST("/devices/pair/confirm", {
+        body: {
+          code: pairingCode.toUpperCase(),
+          deviceType: "wearos",
+        },
+      });
+
+      if (error) {
+        throw new Error(typeof error === "string" ? error : JSON.stringify(error));
+      }
+
+      setStatus("success");
+      setMessage("Smartwatch successfully paired!");
+      setPairingCode("");
+    } catch (_err) {
+      setStatus("error");
+      setMessage(
+        "Failed to pair smartwatch. Please check the code and try again.",
+      );
+    }
+  };
+
+  return (
+    <TeamPortalView
+      pairingCode={pairingCode}
+      setPairingCode={setPairingCode}
+      status={status}
+      message={message}
+      onSubmit={handlePairWatch}
+    />
+  );
+}
+TeamPortalContainer.displayName = "TeamPortalContainer";
+````
+
+## File: apps/web/src/app/(workspace)/team/team.view.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { PinInput, Button, TwoToneHeader } from "@soustools/design-system";
+import { Watch } from "lucide-react";
+
+export interface TeamPortalViewProps {
+  pairingCode: string;
+  setPairingCode: (code: string) => void;
+  status: "idle" | "pairing" | "success" | "error";
+  message: string;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+export function TeamPortalView({
+  pairingCode,
+  setPairingCode,
+  status,
+  message,
+  onSubmit,
+}: TeamPortalViewProps) {
+  return (
+    <div className="flex flex-col gap-8 p-8 max-w-4xl mx-auto w-full h-full">
+      <TwoToneHeader title="Team Management" />
+
+      <div className="bg-card border border-border p-6 rounded-2xl flex flex-col gap-6 w-full max-w-md">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
+            <Watch className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white tracking-wide">
+              Pair Smartwatch
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Enter the 6-digit code shown on your WearOS device.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Pairing Code
+            </label>
+            <PinInput
+              length={6}
+              value={pairingCode}
+              onChange={setPairingCode}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={status === "pairing" || pairingCode.length !== 6}
+            className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold"
+          >
+            {status === "pairing" ? "Pairing..." : "Pair Device"}
+          </Button>
+        </form>
+
+        {message && status !== "idle" && (
+          <div
+            className={`p-4 rounded-xl text-sm text-center border ${
+              status === "success"
+                ? "bg-cyan-400/10 border-cyan-400/20 text-cyan-400"
+                : status === "error"
+                  ? "bg-red-500/10 border-red-500/20 text-red-400"
+                  : "bg-zinc-800/50 border-zinc-700 text-muted-foreground"
+            }`}
+          >
+            {message}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+TeamPortalView.displayName = "TeamPortalView";
 ````
 
 ## File: apps/web/src/app/(workspace)/transactions/TransactionsView.tsx
@@ -27584,6 +28027,22 @@ export function POSRegisterView({
   );
 }
 POSRegisterView.displayName = "POSRegisterView";
+````
+
+## File: packages/domain-pos/src/index.ts
+````typescript
+export * from "./components/POSRegister/pos.types";
+export { POSRegisterView } from "./components/POSRegister/pos.view";
+export type { POSRegisterViewProps } from "./components/POSRegister/pos.view";
+export { POSCatalog } from "./components/POSRegister/components/pos-catalog";
+export type { POSCatalogProps } from "./components/POSRegister/components/pos-catalog";
+export { POSTicket } from "./components/POSRegister/components/pos-ticket";
+export type { POSTicketProps } from "./components/POSRegister/components/pos-ticket";
+export { POSModifiersModal } from "./components/POSRegister/components/pos-modifiers-modal";
+export type { POSModifiersModalProps, ModifierOption, ModifierGroup } from "./components/POSRegister/components/pos-modifiers-modal";
+export { POSTenderModal } from "./components/POSRegister/components/pos-tender-modal";
+export type { POSTenderModalProps } from "./components/POSRegister/components/pos-tender-modal";
+export { POSRegisterContainer } from "./components/POSRegister/pos.container";
 ````
 
 ## File: packages/domain-pos/eslint.config.js
@@ -38663,108 +39122,119 @@ describe('CLI', () => {
 });
 ````
 
-## File: apps/pos-simulator/src/app/page.tsx
-````typescript
-import React from "react";
-import { PosSimulatorContainer } from "../components/PosSimulator.container";
-
-/**
- * PosSimulatorPage mounts the interactive Toast/Square webhook and inventory simulator.
- * This runs isolated in its own dedicated dev environment.
- */
-export default function PosSimulatorPage() {
-  return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-8 bg-zinc-950 text-zinc-100">
-      <div className="max-w-4xl w-full p-8 rounded-3xl bg-zinc-900 border border-zinc-850 shadow-2xl space-y-8">
-        <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-orange-400 to-rose-400 bg-clip-text text-transparent">
-            POS Simulator Dev Utility
-          </h1>
-          <p className="text-sm text-zinc-400 mt-2">
-            This workspace serves as a dedicated portal for local POS simulation. The backend controller handles mock actions and maps POS items to `pos_items`.
-          </p>
-        </div>
-
-        <PosSimulatorContainer />
-      </div>
-    </main>
-  );
-}
-// Force rebuild 1
-````
-
-## File: apps/pos-simulator/src/components/PosSimulator.tsx
+## File: apps/pos-simulator/src/components/PosSimulator.container.tsx
 ````typescript
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { type PosItem } from "@soustools/api-types";
-import { RotateCw, AlertTriangle } from "lucide-react";
-import { PosItemCard } from "./PosItemCard";
-import { StockPromptModal } from "./StockPromptModal";
+import { api } from "@soustools/api-client";
+import { MOCK_POS_ITEMS, mapDbItemToPosItem, type RawDbPosItem } from "./helpers";
+import { PosSimulator } from "./PosSimulator";
 
-export interface PosSimulatorProps {
-  items: PosItem[];
-  loading: boolean;
-  updatingId: string | null;
-  promptItem: PosItem | null;
-  setPromptItem: (item: PosItem | null) => void;
-  onRefresh: () => Promise<void> | void;
-  onToggleSoldOut: (itemId: string, isSoldOut: boolean) => Promise<void> | void;
-  onConfirmStock: (quantity: number | undefined, unlimited: boolean) => Promise<void> | void;
-}
+export const PosSimulatorContainer: React.FC = () => {
+  const [items, setItems] = useState<PosItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [promptItem, setPromptItem] = useState<PosItem | null>(null);
 
-export const PosSimulator: React.FC<PosSimulatorProps> = ({
-  items,
-  loading,
-  updatingId,
-  promptItem,
-  setPromptItem,
-  onRefresh,
-  onToggleSoldOut,
-  onConfirmStock,
-}) => {
+  const fetchItems = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const result = (await api.GET("/pos-simulator/items", {
+        params: {
+          query: {
+            organizationId: "d0000000-0000-0000-0000-000000000000",
+          },
+        },
+      })) as unknown as { data?: { success?: boolean; data?: RawDbPosItem[] }; error?: unknown };
+
+      const payload = result?.data;
+      const error = result?.error;
+
+      if (!error && payload?.success && payload.data) {
+        const mapped = payload.data.map(mapDbItemToPosItem);
+        setItems(mapped);
+        return;
+      }
+      setItems(MOCK_POS_ITEMS);
+    } catch {
+      setItems(MOCK_POS_ITEMS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const updateItemStatus = async (
+    itemId: string,
+    isSoldOut: boolean,
+    quantity?: number,
+    unlimited?: boolean
+  ): Promise<void> => {
+    setUpdatingId(itemId);
+    try {
+      const result = (await api.POST("/pos-simulator/items/toggle-sold-out", {
+        body: { itemId, isSoldOut, quantity, unlimited },
+      } as never)) as unknown as { data?: { success?: boolean }; error?: unknown };
+
+      const payload = result?.data;
+      const error = result?.error;
+
+      if (!error && payload?.success) {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId ? { ...item, isSoldOut } : item
+          )
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleToggleSoldOut = async (
+    itemId: string,
+    isSoldOut: boolean
+  ): Promise<void> => {
+    if (isSoldOut) {
+      const item = items.find((i) => i.id === itemId);
+      if (item) setPromptItem(item);
+    } else {
+      await updateItemStatus(itemId, true);
+    }
+  };
+
+  const handleConfirmStock = async (
+    quantity: number | undefined,
+    unlimited: boolean
+  ): Promise<void> => {
+    if (!promptItem) return;
+    const itemId = promptItem.id;
+    setPromptItem(null);
+    await updateItemStatus(itemId, false, quantity, unlimited);
+  };
+
   return (
-    <div className="space-y-4 bg-zinc-950 p-6 rounded-2xl border border-zinc-900 text-zinc-100 max-w-4xl mx-auto">
-      <header className="flex justify-between items-center pb-3 border-b border-zinc-900">
-        <div>
-          <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-500" /> POS Simulator Panel
-          </h2>
-          <p className="text-xs text-zinc-400">
-            Simulate Point of Sale menu webhook updates. Changes trigger instant socket push updates.
-          </p>
-        </div>
-        <button
-          onClick={onRefresh}
-          className="p-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 cursor-pointer"
-        >
-          <RotateCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-        </button>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {items.map((item) => (
-          <PosItemCard
-            key={item.id}
-            item={item}
-            isUpdating={updatingId === item.id}
-            onToggle={() => onToggleSoldOut(item.id, item.isSoldOut)}
-          />
-        ))}
-      </div>
-
-      <StockPromptModal
-        isOpen={!!promptItem}
-        itemName={promptItem?.name || ""}
-        onClose={() => setPromptItem(null)}
-        onConfirm={onConfirmStock}
-      />
-    </div>
+    <PosSimulator
+      items={items}
+      loading={loading}
+      updatingId={updatingId}
+      promptItem={promptItem}
+      setPromptItem={setPromptItem}
+      onRefresh={fetchItems}
+      onToggleSoldOut={handleToggleSoldOut}
+      onConfirmStock={handleConfirmStock}
+    />
   );
 };
 
-export default PosSimulator;
+export default PosSimulatorContainer;
 ````
 
 ## File: apps/pos-simulator/eslint.config.js
@@ -40479,191 +40949,6 @@ export default function KDSPage() {
 }
 ````
 
-## File: apps/web/src/app/(fullscreen)/pos/page.tsx
-````typescript
-import React from "react";
-import { POSRegisterContainer } from "@soustools/domain-pos";
-export default function POSRegisterPage() {
-  return <POSRegisterContainer />;
-}
-````
-
-## File: apps/web/src/app/(workspace)/admin/devices/devices-client-wrapper.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { useRouter } from "next/navigation";
-import { DisplayManager } from "@soustools/domain-signage";
-import { type SignageDisplay } from "@soustools/api-types";
-import { api } from "@soustools/api-client";
-
-interface DevicesClientWrapperProps {
-  displays: SignageDisplay[];
-  layouts: any[];
-  edgeDevices?: any[];
-}
-
-export function DevicesClientWrapper({
-  displays,
-  layouts,
-  edgeDevices,
-}: DevicesClientWrapperProps) {
-  const router = useRouter();
-
-  const handleAddBrowserDisplay = async (name: string) => {
-    await (api as any).POST("/signage/displays", {
-      body: { name },
-    });
-    router.refresh();
-  };
-
-  const handleDeleteDisplay = async (id: string) => {
-    await api.DELETE("/signage/displays/{id}", {
-      params: { path: { id } },
-    });
-    router.refresh();
-  };
-
-  const handleAssignDeck = async (displayId: string, deckId: string | null) => {
-    await (api as any).PUT("/signage/displays/{id}", {
-      params: { path: { id: displayId } },
-      body: { deckId: deckId || undefined },
-    });
-    router.refresh();
-  };
-
-  const handlePairDisplay = async (code: string) => {
-    await (api as any).POST("/signage/displays/pair/confirm", {
-      body: { pairingCode: code, name: "New TV Display" },
-    });
-    router.refresh();
-  };
-
-  const handleSaveDevice = async (deviceId: string, payload: any) => {
-    await (api as any).PUT("/devices/{deviceId}", {
-      params: { path: { deviceId } },
-      body: payload,
-    });
-    router.refresh();
-  };
-
-  const handleFetchDevice = async (deviceId: string) => {
-    const { data } = await api.GET("/devices/{deviceId}", {
-      params: { path: { deviceId } },
-    });
-    return (data as any)?.data;
-  };
-
-  const handleRevokeDevice = async (id: string) => {
-    await api.POST("/devices/{id}/revoke", {
-      params: { path: { id } },
-    });
-    router.refresh();
-  };
-
-  const renderEdgeDevices = () => {
-    const devices = edgeDevices && edgeDevices.length > 0 ? edgeDevices : [
-      { id: "mock-1", name: "Kitchen WearOS", deviceType: "wearos", assignedUser: "Chef Gordon" },
-      { id: "mock-2", name: "Prep RPi", deviceType: "rpi", assignedUser: "Line Cook A" }
-    ];
-
-    return (
-      <div className="mt-12 bg-card text-card-foreground border border-black/5 dark:border-white/10 shadow-sm rounded-2xl p-6">
-        <h2 className="text-xl font-bold tracking-wide mb-4">Edge Devices</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground text-sm">
-                <th className="pb-3 px-4 font-medium">Device Name</th>
-                <th className="pb-3 px-4 font-medium">Type</th>
-                <th className="pb-3 px-4 font-medium">Assigned User</th>
-                <th className="pb-3 px-4 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {devices.map((device: any) => (
-                <tr key={device.id} className="border-b border-border hover:bg-muted/50">
-                  <td className="py-4 px-4 font-medium">{device.name || "Unknown Device"}</td>
-                  <td className="py-4 px-4 text-muted-foreground uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
-                  <td className="py-4 px-4 text-muted-foreground">{device.assignedUser || "Unassigned"}</td>
-                  <td className="py-4 px-4 text-right">
-                    <button 
-                      onClick={() => handleRevokeDevice(device.id)}
-                      className="px-3 py-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-sm font-semibold transition-colors"
-                    >
-                      Revoke Access
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="flex flex-col gap-8 w-full h-full pb-20">
-      <DisplayManager
-        displays={displays}
-        layouts={layouts}
-        onAddBrowserDisplay={handleAddBrowserDisplay}
-        onDeleteDisplay={handleDeleteDisplay}
-        onAssignDeck={handleAssignDeck}
-        onPairDisplay={handlePairDisplay}
-        onSaveDevice={handleSaveDevice}
-        onFetchDevice={handleFetchDevice}
-        onRefreshData={() => router.refresh()}
-      />
-      {renderEdgeDevices()}
-    </div>
-  );
-}
-````
-
-## File: apps/web/src/app/(workspace)/admin/devices/page.tsx
-````typescript
-import React from "react";
-import { config } from "@soustools/config";
-import { createApiClient } from "@soustools/api-client";
-import { DevicesClientWrapper } from "./devices-client-wrapper";
-
-export const dynamic = 'force-dynamic';
-
-/**
- * DevicesPage mounts the signage physical displays pairing and status manager.
- */
-export default async function DevicesPage() {
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
-  const serverApi = createApiClient({ baseUrl });
-
-  let displays = [];
-  let layouts = [];
-  const edgeDevices: any[] = []; // Uses fallback mock edge devices since list endpoint is not implemented on API
-
-  try {
-    const [dispRes, layRes] = await Promise.all([
-      (serverApi as any).GET("/signage/displays", { cache: "no-store" }),
-      (serverApi as any).GET("/signage/layouts", { cache: "no-store" }),
-    ]);
-
-    if (dispRes && dispRes.data) {
-      displays = (dispRes.data as any).data || [];
-    }
-
-    if (layRes && layRes.data) {
-      layouts = (layRes.data as any).data || [];
-    }
-  } catch (err) {
-    console.error("Failed to fetch signage displays/layouts:", err);
-  }
-
-  return <DevicesClientWrapper displays={displays} layouts={layouts} edgeDevices={edgeDevices} />;
-}
-````
-
 ## File: apps/web/src/app/(workspace)/catalog/CatalogView.tsx
 ````typescript
 "use client";
@@ -41768,160 +42053,6 @@ export default async function SettingsPage() {
     />
   );
 }
-````
-
-## File: apps/web/src/app/(workspace)/team/page.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { TeamPortalContainer } from "./team.container";
-export const dynamic = 'force-dynamic';
-
-export default function TeamPortalPage() {
-  return <TeamPortalContainer />;
-}
-````
-
-## File: apps/web/src/app/(workspace)/team/team.container.tsx
-````typescript
-"use client";
-
-import React, { useState } from "react";
-import { api } from "@soustools/api-client";
-import { TeamPortalView } from "./team.view";
-
-export function TeamPortalContainer() {
-  const [pairingCode, setPairingCode] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "pairing" | "success" | "error"
-  >("idle");
-  const [message, setMessage] = useState("");
-
-  const handlePairWatch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pairingCode.length !== 6) return;
-
-    setStatus("pairing");
-    setMessage("Pairing smartwatch...");
-
-    try {
-      const { error } = await (api as any).POST("/devices/pair/confirm", {
-        body: {
-          code: pairingCode.toUpperCase(),
-          deviceType: "wearos",
-        },
-      });
-
-      if (error) {
-        throw new Error(typeof error === "string" ? error : JSON.stringify(error));
-      }
-
-      setStatus("success");
-      setMessage("Smartwatch successfully paired!");
-      setPairingCode("");
-    } catch (_err) {
-      setStatus("error");
-      setMessage(
-        "Failed to pair smartwatch. Please check the code and try again.",
-      );
-    }
-  };
-
-  return (
-    <TeamPortalView
-      pairingCode={pairingCode}
-      setPairingCode={setPairingCode}
-      status={status}
-      message={message}
-      onSubmit={handlePairWatch}
-    />
-  );
-}
-TeamPortalContainer.displayName = "TeamPortalContainer";
-````
-
-## File: apps/web/src/app/(workspace)/team/team.view.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { PinInput, Button, TwoToneHeader } from "@soustools/design-system";
-import { Watch } from "lucide-react";
-
-export interface TeamPortalViewProps {
-  pairingCode: string;
-  setPairingCode: (code: string) => void;
-  status: "idle" | "pairing" | "success" | "error";
-  message: string;
-  onSubmit: (e: React.FormEvent) => void;
-}
-
-export function TeamPortalView({
-  pairingCode,
-  setPairingCode,
-  status,
-  message,
-  onSubmit,
-}: TeamPortalViewProps) {
-  return (
-    <div className="flex flex-col gap-8 p-8 max-w-4xl mx-auto w-full h-full">
-      <TwoToneHeader title="Team Management" />
-
-      <div className="bg-card border border-border p-6 rounded-2xl flex flex-col gap-6 w-full max-w-md">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
-            <Watch className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-wide">
-              Pair Smartwatch
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Enter the 6-digit code shown on your WearOS device.
-            </p>
-          </div>
-        </div>
-
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Pairing Code
-            </label>
-            <PinInput
-              length={6}
-              value={pairingCode}
-              onChange={setPairingCode}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={status === "pairing" || pairingCode.length !== 6}
-            className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold"
-          >
-            {status === "pairing" ? "Pairing..." : "Pair Device"}
-          </Button>
-        </form>
-
-        {message && status !== "idle" && (
-          <div
-            className={`p-4 rounded-xl text-sm text-center border ${
-              status === "success"
-                ? "bg-cyan-400/10 border-cyan-400/20 text-cyan-400"
-                : status === "error"
-                  ? "bg-red-500/10 border-red-500/20 text-red-400"
-                  : "bg-zinc-800/50 border-zinc-700 text-muted-foreground"
-            }`}
-          >
-            {message}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-TeamPortalView.displayName = "TeamPortalView";
 ````
 
 ## File: apps/web/src/app/(workspace)/transactions/page.tsx
@@ -50003,6 +50134,210 @@ export default defineConfig({
 import "@testing-library/jest-dom";
 ````
 
+## File: packages/domain-pos/src/components/POSRegister/components/pos-modifiers-modal.tsx
+````typescript
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, cn } from "@soustools/design-system";
+import { X, Check } from "lucide-react";
+import { type CatalogItem } from "../pos.types";
+
+export interface ModifierOption {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface ModifierGroup {
+  id: string;
+  name: string;
+  required: boolean;
+  minSelections: number;
+  maxSelections: number;
+  options: ModifierOption[];
+}
+
+export interface POSModifiersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  item: CatalogItem | null;
+  groups: ModifierGroup[];
+  onSubmit: (selected: ModifierOption[]) => void;
+}
+
+export function POSModifiersModal({
+  isOpen,
+  onClose,
+  item,
+  groups = [],
+  onSubmit,
+}: POSModifiersModalProps) {
+  const [selections, setSelections] = useState<Record<string, ModifierOption[]>>({});
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelections({});
+    }
+  }, [isOpen]);
+
+  if (!isOpen || !item) return null;
+
+  const handleOptionToggle = (group: ModifierGroup, option: ModifierOption) => {
+    const groupSelections = selections[group.id] || [];
+    const isSelected = groupSelections.some((opt) => opt.id === option.id);
+
+    if (isSelected) {
+      setSelections({
+        ...selections,
+        [group.id]: groupSelections.filter((opt) => opt.id !== option.id),
+      });
+    } else {
+      if (group.maxSelections === 1) {
+        setSelections({
+          ...selections,
+          [group.id]: [option],
+        });
+      } else if (groupSelections.length < group.maxSelections) {
+        setSelections({
+          ...selections,
+          [group.id]: [...groupSelections, option],
+        });
+      }
+    }
+  };
+
+  const isGroupValid = (group: ModifierGroup) => {
+    const count = (selections[group.id] || []).length;
+    return count >= group.minSelections && count <= group.maxSelections;
+  };
+
+  const isAllValid = groups.every(isGroupValid);
+
+  const flatSelectedOptions = Object.values(selections).flat();
+  const totalModifierPrice = flatSelectedOptions.reduce((sum, opt) => sum + opt.price, 0);
+  const totalPrice = item.price + totalModifierPrice;
+
+  const handleSave = () => {
+    if (isAllValid) {
+      onSubmit(flatSelectedOptions);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
+      <Card className="w-full max-w-lg border border-border bg-card shadow-glow-sm flex flex-col max-h-[90vh]">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+          <div>
+            <CardTitle className="text-xl font-bold text-foreground">{item.name}</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">Customize your item</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+
+        <CardContent className="flex-1 overflow-y-auto p-6 space-y-6">
+          {groups.map((group) => {
+            const groupSelections = selections[group.id] || [];
+            const isValid = isGroupValid(group);
+
+            return (
+              <div key={group.id} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">{group.name}</h4>
+                    <p className="text-[11px] text-muted-foreground">
+                      {group.required
+                        ? `Required (Choose ${group.minSelections}${
+                            group.maxSelections > group.minSelections ? `-${group.maxSelections}` : ""
+                          })`
+                        : `Optional (Max ${group.maxSelections})`}
+                    </p>
+                  </div>
+                  {group.required && !isValid && (
+                    <span className="text-[10px] font-bold text-destructive px-1.5 py-0.5 rounded-sm bg-destructive/10 border border-destructive/20 uppercase tracking-wider">
+                      Required
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {group.options.map((option) => {
+                    const isSelected = groupSelections.some((opt) => opt.id === option.id);
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => handleOptionToggle(group, option)}
+                        className={cn(
+                          "flex items-center justify-between p-3 rounded-[var(--radius-sm)] border text-left transition-all cursor-pointer",
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/60 bg-card/40 hover:border-border hover:bg-card/80 text-foreground"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={cn(
+                              "flex h-4 w-4 shrink-0 items-center justify-center border transition-all",
+                              group.maxSelections === 1 ? "rounded-full" : "rounded-sm",
+                              isSelected
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-muted-foreground/50"
+                            )}
+                          >
+                            {isSelected && <Check className="h-3 w-3 stroke-[3px]" />}
+                          </div>
+                          <span className="text-xs font-medium">{option.name}</span>
+                        </div>
+                        {option.price > 0 && (
+                          <span className="text-xs font-semibold text-accent">
+                            +${option.price.toFixed(2)}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+
+        <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-border/50 pt-4 bg-card/25">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider leading-none">
+              Total Price
+            </span>
+            <span className="text-xl font-black text-accent mt-1">${totalPrice.toFixed(2)}</span>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1 sm:flex-none" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              variant={isAllValid ? "gradient" : "outline"}
+              className="flex-1 sm:flex-none font-bold"
+              disabled={!isAllValid}
+              onClick={handleSave}
+            >
+              Add to Ticket
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+POSModifiersModal.displayName = "POSModifiersModal";
+````
+
 ## File: packages/domain-pos/src/components/POSRegister/components/pos-tender-keypad.tsx
 ````typescript
 import { Delete } from "lucide-react";
@@ -50034,6 +50369,205 @@ export function POSTenderKeypad({ onPress }: POSTenderKeypadProps) {
     </div>
   );
 }
+````
+
+## File: packages/domain-pos/src/components/POSRegister/components/pos-tender-modal.tsx
+````typescript
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, cn } from "@soustools/design-system";
+import { X, CreditCard } from "lucide-react";
+import { PAYMENT_METHODS, getQuickCashOptions, getUpdatedTenderedBuffer } from "./pos-tender-utils";
+import { POSTenderKeypad } from "./pos-tender-keypad";
+
+export interface POSTenderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  amountDue: number;
+  onSubmit: (paymentType: string, amountTendered: number) => void;
+}
+
+
+
+export function POSTenderModal({
+  isOpen,
+  onClose,
+  amountDue,
+  onSubmit,
+}: POSTenderModalProps) {
+  const [selectedMethod, setSelectedMethod] = useState("cash");
+  const [tenderedBuffer, setTenderedBuffer] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedMethod("cash");
+      setTenderedBuffer("");
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const currentTendered = selectedMethod === "cash" 
+    ? (tenderedBuffer === "" ? amountDue : parseFloat(tenderedBuffer) || 0)
+    : amountDue;
+
+  const changeDue = Math.max(0, currentTendered - amountDue);
+  const remainingDue = Math.max(0, amountDue - currentTendered);
+
+  const handleKeypadPress = (val: string) => {
+    if (selectedMethod !== "cash") return;
+    setTenderedBuffer((prev) => getUpdatedTenderedBuffer(prev, val));
+  };
+
+
+
+  const quickCashOptions = getQuickCashOptions(amountDue);
+
+  const handleTenderSubmit = () => {
+    if (selectedMethod !== "cash" || currentTendered >= amountDue) {
+      onSubmit(selectedMethod, currentTendered);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
+      <Card className="w-full max-w-2xl border border-border bg-card shadow-glow-sm flex flex-col max-h-[90vh]">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+          <div>
+            <CardTitle className="text-xl font-bold text-foreground">Payment Checkout</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">Select a payment method and complete checkout</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+
+        <CardContent className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column: Methods & Summary */}
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Payment Method</span>
+              <div className="grid grid-cols-2 gap-2">
+                {PAYMENT_METHODS.map((method) => {
+                  const Icon = method.icon;
+                  const isSelected = selectedMethod === method.id;
+                  return (
+                    <button
+                      key={method.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedMethod(method.id);
+                        setTenderedBuffer("");
+                      }}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-4 rounded-[var(--radius-sm)] border text-center transition-all gap-2 cursor-pointer",
+                        isSelected
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border/60 bg-card/40 hover:border-border hover:bg-card/80 text-foreground"
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="text-xs font-semibold">{method.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Total Indicators */}
+            <div className="p-4 rounded-[var(--radius-sm)] border border-border/60 bg-card/10 space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Amount Due</span>
+                <span className="font-bold text-foreground">${amountDue.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Amount Tendered</span>
+                <span className="font-bold text-accent">${currentTendered.toFixed(2)}</span>
+              </div>
+
+              {selectedMethod === "cash" && (
+                <div className="border-t border-border/30 pt-3 flex justify-between items-center text-base font-bold">
+                  {currentTendered >= amountDue ? (
+                    <>
+                      <span className="text-success-foreground">Change Due</span>
+                      <span className="text-emerald-400">${changeDue.toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-destructive">Remaining</span>
+                      <span className="text-destructive">${remainingDue.toFixed(2)}</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column: Cash Options / Keypad */}
+          <div className="space-y-4">
+            {selectedMethod === "cash" ? (
+              <>
+                {/* Quick Cash Options */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Quick Cash</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {quickCashOptions.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setTenderedBuffer(opt.toFixed(2))}
+                        className={cn(
+                          "py-2 px-3 text-xs font-bold rounded-[var(--radius-sm)] border text-center cursor-pointer transition-all",
+                          parseFloat(tenderedBuffer) === opt
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/60 bg-card/40 hover:border-border text-foreground"
+                        )}
+                      >
+                        {opt === amountDue ? "Exact Cash" : `$${opt.toFixed(2)}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Keypad */}
+                <POSTenderKeypad onPress={handleKeypadPress} />
+              </>
+            ) : (
+              <div className="flex h-full min-h-[220px] flex-col items-center justify-center text-center p-6 border border-dashed border-border/60 rounded-[var(--radius-sm)] bg-card/5">
+                <CreditCard className="h-10 w-10 text-muted-foreground/40 mb-3 animate-pulse" />
+                <span className="text-sm font-semibold text-foreground">Waiting for device...</span>
+                <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
+                  Swipe, insert, or tap device to charge the transaction.
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex flex-row items-center justify-end gap-2 border-t border-border/50 pt-4 bg-card/25">
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant={selectedMethod !== "cash" || currentTendered >= amountDue ? "gradient" : "outline"}
+            className="font-bold min-w-[140px]"
+            disabled={selectedMethod === "cash" && currentTendered < amountDue}
+            onClick={handleTenderSubmit}
+          >
+            Complete Order
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+POSTenderModal.displayName = "POSTenderModal";
 ````
 
 ## File: packages/domain-pos/src/components/POSRegister/components/pos-tender-utils.ts
@@ -50121,22 +50655,6 @@ export const Default: Story = {
     header: <div className="p-2 border-b">Header Placeholder</div>,
   },
 };
-````
-
-## File: packages/domain-pos/src/index.ts
-````typescript
-export * from "./components/POSRegister/pos.types";
-export { POSRegisterView } from "./components/POSRegister/pos.view";
-export type { POSRegisterViewProps } from "./components/POSRegister/pos.view";
-export { POSCatalog } from "./components/POSRegister/components/pos-catalog";
-export type { POSCatalogProps } from "./components/POSRegister/components/pos-catalog";
-export { POSTicket } from "./components/POSRegister/components/pos-ticket";
-export type { POSTicketProps } from "./components/POSRegister/components/pos-ticket";
-export { POSModifiersModal } from "./components/POSRegister/components/pos-modifiers-modal";
-export type { POSModifiersModalProps, ModifierOption, ModifierGroup } from "./components/POSRegister/components/pos-modifiers-modal";
-export { POSTenderModal } from "./components/POSRegister/components/pos-tender-modal";
-export type { POSTenderModalProps } from "./components/POSRegister/components/pos-tender-modal";
-export { POSRegisterContainer } from "./components/POSRegister/pos.container";
 ````
 
 ## File: packages/domain-pos/vitest.config.ts
@@ -57540,121 +58058,6 @@ if (config.NEW_RELIC_ENABLED) {
 }
 ````
 
-## File: apps/pos-simulator/src/components/PosSimulator.container.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { type PosItem } from "@soustools/api-types";
-import { api } from "@soustools/api-client";
-import { MOCK_POS_ITEMS, mapDbItemToPosItem, type RawDbPosItem } from "./helpers";
-import { PosSimulator } from "./PosSimulator";
-
-export const PosSimulatorContainer: React.FC = () => {
-  const [items, setItems] = useState<PosItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [promptItem, setPromptItem] = useState<PosItem | null>(null);
-
-  const fetchItems = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const result = (await api.GET("/pos-simulator/items", {
-        params: {
-          query: {
-            organizationId: "d0000000-0000-0000-0000-000000000000",
-          },
-        },
-      })) as unknown as { data?: { success?: boolean; data?: RawDbPosItem[] }; error?: unknown };
-
-      const payload = result?.data;
-      const error = result?.error;
-
-      if (!error && payload?.success && payload.data) {
-        const mapped = payload.data.map(mapDbItemToPosItem);
-        setItems(mapped);
-        return;
-      }
-      setItems(MOCK_POS_ITEMS);
-    } catch {
-      setItems(MOCK_POS_ITEMS);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  const updateItemStatus = async (
-    itemId: string,
-    isSoldOut: boolean,
-    quantity?: number,
-    unlimited?: boolean
-  ): Promise<void> => {
-    setUpdatingId(itemId);
-    try {
-      const result = (await api.POST("/pos-simulator/items/toggle-sold-out", {
-        body: { itemId, isSoldOut, quantity, unlimited },
-      } as never)) as unknown as { data?: { success?: boolean }; error?: unknown };
-
-      const payload = result?.data;
-      const error = result?.error;
-
-      if (!error && payload?.success) {
-        setItems((prev) =>
-          prev.map((item) =>
-            item.id === itemId ? { ...item, isSoldOut } : item
-          )
-        );
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  const handleToggleSoldOut = async (
-    itemId: string,
-    isSoldOut: boolean
-  ): Promise<void> => {
-    if (isSoldOut) {
-      const item = items.find((i) => i.id === itemId);
-      if (item) setPromptItem(item);
-    } else {
-      await updateItemStatus(itemId, true);
-    }
-  };
-
-  const handleConfirmStock = async (
-    quantity: number | undefined,
-    unlimited: boolean
-  ): Promise<void> => {
-    if (!promptItem) return;
-    const itemId = promptItem.id;
-    setPromptItem(null);
-    await updateItemStatus(itemId, false, quantity, unlimited);
-  };
-
-  return (
-    <PosSimulator
-      items={items}
-      loading={loading}
-      updatingId={updatingId}
-      promptItem={promptItem}
-      setPromptItem={setPromptItem}
-      onRefresh={fetchItems}
-      onToggleSoldOut={handleToggleSoldOut}
-      onConfirmStock={handleConfirmStock}
-    />
-  );
-};
-
-export default PosSimulatorContainer;
-````
-
 ## File: apps/setup-portal/src/app/api/progress/route.ts
 ````typescript
 import { NextResponse } from 'next/server';
@@ -59313,409 +59716,6 @@ export {
 } from "./components/Loader/Loader";
 export { GoogleIcon, GitHubIcon } from "./components/BrandIcons/BrandIcons";
 export { LoginButton, type LoginState } from "./components/LoginButton/LoginButton";
-````
-
-## File: packages/domain-pos/src/components/POSRegister/components/pos-modifiers-modal.tsx
-````typescript
-"use client";
-
-import { useState, useEffect } from "react";
-import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, cn } from "@soustools/design-system";
-import { X, Check } from "lucide-react";
-import { type CatalogItem } from "../pos.types";
-
-export interface ModifierOption {
-  id: string;
-  name: string;
-  price: number;
-}
-
-export interface ModifierGroup {
-  id: string;
-  name: string;
-  required: boolean;
-  minSelections: number;
-  maxSelections: number;
-  options: ModifierOption[];
-}
-
-export interface POSModifiersModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  item: CatalogItem | null;
-  groups: ModifierGroup[];
-  onSubmit: (selected: ModifierOption[]) => void;
-}
-
-export function POSModifiersModal({
-  isOpen,
-  onClose,
-  item,
-  groups = [],
-  onSubmit,
-}: POSModifiersModalProps) {
-  const [selections, setSelections] = useState<Record<string, ModifierOption[]>>({});
-
-  useEffect(() => {
-    if (isOpen) {
-      setSelections({});
-    }
-  }, [isOpen]);
-
-  if (!isOpen || !item) return null;
-
-  const handleOptionToggle = (group: ModifierGroup, option: ModifierOption) => {
-    const groupSelections = selections[group.id] || [];
-    const isSelected = groupSelections.some((opt) => opt.id === option.id);
-
-    if (isSelected) {
-      setSelections({
-        ...selections,
-        [group.id]: groupSelections.filter((opt) => opt.id !== option.id),
-      });
-    } else {
-      if (group.maxSelections === 1) {
-        setSelections({
-          ...selections,
-          [group.id]: [option],
-        });
-      } else if (groupSelections.length < group.maxSelections) {
-        setSelections({
-          ...selections,
-          [group.id]: [...groupSelections, option],
-        });
-      }
-    }
-  };
-
-  const isGroupValid = (group: ModifierGroup) => {
-    const count = (selections[group.id] || []).length;
-    return count >= group.minSelections && count <= group.maxSelections;
-  };
-
-  const isAllValid = groups.every(isGroupValid);
-
-  const flatSelectedOptions = Object.values(selections).flat();
-  const totalModifierPrice = flatSelectedOptions.reduce((sum, opt) => sum + opt.price, 0);
-  const totalPrice = item.price + totalModifierPrice;
-
-  const handleSave = () => {
-    if (isAllValid) {
-      onSubmit(flatSelectedOptions);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
-      <Card className="w-full max-w-lg border border-border bg-card shadow-glow-sm flex flex-col max-h-[90vh]">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
-          <div>
-            <CardTitle className="text-xl font-bold text-foreground">{item.name}</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Customize your item</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-
-        <CardContent className="flex-1 overflow-y-auto p-6 space-y-6">
-          {groups.map((group) => {
-            const groupSelections = selections[group.id] || [];
-            const isValid = isGroupValid(group);
-
-            return (
-              <div key={group.id} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground">{group.name}</h4>
-                    <p className="text-[11px] text-muted-foreground">
-                      {group.required
-                        ? `Required (Choose ${group.minSelections}${
-                            group.maxSelections > group.minSelections ? `-${group.maxSelections}` : ""
-                          })`
-                        : `Optional (Max ${group.maxSelections})`}
-                    </p>
-                  </div>
-                  {group.required && !isValid && (
-                    <span className="text-[10px] font-bold text-destructive px-1.5 py-0.5 rounded-sm bg-destructive/10 border border-destructive/20 uppercase tracking-wider">
-                      Required
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {group.options.map((option) => {
-                    const isSelected = groupSelections.some((opt) => opt.id === option.id);
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => handleOptionToggle(group, option)}
-                        className={cn(
-                          "flex items-center justify-between p-3 rounded-[var(--radius-sm)] border text-left transition-all cursor-pointer",
-                          isSelected
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border/60 bg-card/40 hover:border-border hover:bg-card/80 text-foreground"
-                        )}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={cn(
-                              "flex h-4 w-4 shrink-0 items-center justify-center border transition-all",
-                              group.maxSelections === 1 ? "rounded-full" : "rounded-sm",
-                              isSelected
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-muted-foreground/50"
-                            )}
-                          >
-                            {isSelected && <Check className="h-3 w-3 stroke-[3px]" />}
-                          </div>
-                          <span className="text-xs font-medium">{option.name}</span>
-                        </div>
-                        {option.price > 0 && (
-                          <span className="text-xs font-semibold text-accent">
-                            +${option.price.toFixed(2)}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </CardContent>
-
-        <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-border/50 pt-4 bg-card/25">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider leading-none">
-              Total Price
-            </span>
-            <span className="text-xl font-black text-accent mt-1">${totalPrice.toFixed(2)}</span>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1 sm:flex-none" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              variant={isAllValid ? "gradient" : "outline"}
-              className="flex-1 sm:flex-none font-bold"
-              disabled={!isAllValid}
-              onClick={handleSave}
-            >
-              Add to Ticket
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
-POSModifiersModal.displayName = "POSModifiersModal";
-````
-
-## File: packages/domain-pos/src/components/POSRegister/components/pos-tender-modal.tsx
-````typescript
-"use client";
-
-import { useState, useEffect } from "react";
-import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, cn } from "@soustools/design-system";
-import { X, CreditCard } from "lucide-react";
-import { PAYMENT_METHODS, getQuickCashOptions, getUpdatedTenderedBuffer } from "./pos-tender-utils";
-import { POSTenderKeypad } from "./pos-tender-keypad";
-
-export interface POSTenderModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  amountDue: number;
-  onSubmit: (paymentType: string, amountTendered: number) => void;
-}
-
-
-
-export function POSTenderModal({
-  isOpen,
-  onClose,
-  amountDue,
-  onSubmit,
-}: POSTenderModalProps) {
-  const [selectedMethod, setSelectedMethod] = useState("cash");
-  const [tenderedBuffer, setTenderedBuffer] = useState("");
-
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedMethod("cash");
-      setTenderedBuffer("");
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const currentTendered = selectedMethod === "cash" 
-    ? (tenderedBuffer === "" ? amountDue : parseFloat(tenderedBuffer) || 0)
-    : amountDue;
-
-  const changeDue = Math.max(0, currentTendered - amountDue);
-  const remainingDue = Math.max(0, amountDue - currentTendered);
-
-  const handleKeypadPress = (val: string) => {
-    if (selectedMethod !== "cash") return;
-    setTenderedBuffer((prev) => getUpdatedTenderedBuffer(prev, val));
-  };
-
-
-
-  const quickCashOptions = getQuickCashOptions(amountDue);
-
-  const handleTenderSubmit = () => {
-    if (selectedMethod !== "cash" || currentTendered >= amountDue) {
-      onSubmit(selectedMethod, currentTendered);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in">
-      <Card className="w-full max-w-2xl border border-border bg-card shadow-glow-sm flex flex-col max-h-[90vh]">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
-          <div>
-            <CardTitle className="text-xl font-bold text-foreground">Payment Checkout</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Select a payment method and complete checkout</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-
-        <CardContent className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column: Methods & Summary */}
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Payment Method</span>
-              <div className="grid grid-cols-2 gap-2">
-                {PAYMENT_METHODS.map((method) => {
-                  const Icon = method.icon;
-                  const isSelected = selectedMethod === method.id;
-                  return (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedMethod(method.id);
-                        setTenderedBuffer("");
-                      }}
-                      className={cn(
-                        "flex flex-col items-center justify-center p-4 rounded-[var(--radius-sm)] border text-center transition-all gap-2 cursor-pointer",
-                        isSelected
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border/60 bg-card/40 hover:border-border hover:bg-card/80 text-foreground"
-                      )}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="text-xs font-semibold">{method.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Total Indicators */}
-            <div className="p-4 rounded-[var(--radius-sm)] border border-border/60 bg-card/10 space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Amount Due</span>
-                <span className="font-bold text-foreground">${amountDue.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Amount Tendered</span>
-                <span className="font-bold text-accent">${currentTendered.toFixed(2)}</span>
-              </div>
-
-              {selectedMethod === "cash" && (
-                <div className="border-t border-border/30 pt-3 flex justify-between items-center text-base font-bold">
-                  {currentTendered >= amountDue ? (
-                    <>
-                      <span className="text-success-foreground">Change Due</span>
-                      <span className="text-emerald-400">${changeDue.toFixed(2)}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-destructive">Remaining</span>
-                      <span className="text-destructive">${remainingDue.toFixed(2)}</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column: Cash Options / Keypad */}
-          <div className="space-y-4">
-            {selectedMethod === "cash" ? (
-              <>
-                {/* Quick Cash Options */}
-                <div className="space-y-2">
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Quick Cash</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {quickCashOptions.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => setTenderedBuffer(opt.toFixed(2))}
-                        className={cn(
-                          "py-2 px-3 text-xs font-bold rounded-[var(--radius-sm)] border text-center cursor-pointer transition-all",
-                          parseFloat(tenderedBuffer) === opt
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border/60 bg-card/40 hover:border-border text-foreground"
-                        )}
-                      >
-                        {opt === amountDue ? "Exact Cash" : `$${opt.toFixed(2)}`}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Keypad */}
-                <POSTenderKeypad onPress={handleKeypadPress} />
-              </>
-            ) : (
-              <div className="flex h-full min-h-[220px] flex-col items-center justify-center text-center p-6 border border-dashed border-border/60 rounded-[var(--radius-sm)] bg-card/5">
-                <CreditCard className="h-10 w-10 text-muted-foreground/40 mb-3 animate-pulse" />
-                <span className="text-sm font-semibold text-foreground">Waiting for device...</span>
-                <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
-                  Swipe, insert, or tap device to charge the transaction.
-                </p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-row items-center justify-end gap-2 border-t border-border/50 pt-4 bg-card/25">
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant={selectedMethod !== "cash" || currentTendered >= amountDue ? "gradient" : "outline"}
-            className="font-bold min-w-[140px]"
-            disabled={selectedMethod === "cash" && currentTendered < amountDue}
-            onClick={handleTenderSubmit}
-          >
-            Complete Order
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
-POSTenderModal.displayName = "POSTenderModal";
 ````
 
 ## File: packages/domain-recipes/src/utils/scaling.test.ts
