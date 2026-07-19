@@ -1301,6 +1301,11 @@
 │   │   │   ├── index.ts
 │   │   │   └── server.ts
 │   │   └── tsconfig.json
+│   ├── mcp-server
+│   │   ├── eslint.config.js
+│   │   ├── index.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
 │   ├── supabase
 │   │   ├── eslint.config.js
 │   │   ├── package.json
@@ -1337,4 +1342,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-310 directories, 1028 files
+311 directories, 1032 files

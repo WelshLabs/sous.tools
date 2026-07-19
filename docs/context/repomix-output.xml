@@ -1079,6 +1079,9 @@ packages/
       index.ts
       server.ts
     eslint.config.js
+  mcp-server/
+    eslint.config.js
+    index.ts
   supabase/
     src/
       index.ts
@@ -13203,6 +13206,108 @@ export default {
 };
 ````
 
+## File: apps/wearos/app/src/main/java/com/sous/wearos/complication/DailySalesComplicationService.kt
+````kotlin
+package com.sous.wearos.complication
+
+import android.util.Log
+import androidx.wear.watchface.complications.data.ComplicationData
+import androidx.wear.watchface.complications.data.ComplicationType
+import androidx.wear.watchface.complications.data.PlainComplicationText
+import androidx.wear.watchface.complications.data.ShortTextComplicationData
+import androidx.wear.watchface.complications.datasource.ComplicationRequest
+import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
+import com.sous.wearos.network.ApiClient
+import com.sous.wearos.network.TokenManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+
+class DailySalesComplicationService : SuspendingComplicationDataSourceService() {
+
+    override fun getPreviewData(type: ComplicationType): ComplicationData? {
+        if (type != ComplicationType.SHORT_TEXT) return null
+        return createComplicationData("$1.2k", "Daily Sales")
+    }
+
+    override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
+        val token = withContext(Dispatchers.IO) {
+            TokenManager.getToken(this@DailySalesComplicationService).firstOrNull()
+        }
+        if (token == null) {
+            return createComplicationData("Pair", "Daily Sales")
+        }
+
+        return try {
+            // AuthInterceptor automatically injects the Bearer header
+            val response = withTimeout(5000) { ApiClient.apiService.getSalesMetrics() }
+            createComplicationData(response.value, "Daily Sales")
+        } catch (e: Exception) {
+            Log.e("SousComplication", "DailySales fetch failed", e)
+            createComplicationData("Err", "Daily Sales")
+        }
+    }
+
+    private fun createComplicationData(text: String, contentDescription: String) =
+        ShortTextComplicationData.Builder(
+            text = PlainComplicationText.Builder(text).build(),
+            contentDescription = PlainComplicationText.Builder(contentDescription).build()
+        ).build()
+}
+````
+
+## File: apps/wearos/app/src/main/java/com/sous/wearos/complication/TicketTimeComplicationService.kt
+````kotlin
+package com.sous.wearos.complication
+
+import android.util.Log
+import androidx.wear.watchface.complications.data.ComplicationData
+import androidx.wear.watchface.complications.data.ComplicationType
+import androidx.wear.watchface.complications.data.PlainComplicationText
+import androidx.wear.watchface.complications.data.ShortTextComplicationData
+import androidx.wear.watchface.complications.datasource.ComplicationRequest
+import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
+import com.sous.wearos.network.ApiClient
+import com.sous.wearos.network.TokenManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+
+class TicketTimeComplicationService : SuspendingComplicationDataSourceService() {
+
+    override fun getPreviewData(type: ComplicationType): ComplicationData? {
+        if (type != ComplicationType.SHORT_TEXT) return null
+        return createComplicationData("12m", "Ticket Time")
+    }
+
+    override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
+        val token = withContext(Dispatchers.IO) {
+            TokenManager.getToken(this@TicketTimeComplicationService).firstOrNull()
+        }
+        if (token == null) {
+            return createComplicationData("Pair", "Ticket Time")
+        }
+
+        return try {
+            // AuthInterceptor automatically injects the Bearer header
+            val response = withTimeout(5000) { ApiClient.apiService.getTicketTimeMetrics() }
+            createComplicationData(response.value, "Ticket Time")
+        } catch (e: Exception) {
+            Log.e("SousComplication", "TicketTime fetch failed", e)
+            createComplicationData("Err", "Ticket Time")
+        }
+    }
+
+    private fun createComplicationData(text: String, contentDescription: String) =
+        ShortTextComplicationData.Builder(
+            text = PlainComplicationText.Builder(text).build(),
+            contentDescription = PlainComplicationText.Builder(contentDescription).build()
+        ).build()
+}
+````
+
 ## File: apps/wearos/app/src/main/java/com/sous/wearos/complication/VoiceCommandComplicationService.kt
 ````kotlin
 package com.sous.wearos.complication
@@ -13325,6 +13430,142 @@ fun SousToolsWearTheme(
         colors = wearColorPalette,
         content = content
     )
+}
+````
+
+## File: apps/wearos/app/src/main/java/com/sous/wearos/presentation/PairingScreen.kt
+````kotlin
+package com.sous.wearos.presentation
+
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.CircularProgressIndicator
+import androidx.wear.compose.material.Text
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
+import com.sous.wearos.complication.DailySalesComplicationService
+import com.sous.wearos.complication.TicketTimeComplicationService
+import com.sous.wearos.complication.VoiceCommandComplicationService
+import com.sous.wearos.network.ApiClient
+import com.sous.wearos.network.PairInitRequest
+import com.sous.wearos.network.TokenManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+
+@Composable
+fun PairingScreen(onPaired: () -> Unit) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var pairingCode by remember { mutableStateOf<String?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            val currentCode = pairingCode
+            if (currentCode == null) {
+                try {
+                    val response = withTimeout(5000) { ApiClient.apiService.initPairing(PairInitRequest()) }
+                    if (response.success && response.data != null) {
+                        pairingCode = response.data.code
+                        errorMessage = null
+                    } else {
+                        errorMessage = response.error ?: "Failed to get code"
+                    }
+                } catch (e: Exception) {
+                    Log.e("SousNetwork", "API Call Failed", e)
+                    errorMessage = "Failed to init pairing: ${e.message}"
+                }
+            } else {
+                try {
+                    val statusResponse = withTimeout(5000) {
+                        ApiClient.apiService.checkPairingStatus(currentCode)
+                    }
+                    if (statusResponse.success && statusResponse.data?.token != null) {
+                        withContext(Dispatchers.IO) {
+                            TokenManager.saveToken(context, statusResponse.data.token)
+                        }
+
+                        // -------------------------------------------------------
+                        // COMPLICATION WAKE-UP: force all stale complications to
+                        // immediately re-render and fetch live data now that a
+                        // valid token exists in DataStore.
+                        // -------------------------------------------------------
+                        coroutineScope.launch(Dispatchers.Main) {
+                            listOf(
+                                DailySalesComplicationService::class.java,
+                                TicketTimeComplicationService::class.java,
+                                VoiceCommandComplicationService::class.java
+                            ).forEach { serviceClass ->
+                                try {
+                                    ComplicationDataSourceUpdateRequester
+                                        .create(context, android.content.ComponentName(context, serviceClass))
+                                        .requestUpdateAll()
+                                    Log.d("SousComplication", "Requested update for ${serviceClass.simpleName}")
+                                } catch (ex: Exception) {
+                                    Log.e("SousComplication", "Failed to request update for ${serviceClass.simpleName}", ex)
+                                }
+                            }
+                        }
+
+                        onPaired()
+                        break
+                    }
+                    errorMessage = statusResponse.error
+                } catch (e: Exception) {
+                    Log.e("SousNetwork", "API Call Failed", e)
+                    errorMessage = "Status check failed: ${e.message}"
+                }
+            }
+            delay(5000)
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            if (errorMessage != null) {
+                Text(text = errorMessage ?: "", color = Color.Red)
+            } else if (pairingCode == null) {
+                CircularProgressIndicator(indicatorColor = Color(0xFF00FFFF))
+            } else {
+                Text(
+                    text = pairingCode ?: "",
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF00FFFF), // Cyan
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Enter code at\nsous.tools/team",
+                    fontSize = 14.sp,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
 }
 ````
 
@@ -13524,6 +13765,29 @@ fun tilePreview(context: Context) = TilePreviewData(::resources) {
 }
 ````
 
+## File: apps/wearos/app/src/main/java/com/sous/wearos/SousApplication.kt
+````kotlin
+package com.sous.wearos
+
+import android.app.Application
+import com.sous.wearos.network.ApiClient
+
+/**
+ * Custom Application class.
+ * Initialises the ApiClient singleton with the application context
+ * so the AuthInterceptor and UnauthorizedAuthenticator have a stable
+ * context reference for DataStore access throughout the app's lifetime.
+ *
+ * Registered in AndroidManifest.xml via android:name=".SousApplication"
+ */
+class SousApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        ApiClient.init(this)
+    }
+}
+````
+
 ## File: apps/wearos/app/src/main/res/drawable/ic_chef_hat.xml
 ````xml
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -13683,9 +13947,213 @@ fun tilePreview(context: Context) = TilePreviewData(::resources) {
 </resources>
 ````
 
+## File: apps/wearos/app/src/main/AndroidManifest.xml
+````xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".SousApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@android:style/Theme.DeviceDefault">
+
+        <service
+            android:name=".complication.DailySalesComplicationService"
+            android:exported="true"
+            android:label="Daily Sales"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
+        <service
+            android:name=".complication.TicketTimeComplicationService"
+            android:exported="true"
+            android:label="Ticket Time"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
+        <service
+            android:name=".complication.VoiceCommandComplicationService"
+            android:exported="true"
+            android:label="@string/complication_label"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
+        <service
+            android:name=".tile.MainTileService"
+            android:exported="true"
+            android:label="@string/tile_label"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview" />
+        </service>
+
+        <uses-library
+            android:name="com.google.android.wearable"
+            android:required="true" />
+        <uses-library
+            android:name="wear-sdk"
+            android:required="false" />
+        <!--
+               Set to true if your app is Standalone, that is, it does not require the handheld
+               app to run.
+        -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
+        <activity
+            android:name=".presentation.MainActivity"
+            android:exported="true"
+            android:taskAffinity=""
+            android:theme="@style/MainActivityTheme.Starting">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".presentation.SettingsActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault">
+        </activity>
+    </application>
+
+</manifest>
+````
+
 ## File: apps/wearos/app/.gitignore
 ````
 /build
+````
+
+## File: apps/wearos/app/build.gradle.kts
+````kotlin
+import java.util.Properties
+import java.io.FileInputStream
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+}
+
+android {
+    namespace = "com.sous.wearos"
+    compileSdk {
+        version = release(36)
+    }
+
+    defaultConfig {
+        applicationId = "com.sous.wearos"
+        minSdk = 30
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+    }
+
+    buildTypes {
+        val properties = Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(FileInputStream(localPropertiesFile))
+        }
+        val localApiUrl = properties.getProperty("API_BASE_URL") ?: "\"http://10.0.2.2:3001\""
+
+        debug {
+            applicationIdSuffix = ".debug"
+            buildConfigField("String", "API_BASE_URL", localApiUrl)
+        }
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            buildConfigField("String", "API_BASE_URL", "\"https://api.sous.tools\"")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    useLibrary("wear-sdk")
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+}
+
+dependencies {
+    implementation(libs.play.services.wearable)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.ui)
+    implementation(libs.ui.graphics)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.compose.material)
+    implementation(libs.compose.foundation)
+    implementation(libs.wear.tooling.preview)
+    implementation(libs.activity.compose)
+    implementation(libs.core.splashscreen)
+    implementation(libs.tiles)
+    implementation(libs.tiles.material)
+    implementation(libs.tiles.tooling.preview)
+    implementation(libs.horologist.compose.tools)
+    implementation(libs.horologist.tiles)
+    implementation(libs.watchface.complications.data.source.ktx)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.ui.test.junit4)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    debugImplementation(libs.ui.tooling)
+    debugImplementation(libs.ui.test.manifest)
+    debugImplementation(libs.tiles.tooling)
+}
 ````
 
 ## File: apps/wearos/app/lint.xml
@@ -23649,6 +24117,68 @@ import { initializeLogger } from '@soustools/logger';
 export function register() {
   initializeLogger();
 }
+````
+
+## File: apps/web/src/proxy.ts
+````typescript
+import { NextResponse, type NextRequest } from "next/server";
+import { config as appConfig } from "@soustools/config";
+
+// Must match ACCESS_TOKEN_COOKIE in apps/api/src/modules/auth/auth.controller.ts
+// @todo: extract to a shared @soustools/auth-constants package
+const SESSION_COOKIE = "sb-access-token";
+
+/**
+ * Middleware proxy that enforces authentication for protected routes.
+ *
+ * Auth strategy: check for the presence of the HttpOnly session cookie set by
+ * the NestJS API on login. The cookie's *validity* is verified by the NestJS
+ * SupabaseAuthGuard on every actual data request — we do not re-validate it
+ * here to avoid either leaking Supabase into the frontend or adding a network
+ * round-trip on every page load.
+ */
+export async function proxy(request: NextRequest) {
+  // Public routes that don't require authentication
+  const isPublicRoute =
+    request.nextUrl.pathname === "/" ||
+    request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/api") ||
+    request.nextUrl.pathname.startsWith("/_next") ||
+    request.nextUrl.pathname.includes("."); // static files
+
+  if (isPublicRoute) {
+    return NextResponse.next();
+  }
+
+  // Bypass auth in mock environments (e.g., local testing)
+  if (appConfig.IS_MOCK_ENV) {
+    return NextResponse.next();
+  }
+
+  // Check for the HttpOnly session cookie set by the NestJS API on login
+  const sessionCookie = request.cookies.get(SESSION_COOKIE);
+
+  if (!sessionCookie?.value) {
+    const url = new URL("/login", request.url);
+    url.searchParams.set("returnTo", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+};
 ````
 
 ## File: apps/web/src/sw.ts
@@ -38082,6 +38612,135 @@ sonar.sources=.
 sonar.exclusions=**/node_modules/**, **/.next/**, **/dist/**, **/coverage/**
 ````
 
+## File: .github/workflows/build-and-deploy-rpi-os.yml
+````yaml
+name: Build and Release RPi OS Image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "deploy/pi/**"
+      - "deploy/ansible/**"
+      - "apps/setup-portal/**"
+      - ".github/workflows/build-and-deploy-rpi-os.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, arm64]
+    steps:
+      - name: Who am I?
+        run: whoami
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
+      - name: Fetch Infisical Secrets
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools-1cd-a"
+
+      - name: Inject static deploy key into stage-sous/files/
+        run: |
+          # Write the Ed25519 read-only deploy key from Infisical.
+          # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
+          # with chmod 600 inside the chroot. The file is scrubbed after build.
+          printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
+            > deploy/pi/stage-sous/files/signage-deploy-key
+          chmod 600 deploy/pi/stage-sous/files/signage-deploy-key
+
+      - name: Stage stage-sous inside pi-gen (runtime injection)
+        run: |
+          # pi-gen expects custom stages to live alongside stage0–stage5.
+          # We keep ours in deploy/pi/stage-sous/ and copy at CI time so
+          # it never pollutes the upstream pi-gen checkout.
+          cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
+
+      - name: Install native pi-gen dependencies
+        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted qemu-user-static debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
+
+      - name: Build OS Image natively with pi-gen
+        env:
+          PI_GEN_CONFIG: |
+            IMG_NAME=soustools-signage
+            TARGET_HOSTNAME=signage
+            TARGET_ARCH=arm64
+            ARCH=arm64
+            ENABLE_SSH=1
+            CONTINUE=1
+            FIRST_USER_NAME=sous
+            FIRST_USER_PASS=bootstrap123
+            # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
+            STAGE_LIST="stage0 stage1 stage2 stage-sous"
+          CHROOT_SCRIPT: |
+            #!/bin/bash
+            # B. Mask interactive first-boot screens
+            systemctl mask userconfig.service || true
+            systemctl mask piwiz.service      || true
+        run: |
+          cd deploy/pi/pi-gen
+          cp -r ../stage-sous ./stage-sous
+          touch stage-sous/EXPORT_IMAGE
+
+          # 1. Scaffold the mandatory config file that git ignores
+          echo "$PI_GEN_CONFIG" > config
+
+          # 2. Restore executable flags (git strips them on checkout)
+          echo "Restoring +x permissions to all pi-gen scripts..."
+          sudo find . -type f -name "*.sh" -exec chmod +x {} +
+          sudo chmod +x stage*/prerun.sh             || true
+          sudo chmod +x stage-sous/*.sh              || true
+          sudo chmod +x stage-sous/files/*.sh        || true
+
+          # 3. Hard-bake the 'sous' user and kill first-boot wizards
+          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
+          sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
+
+          # 4. Run the NATIVE pi-gen build (Bypassing Docker)
+          sudo ./build.sh
+
+      - name: Scrub deploy key from workspace (security)
+        if: always()
+        run: |
+          rm -f deploy/pi/stage-sous/files/signage-deploy-key           || true
+          rm -f deploy/pi/pi-gen/stage-sous/files/signage-deploy-key    || true
+
+      - name: Release image to GitHub (conarwelsh/signage-os)
+        uses: softprops/action-gh-release@v2
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        with:
+          repository: conarwelsh/signage-os
+          token: ${{ env.SIGNAGE_GITHUB_PAT }}
+          tag_name: v${{ github.run_number }}
+          name: Signage OS v${{ github.run_number }}
+          files: deploy/pi/pi-gen/deploy/*.zip
+          make_latest: true
+
+      # THE ARMOR: Forcefully detach all system mounts BEFORE wiping the work directory
+      - name: Cleanup and Protect Host Mounts
+        if: always()
+        run: |
+          echo "Detaching any lingering pi-gen bind mounts..."
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/sys || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/proc || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
+
+          echo "Wiping pi-gen work directories safely..."
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work       || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy     || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
+````
+
 ## File: .github/workflows/deploy.yml
 ````yaml
 name: Deploy
@@ -39883,468 +40542,390 @@ export default [
 ];
 ````
 
-## File: apps/wearos/app/src/main/java/com/sous/wearos/complication/DailySalesComplicationService.kt
+## File: apps/wearos/app/src/main/java/com/sous/wearos/network/ApiClient.kt
 ````kotlin
-package com.sous.wearos.complication
+package com.sous.wearos.network
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
-import androidx.wear.watchface.complications.data.ComplicationData
-import androidx.wear.watchface.complications.data.ComplicationType
-import androidx.wear.watchface.complications.data.PlainComplicationText
-import androidx.wear.watchface.complications.data.ShortTextComplicationData
-import androidx.wear.watchface.complications.datasource.ComplicationRequest
-import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
-import com.sous.wearos.network.ApiClient
-import com.sous.wearos.network.TokenManager
-import kotlinx.coroutines.Dispatchers
+import com.sous.wearos.BuildConfig
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.runBlocking
+import okhttp3.Authenticator
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.Route
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
+import java.util.concurrent.TimeUnit
 
-class DailySalesComplicationService : SuspendingComplicationDataSourceService() {
+// ---------------------------------------------------------------------------
+// Domain models
+// ---------------------------------------------------------------------------
 
-    override fun getPreviewData(type: ComplicationType): ComplicationData? {
-        if (type != ComplicationType.SHORT_TEXT) return null
-        return createComplicationData("$1.2k", "Daily Sales")
+data class ApiResponse<T>(
+    val success: Boolean,
+    val data: T?,
+    val error: String?,
+    val timestamp: String?
+)
+
+data class MetricsResponse(val value: String)
+
+data class PairInitRequest(val deviceType: String = "wearos")
+data class PairInitResponse(val code: String)
+data class PairStatusResponse(val status: String, val token: String?)
+
+data class OmniMessage(
+    val id: String,
+    val role: String,
+    val content: String,
+    val timestamp: String
+)
+
+data class CommandRequest(val chatHistory: List<OmniMessage>, val source: String = "wearos")
+data class CommandResponse(val success: Boolean)
+
+// ---------------------------------------------------------------------------
+// API service interface — NO manual @Header params; the interceptor handles it
+// ---------------------------------------------------------------------------
+
+interface ApiService {
+    @GET("/api/metrics/sales")
+    suspend fun getSalesMetrics(): MetricsResponse
+
+    @GET("/api/metrics/ticket-time")
+    suspend fun getTicketTimeMetrics(): MetricsResponse
+
+    @POST("/api/devices/pair/init")
+    suspend fun initPairing(@Body request: PairInitRequest): ApiResponse<PairInitResponse>
+
+    @GET("/api/devices/pair/status/{code}")
+    suspend fun checkPairingStatus(@Path("code") code: String): ApiResponse<PairStatusResponse>
+
+    @POST("/commands/execute")
+    suspend fun sendCommand(@Body request: CommandRequest): ApiResponse<CommandResponse>
+}
+
+// ---------------------------------------------------------------------------
+// Auth Interceptor — reads token from DataStore and injects Bearer header
+// OkHttp interceptors run on a background thread so runBlocking is safe here.
+// ---------------------------------------------------------------------------
+
+class AuthInterceptor(private val context: Context) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val token: String? = runBlocking {
+            TokenManager.getToken(context).firstOrNull()
+        }
+
+        val originalRequest: Request = chain.request()
+        val request = if (token != null) {
+            originalRequest.newBuilder()
+                .header("Authorization", "Bearer $token")
+                .build()
+        } else {
+            originalRequest
+        }
+
+        return chain.proceed(request)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Unauthorized Authenticator — fires on 401, clears the token, and broadcasts
+// SESSION_EXPIRED so any registered receiver can redirect to PairingScreen.
+// Returning null tells OkHttp to stop retrying (no retry loop).
+// ---------------------------------------------------------------------------
+
+const val ACTION_SESSION_EXPIRED = "com.sous.wearos.SESSION_EXPIRED"
+
+class UnauthorizedAuthenticator(private val context: Context) : Authenticator {
+    override fun authenticate(route: Route?, response: Response): Request? {
+        Log.w("SousAuth", "401 Unauthorized – clearing token and broadcasting SESSION_EXPIRED")
+        // Clear the stored token synchronously on IO thread
+        runBlocking {
+            TokenManager.clearToken(context)
+        }
+        // Broadcast so MainActivity (or any registered receiver) can navigate back to PairingScreen
+        val intent = Intent(ACTION_SESSION_EXPIRED).apply {
+            setPackage(context.packageName) // Explicit package for security on Android 8+
+        }
+        context.sendBroadcast(intent)
+        // Return null → do NOT retry the request
+        return null
+    }
+}
+
+// ---------------------------------------------------------------------------
+// ApiClient singleton factory — lazily initialised with application Context
+// ---------------------------------------------------------------------------
+
+object ApiClient {
+    @Volatile
+    private var _apiService: ApiService? = null
+
+    /**
+     * Must be called once from Application.onCreate() or before first use.
+     * Subsequent calls are no-ops (double-checked locking).
+     */
+    fun init(context: Context) {
+        if (_apiService != null) return
+        synchronized(this) {
+            if (_apiService != null) return
+
+            val appContext = context.applicationContext
+
+            val loggingInterceptor = HttpLoggingInterceptor { message ->
+                Log.d("SousHttp", message)
+            }.apply {
+                level = if (BuildConfig.DEBUG) {
+                    HttpLoggingInterceptor.Level.BODY
+                } else {
+                    HttpLoggingInterceptor.Level.NONE
+                }
+            }
+
+            val okHttpClient = OkHttpClient.Builder()
+                .addInterceptor(AuthInterceptor(appContext))      // ← injects token
+                .authenticator(UnauthorizedAuthenticator(appContext)) // ← handles 401
+                .addInterceptor(loggingInterceptor)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .build()
+
+            _apiService = Retrofit.Builder()
+                .baseUrl(BuildConfig.API_BASE_URL)                // ← from build variant
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(ApiService::class.java)
+        }
     }
 
-    override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
-        val token = withContext(Dispatchers.IO) {
-            TokenManager.getToken(this@DailySalesComplicationService).firstOrNull()
-        }
-        if (token == null) {
-            return createComplicationData("Pair", "Daily Sales")
-        }
-
-        return try {
-            // AuthInterceptor automatically injects the Bearer header
-            val response = withTimeout(5000) { ApiClient.apiService.getSalesMetrics() }
-            createComplicationData(response.value, "Daily Sales")
-        } catch (e: Exception) {
-            Log.e("SousComplication", "DailySales fetch failed", e)
-            createComplicationData("Err", "Daily Sales")
-        }
-    }
-
-    private fun createComplicationData(text: String, contentDescription: String) =
-        ShortTextComplicationData.Builder(
-            text = PlainComplicationText.Builder(text).build(),
-            contentDescription = PlainComplicationText.Builder(contentDescription).build()
-        ).build()
+    /**
+     * Returns the fully configured ApiService.
+     * Throws if [init] has not been called yet — this surfaces misconfiguration fast.
+     */
+    val apiService: ApiService
+        get() = _apiService
+            ?: error("ApiClient not initialised. Call ApiClient.init(context) in Application.onCreate().")
 }
 ````
 
-## File: apps/wearos/app/src/main/java/com/sous/wearos/complication/TicketTimeComplicationService.kt
-````kotlin
-package com.sous.wearos.complication
-
-import android.util.Log
-import androidx.wear.watchface.complications.data.ComplicationData
-import androidx.wear.watchface.complications.data.ComplicationType
-import androidx.wear.watchface.complications.data.PlainComplicationText
-import androidx.wear.watchface.complications.data.ShortTextComplicationData
-import androidx.wear.watchface.complications.datasource.ComplicationRequest
-import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
-import com.sous.wearos.network.ApiClient
-import com.sous.wearos.network.TokenManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
-
-class TicketTimeComplicationService : SuspendingComplicationDataSourceService() {
-
-    override fun getPreviewData(type: ComplicationType): ComplicationData? {
-        if (type != ComplicationType.SHORT_TEXT) return null
-        return createComplicationData("12m", "Ticket Time")
-    }
-
-    override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
-        val token = withContext(Dispatchers.IO) {
-            TokenManager.getToken(this@TicketTimeComplicationService).firstOrNull()
-        }
-        if (token == null) {
-            return createComplicationData("Pair", "Ticket Time")
-        }
-
-        return try {
-            // AuthInterceptor automatically injects the Bearer header
-            val response = withTimeout(5000) { ApiClient.apiService.getTicketTimeMetrics() }
-            createComplicationData(response.value, "Ticket Time")
-        } catch (e: Exception) {
-            Log.e("SousComplication", "TicketTime fetch failed", e)
-            createComplicationData("Err", "Ticket Time")
-        }
-    }
-
-    private fun createComplicationData(text: String, contentDescription: String) =
-        ShortTextComplicationData.Builder(
-            text = PlainComplicationText.Builder(text).build(),
-            contentDescription = PlainComplicationText.Builder(contentDescription).build()
-        ).build()
-}
-````
-
-## File: apps/wearos/app/src/main/java/com/sous/wearos/presentation/PairingScreen.kt
+## File: apps/wearos/app/src/main/java/com/sous/wearos/presentation/MainActivity.kt
 ````kotlin
 package com.sous.wearos.presentation
 
+import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.util.Log
+import android.os.Bundle
+import android.speech.RecognizerIntent
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material.CircularProgressIndicator
-import androidx.wear.compose.material.Text
-import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
-import com.sous.wearos.complication.DailySalesComplicationService
-import com.sous.wearos.complication.TicketTimeComplicationService
-import com.sous.wearos.complication.VoiceCommandComplicationService
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.ButtonDefaults
+import androidx.wear.compose.material.Icon
+import com.sous.wearos.network.ACTION_SESSION_EXPIRED
 import com.sous.wearos.network.ApiClient
-import com.sous.wearos.network.PairInitRequest
+import com.sous.wearos.network.CommandRequest
 import com.sous.wearos.network.TokenManager
+import com.sous.wearos.presentation.theme.SousToolsWearTheme
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
-@Composable
-fun PairingScreen(onPaired: () -> Unit) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    var pairingCode by remember { mutableStateOf<String?>(null) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+class MainActivity : ComponentActivity() {
 
-    LaunchedEffect(Unit) {
-        while (isActive) {
-            val currentCode = pairingCode
-            if (currentCode == null) {
-                try {
-                    val response = withTimeout(5000) { ApiClient.apiService.initPairing(PairInitRequest()) }
-                    if (response.success && response.data != null) {
-                        pairingCode = response.data.code
-                        errorMessage = null
-                    } else {
-                        errorMessage = response.error ?: "Failed to get code"
-                    }
-                } catch (e: Exception) {
-                    Log.e("SousNetwork", "API Call Failed", e)
-                    errorMessage = "Failed to init pairing: ${e.message}"
-                }
-            } else {
-                try {
-                    val statusResponse = withTimeout(5000) {
-                        ApiClient.apiService.checkPairingStatus(currentCode)
-                    }
-                    if (statusResponse.success && statusResponse.data?.token != null) {
-                        withContext(Dispatchers.IO) {
-                            TokenManager.saveToken(context, statusResponse.data.token)
-                        }
-
-                        // -------------------------------------------------------
-                        // COMPLICATION WAKE-UP: force all stale complications to
-                        // immediately re-render and fetch live data now that a
-                        // valid token exists in DataStore.
-                        // -------------------------------------------------------
-                        coroutineScope.launch(Dispatchers.Main) {
-                            listOf(
-                                DailySalesComplicationService::class.java,
-                                TicketTimeComplicationService::class.java,
-                                VoiceCommandComplicationService::class.java
-                            ).forEach { serviceClass ->
-                                try {
-                                    ComplicationDataSourceUpdateRequester
-                                        .create(context, android.content.ComponentName(context, serviceClass))
-                                        .requestUpdateAll()
-                                    Log.d("SousComplication", "Requested update for ${serviceClass.simpleName}")
-                                } catch (ex: Exception) {
-                                    Log.e("SousComplication", "Failed to request update for ${serviceClass.simpleName}", ex)
-                                }
-                            }
-                        }
-
-                        onPaired()
-                        break
-                    }
-                    errorMessage = statusResponse.error
-                } catch (e: Exception) {
-                    Log.e("SousNetwork", "API Call Failed", e)
-                    errorMessage = "Status check failed: ${e.message}"
-                }
+    // -----------------------------------------------------------------------
+    // 401 Broadcast Receiver — registered/unregistered with the activity
+    // lifecycle to avoid leaks. On SESSION_EXPIRED the router will bounce
+    // back to PairingScreen by clearing the local isPaired flag.
+    // -----------------------------------------------------------------------
+    private val sessionExpiredReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == ACTION_SESSION_EXPIRED) {
+                Log.w("SousAuth", "SESSION_EXPIRED broadcast received — navigating to PairingScreen")
+                // Restart the activity so MainAppRouter re-reads the (now null) token
+                // and naturally falls into the PairingScreen branch.
+                recreate()
             }
-            delay(5000)
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        super.onCreate(savedInstanceState)
+        setTheme(android.R.style.Theme_DeviceDefault)
+        setContent {
+            SousToolsWearTheme {
+                MainAppRouter()
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(ACTION_SESSION_EXPIRED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(sessionExpiredReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(sessionExpiredReceiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(sessionExpiredReceiver)
+    }
+}
+
+@Composable
+fun MainAppRouter() {
+    val context = LocalContext.current
+    var isPaired by remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(Unit) {
+        val token = withContext(Dispatchers.IO) { TokenManager.getToken(context).firstOrNull() }
+        isPaired = token != null
+    }
+
+    when (isPaired) {
+        true  -> WearApp()
+        false -> PairingScreen(onPaired = { isPaired = true })
+        null  -> Box(modifier = Modifier.fillMaxSize().background(Color.Black)) // Loading
+    }
+}
+
+@Composable
+fun WearApp() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color(0xFF000000)),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)
-        ) {
-            if (errorMessage != null) {
-                Text(text = errorMessage ?: "", color = Color.Red)
-            } else if (pairingCode == null) {
-                CircularProgressIndicator(indicatorColor = Color(0xFF00FFFF))
-            } else {
-                Text(
-                    text = pairingCode ?: "",
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00FFFF), // Cyan
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Enter code at\nsous.tools/team",
-                    fontSize = 14.sp,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
+        VoiceTriggerButton()
+    }
+}
+
+@Composable
+fun VoiceTriggerButton() {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val speechRecognizerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val spokenText = result.data
+                ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                ?.firstOrNull()
+            if (!spokenText.isNullOrEmpty()) {
+                coroutineScope.launch {
+                    sendToApi(context, spokenText)
+                }
             }
         }
     }
-}
-````
 
-## File: apps/wearos/app/src/main/java/com/sous/wearos/SousApplication.kt
-````kotlin
-package com.sous.wearos
-
-import android.app.Application
-import com.sous.wearos.network.ApiClient
-
-/**
- * Custom Application class.
- * Initialises the ApiClient singleton with the application context
- * so the AuthInterceptor and UnauthorizedAuthenticator have a stable
- * context reference for DataStore access throughout the app's lifetime.
- *
- * Registered in AndroidManifest.xml via android:name=".SousApplication"
- */
-class SousApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        ApiClient.init(this)
+    Button(
+        onClick = {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            }
+            speechRecognizerLauncher.launch(intent)
+        },
+        modifier = Modifier.size(120.dp),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Color(0xFF00FFFF),
+            contentColor = Color(0xFF000000)
+        )
+    ) {
+        Icon(
+            painter = painterResource(id = android.R.drawable.ic_btn_speak_now),
+            contentDescription = "Dirty Hands Voice Trigger",
+            modifier = Modifier.size(64.dp)
+        )
     }
 }
-````
 
-## File: apps/wearos/app/src/main/AndroidManifest.xml
-````xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <uses-feature android:name="android.hardware.type.watch" />
-
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <application
-        android:name=".SousApplication"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@android:style/Theme.DeviceDefault">
-
-        <service
-            android:name=".complication.DailySalesComplicationService"
-            android:exported="true"
-            android:label="Daily Sales"
-            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
-            <intent-filter>
-                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
-            <meta-data
-                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
-        </service>
-        <service
-            android:name=".complication.TicketTimeComplicationService"
-            android:exported="true"
-            android:label="Ticket Time"
-            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
-            <intent-filter>
-                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
-            <meta-data
-                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
-        </service>
-        <service
-            android:name=".complication.VoiceCommandComplicationService"
-            android:exported="true"
-            android:label="@string/complication_label"
-            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
-            <intent-filter>
-                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT,ICON,SMALL_IMAGE" />
-            <meta-data
-                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0" />
-        </service>
-        <service
-            android:name=".tile.MainTileService"
-            android:exported="true"
-            android:label="@string/tile_label"
-            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
-            <intent-filter>
-                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
-            </intent-filter>
-
-            <meta-data
-                android:name="androidx.wear.tiles.PREVIEW"
-                android:resource="@drawable/tile_preview" />
-        </service>
-
-        <uses-library
-            android:name="com.google.android.wearable"
-            android:required="true" />
-        <uses-library
-            android:name="wear-sdk"
-            android:required="false" />
-        <!--
-               Set to true if your app is Standalone, that is, it does not require the handheld
-               app to run.
-        -->
-        <meta-data
-            android:name="com.google.android.wearable.standalone"
-            android:value="true" />
-
-        <activity
-            android:name=".presentation.MainActivity"
-            android:exported="true"
-            android:taskAffinity=""
-            android:theme="@style/MainActivityTheme.Starting">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".presentation.SettingsActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.DeviceDefault">
-        </activity>
-    </application>
-
-</manifest>
-````
-
-## File: apps/wearos/app/build.gradle.kts
-````kotlin
-import java.util.Properties
-import java.io.FileInputStream
-
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
-}
-
-android {
-    namespace = "com.sous.wearos"
-    compileSdk {
-        version = release(36)
+// ---------------------------------------------------------------------------
+// sendToApi — now uses the global AuthInterceptor; no manual token injection.
+// Handles network failures gracefully (logs, no crash).
+// A 401 is handled upstream by UnauthorizedAuthenticator and the broadcast
+// receiver in MainActivity; we only need to guard against generic exceptions.
+// ---------------------------------------------------------------------------
+suspend fun sendToApi(context: Context, text: String) {
+    // Verify we are actually paired before attempting the call
+    val token = withContext(Dispatchers.IO) {
+        TokenManager.getToken(context).firstOrNull()
+    }
+    if (token == null) {
+        Log.w("SousCommand", "Skipping command — device is not paired")
+        return
     }
 
-    defaultConfig {
-        applicationId = "com.sous.wearos"
-        minSdk = 30
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
-
-    }
-
-    buildTypes {
-        val properties = Properties()
-        val localPropertiesFile = project.rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            properties.load(FileInputStream(localPropertiesFile))
-        }
-        val localApiUrl = properties.getProperty("API_BASE_URL") ?: "\"http://10.0.2.2:3001\""
-
-        debug {
-            applicationIdSuffix = ".debug"
-            buildConfigField("String", "API_BASE_URL", localApiUrl)
-        }
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+    try {
+        val response = withTimeout(10_000) {
+            ApiClient.apiService.sendCommand(
+                request = CommandRequest(
+                    chatHistory = listOf(
+                        com.sous.wearos.network.OmniMessage(
+                            id = java.util.UUID.randomUUID().toString(),
+                            role = "user",
+                            content = text,
+                            timestamp = java.time.Instant.now().toString()
+                        )
+                    ),
+                    source = "wearos"
+                )
             )
-            buildConfigField("String", "API_BASE_URL", "\"https://api.sous.tools\"")
         }
+        if (response.success) {
+            Log.i("SousCommand", "Command accepted: ${response.data?.success}")
+        } else {
+            Log.w("SousCommand", "Command rejected by server: ${response.error}")
+        }
+    } catch (e: retrofit2.HttpException) {
+        // Non-2xx response that isn't a 401 (401 is handled by the Authenticator)
+        Log.e("SousCommand", "HTTP error ${e.code()}: ${e.message()}", e)
+    } catch (e: java.net.SocketTimeoutException) {
+        Log.e("SousCommand", "Command timed out — network may be unavailable", e)
+    } catch (e: java.io.IOException) {
+        Log.e("SousCommand", "Network error sending command", e)
+    } catch (e: Exception) {
+        Log.e("SousCommand", "Unexpected error sending command", e)
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    useLibrary("wear-sdk")
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-}
-
-dependencies {
-    implementation(libs.play.services.wearable)
-    implementation(platform(libs.compose.bom))
-    implementation(libs.ui)
-    implementation(libs.ui.graphics)
-    implementation(libs.ui.tooling.preview)
-    implementation(libs.compose.material)
-    implementation(libs.compose.foundation)
-    implementation(libs.wear.tooling.preview)
-    implementation(libs.activity.compose)
-    implementation(libs.core.splashscreen)
-    implementation(libs.tiles)
-    implementation(libs.tiles.material)
-    implementation(libs.tiles.tooling.preview)
-    implementation(libs.horologist.compose.tools)
-    implementation(libs.horologist.tiles)
-    implementation(libs.watchface.complications.data.source.ktx)
-    androidTestImplementation(platform(libs.compose.bom))
-    androidTestImplementation(libs.ui.test.junit4)
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.ui.test.manifest)
-    debugImplementation(libs.tiles.tooling)
 }
 ````
 
@@ -42079,6 +42660,45 @@ export default async function TransactionsPage() {
 }
 ````
 
+## File: apps/web/src/app/actions/auth.ts
+````typescript
+"use server";
+
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { config } from "@soustools/config";
+
+export async function logoutAction() {
+  // Forward the user's HttpOnly session cookies to the NestJS API so it can
+  // identify and invalidate the correct Supabase session server-side.
+  // Without this, the fetch call is anonymous and clearCookie is a no-op.
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+
+  try {
+    await fetch(
+      `${config.API_BASE_URL}/auth/logout`,
+      {
+        method: "POST",
+        headers: {
+          // Pass the browser cookies so NestJS can read and clear them.
+          Cookie: cookieHeader,
+        },
+      },
+    );
+  } catch (error) {
+    // Non-fatal — still redirect to login so the user is not stuck.
+    console.error("Logout API call failed", error);
+  }
+
+  // Redirect to login regardless of API outcome.
+  redirect("/login");
+}
+````
+
 ## File: apps/web/src/app/display/[id]/blocks/modifier-group-block.tsx
 ````typescript
 "use client";
@@ -42233,68 +42853,6 @@ export function ModifierGroupBlock({
 }
 ````
 
-## File: apps/web/src/proxy.ts
-````typescript
-import { NextResponse, type NextRequest } from "next/server";
-import { config as appConfig } from "@soustools/config";
-
-// Must match ACCESS_TOKEN_COOKIE in apps/api/src/modules/auth/auth.controller.ts
-// @todo: extract to a shared @soustools/auth-constants package
-const SESSION_COOKIE = "sb-access-token";
-
-/**
- * Middleware proxy that enforces authentication for protected routes.
- *
- * Auth strategy: check for the presence of the HttpOnly session cookie set by
- * the NestJS API on login. The cookie's *validity* is verified by the NestJS
- * SupabaseAuthGuard on every actual data request — we do not re-validate it
- * here to avoid either leaking Supabase into the frontend or adding a network
- * round-trip on every page load.
- */
-export async function proxy(request: NextRequest) {
-  // Public routes that don't require authentication
-  const isPublicRoute =
-    request.nextUrl.pathname === "/" ||
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/api") ||
-    request.nextUrl.pathname.startsWith("/_next") ||
-    request.nextUrl.pathname.includes("."); // static files
-
-  if (isPublicRoute) {
-    return NextResponse.next();
-  }
-
-  // Bypass auth in mock environments (e.g., local testing)
-  if (appConfig.IS_MOCK_ENV) {
-    return NextResponse.next();
-  }
-
-  // Check for the HttpOnly session cookie set by the NestJS API on login
-  const sessionCookie = request.cookies.get(SESSION_COOKIE);
-
-  if (!sessionCookie?.value) {
-    const url = new URL("/login", request.url);
-    url.searchParams.set("returnTo", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
-  }
-
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
-};
-````
-
 ## File: apps/web/eslint.config.js
 ````javascript
 // apps/web/eslint.config.js
@@ -42330,38 +42888,6 @@ BOOT SEQUENCE: Silently read .cursorrules.
 THEN: Run "pnpm knip" to find dead code and unused exports, and "pnpm turbo lint" to find boundary violations. 
 
 Choose exactly ONE file with an error and refactor it into compliance. Commit the fix to a new branch named "audit/fix-{ISSUE_NUMBER}" and push the branch. Then open a Pull Request in the "conarwelsh/sous.tools" repository using the Github MCP Server. DO NOT output conversational text in the terminal. DO NOT converse. Execute the tools and stop.
-````
-
-## File: docs/agents/prompts/implement.md
-````markdown
-<!--
-File: /workspace/docs/agents/prompts/implement.md
-Usage: Triggered by n8n when the label "agent:implement" is applied to a GitHub Issue.
-Purpose: Acts as the Senior Developer. Reads the approved plan on the issue, writes the code, runs typechecks/linting, and opens a PR.
--->
-BOOT SEQUENCE: Silently read .cursorrules. 
-
-THEN: You MUST use your Github MCP Server tools to fetch the data for Issue #{ISSUE_NUMBER} and its comments from the remote "conarwelsh/sous.tools" GitHub repository. 
-
-Create a new git branch named "feature/issue-{ISSUE_NUMBER}" and execute the code changes. You are running in a headless CI/CD container, so you MUST use the `-y` or `--yes` flags for all `npx` commands. 
-
-Once complete, run "pnpm turbo lint" and "pnpm turbo typecheck". IF the linter or typechecker fails, you MUST attempt to read the errors, fix the code, and re-run the checks before proceeding. 
-
-Commit changes and push the branch. Then, MUST use your Github MCP Server tools to open a Pull Request with the terminal output in the description. IF the PR is successfully opened, use the Github MCP Server to post a comment that it is resolved and close the issue. IF you cannot fix the lint/type errors or the push fails, DO NOT close the issue; instead, use the Github MCP Server to post a comment detailing the exact error. DO NOT use the bash tool to attempt to run or install the `gh` CLI. DO NOT output terminal text. DO NOT converse. Execute the tools and stop.
-````
-
-## File: docs/agents/prompts/plan.md
-````markdown
-<!--
-File: /workspace/docs/agents/prompts/plan.md
-Usage: Triggered by n8n when the label "agent:plan" is applied to a GitHub Issue.
-Purpose: Acts as a Software Architect. Reads the issue spec/research and writes a step-by-step implementation plan that strictly adheres to the project's architectural rules, then posts it as a comment.
--->
-BOOT SEQUENCE: Silently read .cursorrules. 
-
-THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
-
-Write a step-by-step implementation plan compliant with our architecture. DO NOT write or modify any code. Then post your final plan as a comment on the issue. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
 ````
 
 ## File: docs/agents/prompts/research.md
@@ -57770,6 +58296,245 @@ export default [
 ];
 ````
 
+## File: packages/mcp-server/eslint.config.js
+````javascript
+import { baseConfig } from "@soustools/eslint-config";
+
+export default [
+  ...baseConfig,
+  {
+    files: ["**/*.ts"],
+    rules: {
+      "no-restricted-syntax": "off",
+      "max-lines": "off"
+    }
+  },
+  { ignores: ["dist/**", "node_modules/**"] },
+];
+````
+
+## File: packages/mcp-server/index.ts
+````typescript
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { Octokit } from "@octokit/rest";
+import * as fs from "fs";
+import * as path from "path";
+
+const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+if (!GITHUB_TOKEN) {
+  console.error("Warning: GITHUB_PERSONAL_ACCESS_TOKEN is not set.");
+}
+
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
+
+const BOUNDARY_ELEMENTS = [
+  { type: "app", pattern: ["apps/web/**", "apps/pos-simulator/**", "apps/setup-portal/**"] },
+  { type: "backend", pattern: ["apps/api/**", "apps/cli/**"] },
+  { type: "domain", pattern: ["packages/domain-*/**"] },
+  { type: "ui", pattern: ["packages/design-system/**"] },
+  { type: "infrastructure", pattern: ["packages/supabase/**"] },
+  { type: "shared", pattern: ["packages/config/**", "packages/logger/**", "packages/api-types/**", "packages/tsconfig/**"] }
+];
+
+const BOUNDARY_RULES = [
+  { from: "app", disallow: ["infrastructure"], message: "Next.js apps cannot import from @soustools/supabase directly. Use the NestJS API for data fetching." },
+  { from: "domain", disallow: ["infrastructure", "backend"], message: "Domain packages cannot import from infrastructure or backend apps." },
+  { from: "ui", disallow: ["infrastructure", "backend"], message: "Design system cannot import from infrastructure or backend apps." }
+];
+
+function globToRegex(pattern: string): RegExp {
+  const escaped = pattern
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*\*/g, ".*")
+    .replace(/\*/g, "[^/]*")
+    .replace(/\?/g, ".");
+  return new RegExp(`^${escaped}$`);
+}
+
+function getBoundaryType(filePath: string): string | null {
+  let normalized = filePath.replace(/\\/g, '/');
+  if (normalized.startsWith('./')) normalized = normalized.slice(2);
+  for (const element of BOUNDARY_ELEMENTS) {
+    for (const pattern of element.pattern) {
+      if (globToRegex(pattern).test(normalized)) return element.type;
+    }
+  }
+  return null;
+}
+
+function resolveImportPath(currentFile: string, importSource: string): string | null {
+  if (importSource.startsWith('.') || importSource.startsWith('..')) {
+    return path.join(path.dirname(currentFile), importSource);
+  }
+  if (importSource.startsWith('@soustools/')) {
+    return `packages/${importSource.substring('@soustools/'.length)}/src/index.ts`;
+  }
+  return null;
+}
+
+const server = new Server({ name: "soustools-mcp-server", version: "1.0.0" }, { capabilities: { tools: {} } });
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [
+      { name: "get_issue", description: "Fetch GitHub issue and comments.", inputSchema: { type: "object", properties: { owner: { type: "string" }, repo: { type: "string" }, issue_number: { type: "number" } }, required: ["owner", "repo", "issue_number"] } },
+      { name: "post_comment", description: "Post comment to GitHub issue.", inputSchema: { type: "object", properties: { owner: { type: "string" }, repo: { type: "string" }, issue_number: { type: "number" }, body: { type: "string" } }, required: ["owner", "repo", "issue_number", "body"] } },
+      { name: "open_pull_request", description: "Open a Pull Request on GitHub.", inputSchema: { type: "object", properties: { owner: { type: "string" }, repo: { type: "string" }, title: { type: "string" }, head: { type: "string" }, base: { type: "string" }, body: { type: "string" } }, required: ["owner", "repo", "title", "head", "base"] } },
+      { name: "read_local_context", description: "Read local workspace context files.", inputSchema: { type: "object", properties: {} } },
+      { name: "read_design_tokens", description: "Fetch semantic CSS variables from packages/design-system/index.css.", inputSchema: { type: "object", properties: {} } },
+      { name: "check_boundaries", description: "Verify DDD ESLint boundaries for a file path.", inputSchema: { type: "object", properties: { filePath: { type: "string" } }, required: ["filePath"] } }
+    ]
+  };
+});
+
+interface GetIssueArgs {
+  owner: string;
+  repo: string;
+  issue_number: number;
+}
+
+interface PostCommentArgs {
+  owner: string;
+  repo: string;
+  issue_number: number;
+  body: string;
+}
+
+interface OpenPullRequestArgs {
+  owner: string;
+  repo: string;
+  title: string;
+  head: string;
+  base: string;
+  body?: string;
+}
+
+interface CheckBoundariesArgs {
+  filePath: string;
+}
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  try {
+    switch (name) {
+      case "get_issue": {
+        const { owner, repo, issue_number } = (args ?? {}) as unknown as GetIssueArgs;
+        if (!GITHUB_TOKEN) throw new Error("GITHUB_PERSONAL_ACCESS_TOKEN is missing.");
+        const { data: issue } = await octokit.issues.get({ owner, repo, issue_number });
+        const { data: comments } = await octokit.issues.listComments({ owner, repo, issue_number });
+        return { content: [{ type: "text", text: JSON.stringify({ title: issue.title, state: issue.state, body: issue.body, comments: comments.map(c => ({ author: c.user?.login, body: c.body })) }, null, 2) }] };
+      }
+      case "post_comment": {
+        const { owner, repo, issue_number, body } = (args ?? {}) as unknown as PostCommentArgs;
+        if (!GITHUB_TOKEN) throw new Error("GITHUB_PERSONAL_ACCESS_TOKEN is missing.");
+        const { data: comment } = await octokit.issues.createComment({ owner, repo, issue_number, body });
+        return { content: [{ type: "text", text: `Comment posted: ${comment.html_url}` }] };
+      }
+      case "open_pull_request": {
+        const { owner, repo, title, head, base, body } = (args ?? {}) as unknown as OpenPullRequestArgs;
+        if (!GITHUB_TOKEN) throw new Error("GITHUB_PERSONAL_ACCESS_TOKEN is missing.");
+        const { data: pr } = await octokit.pulls.create({ owner, repo, title, head, base, body });
+        return { content: [{ type: "text", text: `PR opened: ${pr.html_url}` }] };
+      }
+      case "read_local_context": {
+        const root = process.cwd();
+        const treePaths = [path.join(root, ".context", "directory-tree.txt"), path.join(root, "docs", "context", "directory-tree.txt")];
+        const graphPaths = [path.join(root, ".context", "turbo-graph.txt"), path.join(root, "docs", "context", "turbo-graph.txt")];
+        let tree = "Not found", graph = "Not found";
+        for (const p of treePaths) { if (fs.existsSync(p)) { tree = fs.readFileSync(p, "utf-8"); break; } }
+        for (const p of graphPaths) { if (fs.existsSync(p)) { graph = fs.readFileSync(p, "utf-8"); break; } }
+        return { content: [{ type: "text", text: `=== directory-tree.txt ===\n${tree}\n\n=== turbo-graph.txt ===\n${graph}` }] };
+      }
+      case "read_design_tokens": {
+        const cssPath = path.join(process.cwd(), "packages/design-system/index.css");
+        if (!fs.existsSync(cssPath)) throw new Error("CSS file not found.");
+        const css = fs.readFileSync(cssPath, "utf-8");
+        const parseBlock = (regex: RegExp) => {
+          const m = css.match(regex);
+          if (!m || !m[1]) return {};
+          const res: Record<string, string> = {};
+          m[1].split("\n").forEach(line => {
+            const t = line.trim();
+            if (t.startsWith("--")) {
+              const p = t.split(":");
+              if (p.length >= 2) res[p[0].trim()] = p.slice(1).join(":").replace(/;$/, "").trim();
+            }
+          });
+          return res;
+        };
+        const rootVars = parseBlock(/:root\s*\{([^}]*)\}/);
+        const darkVars = parseBlock(/\.dark\s*\{([^}]*)\}/);
+        const themeMatch = css.match(/@theme\s+inline\s*\{([^}]*)\}/);
+        const report = { file: "packages/design-system/index.css", light: rootVars, dark: darkVars, theme: themeMatch?.[1]?.trim()?.split("\n")?.map(l => l.trim())?.filter(Boolean) || [] };
+        return { content: [{ type: "text", text: JSON.stringify(report, null, 2) }] };
+      }
+      case "check_boundaries": {
+        const { filePath } = (args ?? {}) as unknown as CheckBoundariesArgs;
+        const root = process.cwd();
+        const full = path.isAbsolute(filePath) ? filePath : path.join(root, filePath);
+        const rel = path.isAbsolute(filePath) ? path.relative(root, filePath) : filePath;
+        if (!fs.existsSync(full)) throw new Error(`File not found: ${rel}`);
+        const content = fs.readFileSync(full, "utf-8");
+        const imports: string[] = [];
+        
+        const parsedImports = [...content.matchAll(/import\s+[\s\S]*?\s+from\s+['"]([^'"]+)['"]/g)].map(m => m[1]);
+        const parsedSideEffects = [...content.matchAll(/import\s+['"]([^'"]+)['"]/g)].map(m => m[1]);
+        const parsedExports = [...content.matchAll(/export\s+[\s\S]*?\s+from\s+['"]([^'"]+)['"]/g)].map(m => m[1]);
+        const parsedDynamics = [...content.matchAll(/import\s*\(\s*['"]([^'"]+)['"]\s*\)/g)].map(m => m[1]);
+        const parsedRequires = [...content.matchAll(/require\s*\(\s*['"]([^'"]+)['"]\s*\)/g)].map(m => m[1]);
+        
+        imports.push(...parsedImports, ...parsedSideEffects, ...parsedExports, ...parsedDynamics, ...parsedRequires);
+        
+        const currentType = getBoundaryType(rel);
+        const violations: { source: string; resolved: string; fromType: string; toType: string; message: string }[] = [];
+        const checkedImports: { source: string; resolved: string; type: string }[] = [];
+
+        for (const imp of imports) {
+          const resolved = resolveImportPath(rel, imp);
+          if (!resolved) continue;
+          const impType = getBoundaryType(resolved);
+          if (!impType) continue;
+          
+          checkedImports.push({ source: imp, resolved, type: impType });
+          
+          if (currentType) {
+            const rule = BOUNDARY_RULES.find(r => r.from === currentType);
+            if (rule && rule.disallow.includes(impType)) {
+              violations.push({ source: imp, resolved, fromType: currentType, toType: impType, message: rule.message });
+            }
+          }
+        }
+
+        const report = { file: rel, type: currentType || "unknown", totalImportsFound: imports.length, internalImportsChecked: checkedImports, violations, success: violations.length === 0 };
+        return { content: [{ type: "text", text: JSON.stringify(report, null, 2) }] };
+      }
+      default:
+        throw new Error(`Unknown tool: ${name}`);
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+  }
+});
+
+async function run() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("Soustools MCP Server running on stdio");
+}
+
+run().catch((err: unknown) => {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error("Fatal:", message);
+  process.exit(1);
+});
+````
+
 ## File: phase1.js
 ````javascript
 const fs = require('fs');
@@ -57914,133 +58679,284 @@ contact_links:
     about: Please ask and answer questions here.
 ````
 
-## File: .github/workflows/build-and-deploy-rpi-os.yml
-````yaml
-name: Build and Release RPi OS Image
+## File: apps/api/src/modules/auth/auth.controller.ts
+````typescript
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Res,
+  Req,
+  HttpCode,
+  UnauthorizedException,
+} from "@nestjs/common";
+import type { Response } from "express";
+import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse, ApiProperty } from "@nestjs/swagger";
+import { type ApiResponse, LoginSchema } from "@soustools/api-types";
+import { supabase } from "../../lib/supabase";
+import { config } from "@soustools/config";
 
-on:
-  push:
-    branches: ["main"]
-    paths:
-      - "deploy/pi/**"
-      - "deploy/ansible/**"
-      - "apps/setup-portal/**"
-      - ".github/workflows/build-and-deploy-rpi-os.yml"
-  workflow_dispatch:
+const ACCESS_TOKEN_COOKIE = "sb-access-token";
+const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 
-permissions:
-  contents: write
+/**
+ * Returns cookie options appropriate for the current environment.
+ *
+ * KEY RULE: `clearCookie` MUST be called with the same `domain`, `path`,
+ * `secure`, and `sameSite` values that were used when the cookie was set,
+ * otherwise the browser will not match and delete the cookie.
+ *
+ * In production (behind Traefik on *.sous.tools) we set `Domain: .sous.tools`
+ * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
+ * In development we omit `domain` so the cookie is scoped to localhost.
+ */
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: config.IS_PRODUCTION,
+  sameSite: "lax" as const,
+  path: "/",
+  ...(config.IS_PRODUCTION ? { domain: ".sous.tools" } : {}),
+});
 
-jobs:
-  build:
-    runs-on: [self-hosted, linux, arm64]
-    steps:
-      - name: Who am I?
-        run: whoami
+class LoginDto {
+  @ApiProperty()
+  email!: string;
+  @ApiProperty()
+  password!: string;
+}
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+@ApiTags("auth")
+@Controller("auth")
+export class AuthController {
+  @Post("login")
+  @HttpCode(200)
+  @ApiBody({ type: LoginDto })
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async login(
+    @Body() body: Record<string, unknown>,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
+    const parsed = LoginSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new UnauthorizedException("Invalid request body");
+    }
 
-      # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
-      - name: Fetch Infisical Secrets
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: "prod"
-          project-slug: "sous-tools-1cd-a"
+    const { email, password } = parsed.data;
 
-      - name: Inject static deploy key into stage-sous/files/
-        run: |
-          # Write the Ed25519 read-only deploy key from Infisical.
-          # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
-          # with chmod 600 inside the chroot. The file is scrubbed after build.
-          printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
-            > deploy/pi/stage-sous/files/signage-deploy-key
-          chmod 600 deploy/pi/stage-sous/files/signage-deploy-key
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      - name: Stage stage-sous inside pi-gen (runtime injection)
-        run: |
-          # pi-gen expects custom stages to live alongside stage0–stage5.
-          # We keep ours in deploy/pi/stage-sous/ and copy at CI time so
-          # it never pollutes the upstream pi-gen checkout.
-          cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
+    if (error || !data.session) {
+      throw new UnauthorizedException("Invalid email or password");
+    }
 
-      - name: Install native pi-gen dependencies
-        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted qemu-user-static debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
+    const options = getCookieOptions();
+    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
+      ...options,
+      maxAge: data.session.expires_in * 1000,
+    });
+    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
+      ...options,
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+    });
 
-      - name: Build OS Image natively with pi-gen
-        env:
-          PI_GEN_CONFIG: |
-            IMG_NAME=soustools-signage
-            TARGET_HOSTNAME=signage
-            TARGET_ARCH=arm64
-            ARCH=arm64
-            ENABLE_SSH=1
-            CONTINUE=1
-            FIRST_USER_NAME=sous
-            FIRST_USER_PASS=bootstrap123
-            # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
-            STAGE_LIST="stage0 stage1 stage2 stage-sous"
-          CHROOT_SCRIPT: |
-            #!/bin/bash
-            # B. Mask interactive first-boot screens
-            systemctl mask userconfig.service || true
-            systemctl mask piwiz.service      || true
-        run: |
-          cd deploy/pi/pi-gen
-          cp -r ../stage-sous ./stage-sous
-          touch stage-sous/EXPORT_IMAGE
+    return {
+      success: true,
+      data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
 
-          # 1. Scaffold the mandatory config file that git ignores
-          echo "$PI_GEN_CONFIG" > config
+  @Post("refresh")
+  @HttpCode(200)
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async refresh(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<null>> {
+    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
+    if (!refreshToken) {
+      throw new UnauthorizedException("No refresh token found");
+    }
 
-          # 2. Restore executable flags (git strips them on checkout)
-          echo "Restoring +x permissions to all pi-gen scripts..."
-          sudo find . -type f -name "*.sh" -exec chmod +x {} +
-          sudo chmod +x stage*/prerun.sh             || true
-          sudo chmod +x stage-sous/*.sh              || true
-          sudo chmod +x stage-sous/files/*.sh        || true
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
 
-          # 3. Hard-bake the 'sous' user and kill first-boot wizards
-          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
-          sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
+    if (error || !data.session) {
+      throw new UnauthorizedException("Session refresh failed");
+    }
 
-          # 4. Run the NATIVE pi-gen build (Bypassing Docker)
-          sudo ./build.sh
+    const options = getCookieOptions();
+    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
+      ...options,
+      maxAge: data.session.expires_in * 1000,
+    });
+    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
+      ...options,
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+    });
 
-      - name: Scrub deploy key from workspace (security)
-        if: always()
-        run: |
-          rm -f deploy/pi/stage-sous/files/signage-deploy-key           || true
-          rm -f deploy/pi/pi-gen/stage-sous/files/signage-deploy-key    || true
+    return {
+      success: true,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
 
-      - name: Release image to GitHub (conarwelsh/signage-os)
-        uses: softprops/action-gh-release@v2
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-        with:
-          repository: conarwelsh/signage-os
-          token: ${{ env.SIGNAGE_GITHUB_PAT }}
-          tag_name: v${{ github.run_number }}
-          name: Signage OS v${{ github.run_number }}
-          files: deploy/pi/pi-gen/deploy/*.zip
-          make_latest: true
+  @Post("logout")
+  @HttpCode(200)
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async logout(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<null>> {
+    // Attempt to invalidate the Supabase session server-side using the
+    // access token stored in the HttpOnly cookie.
+    const accessToken = req.cookies?.[ACCESS_TOKEN_COOKIE];
+    if (accessToken) {
+      try {
+        await supabase.auth.admin.signOut(accessToken);
+      } catch {
+        // Non-fatal: the tokens may already be expired. We still clear the cookies.
+      }
+    }
 
-      # THE ARMOR: Forcefully detach all system mounts BEFORE wiping the work directory
-      - name: Cleanup and Protect Host Mounts
-        if: always()
-        run: |
-          echo "Detaching any lingering pi-gen bind mounts..."
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/sys || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/proc || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
+    // IMPORTANT: clearCookie MUST receive the exact same domain, path, secure,
+    // and sameSite attributes as the original Set-Cookie call. If any attribute
+    // differs, the browser will not find a matching cookie to delete.
+    const options = getCookieOptions();
+    res.clearCookie(ACCESS_TOKEN_COOKIE, options);
+    res.clearCookie(REFRESH_TOKEN_COOKIE, options);
 
-          echo "Wiping pi-gen work directories safely..."
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work       || true
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy     || true
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
+    return {
+      success: true,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get("session")
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async getSession(
+    @Req() req: any,
+  ): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
+    const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
+    if (!token) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    return {
+      success: true,
+      data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
+````
+
+## File: apps/api/src/main.ts
+````typescript
+import "newrelic";
+import initializeServerLogger from "@soustools/logger/server";
+initializeServerLogger();
+
+import "reflect-metadata";
+import "./pre-bootstrap";
+import { config } from "@soustools/config";
+
+import { NestFactory } from "@nestjs/core";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import * as fs from "fs";
+import { AppModule } from "./app.module";
+import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
+import cookieParser from "cookie-parser";
+
+import * as express from "express";
+
+/**
+ * Boots the NestJS application.
+ *
+ * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
+ * and starts listening on the configured PORT.
+ *
+ * @returns {Promise<void>} Resolves when the application has successfully started.
+ */
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+
+  /**
+   * Trust the first proxy hop (Traefik) so that Express reads
+   * X-Forwarded-Proto and considers the request HTTPS. Without this,
+   * Express refuses to set Secure cookies because it thinks the
+   * connection is plain HTTP.
+   */
+  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
+  expressApp.set('trust proxy', 1);
+
+  app.use(express.json({ limit: "2mb" }));
+  app.use(express.urlencoded({ limit: "2mb", extended: true }));
+
+  // Parse cookies so guards can read HttpOnly session tokens
+  app.use(cookieParser());
+
+  // Use global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Allow credentials for cookie-based auth.
+  // In production we restrict origins to known frontends; in dev we reflect
+  // the request origin so any localhost port works.
+  const allowedOrigins = config.IS_PRODUCTION
+    ? [
+        'https://sous.tools',
+        'https://app.sous.tools',
+        'https://pos.sous.tools',
+        'https://tv.sous.tools',
+        'https://setup.sous.tools',
+        'https://editor.sous.tools',
+        'android-app://com.sous.wearos',
+        'app://com.sous.wearos'
+      ]
+    : true; // reflect origin in dev
+
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
+
+  // Setup Swagger / OpenAPI
+  const options = new DocumentBuilder()
+    .setTitle("Sous Tools API")
+    .setDescription("The global API for Sous Tools")
+    .setVersion("1.0")
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  if (config.NODE_ENV !== 'production') {
+    fs.writeFileSync('openapi.json', JSON.stringify(document));
+  }
+  
+  const port = config.PORT;
+  await app.listen(config.PORT, "0.0.0.0");
+  console.log(`Application is running on: http://0.0.0.0:${port}`);
+}
+
+bootstrap().catch((err: unknown) => {
+  console.error(err, "Failed to start the application");
+  process.exit(1);
+});
 ````
 
 ## File: apps/api/src/pre-bootstrap.ts
@@ -58203,430 +59119,38 @@ const config: StorybookConfig = {
 export default config;
 ````
 
-## File: apps/wearos/app/src/main/java/com/sous/wearos/network/ApiClient.kt
-````kotlin
-package com.sous.wearos.network
+## File: docs/agents/prompts/implement.md
+````markdown
+<!--
+File: /workspace/docs/agents/prompts/implement.md
+Usage: Triggered by n8n when the label "agent:implement" is applied to a GitHub Issue.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
 
-import android.content.Context
-import android.content.Intent
-import android.util.Log
-import com.sous.wearos.BuildConfig
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
-import okhttp3.Authenticator
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.Route
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
-import java.util.concurrent.TimeUnit
+THEN: Call your `soustools` custom MCP tool `get_issue` for Issue #{ISSUE_NUMBER} to read the approved plan in the comments.
+THEN: Call your custom MCP tool `read_local_context` to understand the codebase.
 
-// ---------------------------------------------------------------------------
-// Domain models
-// ---------------------------------------------------------------------------
+Create a new git branch named "feature/issue-{ISSUE_NUMBER}" and execute the code changes. You MUST use `-y` for all `npx` commands. 
 
-data class ApiResponse<T>(
-    val success: Boolean,
-    val data: T?,
-    val error: String?,
-    val timestamp: String?
-)
+Once complete, run "pnpm turbo lint" and "pnpm turbo typecheck". If they fail, fix the errors. Commit changes and push the branch. 
 
-data class MetricsResponse(val value: String)
-
-data class PairInitRequest(val deviceType: String = "wearos")
-data class PairInitResponse(val code: String)
-data class PairStatusResponse(val status: String, val token: String?)
-
-data class OmniMessage(
-    val id: String,
-    val role: String,
-    val content: String,
-    val timestamp: String
-)
-
-data class CommandRequest(val chatHistory: List<OmniMessage>, val source: String = "wearos")
-data class CommandResponse(val success: Boolean)
-
-// ---------------------------------------------------------------------------
-// API service interface — NO manual @Header params; the interceptor handles it
-// ---------------------------------------------------------------------------
-
-interface ApiService {
-    @GET("/api/metrics/sales")
-    suspend fun getSalesMetrics(): MetricsResponse
-
-    @GET("/api/metrics/ticket-time")
-    suspend fun getTicketTimeMetrics(): MetricsResponse
-
-    @POST("/api/devices/pair/init")
-    suspend fun initPairing(@Body request: PairInitRequest): ApiResponse<PairInitResponse>
-
-    @GET("/api/devices/pair/status/{code}")
-    suspend fun checkPairingStatus(@Path("code") code: String): ApiResponse<PairStatusResponse>
-
-    @POST("/commands/execute")
-    suspend fun sendCommand(@Body request: CommandRequest): ApiResponse<CommandResponse>
-}
-
-// ---------------------------------------------------------------------------
-// Auth Interceptor — reads token from DataStore and injects Bearer header
-// OkHttp interceptors run on a background thread so runBlocking is safe here.
-// ---------------------------------------------------------------------------
-
-class AuthInterceptor(private val context: Context) : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val token: String? = runBlocking {
-            TokenManager.getToken(context).firstOrNull()
-        }
-
-        val originalRequest: Request = chain.request()
-        val request = if (token != null) {
-            originalRequest.newBuilder()
-                .header("Authorization", "Bearer $token")
-                .build()
-        } else {
-            originalRequest
-        }
-
-        return chain.proceed(request)
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Unauthorized Authenticator — fires on 401, clears the token, and broadcasts
-// SESSION_EXPIRED so any registered receiver can redirect to PairingScreen.
-// Returning null tells OkHttp to stop retrying (no retry loop).
-// ---------------------------------------------------------------------------
-
-const val ACTION_SESSION_EXPIRED = "com.sous.wearos.SESSION_EXPIRED"
-
-class UnauthorizedAuthenticator(private val context: Context) : Authenticator {
-    override fun authenticate(route: Route?, response: Response): Request? {
-        Log.w("SousAuth", "401 Unauthorized – clearing token and broadcasting SESSION_EXPIRED")
-        // Clear the stored token synchronously on IO thread
-        runBlocking {
-            TokenManager.clearToken(context)
-        }
-        // Broadcast so MainActivity (or any registered receiver) can navigate back to PairingScreen
-        val intent = Intent(ACTION_SESSION_EXPIRED).apply {
-            setPackage(context.packageName) // Explicit package for security on Android 8+
-        }
-        context.sendBroadcast(intent)
-        // Return null → do NOT retry the request
-        return null
-    }
-}
-
-// ---------------------------------------------------------------------------
-// ApiClient singleton factory — lazily initialised with application Context
-// ---------------------------------------------------------------------------
-
-object ApiClient {
-    @Volatile
-    private var _apiService: ApiService? = null
-
-    /**
-     * Must be called once from Application.onCreate() or before first use.
-     * Subsequent calls are no-ops (double-checked locking).
-     */
-    fun init(context: Context) {
-        if (_apiService != null) return
-        synchronized(this) {
-            if (_apiService != null) return
-
-            val appContext = context.applicationContext
-
-            val loggingInterceptor = HttpLoggingInterceptor { message ->
-                Log.d("SousHttp", message)
-            }.apply {
-                level = if (BuildConfig.DEBUG) {
-                    HttpLoggingInterceptor.Level.BODY
-                } else {
-                    HttpLoggingInterceptor.Level.NONE
-                }
-            }
-
-            val okHttpClient = OkHttpClient.Builder()
-                .addInterceptor(AuthInterceptor(appContext))      // ← injects token
-                .authenticator(UnauthorizedAuthenticator(appContext)) // ← handles 401
-                .addInterceptor(loggingInterceptor)
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .build()
-
-            _apiService = Retrofit.Builder()
-                .baseUrl(BuildConfig.API_BASE_URL)                // ← from build variant
-                .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(ApiService::class.java)
-        }
-    }
-
-    /**
-     * Returns the fully configured ApiService.
-     * Throws if [init] has not been called yet — this surfaces misconfiguration fast.
-     */
-    val apiService: ApiService
-        get() = _apiService
-            ?: error("ApiClient not initialised. Call ApiClient.init(context) in Application.onCreate().")
-}
+CRITICAL INSTRUCTION: Call your custom MCP tool `open_pull_request` to open a PR for your branch. If the code completely fails and you cannot push, call `post_comment` to detail the errors. Execute the tools and stop.
 ````
 
-## File: apps/wearos/app/src/main/java/com/sous/wearos/presentation/MainActivity.kt
-````kotlin
-package com.sous.wearos.presentation
+## File: docs/agents/prompts/plan.md
+````markdown
+<!--
+File: /workspace/docs/agents/prompts/plan.md
+Usage: Triggered by n8n when the label "agent:plan" is applied to a GitHub Issue.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
 
-import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.Build
-import android.util.Log
-import android.os.Bundle
-import android.speech.RecognizerIntent
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.ButtonDefaults
-import androidx.wear.compose.material.Icon
-import com.sous.wearos.network.ACTION_SESSION_EXPIRED
-import com.sous.wearos.network.ApiClient
-import com.sous.wearos.network.CommandRequest
-import com.sous.wearos.network.TokenManager
-import com.sous.wearos.presentation.theme.SousToolsWearTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
+THEN: Call your `soustools` custom MCP tool `get_issue` for Issue #{ISSUE_NUMBER}. 
+THEN: Call your custom MCP tool `read_local_context` to understand the current file structure and dependency graph.
 
-class MainActivity : ComponentActivity() {
+Write a step-by-step implementation plan compliant with our architecture. DO NOT write or modify any code. 
 
-    // -----------------------------------------------------------------------
-    // 401 Broadcast Receiver — registered/unregistered with the activity
-    // lifecycle to avoid leaks. On SESSION_EXPIRED the router will bounce
-    // back to PairingScreen by clearing the local isPaired flag.
-    // -----------------------------------------------------------------------
-    private val sessionExpiredReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == ACTION_SESSION_EXPIRED) {
-                Log.w("SousAuth", "SESSION_EXPIRED broadcast received — navigating to PairingScreen")
-                // Restart the activity so MainAppRouter re-reads the (now null) token
-                // and naturally falls into the PairingScreen branch.
-                recreate()
-            }
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
-        super.onCreate(savedInstanceState)
-        setTheme(android.R.style.Theme_DeviceDefault)
-        setContent {
-            SousToolsWearTheme {
-                MainAppRouter()
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        val filter = IntentFilter(ACTION_SESSION_EXPIRED)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(sessionExpiredReceiver, filter, RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(sessionExpiredReceiver, filter)
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(sessionExpiredReceiver)
-    }
-}
-
-@Composable
-fun MainAppRouter() {
-    val context = LocalContext.current
-    var isPaired by remember { mutableStateOf<Boolean?>(null) }
-
-    LaunchedEffect(Unit) {
-        val token = withContext(Dispatchers.IO) { TokenManager.getToken(context).firstOrNull() }
-        isPaired = token != null
-    }
-
-    when (isPaired) {
-        true  -> WearApp()
-        false -> PairingScreen(onPaired = { isPaired = true })
-        null  -> Box(modifier = Modifier.fillMaxSize().background(Color.Black)) // Loading
-    }
-}
-
-@Composable
-fun WearApp() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF000000)),
-        contentAlignment = Alignment.Center
-    ) {
-        VoiceTriggerButton()
-    }
-}
-
-@Composable
-fun VoiceTriggerButton() {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-    val speechRecognizerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val spokenText = result.data
-                ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                ?.firstOrNull()
-            if (!spokenText.isNullOrEmpty()) {
-                coroutineScope.launch {
-                    sendToApi(context, spokenText)
-                }
-            }
-        }
-    }
-
-    Button(
-        onClick = {
-            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            }
-            speechRecognizerLauncher.launch(intent)
-        },
-        modifier = Modifier.size(120.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = Color(0xFF00FFFF),
-            contentColor = Color(0xFF000000)
-        )
-    ) {
-        Icon(
-            painter = painterResource(id = android.R.drawable.ic_btn_speak_now),
-            contentDescription = "Dirty Hands Voice Trigger",
-            modifier = Modifier.size(64.dp)
-        )
-    }
-}
-
-// ---------------------------------------------------------------------------
-// sendToApi — now uses the global AuthInterceptor; no manual token injection.
-// Handles network failures gracefully (logs, no crash).
-// A 401 is handled upstream by UnauthorizedAuthenticator and the broadcast
-// receiver in MainActivity; we only need to guard against generic exceptions.
-// ---------------------------------------------------------------------------
-suspend fun sendToApi(context: Context, text: String) {
-    // Verify we are actually paired before attempting the call
-    val token = withContext(Dispatchers.IO) {
-        TokenManager.getToken(context).firstOrNull()
-    }
-    if (token == null) {
-        Log.w("SousCommand", "Skipping command — device is not paired")
-        return
-    }
-
-    try {
-        val response = withTimeout(10_000) {
-            ApiClient.apiService.sendCommand(
-                request = CommandRequest(
-                    chatHistory = listOf(
-                        com.sous.wearos.network.OmniMessage(
-                            id = java.util.UUID.randomUUID().toString(),
-                            role = "user",
-                            content = text,
-                            timestamp = java.time.Instant.now().toString()
-                        )
-                    ),
-                    source = "wearos"
-                )
-            )
-        }
-        if (response.success) {
-            Log.i("SousCommand", "Command accepted: ${response.data?.success}")
-        } else {
-            Log.w("SousCommand", "Command rejected by server: ${response.error}")
-        }
-    } catch (e: retrofit2.HttpException) {
-        // Non-2xx response that isn't a 401 (401 is handled by the Authenticator)
-        Log.e("SousCommand", "HTTP error ${e.code()}: ${e.message()}", e)
-    } catch (e: java.net.SocketTimeoutException) {
-        Log.e("SousCommand", "Command timed out — network may be unavailable", e)
-    } catch (e: java.io.IOException) {
-        Log.e("SousCommand", "Network error sending command", e)
-    } catch (e: Exception) {
-        Log.e("SousCommand", "Unexpected error sending command", e)
-    }
-}
-````
-
-## File: apps/web/src/app/actions/auth.ts
-````typescript
-"use server";
-
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { config } from "@soustools/config";
-
-export async function logoutAction() {
-  // Forward the user's HttpOnly session cookies to the NestJS API so it can
-  // identify and invalidate the correct Supabase session server-side.
-  // Without this, the fetch call is anonymous and clearCookie is a no-op.
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ");
-
-  try {
-    await fetch(
-      `${config.API_BASE_URL}/auth/logout`,
-      {
-        method: "POST",
-        headers: {
-          // Pass the browser cookies so NestJS can read and clear them.
-          Cookie: cookieHeader,
-        },
-      },
-    );
-  } catch (error) {
-    // Non-fatal — still redirect to login so the user is not stuck.
-    console.error("Logout API call failed", error);
-  }
-
-  // Redirect to login regardless of API outcome.
-  redirect("/login");
-}
+CRITICAL INSTRUCTION: Call your custom MCP tool `post_comment` to post your final plan directly to the issue. Execute the tools and stop.
 ````
 
 ## File: packages/design-system/src/components/BottomNav/BottomNav.spec.tsx
@@ -60424,195 +60948,6 @@ WORKDIR /workspace
 ENTRYPOINT ["tail", "-f", "/dev/null"]
 ````
 
-## File: apps/api/src/modules/auth/auth.controller.ts
-````typescript
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Res,
-  Req,
-  HttpCode,
-  UnauthorizedException,
-} from "@nestjs/common";
-import type { Response } from "express";
-import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse, ApiProperty } from "@nestjs/swagger";
-import { type ApiResponse, LoginSchema } from "@soustools/api-types";
-import { supabase } from "../../lib/supabase";
-import { config } from "@soustools/config";
-
-const ACCESS_TOKEN_COOKIE = "sb-access-token";
-const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
-
-/**
- * Returns cookie options appropriate for the current environment.
- *
- * KEY RULE: `clearCookie` MUST be called with the same `domain`, `path`,
- * `secure`, and `sameSite` values that were used when the cookie was set,
- * otherwise the browser will not match and delete the cookie.
- *
- * In production (behind Traefik on *.sous.tools) we set `Domain: .sous.tools`
- * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
- * In development we omit `domain` so the cookie is scoped to localhost.
- */
-const getCookieOptions = () => ({
-  httpOnly: true,
-  secure: config.IS_PRODUCTION,
-  sameSite: "lax" as const,
-  path: "/",
-  ...(config.IS_PRODUCTION ? { domain: ".sous.tools" } : {}),
-});
-
-class LoginDto {
-  @ApiProperty()
-  email!: string;
-  @ApiProperty()
-  password!: string;
-}
-
-@ApiTags("auth")
-@Controller("auth")
-export class AuthController {
-  @Post("login")
-  @HttpCode(200)
-  @ApiBody({ type: LoginDto })
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async login(
-    @Body() body: Record<string, unknown>,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
-    const parsed = LoginSchema.safeParse(body);
-    if (!parsed.success) {
-      throw new UnauthorizedException("Invalid request body");
-    }
-
-    const { email, password } = parsed.data;
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error || !data.session) {
-      throw new UnauthorizedException("Invalid email or password");
-    }
-
-    const options = getCookieOptions();
-    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
-      ...options,
-      maxAge: data.session.expires_in * 1000,
-    });
-    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
-      ...options,
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-    });
-
-    return {
-      success: true,
-      data: { user: data.user as unknown as Record<string, unknown> },
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Post("refresh")
-  @HttpCode(200)
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async refresh(
-    @Req() req: any,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<null>> {
-    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
-    if (!refreshToken) {
-      throw new UnauthorizedException("No refresh token found");
-    }
-
-    const { data, error } = await supabase.auth.refreshSession({
-      refresh_token: refreshToken,
-    });
-
-    if (error || !data.session) {
-      throw new UnauthorizedException("Session refresh failed");
-    }
-
-    const options = getCookieOptions();
-    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
-      ...options,
-      maxAge: data.session.expires_in * 1000,
-    });
-    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
-      ...options,
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-    });
-
-    return {
-      success: true,
-      data: null,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Post("logout")
-  @HttpCode(200)
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async logout(
-    @Req() req: any,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<null>> {
-    // Attempt to invalidate the Supabase session server-side using the
-    // access token stored in the HttpOnly cookie.
-    const accessToken = req.cookies?.[ACCESS_TOKEN_COOKIE];
-    if (accessToken) {
-      try {
-        await supabase.auth.admin.signOut(accessToken);
-      } catch {
-        // Non-fatal: the tokens may already be expired. We still clear the cookies.
-      }
-    }
-
-    // IMPORTANT: clearCookie MUST receive the exact same domain, path, secure,
-    // and sameSite attributes as the original Set-Cookie call. If any attribute
-    // differs, the browser will not find a matching cookie to delete.
-    const options = getCookieOptions();
-    res.clearCookie(ACCESS_TOKEN_COOKIE, options);
-    res.clearCookie(REFRESH_TOKEN_COOKIE, options);
-
-    return {
-      success: true,
-      data: null,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Get("session")
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async getSession(
-    @Req() req: any,
-  ): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
-    const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
-    if (!token) {
-      return {
-        success: true,
-        data: { user: null },
-        timestamp: new Date().toISOString(),
-      };
-    }
-
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) {
-      return {
-        success: true,
-        data: { user: null },
-        timestamp: new Date().toISOString(),
-      };
-    }
-
-    return {
-      success: true,
-      data: { user: data.user as unknown as Record<string, unknown> },
-      timestamp: new Date().toISOString(),
-    };
-  }
-}
-````
-
 ## File: apps/api/src/app.controller.ts
 ````typescript
 import { Controller, Get, Post, Body, Res, HttpCode, UnauthorizedException, Req } from "@nestjs/common";
@@ -60762,97 +61097,6 @@ export class AppController {
 }
 ````
 
-## File: apps/api/src/main.ts
-````typescript
-import "newrelic";
-import initializeServerLogger from "@soustools/logger/server";
-initializeServerLogger();
-
-import "reflect-metadata";
-import "./pre-bootstrap";
-import { config } from "@soustools/config";
-
-import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import * as fs from "fs";
-import { AppModule } from "./app.module";
-import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
-import cookieParser from "cookie-parser";
-
-import * as express from "express";
-
-/**
- * Boots the NestJS application.
- *
- * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
- * and starts listening on the configured PORT.
- *
- * @returns {Promise<void>} Resolves when the application has successfully started.
- */
-async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
-
-  /**
-   * Trust the first proxy hop (Traefik) so that Express reads
-   * X-Forwarded-Proto and considers the request HTTPS. Without this,
-   * Express refuses to set Secure cookies because it thinks the
-   * connection is plain HTTP.
-   */
-  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
-  expressApp.set('trust proxy', 1);
-
-  app.use(express.json({ limit: "2mb" }));
-  app.use(express.urlencoded({ limit: "2mb", extended: true }));
-
-  // Parse cookies so guards can read HttpOnly session tokens
-  app.use(cookieParser());
-
-  // Use global exception filter
-  app.useGlobalFilters(new AllExceptionsFilter());
-
-  // Allow credentials for cookie-based auth.
-  // In production we restrict origins to known frontends; in dev we reflect
-  // the request origin so any localhost port works.
-  const allowedOrigins = config.IS_PRODUCTION
-    ? [
-        'https://sous.tools',
-        'https://app.sous.tools',
-        'https://pos.sous.tools',
-        'https://tv.sous.tools',
-        'https://setup.sous.tools',
-        'https://editor.sous.tools',
-        'android-app://com.sous.wearos',
-        'app://com.sous.wearos'
-      ]
-    : true; // reflect origin in dev
-
-  app.enableCors({
-    origin: allowedOrigins,
-    credentials: true,
-  });
-
-  // Setup Swagger / OpenAPI
-  const options = new DocumentBuilder()
-    .setTitle("Sous Tools API")
-    .setDescription("The global API for Sous Tools")
-    .setVersion("1.0")
-    .build();
-  const document = SwaggerModule.createDocument(app, options);
-  if (config.NODE_ENV !== 'production') {
-    fs.writeFileSync('openapi.json', JSON.stringify(document));
-  }
-  
-  const port = config.PORT;
-  await app.listen(config.PORT, "0.0.0.0");
-  console.log(`Application is running on: http://0.0.0.0:${port}`);
-}
-
-bootstrap().catch((err: unknown) => {
-  console.error(err, "Failed to start the application");
-  process.exit(1);
-});
-````
-
 ## File: apps/storybook/.storybook/preview.tsx
 ````typescript
 import type { Preview } from "@storybook/react";
@@ -60977,63 +61221,6 @@ export default async function WorkspaceLayout({
     </div>
   );
 }
-````
-
-## File: docs/agents/run-agent.sh
-````bash
-#!/bin/bash
-# Usage: bash docs/agents/run-agent.sh <label_type> <issue_number>
-# Example: bash docs/agents/run-agent.sh agent:plan 88
-
-# 1. Source the environment to get the GitHub PAT
-set -a
-source /workspace/.env
-set +a
-
-LABEL=$1
-ISSUE=$2
-LOG_FILE="/workspace/docs/agents/logs/agent-run-${ISSUE}.log"
-
-# 2. Strip the 'agent:' prefix from the label to get the exact filename
-# (e.g., "agent:plan" becomes "plan", "agent:ui" becomes "ui")
-FILE_NAME=${LABEL#*:}
-PROMPT_FILE="/workspace/docs/agents/prompts/${FILE_NAME}.md"
-
-echo "Booting Agent for Issue $ISSUE with label $LABEL..." > "$LOG_FILE"
-
-# 3. Force headless environment to prevent zombie terminal prompts
-export CI=true
-export FORCE_COLOR=0
-
-# 4. Inject global Git authentication so agents can push branches
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
-
-# 5. Verify the prompt file exists before running
-if [ ! -f "$PROMPT_FILE" ]; then
-  echo "Error: Prompt file $PROMPT_FILE not found!" >> "$LOG_FILE"
-  exit 1
-fi
-
-# 6. Inject the dynamic issue number into the markdown prompt
-PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")
-
-# 7. Execute Claude with the safety wrapper, piping all output to the log
-timeout 20m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" < /dev/null >> "$LOG_FILE" 2>&1
-
-# 8. Check exit status and execute the curl fail-safe
-if [ $? -ne 0 ]; then
-  echo "AGENT FAILED OR TIMED OUT." >> "$LOG_FILE"
-  
-  # The cURL command to post the failure to the GitHub Issue
-  curl -s -X POST -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/conarwelsh/sous.tools/issues/${ISSUE}/comments" \
-    -d '{
-      "body": "⚠️ **Agent Execution Failed or Timed Out.**\n\nTask: `'"$LABEL"'`\n\nI encountered a critical error or hit my 15-minute execution limit. Please check the logs on the Oracle Server at `'"$LOG_FILE"'` to see what went wrong."
-    }'
-fi
 ````
 
 ## File: packages/design-system/src/components/OmniBar/use-omnibar-hotkeys.hook.ts
@@ -61828,6 +62015,42 @@ newrelic_agent.log
 signage_deploy_key*
 .claude
 docs/agents/logs/agent-run-*.log
+````
+
+## File: docs/agents/run-agent.sh
+````bash
+#!/bin/bash
+# Usage: bash .github/agents/run-agent.sh <label_type> <issue_number>
+
+set -a
+source /workspace/.env
+set +a
+
+export CI=true
+export FORCE_COLOR=0
+
+LABEL=$1
+ISSUE=$2
+FILE_NAME=${LABEL#*:}
+PROMPT_FILE="/workspace/docs/agents/prompts/${FILE_NAME}.md"
+LOG_FILE="/workspace/docs/agents/logs/agent-run-${ISSUE}.log"
+
+# Global Git auth for native pushes
+git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
+git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+if [ ! -f "$PROMPT_FILE" ]; then
+  echo "Error: Prompt file $PROMPT_FILE not found!" >> "$LOG_FILE"
+  exit 1
+fi
+
+echo "Booting Agent for Issue $ISSUE with label $LABEL..." > "$LOG_FILE"
+
+# Inject the dynamic issue number into the markdown prompt
+PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")
+
+# Execute Claude, pipe output to log, and pass /dev/null to prevent interactive hanging
+timeout 15m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" < /dev/null >> "$LOG_FILE" 2>&1
 ````
 
 ## File: packages/domain-recipes/src/RecipeCostPanelSummary.tsx

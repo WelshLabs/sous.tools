@@ -1,35 +1,35 @@
 
-   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
-   • Running e2e in 19 packages
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/mcp-server, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
+   • Running e2e in 20 packages
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing 28cb6c2fbaf67327
+cache miss, executing cbd14a24758bdb1e
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing b3b14e001e5d9972
+cache miss, executing e30a7d531e75f246
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 1c6325701c4bb6c3
+cache miss, executing 6d4132213e164488
 $ tsc
 ::endgroup::
 ::group::@soustools/supabase:build
-cache miss, executing eae787ff02a9c99a
+cache miss, executing 31f1a1dbc51e08df
 $ tsc
 ::endgroup::
 ::group::cli:build
-cache miss, executing 58f5d55ac4ce9cfe
+cache miss, executing 4173c3c907526efc
 $ nest build
 ::endgroup::
 ::group::api:build
-cache miss, executing 1dd93102513056a8
+cache miss, executing 638ca2a73c40541d
 $ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 43250 ms
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 54071 ms
 ::endgroup::
 ::group::pos-simulator:build
-cache miss, executing 24e43893365adc9f
+cache miss, executing f948a04d4b5aa3dc
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -42,11 +42,11 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 31.9s
+ ✓ Compiled successfully in 34.5s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:7707) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784474655683 is not specified and it doesn't parse as CommonJS.
+(node:8117) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784478963058 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -73,7 +73,7 @@ Route (app)                                 Size  First Load JS
 
 ::endgroup::
 ::group::web:build
-cache miss, executing fef496eca8affeeb
+cache miss, executing 4579d599c4aa2b5a
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -89,11 +89,11 @@ https://nextjs.org/telemetry
 
    Creating an optimized production build ...
  [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
- ✓ Compiled successfully in 64s
+ ✓ Compiled successfully in 76s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:7874) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784474655690 is not specified and it doesn't parse as CommonJS.
+(node:8283) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784478963066 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -118,12 +118,12 @@ Route (app)                                 Size  First Load JS
 ├ ƒ /display/[id]                        4.89 kB         611 kB
 ├ ƒ /home                                1.06 kB         349 kB
 ├ ƒ /ingestion/review/[id]               3.16 kB         357 kB
-├ ƒ /ingestions                            166 B         112 kB
+├ ƒ /ingestions                            165 B         112 kB
 ├ ƒ /inventory                           2.05 kB         350 kB
 ├ ƒ /inventory/(.)vendors/add             1.9 kB         350 kB
 ├ ƒ /inventory/invoices                  2.72 kB         351 kB
 ├ ƒ /inventory/items                     2.12 kB         360 kB
-├ ƒ /inventory/orders                      956 B         358 kB
+├ ƒ /inventory/orders                      955 B         358 kB
 ├ ƒ /inventory/orders/[id]/shop          2.96 kB         118 kB
 ├ ƒ /inventory/vendors                     679 B         358 kB
 ├ ƒ /inventory/vendors/add                  2 kB         350 kB
@@ -142,12 +142,12 @@ Route (app)                                 Size  First Load JS
 ├ ○ /showcase                            12.2 kB         360 kB
 ├ ƒ /signage                             1.67 kB         608 kB
 ├ ƒ /signage/[deckId]                    1.38 kB         607 kB
-├ ƒ /signage/[deckId]/preview              935 B         113 kB
+├ ƒ /signage/[deckId]/preview              934 B         113 kB
 ├ ƒ /team                                1.56 kB         350 kB
 ├ ƒ /transactions                        2.48 kB         351 kB
 └ ƒ /vendors                             1.53 kB         114 kB
 + First Load JS shared by all             108 kB
-  ├ chunks/9446-6a073f6397ea61a2.js      50.5 kB
+  ├ chunks/8981-ab3bc1d0d20e5648.js      50.5 kB
   ├ chunks/c320de20-ff27f4eadafb90b7.js  54.2 kB
   └ other shared chunks (total)          3.53 kB
 
@@ -157,7 +157,7 @@ Route (app)                                 Size  First Load JS
 
 ::endgroup::
 ::group::@soustools/setup-portal:build
-cache miss, executing 7d89ffec50a4119c
+cache miss, executing 815a774112e46aae
 $ next build
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
@@ -168,7 +168,7 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 41s
+ ✓ Compiled successfully in 42s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
@@ -201,5 +201,5 @@ Route (app)                                 Size  First Load JS
 
  Tasks:    9 successful, 9 total
 Cached:    0 cached, 9 total
-  Time:    1m40.723s 
+  Time:    1m58.316s 
 
