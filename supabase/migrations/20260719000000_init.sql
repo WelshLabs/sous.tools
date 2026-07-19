@@ -1508,6 +1508,20 @@ ALTER TABLE signage_displays
 -- Enable pg_net extension
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
+-- Create app_settings table
+CREATE TABLE IF NOT EXISTS public.app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+-- Enable RLS on app_settings
+ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
+
+-- Allow read access to all roles (anon, authenticated, service_role)
+DROP POLICY IF EXISTS "Allow read access to app_settings" ON public.app_settings;
+CREATE POLICY "Allow read access to app_settings" ON public.app_settings
+  FOR SELECT TO authenticated, service_role, anon USING (true);
+
 -- Create generic trigger function to sync to Neo4j
 CREATE OR REPLACE FUNCTION public.handle_neo4j_sync()
 RETURNS TRIGGER AS $$
@@ -1516,9 +1530,15 @@ DECLARE
   res_id BIGINT;
   sync_url TEXT;
 BEGIN
-  -- Read the webhook URL from database configuration, fallback to local docker URL
+  -- Read the webhook URL from app_settings table, fallback to local docker URL
+  BEGIN
+    SELECT value INTO sync_url FROM public.app_settings WHERE key = 'neo4j_sync_url';
+  EXCEPTION WHEN OTHERS THEN
+    sync_url := NULL;
+  END;
+
   sync_url := COALESCE(
-    current_setting('app.settings.neo4j_sync_url', true),
+    sync_url,
     'http://host.docker.internal:3001/webhooks/neo4j-sync'
   );
 
