@@ -52,8 +52,8 @@ cat <<EOF > ~/.claude.json
 {
   "mcpServers": {
     "soustools": {
-      "command": "npx",
-      "args": ["-y", "tsx", "/workspace/packages/mcp-server/index.ts"],
+      "command": "pnpm",
+      "args": ["--filter", "./packages/mcp-server", "exec", "tsx", "index.ts"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PERSONAL_ACCESS_TOKEN"
       }

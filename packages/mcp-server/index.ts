@@ -332,8 +332,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "read_local_context": {
         const root = process.cwd();
-        const treePaths = [path.join(root, ".context", "directory-tree.txt"), path.join(root, "docs", "context", "directory-tree.txt")];
-        const graphPaths = [path.join(root, ".context", "turbo-graph.txt"), path.join(root, "docs", "context", "turbo-graph.txt")];
+        const treePaths = [path.join(root, "docs", "context", "directory-tree.txt")];
+        const graphPaths = [path.join(root, "docs", "context", "turbo-graph.txt")];
         let tree = "Not found", graph = "Not found";
         for (const p of treePaths) { if (fs.existsSync(p)) { tree = fs.readFileSync(p, "utf-8"); break; } }
         for (const p of graphPaths) { if (fs.existsSync(p)) { graph = fs.readFileSync(p, "utf-8"); break; } }
