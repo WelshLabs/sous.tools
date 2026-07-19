@@ -4,403 +4,70 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing f19d67e3117bb6c9
+cache miss, executing e6e0438298cd2509
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing f87b69a2362fcd35
+cache miss, executing 3adb31b0eb9e3bfe
 $ tsc
+::endgroup::
+[;31m@soustools/domain-signage:test[;0m
+cache miss, executing 7b8f7dc08ba487ca
+$ vitest run --coverage --passWithNoTests
+[2m1:46:58 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
+`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
+[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
+[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
+
+[ELIFECYCLE] Test failed. See above for more details.
+::group::@soustools/domain-inventory:test
+cache miss, executing e0b6a8c497bda3fd
+$ vitest run --coverage --passWithNoTests
+[ELIFECYCLE] Test failed. See above for more details.
+::endgroup::
+::group::@soustools/domain-pos:test
+cache miss, executing be584660ef76a68b
+$ vitest run --coverage --passWithNoTests
+[ELIFECYCLE] Test failed. See above for more details.
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing c326482ddc29dcd5
+cache miss, executing 411fe70c38448489
 $ tsc
+[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::cli:test
-cache miss, executing 2a028f6f2299f267
-$ jest --coverage --passWithNoTests
-PASS src/cli.spec.ts
-  CLI
-    ✓ should be instantiable (2 ms)
+::group::@soustools/domain-settings:test
+cache miss, executing 7f6d64aa6d1dc076
+$ vitest run --coverage --passWithNoTests
+[2m1:46:59 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
+`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
+[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
+[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
---------------------------------|---------|----------|---------|---------|-------------------
-File                            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
---------------------------------|---------|----------|---------|---------|-------------------
-All files                       |       0 |        0 |       0 |       0 |                   
- src                            |       0 |      100 |       0 |       0 |                   
-  app.module.ts                 |       0 |      100 |     100 |       0 | 1-9               
-  main.ts                       |       0 |      100 |       0 |       0 | 1-7               
- src/commands                   |       0 |        0 |       0 |       0 |                   
-  commands.module.ts            |       0 |      100 |     100 |       0 | 1-11              
-  import-textbook.command.ts    |       0 |        0 |       0 |       0 | 1-70              
-  import.command.ts             |       0 |        0 |       0 |       0 | 1-48              
-  parse-textbook.command.ts     |       0 |        0 |       0 |       0 | 1-43              
- src/ingestion                  |       0 |        0 |       0 |       0 |                   
-  gemini-parser.schemas.ts      |       0 |        0 |       0 |       0 | 1-95              
-  gemini-parser.service.ts      |       0 |        0 |       0 |       0 | 1-209             
-  ingestion.module.ts           |       0 |      100 |     100 |       0 | 1-10              
-  ingestion.service.ts          |       0 |        0 |       0 |       0 | 1-208             
-  playwright-flipper.service.ts |       0 |        0 |       0 |       0 | 1-78              
-  prompt-templates.ts           |       0 |      100 |     100 |       0 | 1-55              
---------------------------------|---------|----------|---------|---------|-------------------
-Test Suites: 1 passed, 1 total
-Tests:       1 passed, 1 total
-Snapshots:   0 total
-Time:        4.125 s
-Ran all test suites.
-::endgroup::
-[;31mapi:test[;0m
-cache miss, executing f17aec4bc3dc4ac9
-$ jest --coverage --passWithNoTests
-PASS src/modules/recipe/recipe.spec.ts
-FAIL src/modules/integrations/webhooks.spec.ts
-  ● WebhooksController › should queue the sync job and return status queued when integration exists
-
-    expect(received).toEqual(expected) // deep equality
-
-    - Expected  - 1
-    + Received  + 1
-
-      Object {
-    -   "status": "queued",
-    +   "status": "duplicate_ignored",
-      }
-
-    [0m [90m 101 |[39m
-     [90m 102 |[39m     [36mconst[39m result [33m=[39m [36mawait[39m controller[33m.[39mhandleWebhook([32m"square"[39m[33m,[39m [32m"sig"[39m[33m,[39m [32m""[39m[33m,[39m mockReq)[33m;[39m
-    [31m[1m>[22m[39m[90m 103 |[39m     expect(result)[33m.[39mtoEqual({ status[33m:[39m [32m"queued"[39m })[33m;[39m
-     [90m     |[39m                    [31m[1m^[22m[39m
-     [90m 104 |[39m     expect(queue[33m.[39madd)[33m.[39mtoHaveBeenCalledWith([32m"pos-sync-job"[39m[33m,[39m {
-     [90m 105 |[39m       orgId[33m:[39m [32m"org-uuid-123"[39m[33m,[39m
-     [90m 106 |[39m       type[33m:[39m [32m"webhook-inventory"[39m[33m,[39m[0m
-
-      at Object.<anonymous> (modules/integrations/webhooks.spec.ts:103:20)
-
-PASS src/modules/pos-simulator/pos-simulator.spec.ts
-PASS src/modules/signage/displays.spec.ts
-PASS src/modules/devices/devices.spec.ts
-FAIL src/app.controller.spec.ts
-  ● Test suite failed to run
-
-    Cannot find module '../lib/config' from 'app.controller.spec.ts'
-
-    [0m [90m  5 |[39m [90m// Mock the config module to provide SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY[39m
-     [90m  6 |[39m [90m// Ensure the path to config is correct relative to app.controller.spec.ts[39m
-    [31m[1m>[22m[39m[90m  7 |[39m jest[33m.[39mmock([32m"../lib/config"[39m[33m,[39m () [33m=>[39m ({
-     [90m    |[39m      [31m[1m^[22m[39m
-     [90m  8 |[39m   config[33m:[39m {
-     [90m  9 |[39m     [33mSUPABASE_URL[39m[33m:[39m [32m"http://localhost:54321"[39m[33m,[39m [90m// Dummy URL for testing[39m
-     [90m 10 |[39m     [33mSUPABASE_SERVICE_ROLE_KEY[39m[33m:[39m [32m"dummy-service-role-key"[39m[33m,[39m[0m
-
-      at Resolver._throwModNotFoundError (../../../node_modules/.pnpm/jest-resolve@29.7.0/node_modules/jest-resolve/build/resolver.js:427:11)
-      at Object.<anonymous> (app.controller.spec.ts:7:6)
-
-PASS src/modules/signage/layouts.spec.ts
-FAIL src/modules/integrations/integrations.spec.ts
-  ● Integrations › should be defined
-
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
-
-    Potential solutions:
-    - Is RootTestModule a valid NestJS module?
-    - If SquareDriver is a provider, is it part of the current RootTestModule?
-    - If SquareDriver is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing SquareDriver */ ]
-      })
-
-    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
-
-    [0m [90m 20 |[39m
-     [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
-    [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
-     [90m    |[39m                                   [31m[1m^[22m[39m
-     [90m 23 |[39m       controllers[33m:[39m [[33mIntegrationsController[39m][33m,[39m
-     [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
-     [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
-
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
-          at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
-          at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
-          at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
-      at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
-
-  ● Integrations › should generate OAuth URLs correctly
-
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
-
-    Potential solutions:
-    - Is RootTestModule a valid NestJS module?
-    - If SquareDriver is a provider, is it part of the current RootTestModule?
-    - If SquareDriver is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing SquareDriver */ ]
-      })
-
-    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
-
-    [0m [90m 20 |[39m
-     [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
-    [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
-     [90m    |[39m                                   [31m[1m^[22m[39m
-     [90m 23 |[39m       controllers[33m:[39m [[33mIntegrationsController[39m][33m,[39m
-     [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
-     [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
-
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
-          at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
-          at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
-          at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
-      at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
-
-  ● Integrations › should return integration status correctly
-
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
-
-    Potential solutions:
-    - Is RootTestModule a valid NestJS module?
-    - If SquareDriver is a provider, is it part of the current RootTestModule?
-    - If SquareDriver is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing SquareDriver */ ]
-      })
-
-    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
-
-    [0m [90m 20 |[39m
-     [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
-    [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
-     [90m    |[39m                                   [31m[1m^[22m[39m
-     [90m 23 |[39m       controllers[33m:[39m [[33mIntegrationsController[39m][33m,[39m
-     [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
-     [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
-
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
-          at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
-          at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
-          at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
-      at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
-
-  ● Integrations › should disconnect correctly
-
-    Nest can't resolve dependencies of the IntegrationsService (?). Please make sure that the argument SquareDriver at index [0] is available in the RootTestModule module.
-
-    Potential solutions:
-    - Is RootTestModule a valid NestJS module?
-    - If SquareDriver is a provider, is it part of the current RootTestModule?
-    - If SquareDriver is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing SquareDriver */ ]
-      })
-
-    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
-
-    [0m [90m 20 |[39m
-     [90m 21 |[39m   beforeEach([36masync[39m () [33m=>[39m {
-    [31m[1m>[22m[39m[90m 22 |[39m     [36mconst[39m module[33m:[39m [33mTestingModule[39m [33m=[39m [36mawait[39m [33mTest[39m[33m.[39mcreateTestingModule({
-     [90m    |[39m                                   [31m[1m^[22m[39m
-     [90m 23 |[39m       controllers[33m:[39m [[33mIntegrationsController[39m][33m,[39m
-     [90m 24 |[39m       providers[33m:[39m [[33mIntegrationsService[39m][33m,[39m
-     [90m 25 |[39m     })[33m.[39mcompile()[33m;[39m[0m
-
-      at TestingInjector.lookupComponentInParentModules (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:290:19)
-      at resolveParam (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:140:38)
-          at async Promise.all (index 0)
-      at TestingInjector.resolveConstructorParams (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:169:27)
-      at TestingInjector.loadInstance (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:75:13)
-      at TestingInjector.loadProvider (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/injector.js:103:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:56:13
-          at async Promise.all (index 3)
-      at TestingInstanceLoader.createInstancesOfProviders (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:55:9)
-      at ../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:40:13
-          at async Promise.all (index 1)
-      at TestingInstanceLoader.createInstances (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:39:9)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+core@11.1.18_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_supports-_2fe8c2dc8d14c7614fd600debf8e32b3/node_modules/@nestjs/core/injector/instance-loader.js:22:13)
-      at TestingInstanceLoader.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
-      at TestingModuleBuilder.createInstancesOfDependencies (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:118:9)
-      at TestingModuleBuilder.compile (../../../node_modules/.pnpm/@nestjs+testing@10.4.22_@nestjs+common@10.4.22_reflect-metadata@0.2.2_rxjs@7.8.2_suppor_d3ba48d35068b2b3d0307971001b33b3/node_modules/@nestjs/testing/testing-module.builder.js:74:9)
-      at Object.<anonymous> (modules/integrations/integrations.spec.ts:22:35)
-
-A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
-----------------------------------|---------|----------|---------|---------|------------------------------------------------------------------
-File                              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                
-----------------------------------|---------|----------|---------|---------|------------------------------------------------------------------
-All files                         |   12.02 |    12.08 |   10.92 |   11.65 |                                                                  
- src                              |       0 |        0 |       0 |       0 |                                                                  
-  app.controller.ts               |       0 |        0 |       0 |       0 | 1-139                                                            
-  app.module.ts                   |       0 |        0 |       0 |       0 | 1-83                                                             
-  app.service.ts                  |       0 |        0 |       0 |       0 | 1-15                                                             
-  main.ts                         |       0 |        0 |       0 |       0 | 1-86                                                             
-  pre-bootstrap.ts                |       0 |        0 |       0 |       0 | 1-10                                                             
- src/common/filters               |       0 |        0 |       0 |       0 |                                                                  
-  ws-exception.filter.ts          |       0 |        0 |       0 |       0 | 1-16                                                             
- src/common/guards                |   44.44 |        0 |       0 |   28.57 |                                                                  
-  admin.guard.ts                  |   44.44 |        0 |       0 |   28.57 | 6-15                                                             
- src/common/pipes                 |       0 |      100 |       0 |       0 |                                                                  
-  zod-validation.pipe.ts          |       0 |      100 |       0 |       0 | 1-13                                                             
- src/filters                      |       0 |        0 |       0 |       0 |                                                                  
-  all-exceptions.filter.ts        |       0 |        0 |       0 |       0 | 1-30                                                             
- src/graphql                      |       0 |        0 |     100 |       0 |                                                                  
-  graphql.module.ts               |       0 |        0 |     100 |       0 | 1-20                                                             
- src/health                       |       0 |        0 |       0 |       0 |                                                                  
-  health.controller.ts            |       0 |        0 |       0 |       0 | 1-7                                                              
-  health.module.ts                |       0 |      100 |     100 |       0 | 1-9                                                              
-  health.resolver.ts              |       0 |        0 |       0 |       0 | 1-8                                                              
-  health.types.ts                 |       0 |      100 |       0 |       0 | 1-9                                                              
- src/lib                          |   12.76 |        0 |       0 |     9.3 |                                                                  
-  supabase-auth.guard.ts          |   31.57 |        0 |       0 |   23.52 | 21-47                                                            
-  supabase.ts                     |       0 |      100 |       0 |       0 | 1-22                                                             
-  ws-supabase-auth.guard.ts       |       0 |        0 |       0 |       0 | 1-41                                                             
- src/modules/auth                 |       0 |        0 |       0 |       0 |                                                                  
-  auth.controller.ts              |       0 |        0 |       0 |       0 | 1-179                                                            
-  auth.module.ts                  |       0 |      100 |     100 |       0 | 1-8                                                              
- src/modules/commands             |       0 |        0 |       0 |       0 |                                                                  
-  commands-ollama.helper.ts       |       0 |        0 |       0 |       0 | 3-48                                                             
-  commands-tools.ts               |       0 |      100 |     100 |       0 | 1-95                                                             
-  commands.controller.ts          |       0 |        0 |       0 |       0 | 1-32                                                             
-  commands.gateway.ts             |       0 |        0 |       0 |       0 | 1-61                                                             
-  commands.module.ts              |       0 |      100 |     100 |       0 | 1-21                                                             
-  commands.service.ts             |       0 |        0 |       0 |       0 | 1-341                                                            
- src/modules/dashboard            |       0 |        0 |       0 |       0 |                                                                  
-  dashboard.controller.ts         |       0 |        0 |       0 |       0 | 1-158                                                            
-  dashboard.module.ts             |       0 |      100 |     100 |       0 | 1-7                                                              
- src/modules/devices              |   41.22 |    55.22 |   27.58 |    40.4 |                                                                  
-  devices.controller.ts           |   58.53 |    73.17 |   26.31 |      60 | 43,59,99-105,117-118,129-130,138-139,148                         
-  devices.module.ts               |       0 |      100 |     100 |       0 | 1-10                                                             
-  devices.service.ts              |   34.32 |    26.92 |      30 |   31.66 | 50-112,126,159,165-228                                           
- src/modules/ingestion            |       0 |        0 |       0 |       0 |                                                                  
-  CloudVisionService.ts           |       0 |        0 |       0 |       0 | 1-167                                                            
-  OllamaVisionService.ts          |       0 |        0 |       0 |       0 | 1-100                                                            
-  ingestion.controller.ts         |       0 |        0 |       0 |       0 | 1-848                                                            
-  ingestion.gateway.ts            |       0 |        0 |       0 |       0 | 1-38                                                             
-  ingestion.module.ts             |       0 |        0 |       0 |       0 | 1-40                                                             
-  ingestion.processor.ts          |       0 |        0 |       0 |       0 | 1-215                                                            
-  normalization.service.ts        |       0 |        0 |       0 |       0 | 1-414                                                            
- src/modules/integrations         |   18.45 |    11.62 |     3.4 |   17.77 |                                                                  
-  google-drive.service.ts         |   10.44 |        0 |       0 |    7.69 | 9-151                                                            
-  integrations.controller.ts      |      36 |    51.21 |       0 |   33.33 | 20,26-27,36-37,47-61,71-72,81-82,88-89,95-96,106,113-119,128-129 
-  integrations.module.ts          |       0 |      100 |     100 |       0 | 1-23                                                             
-  integrations.service.ts         |   11.94 |     6.66 |       0 |    9.23 | 11-222                                                           
-  pos-sync.processor.ts           |       0 |        0 |       0 |       0 | 1-34                                                             
-  square-client.helper.ts         |   14.28 |        0 |       0 |      15 | 33,42-66                                                         
-  square-mapper.helper.ts         |    12.9 |        0 |       0 |   14.03 | 160,173-181,197,216,232-252,261-273,293-309,317-339              
-  square-seed-types.ts            |   22.22 |        0 |       0 |   28.57 | 51-57,70-87                                                      
-  square-seed.helper.ts           |   11.11 |        0 |       0 |   11.36 | 25-132                                                           
-  square-sync.helper.ts           |    8.24 |        0 |       0 |    6.66 | 23-208                                                           
-  webhooks.controller.ts          |    65.3 |    48.27 |     100 |   63.82 | 57,88,110-149                                                    
- src/modules/integrations/drivers |   19.56 |        0 |       0 |   16.27 |                                                                  
-  base.driver.ts                  |      50 |        0 |       0 |      50 | 7                                                                
-  square.driver.ts                |   18.18 |        0 |       0 |   14.63 | 11-129                                                           
- src/modules/items                |       0 |        0 |       0 |       0 |                                                                  
-  inventory.controller.ts         |       0 |        0 |       0 |       0 | 1-42                                                             
-  inventory.service.ts            |       0 |        0 |       0 |       0 | 1-167                                                            
-  items-query.helper.ts           |       0 |        0 |       0 |       0 | 32-93                                                            
-  items.controller.ts             |       0 |        0 |       0 |       0 | 1-132                                                            
-  items.module.ts                 |       0 |      100 |     100 |       0 | 1-49                                                             
-  items.service.ts                |       0 |        0 |       0 |       0 | 1-239                                                            
-  price-history.controller.ts     |       0 |        0 |       0 |       0 | 1-47                                                             
-  price-history.service.ts        |       0 |        0 |       0 |       0 | 1-50                                                             
-  purchase-orders.controller.ts   |       0 |        0 |       0 |       0 | 1-121                                                            
-  purchase-orders.service.ts      |       0 |        0 |       0 |       0 | 1-147                                                            
-  vendors.controller.ts           |       0 |        0 |       0 |       0 | 1-91                                                             
-  vendors.service.ts              |       0 |        0 |       0 |       0 | 1-91                                                             
-  wastage.controller.ts           |       0 |        0 |       0 |       0 | 1-53                                                             
-  wastage.service.ts              |       0 |        0 |       0 |       0 | 1-66                                                             
-  whiteboard.controller.ts        |       0 |        0 |       0 |       0 | 1-48                                                             
-  whiteboard.service.ts           |       0 |        0 |       0 |       0 | 1-62                                                             
- src/modules/metrics              |       0 |      100 |       0 |       0 |                                                                  
-  metrics.controller.ts           |       0 |      100 |       0 |       0 | 1-20                                                             
-  metrics.module.ts               |       0 |      100 |     100 |       0 | 1-8                                                              
- src/modules/nutrition            |       0 |        0 |       0 |       0 |                                                                  
-  dietary-classifier.service.ts   |       0 |        0 |       0 |       0 | 1-28                                                             
-  label-renderer.service.ts       |       0 |        0 |       0 |       0 | 1-70                                                             
-  nutrition.controller.ts         |       0 |        0 |       0 |       0 | 1-176                                                            
-  nutrition.module.ts             |       0 |      100 |     100 |       0 | 1-20                                                             
-  nutrition.service.ts            |       0 |        0 |       0 |       0 | 1-78                                                             
-  usda-resolver.service.ts        |       0 |        0 |       0 |       0 | 1-70                                                             
- src/modules/pos                  |       0 |        0 |       0 |       0 |                                                                  
-  pos-links.service.ts            |       0 |        0 |       0 |       0 | 1-40                                                             
-  pos-transactions.service.ts     |       0 |        0 |       0 |       0 | 1-53                                                             
-  pos.controller.ts               |       0 |        0 |       0 |       0 | 1-117                                                            
-  pos.module.ts                   |       0 |      100 |     100 |       0 | 1-11                                                             
- src/modules/pos-simulator        |   48.64 |    38.27 |   46.15 |      48 |                                                                  
-  pos-simulator.controller.ts     |   61.01 |    46.15 |   55.55 |   59.64 | 43,51-64,78,96,112-117,123,159-192                               
-  pos-simulator.helpers.ts        |   38.63 |    24.13 |   33.33 |   35.13 | 40-132                                                           
-  pos-simulator.mock.ts           |      50 |      100 |       0 |      50 | 12                                                               
-  pos-simulator.module.ts         |       0 |      100 |     100 |       0 | 1-9                                                              
- src/modules/recipe               |   22.79 |       28 |      25 |   22.57 |                                                                  
-  ingredients.controller.ts       |   46.87 |    52.38 |   33.33 |   43.33 | 25,37-41,57-64,77-81,93-97                                       
-  ingredients.service.ts          |   25.71 |       56 |   33.33 |   29.16 | 19-80                                                            
-  recipe-cost.service.ts          |    7.04 |        0 |       0 |    4.41 | 27-170                                                           
-  recipe-meta.controller.ts       |       0 |        0 |       0 |       0 | 1-38                                                             
-  recipe-meta.service.ts          |       0 |        0 |       0 |       0 | 1-36                                                             
-  recipe-versions.controller.ts   |       0 |        0 |       0 |       0 | 1-105                                                            
-  recipe.module.ts                |       0 |      100 |     100 |       0 | 1-18                                                             
-  recipes.controller.ts           |    47.5 |       50 |   28.57 |   44.73 | 30-34,48-56,66-70,143,161-169,179-183                            
-  recipes.mapper.ts               |   57.14 |    22.97 |   33.33 |   61.53 | 25-54                                                            
-  recipes.service.ts              |   19.11 |       10 |      25 |   19.29 | 13-21,81-98,113-180                                              
-  vessels.controller.ts           |   46.87 |    52.38 |   33.33 |   43.33 | 25,35-39,51-55,68-72,82-86                                       
-  vessels.service.ts              |   21.95 |    22.72 |   33.33 |   25.92 | 19-84                                                            
- src/modules/signage              |   38.97 |    42.77 |   35.48 |   40.18 |                                                                  
-  displays.controller.ts          |   56.41 |       75 |   29.41 |   57.14 | 32-42,48-49,55,83,89-91,101-102                                  
-  displays.helpers.ts             |   24.24 |     9.52 |      25 |   26.66 | 12,15,27-32,42-62,80-107                                         
-  displays.service.ts             |   38.29 |    27.27 |   33.33 |    37.5 | 20-33,72-147                                                     
-  layouts.controller.ts           |   69.23 |    73.33 |   38.46 |   72.72 | 37-38,44,61-62,68                                                
-  layouts.service.ts              |   31.37 |    18.51 |      50 |      35 | 29-66,94-128                                                     
-  response.helper.ts              |   57.14 |        0 |     100 |   57.14 | 20-22                                                            
-  signage.gateway.ts              |   30.95 |    29.03 |      30 |   28.94 | 24-32,45-62,99-116                                               
-  signage.module.ts               |       0 |      100 |     100 |       0 | 1-13                                                             
- src/modules/storage              |       0 |        0 |       0 |       0 |                                                                  
-  storage.controller.ts           |       0 |        0 |       0 |       0 | 1-48                                                             
-  storage.module.ts               |       0 |      100 |     100 |       0 | 1-7                                                              
- src/modules/users                |       0 |        0 |       0 |       0 |                                                                  
-  users.controller.ts             |       0 |        0 |       0 |       0 | 1-31                                                             
-  users.module.ts                 |       0 |      100 |     100 |       0 | 1-7                                                              
-----------------------------------|---------|----------|---------|---------|------------------------------------------------------------------
-Test Suites: 3 failed, 5 passed, 8 total
-Tests:       5 failed, 14 passed, 19 total
-Snapshots:   0 total
-Time:        11.064 s
-Ran all test suites.
 [ELIFECYCLE] Test failed. See above for more details.
+[39m
+::endgroup::
+::group::@soustools/domain-recipes:test
+cache miss, executing 8c56432faae47b9e
+$ vitest run --coverage --passWithNoTests
+[ELIFECYCLE] Test failed. See above for more details.
+::endgroup::
+::group::@soustools/design-system:test
+cache miss, executing 99edfd86cc8d5ea3
+$ vitest run --coverage --passWithNoTests
+[2m1:46:59 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
+`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
+[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
+[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
- Tasks:    4 successful, 5 total
-Cached:    0 cached, 5 total
-  Time:    16.282s 
-Failed:    api#test
+[ELIFECYCLE] Test failed. See above for more details.
+[39m
+::endgroup::
+
+ Tasks:    2 successful, 9 total
+Cached:    0 cached, 9 total
+  Time:    5.496s 
+Failed:    @soustools/domain-signage#test
 

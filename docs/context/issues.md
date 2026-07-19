@@ -2,48 +2,9 @@
 
 ---
 
-author: conarwelsh
-association: owner
-edited: false
-status: none
---
+---
 
-Here is the step-by-step implementation plan for refactoring the design system base primitives:
-
-1. **Audit Existing Components:**
-   - Navigate to `packages/design-system/src`.
-   - Thoroughly review all existing custom base components.
-   - Identify components that correspond to standard UI elements such as Buttons, Inputs, Dialogs, and Popovers.
-
-2. **Install Shadcn UI Primitives:**
-   - Use the Shadcn CLI to install the official primitives into the design system.
-   - The target directory for installation should be `packages/design-system/src/components/<primitive-name>/`.
-   - Example command: `npx shadcn-ui@latest add button` (adjust for each primitive).
-
-3. **Apply Neon-Glass Tokens:**
-   - For each installed Shadcn primitive:
-     - Locate the component files within its respective directory.
-     - Modify the component's styling to exclusively utilize the existing Neon-Glass semantic Tailwind tokens.
-     - Ensure consistency with the project's design language.
-
-4. **Enforce Naming and Folder Conventions:**
-   - For each refactored primitive, ensure the following structure and naming:
-     - **Folder Structure:** `packages/design-system/src/components/<ComponentName>/`
-     - **Component File:** `[ComponentName].tsx` (PascalCase)
-     - **Storybook File:** `[ComponentName].stories.tsx` (PascalCase, with basic Storybook implementation)
-     - **Test File:** `[ComponentName].spec.tsx` (PascalCase, with a basic render test)
-
-5. **Cleanup Legacy Components:**
-   - Once all Shadcn primitives are installed, configured, and correctly structured:
-     - Delete the original custom base components that have been replaced.
-
-6. **Verification:**
-   - Run the following commands to ensure all changes are correctly implemented and the project adheres to standards:
-     - `pnpm turbo test` (to execute all unit and integration tests)
-     - `pnpm turbo lint` (to check for code style and quality issues)
-
-This plan ensures that the design system's base primitives are migrated to robust Shadcn equivalents, adhere to the specified naming and folder conventions, and are styled using the project's established tokens, all while maintaining a high standard of code quality and test coverage.
---
+---
 
 ---
 
@@ -157,6 +118,15 @@ Here is the implementation plan:
 
 ---
 
+author: conarwelsh
+association: owner
+edited: false
+status: none
+--
+
+I want to retain the icons with a background as an optional fallback, but want the default icons to be the transparent ones where possible, as some environments dictate different rules and guidelines for icons.
+--
+
 ---
 
 ---
@@ -172,7 +142,33 @@ status: none
 this also remains true for our packages/domain-* packages, they have the same issues
 --
 
+author: conarwelsh
+association: owner
+edited: true
+status: none
+--
+
+packages/design-system/src/components/InsightsSidebar should be moved into packages/domain-inventory
+so should the quick add bar
+TopProgress should be moved into the Loader component
+--
+
 ---
+
+author: conarwelsh
+association: owner
+edited: false
+status: none
+--
+
+Here is the step-by-step implementation plan:
+
+1. **Locate the Waffle Menu Component:** Navigate to the `design-system` directory and find the `WaffleMenuDropdown.tsx` file.
+2. **Analyze Click Listener/Overlay Element:** Examine the existing implementation of the Waffle Menu's click-out detection. Identify the element or event listener responsible for closing the menu when a click occurs outside of it.
+3. **Expand Overlay Dimensions:** Modify the Waffle Menu's overlay element or its associated click listener to span the full viewport. This typically involves setting its `width` to `100vw` and `height` to `100vh`.
+4. **Adjust Z-index:** Ensure the overlay's `z-index` is correctly configured. It should be positioned behind the Waffle Menu itself but above all other application elements, so that clicks on the overlay correctly trigger the menu's close function.
+5. **Test Functionality:** Thoroughly test the Waffle Menu by clicking inside and outside the menu to ensure it opens and closes as expected in all scenarios. Verify that clicks on the overlay correctly dismiss the menu.
+   \--
 
 ---
 

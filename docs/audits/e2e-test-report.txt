@@ -4,32 +4,32 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing 77ec858d2b5cd7d9
+cache miss, executing 28cb6c2fbaf67327
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing 3898c7f41d4924ae
+cache miss, executing b3b14e001e5d9972
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing a3709adb357b84f0
+cache miss, executing 1c6325701c4bb6c3
 $ tsc
 ::endgroup::
 ::group::@soustools/supabase:build
-cache miss, executing 7b192a7aefb17e4b
+cache miss, executing eae787ff02a9c99a
 $ tsc
 ::endgroup::
 ::group::cli:build
-cache miss, executing d5ba7d67dd1602d3
+cache miss, executing 58f5d55ac4ce9cfe
 $ nest build
 ::endgroup::
 ::group::api:build
-cache miss, executing 9f706809288c22ae
+cache miss, executing 1dd93102513056a8
 $ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 53262 ms
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 56035 ms
 ::endgroup::
 ::group::pos-simulator:build
-cache miss, executing f311f14aea58079b
+cache miss, executing 24e43893365adc9f
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -42,11 +42,11 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 32.1s
+ ✓ Compiled successfully in 35.8s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:7878) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784418079795 is not specified and it doesn't parse as CommonJS.
+(node:7980) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784468708199 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -60,12 +60,12 @@ To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                    80.2 kB         182 kB
-├ ○ /_not-found                            992 B         103 kB
-└ ○ /test                                  122 B         102 kB
+┌ ○ /                                    95.4 kB         197 kB
+├ ○ /_not-found                            997 B         103 kB
+└ ○ /test                                  121 B         102 kB
 + First Load JS shared by all             102 kB
-  ├ chunks/236-5caa8f56cc2653e3.js         46 kB
-  ├ chunks/c1ced9cb-d98a9da30eb7cdc9.js  54.2 kB
+  ├ chunks/17-9a50ec6f51b315fe.js        45.9 kB
+  ├ chunks/c320de20-018b4416a2d7f6ce.js  54.2 kB
   └ other shared chunks (total)          1.86 kB
 
 
@@ -73,7 +73,7 @@ Route (app)                                 Size  First Load JS
 
 ::endgroup::
 ::group::web:build
-cache miss, executing 48499522cbc120a4
+cache miss, executing fef496eca8affeeb
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -89,11 +89,11 @@ https://nextjs.org/telemetry
 
    Creating an optimized production build ...
  [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
- ✓ Compiled successfully in 72s
+ ✓ Compiled successfully in 77s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8047) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784418079803 is not specified and it doesn't parse as CommonJS.
+(node:8144) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784468708208 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -107,49 +107,49 @@ To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                    3.19 kB         338 kB
-├ ○ /_not-found                            999 B         109 kB
-├ ƒ /(.)ingestion/review/[id]            2.42 kB         598 kB
-├ ƒ /admin/devices                       1.25 kB         591 kB
-├ ƒ /admin/users                           302 B         331 kB
-├ ƒ /catalog                             3.46 kB         338 kB
-├ ƒ /dashboard                             302 B         331 kB
-├ ○ /display                               825 B         336 kB
-├ ƒ /display/[id]                        4.88 kB         595 kB
-├ ƒ /home                                1.06 kB         336 kB
-├ ƒ /ingestion/review/[id]               3.17 kB         344 kB
-├ ƒ /ingestions                            165 B         111 kB
-├ ƒ /inventory                           2.05 kB         337 kB
-├ ƒ /inventory/(.)vendors/add            1.89 kB         337 kB
-├ ƒ /inventory/invoices                  2.72 kB         338 kB
-├ ƒ /inventory/items                     2.11 kB         346 kB
-├ ƒ /inventory/orders                      958 B         345 kB
-├ ƒ /inventory/orders/[id]/shop          2.96 kB         117 kB
-├ ƒ /inventory/vendors                     681 B         345 kB
-├ ƒ /inventory/vendors/add               2.01 kB         337 kB
-├ ○ /kds                                 5.53 kB         340 kB
-├ ○ /login                               2.33 kB         337 kB
+┌ ○ /                                    3.18 kB         351 kB
+├ ○ /_not-found                             1 kB         109 kB
+├ ƒ /(.)ingestion/review/[id]            2.42 kB         614 kB
+├ ƒ /admin/devices                       1.25 kB         607 kB
+├ ƒ /admin/users                           304 B         344 kB
+├ ƒ /catalog                             3.44 kB         352 kB
+├ ƒ /dashboard                             304 B         344 kB
+├ ○ /display                               825 B         349 kB
+├ ƒ /display/[id]                        4.89 kB         611 kB
+├ ƒ /home                                1.06 kB         349 kB
+├ ƒ /ingestion/review/[id]               3.16 kB         357 kB
+├ ƒ /ingestions                            166 B         112 kB
+├ ƒ /inventory                           2.05 kB         350 kB
+├ ƒ /inventory/(.)vendors/add             1.9 kB         350 kB
+├ ƒ /inventory/invoices                  2.72 kB         351 kB
+├ ƒ /inventory/items                     2.12 kB         360 kB
+├ ƒ /inventory/orders                      956 B         358 kB
+├ ƒ /inventory/orders/[id]/shop          2.96 kB         118 kB
+├ ƒ /inventory/vendors                     679 B         358 kB
+├ ƒ /inventory/vendors/add                  2 kB         350 kB
+├ ○ /kds                                 5.55 kB         354 kB
+├ ○ /login                               2.33 kB         350 kB
 ├ ○ /manifest.webmanifest                  139 B         108 kB
-├ ○ /pos                                 7.37 kB         342 kB
-├ ƒ /pos-orders                          1.06 kB         336 kB
-├ ○ /privacy-policy                        317 B         331 kB
-├ ƒ /recipes                               495 B         349 kB
-├ ƒ /recipes/[id]                           1 kB         349 kB
-├ ƒ /recipes/[id]/edit                     739 B         349 kB
-├ ƒ /recipes/[id]/kitchen                  524 B         349 kB
-├ ƒ /recipes/new                           739 B         349 kB
-├ ƒ /settings                            2.06 kB         369 kB
-├ ○ /showcase                            12.2 kB         347 kB
-├ ƒ /signage                             1.67 kB         592 kB
-├ ƒ /signage/[deckId]                    1.38 kB         591 kB
-├ ƒ /signage/[deckId]/preview              939 B         112 kB
-├ ƒ /team                                1.57 kB         336 kB
-├ ƒ /transactions                         2.5 kB         337 kB
+├ ○ /pos                                 7.37 kB         355 kB
+├ ƒ /pos-orders                          1.06 kB         349 kB
+├ ○ /privacy-policy                        318 B         344 kB
+├ ƒ /recipes                               497 B         363 kB
+├ ƒ /recipes/[id]                           1 kB         363 kB
+├ ƒ /recipes/[id]/edit                     739 B         363 kB
+├ ƒ /recipes/[id]/kitchen                  525 B         363 kB
+├ ƒ /recipes/new                           739 B         363 kB
+├ ƒ /settings                            2.06 kB         371 kB
+├ ○ /showcase                            12.2 kB         360 kB
+├ ƒ /signage                             1.67 kB         608 kB
+├ ƒ /signage/[deckId]                    1.38 kB         607 kB
+├ ƒ /signage/[deckId]/preview              935 B         113 kB
+├ ƒ /team                                1.56 kB         350 kB
+├ ƒ /transactions                        2.48 kB         351 kB
 └ ƒ /vendors                             1.53 kB         114 kB
 + First Load JS shared by all             108 kB
-  ├ chunks/5585-8b10fddf9da850e8.js      50.3 kB
-  ├ chunks/c1ced9cb-9608bf2c58bd2ad6.js  54.2 kB
-  └ other shared chunks (total)          3.38 kB
+  ├ chunks/9446-6a073f6397ea61a2.js      50.5 kB
+  ├ chunks/c320de20-ff27f4eadafb90b7.js  54.2 kB
+  └ other shared chunks (total)          3.53 kB
 
 
 ○  (Static)   prerendered as static content
@@ -157,7 +157,7 @@ Route (app)                                 Size  First Load JS
 
 ::endgroup::
 ::group::@soustools/setup-portal:build
-cache miss, executing 0a5e06da25a42c23
+cache miss, executing 7d89ffec50a4119c
 $ next build
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
@@ -168,7 +168,7 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 40s
+ ✓ Compiled successfully in 44s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
@@ -183,14 +183,14 @@ https://nextjs.org/telemetry
 
 Route (app)                                 Size  First Load JS
 ┌ ○ /                                    2.39 kB         105 kB
-├ ○ /_not-found                            995 B         103 kB
+├ ○ /_not-found                            998 B         103 kB
 ├ ƒ /api/finalize                          134 B         102 kB
 ├ ƒ /api/pairing                           134 B         102 kB
 ├ ƒ /api/progress                          134 B         102 kB
 └ ƒ /api/wifi                              134 B         102 kB
 + First Load JS shared by all             102 kB
-  ├ chunks/236-6e944717b7d44255.js       46.1 kB
-  ├ chunks/c1ced9cb-e45ce61b6415495d.js  54.2 kB
+  ├ chunks/17-f1e459edfc6b2fb0.js        46.2 kB
+  ├ chunks/c320de20-99bdec68132def0c.js  54.2 kB
   └ other shared chunks (total)          1.88 kB
 
 
@@ -201,5 +201,5 @@ Route (app)                                 Size  First Load JS
 
  Tasks:    9 successful, 9 total
 Cached:    0 cached, 9 total
-  Time:    1m52.914s 
+  Time:    2m0.887s 
 
