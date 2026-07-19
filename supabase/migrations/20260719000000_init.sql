@@ -1519,7 +1519,7 @@ BEGIN
   -- Read the webhook URL from database configuration, fallback to local docker URL
   sync_url := COALESCE(
     current_setting('app.settings.neo4j_sync_url', true),
-    'http://api:3001/webhooks/neo4j-sync'
+    'http://host.docker.internal:3001/webhooks/neo4j-sync'
   );
 
   -- Construct the payload
