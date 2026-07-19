@@ -140,6 +140,12 @@ apps/
         metrics/
           metrics.controller.ts
           metrics.module.ts
+        neo4j-sync/
+          neo4j-sync.controller.ts
+          neo4j-sync.module.ts
+          neo4j-sync.service.ts
+          neo4j-sync.spec.ts
+          neo4j.service.ts
         nutrition/
           dietary-classifier.service.ts
           label-renderer.service.ts
@@ -39201,6 +39207,1629 @@ describe("WebhooksController", () => {
 });
 ````
 
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.controller.ts
+````typescript
+import {
+  Controller,
+  Post,
+  Body,
+  Headers,
+  UnauthorizedException,
+  Logger,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
+import { Neo4jSyncService, SupabaseWebhookPayload } from "./neo4j-sync.service";
+import { config } from "@soustools/config";
+
+@Controller("webhooks/neo4j-sync")
+export class Neo4jSyncController {
+  private readonly logger = new Logger(Neo4jSyncController.name);
+
+  constructor(private readonly neo4jSyncService: Neo4jSyncService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  async handleWebhook(
+    @Body() payload: SupabaseWebhookPayload,
+    @Headers("x-supabase-signature") signature: string,
+  ): Promise<{ success: boolean }> {
+    this.logger.log(`Received Neo4j sync webhook request for table: ${payload?.table}`);
+
+    // Strictly enforce signature unless running in mock environment
+    if (!config.IS_MOCK_ENV) {
+      if (!signature || signature !== config.SUPABASE_WEBHOOK_SECRET) {
+        this.logger.warn(`Unauthorized sync attempt. Signature mismatch.`);
+        throw new UnauthorizedException("Invalid webhook signature");
+      }
+    }
+
+    try {
+      await this.neo4jSyncService.handleWebhook(payload);
+      return { success: true };
+    } catch (error) {
+      this.logger.error(
+        `Error processing Neo4j sync webhook payload: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
+      throw error;
+    }
+  }
+}
+````
+
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.module.ts
+````typescript
+import { Module } from "@nestjs/common";
+import { Neo4jService } from "./neo4j.service";
+import { Neo4jSyncService } from "./neo4j-sync.service";
+import { Neo4jSyncController } from "./neo4j-sync.controller";
+
+@Module({
+  controllers: [Neo4jSyncController],
+  providers: [Neo4jService, Neo4jSyncService],
+  exports: [Neo4jService, Neo4jSyncService],
+})
+export class Neo4jSyncModule {}
+````
+
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts
+````typescript
+import { Injectable, Logger, BadRequestException } from "@nestjs/common";
+import { Neo4jService } from "./neo4j.service";
+
+export class SupabaseWebhookPayload {
+  type!: "INSERT" | "UPDATE" | "DELETE";
+  table!: string;
+  schema!: string;
+  record!: Record<string, any> | null;
+  old_record!: Record<string, any> | null;
+}
+
+@Injectable()
+export class Neo4jSyncService {
+  private readonly logger = new Logger(Neo4jSyncService.name);
+
+  constructor(private readonly neo4jService: Neo4jService) {}
+
+  /**
+   * Processes the incoming database webhook payload and translates it to Cypher queries.
+   */
+  async handleWebhook(payload: SupabaseWebhookPayload): Promise<void> {
+    const { table, type, schema } = payload;
+    this.logger.log(`Processing database webhook: [${schema}.${table}] [${type}]`);
+
+    switch (table) {
+      case "users":
+        await this.syncUser(payload);
+        break;
+      case "recipes":
+        await this.syncRecipe(payload);
+        break;
+      case "organizations":
+        await this.syncOrganization(payload);
+        break;
+      case "vendors":
+        await this.syncVendor(payload);
+        break;
+      case "items":
+        await this.syncItem(payload);
+        break;
+      case "recipe_ingredients":
+        await this.syncRecipeIngredient(payload);
+        break;
+      case "inventory_on_hand":
+        await this.syncInventoryOnHand(payload);
+        break;
+      case "purchase_orders":
+        await this.syncPurchaseOrder(payload);
+        break;
+      case "purchase_order_items":
+        await this.syncPurchaseOrderItem(payload);
+        break;
+      case "vendor_item_aliases":
+        await this.syncVendorItemAlias(payload);
+        break;
+      case "tickets":
+        await this.syncTicket(payload);
+        break;
+      case "orders":
+        await this.syncOrder(payload);
+        break;
+      case "order_items":
+        await this.syncOrderItem(payload);
+        break;
+      case "shifts":
+        await this.syncShift(payload);
+        break;
+      case "time_clocks":
+        await this.syncTimeClock(payload);
+        break;
+      case "invoices":
+        await this.syncInvoice(payload);
+        break;
+      case "invoice_items":
+        await this.syncInvoiceItem(payload);
+        break;
+      case "wastage_logs":
+        await this.syncWastageLog(payload);
+        break;
+      default:
+        this.logger.warn(`Received sync request for unhandled table: ${schema}.${table}`);
+        break;
+    }
+  }
+
+  private async syncUser(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing user ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting User node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (u:User {id: $id})
+        DETACH DELETE u
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing user record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const rawMeta = record.raw_user_meta_data || {};
+      const fullName = rawMeta.full_name || rawMeta.name || null;
+
+      const properties = {
+        email: record.email || null,
+        role: record.role || null,
+        fullName,
+        createdAt: record.created_at || null,
+        updatedAt: record.updated_at || null,
+      };
+
+      this.logger.log(`Upserting User node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (u:User {id: $id})
+        SET u += $properties
+        `,
+        { id, properties },
+      );
+    }
+  }
+
+  private async syncRecipe(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing recipe ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Recipe node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (r:Recipe {id: $id})
+        DETACH DELETE r
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing recipe record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+
+      if (!organizationId) {
+        throw new BadRequestException("Missing organization_id in recipe record");
+      }
+
+      const properties = {
+        title: record.title || null,
+        yieldCount: record.yield_count ? parseFloat(record.yield_count) : null,
+        yieldUnit: record.yield_unit || null,
+        vesselId: record.vessel_id || null,
+        categoryId: record.category_id || null,
+        status: record.status || null,
+        sourceBook: record.source_book || null,
+        sourceAuthor: record.source_author || null,
+        sourcePageStart: record.source_page_start || null,
+        sourcePageEnd: record.source_page_end || null,
+        sourceDocumentUrl: record.source_document_url || null,
+        posItemId: record.pos_item_id || null,
+        costPerYield: record.cost_per_yield ? parseFloat(record.cost_per_yield) : 0,
+        grossMargin: record.gross_margin ? parseFloat(record.gross_margin) : 0,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting Recipe node and Organization relationship in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (r:Recipe {id: $id})
+        SET r += $properties
+        WITH r
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (r)-[:BELONGS_TO]->(o)
+        `,
+        { id, properties, organizationId },
+      );
+    }
+  }
+
+  private async syncOrganization(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing organization ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Organization node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (o:Organization {id: $id})
+        DETACH DELETE o
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing organization record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const properties = {
+        name: record.name || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting Organization node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (o:Organization {id: $id})
+        SET o += $properties
+        `,
+        { id, properties },
+      );
+    }
+  }
+
+  private async syncVendor(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing vendor ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Vendor node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (v:Vendor {id: $id})
+        DETACH DELETE v
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing vendor record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+
+      if (!organizationId) {
+        throw new BadRequestException("Missing organization_id in vendor record");
+      }
+
+      const properties = {
+        name: record.name || null,
+        orderMethod: record.order_method || null,
+        email: record.email || null,
+        phone: record.phone || null,
+        createdAt: record.created_at || null,
+        updatedAt: record.updated_at || null,
+      };
+
+      this.logger.log(`Upserting Vendor node and Organization relationship in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (v:Vendor {id: $id})
+        SET v += $properties
+        WITH v
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (v)-[:BELONGS_TO]->(o)
+        `,
+        { id, properties, organizationId },
+      );
+    }
+  }
+
+  private async syncItem(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing item ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Item node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (i:Item {id: $id})
+        DETACH DELETE i
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing item record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+
+      if (!organizationId) {
+        throw new BadRequestException("Missing organization_id in item record");
+      }
+
+      const properties = {
+        name: record.name || null,
+        category: record.category || null,
+        purchaseUnit: record.purchase_unit || null,
+        currentCostPerG: record.current_cost_per_g ? parseFloat(record.current_cost_per_g) : null,
+        createdAt: record.created_at || null,
+        updatedAt: record.updated_at || null,
+      };
+
+      this.logger.log(`Upserting Item node and Organization relationship in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (i:Item {id: $id})
+        SET i += $properties
+        WITH i
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (i)-[:BELONGS_TO]->(o)
+        `,
+        { id, properties, organizationId },
+      );
+    }
+  }
+
+  private async syncRecipeIngredient(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing recipe ingredient ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting RecipeIngredient node and USES_INGREDIENT edge in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (ri:RecipeIngredient {id: $id})
+        DETACH DELETE ri
+        WITH $id AS targetId
+        MATCH (:Recipe)-[rel:USES_INGREDIENT {id: $targetId}]->()
+        DELETE rel
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing recipe ingredient record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const recipeId = record.recipe_id;
+      const itemId = record.item_id || null;
+      const masterItemId = record.master_item_id || record.master_ingredient_id || null;
+
+      if (!recipeId) {
+        throw new BadRequestException("Missing recipe_id in recipe ingredient record");
+      }
+
+      const properties = {
+        recipeId,
+        itemId,
+        masterItemId,
+        amount: record.amount ? parseFloat(record.amount) : 0,
+        unit: record.unit || null,
+        prepNotes: record.prep_notes || null,
+        component: record.component || null,
+        rawName: record.raw_name || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting RecipeIngredient node and USES_INGREDIENT edges in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (ri:RecipeIngredient {id: $id})
+        SET ri += $properties
+        WITH ri
+        MATCH (r:Recipe {id: $recipeId})
+        
+        // Link to Item if set
+        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (item:Item {id: $itemId})
+          MERGE (r)-[rel:USES_INGREDIENT {id: $id}]->(item)
+          SET rel.amount = $amount, rel.unit = $unit, rel.prepNotes = $prepNotes
+        )
+        
+        // Link to MasterItem if set
+        FOREACH (x IN CASE WHEN $masterItemId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (m:MasterItem {id: $masterItemId})
+          MERGE (r)-[rel:USES_INGREDIENT {id: $id}]->(m)
+          SET rel.amount = $amount, rel.unit = $unit, rel.prepNotes = $prepNotes
+        )
+        `,
+        {
+          id,
+          recipeId,
+          itemId,
+          masterItemId,
+          amount: properties.amount,
+          unit: properties.unit,
+          prepNotes: properties.prepNotes,
+          properties,
+        },
+      );
+    }
+  }
+
+  private async syncInventoryOnHand(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing inventory record ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting InventoryOnHand node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (ioh:InventoryOnHand {id: $id})
+        DETACH DELETE ioh
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing inventory record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const itemId = record.item_id;
+
+      if (!organizationId || !itemId) {
+        throw new BadRequestException("Missing organization_id or item_id in inventory record");
+      }
+
+      const properties = {
+        quantityG: record.quantity_g ? parseFloat(record.quantity_g) : 0,
+        lotNumber: record.lot_number || null,
+        lotExpiry: record.lot_expiry || null,
+        location: record.location || null,
+        updatedAt: record.updated_at || null,
+      };
+
+      this.logger.log(`Upserting InventoryOnHand node and relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (ioh:InventoryOnHand {id: $id})
+        SET ioh += $properties
+        WITH ioh
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (ioh)-[:BELONGS_TO]->(o)
+        WITH ioh
+        MERGE (i:Item {id: $itemId})
+        MERGE (ioh)-[:OF_ITEM]->(i)
+        `,
+        { id, properties, organizationId, itemId },
+      );
+    }
+  }
+
+  private async syncPurchaseOrder(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing purchase order ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting PurchaseOrder node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (po:PurchaseOrder {id: $id})
+        DETACH DELETE po
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing purchase order record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const vendorId = record.vendor_id;
+
+      if (!organizationId || !vendorId) {
+        throw new BadRequestException("Missing organization_id or vendor_id in purchase order record");
+      }
+
+      const properties = {
+        status: record.status || null,
+        orderDate: record.order_date || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting PurchaseOrder node and relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (po:PurchaseOrder {id: $id})
+        SET po += $properties
+        WITH po
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (po)-[:BELONGS_TO]->(o)
+        WITH po
+        MERGE (v:Vendor {id: $vendorId})
+        MERGE (po)-[:PLACED_WITH]->(v)
+        `,
+        { id, properties, organizationId, vendorId },
+      );
+    }
+  }
+
+  private async syncPurchaseOrderItem(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing purchase order item ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting PurchaseOrderItem node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (poi:PurchaseOrderItem {id: $id})
+        DETACH DELETE poi
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing purchase order item record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const poId = record.po_id;
+
+      if (!poId) {
+        throw new BadRequestException("Missing po_id in purchase order item record");
+      }
+
+      const properties = {
+        rawName: record.raw_name || null,
+        orderedQty: record.ordered_qty ? parseFloat(record.ordered_qty) : 0,
+        pricePerUnit: record.price_per_unit ? parseFloat(record.price_per_unit) : 0,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting PurchaseOrderItem node and relationship in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (poi:PurchaseOrderItem {id: $id})
+        SET poi += $properties
+        WITH poi
+        MERGE (po:PurchaseOrder {id: $poId})
+        MERGE (poi)-[:PART_OF]->(po)
+        `,
+        { id, properties, poId },
+      );
+    }
+  }
+
+  private async syncVendorItemAlias(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing vendor item alias ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting VendorItemAlias node and SUPPLIED_BY edge in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (via:VendorItemAlias {id: $id})
+        DETACH DELETE via
+        WITH $id AS targetId
+        MATCH ()-[rel:SUPPLIED_BY {id: $targetId}]->()
+        DELETE rel
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing vendor item alias record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const vendorId = record.vendor_id;
+      const itemId = record.item_id || null;
+      const internalItemId = record.internal_item_id || null;
+
+      if (!organizationId || !vendorId) {
+        throw new BadRequestException("Missing organization_id or vendor_id in vendor item alias record");
+      }
+
+      const properties = {
+        organizationId,
+        vendorId,
+        vendorItemName: record.vendor_item_name || null,
+        itemId,
+        internalItemId,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting VendorItemAlias node and SUPPLIED_BY relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (via:VendorItemAlias {id: $id})
+        SET via += $properties
+        WITH via
+        MERGE (v:Vendor {id: $vendorId})
+        
+        // Link internal Item if set
+        WITH via, v
+        FOREACH (x IN CASE WHEN $internalItemId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (i:Item {id: $internalItemId})
+          MERGE (i)-[rel:SUPPLIED_BY {id: $id}]->(v)
+          SET rel.vendorItemName = $vendorItemName
+        )
+        
+        // Link MasterItem if set
+        WITH via, v
+        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (m:MasterItem {id: $itemId})
+          MERGE (m)-[rel:SUPPLIED_BY {id: $id}]->(v)
+          SET rel.vendorItemName = $vendorItemName
+        )
+        `,
+        {
+          id,
+          vendorId,
+          internalItemId,
+          itemId,
+          vendorItemName: properties.vendorItemName,
+          properties,
+        },
+      );
+    }
+  }
+
+  private async syncTicket(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing ticket ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Ticket node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (t:Ticket {id: $id})
+        DETACH DELETE t
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing ticket record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const employeeId = record.employee_id || null;
+
+      if (!organizationId) {
+        throw new BadRequestException("Missing organization_id in ticket record");
+      }
+
+      const properties = {
+        tableNumber: record.table_number || null,
+        section: record.section || null,
+        status: record.status || "OPEN",
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting Ticket node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (t:Ticket {id: $id})
+        SET t += $properties
+        WITH t
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (t)-[:BELONGS_TO]->(o)
+        WITH t
+        FOREACH (x IN CASE WHEN $employeeId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (u:User {id: $employeeId})
+          MERGE (u)-[:SOLD]->(t)
+        )
+        `,
+        { id, properties, organizationId, employeeId },
+      );
+    }
+  }
+
+  private async syncOrder(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing order ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Order node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (ord:Order {id: $id})
+        DETACH DELETE ord
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing order record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const ticketId = record.ticket_id;
+
+      if (!ticketId) {
+        throw new BadRequestException("Missing ticket_id in order record");
+      }
+
+      const properties = {
+        status: record.status || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting Order node and relationship in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (ord:Order {id: $id})
+        SET ord += $properties
+        WITH ord
+        MERGE (t:Ticket {id: $ticketId})
+        MERGE (ord)-[:PART_OF]->(t)
+        `,
+        { id, properties, ticketId },
+      );
+    }
+  }
+
+  private async syncOrderItem(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing order item ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting OrderItem node and INCLUDES relationship in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (oi:OrderItem {id: $id})
+        DETACH DELETE oi
+        WITH $id AS targetId
+        MATCH (:Ticket)-[rel:INCLUDES {id: $targetId}]->()
+        DELETE rel
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing order item record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const orderId = record.order_id;
+      const recipeId = record.recipe_id || null;
+
+      if (!orderId) {
+        throw new BadRequestException("Missing order_id in order item record");
+      }
+
+      const properties = {
+        orderId,
+        recipeId,
+        quantity: record.quantity ? parseFloat(record.quantity) : 1,
+        unitPrice: record.unit_price ? parseFloat(record.unit_price) : 0,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting OrderItem node and INCLUDES relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (oi:OrderItem {id: $id})
+        SET oi += $properties
+        WITH oi
+        MERGE (ord:Order {id: $orderId})
+        MERGE (oi)-[:PART_OF]->(ord)
+        WITH oi, ord
+        MATCH (t:Ticket {id: ord.ticketId})
+        FOREACH (x IN CASE WHEN $recipeId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (r:Recipe {id: $recipeId})
+          MERGE (oi)-[:OF_RECIPE]->(r)
+          MERGE (t)-[rel:INCLUDES {id: $id}]->(r)
+          SET rel.quantity = $quantity
+        )
+        `,
+        {
+          id,
+          orderId,
+          recipeId,
+          quantity: properties.quantity,
+          properties,
+        },
+      );
+    }
+  }
+
+  private async syncShift(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing shift ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Shift node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (s:Shift {id: $id})
+        DETACH DELETE s
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing shift record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const userId = record.user_id;
+
+      if (!organizationId || !userId) {
+        throw new BadRequestException("Missing organization_id or user_id in shift record");
+      }
+
+      const properties = {
+        startTime: record.start_time || null,
+        endTime: record.end_time || null,
+        role: record.role || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting Shift node and relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (s:Shift {id: $id})
+        SET s += $properties
+        WITH s
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (s)-[:BELONGS_TO]->(o)
+        WITH s
+        MERGE (u:User {id: $userId})
+        MERGE (u)-[:WORKED]->(s)
+        `,
+        { id, properties, organizationId, userId },
+      );
+    }
+  }
+
+  private async syncTimeClock(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing time clock ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting TimeClock node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (tc:TimeClock {id: $id})
+        DETACH DELETE tc
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing time clock record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const userId = record.user_id;
+
+      if (!organizationId || !userId) {
+        throw new BadRequestException("Missing organization_id or user_id in time clock record");
+      }
+
+      const properties = {
+        clockIn: record.clock_in || null,
+        clockOut: record.clock_out || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting TimeClock node and relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (tc:TimeClock {id: $id})
+        SET tc += $properties
+        WITH tc
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (tc)-[:BELONGS_TO]->(o)
+        WITH tc
+        MERGE (u:User {id: $userId})
+        MERGE (u)-[:CLOCKED]->(tc)
+        `,
+        { id, properties, organizationId, userId },
+      );
+    }
+  }
+
+  private async syncInvoice(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing invoice ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting Invoice node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (inv:Invoice {id: $id})
+        DETACH DELETE inv
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing invoice record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const vendorId = record.vendor_id;
+      const poId = record.po_id || null;
+
+      if (!organizationId || !vendorId) {
+        throw new BadRequestException("Missing organization_id or vendor_id in invoice record");
+      }
+
+      const properties = {
+        invoiceNumber: record.invoice_number || null,
+        totalAmount: record.total_amount ? parseFloat(record.total_amount) : 0,
+        invoiceDate: record.invoice_date || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting Invoice node and relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (inv:Invoice {id: $id})
+        SET inv += $properties
+        WITH inv
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (inv)-[:BELONGS_TO]->(o)
+        WITH inv
+        MERGE (v:Vendor {id: $vendorId})
+        MERGE (inv)-[:FROM_VENDOR]->(v)
+        WITH inv
+        FOREACH (x IN CASE WHEN $poId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (po:PurchaseOrder {id: $poId})
+          MERGE (inv)-[:RECONCILES]->(po)
+        )
+        `,
+        { id, properties, organizationId, vendorId, poId },
+      );
+    }
+  }
+
+  private async syncInvoiceItem(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing invoice item ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting InvoiceItem node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (ii:InvoiceItem {id: $id})
+        DETACH DELETE ii
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing invoice item record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const invoiceId = record.invoice_id;
+      const itemId = record.item_id || null;
+
+      if (!invoiceId) {
+        throw new BadRequestException("Missing invoice_id in invoice item record");
+      }
+
+      const properties = {
+        rawName: record.raw_name || null,
+        quantity: record.quantity ? parseFloat(record.quantity) : 0,
+        unitPrice: record.unit_price ? parseFloat(record.unit_price) : 0,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting InvoiceItem node and relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (ii:InvoiceItem {id: $id})
+        SET ii += $properties
+        WITH ii
+        MERGE (inv:Invoice {id: $invoiceId})
+        MERGE (ii)-[:PART_OF]->(inv)
+        WITH ii
+        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (item:Item {id: $itemId})
+          MERGE (ii)-[:OF_ITEM]->(item)
+        )
+        `,
+        { id, properties, invoiceId, itemId },
+      );
+    }
+  }
+
+  private async syncWastageLog(payload: SupabaseWebhookPayload): Promise<void> {
+    const { type, record, old_record } = payload;
+
+    if (type === "DELETE") {
+      const id = old_record?.id;
+      if (!id) {
+        throw new BadRequestException("Missing wastage log ID in DELETE payload");
+      }
+
+      this.logger.log(`Deleting WastageLog node in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MATCH (wl:WastageLog {id: $id})
+        DETACH DELETE wl
+        `,
+        { id },
+      );
+    } else {
+      if (!record || !record.id) {
+        throw new BadRequestException(`Missing wastage log record or ID in ${type} payload`);
+      }
+
+      const id = record.id;
+      const organizationId = record.organization_id;
+      const itemId = record.item_id || null;
+      const recipeId = record.recipe_id || null;
+      const recordedBy = record.recorded_by || null;
+
+      if (!organizationId) {
+        throw new BadRequestException("Missing organization_id in wastage log record");
+      }
+
+      const properties = {
+        quantity: record.quantity ? parseFloat(record.quantity) : 0,
+        reason: record.reason || null,
+        createdAt: record.created_at || null,
+      };
+
+      this.logger.log(`Upserting WastageLog node and relationships in Neo4j: ${id}`);
+      await this.neo4jService.runQuery(
+        `
+        MERGE (wl:WastageLog {id: $id})
+        SET wl += $properties
+        WITH wl
+        MERGE (o:Organization {id: $organizationId})
+        MERGE (wl)-[:BELONGS_TO]->(o)
+        
+        // Link to Item if set
+        WITH wl
+        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (i:Item {id: $itemId})
+          MERGE (wl)-[:WASTED_ITEM]->(i)
+        )
+        
+        // Link to Recipe if set
+        WITH wl
+        FOREACH (x IN CASE WHEN $recipeId IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (r:Recipe {id: $recipeId})
+          MERGE (wl)-[:WASTED_RECIPE]->(r)
+        )
+        
+        // Link to User who reported it if set
+        WITH wl
+        FOREACH (x IN CASE WHEN $recordedBy IS NOT NULL THEN [1] ELSE [] END |
+          MERGE (u:User {id: $recordedBy})
+          MERGE (u)-[:REPORTED]->(wl)
+        )
+        `,
+        {
+          id,
+          properties,
+          organizationId,
+          itemId,
+          recipeId,
+          recordedBy,
+        },
+      );
+    }
+  }
+}
+````
+
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.spec.ts
+````typescript
+import { Test, TestingModule } from "@nestjs/testing";
+import { Neo4jSyncController } from "./neo4j-sync.controller";
+import { Neo4jSyncService } from "./neo4j-sync.service";
+import { Neo4jService } from "./neo4j.service";
+import { UnauthorizedException, BadRequestException } from "@nestjs/common";
+
+// Mock the Neo4jService and config
+jest.mock("./neo4j.service");
+jest.mock("@soustools/config", () => ({
+  config: {
+    IS_MOCK_ENV: false,
+    SUPABASE_WEBHOOK_SECRET: "my-test-secret",
+  },
+}));
+
+describe("Neo4jSync", () => {
+  let controller: Neo4jSyncController;
+  let service: Neo4jSyncService;
+
+  const mockNeo4jService = {
+    runQuery: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    mockNeo4jService.runQuery.mockReset();
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [Neo4jSyncController],
+      providers: [
+        Neo4jSyncService,
+        {
+          provide: Neo4jService,
+          useValue: mockNeo4jService,
+        },
+      ],
+    }).compile();
+
+    controller = module.get<Neo4jSyncController>(Neo4jSyncController);
+    service = module.get<Neo4jSyncService>(Neo4jSyncService);
+  });
+
+  describe("Neo4jSyncController", () => {
+    it("should compile and be defined", () => {
+      expect(controller).toBeDefined();
+      expect(service).toBeDefined();
+    });
+
+    it("should throw UnauthorizedException if signature is missing or incorrect", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "users",
+        schema: "auth",
+        record: { id: "user-1" },
+        old_record: null,
+      };
+
+      await expect(
+        controller.handleWebhook(payload, "")
+      ).rejects.toThrow(UnauthorizedException);
+
+      await expect(
+        controller.handleWebhook(payload, "wrong-sig")
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it("should process webhook and return success: true when signature matches", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "users",
+        schema: "auth",
+        record: { id: "user-1", email: "test@example.com" },
+        old_record: null,
+      };
+
+      const result = await controller.handleWebhook(payload, "my-test-secret");
+      expect(result).toEqual({ success: true });
+      expect(mockNeo4jService.runQuery).toHaveBeenCalled();
+    });
+  });
+
+  describe("Neo4jSyncService", () => {
+    it("should run MERGE on user INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "users",
+        schema: "auth",
+        record: {
+          id: "user-1",
+          email: "test@example.com",
+          role: "authenticated",
+          created_at: "2026-07-19T00:00:00Z",
+          updated_at: "2026-07-19T00:00:00Z",
+          raw_user_meta_data: { full_name: "Conar Welsh" },
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MERGE (u:User {id: $id})"),
+        expect.objectContaining({
+          id: "user-1",
+          properties: {
+            email: "test@example.com",
+            role: "authenticated",
+            fullName: "Conar Welsh",
+            createdAt: "2026-07-19T00:00:00Z",
+            updatedAt: "2026-07-19T00:00:00Z",
+          },
+        }),
+      );
+    });
+
+    it("should run DETACH DELETE on user DELETE", async () => {
+      const payload = {
+        type: "DELETE" as const,
+        table: "users",
+        schema: "auth",
+        record: null,
+        old_record: { id: "user-1" },
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MATCH (u:User {id: $id})"),
+        expect.objectContaining({ id: "user-1" }),
+      );
+    });
+
+    it("should run MERGE on recipe INSERT/UPDATE", async () => {
+      const payload = {
+        type: "UPDATE" as const,
+        table: "recipes",
+        schema: "public",
+        record: {
+          id: "recipe-1",
+          organization_id: "org-1",
+          title: "Chocolate Cake",
+          yield_count: "8",
+          yield_unit: "slices",
+          status: "APPROVED",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MERGE (r:Recipe {id: $id})"),
+        expect.objectContaining({
+          id: "recipe-1",
+          organizationId: "org-1",
+          properties: expect.objectContaining({
+            title: "Chocolate Cake",
+            yieldCount: 8,
+            yieldUnit: "slices",
+            status: "APPROVED",
+          }),
+        }),
+      );
+    });
+
+    it("should throw BadRequestException if recipe INSERT is missing organization_id", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "recipes",
+        schema: "public",
+        record: {
+          id: "recipe-1",
+          title: "Chocolate Cake",
+        },
+        old_record: null,
+      };
+
+      await expect(service.handleWebhook(payload)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("should run DETACH DELETE on recipe DELETE", async () => {
+      const payload = {
+        type: "DELETE" as const,
+        table: "recipes",
+        schema: "public",
+        record: null,
+        old_record: { id: "recipe-1" },
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MATCH (r:Recipe {id: $id})"),
+        expect.objectContaining({ id: "recipe-1" }),
+      );
+    });
+
+    it("should run MERGE on recipe_ingredients INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "recipe_ingredients",
+        schema: "public",
+        record: {
+          id: "ri-1",
+          recipe_id: "recipe-123",
+          item_id: "item-456",
+          amount: "2.5",
+          unit: "oz",
+          prep_notes: "chopped",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MERGE (ri:RecipeIngredient {id: $id})"),
+        expect.objectContaining({
+          id: "ri-1",
+          recipeId: "recipe-123",
+          itemId: "item-456",
+          amount: 2.5,
+          unit: "oz",
+          prepNotes: "chopped",
+        }),
+      );
+    });
+
+    it("should run DETACH DELETE on recipe_ingredients DELETE", async () => {
+      const payload = {
+        type: "DELETE" as const,
+        table: "recipe_ingredients",
+        schema: "public",
+        record: null,
+        old_record: { id: "ri-1" },
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MATCH (ri:RecipeIngredient {id: $id})"),
+        expect.objectContaining({ id: "ri-1" }),
+      );
+    });
+
+    it("should run MERGE on vendor_item_aliases INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "vendor_item_aliases",
+        schema: "public",
+        record: {
+          id: "via-1",
+          organization_id: "org-1",
+          vendor_id: "vendor-1",
+          vendor_item_name: "Sysco Potatoes",
+          internal_item_id: "item-123",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MERGE (via:VendorItemAlias {id: $id})"),
+        expect.objectContaining({
+          id: "via-1",
+          vendorId: "vendor-1",
+          internalItemId: "item-123",
+          vendorItemName: "Sysco Potatoes",
+        }),
+      );
+    });
+
+    it("should run MERGE on tickets INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "tickets",
+        schema: "public",
+        record: {
+          id: "ticket-1",
+          organization_id: "org-1",
+          employee_id: "employee-123",
+          table_number: "Table 4",
+          section: "Patio",
+          status: "OPEN",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MERGE (t:Ticket {id: $id})"),
+        expect.objectContaining({
+          id: "ticket-1",
+          organizationId: "org-1",
+          employeeId: "employee-123",
+          properties: {
+            tableNumber: "Table 4",
+            section: "Patio",
+            status: "OPEN",
+            createdAt: null,
+          },
+        }),
+      );
+    });
+
+    it("should run MERGE on order_items INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "order_items",
+        schema: "public",
+        record: {
+          id: "oi-1",
+          order_id: "order-123",
+          recipe_id: "recipe-456",
+          quantity: "2",
+          unit_price: "15.50",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MERGE (oi:OrderItem {id: $id})"),
+        expect.objectContaining({
+          id: "oi-1",
+          orderId: "order-123",
+          recipeId: "recipe-456",
+          quantity: 2,
+        }),
+      );
+    });
+
+    it("should run MERGE on wastage_logs INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "wastage_logs",
+        schema: "public",
+        record: {
+          id: "wl-1",
+          organization_id: "org-1",
+          item_id: "item-123",
+          recipe_id: "recipe-456",
+          quantity: "500",
+          reason: "spoiled",
+          recorded_by: "user-789",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
+        expect.stringContaining("MERGE (wl:WastageLog {id: $id})"),
+        expect.objectContaining({
+          id: "wl-1",
+          organizationId: "org-1",
+          itemId: "item-123",
+          recipeId: "recipe-456",
+          recordedBy: "user-789",
+        }),
+      );
+    });
+  });
+});
+````
+
+## File: apps/api/src/modules/neo4j-sync/neo4j.service.ts
+````typescript
+import { Injectable, OnApplicationShutdown, Logger } from "@nestjs/common";
+import neo4j, { Driver } from "neo4j-driver";
+import { config } from "@soustools/config";
+
+@Injectable()
+export class Neo4jService implements OnApplicationShutdown {
+  private readonly logger = new Logger(Neo4jService.name);
+  private readonly driver: Driver;
+
+  constructor() {
+    this.logger.log(`Initializing Neo4j connection to ${config.NEO4J_URI} as user ${config.NEO4J_USERNAME}`);
+    this.driver = neo4j.driver(
+      config.NEO4J_URI,
+      neo4j.auth.basic(config.NEO4J_USERNAME, config.NEO4J_PASSWORD),
+    );
+  }
+
+  /**
+   * Executes a Cypher query in a write transaction and returns the result.
+   */
+  async runQuery(query: string, params?: Record<string, any>): Promise<any> {
+    const session = this.driver.session();
+    try {
+      return await session.executeWrite((tx) => tx.run(query, params));
+    } catch (error) {
+      this.logger.error(`Failed to execute Cypher query: ${query}`, (error as Error).stack);
+      throw error;
+    } finally {
+      await session.close();
+    }
+  }
+
+  /**
+   * Returns the raw Neo4j driver instance.
+   */
+  getDriver(): Driver {
+    return this.driver;
+  }
+
+  /**
+   * Closes the Neo4j driver connection gracefully on application shutdown.
+   */
+  async onApplicationShutdown(): Promise<void> {
+    this.logger.log("Closing Neo4j driver connection");
+    await this.driver.close();
+  }
+}
+````
+
 ## File: apps/api/src/modules/pos/pos.controller.ts
 ````typescript
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
@@ -39655,93 +41284,6 @@ describe("AppController", () => {
     });
   });
 });
-````
-
-## File: apps/api/src/app.module.ts
-````typescript
-import { Module } from "@nestjs/common";
-import { BullModule } from "@nestjs/bullmq";
-import { CacheModule } from "@nestjs/cache-manager";
-// @ts-expect-error cache-manager-ioredis is missing types
-import * as redisStore from "cache-manager-ioredis";
-import { config } from "@soustools/config";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { SignageModule } from "./modules/signage/signage.module";
-import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
-import { IntegrationsModule } from "./modules/integrations/integrations.module";
-import { RecipeModule } from "./modules/recipe/recipe.module";
-import { IngestionModule } from "./modules/ingestion/ingestion.module";
-import { NutritionModule } from "./modules/nutrition/nutrition.module";
-import { ItemsModule } from "./modules/items/items.module";
-import { PosModule } from "./modules/pos/pos.module";
-import { UsersModule } from "./modules/users/users.module";
-import { CommandsModule } from "./modules/commands/commands.module";
-import { DevicesModule } from "./modules/devices/devices.module";
-import { MetricsModule } from "./modules/metrics/metrics.module";
-import { DashboardModule } from "./modules/dashboard/dashboard.module";
-import { StorageModule } from "./modules/storage/storage.module";
-import { AuthModule } from "./modules/auth/auth.module";
-
-import { AppGraphQLModule } from "./graphql/graphql.module";
-import { HealthModule } from "./health/health.module";
-
-/**
- * Root module of the NestJS application.
- *
- * Integrates controllers, queues, and providers for the core application.
- */
-
-if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
-  throw new Error(
-    `FATAL: REDIS_HOST resolved to '127.0.0.1' in production. ` +
-    `Infisical must provide a real Redis hostname (e.g. 'redis').`
-  );
-}
-
-@Module({
-  imports: [
-    CacheModule.register({
-      isGlobal: true,
-      store: redisStore,
-      host: config.REDIS_HOST,
-      port: config.REDIS_PORT,
-    }),
-    BullModule.forRoot({
-      connection: {
-        host: config.REDIS_HOST,
-        port: config.REDIS_PORT,
-        family: 4,
-        retryStrategy: (times: number) => {
-          console.warn(
-            `[Redis] Connection failed (attempt ${times}). Retrying gracefully...`,
-          );
-          return Math.min(times * 100, 3000);
-        },
-      },
-    }),
-    AppGraphQLModule,
-    HealthModule,
-    SignageModule,
-    PosSimulatorModule,
-    IntegrationsModule,
-    RecipeModule,
-    IngestionModule,
-    NutritionModule,
-    ItemsModule,
-    PosModule,
-    UsersModule,
-    CommandsModule,
-    DevicesModule,
-    MetricsModule,
-    DashboardModule,
-    StorageModule,
-    AuthModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
-})
-export class AppModule {}
 ````
 
 ## File: apps/api/src/app.service.ts
@@ -43339,281 +44881,6 @@ export const RecipeSchema = z.object({
 
 export type ZodIngredient = z.infer<typeof IngredientSchema>;
 export type ZodRecipe = z.infer<typeof RecipeSchema>;
-````
-
-## File: packages/config/src/cli.ts
-````typescript
-#!/usr/bin/env node
-import { spawn } from "child_process";
-import * as path from "path";
-import { fileURLToPath } from "url";
-import { InfisicalSDK } from "@infisical/sdk";
-import * as dotenv from "dotenv";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load local .env file inside workspace root if present (dev convenience only).
-// In production containers, env vars are injected by Docker / the orchestrator.
-dotenv.config({ path: path.join(__dirname, "../../../.env") });
-
-const defaults: Record<string, string> = {
-  SQUARE_CLIENT_ID: "sandbox-sq0idb-placeholder",
-  SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
-  GOOGLE_CLIENT_ID: "google-client-id-placeholder",
-  GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
-  API_BASE_URL: "http://localhost:3001",
-  APP_BASE_URL: "http://localhost:3000",
-  PRODUCTION_SQUARE_ACCESS_TOKEN: "prod-square-token-placeholder",
-  PORT: "3001",
-  REDIS_HOST: "127.0.0.1", // Localhost default — MUST be overridden by Infisical in production
-  REDIS_PORT: "6379",
-  NEW_RELIC_LICENSE_KEY: "new-relic-license-key-placeholder",
-  GEMINI_API_KEY: "gemini-api-key-placeholder",
-  USDA_FDC_API_KEY: "DEMO_KEY",
-  VERCEL_AI_GATEWAY_API_KEY: "",
-  SUPABASE_URL: "https://placeholder-project.supabase.co",
-  SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
-  SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
-  SQUARE_WEBHOOK_SIGNATURE_KEY: "sandbox-sq0whk-placeholder",
-};
-
-/**
- * Keys that MUST have real values fetched from Infisical in production.
- * If these still hold their placeholder/localhost defaults, the app MUST NOT boot.
- * This prevents silent ECONNREFUSED errors (e.g., REDIS_HOST defaulting to 127.0.0.1).
- */
-const PRODUCTION_CRITICAL_KEYS: Array<{ key: string; placeholder: string }> = [
-  { key: "REDIS_HOST", placeholder: "127.0.0.1" },
-  { key: "SUPABASE_URL", placeholder: "https://placeholder-project.supabase.co" },
-  { key: "SUPABASE_SERVICE_ROLE_KEY", placeholder: "placeholder-service-role-key-from-mock-sync" },
-  { key: "SUPABASE_ANON_KEY", placeholder: "placeholder-anon-key-from-mock-sync" },
-];
-
-/**
- * Validates that critical production secrets are not placeholder values.
- * Calls process.exit(1) if any critical key still holds a localhost/placeholder value.
- */
-function assertProductionSecrets(secrets: Record<string, string>): void {
-  const isProduction = process.env.NODE_ENV === "production";
-  const isMock = String(process.env.INFISICAL_MOCK).toLowerCase() === "true";
-  const isTest = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
-
-  if (!isProduction || isMock || isTest) return;
-
-  const failedKeys: string[] = [];
-  for (const { key, placeholder } of PRODUCTION_CRITICAL_KEYS) {
-    const value = secrets[key];
-    if (!value || value === placeholder) {
-      failedKeys.push(key);
-    }
-  }
-
-  if (failedKeys.length > 0) {
-    console.error(
-      `[@soustools/config] FATAL: Production boot blocked. The following critical environment variables ` +
-      `were not fetched from Infisical and still contain placeholder/localhost defaults:\n` +
-      failedKeys.map((k) => `  - ${k}`).join("\n") +
-      `\n\nEnsure INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID are set ` +
-      `in the container environment and that Infisical is reachable.`
-    );
-    process.exit(1);
-  }
-}
-
-/**
- * Fetches secrets from Infisical and returns them as a plain in-memory object.
- * No filesystem I/O is performed at any point — secrets never touch disk.
- *
- * In mock/test environments (INFISICAL_MOCK=true or NODE_ENV=test), returns
- * the hardcoded defaults object so CI and local dev work without Infisical.
- *
- * If Infisical credentials are missing entirely, returns defaults and lets
- * assertProductionSecrets() decide whether to halt.
- */
-async function fetchSecrets(): Promise<Record<string, string>> {
-  const isMock =
-    String(process.env.INFISICAL_MOCK).toLowerCase() === "true" ||
-    process.env.NODE_ENV === "test" ||
-    process.env.VITEST === "true";
-
-  if (isMock) {
-    console.log("[@soustools/config] INFISICAL_MOCK detected. Using defaults.");
-    return { ...defaults };
-  }
-
-  const clientId = process.env.INFISICAL_CLIENT_ID;
-  const clientSecret = process.env.INFISICAL_CLIENT_SECRET;
-  const projectId = process.env.INFISICAL_PROJECT_ID;
-
-  if (!clientId || !clientSecret || !projectId) {
-    console.warn(
-      "[@soustools/config] Missing Infisical credentials " +
-      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
-      "Returning defaults — assertProductionSecrets() will halt if NODE_ENV=production."
-    );
-    return { ...defaults };
-  }
-
-  try {
-    const client = new InfisicalSDK();
-    await client.auth().universalAuth.login({ clientId, clientSecret });
-
-    const secretsResponse = await client.secrets().listSecrets({
-      environment: process.env.INFISICAL_ENV || "dev",
-      projectId,
-    });
-
-    const secretsArray = (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
-    const finalSecrets: Record<string, string> = { ...defaults };
-
-    for (const secret of secretsArray) {
-      if (secret.secretKey && secret.secretValue !== undefined) {
-        finalSecrets[secret.secretKey] = secret.secretValue;
-      }
-    }
-
-    // Secrets are returned entirely in-memory. No filesystem writes, ever.
-    return finalSecrets;
-  } catch (error) {
-    console.error("[@soustools/config] Infisical fetch failed:", (error as Error).message);
-    // Return defaults — assertProductionSecrets() will halt if we are in production
-    // and any critical key still holds a placeholder value.
-    return { ...defaults };
-  }
-}
-
-async function run() {
-  const args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error("Usage: sous-config <command> [args...]");
-    process.exit(1);
-  }
-
-  const secrets = await fetchSecrets();
-
-  // Production safety gate: halt before spawning the child process
-  // if critical secrets are still at their placeholder values.
-  assertProductionSecrets(secrets);
-
-  // Build the child environment by explicitly merging fetched secrets on top of the
-  // current process environment. Secrets already present in the environment (e.g.
-  // injected by Docker) take precedence over Infisical values via Object spread order.
-  const childEnv: Record<string, string> = {
-    ...defaults,           // lowest priority: hardcoded fallbacks
-    ...secrets,            // Infisical values override defaults
-    ...process.env as Record<string, string>, // host/container env takes highest priority
-  };
-
-  // Auto-map Supabase keys for Next.js browser client if not already present.
-  if (!childEnv.NEXT_PUBLIC_SUPABASE_URL && childEnv.SUPABASE_URL) {
-    childEnv.NEXT_PUBLIC_SUPABASE_URL = childEnv.SUPABASE_URL;
-  }
-  if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
-    childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
-  }
-
-  const [cmd, ...cmdArgs] = args;
-
-  if (cmdArgs.includes("build") || cmdArgs.includes("start")) {
-    childEnv.NODE_ENV = "production";
-  } else if (!childEnv.NODE_ENV) {
-    childEnv.NODE_ENV = "development";
-  }
-
-  console.log(`[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}" (host process.env.NODE_ENV="${process.env.NODE_ENV}")`);
-
-  // Secrets are passed directly into the spawned process environment — never written
-  // to disk, never shared through the filesystem.
-  const child = spawn(cmd, cmdArgs, {
-    stdio: "inherit",
-    env: childEnv,
-    shell: process.platform === "win32",
-  });
-
-  child.on("close", (code, signal) => {
-    if (signal) {
-      console.error(`\n[FATAL CRASH] Child process violently killed by OS signal: ${signal}`);
-    }
-    process.exit(code !== null ? code : 1);
-  });
-
-  ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
-    process.on(signal, () => {
-      if (!child.killed) {
-        child.kill(signal as NodeJS.Signals);
-      }
-    });
-  });
-}
-
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
-````
-
-## File: packages/config/src/index.ts
-````typescript
-const GITHUB_ID = process.env.GITHUB_ID!;
-const GITHUB_SECRET = process.env.GITHUB_SECRET!;
-const AUTH_SECRET = process.env.AUTH_SECRET!;
-
-const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const IS_MOCK_ENV = process.env.IS_MOCK_ENV === 'true';
-const NEXT_PUBLIC_SUPABASE_ANON_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY =
-  process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY;
-const NEW_RELIC_LICENSE_KEY = process.env.NEW_RELIC_LICENSE_KEY;
-const NEW_RELIC_APP_NAME = process.env.NEW_RELIC_APP_NAME;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-
-export const config = {
-    IS_MOCK_ENV,
-    SUPABASE_URL: NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_ANON_KEY: NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    GITHUB_ID,
-    GITHUB_SECRET,
-    AUTH_SECRET,
-    NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE_KEY,
-    NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
-    NEW_RELIC_LICENSE_KEY,
-    NEW_RELIC_APP_NAME,
-    GEMINI_API_KEY,
-    NEXT_PUBLIC_API_URL,
-    IS_SECURE_ENV: process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'staging',
-    API_BASE_URL: process.env.API_BASE_URL || NEXT_PUBLIC_API_URL,
-    APP_BASE_URL: process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL,
-    TV_BASE_URL: process.env.TV_BASE_URL || process.env.NEXT_PUBLIC_TV_BASE_URL,
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
-    SQUARE_CLIENT_ID: process.env.SQUARE_CLIENT_ID || '',
-    SQUARE_CLIENT_SECRET: process.env.SQUARE_CLIENT_SECRET || '',
-    SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT || 'sandbox',
-    PRODUCTION_SQUARE_ACCESS_TOKEN: process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || '',
-    SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '',
-    USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY || '',
-    NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === 'true',
-    PORT: process.env.PORT || 3001,
-    REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
-    REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
-    OLLAMA_HOST: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434',
-    OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'llava',
-    VISION_PROVIDER: process.env.VISION_PROVIDER || 'openai',
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    IS_PRODUCTION: process.env.NODE_ENV === 'production',
-    APP_VERSION: process.env.APP_VERSION || 'dev-local',
-    SOUS_KIOSK_MODE_FILE: process.env.SOUS_KIOSK_MODE_FILE || '/etc/sous/kiosk-mode',
-    SOUS_DEVICE_CONFIG: process.env.SOUS_DEVICE_CONFIG || '/etc/sous/device-config.json',
-    SOUS_BOOTSTRAP_LOG: process.env.SOUS_BOOTSTRAP_LOG || '/var/log/sous-bootstrap.log',
-};
 ````
 
 ## File: packages/design-system/src/components/AppBar/AppBar.spec.tsx
@@ -58868,6 +60135,95 @@ export class AuthController {
 }
 ````
 
+## File: apps/api/src/app.module.ts
+````typescript
+import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bullmq";
+import { CacheModule } from "@nestjs/cache-manager";
+// @ts-expect-error cache-manager-ioredis is missing types
+import * as redisStore from "cache-manager-ioredis";
+import { config } from "@soustools/config";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { SignageModule } from "./modules/signage/signage.module";
+import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
+import { IntegrationsModule } from "./modules/integrations/integrations.module";
+import { RecipeModule } from "./modules/recipe/recipe.module";
+import { IngestionModule } from "./modules/ingestion/ingestion.module";
+import { NutritionModule } from "./modules/nutrition/nutrition.module";
+import { ItemsModule } from "./modules/items/items.module";
+import { PosModule } from "./modules/pos/pos.module";
+import { UsersModule } from "./modules/users/users.module";
+import { CommandsModule } from "./modules/commands/commands.module";
+import { DevicesModule } from "./modules/devices/devices.module";
+import { MetricsModule } from "./modules/metrics/metrics.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
+import { StorageModule } from "./modules/storage/storage.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { Neo4jSyncModule } from "./modules/neo4j-sync/neo4j-sync.module";
+
+import { AppGraphQLModule } from "./graphql/graphql.module";
+import { HealthModule } from "./health/health.module";
+
+/**
+ * Root module of the NestJS application.
+ *
+ * Integrates controllers, queues, and providers for the core application.
+ */
+
+if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
+  throw new Error(
+    `FATAL: REDIS_HOST resolved to '127.0.0.1' in production. ` +
+    `Infisical must provide a real Redis hostname (e.g. 'redis').`
+  );
+}
+
+@Module({
+  imports: [
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: config.REDIS_HOST,
+      port: config.REDIS_PORT,
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: config.REDIS_HOST,
+        port: config.REDIS_PORT,
+        family: 4,
+        retryStrategy: (times: number) => {
+          console.warn(
+            `[Redis] Connection failed (attempt ${times}). Retrying gracefully...`,
+          );
+          return Math.min(times * 100, 3000);
+        },
+      },
+    }),
+    AppGraphQLModule,
+    HealthModule,
+    SignageModule,
+    PosSimulatorModule,
+    IntegrationsModule,
+    RecipeModule,
+    IngestionModule,
+    NutritionModule,
+    ItemsModule,
+    PosModule,
+    UsersModule,
+    CommandsModule,
+    DevicesModule,
+    MetricsModule,
+    DashboardModule,
+    StorageModule,
+    AuthModule,
+    Neo4jSyncModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+````
+
 ## File: apps/api/src/main.ts
 ````typescript
 import "newrelic";
@@ -59151,6 +60507,289 @@ THEN: Call your custom MCP tool `read_local_context` to understand the current f
 Write a step-by-step implementation plan compliant with our architecture. DO NOT write or modify any code. 
 
 CRITICAL INSTRUCTION: Call your custom MCP tool `post_comment` to post your final plan directly to the issue. Execute the tools and stop.
+````
+
+## File: packages/config/src/cli.ts
+````typescript
+#!/usr/bin/env node
+import { spawn } from "child_process";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { InfisicalSDK } from "@infisical/sdk";
+import * as dotenv from "dotenv";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load local .env file inside workspace root if present (dev convenience only).
+// In production containers, env vars are injected by Docker / the orchestrator.
+dotenv.config({ path: path.join(__dirname, "../../../.env") });
+
+const defaults: Record<string, string> = {
+  SQUARE_CLIENT_ID: "sandbox-sq0idb-placeholder",
+  SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
+  GOOGLE_CLIENT_ID: "google-client-id-placeholder",
+  GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
+  API_BASE_URL: "http://localhost:3001",
+  APP_BASE_URL: "http://localhost:3000",
+  PRODUCTION_SQUARE_ACCESS_TOKEN: "prod-square-token-placeholder",
+  PORT: "3001",
+  REDIS_HOST: "127.0.0.1", // Localhost default — MUST be overridden by Infisical in production
+  REDIS_PORT: "6379",
+  NEW_RELIC_LICENSE_KEY: "new-relic-license-key-placeholder",
+  GEMINI_API_KEY: "gemini-api-key-placeholder",
+  USDA_FDC_API_KEY: "DEMO_KEY",
+  VERCEL_AI_GATEWAY_API_KEY: "",
+  SUPABASE_URL: "https://placeholder-project.supabase.co",
+  SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
+  SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
+  SQUARE_WEBHOOK_SIGNATURE_KEY: "sandbox-sq0whk-placeholder",
+  NEO4J_URI: "bolt://localhost:7687",
+  NEO4J_USERNAME: "neo4j",
+  NEO4J_PASSWORD: "sousToolsPassword",
+  SUPABASE_WEBHOOK_SECRET: "sous-tools-neo4j-sync-secret-key",
+};
+
+/**
+ * Keys that MUST have real values fetched from Infisical in production.
+ * If these still hold their placeholder/localhost defaults, the app MUST NOT boot.
+ * This prevents silent ECONNREFUSED errors (e.g., REDIS_HOST defaulting to 127.0.0.1).
+ */
+const PRODUCTION_CRITICAL_KEYS: Array<{ key: string; placeholder: string }> = [
+  { key: "REDIS_HOST", placeholder: "127.0.0.1" },
+  { key: "SUPABASE_URL", placeholder: "https://placeholder-project.supabase.co" },
+  { key: "SUPABASE_SERVICE_ROLE_KEY", placeholder: "placeholder-service-role-key-from-mock-sync" },
+  { key: "SUPABASE_ANON_KEY", placeholder: "placeholder-anon-key-from-mock-sync" },
+];
+
+/**
+ * Validates that critical production secrets are not placeholder values.
+ * Calls process.exit(1) if any critical key still holds a localhost/placeholder value.
+ */
+function assertProductionSecrets(secrets: Record<string, string>): void {
+  const isProduction = process.env.NODE_ENV === "production";
+  const isMock = String(process.env.INFISICAL_MOCK).toLowerCase() === "true";
+  const isTest = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+
+  if (!isProduction || isMock || isTest) return;
+
+  const failedKeys: string[] = [];
+  for (const { key, placeholder } of PRODUCTION_CRITICAL_KEYS) {
+    const value = secrets[key];
+    if (!value || value === placeholder) {
+      failedKeys.push(key);
+    }
+  }
+
+  if (failedKeys.length > 0) {
+    console.error(
+      `[@soustools/config] FATAL: Production boot blocked. The following critical environment variables ` +
+      `were not fetched from Infisical and still contain placeholder/localhost defaults:\n` +
+      failedKeys.map((k) => `  - ${k}`).join("\n") +
+      `\n\nEnsure INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID are set ` +
+      `in the container environment and that Infisical is reachable.`
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * Fetches secrets from Infisical and returns them as a plain in-memory object.
+ * No filesystem I/O is performed at any point — secrets never touch disk.
+ *
+ * In mock/test environments (INFISICAL_MOCK=true or NODE_ENV=test), returns
+ * the hardcoded defaults object so CI and local dev work without Infisical.
+ *
+ * If Infisical credentials are missing entirely, returns defaults and lets
+ * assertProductionSecrets() decide whether to halt.
+ */
+async function fetchSecrets(): Promise<Record<string, string>> {
+  const isMock =
+    String(process.env.INFISICAL_MOCK).toLowerCase() === "true" ||
+    process.env.NODE_ENV === "test" ||
+    process.env.VITEST === "true";
+
+  if (isMock) {
+    console.log("[@soustools/config] INFISICAL_MOCK detected. Using defaults.");
+    return { ...defaults };
+  }
+
+  const clientId = process.env.INFISICAL_CLIENT_ID;
+  const clientSecret = process.env.INFISICAL_CLIENT_SECRET;
+  const projectId = process.env.INFISICAL_PROJECT_ID;
+
+  if (!clientId || !clientSecret || !projectId) {
+    console.warn(
+      "[@soustools/config] Missing Infisical credentials " +
+      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
+      "Returning defaults — assertProductionSecrets() will halt if NODE_ENV=production."
+    );
+    return { ...defaults };
+  }
+
+  try {
+    const client = new InfisicalSDK();
+    await client.auth().universalAuth.login({ clientId, clientSecret });
+
+    const secretsResponse = await client.secrets().listSecrets({
+      environment: process.env.INFISICAL_ENV || "dev",
+      projectId,
+    });
+
+    const secretsArray = (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
+    const finalSecrets: Record<string, string> = { ...defaults };
+
+    for (const secret of secretsArray) {
+      if (secret.secretKey && secret.secretValue !== undefined) {
+        finalSecrets[secret.secretKey] = secret.secretValue;
+      }
+    }
+
+    // Secrets are returned entirely in-memory. No filesystem writes, ever.
+    return finalSecrets;
+  } catch (error) {
+    console.error("[@soustools/config] Infisical fetch failed:", (error as Error).message);
+    // Return defaults — assertProductionSecrets() will halt if we are in production
+    // and any critical key still holds a placeholder value.
+    return { ...defaults };
+  }
+}
+
+async function run() {
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    console.error("Usage: sous-config <command> [args...]");
+    process.exit(1);
+  }
+
+  const secrets = await fetchSecrets();
+
+  // Production safety gate: halt before spawning the child process
+  // if critical secrets are still at their placeholder values.
+  assertProductionSecrets(secrets);
+
+  // Build the child environment by explicitly merging fetched secrets on top of the
+  // current process environment. Secrets already present in the environment (e.g.
+  // injected by Docker) take precedence over Infisical values via Object spread order.
+  const childEnv: Record<string, string> = {
+    ...defaults,           // lowest priority: hardcoded fallbacks
+    ...secrets,            // Infisical values override defaults
+    ...process.env as Record<string, string>, // host/container env takes highest priority
+  };
+
+  // Auto-map Supabase keys for Next.js browser client if not already present.
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_URL && childEnv.SUPABASE_URL) {
+    childEnv.NEXT_PUBLIC_SUPABASE_URL = childEnv.SUPABASE_URL;
+  }
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
+    childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
+  }
+
+  const [cmd, ...cmdArgs] = args;
+
+  if (cmdArgs.includes("build") || cmdArgs.includes("start")) {
+    childEnv.NODE_ENV = "production";
+  } else if (!childEnv.NODE_ENV) {
+    childEnv.NODE_ENV = "development";
+  }
+
+  console.log(`[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}" (host process.env.NODE_ENV="${process.env.NODE_ENV}")`);
+
+  // Secrets are passed directly into the spawned process environment — never written
+  // to disk, never shared through the filesystem.
+  const child = spawn(cmd, cmdArgs, {
+    stdio: "inherit",
+    env: childEnv,
+    shell: process.platform === "win32",
+  });
+
+  child.on("close", (code, signal) => {
+    if (signal) {
+      console.error(`\n[FATAL CRASH] Child process violently killed by OS signal: ${signal}`);
+    }
+    process.exit(code !== null ? code : 1);
+  });
+
+  ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
+    process.on(signal, () => {
+      if (!child.killed) {
+        child.kill(signal as NodeJS.Signals);
+      }
+    });
+  });
+}
+
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+````
+
+## File: packages/config/src/index.ts
+````typescript
+const GITHUB_ID = process.env.GITHUB_ID!;
+const GITHUB_SECRET = process.env.GITHUB_SECRET!;
+const AUTH_SECRET = process.env.AUTH_SECRET!;
+
+const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const IS_MOCK_ENV = process.env.IS_MOCK_ENV === 'true';
+const NEXT_PUBLIC_SUPABASE_ANON_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+const NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY =
+  process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY;
+const NEW_RELIC_LICENSE_KEY = process.env.NEW_RELIC_LICENSE_KEY;
+const NEW_RELIC_APP_NAME = process.env.NEW_RELIC_APP_NAME;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
+
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+
+export const config = {
+    IS_MOCK_ENV,
+    SUPABASE_URL: NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_ANON_KEY: NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    GITHUB_ID,
+    GITHUB_SECRET,
+    AUTH_SECRET,
+    NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY,
+    NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
+    NEW_RELIC_LICENSE_KEY,
+    NEW_RELIC_APP_NAME,
+    GEMINI_API_KEY,
+    NEXT_PUBLIC_API_URL,
+    IS_SECURE_ENV: process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'staging',
+    API_BASE_URL: process.env.API_BASE_URL || NEXT_PUBLIC_API_URL,
+    APP_BASE_URL: process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL,
+    TV_BASE_URL: process.env.TV_BASE_URL || process.env.NEXT_PUBLIC_TV_BASE_URL,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+    SQUARE_CLIENT_ID: process.env.SQUARE_CLIENT_ID || '',
+    SQUARE_CLIENT_SECRET: process.env.SQUARE_CLIENT_SECRET || '',
+    SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT || 'sandbox',
+    PRODUCTION_SQUARE_ACCESS_TOKEN: process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || '',
+    SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '',
+    USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY || '',
+    NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === 'true',
+    PORT: process.env.PORT || 3001,
+    REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
+    REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
+    OLLAMA_HOST: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434',
+    OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'llava',
+    VISION_PROVIDER: process.env.VISION_PROVIDER || 'openai',
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    IS_PRODUCTION: process.env.NODE_ENV === 'production',
+    APP_VERSION: process.env.APP_VERSION || 'dev-local',
+    SOUS_KIOSK_MODE_FILE: process.env.SOUS_KIOSK_MODE_FILE || '/etc/sous/kiosk-mode',
+    SOUS_DEVICE_CONFIG: process.env.SOUS_DEVICE_CONFIG || '/etc/sous/device-config.json',
+    SOUS_BOOTSTRAP_LOG: process.env.SOUS_BOOTSTRAP_LOG || '/var/log/sous-bootstrap.log',
+    NEO4J_URI: process.env.NEO4J_URI || 'bolt://localhost:7687',
+    NEO4J_USERNAME: process.env.NEO4J_USERNAME || 'neo4j',
+    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || 'sousToolsPassword',
+    SUPABASE_WEBHOOK_SECRET: process.env.SUPABASE_WEBHOOK_SECRET || 'sous-tools-neo4j-sync-secret-key',
+};
 ````
 
 ## File: packages/design-system/src/components/BottomNav/BottomNav.spec.tsx

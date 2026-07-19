@@ -104,6 +104,12 @@
 │   │   │   │   ├── metrics
 │   │   │   │   │   ├── metrics.controller.ts
 │   │   │   │   │   └── metrics.module.ts
+│   │   │   │   ├── neo4j-sync
+│   │   │   │   │   ├── neo4j-sync.controller.ts
+│   │   │   │   │   ├── neo4j-sync.module.ts
+│   │   │   │   │   ├── neo4j-sync.service.ts
+│   │   │   │   │   ├── neo4j-sync.spec.ts
+│   │   │   │   │   └── neo4j.service.ts
 │   │   │   │   ├── nutrition
 │   │   │   │   │   ├── dietary-classifier.service.ts
 │   │   │   │   │   ├── label-renderer.service.ts
@@ -1336,10 +1342,13 @@
 │   │   ├── 20260712000000_vendor_item_aliases.sql
 │   │   ├── 20260712010000_pgvector_setup.sql
 │   │   ├── 20260712020000_rename_master_ingredients.sql
-│   │   └── 20260715000000_signage_displays_port_label.sql
+│   │   ├── 20260715000000_signage_displays_port_label.sql
+│   │   ├── 20260719000000_neo4j_sync_triggers.sql
+│   │   ├── 20260719000001_neo4j_sync_all_tables.sql
+│   │   └── 20260719000002_neo4j_sync_operational_tables.sql
 │   ├── seed.sql
 │   └── snippets
 │       └── Untitled query 242.sql
 └── turbo.json
 
-311 directories, 1032 files
+312 directories, 1040 files

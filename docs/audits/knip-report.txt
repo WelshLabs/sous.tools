@@ -102,9 +102,8 @@ packages/domain-signage/src/preview-column-renderers.tsx
 packages/domain-signage/src/preview-menu-renderer.tsx                        
 phase1.js                                                                    
 scripts/generate-icons.mjs                                                   
-[93m[4mUnused dependencies[24m[39m (25)
+[93m[4mUnused dependencies[24m[39m (24)
 @as-integrations/express4      apps/api/package.json:20:6                
-neo4j-driver                   apps/api/package.json:46:6                
 @nestjs/platform-express       apps/cli/package.json:25:6                
 @soustools/api-types           apps/cli/package.json:26:6                
 @soustools/logger              apps/cli/package.json:28:6                
