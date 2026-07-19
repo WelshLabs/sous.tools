@@ -21,6 +21,7 @@ import { MetricsModule } from "./modules/metrics/metrics.module";
 import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { StorageModule } from "./modules/storage/storage.module";
 import { AuthModule } from "./modules/auth/auth.module";
+import { Neo4jSyncModule } from "./modules/neo4j-sync/neo4j-sync.module";
 
 import { AppGraphQLModule } from "./graphql/graphql.module";
 import { HealthModule } from "./health/health.module";
@@ -76,6 +77,7 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
     DashboardModule,
     StorageModule,
     AuthModule,
+    Neo4jSyncModule,
   ],
   controllers: [AppController],
   providers: [AppService],

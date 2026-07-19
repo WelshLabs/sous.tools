@@ -56,4 +56,8 @@ export const config = {
     SOUS_KIOSK_MODE_FILE: process.env.SOUS_KIOSK_MODE_FILE || '/etc/sous/kiosk-mode',
     SOUS_DEVICE_CONFIG: process.env.SOUS_DEVICE_CONFIG || '/etc/sous/device-config.json',
     SOUS_BOOTSTRAP_LOG: process.env.SOUS_BOOTSTRAP_LOG || '/var/log/sous-bootstrap.log',
+    NEO4J_URI: process.env.NEO4J_URI || 'bolt://localhost:7687',
+    NEO4J_USERNAME: process.env.NEO4J_USERNAME || 'neo4j',
+    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || 'sousToolsPassword',
+    SUPABASE_WEBHOOK_SECRET: process.env.SUPABASE_WEBHOOK_SECRET || 'sous-tools-neo4j-sync-secret-key',
 };

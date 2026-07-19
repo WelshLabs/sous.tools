@@ -31,6 +31,10 @@ const defaults: Record<string, string> = {
   SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
   SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
   SQUARE_WEBHOOK_SIGNATURE_KEY: "sandbox-sq0whk-placeholder",
+  NEO4J_URI: "bolt://localhost:7687",
+  NEO4J_USERNAME: "neo4j",
+  NEO4J_PASSWORD: "sousToolsPassword",
+  SUPABASE_WEBHOOK_SECRET: "sous-tools-neo4j-sync-secret-key",
 };
 
 /**
