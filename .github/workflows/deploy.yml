@@ -18,34 +18,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      # --- 1. STAGING PHASE ---
-      - name: Fetch Staging Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "staging"
-          export-env: true
-
-      - name: Run Staging Supabase Migrations
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
-            echo "Error: Missing required staging environment variables from Infisical."
-            exit 1
-          fi
-          supabase link --project-ref $SUPABASE_PROJECT_ID
-          supabase db push
-
-      # --- 2. PRODUCTION PHASE ---
-      # Fetching prod secrets overwrites the staging env vars in the runner
+      # --- 1. PRODUCTION CONFIG & SECRETS ---
       - name: Fetch Production Secrets from Infisical
         uses: infisical/secrets-action@v1.0.8
         with:
@@ -55,18 +28,7 @@ jobs:
           env-slug: "prod"
           export-env: true
 
-      - name: Run Production Supabase Migrations
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ env.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          if [ -z "$SUPABASE_PROJECT_ID" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
-            echo "Error: Missing required production environment variables from Infisical."
-            exit 1
-          fi
-          supabase link --project-ref $SUPABASE_PROJECT_ID
-          supabase db push
-
-      # --- 3. HARDWARE DEPLOYMENT ---
+      # --- 2. HARDWARE DEPLOYMENT ---
       # Uses the ORACLE_HOST and ORACLE_SSH_KEY fetched during the Prod Infisical step
       - name: Trigger Native Hardware Build via SSH
         uses: appleboy/ssh-action@v1.0.3

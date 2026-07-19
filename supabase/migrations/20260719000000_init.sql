@@ -1272,3 +1272,451 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON notifications TO authenticated;
 GRANT ALL ON notifications TO service_role;
 GRANT ALL ON processed_webhook_events TO service_role;
 GRANT EXECUTE ON FUNCTION update_item_current_cost() TO service_role;
+-- 1. Drop the existing CHECK constraint on purchase_orders.status
+ALTER TABLE public.purchase_orders
+DROP CONSTRAINT IF EXISTS purchase_orders_status_check;
+
+-- 2. Add the new CHECK constraint that includes 'RECEIVED'
+ALTER TABLE public.purchase_orders
+ADD CONSTRAINT purchase_orders_status_check
+CHECK (status IN ('DRAFT', 'SUBMITTED', 'RECEIVED', 'RECONCILED'));
+
+-- 3. (Optional) In case there are any cleanups or backfills needed in the future, we include the standard grants
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON SEQUENCES TO authenticated, service_role;
+-- ==============================================================================
+-- Migration: Square Integration Expansion
+-- Adds pos_categories, pos_discounts, pos_orders and updates pos_items.
+-- Enforces Row Level Security (RLS) for tenant isolation.
+-- ==============================================================================
+
+-- ------------------------------------------------------------------------------
+-- 1. POS Categories
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.pos_categories (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  pos_provider TEXT NOT NULL,
+  external_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (organization_id, pos_provider, external_id)
+);
+
+ALTER TABLE public.pos_categories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "org_members_full_crud_pos_categories" ON public.pos_categories
+  FOR ALL USING (is_org_member(organization_id))
+  WITH CHECK (is_org_member(organization_id));
+
+-- ------------------------------------------------------------------------------
+-- 2. Update POS Items (Add Category Relation)
+-- ------------------------------------------------------------------------------
+ALTER TABLE public.pos_items ADD COLUMN IF NOT EXISTS category_id UUID REFERENCES public.pos_categories(id) ON DELETE SET NULL;
+
+-- ------------------------------------------------------------------------------
+-- 3. POS Discounts
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.pos_discounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  pos_provider TEXT NOT NULL,
+  external_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  discount_type TEXT NOT NULL, -- FIXED_PERCENTAGE, FIXED_AMOUNT, etc.
+  amount_or_percentage NUMERIC NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (organization_id, pos_provider, external_id)
+);
+
+ALTER TABLE public.pos_discounts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "org_members_full_crud_pos_discounts" ON public.pos_discounts
+  FOR ALL USING (is_org_member(organization_id))
+  WITH CHECK (is_org_member(organization_id));
+
+-- ------------------------------------------------------------------------------
+-- 4. POS Orders
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.pos_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  pos_provider TEXT NOT NULL,
+  external_id TEXT NOT NULL,
+  location_id TEXT,
+  state TEXT NOT NULL,
+  total_money NUMERIC NOT NULL DEFAULT 0,
+  total_discount_money NUMERIC NOT NULL DEFAULT 0,
+  total_tax_money NUMERIC NOT NULL DEFAULT 0,
+  closed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (organization_id, pos_provider, external_id)
+);
+
+ALTER TABLE public.pos_orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "org_members_full_crud_pos_orders" ON public.pos_orders
+  FOR ALL USING (is_org_member(organization_id))
+  WITH CHECK (is_org_member(organization_id));
+-- Drop the existing table if it exists to clean up
+DROP TABLE IF EXISTS public.vendor_item_aliases CASCADE;
+
+-- Create the new vendor_item_aliases table
+CREATE TABLE public.vendor_item_aliases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  vendor_id UUID REFERENCES public.vendors(id) ON DELETE CASCADE,
+  vendor_item_string TEXT NOT NULL,
+  master_ingredient_id UUID NOT NULL REFERENCES public.items(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(organization_id, vendor_id, vendor_item_string)
+);
+
+-- Enable RLS
+ALTER TABLE public.vendor_item_aliases ENABLE ROW LEVEL SECURITY;
+
+-- Tenant Isolation Policies
+CREATE POLICY "org_members_full_crud_vendor_item_aliases" ON public.vendor_item_aliases
+  FOR ALL USING (is_org_member(organization_id))
+  WITH CHECK (is_org_member(organization_id));
+-- Enable pgvector extension
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Add embedding vector(768) columns if they do not exist
+ALTER TABLE public.items ADD COLUMN IF NOT EXISTS embedding vector(768);
+ALTER TABLE public.master_ingredients ADD COLUMN IF NOT EXISTS embedding vector(768);
+
+-- Create match_items RPC function for cosine similarity search on tenant items
+CREATE OR REPLACE FUNCTION public.match_items(
+  query_embedding vector(768),
+  match_threshold float,
+  match_count int,
+  org_id uuid
+)
+RETURNS TABLE (
+  id uuid,
+  name text,
+  similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    items.id,
+    items.name,
+    (1 - (items.embedding <=> query_embedding))::float AS similarity
+  FROM public.items
+  WHERE items.organization_id = org_id
+    AND items.embedding IS NOT NULL
+    AND (1 - (items.embedding <=> query_embedding)) > match_threshold
+  ORDER BY items.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;
+
+-- Create match_master_ingredients RPC function for cosine similarity search on global master_ingredients
+CREATE OR REPLACE FUNCTION public.match_master_ingredients(
+  query_embedding vector(768),
+  match_threshold float,
+  match_count int
+)
+RETURNS TABLE (
+  id uuid,
+  name text,
+  similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    master_ingredients.id,
+    master_ingredients.name,
+    (1 - (master_ingredients.embedding <=> query_embedding))::float AS similarity
+  FROM public.master_ingredients
+  WHERE master_ingredients.embedding IS NOT NULL
+    AND (1 - (master_ingredients.embedding <=> query_embedding)) > match_threshold
+  ORDER BY master_ingredients.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;
+-- Rename the table public.master_ingredients to public.master_items
+ALTER TABLE public.master_ingredients RENAME TO master_items;
+
+-- Rename foreign key column master_ingredient_id in recipe_ingredients to master_item_id
+ALTER TABLE public.recipe_ingredients RENAME COLUMN master_ingredient_id TO master_item_id;
+
+-- Rename foreign key column master_ingredient_id in vendor_item_aliases to item_id
+ALTER TABLE public.vendor_item_aliases RENAME COLUMN master_ingredient_id TO item_id;
+
+-- Drop the old match_master_ingredients function
+DROP FUNCTION IF EXISTS public.match_master_ingredients(vector(768), float, int);
+
+-- Create new match_master_items RPC function for cosine similarity search on global master_items
+CREATE OR REPLACE FUNCTION public.match_master_items(
+  query_embedding vector(768),
+  match_threshold float,
+  match_count int
+)
+RETURNS TABLE (
+  id uuid,
+  name text,
+  similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    master_items.id,
+    master_items.name,
+    (1 - (master_items.embedding <=> query_embedding))::float AS similarity
+  FROM public.master_items
+  WHERE master_items.embedding IS NOT NULL
+    AND (1 - (master_items.embedding <=> query_embedding)) > match_threshold
+  ORDER BY master_items.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$;
+-- ============================================================================
+-- 20260715000000_signage_displays_port_label.sql
+-- Enforces physical port label constraints for dual-HDMI kiosk routing
+-- ============================================================================
+
+-- 1. Ensure port_label exists and is indexed (schema init usually has it,
+--    but we want to strictly enforce the unique constraint per-device).
+CREATE INDEX IF NOT EXISTS idx_signage_displays_port_label ON signage_displays(port_label);
+
+-- 2. Prevent two displays from being assigned to the same physical port on the same device
+ALTER TABLE signage_displays
+  ADD CONSTRAINT uq_signage_displays_device_port
+  UNIQUE NULLS NOT DISTINCT (device_id, port_label);
+
+-- 3. Add a check constraint to restrict port_label to known Pi 5 physical ports
+--    (HDMI-A-1 and HDMI-A-2 are the standard Wayland output names)
+ALTER TABLE signage_displays
+  ADD CONSTRAINT chk_signage_displays_valid_ports
+  CHECK (port_label IN ('HDMI-A-1', 'HDMI-A-2', 'VIRTUAL', null));
+-- Enable pg_net extension
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+
+-- Create generic trigger function to sync to Neo4j
+CREATE OR REPLACE FUNCTION public.handle_neo4j_sync()
+RETURNS TRIGGER AS $$
+DECLARE
+  payload JSONB;
+  res_id BIGINT;
+  sync_url TEXT;
+BEGIN
+  -- Read the webhook URL from database configuration, fallback to local docker URL
+  sync_url := COALESCE(
+    current_setting('app.settings.neo4j_sync_url', true),
+    'http://api:3001/webhooks/neo4j-sync'
+  );
+
+  -- Construct the payload
+  payload := jsonb_build_object(
+    'type', TG_OP,
+    'table', TG_TABLE_NAME,
+    'schema', TG_TABLE_SCHEMA,
+    'record', CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN to_jsonb(NEW) ELSE NULL END,
+    'old_record', CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN to_jsonb(OLD) ELSE NULL END
+  );
+
+  -- Perform the http post call via pg_net asynchronously
+  SELECT net.http_post(
+    url := sync_url,
+    body := payload,
+    headers := '{"Content-Type": "application/json", "x-supabase-signature": "sous-tools-neo4j-sync-secret-key"}'::jsonb
+  ) INTO res_id;
+
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Drop triggers if they exist
+DROP TRIGGER IF EXISTS on_auth_user_sync ON auth.users;
+DROP TRIGGER IF EXISTS on_recipe_sync ON public.recipes;
+
+-- Register trigger on auth.users (in the auth schema)
+CREATE TRIGGER on_auth_user_sync
+  AFTER INSERT OR UPDATE OR DELETE ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Register trigger on public.recipes (in the public schema)
+CREATE TRIGGER on_recipe_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.recipes
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+-- Drop triggers if they exist
+DROP TRIGGER IF EXISTS on_organization_sync ON public.organizations;
+DROP TRIGGER IF EXISTS on_vendor_sync ON public.vendors;
+DROP TRIGGER IF EXISTS on_item_sync ON public.items;
+DROP TRIGGER IF EXISTS on_recipe_ingredient_sync ON public.recipe_ingredients;
+DROP TRIGGER IF EXISTS on_inventory_on_hand_sync ON public.inventory_on_hand;
+DROP TRIGGER IF EXISTS on_purchase_order_sync ON public.purchase_orders;
+DROP TRIGGER IF EXISTS on_purchase_order_item_sync ON public.purchase_order_items;
+DROP TRIGGER IF EXISTS on_vendor_item_alias_sync ON public.vendor_item_aliases;
+
+-- Register triggers on all core tables to forward changes to Neo4j
+CREATE TRIGGER on_organization_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.organizations
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_vendor_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.vendors
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_item_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.items
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_recipe_ingredient_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.recipe_ingredients
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_inventory_on_hand_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.inventory_on_hand
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_purchase_order_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.purchase_orders
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_purchase_order_item_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.purchase_order_items
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_vendor_item_alias_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.vendor_item_aliases
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+-- 1. Create Sales Tables if not exists
+CREATE TABLE IF NOT EXISTS public.tickets (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  employee_id     UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  table_number    TEXT,
+  section         TEXT,
+  status          TEXT CHECK (status IN ('OPEN', 'CLOSED')) DEFAULT 'OPEN',
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.orders (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_id       UUID NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  status          TEXT,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.order_items (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id        UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  recipe_id       UUID REFERENCES recipes(id) ON DELETE SET NULL,
+  quantity        NUMERIC NOT NULL DEFAULT 1,
+  unit_price      NUMERIC NOT NULL DEFAULT 0,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+-- 2. Create Labor Tables if not exists
+CREATE TABLE IF NOT EXISTS public.shifts (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  start_time      TIMESTAMP WITH TIME ZONE NOT NULL,
+  end_time        TIMESTAMP WITH TIME ZONE,
+  role            TEXT,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.time_clocks (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  clock_in        TIMESTAMP WITH TIME ZONE NOT NULL,
+  clock_out       TIMESTAMP WITH TIME ZONE,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+-- 3. Create Ledger/Ingestion Tables if not exists
+CREATE TABLE IF NOT EXISTS public.invoices (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  vendor_id       UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
+  po_id           UUID REFERENCES purchase_orders(id) ON DELETE SET NULL,
+  invoice_number  TEXT NOT NULL,
+  total_amount    NUMERIC NOT NULL,
+  invoice_date    DATE NOT NULL,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.invoice_items (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  invoice_id      UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+  raw_name        TEXT NOT NULL,
+  item_id         UUID REFERENCES items(id) ON DELETE SET NULL,
+  quantity        NUMERIC NOT NULL,
+  unit_price      NUMERIC NOT NULL,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+-- 4. Create Kitchen Ops Tables if not exists
+CREATE TABLE IF NOT EXISTS public.wastage_logs (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  item_id         UUID REFERENCES items(id) ON DELETE SET NULL,
+  recipe_id       UUID REFERENCES recipes(id) ON DELETE SET NULL,
+  quantity        NUMERIC NOT NULL,
+  reason          TEXT,
+  recorded_by     UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+-- 5. Drop triggers if they exist
+DROP TRIGGER IF EXISTS on_ticket_sync ON public.tickets;
+DROP TRIGGER IF EXISTS on_order_sync ON public.orders;
+DROP TRIGGER IF EXISTS on_order_item_sync ON public.order_items;
+DROP TRIGGER IF EXISTS on_shift_sync ON public.shifts;
+DROP TRIGGER IF EXISTS on_time_clock_sync ON public.time_clocks;
+DROP TRIGGER IF EXISTS on_invoice_sync ON public.invoices;
+DROP TRIGGER IF EXISTS on_invoice_item_sync ON public.invoice_items;
+DROP TRIGGER IF EXISTS on_wastage_log_sync ON public.wastage_logs;
+
+-- 6. Register triggers on public schema operational tables
+CREATE TRIGGER on_ticket_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.tickets
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_order_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.orders
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_order_item_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.order_items
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_shift_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.shifts
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_time_clock_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.time_clocks
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_invoice_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.invoices
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_invoice_item_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.invoice_items
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+CREATE TRIGGER on_wastage_log_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.wastage_logs
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();

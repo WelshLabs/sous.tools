@@ -5,6 +5,6 @@ Purpose: Acts as the CTO. Reads a raw brainstorming issue and rewrites the descr
 -->
 BOOT SEQUENCE: Silently read .cursorrules and docs/context/project.md. 
 
-THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
+THEN: Call your `soustools` custom MCP tool `get_issue` (with owner: "conarwelsh", repo: "sous.tools", issue_number: {ISSUE_NUMBER}) to fetch the issue details and comments. 
 
-Rewrite the issue description into a highly structured Technical Spec including a User Story, Acceptance Criteria, and a checklist of exact files in the Turborepo that will need to be created or modified. Then update the issue description directly. DO NOT output the spec as terminal text. DO NOT converse. Execute the tools and stop.
+You MUST check the issue body and comments for brainstorms, edits, or feedback. Rewrite the issue description into a highly structured Technical Spec including a User Story, Acceptance Criteria, and a checklist of exact files in the Turborepo that will need to be created or modified. Then update the issue description directly by calling your `soustools` custom MCP tool `update_issue` (passing the body parameter). DO NOT output the spec as terminal text. DO NOT converse. Execute the tools and stop.

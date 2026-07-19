@@ -52,7 +52,7 @@ alias dco='docker compose'
 alias docker-nuke='docker system prune -af'
 
 # Stack Aliases
-alias up='pm2 start ecosystem.config.js'
+alias up='docker compose -f docker-compose.dev.yml up -d && pm2 start ecosystem.config.js'
 alias monit='pm2 monit'
 alias logs='pm2 logs'
 

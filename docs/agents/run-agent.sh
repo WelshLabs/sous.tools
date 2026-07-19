@@ -1,8 +1,11 @@
 #!/bin/bash
-# Usage: bash .github/agents/run-agent.sh <label_type> <issue_number>
+# Usage: bash docs/agents/run-agent.sh <label_type> <issue_number>
 
 set -a
-source /workspace/.env
+# Try to load env from /workspace/.env if it exists
+if [ -f /workspace/.env ]; then
+  source /workspace/.env
+fi
 set +a
 
 export CI=true
@@ -14,9 +17,13 @@ FILE_NAME=${LABEL#*:}
 PROMPT_FILE="/workspace/docs/agents/prompts/${FILE_NAME}.md"
 LOG_FILE="/workspace/docs/agents/logs/agent-run-${ISSUE}.log"
 
-# Global Git auth for native pushes
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+# Verify log directory exists
+mkdir -p /workspace/docs/agents/logs
+
+if [ -z "$LABEL" ] || [ -z "$ISSUE" ]; then
+  echo "Error: Usage: bash docs/agents/run-agent.sh <label_type> <issue_number>" >> "$LOG_FILE"
+  exit 1
+fi
 
 if [ ! -f "$PROMPT_FILE" ]; then
   echo "Error: Prompt file $PROMPT_FILE not found!" >> "$LOG_FILE"
@@ -24,6 +31,36 @@ if [ ! -f "$PROMPT_FILE" ]; then
 fi
 
 echo "Booting Agent for Issue $ISSUE with label $LABEL..." > "$LOG_FILE"
+
+# Check GITHUB_PERSONAL_ACCESS_TOKEN
+if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
+  echo "Error: GITHUB_PERSONAL_ACCESS_TOKEN is not set." >> "$LOG_FILE"
+  exit 1
+fi
+
+# Global Git auth for native pushes using token
+git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
+git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+# Configure git credentials if not set
+git config --global user.name "Soustools Agent"
+git config --global user.email "agent@sous.tools"
+
+# Generate Claude Code global MCP configuration
+mkdir -p ~/.config
+cat <<EOF > ~/.claude.json
+{
+  "mcpServers": {
+    "soustools": {
+      "command": "npx",
+      "args": ["-y", "tsx", "/workspace/packages/mcp-server/index.ts"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PERSONAL_ACCESS_TOKEN"
+      }
+    }
+  }
+}
+EOF
 
 # Inject the dynamic issue number into the markdown prompt
 PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")

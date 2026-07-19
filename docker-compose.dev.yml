@@ -11,8 +11,6 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
-    networks:
-      - traefik_public
 
   ollama:
     image: ollama/ollama:latest
@@ -23,8 +21,22 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
-    networks:
-      - traefik_public
+
+  neo4j:
+    image: neo4j:5-community
+    container_name: neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/sousToolsPassword
+      # Strict memory limits to protect your 24GB Oracle instance
+      - NEO4J_server_memory_pagecache_size=1G
+      - NEO4J_server_memory_heap_initial__size=1G
+      - NEO4J_server_memory_heap_max__size=2G
+    ports:
+      - "7474:7474" # Neo4j Browser Web UI
+      - "7687:7687" # Bolt protocol for NestJS
+    volumes:
+      - neo4j_data:/data
 
   ollama-pull:
     image: ollama/ollama:latest
@@ -32,12 +44,25 @@ services:
     profiles: ["home"]
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    command: -c "sleep 10 && ollama pull qwen2.5-coder:3b && ollama pull nomic-embed-text && ollama pull llama3.2-vision && ollama pull qwen2.5-coder:7b && deepseek-coder:6.7b"
     depends_on:
       - ollama
-    networks:
-      - traefik_public
+    command:
+      - "-c"
+      - |
+        echo "Waiting for Ollama to boot..."
+        sleep 10
+
+        # Add any new models to this list separated by a space
+        MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
+
+        for model in $$MODELS; do
+          echo "Checking/Pulling $$model..."
+          ollama pull $$model
+        done
+
+        echo "All models verified and ready!"
 
 volumes:
   redis_data:
   ollama_data:
+  neo4j_data:

@@ -270,6 +270,7 @@ volumes:
   ollama_data:
   n8n_data:
   agent_data:
+  neo4j_data:
 
 networks:
   traefik_public:

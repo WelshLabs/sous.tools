@@ -5,6 +5,6 @@ Purpose: Acts as a Principal Engineer. Reads the issue, searches the local codeb
 -->
 BOOT SEQUENCE: Silently read .cursorrules, docs/context/project.md, and docs/context/directory-tree.txt. 
 
-THEN: Fetch the data for Issue #{ISSUE_NUMBER} from the remote "conarwelsh/sous.tools" GitHub repository using the Github MCP Server. 
+THEN: Call your `soustools` custom MCP tool `get_issue` to fetch the issue details and comments for Issue #{ISSUE_NUMBER}. 
 
-Search the codebase locally to locate all relevant files. Then post a detailed research report as a comment on the issue including the exact file paths involved, current tech debt, and your diagnosis. DO NOT write any code. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
+You MUST check the issue body and comments for additional guidelines, previous findings, or specifications. Search the codebase locally to locate all relevant files. Then post a detailed research report as a comment on the issue using your `soustools` custom MCP tool `post_comment`, including the exact file paths involved, current tech debt, and your diagnosis. DO NOT write any code. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.

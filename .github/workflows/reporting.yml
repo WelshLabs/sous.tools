@@ -80,6 +80,9 @@ jobs:
       # ==========================================
       # 3. AI CONTEXT GENERATION (Architecture & State)
       # ==========================================
+      - name: Install tree utility
+        run: sudo apt-get update && sudo apt-get install -y tree
+
       - name: Generate Tech Debt, Graph Context & Rules
         run: |
           pnpm run knip > docs/audits/knip-report.txt || true
