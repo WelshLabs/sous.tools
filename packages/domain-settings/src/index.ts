@@ -1,6 +1,9 @@
-export * from "./downloads-panel";
-export * from "./general-settings";
-export * from "./global-styling-settings";
-export * from "./integration-card";
-export * from "./integrations-panel";
-export * from "./google-drive-browser";
+export * from "./components/SettingsPanel/SettingsPanel.container";
+export {
+  GeneralSettingsView as GeneralSettings,
+  GlobalStylingSettingsView as GlobalStylingSettings,
+  IntegrationsPanelView as IntegrationsPanel,
+  DownloadsPanelView as DownloadsPanel,
+  GoogleDriveBrowserView as GoogleDriveBrowser,
+} from "./components/SettingsPanel/SettingsPanel.view";
+export * from "./components/SettingsPanel/SettingsPanel.view";

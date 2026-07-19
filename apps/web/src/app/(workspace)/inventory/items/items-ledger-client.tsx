@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { Plus, Download, Upload, Loader2 } from "lucide-react";
-import { ItemsLedgerTable, ItemEditorModal } from "@soustools/domain-inventory";
+import { ItemsLedgerView, ItemEditor } from "@soustools/domain-inventory";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -161,7 +161,7 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
       </div>
 
       <div className="bg-card text-card-foreground overflow-hidden rounded-2xl border border-border dark:border-border shadow-sm">
-        <ItemsLedgerTable
+        <ItemsLedgerView
           items={initialItems}
           loading={loading}
           onEdit={handleEdit}
@@ -170,7 +170,7 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
       </div>
 
       {isModalOpen && (
-        <ItemEditorModal
+        <ItemEditor
           item={selectedItem}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSave}

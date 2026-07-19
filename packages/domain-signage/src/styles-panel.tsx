@@ -5,7 +5,7 @@ import { useState } from "react";
 import { type SignageLayoutConfig, type ColumnLayoutSlide } from "@soustools/api-types";
 import { Code2 } from "lucide-react";
 import { CssEditorModal } from "./css-editor-modal";
-import { DisplayPicker } from "./display-picker";
+import { DisplayPicker } from "./components/DisplayManager/DisplayManager.container";
 import { BodyPortal } from "./body-portal";
 
 export interface StylesPanelProps {

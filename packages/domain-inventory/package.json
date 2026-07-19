@@ -17,15 +17,20 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
+    "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9",
+    "jsdom": "^26.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.3.3",
-    "@soustools/eslint-config": "workspace:*",
-    "eslint": "^9",
-    "typescript-eslint": "^8"
+    "typescript-eslint": "^8",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "@soustools/api-types": "workspace:*",
@@ -35,6 +40,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run"
   }
 }
