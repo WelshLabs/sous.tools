@@ -4,32 +4,32 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing cbd14a24758bdb1e
+cache miss, executing 778b7262945953ba
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing e30a7d531e75f246
+cache miss, executing 0b92dc140f38e0b6
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 6d4132213e164488
+cache miss, executing a4ab5c7dc7c1ff10
 $ tsc
 ::endgroup::
 ::group::@soustools/supabase:build
-cache miss, executing 31f1a1dbc51e08df
+cache miss, executing 5fa285b9e65c987b
 $ tsc
 ::endgroup::
 ::group::cli:build
-cache miss, executing 4173c3c907526efc
+cache miss, executing e23b52ff30bf59ec
 $ nest build
 ::endgroup::
 ::group::api:build
-cache miss, executing 638ca2a73c40541d
+cache miss, executing 4f9585fb69928be5
 $ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 54071 ms
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 36171 ms
 ::endgroup::
 ::group::pos-simulator:build
-cache miss, executing f948a04d4b5aa3dc
+cache miss, executing fea1db95d2ec6152
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -42,11 +42,11 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 34.5s
+ ✓ Compiled successfully in 26.2s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8117) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784478963058 is not specified and it doesn't parse as CommonJS.
+(node:7788) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784479793951 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -60,7 +60,7 @@ To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                    95.4 kB         197 kB
+┌ ○ /                                    95.5 kB         198 kB
 ├ ○ /_not-found                            997 B         103 kB
 └ ○ /test                                  121 B         102 kB
 + First Load JS shared by all             102 kB
@@ -73,7 +73,7 @@ Route (app)                                 Size  First Load JS
 
 ::endgroup::
 ::group::web:build
-cache miss, executing 4579d599c4aa2b5a
+cache miss, executing 40dd13416ef2aad3
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -89,11 +89,11 @@ https://nextjs.org/telemetry
 
    Creating an optimized production build ...
  [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
- ✓ Compiled successfully in 76s
+ ✓ Compiled successfully in 53s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8283) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784478963066 is not specified and it doesn't parse as CommonJS.
+(node:7953) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784479793956 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -123,14 +123,14 @@ Route (app)                                 Size  First Load JS
 ├ ƒ /inventory/(.)vendors/add             1.9 kB         350 kB
 ├ ƒ /inventory/invoices                  2.72 kB         351 kB
 ├ ƒ /inventory/items                     2.12 kB         360 kB
-├ ƒ /inventory/orders                      955 B         358 kB
+├ ƒ /inventory/orders                      955 B         359 kB
 ├ ƒ /inventory/orders/[id]/shop          2.96 kB         118 kB
 ├ ƒ /inventory/vendors                     679 B         358 kB
 ├ ƒ /inventory/vendors/add                  2 kB         350 kB
 ├ ○ /kds                                 5.55 kB         354 kB
-├ ○ /login                               2.33 kB         350 kB
+├ ○ /login                               2.33 kB         351 kB
 ├ ○ /manifest.webmanifest                  139 B         108 kB
-├ ○ /pos                                 7.37 kB         355 kB
+├ ○ /pos                                 7.37 kB         356 kB
 ├ ƒ /pos-orders                          1.06 kB         349 kB
 ├ ○ /privacy-policy                        318 B         344 kB
 ├ ƒ /recipes                               497 B         363 kB
@@ -149,7 +149,7 @@ Route (app)                                 Size  First Load JS
 + First Load JS shared by all             108 kB
   ├ chunks/8981-ab3bc1d0d20e5648.js      50.5 kB
   ├ chunks/c320de20-ff27f4eadafb90b7.js  54.2 kB
-  └ other shared chunks (total)          3.53 kB
+  └ other shared chunks (total)          3.63 kB
 
 
 ○  (Static)   prerendered as static content
@@ -157,7 +157,7 @@ Route (app)                                 Size  First Load JS
 
 ::endgroup::
 ::group::@soustools/setup-portal:build
-cache miss, executing 815a774112e46aae
+cache miss, executing 3d3565d2c045a174
 $ next build
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
 Attention: Next.js now collects completely anonymous telemetry regarding usage.
@@ -168,7 +168,7 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 42s
+ ✓ Compiled successfully in 33.7s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
@@ -201,5 +201,5 @@ Route (app)                                 Size  First Load JS
 
  Tasks:    9 successful, 9 total
 Cached:    0 cached, 9 total
-  Time:    1m58.316s 
+  Time:    1m21.095s 
 
