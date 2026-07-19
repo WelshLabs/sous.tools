@@ -1,14 +1,24 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { GoogleIcon } from './BrandIcons';
+import React from 'react';
+import type { Meta } from '@storybook/react';
+import { GoogleIcon, GitHubIcon } from './BrandIcons';
 
-const meta: Meta<typeof GoogleIcon> = {
+const meta: Meta = {
   title: 'Components/BrandIcons',
-  component: GoogleIcon,
   tags: ['autodocs'],
 };
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {}
+export const Default = {
+  render: () => (
+    <div className="flex items-center gap-6 p-4">
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-xs text-muted-foreground">Google</span>
+        <GoogleIcon className="w-8 h-8" />
+      </div>
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-xs text-muted-foreground">GitHub</span>
+        <GitHubIcon className="w-8 h-8 text-foreground" />
+      </div>
+    </div>
+  ),
 };
