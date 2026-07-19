@@ -11,6 +11,34 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    viewport: {
+      viewports: {
+        mobile: {
+          name: "Phone (iPhone 14)",
+          styles: {
+            width: "393px",
+            height: "852px",
+          },
+          type: "mobile",
+        },
+        tablet: {
+          name: "Tablet (iPad)",
+          styles: {
+            width: "768px",
+            height: "1024px",
+          },
+          type: "tablet",
+        },
+        desktop: {
+          name: "Desktop (Standard)",
+          styles: {
+            width: "1440px",
+            height: "900px",
+          },
+          type: "desktop",
+        },
+      },
+    },
   },
   globalTypes: {
     theme: {
