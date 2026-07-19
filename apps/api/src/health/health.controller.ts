@@ -1,4 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
+import { config } from "@soustools/config";
 
 @Controller("health")
 export class HealthController {
@@ -7,7 +8,7 @@ export class HealthController {
     return {
       status: "ok",
       timestamp: new Date().toISOString(),
-      version: process.env.APP_VERSION || "dev-local",
+      version: config.APP_VERSION,
     };
   }
 }

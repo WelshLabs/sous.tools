@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { execSync } from 'child_process';
+import { config } from '@soustools/config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const KIOSK_MODE_FILE = process.env.SOUS_KIOSK_MODE_FILE || '/etc/sous/kiosk-mode';
+const KIOSK_MODE_FILE = config.SOUS_KIOSK_MODE_FILE;
 
 /**
  * POST /api/finalize

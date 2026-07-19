@@ -37,12 +37,12 @@ describe("DisplayManagerView", () => {
     expect(screen.getByText("Test Display")).toBeDefined();
 
     // Click add browser display
-    const addBrowserBtn = screen.getByText(/Browser Display/i);
+    const addBrowserBtn = screen.getByRole("button", { name: /Browser Display/i });
     fireEvent.click(addBrowserBtn);
     expect(handleAddBrowserDisplay).toHaveBeenCalled();
     
     // Click pair TV device
-    const pairTvBtn = screen.getByText(/Pair TV Device/i);
+    const pairTvBtn = screen.getByRole("button", { name: /Pair TV Device/i });
     fireEvent.click(pairTvBtn);
     expect(setShowPairModal).toHaveBeenCalledWith(true);
   });

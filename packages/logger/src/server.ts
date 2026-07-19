@@ -1,4 +1,5 @@
 import pino from 'pino';
+import { config } from '@soustools/config';
 
 const initializeServerLogger = () => {
   const pinoServer = pino({
@@ -8,7 +9,7 @@ const initializeServerLogger = () => {
             return { 
                 ...object,
                 service: 'soustools-api',
-                environment: process.env.NODE_ENV === 'development' ? 'remote-dev' : 'production',
+                environment: config.NODE_ENV === 'development' ? 'remote-dev' : 'production',
             }
         }
     }

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import { accessSync, constants } from 'fs';
+import { config } from '@soustools/config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const LOG_FILE = process.env.SOUS_BOOTSTRAP_LOG || '/var/log/sous-bootstrap.log';
+const LOG_FILE = config.SOUS_BOOTSTRAP_LOG;
 
 /**
  * GET /api/progress

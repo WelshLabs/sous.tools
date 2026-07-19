@@ -38,7 +38,7 @@ const initializeBrowserLogger = () => {
             message: logEvent.messages.join(' '),
             level: level,
             service: 'soustools-web',
-            environment: process.env.NODE_ENV === 'development' ? 'remote-dev' : 'production',
+            environment: config.NODE_ENV === 'development' ? 'remote-dev' : 'production',
             timestamp: logEvent.ts,
             bindings: logEvent.bindings
           };

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { HelloResponse } from "@soustools/api-types";
+import { config } from "@soustools/config";
 
 /**
  * Service managing logic for base application endpoints.
@@ -14,7 +15,7 @@ export class AppService {
   getHelloData(): HelloResponse {
     return {
       message: "Hello World from Sous Tools API!",
-      version: process.env.APP_VERSION || "dev-local",
+      version: config.APP_VERSION,
       status: "healthy",
     };
   }

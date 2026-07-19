@@ -72,7 +72,7 @@ async function bootstrap(): Promise<void> {
     .setVersion("1.0")
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  if (process.env.NODE_ENV !== 'production') {
+  if (config.NODE_ENV !== 'production') {
     fs.writeFileSync('openapi.json', JSON.stringify(document));
   }
   

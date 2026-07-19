@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { readFileSync } from 'fs';
+import { config } from '@soustools/config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const CONFIG_FILE = process.env.SOUS_DEVICE_CONFIG || '/etc/sous/device-config.json';
+const CONFIG_FILE = config.SOUS_DEVICE_CONFIG;
 
 /**
  * GET /api/pairing

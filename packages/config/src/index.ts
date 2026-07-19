@@ -52,4 +52,8 @@ export const config = {
     VISION_PROVIDER: process.env.VISION_PROVIDER || 'openai',
     NODE_ENV: process.env.NODE_ENV || 'development',
     IS_PRODUCTION: process.env.NODE_ENV === 'production',
+    APP_VERSION: process.env.APP_VERSION || 'dev-local',
+    SOUS_KIOSK_MODE_FILE: process.env.SOUS_KIOSK_MODE_FILE || '/etc/sous/kiosk-mode',
+    SOUS_DEVICE_CONFIG: process.env.SOUS_DEVICE_CONFIG || '/etc/sous/device-config.json',
+    SOUS_BOOTSTRAP_LOG: process.env.SOUS_BOOTSTRAP_LOG || '/var/log/sous-bootstrap.log',
 };
