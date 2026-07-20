@@ -177,7 +177,7 @@ async function run() {
 
   const [cmd, ...cmdArgs] = args;
 
-  if (cmdArgs.includes("build") || cmdArgs.includes("start")) {
+  if (cmd === "next" && (cmdArgs.includes("build") || cmdArgs.includes("start"))) {
     childEnv.NODE_ENV = "production";
   } else if (!childEnv.NODE_ENV) {
     childEnv.NODE_ENV = "development";

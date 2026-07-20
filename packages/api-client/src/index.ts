@@ -50,13 +50,20 @@ export const getBrowserApiUrl = (origin: string): string => {
 export const getDefaultBaseUrl = () => {
   if (typeof window !== "undefined") {
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl && envUrl !== "undefined" && envUrl !== "") {
-      return envUrl;
-    }
-    const derivedUrl = getBrowserApiUrl(window.location.origin);
-    if (derivedUrl) {
-      return derivedUrl;
-    }
+    const origin = window.location.origin;
+    const derivedUrl = getBrowserApiUrl(origin);
+    const finalUrl = (envUrl && envUrl !== "undefined" && envUrl !== "")
+      ? envUrl
+      : (derivedUrl || config.NEXT_PUBLIC_API_URL || "http://localhost:3001");
+
+    console.log("[api-client] getDefaultBaseUrl resolved in browser:", {
+      envUrl,
+      origin,
+      derivedUrl,
+      configUrl: config.NEXT_PUBLIC_API_URL,
+      finalUrl,
+    });
+    return finalUrl;
   }
   return (
     config.NEXT_PUBLIC_API_URL ||

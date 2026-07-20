@@ -58,7 +58,9 @@ async function bootstrap(): Promise<void> {
         'android-app://com.sous.wearos',
         'app://com.sous.wearos'
       ]
-    : true; // reflect origin in dev
+    : (origin: string | undefined, callback: (err: Error | null, allow?: any) => void) => {
+        callback(null, origin || "*");
+      };
 
   app.enableCors({
     origin: allowedOrigins,
