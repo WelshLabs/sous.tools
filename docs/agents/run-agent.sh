@@ -39,8 +39,8 @@ if [ -z "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
 fi
 
 # Global Git auth for native pushes using token
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
-git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
+# git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
+# git config --global url."https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 # Configure git credentials if not set
 git config --global user.name "Soustools Agent"
@@ -52,8 +52,8 @@ cat <<EOF > ~/.claude.json
 {
   "mcpServers": {
     "soustools": {
-      "command": "npx",
-      "args": ["-y", "tsx", "/workspace/packages/mcp-server/index.ts"],
+      "command": "pnpm",
+      "args": ["--filter", "./packages/mcp-server", "exec", "tsx", "index.ts"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PERSONAL_ACCESS_TOKEN"
       }
