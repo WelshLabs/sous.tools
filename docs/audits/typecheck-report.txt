@@ -3,12 +3,12 @@
    • Running typecheck in 20 packages
    • Remote caching disabled
 
-::group::@soustools/config:build
-cache hit, replaying logs 84048c90433b9856
-$ tsc
-::endgroup::
 ::group::@soustools/api-types:build
 cache hit, replaying logs 3e9ecc9fa3ee8db1
+$ tsc
+::endgroup::
+::group::@soustools/config:build
+cache hit, replaying logs 84048c90433b9856
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
@@ -31,44 +31,44 @@ $ tsc --noEmit
 cache miss, executing 46d76f95b524125a
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/mcp-server:typecheck
-cache miss, executing 0c4f494de1ed1cff
+::group::@soustools/config:typecheck
+cache miss, executing 578f83ec36485693
 $ tsc --noEmit
 ::endgroup::
 ::group::cli:typecheck
 cache miss, executing a272ea3d6f1e0cd9
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/config:typecheck
-cache miss, executing 578f83ec36485693
+::group::@soustools/mcp-server:typecheck
+cache miss, executing 27e72d1f7c244f55
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/design-system:typecheck
 cache miss, executing 8a8a7574b4f77888
 $ tsc --noEmit
 ::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing c1d2d4cb336f9423
+$ tsc --noEmit
+::endgroup::
 ::group::@soustools/domain-pos:typecheck
 cache miss, executing 0ce68190e101ed8e
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 10ce3d2a7b6d29f7
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing 569c16a26357b2c4
 $ tsc --noEmit
 ::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 44a7eeabc55a32a8
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 9ad34e0e3133f3e2
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-settings:typecheck
 cache miss, executing 444bc0a1c84ce241
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing f36cdce51d929bbe
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 9ad34e0e3133f3e2
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
@@ -76,15 +76,15 @@ cache miss, executing f423cdbd0421507d
 $ tsc --noEmit
 ::endgroup::
 ::group::api:typecheck
-cache miss, executing 15ae275df7a50a91
+cache miss, executing 0756c372bb3714a9
 $ tsc --noEmit
 ::endgroup::
 ::group::web:typecheck
-cache miss, executing 98ca974498e5adee
+cache miss, executing e128e0537d9413bf
 $ tsc --noEmit
 ::endgroup::
 
  Tasks:    20 successful, 20 total
 Cached:    3 cached, 20 total
-  Time:    38.024s 
+  Time:    55.531s 
 
