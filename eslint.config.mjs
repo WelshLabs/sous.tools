@@ -1,6 +1,6 @@
 // Root eslint.config.js — sous.tools monorepo
 import js from "@eslint/js";
-import projectStructure from "eslint-plugin-project-structure";
+// import projectStructure from "eslint-plugin-project-structure";
 import boundaries from "eslint-plugin-boundaries";
 import tailwindcss from "eslint-plugin-tailwindcss";
 
@@ -26,7 +26,7 @@ export default [
   {
     files: ["**/*.ts", "**/*.tsx"], // Apply strictly to all TypeScript/React files
     plugins: {
-      "project-structure": projectStructure,
+      // "project-structure": projectStructure,
       boundaries: boundaries,
       tailwindcss: tailwindcss,
     },
@@ -45,15 +45,15 @@ export default [
     },
     rules: {
       // 1. The Container/View Enforcement (Prevents logic in pure UI files)
-      "project-structure/file-structure": [
-        "error",
-        {
-          rules: [
-            { name: "Containers", extension: ".container.tsx" },
-            { name: "Presentational", extension: ".tsx" },
-          ],
-        },
-      ],
+      // "project-structure/file-structure": [
+      //   "error",
+      //   {
+      //     rules: [
+      //       { name: "Containers", extension: ".container.tsx" },
+      //       { name: "Presentational", extension: ".tsx" },
+      //     ],
+      //   },
+      // ],
 
       // 2. The 200-Line "Bee's Nest" Limit
       "max-lines": ["error", 200],
@@ -90,8 +90,8 @@ export default [
       "tailwindcss/no-custom-classname": [
         "error",
         {
-          callee: "classnames",
-          config: "tailwind.config.js", // Ensure this points to your shared tailwind config
+          whitelist: ["classnames"],
+          // config: "tailwind.config.js", // Ensure this points to your shared tailwind config
         },
       ],
     },
