@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Search, Edit3, X, Save, Image, DollarSign } from "lucide-react";
 import { Button } from "@soustools/design-system";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { api } from "@soustools/api-client";
 
 export interface PosItem {
   id: string;

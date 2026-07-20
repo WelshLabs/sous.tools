@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api } from "@soustools/api-client";
 
 export const dynamic = 'force-dynamic';
 

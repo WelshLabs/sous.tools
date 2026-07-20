@@ -2,20 +2,11 @@
 
 import { useOmnibarContext } from "./OmniBarContext";
 import { toast } from "sonner";
-import { toast } from "sonner";
+import { api } from "@soustools/api-client";
 import { type RecipeExtractionDTO } from "@soustools/api-types";
 
 export function useOmniActions() {
-  const { chatHistory, setChatHistory, contextPayload, apiInstance } = useOmnibarContext();
-
-  if (!apiInstance) {
-    throw new Error(
-      "[useOmniActions] apiInstance not found in context. " +
-      "Pass apiInstance to OmniBarProvider from your app entry point."
-    );
-  }
-
-  const api = apiInstance;
+  const { chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
   const organizationId = (contextPayload?.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
 
   const handleConfirmAlias = async (rawName: string, itemId: string) => {

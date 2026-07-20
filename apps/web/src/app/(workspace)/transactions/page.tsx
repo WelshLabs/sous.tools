@@ -1,6 +1,6 @@
 import React from "react";
 import { TransactionsView } from "./TransactionsView";
-import { api } from "@/lib/api";
+import { api } from "@soustools/api-client";
 
 export const dynamic = "force-dynamic";
 

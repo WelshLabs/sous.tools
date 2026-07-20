@@ -9,8 +9,16 @@ export interface ApiClientOptions {
 
 export type ExtendedApiClient = ReturnType<typeof createClient<paths>>;
 
+export const getDefaultBaseUrl = () => {
+  return (
+    (typeof window !== "undefined" ? process.env.NEXT_PUBLIC_API_URL : undefined) ||
+    config.NEXT_PUBLIC_API_URL ||
+    "http://localhost:3001"
+  );
+};
+
 export const createApiClient = (options: ApiClientOptions = {}) => {
-  const baseUrl = options.baseUrl || config.NEXT_PUBLIC_API_URL;
+  const baseUrl = options.baseUrl || getDefaultBaseUrl();
   
   const client = createClient<paths>({ 
     baseUrl,
@@ -73,11 +81,10 @@ export const createApiClient = (options: ApiClientOptions = {}) => {
   return client;
 };
 
-// NOTE: Do NOT export a singleton `api` here.  This package is compiled
-// outside the Next.js pipeline and cannot receive NEXT_PUBLIC_* substitution.
-// Each host app must instantiate its own client via createApiClient() after
-// reading process.env.NEXT_PUBLIC_API_URL in app code where the compiler can
-// inline it.  See apps/web/src/lib/api.ts for the canonical pattern.
+const defaultBaseUrl = getDefaultBaseUrl();
+
+// Global singleton client for convenience in browser
+export const api = createApiClient({ baseUrl: defaultBaseUrl });
 
 // Encapsulated socket connection
 // export const socket: Socket = io(defaultBaseUrl, {

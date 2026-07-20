@@ -10,7 +10,6 @@ import { useSpeechRecognition } from "./use-speech-recognition.hook";
 import { useGlobalDrag } from "./use-global-drag.hook";
 import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
-import { type ExtendedApiClient } from "@soustools/api-client";
 
 
 interface IntegrationStatus {
@@ -22,12 +21,10 @@ export function OmniBarProvider({
   children,
   token,
   apiClient,
-  apiInstance,
 }: {
   children?: React.ReactNode;
   token?: string;
   apiClient?: typeof fetch;
-  apiInstance?: ExtendedApiClient;
 }) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
@@ -43,7 +40,6 @@ export function OmniBarProvider({
     setIsGoogleDriveConnected,
     setChatHistory,
     setApiClient,
-    setApiInstance,
     apiClient: ctxApiClient,
   } = useOmnibarContext();
 
@@ -54,12 +50,6 @@ export function OmniBarProvider({
       setApiClient(apiClient);
     }
   }, [apiClient, setApiClient, ctxApiClient]);
-
-  useEffect(() => {
-    if (apiInstance) {
-      setApiInstance(apiInstance);
-    }
-  }, [apiInstance, setApiInstance]);
 
   const { socket, errorMessage, setErrorMessage } =
     useOmniSocket(token);

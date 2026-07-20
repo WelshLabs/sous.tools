@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { DisplayManager } from "@soustools/domain-signage";
 import { type SignageDisplay } from "@soustools/api-types";
-import { api } from "@/lib/api";
+import { api } from "@soustools/api-client";
 
 interface DevicesClientWrapperProps {
   displays: SignageDisplay[];

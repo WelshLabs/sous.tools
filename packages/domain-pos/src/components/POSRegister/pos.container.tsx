@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
-import { api as apiSingleton, type ExtendedApiClient } from "@soustools/api-client";
+import { api } from "@soustools/api-client";
 import { OmniBar } from "@soustools/design-system";
 import { POSRegisterView } from "./pos.view";
 import { POSCatalog } from "./components/pos-catalog";
@@ -14,8 +14,7 @@ import { POSTenderModal } from "./components/pos-tender-modal";
 import { type CatalogItem, type CartItem } from "./pos.types";
 import { MOCK_BURGER_MODIFIERS, CATEGORIES, getFilteredItems, calculateTotals, buildCartWithAddedItem } from "./pos.helpers";
 
-export function POSRegisterContainer({ apiInstance }: { apiInstance?: ExtendedApiClient } = {}) {
-  const api = apiInstance ?? apiSingleton;
+export function POSRegisterContainer() {
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
