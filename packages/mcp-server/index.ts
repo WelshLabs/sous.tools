@@ -1,19 +1,19 @@
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-// import {
-//   CallToolRequestSchema,
-//   ListToolsRequestSchema,
-// } from "@modelcontextprotocol/sdk/types.js";
-import { Octokit } from "@octokit/rest";
-import * as fs from "fs";
-import * as path from "path";
-
-const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-if (!GITHUB_TOKEN) {
-  console.error("Warning: GITHUB_PERSONAL_ACCESS_TOKEN is not set.");
-}
-
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+// import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+// import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+// // import {
+// //   CallToolRequestSchema,
+// //   ListToolsRequestSchema,
+// // } from "@modelcontextprotocol/sdk/types.js";
+// import { Octokit } from "@octokit/rest";
+// import * as fs from "fs";
+// import * as path from "path";
+// 
+// const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+// if (!GITHUB_TOKEN) {
+//   console.error("Warning: GITHUB_PERSONAL_ACCESS_TOKEN is not set.");
+// }
+// 
+// const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 // const BOUNDARY_ELEMENTS = [
 //   { type: "app", pattern: ["apps/web/**", "apps/pos-simulator/**", "apps/setup-portal/**"] },
@@ -422,3 +422,5 @@ const octokit = new Octokit({ auth: GITHUB_TOKEN });
 //   console.error("Fatal:", message);
 //   process.exit(1);
 // });
+
+export {};

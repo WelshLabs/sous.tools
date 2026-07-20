@@ -3,6 +3,8 @@ import createClient from "openapi-fetch";
 import type { paths } from "./schema.js";
 import { config } from "@soustools/config";
 
+declare const process: { env: Record<string, string | undefined> };
+
 export interface ApiClientOptions {
   baseUrl?: string;
 }
