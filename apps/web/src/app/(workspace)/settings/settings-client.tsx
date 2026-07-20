@@ -1,17 +1,36 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   IntegrationsPanel,
   GlobalStylingSettings,
   GeneralSettings,
   DownloadsPanel,
-  type SettingsFormValues,
 } from "@soustools/domain-settings";
 import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
 import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+const SettingsSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+}).refine((data) => {
+  if (data.password && data.password !== data.confirmPassword) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type SettingsFormValues = z.infer<typeof SettingsSchema>;
 
 export interface SettingsClientProps {
   integrations: IntegrationStatus[];
@@ -35,6 +54,27 @@ export function SettingsClient({
     "general" | "integrations" | "styling" | "downloads"
   >("general");
 
+  // --- General Settings State & Hook ---
+  const [generalSaving, setGeneralSaving] = useState(false);
+  const [generalSuccess, setGeneralSuccess] = useState(false);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<SettingsFormValues>({
+    resolver: zodResolver(SettingsSchema),
+    defaultValues: { name: userProfile.name, email: userProfile.email, password: "", confirmPassword: "" },
+  });
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
+
+  // --- Styling State ---
+  const [tokens, setTokens] = useState<GlobalDesignTokens>(initialTokens || {});
+  const [tokensSaving, setTokensSaving] = useState(false);
+  const [tokensSuccess, setTokensSuccess] = useState(false);
+
+  // --- Integrations State ---
+  const [actionLoading, setActionLoading] = useState(false);
+  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string; } | null>(null);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -54,9 +94,43 @@ export function SettingsClient({
     toast.success("General settings saved!");
   };
 
+  const onSubmitGeneral = async (data: SettingsFormValues) => {
+    setGeneralSaving(true);
+    setGeneralSuccess(false);
+    setGeneralError(null);
+    try {
+      await handleSaveGeneral(data);
+      setGeneralSuccess(true);
+      setTimeout(() => setGeneralSuccess(false), 3000);
+    } catch (err: any) {
+      setGeneralError(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setGeneralSaving(false);
+    }
+  };
+
   const handleSaveTokens = async (_tokens: GlobalDesignTokens) => {
     // Stub: send to API
     toast.success("Tokens saved!");
+  };
+
+  const handleTokenChange = (key: keyof GlobalDesignTokens, value: string) => {
+    setTokens((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const onSubmitTokens = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTokensSaving(true);
+    setTokensSuccess(false);
+    try {
+      await handleSaveTokens(tokens);
+      setTokensSuccess(true);
+      setTimeout(() => setTokensSuccess(false), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTokensSaving(false);
+    }
   };
 
   const handleConnectIntegration = (provider: string) => {
@@ -71,11 +145,42 @@ export function SettingsClient({
     router.refresh();
   };
 
+  const handleDisconnect = async (provider: string) => {
+    setActionLoading(true);
+    setNotification(null);
+    try {
+      await handleDisconnectIntegration(provider);
+      setNotification({ type: "success", message: `${provider} integration disconnected.` });
+    } catch (err: any) {
+      setNotification({ type: "error", message: err.message || "Error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleSquareAction = async (action: "sync" | "seed") => {
     const res = await fetch(`/api/integrations/square/${action}?orgId=default`, {
       method: "POST",
     });
     if (!res.ok) throw new Error(`Failed to ${action}`);
+  };
+
+  const handleSquareActionWrapper = async (action: "sync" | "seed") => {
+    setActionLoading(true);
+    setNotification(null);
+    try {
+      await handleSquareAction(action);
+      setNotification({
+        type: "success",
+        message: action === "sync"
+          ? "Square menu catalog synchronized successfully!"
+          : "Square sandbox catalog seeded successfully!",
+      });
+    } catch (err: any) {
+      setNotification({ type: "error", message: err.message || `Failed to ${action} catalog.` });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleTabChange = (tab: "general" | "integrations" | "styling" | "downloads") => {
@@ -141,19 +246,37 @@ export function SettingsClient({
 
       <div className="p-6 rounded-2xl bg-card dark:bg-card/40 border border-border dark:border-border shadow-2xl backdrop-blur-2xl">
         {activeTab === "general" && (
-          <GeneralSettings initialData={userProfile} onSave={handleSaveGeneral} />
+          <GeneralSettings
+            register={register}
+            errors={errors}
+            password={password}
+            confirmPassword={confirmPassword}
+            initialData={userProfile}
+            saving={generalSaving}
+            success={generalSuccess}
+            serverError={generalError}
+            onSubmit={handleSubmit(onSubmitGeneral)}
+          />
         )}
         {activeTab === "integrations" && (
           <IntegrationsPanel
             integrations={integrations}
             isDev={isDev}
             onConnect={handleConnectIntegration}
-            onDisconnect={handleDisconnectIntegration}
-            onSquareAction={handleSquareAction}
+            onDisconnect={handleDisconnect}
+            onSquareAction={handleSquareActionWrapper}
+            actionLoading={actionLoading}
+            notification={notification}
           />
         )}
         {activeTab === "styling" && (
-          <GlobalStylingSettings initialTokens={initialTokens} onSave={handleSaveTokens} />
+          <GlobalStylingSettings
+            tokens={tokens}
+            saving={tokensSaving}
+            success={tokensSuccess}
+            onSubmit={onSubmitTokens}
+            handleTokenChange={handleTokenChange}
+          />
         )}
         {activeTab === "downloads" && <DownloadsPanel />}
       </div>
