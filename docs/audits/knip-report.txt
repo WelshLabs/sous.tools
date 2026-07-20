@@ -101,7 +101,7 @@ packages/domain-signage/src/preview-column-layout.tsx
 packages/domain-signage/src/preview-column-renderers.tsx                     
 packages/domain-signage/src/preview-menu-renderer.tsx                        
 scripts/generate-icons.mjs                                                   
-[93m[4mUnused dependencies[24m[39m (23)
+[93m[4mUnused dependencies[24m[39m (24)
 @as-integrations/express4      apps/api/package.json:20:6                
 @nestjs/platform-express       apps/cli/package.json:25:6                
 @soustools/api-types           apps/cli/package.json:26:6                
@@ -119,6 +119,7 @@ dotenv                         packages/config/package.json:15:6
 zod                            packages/config/package.json:16:6         
 @radix-ui/react-dropdown-menu  packages/design-system/package.json:49:6  
 @radix-ui/react-tooltip        packages/design-system/package.json:53:6  
+@soustools/config              packages/design-system/package.json:56:6  
 radix-ui                       packages/design-system/package.json:63:6  
 @soustools/api-types           packages/domain-pos/package.json:37:6     
 sonner                         packages/domain-settings/package.json:41:6

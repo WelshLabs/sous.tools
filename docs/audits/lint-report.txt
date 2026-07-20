@@ -15,12 +15,12 @@ $ tsc
 cache miss, executing 10d51ea4e41dc243
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing 1f4a98d37ea3df40
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/config:lint
 cache miss, executing 0b5e95022385b9b7
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing 1f4a98d37ea3df40
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
@@ -31,80 +31,80 @@ $ tsc
 cache miss, executing 9c9a832b65e76765
 $ tsc
 ::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 91b1081823c05947
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/supabase:lint
 cache miss, executing 1aabc1050b867f22
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing e61ae09ed72f6275
+::group::@soustools/logger:lint
+cache miss, executing 91b1081823c05947
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing eb0b8415eca1ded4
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-client:lint
 cache miss, executing c02d9c5c4c92bb53
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 895a9ddf10686999
+::group::@soustools/domain-settings:lint
+cache miss, executing a3b71705938107a2
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing acba26e993240afd
+::group::@soustools/domain-inventory:lint
+cache miss, executing e68da95b359d65e6
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing 1f39adcb98372d14
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing 2bf0491ae37158bf
+cache miss, executing 6a9c376bc12ea4e1
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/design-system:lint
-cache miss, executing c3a00aacb1f91d3a
+cache miss, executing 14a723294f80e9e2
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing 1ac5f2bcab499687
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::cli:lint
 cache miss, executing a8704a42249845d7
 $ eslint . --max-warnings 0
-(node:3313) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784555544869 is not specified and it doesn't parse as CommonJS.
+(node:3358) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784556486242 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 ::group::pos-simulator:lint
-cache miss, executing f4cd68fa1b3d8198
+cache miss, executing b6a847d0b8f7c20d
 $ eslint . --max-warnings 0
-(node:3372) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784555544871 is not specified and it doesn't parse as CommonJS.
+(node:3341) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784556486243 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 ::group::@soustools/setup-portal:lint
-cache miss, executing 9a5bb9129892765e
+cache miss, executing fe528c8125fddf54
 $ eslint . --max-warnings 0
-::endgroup::
-::group::web:lint
-cache miss, executing c4435e7dd07b1341
-$ eslint . --max-warnings 0
-(node:3330) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784555544878 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 ::group::api:lint
 cache miss, executing 393609f75118a0c8
 $ eslint . --max-warnings 0
-(node:3379) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784555544862 is not specified and it doesn't parse as CommonJS.
+(node:3310) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784556486235 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+::endgroup::
+::group::web:lint
+cache miss, executing 553be44cf8d56308
+$ eslint . --max-warnings 0
+(node:3289) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784556486251 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 
  Tasks:    21 successful, 21 total
 Cached:    0 cached, 21 total
-  Time:    23.574s 
+  Time:    23.045s 
 
