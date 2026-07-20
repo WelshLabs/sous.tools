@@ -5,7 +5,7 @@ import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
 import { type SignageLayoutConfig, type PosItem } from "@soustools/api-types";
 import { io } from "socket.io-client";
 import { mapDbItemToPosItem, type RawDbPosItem } from "@/app/display/[id]/helpers";
-import { config as appConfig } from "@soustools/config";
+import { getDefaultBaseUrl } from "@soustools/api-client";
 import { useRouter } from "next/navigation";
 
 interface SignageDeck {
@@ -46,7 +46,7 @@ export default function TVSignageEditorClient({ deckId, initialDeck, initialItem
   }, [initialItems]);
 
   useEffect(() => {
-    const socketUrl = appConfig.API_BASE_URL || window.location.origin;
+    const socketUrl = getDefaultBaseUrl();
     const socket = io(socketUrl, {
       query: { deckId },
     });

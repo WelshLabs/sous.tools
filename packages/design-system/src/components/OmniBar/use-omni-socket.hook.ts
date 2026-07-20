@@ -6,7 +6,7 @@ import { io, type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
-import { config } from "@soustools/config";
+import { getDefaultBaseUrl } from "@soustools/api-client";
 
 export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
   const configuredBase = apiUrl?.trim();
@@ -70,7 +70,7 @@ export function useOmniSocket(token?: string): {
     const initSocket = async () => {
       try {
         const socketUrl = resolveSocketUrl(
-          config.API_BASE_URL,
+          getDefaultBaseUrl(),
           typeof window !== "undefined" ? window.location.origin : undefined,
         );
 
