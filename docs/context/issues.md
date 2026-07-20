@@ -8,6 +8,57 @@
 
 ---
 
+author: conarwelsh
+association: owner
+edited: false
+status: none
+--
+
+### Implementation Plan
+
+**Objective:** Set up a live, interactive Storybook playground hosted on GitHub Pages for the design system and link it in the Wiki and agent prompts.
+
+**Phase 1: Storybook Build and Deployment Workflow**
+
+1.  **Create GitHub Actions Workflow:**
+    - Create a new file `.github/workflows/deploy-storybook.yml` (or update an existing one if `packages/design-system/` is already covered by another workflow).
+    - Configure the workflow to trigger on pushes to the `packages/design-system/` directory.
+    - **Job: Build and Deploy Storybook**
+      - **Checkout Code:** Use `actions/checkout@v3` to get the repository code.
+      - **Setup Node.js:** Use `actions/setup-node@v3` to set up the Node.js environment.
+      - **Install Dependencies:** Run `npm ci` or `pnpm install` to install project dependencies.
+      - **Build Storybook:** Execute the Storybook build command: `npx storybook build` or `pnpm build-storybook`. This should output to a `storybook-static/` directory. Ensure `CI=true` is set for headless execution.
+      - **Deploy to GitHub Pages:** Use `actions/deploy-pages@v1` to deploy the contents of the `storybook-static/` directory to GitHub Pages. This action requires the `GITHUB_TOKEN` to be available and repository settings to be configured for GitHub Pages deployment.
+
+**Phase 2: Link Storybook URL**
+
+1.  **Update GitHub Wiki:**
+    - Identify the relevant section in the GitHub Wiki to add the Storybook URL.
+    - Add a Markdown link to the deployed Storybook on GitHub Pages. The URL will be in the format `https://&lt;owner&gt;.github.io/&lt;repo&gt;/` (or a custom domain if configured).
+2.  **Update Agent Prompt File:**
+    - Locate and open the `docs/agents/prompts/ui.md` file.
+    - Find the section where external references are provided to the `agent:ui` designer.
+    - Add or update the entry to include the direct URL to the live Storybook instance.
+
+**Phase 3: Verification**
+
+1.  **Test Workflow:**
+    - Make a small change to a component in `packages/design-system/` and push it to trigger the GitHub Actions workflow.
+    - Monitor the workflow run to ensure it completes successfully and deploys the Storybook.
+2.  **Verify Live URL:**
+    - Access the deployed Storybook URL to confirm it loads correctly and is interactive.
+3.  **Check Wiki and Prompt File:**
+    - Verify that the links in the GitHub Wiki and `docs/agents/prompts/ui.md` point to the correct live Storybook URL and are formatted correctly.
+
+### Critical Files for Implementation
+
+- `.github/workflows/deploy-storybook.yml` (to be created/updated)
+- `packages/design-system/` (directory containing Storybook configuration and components)
+- `docs/agents/prompts/ui.md`
+- Repository GitHub Pages settings (configuration in GitHub UI)
+- GitHub Wiki (for linking the URL)
+  \--
+
 ---
 
 ---
@@ -127,6 +178,75 @@ status: none
 --
 
 I want to retain the icons with a background as an optional fallback, but want the default icons to be the transparent ones where possible, as some environments dictate different rules and guidelines for icons.
+--
+
+author: conarwelsh
+association: owner
+edited: false
+status: none
+--
+
+## Implementation Plan: Environment-Aware Transparent Favicons
+
+**Objective:**
+To ensure favicons render with transparent backgrounds and dynamically apply environment-specific colors (Green for Dev, Orange for Staging, gradient for Prod), with existing icons as a fallback.
+
+**Phased Approach:**
+
+**Phase 1: Refactor Icon Generation Script**
+
+1.  **Analyze `scripts/generate-icons.mjs`**:
+    - Understand the current icon generation process.
+    - Identify how backgrounds are currently handled.
+2.  **Implement Transparency**:
+    - Modify `scripts/generate-icons.mjs` to ensure all generated PNG, ICO, and SVG files have strictly transparent backgrounds. This may involve adjusting image manipulation libraries or parameters.
+3.  **Test Icon Generation**:
+    - Run `scripts/generate-icons.mjs` and verify that the output files (PNG, ICO, SVG) have transparent backgrounds.
+
+**Phase 2: Integrate Environment Colors**
+
+1.  **Determine Color Application Method**:
+    - Assess whether to modify `scripts/generate-icons.mjs` further or use `packages/design-system/src/utils/favicon-canvas.ts` for applying environment colors. The latter seems more appropriate for dynamic coloring.
+2.  **Implement Environment Color Logic in `favicon-canvas.ts`**:
+    - Add logic to `packages/design-system/src/utils/favicon-canvas.ts` that checks the `process.env.NODE_ENV` variable.
+    - Based on the environment:
+      - **Development (`dev`)**: Apply a green color.
+      - **Staging (`staging`)**: Apply an orange color.
+      - **Production (`prod`)**: Apply the standard gradient.
+    - Ensure this logic correctly overlays or modifies the transparent favicon.
+3.  **Integrate `favicon-canvas.ts` with Icon Generation**:
+    - Update `scripts/generate-icons.mjs` to call the new logic in `favicon-canvas.ts` during the generation process, ensuring the environment colors are applied to the transparent base.
+4.  **Test Environment Color Application**:
+    - Run the icon generation script in different simulated environments (e.g., by setting `NODE_ENV` to `dev`, `staging`, `prod`) and verify that the correct colors are applied to the generated icons.
+
+**Phase 3: Dynamic Icon Loading in Application**
+
+1.  **Locate Dynamic Loading Point**:
+    - Identify the relevant file for dynamic favicon loading, which is specified as `apps/web/src/app/layout.tsx`.
+2.  **Implement Dynamic Loading Logic**:
+    - Within `apps/web/src/app/layout.tsx`, implement logic to dynamically select and load the appropriate favicon based on `process.env.NODE_ENV`. This might involve conditionally setting `link` tags in the head or using a server-side rendering approach to inject the correct favicon.
+    - Ensure that if an environment-specific icon is not found (e.g., during a transition or for an unhandled `NODE_ENV`), the original fallback icon is used.
+3.  **Test Dynamic Loading**:
+    - Build and run the application in each environment (`dev`, `staging`, `prod`).
+    - Verify that the correct favicon (transparent with environment color) is displayed in the browser tab for each environment.
+    - Test the fallback mechanism by temporarily removing or renaming an environment-specific icon to ensure the default is loaded.
+
+**Phase 4: Fallback and Final Review**
+
+1.  **Confirm Fallback Behavior**:
+    - Re-verify that the original icons are still available and function as a fallback if needed, as per the issue comment.
+2.  **Code Review and Cleanup**:
+    - Perform a code review of all changes, focusing on adherence to the architecture, code quality, and clarity.
+    - Ensure that any newly introduced files or modifications are well-documented.
+3.  **Final Testing**:
+    - Conduct a comprehensive test across all environments to confirm the transparency, environment colors, and dynamic loading are working as expected.
+
+**Potential Challenges**:
+
+- **Build Tool Configuration**: Ensuring that `process.env.NODE_ENV` is correctly set and accessible in both the icon generation scripts and the main application.
+- **Image Manipulation Library Compatibility**: If `scripts/generate-icons.mjs` uses a specific library, ensuring it supports transparency and color manipulation effectively.
+- **Caching**: Browser and server-side caching might interfere with seeing favicon changes immediately. Appropriate cache-busting strategies might be needed.
+
 --
 
 ---
