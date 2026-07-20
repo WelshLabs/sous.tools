@@ -32,14 +32,14 @@ jobs:
           env-slug: "prod"
           project-slug: "sous-tools-1cd-a"
 
-      - name: Inject static deploy key into stage-sous/files/
+      - name: Inject static deploy key into stage-sous/00-install/files/
         run: |
           # Write the Ed25519 read-only deploy key from Infisical.
           # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
           # with chmod 600 inside the chroot. The file is scrubbed after build.
           printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
-            > deploy/pi/stage-sous/files/signage-deploy-key
-          chmod 600 deploy/pi/stage-sous/files/signage-deploy-key
+            > deploy/pi/stage-sous/00-install/files/signage-deploy-key
+          chmod 600 deploy/pi/stage-sous/00-install/files/signage-deploy-key
 
       - name: Stage stage-sous inside pi-gen (runtime injection)
         run: |
@@ -71,7 +71,6 @@ jobs:
             systemctl mask piwiz.service      || true
         run: |
           cd deploy/pi/pi-gen
-          cp -r ../stage-sous ./stage-sous
           touch stage-sous/EXPORT_IMAGE
 
           # 1. Scaffold the mandatory config file that git ignores
@@ -81,8 +80,8 @@ jobs:
           echo "Restoring +x permissions to all pi-gen scripts..."
           sudo find . -type f -name "*.sh" -exec chmod +x {} +
           sudo chmod +x stage*/prerun.sh             || true
-          sudo chmod +x stage-sous/*.sh              || true
-          sudo chmod +x stage-sous/files/*.sh        || true
+          sudo chmod +x stage-sous/00-install/*.sh   || true
+          sudo chmod +x stage-sous/00-install/files/*.sh || true
 
           # 3. Hard-bake the 'sous' user and kill first-boot wizards
           echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
@@ -94,8 +93,8 @@ jobs:
       - name: Scrub deploy key from workspace (security)
         if: always()
         run: |
-          rm -f deploy/pi/stage-sous/files/signage-deploy-key           || true
-          rm -f deploy/pi/pi-gen/stage-sous/files/signage-deploy-key    || true
+          rm -f deploy/pi/stage-sous/00-install/files/signage-deploy-key           || true
+          rm -f deploy/pi/pi-gen/stage-sous/00-install/files/signage-deploy-key    || true
 
       - name: Release image to GitHub (conarwelsh/signage-os)
         uses: softprops/action-gh-release@v2
