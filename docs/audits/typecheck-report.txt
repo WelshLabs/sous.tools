@@ -3,68 +3,88 @@
    • Running typecheck in 20 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:typecheck
-cache miss, executing 14deeaf1cb3b069b
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing 3e9ecc9fa3ee8db1
+cache hit, replaying logs e6e3f01e4f9a557a
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing 84048c90433b9856
+cache hit, replaying logs 0dbc97f63a9fde3e
 $ tsc
 ::endgroup::
-::group::@soustools/config:typecheck
-cache miss, executing 578f83ec36485693
-$ tsc --noEmit
-::endgroup::
-[;31m@soustools/mcp-server:typecheck[;0m
-cache miss, executing 8139ba7256868f6f
-$ tsc --noEmit
-index.ts(1,1): error TS6133: 'Server' is declared but its value is never read.
-index.ts(2,1): error TS6133: 'StdioServerTransport' is declared but its value is never read.
-index.ts(8,1): error TS6133: 'fs' is declared but its value is never read.
-index.ts(9,1): error TS6133: 'path' is declared but its value is never read.
-index.ts(16,7): error TS6133: 'octokit' is declared but its value is never read.
-[ELIFECYCLE] Command failed with exit code 2.
 ::group::@soustools/logger:build
-cache miss, executing 8af88e08435d3802
+cache hit, replaying logs 9c9a832b65e76765
+$ tsc
 ::endgroup::
-::group::@soustools/supabase:typecheck
-cache miss, executing 46d76f95b524125a
-::endgroup::
-::group::@soustools/logger:typecheck
-cache miss, executing 74b6f15050100df0
-::endgroup::
-::group::@soustools/design-system:typecheck
-cache miss, executing 89227939b30d4a97
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing ab75b60c9a3596a7
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing f85d9b9590671531
-::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing 399305404ab2af44
-::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 0dceef49139aa344
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 2c8b2ea7069d1888
+::group::@soustools/mcp-server:typecheck
+cache miss, executing 48e1ff063faafeed
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/api-client:typecheck
-cache miss, executing 9b439ce420695eba
+cache miss, executing 24eb7666f7424f37
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/logger:typecheck
+cache miss, executing deee73376a3450ca
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing 4df9b22c87e02f99
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/supabase:typecheck
+cache miss, executing 6d6fa55aa9ba387d
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/config:typecheck
+cache miss, executing 2d1976f8f772c48f
+$ tsc --noEmit
+::endgroup::
+::group::cli:typecheck
+cache miss, executing 8ffdc27453468bce
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/design-system:typecheck
+cache miss, executing 3c9a3198e470998c
+$ tsc --noEmit
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing e62b7d495060c222
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing a9a10ba8801281fe
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 4123f2e123c5629c
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing 2f8d4cf7ab14a794
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 460ea485800c709c
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 24785383d5cdaa7f
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing a05e16f7ea70c032
+$ tsc --noEmit
+::endgroup::
+::group::api:typecheck
+cache miss, executing d1cccba8f5c205ef
+$ tsc --noEmit
+::endgroup::
+::group::web:typecheck
+cache miss, executing 5e2e86fec7417878
+$ tsc --noEmit
 ::endgroup::
 
- Tasks:    4 successful, 15 total
-Cached:    0 cached, 15 total
-  Time:    8.008s 
-Failed:    @soustools/mcp-server#typecheck
+ Tasks:    20 successful, 20 total
+Cached:    3 cached, 20 total
+  Time:    52.633s 
 

@@ -779,24 +779,26 @@
 │   │   │       ├── SKIP_IMAGES
 │   │   │       └── prerun.sh
 │   │   └── stage-sous
-│   │       ├── 00-packages
-│   │       ├── 01-run.sh
-│   │       ├── 02-run-chroot.sh
-│   │       └── files
-│   │           ├── bootstrap.sh
-│   │           ├── chromium-kiosk@.service
-│   │           ├── maintenance-ota.sh
-│   │           ├── nm-dispatcher-captive
-│   │           ├── sous-hotspot.nmconnection
-│   │           ├── sous-ota-scheduler.sh
-│   │           ├── sous-ota.service
-│   │           ├── sous-ota.timer
-│   │           ├── sous-setup-portal.service
-│   │           ├── sous-sway-config-select.sh
-│   │           ├── sous-sway.service
-│   │           ├── sway-base.conf
-│   │           ├── sway-kiosk.conf
-│   │           └── sway-setup.conf
+│   │       ├── 00-install
+│   │       │   ├── 00-packages
+│   │       │   ├── 01-run.sh
+│   │       │   ├── 02-run-chroot.sh
+│   │       │   └── files
+│   │       │       ├── bootstrap.sh
+│   │       │       ├── chromium-kiosk@.service
+│   │       │       ├── maintenance-ota.sh
+│   │       │       ├── nm-dispatcher-captive
+│   │       │       ├── sous-hotspot.nmconnection
+│   │       │       ├── sous-ota-scheduler.sh
+│   │       │       ├── sous-ota.service
+│   │       │       ├── sous-ota.timer
+│   │       │       ├── sous-setup-portal.service
+│   │       │       ├── sous-sway-config-select.sh
+│   │       │       ├── sous-sway.service
+│   │       │       ├── sway-base.conf
+│   │       │       ├── sway-kiosk.conf
+│   │       │       └── sway-setup.conf
+│   │       └── prerun.sh
 │   └── vercel-setup.md
 ├── deploy.sh
 ├── docker-compose.dev.yml
@@ -1341,4 +1343,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-312 directories, 1030 files
+313 directories, 1031 files

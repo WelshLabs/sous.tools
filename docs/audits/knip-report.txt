@@ -101,7 +101,7 @@ packages/domain-signage/src/preview-column-layout.tsx
 packages/domain-signage/src/preview-column-renderers.tsx                     
 packages/domain-signage/src/preview-menu-renderer.tsx                        
 scripts/generate-icons.mjs                                                   
-[93m[4mUnused dependencies[24m[39m (24)
+[93m[4mUnused dependencies[24m[39m (23)
 @as-integrations/express4      apps/api/package.json:20:6                
 @nestjs/platform-express       apps/cli/package.json:25:6                
 @soustools/api-types           apps/cli/package.json:26:6                
@@ -109,12 +109,9 @@ scripts/generate-icons.mjs
 @soustools/config              apps/pos-simulator/package.json:15:6      
 @supabase/supabase-js          apps/pos-simulator/package.json:17:6      
 @hello-pangea/dnd              apps/web/package.json:14:6                
-@hookform/resolvers            apps/web/package.json:15:6                
 @supabase/supabase-js          apps/web/package.json:27:6                
-react-hook-form                apps/web/package.json:36:6                
 recharts                       apps/web/package.json:37:6                
 serwist                        apps/web/package.json:38:6                
-zod                            apps/web/package.json:41:6                
 eslint-plugin-react            package.json:51:6                         
 socket.io-client               packages/api-client/package.json:15:6     
 @infisical/sdk                 packages/config/package.json:14:6         
@@ -125,6 +122,8 @@ zod                            packages/config/package.json:16:6
 radix-ui                       packages/design-system/package.json:63:6  
 @soustools/api-types           packages/domain-pos/package.json:37:6     
 sonner                         packages/domain-settings/package.json:41:6
+@modelcontextprotocol/sdk      packages/mcp-server/package.json          
+@octokit/rest                  packages/mcp-server/package.json          
 dotenv                         packages/mcp-server/package.json          
 [93m[4mUnused devDependencies[24m[39m (32)
 @types/supertest                 apps/api/package.json:63:6              
@@ -287,7 +286,7 @@ VendorsClientProps          interface  apps/web/src/app/(workspace)/inventory/ve
 PosOrder                    interface  apps/web/src/app/(workspace)/pos-orders/PosOrdersView.tsx:13:18                  
 RecipeViewerClientProps     interface  apps/web/src/app/(workspace)/recipes/[id]/RecipeViewerClient.tsx:8:18            
 RecipeBuilderClientProps    interface  apps/web/src/app/(workspace)/recipes/RecipeBuilderClient.tsx:9:18                
-SettingsClientProps         interface  apps/web/src/app/(workspace)/settings/settings-client.tsx:16:18                  
+SettingsClientProps         interface  apps/web/src/app/(workspace)/settings/settings-client.tsx:35:18                  
 TeamPortalViewProps         interface  apps/web/src/app/(workspace)/team/team.view.tsx:7:18                             
 Transaction                 interface  apps/web/src/app/(workspace)/transactions/TransactionsView.tsx:21:18             
 MenuItemCardProps           interface  apps/web/src/app/display/[id]/menu-item-card.tsx:14:18                           

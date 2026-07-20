@@ -4,46 +4,107 @@
    • Remote caching disabled
 
 ::group::@soustools/eslint-config:lint
-cache miss, executing e5cb80306e507eb8
+cache miss, executing 2936c2687f08918b
 $ eslint . --max-warnings 0
-::endgroup::
-[;31m@soustools/mcp-server:lint[;0m
-cache miss, executing d198f5acc6303f70
-$ eslint . --max-warnings 0
-
-/home/runner/work/sous.tools/sous.tools/packages/mcp-server/index.ts
-   1:10  error  'Server' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
-   2:10  error  'StdioServerTransport' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
-   8:13  error  'fs' is defined but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
-   9:13  error  'path' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
-  16:7   error  'octokit' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
-
-✖ 5 problems (5 errors, 0 warnings)
-
-[ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/config:build
-cache miss, executing 84048c90433b9856
-$ tsc
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing 0158caef097e5c14
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/config:lint
-cache miss, executing f6d81b011d19d2e4
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing 3e9ecc9fa3ee8db1
+cache miss, executing e6e3f01e4f9a557a
 $ tsc
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing 10d51ea4e41dc243
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing 1f4a98d37ea3df40
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:lint
+cache miss, executing 0b5e95022385b9b7
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing 0dbc97f63a9fde3e
+$ tsc
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 9c9a832b65e76765
+$ tsc
+::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing 91b1081823c05947
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/supabase:lint
+cache miss, executing 1aabc1050b867f22
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing e61ae09ed72f6275
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-client:lint
+cache miss, executing c02d9c5c4c92bb53
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 895a9ddf10686999
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing acba26e993240afd
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-recipes:lint
+cache miss, executing 1f39adcb98372d14
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing 2bf0491ae37158bf
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing c3a00aacb1f91d3a
+$ eslint . --max-warnings 0
+::endgroup::
+::group::cli:lint
+cache miss, executing a8704a42249845d7
+$ eslint . --max-warnings 0
+(node:3313) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784555544869 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing f4cd68fa1b3d8198
+$ eslint . --max-warnings 0
+(node:3372) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784555544871 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+::endgroup::
+::group::@soustools/setup-portal:lint
+cache miss, executing 9a5bb9129892765e
+$ eslint . --max-warnings 0
+::endgroup::
+::group::web:lint
+cache miss, executing c4435e7dd07b1341
+$ eslint . --max-warnings 0
+(node:3330) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784555544878 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+::endgroup::
+::group::api:lint
+cache miss, executing 393609f75118a0c8
+$ eslint . --max-warnings 0
+(node:3379) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784555544862 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
 ::endgroup::
 
- Tasks:    1 successful, 6 total
-Cached:    0 cached, 6 total
-  Time:    6.052s 
-Failed:    @soustools/mcp-server#lint
+ Tasks:    21 successful, 21 total
+Cached:    0 cached, 21 total
+  Time:    23.574s 
 

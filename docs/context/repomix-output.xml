@@ -585,9 +585,11 @@ deploy/
     README.md
   pi/
     stage-sous/
-      00-packages
-      01-run.sh
-      02-run-chroot.sh
+      00-install/
+        00-packages
+        01-run.sh
+        02-run-chroot.sh
+      prerun.sh
     README.md
   vercel-setup.md
 docs/
@@ -1118,6 +1120,15 @@ sonar-project.properties
 ```
 
 # Files
+
+## File: .github/ISSUE_TEMPLATE/config.yml
+````yaml
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/conarwelsh/sous.tools/discussions
+    about: Please ask and answer questions here.
+````
 
 ## File: .husky/pre-commit
 ````
@@ -19830,172 +19841,6 @@ export function RecipesClientPage({ initialRecipes }: { initialRecipes: Recipe[]
 }
 ````
 
-## File: apps/web/src/app/(workspace)/settings/settings-client.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import {
-  IntegrationsPanel,
-  GlobalStylingSettings,
-  GeneralSettings,
-  DownloadsPanel,
-  type SettingsFormValues,
-} from "@soustools/domain-settings";
-import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
-import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-
-export interface SettingsClientProps {
-  integrations: IntegrationStatus[];
-  isDev: boolean;
-  initialTokens: GlobalDesignTokens;
-  userProfile: {
-    name: string;
-    email: string;
-    role: string;
-  };
-}
-
-export function SettingsClient({
-  integrations,
-  isDev,
-  initialTokens,
-  userProfile,
-}: SettingsClientProps) {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<
-    "general" | "integrations" | "styling" | "downloads"
-  >("general");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get("tab");
-      if (tab === "integrations") {
-        setActiveTab("integrations");
-      } else if (tab === "styling") {
-        setActiveTab("styling");
-      } else if (tab === "downloads") {
-        setActiveTab("downloads");
-      }
-    }
-  }, []);
-
-  const handleSaveGeneral = async (_data: SettingsFormValues) => {
-    // Stub: send to API
-    toast.success("General settings saved!");
-  };
-
-  const handleSaveTokens = async (_tokens: GlobalDesignTokens) => {
-    // Stub: send to API
-    toast.success("Tokens saved!");
-  };
-
-  const handleConnectIntegration = (provider: string) => {
-    window.location.href = `/api/integrations/connect/${provider.toLowerCase()}?orgId=default`;
-  };
-
-  const handleDisconnectIntegration = async (provider: string) => {
-    const res = await fetch(`/api/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
-      method: "DELETE",
-    });
-    if (!res.ok) throw new Error("Failed to disconnect");
-    router.refresh();
-  };
-
-  const handleSquareAction = async (action: "sync" | "seed") => {
-    const res = await fetch(`/api/integrations/square/${action}?orgId=default`, {
-      method: "POST",
-    });
-    if (!res.ok) throw new Error(`Failed to ${action}`);
-  };
-
-  const handleTabChange = (tab: "general" | "integrations" | "styling" | "downloads") => {
-    setActiveTab(tab);
-    router.replace(`/settings?tab=${tab}`);
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100 animate-in fade-in">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-          <Settings className="w-6 h-6 text-sky-500 animate-pulse" />
-          Settings Panel
-        </h1>
-        <p className="text-xs text-muted-foreground">
-          Configure global kitchen parameters, system integration profiles, and
-          tenant design tokens.
-        </p>
-      </header>
-
-      <div className="flex border-b border-border dark:border-border gap-1">
-        {(["general", "integrations", "styling", "downloads"] as const).map(
-          (tab) => {
-            const icons = {
-              general: Sliders,
-              integrations: Cable,
-              styling: Paintbrush,
-              downloads: () => (
-                <svg
-                  className="w-4 h-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" x2="12" y1="15" y2="3" />
-                </svg>
-              ),
-            };
-            const Icon = icons[tab];
-            return (
-              <button
-                key={tab}
-                onClick={() => handleTabChange(tab)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
-                  activeTab === tab
-                    ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
-                    : "border-transparent text-zinc-500 dark:text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-card dark:hover:bg-card/40"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab === "styling" ? "Global Styling" : tab}
-              </button>
-            );
-          }
-        )}
-      </div>
-
-      <div className="p-6 rounded-2xl bg-card dark:bg-card/40 border border-border dark:border-border shadow-2xl backdrop-blur-2xl">
-        {activeTab === "general" && (
-          <GeneralSettings initialData={userProfile} onSave={handleSaveGeneral} />
-        )}
-        {activeTab === "integrations" && (
-          <IntegrationsPanel
-            integrations={integrations}
-            isDev={isDev}
-            onConnect={handleConnectIntegration}
-            onDisconnect={handleDisconnectIntegration}
-            onSquareAction={handleSquareAction}
-          />
-        )}
-        {activeTab === "styling" && (
-          <GlobalStylingSettings initialTokens={initialTokens} onSave={handleSaveTokens} />
-        )}
-        {activeTab === "downloads" && <DownloadsPanel />}
-      </div>
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/(workspace)/signage/[deckId]/preview/page.tsx
 ````typescript
 import React from "react";
@@ -24768,214 +24613,6 @@ sudo ansible-pull \
 - `inventory.ini` is **gitignored** — never commit it
 - All secrets flow from Ansible vault → `/etc/*` files on-device with `chmod 600`
 - Infisical fetches runtime secrets at boot (Supabase keys, etc.)
-````
-
-## File: deploy/pi/stage-sous/00-packages
-````
-sway
-swaybg
-swayidle
-wl-mirror
-foot
-network-manager
-jq
-curl
-git
-ansible
-moreutils
-xdg-utils
-libinput-tools
-````
-
-## File: deploy/pi/stage-sous/01-run.sh
-````bash
-#!/bin/bash -e
-# =============================================================================
-# 01-run.sh  —  stage-sous HOST-SIDE setup (runs on the build machine)
-# Installs all files from files/ into the target rootfs image.
-# ROOTFS_DIR is provided by pi-gen pointing to the mounted target filesystem.
-# =============================================================================
-
-STAGE_DIR="$(cd "$(dirname "$0")" && pwd)"
-FILES_DIR="${STAGE_DIR}/files"
-
-# ── Create required directories in the rootfs ─────────────────────────────────
-install -d -m 755 "${ROOTFS_DIR}/usr/local/bin"
-install -d -m 755 "${ROOTFS_DIR}/etc/sway"
-install -d -m 755 "${ROOTFS_DIR}/etc/sous"
-install -d -m 700 "${ROOTFS_DIR}/etc/sous/secrets"
-install -d -m 755 "${ROOTFS_DIR}/etc/NetworkManager/dispatcher.d"
-install -d -m 700 "${ROOTFS_DIR}/etc/NetworkManager/system-connections"
-install -d -m 700 "${ROOTFS_DIR}/home/sous/.ssh"
-install -d -m 755 "${ROOTFS_DIR}/var/log"
-
-# ── Sway compositor configs ───────────────────────────────────────────────────
-install -m 644 "${FILES_DIR}/sway-base.conf"  "${ROOTFS_DIR}/etc/sway/sway-base.conf"
-install -m 644 "${FILES_DIR}/sway-setup.conf" "${ROOTFS_DIR}/etc/sway/sway-setup.conf"
-install -m 644 "${FILES_DIR}/sway-kiosk.conf" "${ROOTFS_DIR}/etc/sway/sway-kiosk.conf"
-
-# Default symlink → setup mode on first boot
-ln -sf /etc/sway/sway-setup.conf "${ROOTFS_DIR}/etc/sway/config"
-
-# ── systemd unit files ────────────────────────────────────────────────────────
-install -m 644 "${FILES_DIR}/sous-sway.service"          "${ROOTFS_DIR}/etc/systemd/system/sous-sway.service"
-install -m 644 "${FILES_DIR}/sous-setup-portal.service"  "${ROOTFS_DIR}/etc/systemd/system/sous-setup-portal.service"
-install -m 644 "${FILES_DIR}/sous-ota.service"           "${ROOTFS_DIR}/etc/systemd/system/sous-ota.service"
-install -m 644 "${FILES_DIR}/sous-ota.timer"             "${ROOTFS_DIR}/etc/systemd/system/sous-ota.timer"
-install -m 644"${FILES_DIR}/chromium-kiosk@.service"    "${ROOTFS_DIR}/etc/systemd/system/chromium-kiosk@.service"
-
-# ── Executable helper scripts ─────────────────────────────────────────────────
-install -m 755 "${FILES_DIR}/sous-sway-config-select.sh"  "${ROOTFS_DIR}/usr/local/bin/sous-sway-config-select.sh"
-install -m 755 "${FILES_DIR}/sous-ota-scheduler.sh"       "${ROOTFS_DIR}/usr/local/bin/sous-ota-scheduler.sh"
-install -m 755 "${FILES_DIR}/maintenance-ota.sh"          "${ROOTFS_DIR}/usr/local/bin/maintenance-ota.sh"
-install -m 755 "${FILES_DIR}/bootstrap.sh"                "${ROOTFS_DIR}/usr/local/bin/bootstrap.sh"
-
-# ── NetworkManager ────────────────────────────────────────────────────────────
-install -m 755 "${FILES_DIR}/nm-dispatcher-captive" \
-  "${ROOTFS_DIR}/etc/NetworkManager/dispatcher.d/90-captive-portal"
-
-install -m 600 "${FILES_DIR}/sous-hotspot.nmconnection" \
-  "${ROOTFS_DIR}/etc/NetworkManager/system-connections/Sous-Signage-Setup.nmconnection"
-
-# ── SSH Deploy Key  (signage-deploy-key written by CI from Infisical) ─────────
-if [ -f "${FILES_DIR}/signage-deploy-key" ]; then
-  install -m 600 "${FILES_DIR}/signage-deploy-key" \
-    "${ROOTFS_DIR}/home/sous/.ssh/id_ed25519"
-else
-  echo "WARNING: signage-deploy-key not found — SSH pull from GitHub will fail on device."
-fi
-
-# ── Default device configuration ─────────────────────────────────────────────
-cat > "${ROOTFS_DIR}/etc/sous/device-config.json" <<'EOJSON'
-{
-  "kiosk_mode": "setup",
-  "maintenance_window": { "hour": 2, "minute": 0, "dayOfWeek": null },
-  "operating_hours": { "wake_hour": 6, "wake_minute": 0, "sleep_hour": 22, "sleep_minute": 0 },
-  "pairing_code": null,
-  "device_id": null,
-  "paired_at": null,
-  "last_ota_at": null
-}
-EOJSON
-
-# ── Phase state file (setup → kiosk after pairing) ────────────────────────────
-echo "setup" > "${ROOTFS_DIR}/etc/sous/kiosk-mode"
-
-# ── Bootstrap log placeholder ─────────────────────────────────────────────────
-touch "${ROOTFS_DIR}/var/log/sous-bootstrap.log"
-````
-
-## File: deploy/pi/stage-sous/02-run-chroot.sh
-````bash
-#!/bin/bash -e
-# =============================================================================
-# 02-run-chroot.sh  —  stage-sous CHROOT-SIDE setup
-# Runs INSIDE the Pi's root filesystem (ARM64 chroot).
-# This script configures: Node 22, pnpm, SSH, sudoers, systemd services,
-# autologin, and the graphical target.
-# =============================================================================
-
-set -euo pipefail
-
-echo "=== [stage-sous chroot] Starting Sous Signage Node configuration ==="
-
-# ── Node.js 22 (LTS) via NodeSource ──────────────────────────────────────────
-echo "--- Installing Node.js 22 via NodeSource..."
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-apt-get install -y nodejs
-node --version
-npm --version
-
-# ── pnpm (global, pinned major) ───────────────────────────────────────────────
-echo "--- Installing pnpm..."
-npm install -g pnpm@9
-pnpm --version
-
-# ── Fix ownership of sous home and baked SSH key ──────────────────────────────
-echo "--- Configuring SSH for sous user..."
-chown -R sous:sous /home/sous/.ssh || true
-chmod 700 /home/sous/.ssh          || true
-
-if [ -f /home/sous/.ssh/id_ed25519 ]; then
-  chmod 600 /home/sous/.ssh/id_ed25519
-  chown sous:sous /home/sous/.ssh/id_ed25519
-fi
-
-# ── SSH config stanza (deploy key → GitHub) ───────────────────────────────────
-cat > /home/sous/.ssh/config <<'EOSSH'
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_ed25519
-  StrictHostKeyChecking accept-new
-  AddKeysToAgent no
-  BatchMode yes
-EOSSH
-chmod 600 /home/sous/.ssh/config
-chown sous:sous /home/sous/.ssh/config
-
-# ── Pre-scan GitHub host key so first git pull is non-interactive ─────────────
-# We use the official fingerprint; ssh-keyscan inside chroot may not have network.
-# The key is also seeded via StrictHostKeyChecking=accept-new on first real pull.
-cat >> /home/sous/.ssh/known_hosts <<'EOKNOWN'
-github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
-EOKNOWN
-chmod 644 /home/sous/.ssh/known_hosts
-chown sous:sous /home/sous/.ssh/known_hosts
-
-# ── sudoers: allow Next.js API routes to run kiosk helpers without password ───
-echo "--- Configuring sudoers for kiosk helpers..."
-cat > /etc/sudoers.d/99-sous-kiosk <<'EOSUDO'
-# Allow the sous user (running the setup-portal Node server) to perform
-# compositor mode switches and hostapd toggling without a password prompt.
-Defaults:sous !requiretty
-sous ALL=(ALL) NOPASSWD: /usr/local/bin/sous-sway-config-select.sh
-sous ALL=(ALL) NOPASSWD: /bin/systemctl restart sous-sway.service
-sous ALL=(ALL) NOPASSWD: /bin/systemctl start   sous-sway.service
-sous ALL=(ALL) NOPASSWD: /bin/systemctl stop    sous-sway.service
-sous ALL=(ALL) NOPASSWD: /usr/bin/pkill -x wl-mirror
-sous ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/sous/kiosk-mode
-sous ALL=(ALL) NOPASSWD: /bin/nmcli connection up   Sous-Signage-Setup
-sous ALL=(ALL) NOPASSWD: /bin/nmcli connection down Sous-Signage-Setup
-EOSUDO
-chmod 440 /etc/sudoers.d/99-sous-kiosk
-# Validate — fail the build if sudoers syntax is broken
-visudo -c
-
-# ── Ensure /etc/sous is owned by sous ────────────────────────────────────────
-chown -R sous:sous /etc/sous
-chmod 755 /etc/sous
-chmod 600 /etc/sous/kiosk-mode
-
-# ── Autologin for 'sous' on tty1 (required for Wayland/DRM access) ───────────
-echo "--- Configuring autologin on tty1..."
-mkdir -p /etc/systemd/system/getty@tty1.service.d/
-cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<'EOCNF'
-[Service]
-ExecStart=
-ExecStart=-/sbin/agetty --autologin sous --noclear %I $TERM
-Type=idle
-EOCNF
-
-# ── Enable linger so sous user services can run at boot ──────────────────────
-loginctl enable-linger sous 2>/dev/null || true
-
-# ── Enable required systemd services ─────────────────────────────────────────
-echo "--- Enabling systemd services..."
-systemctl enable sous-sway.service
-systemctl enable sous-setup-portal.service
-systemctl enable sous-ota.timer
-systemctl enable NetworkManager.service
-
-# ── Set graphical.target as the default boot target ──────────────────────────
-systemctl set-default graphical.target
-
-# ── Bootstrap log placeholder (writable by sous) ─────────────────────────────
-touch /var/log/sous-bootstrap.log
-chown sous:sous /var/log/sous-bootstrap.log
-chmod 644 /var/log/sous-bootstrap.log
-
-echo "=== [stage-sous chroot] Configuration complete ==="
 ````
 
 ## File: deploy/pi/README.md
@@ -37896,6 +37533,56 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 ````
 
+## File: .cursorrules
+````
+# sous.tools AI System Rules
+
+## 1. Domain-Driven Design (DDD) & Infrastructure
+
+- **Strict Boundaries:** Next.js apps (e.g., apps/web, apps/pos-simulator) and domain packages (packages/domain-*) are strictly forbidden from importing database clients.
+- **The Supabase Firewall:** NO CLIENT OR UI APP is allowed to access Supabase. Absolutely no one outside of apps/api should have access to or knowledge of Supabase.
+- **API First & Network Fetching:** ALL network requests must go exclusively through our unified packages/api-client. Native fetch(), axios, or direct endpoint calls outside of api-client are strictly forbidden.
+- **Server-Side Supremacy:** Next.js functions strictly as a routing and data orchestration layer. Server Components are the default.
+- **Config Lockdown:** process.env is strictly forbidden outside of @soustools/config. All apps must import the type-safe, validated config object.
+- **Secrets SSOT:** Infisical is the Single Source of Truth for all environment variables.
+- **TSConfig Management:** All tsconfig.json files must extend from the shared packages/tsconfig. No relative paths (e.g., ../../../) are allowed.
+- **Thin App Router Shells:** apps/* directories must remain as hollow as possible. Next.js page.tsx files should act strictly as Server Component entry points that import their corresponding Containers or Views from @soustools/domain-* packages. Building complex components/ directories inside the Next.js apps/* router is forbidden.
+
+## 2. Component Architecture & Folder Structure
+
+- **Feature-Driven Folders:** Do not use atoms/, molecules/, or organisms/ as folder names. Group files by their Feature or Domain (e.g., Supplier/). The Atomic design philosophy (Atoms build Molecules, Molecules build Organisms) dictates _how_ components are composed and imported, not how folders are structured.
+- **Design System vs. Domain Packages:** packages/design-system is strictly reserved for generic, highly reusable UI primitives and theming. Domain-specific UI components (e.g., SupplierOrderGroup, RecipeBuilder) MUST live in their respective packages/domain-* package.
+- **Container/View Pattern:** Pure presentational UI components must live in *.tsx files and are banned from importing data-fetching hooks or infrastructure logic.
+- **Logic Quarantines:** Business logic, API calls, and state management must be strictly quarantined to *.container.tsx files.
+- **Max Lines:** Files must not exceed 200 lines. Refactor logically into smaller compositional units instead of artificially chopping files.
+- **Zero Tech Debt:** Do not use eslint-disable to bypass rules. If a file fails linting or knip dead-code checks, refactor it into compliance.
+
+## 3. soustools design system & Styling
+
+- **Tailwind v4:** Use the @theme directive in CSS. No tailwind.config file.
+- **Semantic Variables Only:** Hardcoding legacy Tailwind colors (e.g., slate-_), arbitrary values (e.g., w-[32px], bg-[#123456]), or absolute z-indexes is forbidden. Strictly use semantic CSS variables (e.g., var(--z-overlay)) and the "Midnight Slate" (zinc-_) palette defined in @soustools/design-system.
+- **Opacities:** Use strict Hex codes to allow native color-mix() opacity.
+- **Animations:** Use Framer Motion for micro-animations and spring physics.
+
+## 4. AI Orchestration & Execution
+
+- **Halt-on-Error:** If a TypeScript, ESLint, Database Migration, Runtime, or Playwright E2E error occurs, STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. Request manual intervention.
+- **Issue Triage & Diagnostics:** Before writing code to fix a bug, you MUST read the diagnostic comments inside docs/context/notebooklm-issues.md to leverage previous junior-agent research.
+- **Debt Audits:** When refactoring, you MUST review the reports in docs/context/ and docs/audits/ (such as knip-report.txt and lint-report.txt) to ensure you are not duplicating tech debt.
+- **Boot Sequence:** Before executing any task, you MUST silently read this `.cursorrules` file, `docs/context/notebooklm-project.md` (Kanban State), and `docs/context/notebooklm-architecture.md` (Workspace Graph) to understand the current architecture and sprint goals.
+- **Direct Execution (No Yapping):** Do not waste output tokens "thinking out loud" or providing lengthy explanations of code or CSS class conversions in the chat window. Analyze silently, and immediately use your file-editing tools to execute the changes.
+- **Task Decomposition:** If a refactor involves moving or rewriting multiple files (e.g., separating an Organism and its Molecules), execute the file creations and edits one by one to avoid context/token exhaustion.
+- **GitHub Issue & Kanban Management (MCP):** You have access to GitHub via an MCP server. When you are assigned a task associated with a GitHub Issue, you must autonomously manage its state using the MCP tool to make real API calls.
+- **Task Completion & Read-Only Context:** Upon completing the code refactor or bug fix for an issue, you MUST use your MCP tools to move the corresponding ticket into the "Review" column on the remote GitHub Projects Kanban board.
+- **CRITICAL:** Do NOT edit the docs/context/notebooklm-project.md or notebooklm-issues.md files to simulate moving a ticket or updating an issue. Those files are READ-ONLY and automatically generated by the CI/CD pipeline. You must interact with the actual GitHub API.
+
+## 5. Continuous X-Ray Sync (NotebookLM / CTO Directive)
+
+- **Living Document:** This .cursorrules file is a living document.
+- **CTO Oversight:** During architectural planning sessions, the AI CTO (NotebookLM) is explicitly instructed to monitor for any new conventions, UI decisions, or workflow changes.
+- **Auto-Correction:** If a conversation dictates a change in our strategy (e.g., swapping a tool, changing a naming convention, or adjusting the CI/CD pipeline), NotebookLM MUST conclude its response by providing a formatted update block to append to or modify this .cursorrules file.
+````
+
 ## File: .nvmrc
 ````
 22.22.0
@@ -38165,142 +37852,40 @@ export ANTHROPIC_BASE_URL="https://ai.sous.tools"
 export ANTHROPIC_API_KEY="sk-1234"
 ````
 
-## File: .github/ISSUE_TEMPLATE/config.yml
+## File: .github/ISSUE_TEMPLATE/agent_task.yml
 ````yaml
-blank_issues_enabled: false
-contact_links:
-  - name: Ask a question
-    url: https://github.com/conarwelsh/sous.tools/discussions
-    about: Please ask and answer questions here.
-````
-
-## File: .github/workflows/build-and-deploy-rpi-os.yml
-````yaml
-name: Build and Release RPi OS Image
-
-on:
-  push:
-    branches: ["main"]
-    paths:
-      - "deploy/pi/**"
-      - "deploy/ansible/**"
-      - "apps/setup-portal/**"
-      - ".github/workflows/build-and-deploy-rpi-os.yml"
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: [self-hosted, linux, arm64]
-    steps:
-      - name: Who am I?
-        run: whoami
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
-      - name: Fetch Infisical Secrets
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: "prod"
-          project-slug: "sous-tools-1cd-a"
-
-      - name: Inject static deploy key into stage-sous/files/
-        run: |
-          # Write the Ed25519 read-only deploy key from Infisical.
-          # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
-          # with chmod 600 inside the chroot. The file is scrubbed after build.
-          printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
-            > deploy/pi/stage-sous/files/signage-deploy-key
-          chmod 600 deploy/pi/stage-sous/files/signage-deploy-key
-
-      - name: Stage stage-sous inside pi-gen (runtime injection)
-        run: |
-          # pi-gen expects custom stages to live alongside stage0–stage5.
-          # We keep ours in deploy/pi/stage-sous/ and copy at CI time so
-          # it never pollutes the upstream pi-gen checkout.
-          cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
-
-      - name: Install native pi-gen dependencies
-        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted qemu-user-static debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
-
-      - name: Build OS Image natively with pi-gen
-        env:
-          PI_GEN_CONFIG: |
-            IMG_NAME=soustools-signage
-            TARGET_HOSTNAME=signage
-            TARGET_ARCH=arm64
-            ARCH=arm64
-            ENABLE_SSH=1
-            CONTINUE=1
-            FIRST_USER_NAME=sous
-            FIRST_USER_PASS=bootstrap123
-            # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
-            STAGE_LIST="stage0 stage1 stage2 stage-sous"
-          CHROOT_SCRIPT: |
-            #!/bin/bash
-            # B. Mask interactive first-boot screens
-            systemctl mask userconfig.service || true
-            systemctl mask piwiz.service      || true
-        run: |
-          cd deploy/pi/pi-gen
-          cp -r ../stage-sous ./stage-sous
-          touch stage-sous/EXPORT_IMAGE
-
-          # 1. Scaffold the mandatory config file that git ignores
-          echo "$PI_GEN_CONFIG" > config
-
-          # 2. Restore executable flags (git strips them on checkout)
-          echo "Restoring +x permissions to all pi-gen scripts..."
-          sudo find . -type f -name "*.sh" -exec chmod +x {} +
-          sudo chmod +x stage*/prerun.sh             || true
-          sudo chmod +x stage-sous/*.sh              || true
-          sudo chmod +x stage-sous/files/*.sh        || true
-
-          # 3. Hard-bake the 'sous' user and kill first-boot wizards
-          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
-          sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
-
-          # 4. Run the NATIVE pi-gen build (Bypassing Docker)
-          sudo ./build.sh
-
-      - name: Scrub deploy key from workspace (security)
-        if: always()
-        run: |
-          rm -f deploy/pi/stage-sous/files/signage-deploy-key           || true
-          rm -f deploy/pi/pi-gen/stage-sous/files/signage-deploy-key    || true
-
-      - name: Release image to GitHub (conarwelsh/signage-os)
-        uses: softprops/action-gh-release@v2
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-        with:
-          repository: conarwelsh/signage-os
-          token: ${{ env.SIGNAGE_GITHUB_PAT }}
-          tag_name: v${{ github.run_number }}
-          name: Signage OS v${{ github.run_number }}
-          files: deploy/pi/pi-gen/deploy/*.zip
-          make_latest: true
-
-      # THE ARMOR: Forcefully detach all system mounts BEFORE wiping the work directory
-      - name: Cleanup and Protect Host Mounts
-        if: always()
-        run: |
-          echo "Detaching any lingering pi-gen bind mounts..."
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/sys || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/proc || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
-
-          echo "Wiping pi-gen work directories safely..."
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work       || true
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy     || true
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
+name: Agent Task
+description: Template for autonomous AI agent execution
+title: "Task: "
+labels: ["backlog"]
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What is the brainstormed idea or bug that needs fixing?
+    validations:
+      required: true
+  - type: checkboxes
+    id: dod
+    attributes:
+      label: Agent Definition of Done (DoD)
+      description: The executing agent MUST complete the following before opening a Pull Request.
+      options:
+        - label: Create a new feature branch (`feature/issue-[id]`).
+          required: true
+        - label: Write the code strictly conforming to `.cursorrules`.
+          required: true
+        - label: Run `pnpm turbo lint` and ensure 0 errors.
+          required: true
+        - label: Run `pnpm turbo typecheck` and ensure perfect compilation.
+          required: true
+        - label: Push the branch and open a PR.
+          required: true
+        - label: The PR body MUST include the raw output of the lint and typecheck commands to prove verification.
+          required: true
+        - label: Post a comment on this issue linking to the PR.
+          required: true
 ````
 
 ## File: .github/workflows/deploy-storybook.yml
@@ -42592,6 +42177,295 @@ export function RecipeViewerClient({
 }
 ````
 
+## File: apps/web/src/app/(workspace)/settings/settings-client.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  IntegrationsPanel,
+  GlobalStylingSettings,
+  GeneralSettings,
+  DownloadsPanel,
+} from "@soustools/domain-settings";
+import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
+import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+const SettingsSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+}).refine((data) => {
+  if (data.password && data.password !== data.confirmPassword) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type SettingsFormValues = z.infer<typeof SettingsSchema>;
+
+export interface SettingsClientProps {
+  integrations: IntegrationStatus[];
+  isDev: boolean;
+  initialTokens: GlobalDesignTokens;
+  userProfile: {
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+export function SettingsClient({
+  integrations,
+  isDev,
+  initialTokens,
+  userProfile,
+}: SettingsClientProps) {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<
+    "general" | "integrations" | "styling" | "downloads"
+  >("general");
+
+  // --- General Settings State & Hook ---
+  const [generalSaving, setGeneralSaving] = useState(false);
+  const [generalSuccess, setGeneralSuccess] = useState(false);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<SettingsFormValues>({
+    resolver: zodResolver(SettingsSchema),
+    defaultValues: { name: userProfile.name, email: userProfile.email, password: "", confirmPassword: "" },
+  });
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
+
+  // --- Styling State ---
+  const [tokens, setTokens] = useState<GlobalDesignTokens>(initialTokens || {});
+  const [tokensSaving, setTokensSaving] = useState(false);
+  const [tokensSuccess, setTokensSuccess] = useState(false);
+
+  // --- Integrations State ---
+  const [actionLoading, setActionLoading] = useState(false);
+  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string; } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "integrations") {
+        setActiveTab("integrations");
+      } else if (tab === "styling") {
+        setActiveTab("styling");
+      } else if (tab === "downloads") {
+        setActiveTab("downloads");
+      }
+    }
+  }, []);
+
+  const handleSaveGeneral = async (_data: SettingsFormValues) => {
+    // Stub: send to API
+    toast.success("General settings saved!");
+  };
+
+  const onSubmitGeneral = async (data: SettingsFormValues) => {
+    setGeneralSaving(true);
+    setGeneralSuccess(false);
+    setGeneralError(null);
+    try {
+      await handleSaveGeneral(data);
+      setGeneralSuccess(true);
+      setTimeout(() => setGeneralSuccess(false), 3000);
+    } catch (err: any) {
+      setGeneralError(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setGeneralSaving(false);
+    }
+  };
+
+  const handleSaveTokens = async (_tokens: GlobalDesignTokens) => {
+    // Stub: send to API
+    toast.success("Tokens saved!");
+  };
+
+  const handleTokenChange = (key: keyof GlobalDesignTokens, value: string) => {
+    setTokens((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const onSubmitTokens = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTokensSaving(true);
+    setTokensSuccess(false);
+    try {
+      await handleSaveTokens(tokens);
+      setTokensSuccess(true);
+      setTimeout(() => setTokensSuccess(false), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTokensSaving(false);
+    }
+  };
+
+  const handleConnectIntegration = (provider: string) => {
+    window.location.href = `/api/integrations/connect/${provider.toLowerCase()}?orgId=default`;
+  };
+
+  const handleDisconnectIntegration = async (provider: string) => {
+    const res = await fetch(`/api/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to disconnect");
+    router.refresh();
+  };
+
+  const handleDisconnect = async (provider: string) => {
+    setActionLoading(true);
+    setNotification(null);
+    try {
+      await handleDisconnectIntegration(provider);
+      setNotification({ type: "success", message: `${provider} integration disconnected.` });
+    } catch (err: any) {
+      setNotification({ type: "error", message: err.message || "Error" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSquareAction = async (action: "sync" | "seed") => {
+    const res = await fetch(`/api/integrations/square/${action}?orgId=default`, {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error(`Failed to ${action}`);
+  };
+
+  const handleSquareActionWrapper = async (action: "sync" | "seed") => {
+    setActionLoading(true);
+    setNotification(null);
+    try {
+      await handleSquareAction(action);
+      setNotification({
+        type: "success",
+        message: action === "sync"
+          ? "Square menu catalog synchronized successfully!"
+          : "Square sandbox catalog seeded successfully!",
+      });
+    } catch (err: any) {
+      setNotification({ type: "error", message: err.message || `Failed to ${action} catalog.` });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleTabChange = (tab: "general" | "integrations" | "styling" | "downloads") => {
+    setActiveTab(tab);
+    router.replace(`/settings?tab=${tab}`);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100 animate-in fade-in">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+          <Settings className="w-6 h-6 text-sky-500 animate-pulse" />
+          Settings Panel
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Configure global kitchen parameters, system integration profiles, and
+          tenant design tokens.
+        </p>
+      </header>
+
+      <div className="flex border-b border-border dark:border-border gap-1">
+        {(["general", "integrations", "styling", "downloads"] as const).map(
+          (tab) => {
+            const icons = {
+              general: Sliders,
+              integrations: Cable,
+              styling: Paintbrush,
+              downloads: () => (
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
+              ),
+            };
+            const Icon = icons[tab];
+            return (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
+                  activeTab === tab
+                    ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
+                    : "border-transparent text-zinc-500 dark:text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-card dark:hover:bg-card/40"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab === "styling" ? "Global Styling" : tab}
+              </button>
+            );
+          }
+        )}
+      </div>
+
+      <div className="p-6 rounded-2xl bg-card dark:bg-card/40 border border-border dark:border-border shadow-2xl backdrop-blur-2xl">
+        {activeTab === "general" && (
+          <GeneralSettings
+            register={register}
+            errors={errors}
+            password={password}
+            confirmPassword={confirmPassword}
+            initialData={userProfile}
+            saving={generalSaving}
+            success={generalSuccess}
+            serverError={generalError}
+            onSubmit={handleSubmit(onSubmitGeneral)}
+          />
+        )}
+        {activeTab === "integrations" && (
+          <IntegrationsPanel
+            integrations={integrations}
+            isDev={isDev}
+            onConnect={handleConnectIntegration}
+            onDisconnect={handleDisconnect}
+            onSquareAction={handleSquareActionWrapper}
+            actionLoading={actionLoading}
+            notification={notification}
+          />
+        )}
+        {activeTab === "styling" && (
+          <GlobalStylingSettings
+            tokens={tokens}
+            saving={tokensSaving}
+            success={tokensSuccess}
+            onSubmit={onSubmitTokens}
+            handleTokenChange={handleTokenChange}
+          />
+        )}
+        {activeTab === "downloads" && <DownloadsPanel />}
+      </div>
+    </div>
+  );
+}
+````
+
 ## File: apps/web/src/app/actions/auth.ts
 ````typescript
 "use server";
@@ -42647,6 +42521,223 @@ export default [
   },
   { ignores: [".next/**", "node_modules/**", "public/**", "next-env.d.ts"] },
 ];
+````
+
+## File: deploy/pi/stage-sous/00-install/00-packages
+````
+sway
+swaybg
+swayidle
+wl-mirror
+foot
+network-manager
+jq
+curl
+git
+ansible
+moreutils
+xdg-utils
+libinput-tools
+````
+
+## File: deploy/pi/stage-sous/00-install/01-run.sh
+````bash
+#!/bin/bash -e
+# =============================================================================
+# 01-run.sh  —  stage-sous HOST-SIDE setup (runs on the build machine)
+# Installs all files from files/ into the target rootfs image.
+# ROOTFS_DIR is provided by pi-gen pointing to the mounted target filesystem.
+# =============================================================================
+
+STAGE_DIR="$(cd "$(dirname "$0")" && pwd)"
+FILES_DIR="${STAGE_DIR}/files"
+
+# ── Create required directories in the rootfs ─────────────────────────────────
+install -d -m 755 "${ROOTFS_DIR}/usr/local/bin"
+install -d -m 755 "${ROOTFS_DIR}/etc/sway"
+install -d -m 755 "${ROOTFS_DIR}/etc/sous"
+install -d -m 700 "${ROOTFS_DIR}/etc/sous/secrets"
+install -d -m 755 "${ROOTFS_DIR}/etc/NetworkManager/dispatcher.d"
+install -d -m 700 "${ROOTFS_DIR}/etc/NetworkManager/system-connections"
+install -d -m 700 "${ROOTFS_DIR}/home/sous/.ssh"
+install -d -m 755 "${ROOTFS_DIR}/var/log"
+
+# ── Sway compositor configs ───────────────────────────────────────────────────
+install -m 644 "${FILES_DIR}/sway-base.conf"  "${ROOTFS_DIR}/etc/sway/sway-base.conf"
+install -m 644 "${FILES_DIR}/sway-setup.conf" "${ROOTFS_DIR}/etc/sway/sway-setup.conf"
+install -m 644 "${FILES_DIR}/sway-kiosk.conf" "${ROOTFS_DIR}/etc/sway/sway-kiosk.conf"
+
+# Default symlink → setup mode on first boot
+ln -sf /etc/sway/sway-setup.conf "${ROOTFS_DIR}/etc/sway/config"
+
+# ── systemd unit files ────────────────────────────────────────────────────────
+install -m 644 "${FILES_DIR}/sous-sway.service"          "${ROOTFS_DIR}/etc/systemd/system/sous-sway.service"
+install -m 644 "${FILES_DIR}/sous-setup-portal.service"  "${ROOTFS_DIR}/etc/systemd/system/sous-setup-portal.service"
+install -m 644 "${FILES_DIR}/sous-ota.service"           "${ROOTFS_DIR}/etc/systemd/system/sous-ota.service"
+install -m 644 "${FILES_DIR}/sous-ota.timer"             "${ROOTFS_DIR}/etc/systemd/system/sous-ota.timer"
+install -m 644"${FILES_DIR}/chromium-kiosk@.service"    "${ROOTFS_DIR}/etc/systemd/system/chromium-kiosk@.service"
+
+# ── Executable helper scripts ─────────────────────────────────────────────────
+install -m 755 "${FILES_DIR}/sous-sway-config-select.sh"  "${ROOTFS_DIR}/usr/local/bin/sous-sway-config-select.sh"
+install -m 755 "${FILES_DIR}/sous-ota-scheduler.sh"       "${ROOTFS_DIR}/usr/local/bin/sous-ota-scheduler.sh"
+install -m 755 "${FILES_DIR}/maintenance-ota.sh"          "${ROOTFS_DIR}/usr/local/bin/maintenance-ota.sh"
+install -m 755 "${FILES_DIR}/bootstrap.sh"                "${ROOTFS_DIR}/usr/local/bin/bootstrap.sh"
+
+# ── NetworkManager ────────────────────────────────────────────────────────────
+install -m 755 "${FILES_DIR}/nm-dispatcher-captive" \
+  "${ROOTFS_DIR}/etc/NetworkManager/dispatcher.d/90-captive-portal"
+
+install -m 600 "${FILES_DIR}/sous-hotspot.nmconnection" \
+  "${ROOTFS_DIR}/etc/NetworkManager/system-connections/Sous-Signage-Setup.nmconnection"
+
+# ── SSH Deploy Key  (signage-deploy-key written by CI from Infisical) ─────────
+if [ -f "${FILES_DIR}/signage-deploy-key" ]; then
+  install -m 600 "${FILES_DIR}/signage-deploy-key" \
+    "${ROOTFS_DIR}/home/sous/.ssh/id_ed25519"
+else
+  echo "WARNING: signage-deploy-key not found — SSH pull from GitHub will fail on device."
+fi
+
+# ── Default device configuration ─────────────────────────────────────────────
+cat > "${ROOTFS_DIR}/etc/sous/device-config.json" <<'EOJSON'
+{
+  "kiosk_mode": "setup",
+  "maintenance_window": { "hour": 2, "minute": 0, "dayOfWeek": null },
+  "operating_hours": { "wake_hour": 6, "wake_minute": 0, "sleep_hour": 22, "sleep_minute": 0 },
+  "pairing_code": null,
+  "device_id": null,
+  "paired_at": null,
+  "last_ota_at": null
+}
+EOJSON
+
+# ── Phase state file (setup → kiosk after pairing) ────────────────────────────
+echo "setup" > "${ROOTFS_DIR}/etc/sous/kiosk-mode"
+
+# ── Bootstrap log placeholder ─────────────────────────────────────────────────
+touch "${ROOTFS_DIR}/var/log/sous-bootstrap.log"
+````
+
+## File: deploy/pi/stage-sous/00-install/02-run-chroot.sh
+````bash
+#!/bin/bash -e
+# =============================================================================
+# 02-run-chroot.sh  —  stage-sous CHROOT-SIDE setup
+# Runs INSIDE the Pi's root filesystem (ARM64 chroot).
+# This script configures: Node 22, pnpm, SSH, sudoers, systemd services,
+# autologin, and the graphical target.
+# =============================================================================
+
+set -euo pipefail
+
+echo "=== [stage-sous chroot] Starting Sous Signage Node configuration ==="
+
+# ── Node.js 22 (LTS) via NodeSource ──────────────────────────────────────────
+echo "--- Installing Node.js 22 via NodeSource..."
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
+node --version
+npm --version
+
+# ── pnpm (global, pinned major) ───────────────────────────────────────────────
+echo "--- Installing pnpm..."
+npm install -g pnpm@9
+pnpm --version
+
+# ── Fix ownership of sous home and baked SSH key ──────────────────────────────
+echo "--- Configuring SSH for sous user..."
+chown -R sous:sous /home/sous/.ssh || true
+chmod 700 /home/sous/.ssh          || true
+
+if [ -f /home/sous/.ssh/id_ed25519 ]; then
+  chmod 600 /home/sous/.ssh/id_ed25519
+  chown sous:sous /home/sous/.ssh/id_ed25519
+fi
+
+# ── SSH config stanza (deploy key → GitHub) ───────────────────────────────────
+cat > /home/sous/.ssh/config <<'EOSSH'
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+  StrictHostKeyChecking accept-new
+  AddKeysToAgent no
+  BatchMode yes
+EOSSH
+chmod 600 /home/sous/.ssh/config
+chown sous:sous /home/sous/.ssh/config
+
+# ── Pre-scan GitHub host key so first git pull is non-interactive ─────────────
+# We use the official fingerprint; ssh-keyscan inside chroot may not have network.
+# The key is also seeded via StrictHostKeyChecking=accept-new on first real pull.
+cat >> /home/sous/.ssh/known_hosts <<'EOKNOWN'
+github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+EOKNOWN
+chmod 644 /home/sous/.ssh/known_hosts
+chown sous:sous /home/sous/.ssh/known_hosts
+
+# ── sudoers: allow Next.js API routes to run kiosk helpers without password ───
+echo "--- Configuring sudoers for kiosk helpers..."
+cat > /etc/sudoers.d/99-sous-kiosk <<'EOSUDO'
+# Allow the sous user (running the setup-portal Node server) to perform
+# compositor mode switches and hostapd toggling without a password prompt.
+Defaults:sous !requiretty
+sous ALL=(ALL) NOPASSWD: /usr/local/bin/sous-sway-config-select.sh
+sous ALL=(ALL) NOPASSWD: /bin/systemctl restart sous-sway.service
+sous ALL=(ALL) NOPASSWD: /bin/systemctl start   sous-sway.service
+sous ALL=(ALL) NOPASSWD: /bin/systemctl stop    sous-sway.service
+sous ALL=(ALL) NOPASSWD: /usr/bin/pkill -x wl-mirror
+sous ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/sous/kiosk-mode
+sous ALL=(ALL) NOPASSWD: /bin/nmcli connection up   Sous-Signage-Setup
+sous ALL=(ALL) NOPASSWD: /bin/nmcli connection down Sous-Signage-Setup
+EOSUDO
+chmod 440 /etc/sudoers.d/99-sous-kiosk
+# Validate — fail the build if sudoers syntax is broken
+visudo -c
+
+# ── Ensure /etc/sous is owned by sous ────────────────────────────────────────
+chown -R sous:sous /etc/sous
+chmod 755 /etc/sous
+chmod 600 /etc/sous/kiosk-mode
+
+# ── Autologin for 'sous' on tty1 (required for Wayland/DRM access) ───────────
+echo "--- Configuring autologin on tty1..."
+mkdir -p /etc/systemd/system/getty@tty1.service.d/
+cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<'EOCNF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin sous --noclear %I $TERM
+Type=idle
+EOCNF
+
+# ── Enable linger so sous user services can run at boot ──────────────────────
+loginctl enable-linger sous 2>/dev/null || true
+
+# ── Enable required systemd services ─────────────────────────────────────────
+echo "--- Enabling systemd services..."
+systemctl enable sous-sway.service
+systemctl enable sous-setup-portal.service
+systemctl enable sous-ota.timer
+systemctl enable NetworkManager.service
+
+# ── Set graphical.target as the default boot target ──────────────────────────
+systemctl set-default graphical.target
+
+# ── Bootstrap log placeholder (writable by sous) ─────────────────────────────
+touch /var/log/sous-bootstrap.log
+chown sous:sous /var/log/sous-bootstrap.log
+chmod 644 /var/log/sous-bootstrap.log
+
+echo "=== [stage-sous chroot] Configuration complete ==="
+````
+
+## File: deploy/pi/stage-sous/prerun.sh
+````bash
+#!/bin/bash -e
+
+if [ ! -d "${ROOTFS_DIR}" ]; then
+	copy_previous
+fi
 ````
 
 ## File: docs/agents/logs/.gitkeep
@@ -57159,56 +57250,6 @@ await writeFile(path.join(out, "windows.ico"), await pngToIco(windowsSizes))
 console.log(`Generated ChefOS icon suite in ${out}`)
 ````
 
-## File: .cursorrules
-````
-# sous.tools AI System Rules
-
-## 1. Domain-Driven Design (DDD) & Infrastructure
-
-- **Strict Boundaries:** Next.js apps (e.g., apps/web, apps/pos-simulator) and domain packages (packages/domain-*) are strictly forbidden from importing database clients.
-- **The Supabase Firewall:** NO CLIENT OR UI APP is allowed to access Supabase. Absolutely no one outside of apps/api should have access to or knowledge of Supabase.
-- **API First & Network Fetching:** ALL network requests must go exclusively through our unified packages/api-client. Native fetch(), axios, or direct endpoint calls outside of api-client are strictly forbidden.
-- **Server-Side Supremacy:** Next.js functions strictly as a routing and data orchestration layer. Server Components are the default.
-- **Config Lockdown:** process.env is strictly forbidden outside of @soustools/config. All apps must import the type-safe, validated config object.
-- **Secrets SSOT:** Infisical is the Single Source of Truth for all environment variables.
-- **TSConfig Management:** All tsconfig.json files must extend from the shared packages/tsconfig. No relative paths (e.g., ../../../) are allowed.
-- **Thin App Router Shells:** apps/* directories must remain as hollow as possible. Next.js page.tsx files should act strictly as Server Component entry points that import their corresponding Containers or Views from @soustools/domain-* packages. Building complex components/ directories inside the Next.js apps/* router is forbidden.
-
-## 2. Component Architecture & Folder Structure
-
-- **Feature-Driven Folders:** Do not use atoms/, molecules/, or organisms/ as folder names. Group files by their Feature or Domain (e.g., Supplier/). The Atomic design philosophy (Atoms build Molecules, Molecules build Organisms) dictates _how_ components are composed and imported, not how folders are structured.
-- **Design System vs. Domain Packages:** packages/design-system is strictly reserved for generic, highly reusable UI primitives and theming. Domain-specific UI components (e.g., SupplierOrderGroup, RecipeBuilder) MUST live in their respective packages/domain-* package.
-- **Container/View Pattern:** Pure presentational UI components must live in *.tsx files and are banned from importing data-fetching hooks or infrastructure logic.
-- **Logic Quarantines:** Business logic, API calls, and state management must be strictly quarantined to *.container.tsx files.
-- **Max Lines:** Files must not exceed 200 lines. Refactor logically into smaller compositional units instead of artificially chopping files.
-- **Zero Tech Debt:** Do not use eslint-disable to bypass rules. If a file fails linting or knip dead-code checks, refactor it into compliance.
-
-## 3. soustools design system & Styling
-
-- **Tailwind v4:** Use the @theme directive in CSS. No tailwind.config file.
-- **Semantic Variables Only:** Hardcoding legacy Tailwind colors (e.g., slate-_), arbitrary values (e.g., w-[32px], bg-[#123456]), or absolute z-indexes is forbidden. Strictly use semantic CSS variables (e.g., var(--z-overlay)) and the "Midnight Slate" (zinc-_) palette defined in @soustools/design-system.
-- **Opacities:** Use strict Hex codes to allow native color-mix() opacity.
-- **Animations:** Use Framer Motion for micro-animations and spring physics.
-
-## 4. AI Orchestration & Execution
-
-- **Halt-on-Error:** If a TypeScript, ESLint, Database Migration, Runtime, or Playwright E2E error occurs, STOP IMMEDIATELY. Circular correction loops or automated guessing are forbidden. Request manual intervention.
-- **Issue Triage & Diagnostics:** Before writing code to fix a bug, you MUST read the diagnostic comments inside docs/context/notebooklm-issues.md to leverage previous junior-agent research.
-- **Debt Audits:** When refactoring, you MUST review the reports in docs/context/ and docs/audits/ (such as knip-report.txt and lint-report.txt) to ensure you are not duplicating tech debt.
-- **Boot Sequence:** Before executing any task, you MUST silently read this `.cursorrules` file, `docs/context/notebooklm-project.md` (Kanban State), and `docs/context/notebooklm-architecture.md` (Workspace Graph) to understand the current architecture and sprint goals.
-- **Direct Execution (No Yapping):** Do not waste output tokens "thinking out loud" or providing lengthy explanations of code or CSS class conversions in the chat window. Analyze silently, and immediately use your file-editing tools to execute the changes.
-- **Task Decomposition:** If a refactor involves moving or rewriting multiple files (e.g., separating an Organism and its Molecules), execute the file creations and edits one by one to avoid context/token exhaustion.
-- **GitHub Issue & Kanban Management (MCP):** You have access to GitHub via an MCP server. When you are assigned a task associated with a GitHub Issue, you must autonomously manage its state using the MCP tool to make real API calls.
-- **Task Completion & Read-Only Context:** Upon completing the code refactor or bug fix for an issue, you MUST use your MCP tools to move the corresponding ticket into the "Review" column on the remote GitHub Projects Kanban board.
-- **CRITICAL:** Do NOT edit the docs/context/notebooklm-project.md or notebooklm-issues.md files to simulate moving a ticket or updating an issue. Those files are READ-ONLY and automatically generated by the CI/CD pipeline. You must interact with the actual GitHub API.
-
-## 5. Continuous X-Ray Sync (NotebookLM / CTO Directive)
-
-- **Living Document:** This .cursorrules file is a living document.
-- **CTO Oversight:** During architectural planning sessions, the AI CTO (NotebookLM) is explicitly instructed to monitor for any new conventions, UI decisions, or workflow changes.
-- **Auto-Correction:** If a conversation dictates a change in our strategy (e.g., swapping a tool, changing a naming convention, or adjusting the CI/CD pipeline), NotebookLM MUST conclude its response by providing a formatted update block to append to or modify this .cursorrules file.
-````
-
 ## File: docker-compose.dev.yml
 ````yaml
 networks:
@@ -57455,40 +57496,132 @@ This repository uses GitHub Issues as the central nervous system for autonomous 
 8. **`agent:audit`** - _The Janitor._ A cron-friendly agent that fixes exactly one tech-debt item (dead code/lint error) and opens a PR.
 ````
 
-## File: .github/ISSUE_TEMPLATE/agent_task.yml
+## File: .github/workflows/build-and-deploy-rpi-os.yml
 ````yaml
-name: Agent Task
-description: Template for autonomous AI agent execution
-title: "Task: "
-labels: ["backlog"]
-body:
-  - type: textarea
-    id: objective
-    attributes:
-      label: Objective
-      description: What is the brainstormed idea or bug that needs fixing?
-    validations:
-      required: true
-  - type: checkboxes
-    id: dod
-    attributes:
-      label: Agent Definition of Done (DoD)
-      description: The executing agent MUST complete the following before opening a Pull Request.
-      options:
-        - label: Create a new feature branch (`feature/issue-[id]`).
-          required: true
-        - label: Write the code strictly conforming to `.cursorrules`.
-          required: true
-        - label: Run `pnpm turbo lint` and ensure 0 errors.
-          required: true
-        - label: Run `pnpm turbo typecheck` and ensure perfect compilation.
-          required: true
-        - label: Push the branch and open a PR.
-          required: true
-        - label: The PR body MUST include the raw output of the lint and typecheck commands to prove verification.
-          required: true
-        - label: Post a comment on this issue linking to the PR.
-          required: true
+name: Build and Release RPi OS Image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "deploy/pi/**"
+      - "deploy/ansible/**"
+      - "apps/setup-portal/**"
+      - ".github/workflows/build-and-deploy-rpi-os.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, arm64]
+    steps:
+      - name: Who am I?
+        run: whoami
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
+      - name: Fetch Infisical Secrets
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools-1cd-a"
+
+      - name: Inject static deploy key into stage-sous/00-install/files/
+        run: |
+          # Write the Ed25519 read-only deploy key from Infisical.
+          # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
+          # with chmod 600 inside the chroot. The file is scrubbed after build.
+          printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
+            > deploy/pi/stage-sous/00-install/files/signage-deploy-key
+          chmod 600 deploy/pi/stage-sous/00-install/files/signage-deploy-key
+
+      - name: Stage stage-sous inside pi-gen (runtime injection)
+        run: |
+          # pi-gen expects custom stages to live alongside stage0–stage5.
+          # We keep ours in deploy/pi/stage-sous/ and copy at CI time so
+          # it never pollutes the upstream pi-gen checkout.
+          cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
+
+      - name: Install native pi-gen dependencies
+        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted qemu-user-static debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
+
+      - name: Build OS Image natively with pi-gen
+        env:
+          PI_GEN_CONFIG: |
+            IMG_NAME=soustools-signage
+            TARGET_HOSTNAME=signage
+            TARGET_ARCH=arm64
+            ARCH=arm64
+            ENABLE_SSH=1
+            CONTINUE=1
+            FIRST_USER_NAME=sous
+            FIRST_USER_PASS=bootstrap123
+            # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
+            STAGE_LIST="stage0 stage1 stage2 stage-sous"
+          CHROOT_SCRIPT: |
+            #!/bin/bash
+            # B. Mask interactive first-boot screens
+            systemctl mask userconfig.service || true
+            systemctl mask piwiz.service      || true
+        run: |
+          cd deploy/pi/pi-gen
+          touch stage-sous/EXPORT_IMAGE
+
+          # 1. Scaffold the mandatory config file that git ignores
+          echo "$PI_GEN_CONFIG" > config
+
+          # 2. Restore executable flags (git strips them on checkout)
+          echo "Restoring +x permissions to all pi-gen scripts..."
+          sudo find . -type f -name "*.sh" -exec chmod +x {} +
+          sudo chmod +x stage*/prerun.sh             || true
+          sudo chmod +x stage-sous/00-install/*.sh   || true
+          sudo chmod +x stage-sous/00-install/files/*.sh || true
+
+          # 3. Hard-bake the 'sous' user and kill first-boot wizards
+          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
+          sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
+
+          # 4. Run the NATIVE pi-gen build (Bypassing Docker)
+          sudo ./build.sh
+
+      - name: Scrub deploy key from workspace (security)
+        if: always()
+        run: |
+          rm -f deploy/pi/stage-sous/00-install/files/signage-deploy-key           || true
+          rm -f deploy/pi/pi-gen/stage-sous/00-install/files/signage-deploy-key    || true
+
+      - name: Release image to GitHub (conarwelsh/signage-os)
+        uses: softprops/action-gh-release@v2
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        with:
+          repository: conarwelsh/signage-os
+          token: ${{ env.SIGNAGE_GITHUB_PAT }}
+          tag_name: v${{ github.run_number }}
+          name: Signage OS v${{ github.run_number }}
+          files: deploy/pi/pi-gen/deploy/*.zip
+          make_latest: true
+
+      # THE ARMOR: Forcefully detach all system mounts BEFORE wiping the work directory
+      - name: Cleanup and Protect Host Mounts
+        if: always()
+        run: |
+          echo "Detaching any lingering pi-gen bind mounts..."
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/sys || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/proc || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
+
+          echo "Wiping pi-gen work directories safely..."
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work       || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy     || true
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
 ````
 
 ## File: .github/workflows/deploy.yml
@@ -57630,97 +57763,6 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
   providers: [AppService],
 })
 export class AppModule {}
-````
-
-## File: apps/api/src/main.ts
-````typescript
-import "newrelic";
-import initializeServerLogger from "@soustools/logger/server";
-initializeServerLogger();
-
-import "reflect-metadata";
-import "./pre-bootstrap";
-import { config } from "@soustools/config";
-
-import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import * as fs from "fs";
-import { AppModule } from "./app.module";
-import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
-import cookieParser from "cookie-parser";
-
-import * as express from "express";
-
-/**
- * Boots the NestJS application.
- *
- * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
- * and starts listening on the configured PORT.
- *
- * @returns {Promise<void>} Resolves when the application has successfully started.
- */
-async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
-
-  /**
-   * Trust the first proxy hop (Traefik) so that Express reads
-   * X-Forwarded-Proto and considers the request HTTPS. Without this,
-   * Express refuses to set Secure cookies because it thinks the
-   * connection is plain HTTP.
-   */
-  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
-  expressApp.set('trust proxy', 1);
-
-  app.use(express.json({ limit: "2mb" }));
-  app.use(express.urlencoded({ limit: "2mb", extended: true }));
-
-  // Parse cookies so guards can read HttpOnly session tokens
-  app.use(cookieParser());
-
-  // Use global exception filter
-  app.useGlobalFilters(new AllExceptionsFilter());
-
-  // Allow credentials for cookie-based auth.
-  // In production we restrict origins to known frontends; in dev we reflect
-  // the request origin so any localhost port works.
-  const allowedOrigins = config.IS_PRODUCTION
-    ? [
-        'https://sous.tools',
-        'https://app.sous.tools',
-        'https://pos.sous.tools',
-        'https://tv.sous.tools',
-        'https://setup.sous.tools',
-        'https://editor.sous.tools',
-        'android-app://com.sous.wearos',
-        'app://com.sous.wearos'
-      ]
-    : true; // reflect origin in dev
-
-  app.enableCors({
-    origin: allowedOrigins,
-    credentials: true,
-  });
-
-  // Setup Swagger / OpenAPI
-  const options = new DocumentBuilder()
-    .setTitle("Sous Tools API")
-    .setDescription("The global API for Sous Tools")
-    .setVersion("1.0")
-    .build();
-  const document = SwaggerModule.createDocument(app, options);
-  if (config.NODE_ENV !== 'production') {
-    fs.writeFileSync('openapi.json', JSON.stringify(document));
-  }
-  
-  const port = config.PORT;
-  await app.listen(config.PORT, "0.0.0.0");
-  console.log(`Application is running on: http://0.0.0.0:${port}`);
-}
-
-bootstrap().catch((err: unknown) => {
-  console.error(err, "Failed to start the application");
-  process.exit(1);
-});
 ````
 
 ## File: apps/api/src/pre-bootstrap.ts
@@ -58350,289 +58392,6 @@ BOOT SEQUENCE: Silently read .cursorrules, docs/context/project.md, and docs/con
 THEN: Call your `soustools` custom MCP tool `get_issue` (with owner: "conarwelsh", repo: "sous.tools", issue_number: {ISSUE_NUMBER}) to fetch the issue details and comments. 
 
 You MUST check the issue body and comments for extra specifications or guidelines. Locate the implemented feature files and write the missing unit tests (.spec.ts) and Playwright E2E tests to achieve 100% coverage. Do not modify the business logic. Run "pnpm turbo test". Then post the test results as a comment on the issue using your `soustools` custom MCP tool `post_comment`. DO NOT output your comment as terminal text. DO NOT converse. Execute the tools and stop.
-````
-
-## File: packages/config/src/cli.ts
-````typescript
-#!/usr/bin/env node
-import { spawn } from "child_process";
-import * as path from "path";
-import { fileURLToPath } from "url";
-import { InfisicalSDK } from "@infisical/sdk";
-import * as dotenv from "dotenv";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load local .env file inside workspace root if present (dev convenience only).
-// In production containers, env vars are injected by Docker / the orchestrator.
-dotenv.config({ path: path.join(__dirname, "../../../.env") });
-
-const defaults: Record<string, string> = {
-  SQUARE_CLIENT_ID: "sandbox-sq0idb-placeholder",
-  SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
-  GOOGLE_CLIENT_ID: "google-client-id-placeholder",
-  GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
-  API_BASE_URL: "http://localhost:3001",
-  APP_BASE_URL: "http://localhost:3000",
-  PRODUCTION_SQUARE_ACCESS_TOKEN: "prod-square-token-placeholder",
-  PORT: "3001",
-  REDIS_HOST: "127.0.0.1", // Localhost default — MUST be overridden by Infisical in production
-  REDIS_PORT: "6379",
-  NEW_RELIC_LICENSE_KEY: "new-relic-license-key-placeholder",
-  GEMINI_API_KEY: "gemini-api-key-placeholder",
-  USDA_FDC_API_KEY: "DEMO_KEY",
-  VERCEL_AI_GATEWAY_API_KEY: "",
-  SUPABASE_URL: "https://placeholder-project.supabase.co",
-  SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
-  SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
-  SQUARE_WEBHOOK_SIGNATURE_KEY: "sandbox-sq0whk-placeholder",
-  NEO4J_URI: "bolt://localhost:7687",
-  NEO4J_USERNAME: "neo4j",
-  NEO4J_PASSWORD: "sousToolsPassword",
-  SUPABASE_WEBHOOK_SECRET: "sous-tools-neo4j-sync-secret-key",
-};
-
-/**
- * Keys that MUST have real values fetched from Infisical in production.
- * If these still hold their placeholder/localhost defaults, the app MUST NOT boot.
- * This prevents silent ECONNREFUSED errors (e.g., REDIS_HOST defaulting to 127.0.0.1).
- */
-const PRODUCTION_CRITICAL_KEYS: Array<{ key: string; placeholder: string }> = [
-  { key: "REDIS_HOST", placeholder: "127.0.0.1" },
-  { key: "SUPABASE_URL", placeholder: "https://placeholder-project.supabase.co" },
-  { key: "SUPABASE_SERVICE_ROLE_KEY", placeholder: "placeholder-service-role-key-from-mock-sync" },
-  { key: "SUPABASE_ANON_KEY", placeholder: "placeholder-anon-key-from-mock-sync" },
-];
-
-/**
- * Validates that critical production secrets are not placeholder values.
- * Calls process.exit(1) if any critical key still holds a localhost/placeholder value.
- */
-function assertProductionSecrets(secrets: Record<string, string>): void {
-  const isProduction = process.env.NODE_ENV === "production";
-  const isMock = String(process.env.INFISICAL_MOCK).toLowerCase() === "true";
-  const isTest = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
-
-  if (!isProduction || isMock || isTest) return;
-
-  const failedKeys: string[] = [];
-  for (const { key, placeholder } of PRODUCTION_CRITICAL_KEYS) {
-    const value = secrets[key];
-    if (!value || value === placeholder) {
-      failedKeys.push(key);
-    }
-  }
-
-  if (failedKeys.length > 0) {
-    console.error(
-      `[@soustools/config] FATAL: Production boot blocked. The following critical environment variables ` +
-      `were not fetched from Infisical and still contain placeholder/localhost defaults:\n` +
-      failedKeys.map((k) => `  - ${k}`).join("\n") +
-      `\n\nEnsure INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID are set ` +
-      `in the container environment and that Infisical is reachable.`
-    );
-    process.exit(1);
-  }
-}
-
-/**
- * Fetches secrets from Infisical and returns them as a plain in-memory object.
- * No filesystem I/O is performed at any point — secrets never touch disk.
- *
- * In mock/test environments (INFISICAL_MOCK=true or NODE_ENV=test), returns
- * the hardcoded defaults object so CI and local dev work without Infisical.
- *
- * If Infisical credentials are missing entirely, returns defaults and lets
- * assertProductionSecrets() decide whether to halt.
- */
-async function fetchSecrets(): Promise<Record<string, string>> {
-  const isMock =
-    String(process.env.INFISICAL_MOCK).toLowerCase() === "true" ||
-    process.env.NODE_ENV === "test" ||
-    process.env.VITEST === "true";
-
-  if (isMock) {
-    console.log("[@soustools/config] INFISICAL_MOCK detected. Using defaults.");
-    return { ...defaults };
-  }
-
-  const clientId = process.env.INFISICAL_CLIENT_ID;
-  const clientSecret = process.env.INFISICAL_CLIENT_SECRET;
-  const projectId = process.env.INFISICAL_PROJECT_ID;
-
-  if (!clientId || !clientSecret || !projectId) {
-    console.warn(
-      "[@soustools/config] Missing Infisical credentials " +
-      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
-      "Returning defaults — assertProductionSecrets() will halt if NODE_ENV=production."
-    );
-    return { ...defaults };
-  }
-
-  try {
-    const client = new InfisicalSDK();
-    await client.auth().universalAuth.login({ clientId, clientSecret });
-
-    const secretsResponse = await client.secrets().listSecrets({
-      environment: process.env.INFISICAL_ENV || "dev",
-      projectId,
-    });
-
-    const secretsArray = (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
-    const finalSecrets: Record<string, string> = { ...defaults };
-
-    for (const secret of secretsArray) {
-      if (secret.secretKey && secret.secretValue !== undefined) {
-        finalSecrets[secret.secretKey] = secret.secretValue;
-      }
-    }
-
-    // Secrets are returned entirely in-memory. No filesystem writes, ever.
-    return finalSecrets;
-  } catch (error) {
-    console.error("[@soustools/config] Infisical fetch failed:", (error as Error).message);
-    // Return defaults — assertProductionSecrets() will halt if we are in production
-    // and any critical key still holds a placeholder value.
-    return { ...defaults };
-  }
-}
-
-async function run() {
-  const args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error("Usage: sous-config <command> [args...]");
-    process.exit(1);
-  }
-
-  const secrets = await fetchSecrets();
-
-  // Production safety gate: halt before spawning the child process
-  // if critical secrets are still at their placeholder values.
-  assertProductionSecrets(secrets);
-
-  // Build the child environment by explicitly merging fetched secrets on top of the
-  // current process environment. Secrets already present in the environment (e.g.
-  // injected by Docker) take precedence over Infisical values via Object spread order.
-  const childEnv: Record<string, string> = {
-    ...defaults,           // lowest priority: hardcoded fallbacks
-    ...secrets,            // Infisical values override defaults
-    ...process.env as Record<string, string>, // host/container env takes highest priority
-  };
-
-  // Auto-map Supabase keys for Next.js browser client if not already present.
-  if (!childEnv.NEXT_PUBLIC_SUPABASE_URL && childEnv.SUPABASE_URL) {
-    childEnv.NEXT_PUBLIC_SUPABASE_URL = childEnv.SUPABASE_URL;
-  }
-  if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
-    childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
-  }
-
-  const [cmd, ...cmdArgs] = args;
-
-  if (cmdArgs.includes("build") || cmdArgs.includes("start")) {
-    childEnv.NODE_ENV = "production";
-  } else if (!childEnv.NODE_ENV) {
-    childEnv.NODE_ENV = "development";
-  }
-
-  console.log(`[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}" (host process.env.NODE_ENV="${process.env.NODE_ENV}")`);
-
-  // Secrets are passed directly into the spawned process environment — never written
-  // to disk, never shared through the filesystem.
-  const child = spawn(cmd, cmdArgs, {
-    stdio: "inherit",
-    env: childEnv,
-    shell: process.platform === "win32",
-  });
-
-  child.on("close", (code, signal) => {
-    if (signal) {
-      console.error(`\n[FATAL CRASH] Child process violently killed by OS signal: ${signal}`);
-    }
-    process.exit(code !== null ? code : 1);
-  });
-
-  ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
-    process.on(signal, () => {
-      if (!child.killed) {
-        child.kill(signal as NodeJS.Signals);
-      }
-    });
-  });
-}
-
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
-````
-
-## File: packages/config/src/index.ts
-````typescript
-const GITHUB_ID = process.env.GITHUB_ID!;
-const GITHUB_SECRET = process.env.GITHUB_SECRET!;
-const AUTH_SECRET = process.env.AUTH_SECRET!;
-
-const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const IS_MOCK_ENV = process.env.IS_MOCK_ENV === 'true';
-const NEXT_PUBLIC_SUPABASE_ANON_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY =
-  process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY;
-const NEW_RELIC_LICENSE_KEY = process.env.NEW_RELIC_LICENSE_KEY;
-const NEW_RELIC_APP_NAME = process.env.NEW_RELIC_APP_NAME;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-
-export const config = {
-    IS_MOCK_ENV,
-    SUPABASE_URL: NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_ANON_KEY: NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    GITHUB_ID,
-    GITHUB_SECRET,
-    AUTH_SECRET,
-    NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE_KEY,
-    NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
-    NEW_RELIC_LICENSE_KEY,
-    NEW_RELIC_APP_NAME,
-    GEMINI_API_KEY,
-    NEXT_PUBLIC_API_URL,
-    IS_SECURE_ENV: process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'staging',
-    API_BASE_URL: process.env.API_BASE_URL || NEXT_PUBLIC_API_URL,
-    APP_BASE_URL: process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL,
-    TV_BASE_URL: process.env.TV_BASE_URL || process.env.NEXT_PUBLIC_TV_BASE_URL,
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
-    SQUARE_CLIENT_ID: process.env.SQUARE_CLIENT_ID || '',
-    SQUARE_CLIENT_SECRET: process.env.SQUARE_CLIENT_SECRET || '',
-    SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT || 'sandbox',
-    PRODUCTION_SQUARE_ACCESS_TOKEN: process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || '',
-    SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '',
-    USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY || '',
-    NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === 'true',
-    PORT: process.env.PORT || 3001,
-    REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
-    REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
-    OLLAMA_HOST: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434',
-    OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'llava',
-    VISION_PROVIDER: process.env.VISION_PROVIDER || 'openai',
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    IS_PRODUCTION: process.env.NODE_ENV === 'production',
-    APP_VERSION: process.env.APP_VERSION || 'dev-local',
-    SOUS_KIOSK_MODE_FILE: process.env.SOUS_KIOSK_MODE_FILE || '/etc/sous/kiosk-mode',
-    SOUS_DEVICE_CONFIG: process.env.SOUS_DEVICE_CONFIG || '/etc/sous/device-config.json',
-    SOUS_BOOTSTRAP_LOG: process.env.SOUS_BOOTSTRAP_LOG || '/var/log/sous-bootstrap.log',
-    NEO4J_URI: process.env.NEO4J_URI || 'bolt://localhost:7687',
-    NEO4J_USERNAME: process.env.NEO4J_USERNAME || 'neo4j',
-    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || 'sousToolsPassword',
-    SUPABASE_WEBHOOK_SECRET: process.env.SUPABASE_WEBHOOK_SECRET || 'sous-tools-neo4j-sync-secret-key',
-};
 ````
 
 ## File: packages/design-system/src/components/BottomNav/BottomNav.spec.tsx
@@ -60551,6 +60310,160 @@ module.exports = {
 };
 ````
 
+## File: litellm_config.yaml
+````yaml
+model_list:
+  # --- Route to your local Ollama container ---
+  - model_name: qwen2.5-coder:7b
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b
+      api_base: http://ollama:11434
+  - model_name: deepseek-coder-v2
+    litellm_params:
+      model: ollama/deepseek-coder-v2
+      api_base: http://ollama:11434
+
+  # --- Route to Google Gemini (2026 Models) ---
+  - model_name: gemini-3.5-flash
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-pro
+    litellm_params:
+      model: gemini/gemini-3.1-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-flash-lite
+    litellm_params:
+      model: gemini/gemini-3.1-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  # === THE CLAUDE CLI ALIASES ===
+  # The Claude CLI hardcodes requests for these model names.
+  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-opus-4-8
+    litellm_params:
+      model: gemini/gemini-3.1-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+general_settings:
+  master_key: sk-1234
+````
+
+## File: apps/api/src/main.ts
+````typescript
+import "newrelic";
+import initializeServerLogger from "@soustools/logger/server";
+initializeServerLogger();
+
+import "reflect-metadata";
+import "./pre-bootstrap";
+import { config } from "@soustools/config";
+
+import { NestFactory } from "@nestjs/core";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import * as fs from "fs";
+import { AppModule } from "./app.module";
+import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
+import cookieParser from "cookie-parser";
+
+import * as express from "express";
+
+/**
+ * Boots the NestJS application.
+ *
+ * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
+ * and starts listening on the configured PORT.
+ *
+ * @returns {Promise<void>} Resolves when the application has successfully started.
+ */
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+
+  /**
+   * Trust the first proxy hop (Traefik) so that Express reads
+   * X-Forwarded-Proto and considers the request HTTPS. Without this,
+   * Express refuses to set Secure cookies because it thinks the
+   * connection is plain HTTP.
+   */
+  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
+  expressApp.set('trust proxy', 1);
+
+  app.use(express.json({ limit: "2mb" }));
+  app.use(express.urlencoded({ limit: "2mb", extended: true }));
+
+  // Parse cookies so guards can read HttpOnly session tokens
+  app.use(cookieParser());
+
+  // Use global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Allow credentials for cookie-based auth.
+  // In production we restrict origins to known frontends; in dev we reflect
+  // the request origin so any localhost port works.
+  const allowedOrigins = config.IS_PRODUCTION
+    ? [
+        'https://sous.tools',
+        'https://app.sous.tools',
+        'https://pos.sous.tools',
+        'https://tv.sous.tools',
+        'https://setup.sous.tools',
+        'https://editor.sous.tools',
+        'android-app://com.sous.wearos',
+        'app://com.sous.wearos'
+      ]
+    : (origin: string | undefined, callback: (err: Error | null, allow?: any) => void) => {
+        callback(null, origin || "*");
+      };
+
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
+
+  // Setup Swagger / OpenAPI
+  const options = new DocumentBuilder()
+    .setTitle("Sous Tools API")
+    .setDescription("The global API for Sous Tools")
+    .setVersion("1.0")
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  if (config.NODE_ENV !== 'production') {
+    fs.writeFileSync('openapi.json', JSON.stringify(document));
+  }
+  
+  const port = config.PORT;
+  await app.listen(config.PORT, "0.0.0.0");
+  console.log(`Application is running on: http://0.0.0.0:${port}`);
+}
+
+bootstrap().catch((err: unknown) => {
+  console.error(err, "Failed to start the application");
+  process.exit(1);
+});
+````
+
 ## File: apps/pos-simulator/src/components/PosSimulator.container.tsx
 ````typescript
 "use client";
@@ -62164,163 +62077,71 @@ You MUST check the issue body and comments for visual briefs, asset paths, or st
 Live Storybook URL: https://conarwelsh.github.io/sous.tools/
 ````
 
-## File: packages/api-client/src/index.ts
+## File: packages/config/src/index.ts
 ````typescript
-import createClient from "openapi-fetch";
-// "io" and "Socket" are not directly used in this file, but are necessary for the WebSocket functionality to be available.
-import type { paths } from "./schema.js";
-import { config } from "@soustools/config";
+const GITHUB_ID = process.env.GITHUB_ID!;
+const GITHUB_SECRET = process.env.GITHUB_SECRET!;
+const AUTH_SECRET = process.env.AUTH_SECRET!;
 
-export interface ApiClientOptions {
-  baseUrl?: string;
-}
+const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const IS_MOCK_ENV = process.env.IS_MOCK_ENV === 'true';
+const NEXT_PUBLIC_SUPABASE_ANON_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-export type ExtendedApiClient = ReturnType<typeof createClient<paths>>;
+const NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY =
+  process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY;
+const NEW_RELIC_LICENSE_KEY = process.env.NEW_RELIC_LICENSE_KEY;
+const NEW_RELIC_APP_NAME = process.env.NEW_RELIC_APP_NAME;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
 
-export const getDefaultBaseUrl = () => {
-  return (
-    (typeof window !== "undefined" ? process.env.NEXT_PUBLIC_API_URL : undefined) ||
-    config.NEXT_PUBLIC_API_URL ||
-    "http://localhost:3001"
-  );
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'http://localhost:3001';
+
+export const config = {
+    IS_MOCK_ENV,
+    SUPABASE_URL: NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_ANON_KEY: NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    GITHUB_ID,
+    GITHUB_SECRET,
+    AUTH_SECRET,
+    NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY,
+    NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
+    NEW_RELIC_LICENSE_KEY,
+    NEW_RELIC_APP_NAME,
+    GEMINI_API_KEY,
+    NEXT_PUBLIC_API_URL,
+    IS_SECURE_ENV: process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'staging',
+    API_BASE_URL: process.env.API_BASE_URL || NEXT_PUBLIC_API_URL,
+    APP_BASE_URL: process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_BASE_URL,
+    TV_BASE_URL: process.env.TV_BASE_URL || process.env.NEXT_PUBLIC_TV_BASE_URL,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+    SQUARE_CLIENT_ID: process.env.SQUARE_CLIENT_ID || '',
+    SQUARE_CLIENT_SECRET: process.env.SQUARE_CLIENT_SECRET || '',
+    SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT || 'sandbox',
+    PRODUCTION_SQUARE_ACCESS_TOKEN: process.env.PRODUCTION_SQUARE_ACCESS_TOKEN || '',
+    SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '',
+    USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY || '',
+    NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === 'true',
+    PORT: process.env.PORT || 3001,
+    REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
+    REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
+    OLLAMA_HOST: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434',
+    OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'llava',
+    VISION_PROVIDER: process.env.VISION_PROVIDER || 'openai',
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    IS_PRODUCTION: process.env.NODE_ENV === 'production',
+    APP_VERSION: process.env.APP_VERSION || 'dev-local',
+    SOUS_KIOSK_MODE_FILE: process.env.SOUS_KIOSK_MODE_FILE || '/etc/sous/kiosk-mode',
+    SOUS_DEVICE_CONFIG: process.env.SOUS_DEVICE_CONFIG || '/etc/sous/device-config.json',
+    SOUS_BOOTSTRAP_LOG: process.env.SOUS_BOOTSTRAP_LOG || '/var/log/sous-bootstrap.log',
+    NEO4J_URI: process.env.NEO4J_URI || 'bolt://localhost:7687',
+    NEO4J_USERNAME: process.env.NEO4J_USERNAME || 'neo4j',
+    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || 'sousToolsPassword',
+    SUPABASE_WEBHOOK_SECRET: process.env.SUPABASE_WEBHOOK_SECRET || 'sous-tools-neo4j-sync-secret-key',
 };
-
-export const createApiClient = (options: ApiClientOptions = {}) => {
-  const baseUrl = options.baseUrl || getDefaultBaseUrl();
-  
-  const client = createClient<paths>({ 
-    baseUrl,
-    credentials: "include", // Ensure cookies are passed by default in openapi-fetch
-  });
-
-  client.use({
-    onRequest: async ({ request }) => {
-      let nextRequest = request;
-
-      // Ensure credentials include for cookie passing
-      if (nextRequest.credentials !== "include") {
-        nextRequest = new Request(nextRequest, { credentials: "include" });
-      }
-        
-      // Clone the request before it gets consumed by fetch() so we can replay it on 401
-      (nextRequest as any)._retryClone = nextRequest.clone();
-      return nextRequest;
-    },
-    onResponse: async ({ response, request }) => {
-      // If we got a 401 and the request wasn't already trying to refresh the session
-      if (
-        response.status === 401 &&
-        !request.url.includes("/auth/refresh") &&
-        !request.url.includes("/auth/login")
-      ) {
-        try {
-          // Attempt silent refresh using the strongly typed client
-          const refreshRes = await client.POST("/auth/refresh");
-
-          if (refreshRes.response.status === 401 || refreshRes.response.status === 403) {
-            if (typeof window !== "undefined") {
-              window.location.href = "/login";
-            }
-            throw new Error("SessionExpiredError");
-          }
-
-          if (!refreshRes.error) {
-            let retryReq = (request as any)._retryClone || request.clone();
-            
-            // Ensure credentials is set on retry
-            if (retryReq.credentials !== "include") {
-              retryReq = new Request(retryReq, { credentials: "include" });
-            }
-
-            return await fetch(retryReq);
-          }
-        } catch (err) {
-          if (err instanceof Error && err.message === "SessionExpiredError") {
-            throw err;
-          }
-          // Fallthrough: If refresh fails, we just return the original 401
-          console.error("Session refresh interceptor caught an error:", err);
-        }
-      }
-      return response;
-    }
-  });
-
-  return client;
-};
-
-const defaultBaseUrl = getDefaultBaseUrl();
-
-// Global singleton client for convenience in browser
-export const api = createApiClient({ baseUrl: defaultBaseUrl });
-
-// Encapsulated socket connection
-// export const socket: Socket = io(defaultBaseUrl, {
-//   withCredentials: true,
-//   autoConnect: false,
-// });
-
-export async function uploadFile(
-  file: File
-): Promise<string> {
-  let attempt = 0;
-  const maxAttempts = 2;
-
-  while (attempt < maxAttempts) {
-    const { data, error } = await api.POST("/storage/upload-url", {
-      body: { fileName: file.name },
-    });
-
-    if (error) {
-      throw new Error(`Failed to retrieve signed upload URL: ${JSON.stringify(error)}`);
-    }
-
-    const payload = data as any;
-    if (!payload?.data?.signedUrl || !payload?.data?.publicUrl) {
-      throw new Error("Invalid response structure from API for signed URL");
-    }
-
-    const { signedUrl, publicUrl } = payload.data;
-
-    const uploadRes = await fetch(signedUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type || "application/octet-stream",
-      },
-      body: file,
-      credentials: "omit", // Omit credentials to prevent browser cookies from causing 401s on the storage gateway
-    });
-
-    if (uploadRes.status === 401 && attempt < maxAttempts - 1) {
-      attempt++;
-      try {
-        const refreshRes = await api.POST("/auth/refresh");
-        if (refreshRes.response.status === 401 || refreshRes.response.status === 403) {
-          if (typeof window !== "undefined") {
-            window.location.href = "/login";
-          }
-          throw new Error("SessionExpiredError");
-        }
-      } catch (refreshErr) {
-        if (refreshErr instanceof Error && refreshErr.message === "SessionExpiredError") {
-          throw refreshErr;
-        }
-        console.error("Token refresh failed during file upload retry:", refreshErr);
-      }
-      continue;
-    }
-
-    if (!uploadRes.ok) {
-      throw new Error(`Direct upload failed with status ${uploadRes.status}`);
-    }
-
-    return publicUrl;
-  }
-
-  throw new Error("File upload failed after maximum retry attempts");
-}
-
-export type { paths };
 ````
 
 ## File: packages/design-system/src/components/OmniBar/use-omnibar-hotkeys.hook.ts
@@ -62994,67 +62815,6 @@ signage_deploy_key*
 docs/agents/logs/agent-run-*.log
 ````
 
-## File: litellm_config.yaml
-````yaml
-model_list:
-  # --- Route to your local Ollama container ---
-  - model_name: qwen2.5-coder:7b
-    litellm_params:
-      model: ollama/qwen2.5-coder:7b
-      api_base: http://ollama:11434
-  - model_name: deepseek-coder-v2
-    litellm_params:
-      model: ollama/deepseek-coder-v2
-      api_base: http://ollama:11434
-
-  # --- Route to Google Gemini (2026 Models) ---
-  - model_name: gemini-3.5-flash
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-3.1-pro
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-3.1-flash-lite
-    litellm_params:
-      model: gemini/gemini-3.1-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-2.5-pro
-    litellm_params:
-      model: gemini/gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: gemini/gemini-2.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  # === THE CLAUDE CLI ALIASES ===
-  # The Claude CLI hardcodes requests for these model names.
-  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
-  - model_name: claude-3-5-sonnet-20241022
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: claude-3-5-haiku-20241022
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: claude-opus-4-8
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-general_settings:
-  master_key: sk-1234
-````
-
 ## File: docs/agents/prompts/implement.md
 ````markdown
 <!--
@@ -63091,6 +62851,225 @@ You MUST read the issue body and ALL comments in detail to understand the histor
 Write a step-by-step implementation plan compliant with our architecture. DO NOT write or modify any code. 
 
 CRITICAL INSTRUCTION: Review your available MCP tools and use the correct tool (e.g., `soustools_post_comment`) to post your final plan directly to the issue. Execute the tools and stop.
+````
+
+## File: packages/config/src/cli.ts
+````typescript
+#!/usr/bin/env node
+import { spawn } from "child_process";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { InfisicalSDK } from "@infisical/sdk";
+import * as dotenv from "dotenv";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load local .env file inside workspace root if present (dev convenience only).
+// In production containers, env vars are injected by Docker / the orchestrator.
+dotenv.config({ path: path.join(__dirname, "../../../.env") });
+
+const defaults: Record<string, string> = {
+  SQUARE_CLIENT_ID: "sandbox-sq0idb-placeholder",
+  SQUARE_CLIENT_SECRET: "sandbox-sq0csp-placeholder",
+  GOOGLE_CLIENT_ID: "google-client-id-placeholder",
+  GOOGLE_CLIENT_SECRET: "google-client-secret-placeholder",
+  API_BASE_URL: "http://localhost:3001",
+  APP_BASE_URL: "http://localhost:3000",
+  PRODUCTION_SQUARE_ACCESS_TOKEN: "prod-square-token-placeholder",
+  PORT: "3001",
+  REDIS_HOST: "127.0.0.1", // Localhost default — MUST be overridden by Infisical in production
+  REDIS_PORT: "6379",
+  NEW_RELIC_LICENSE_KEY: "new-relic-license-key-placeholder",
+  GEMINI_API_KEY: "gemini-api-key-placeholder",
+  USDA_FDC_API_KEY: "DEMO_KEY",
+  VERCEL_AI_GATEWAY_API_KEY: "",
+  SUPABASE_URL: "https://placeholder-project.supabase.co",
+  SUPABASE_ANON_KEY: "placeholder-anon-key-from-mock-sync",
+  SUPABASE_SERVICE_ROLE_KEY: "placeholder-service-role-key-from-mock-sync",
+  SQUARE_WEBHOOK_SIGNATURE_KEY: "sandbox-sq0whk-placeholder",
+  NEO4J_URI: "bolt://localhost:7687",
+  NEO4J_USERNAME: "neo4j",
+  NEO4J_PASSWORD: "sousToolsPassword",
+  SUPABASE_WEBHOOK_SECRET: "sous-tools-neo4j-sync-secret-key",
+};
+
+/**
+ * Keys that MUST have real values fetched from Infisical in production.
+ * If these still hold their placeholder/localhost defaults, the app MUST NOT boot.
+ * This prevents silent ECONNREFUSED errors (e.g., REDIS_HOST defaulting to 127.0.0.1).
+ */
+const PRODUCTION_CRITICAL_KEYS: Array<{ key: string; placeholder: string }> = [
+  { key: "REDIS_HOST", placeholder: "127.0.0.1" },
+  { key: "SUPABASE_URL", placeholder: "https://placeholder-project.supabase.co" },
+  { key: "SUPABASE_SERVICE_ROLE_KEY", placeholder: "placeholder-service-role-key-from-mock-sync" },
+  { key: "SUPABASE_ANON_KEY", placeholder: "placeholder-anon-key-from-mock-sync" },
+];
+
+/**
+ * Validates that critical production secrets are not placeholder values.
+ * Calls process.exit(1) if any critical key still holds a localhost/placeholder value.
+ */
+function assertProductionSecrets(secrets: Record<string, string>): void {
+  const isProduction = process.env.NODE_ENV === "production";
+  const isMock = String(process.env.INFISICAL_MOCK).toLowerCase() === "true";
+  const isTest = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+
+  if (!isProduction || isMock || isTest) return;
+
+  const failedKeys: string[] = [];
+  for (const { key, placeholder } of PRODUCTION_CRITICAL_KEYS) {
+    const value = secrets[key];
+    if (!value || value === placeholder) {
+      failedKeys.push(key);
+    }
+  }
+
+  if (failedKeys.length > 0) {
+    console.error(
+      `[@soustools/config] FATAL: Production boot blocked. The following critical environment variables ` +
+      `were not fetched from Infisical and still contain placeholder/localhost defaults:\n` +
+      failedKeys.map((k) => `  - ${k}`).join("\n") +
+      `\n\nEnsure INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID are set ` +
+      `in the container environment and that Infisical is reachable.`
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * Fetches secrets from Infisical and returns them as a plain in-memory object.
+ * No filesystem I/O is performed at any point — secrets never touch disk.
+ *
+ * In mock/test environments (INFISICAL_MOCK=true or NODE_ENV=test), returns
+ * the hardcoded defaults object so CI and local dev work without Infisical.
+ *
+ * If Infisical credentials are missing entirely, returns defaults and lets
+ * assertProductionSecrets() decide whether to halt.
+ */
+async function fetchSecrets(): Promise<Record<string, string>> {
+  const isMock =
+    String(process.env.INFISICAL_MOCK).toLowerCase() === "true" ||
+    process.env.NODE_ENV === "test" ||
+    process.env.VITEST === "true";
+
+  if (isMock) {
+    console.log("[@soustools/config] INFISICAL_MOCK detected. Using defaults.");
+    return { ...defaults };
+  }
+
+  const clientId = process.env.INFISICAL_CLIENT_ID;
+  const clientSecret = process.env.INFISICAL_CLIENT_SECRET;
+  const projectId = process.env.INFISICAL_PROJECT_ID;
+
+  if (!clientId || !clientSecret || !projectId) {
+    console.warn(
+      "[@soustools/config] Missing Infisical credentials " +
+      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
+      "Returning defaults — assertProductionSecrets() will halt if NODE_ENV=production."
+    );
+    return { ...defaults };
+  }
+
+  try {
+    const client = new InfisicalSDK();
+    await client.auth().universalAuth.login({ clientId, clientSecret });
+
+    const secretsResponse = await client.secrets().listSecrets({
+      environment: process.env.INFISICAL_ENV || "dev",
+      projectId,
+    });
+
+    const secretsArray = (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
+    const finalSecrets: Record<string, string> = { ...defaults };
+
+    for (const secret of secretsArray) {
+      if (secret.secretKey && secret.secretValue !== undefined) {
+        finalSecrets[secret.secretKey] = secret.secretValue;
+      }
+    }
+
+    // Secrets are returned entirely in-memory. No filesystem writes, ever.
+    return finalSecrets;
+  } catch (error) {
+    console.error("[@soustools/config] Infisical fetch failed:", (error as Error).message);
+    // Return defaults — assertProductionSecrets() will halt if we are in production
+    // and any critical key still holds a placeholder value.
+    return { ...defaults };
+  }
+}
+
+async function run() {
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    console.error("Usage: sous-config <command> [args...]");
+    process.exit(1);
+  }
+
+  const secrets = await fetchSecrets();
+
+  // Production safety gate: halt before spawning the child process
+  // if critical secrets are still at their placeholder values.
+  assertProductionSecrets(secrets);
+
+  // Build the child environment by explicitly merging fetched secrets on top of the
+  // current process environment. Secrets already present in the environment (e.g.
+  // injected by Docker) take precedence over Infisical values via Object spread order.
+  const childEnv: Record<string, string> = {
+    ...defaults,           // lowest priority: hardcoded fallbacks
+    ...secrets,            // Infisical values override defaults
+    ...process.env as Record<string, string>, // host/container env takes highest priority
+  };
+
+  // Auto-map Supabase keys for Next.js browser client if not already present.
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_URL && childEnv.SUPABASE_URL) {
+    childEnv.NEXT_PUBLIC_SUPABASE_URL = childEnv.SUPABASE_URL;
+  }
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
+    childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
+  }
+  if (!childEnv.NEXT_PUBLIC_API_URL && childEnv.API_BASE_URL) {
+    childEnv.NEXT_PUBLIC_API_URL = childEnv.API_BASE_URL;
+  }
+
+  const [cmd, ...cmdArgs] = args;
+
+  if (cmd === "next" && (cmdArgs.includes("build") || cmdArgs.includes("start"))) {
+    childEnv.NODE_ENV = "production";
+  } else if (!childEnv.NODE_ENV) {
+    childEnv.NODE_ENV = "development";
+  }
+
+  console.log(`[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}" (host process.env.NODE_ENV="${process.env.NODE_ENV}")`);
+
+  // Secrets are passed directly into the spawned process environment — never written
+  // to disk, never shared through the filesystem.
+  const child = spawn(cmd, cmdArgs, {
+    stdio: "inherit",
+    env: childEnv,
+    shell: process.platform === "win32",
+  });
+
+  child.on("close", (code, signal) => {
+    if (signal) {
+      console.error(`\n[FATAL CRASH] Child process violently killed by OS signal: ${signal}`);
+    }
+    process.exit(code !== null ? code : 1);
+  });
+
+  ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
+    process.on(signal, () => {
+      if (!child.killed) {
+        child.kill(signal as NodeJS.Signals);
+      }
+    });
+  });
+}
+
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
 ````
 
 ## File: packages/design-system/src/components/OmniBar/OmniChatWindow.tsx
@@ -63634,24 +63613,73 @@ const initializeServerLogger = () => {
 export default initializeServerLogger;
 ````
 
+## File: apps/web/src/app/(workspace)/layout.tsx
+````typescript
+import React from "react";
+import { AppBar, OmniBarProvider } from "@soustools/design-system";
+import { logoutAction } from "@/app/actions/auth";
+import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
+import { api } from "@soustools/api-client";
+
+export default async function WorkspaceLayout({ 
+  children,
+  modal
+}: { 
+  children: any;
+  modal: any;
+}) {
+  let notifications = [];
+  try {
+    const { data, error } = await api.GET("/notifications/unread", {
+      cache: "no-store",
+    });
+    if (!error && data) {
+      notifications = (data as any).data || [];
+    }
+  } catch (error: any) {
+    if (error && (error.digest === 'DYNAMIC_SERVER_USAGE' || error.message?.includes('Dynamic server usage') || error.message?.includes('dynamic-server-error'))) {
+      throw error;
+    }
+    console.error("Failed to fetch notifications:", error);
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AppBar 
+        notifications={notifications || []} 
+        onLogoutAction={logoutAction} 
+        isAdmin={true}
+      />
+      <main className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-y-auto min-w-0">
+        <OmniBarProvider>
+          {children}
+          {modal}
+          <GoogleDriveBrowserWrapper />
+        </OmniBarProvider>
+      </main>
+    </div>
+  );
+}
+````
+
 ## File: packages/mcp-server/index.ts
 ````typescript
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-// import {
-//   CallToolRequestSchema,
-//   ListToolsRequestSchema,
-// } from "@modelcontextprotocol/sdk/types.js";
-import { Octokit } from "@octokit/rest";
-import * as fs from "fs";
-import * as path from "path";
-
-const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-if (!GITHUB_TOKEN) {
-  console.error("Warning: GITHUB_PERSONAL_ACCESS_TOKEN is not set.");
-}
-
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+// import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+// import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+// // import {
+// //   CallToolRequestSchema,
+// //   ListToolsRequestSchema,
+// // } from "@modelcontextprotocol/sdk/types.js";
+// import { Octokit } from "@octokit/rest";
+// import * as fs from "fs";
+// import * as path from "path";
+// 
+// const GITHUB_TOKEN = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+// if (!GITHUB_TOKEN) {
+//   console.error("Warning: GITHUB_PERSONAL_ACCESS_TOKEN is not set.");
+// }
+// 
+// const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 // const BOUNDARY_ELEMENTS = [
 //   { type: "app", pattern: ["apps/web/**", "apps/pos-simulator/**", "apps/setup-portal/**"] },
@@ -64060,55 +64088,502 @@ const octokit = new Octokit({ auth: GITHUB_TOKEN });
 //   console.error("Fatal:", message);
 //   process.exit(1);
 // });
+
+export {};
 ````
 
-## File: apps/web/src/app/(workspace)/layout.tsx
-````typescript
-import React from "react";
-import { AppBar, OmniBarProvider } from "@soustools/design-system";
-import { logoutAction } from "@/app/actions/auth";
-import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
-import { api } from "@soustools/api-client";
+## File: docker-compose.yml
+````yaml
+services:
+  traefik:
+    image: traefik:latest
+    environment:
+      - DOCKER_API_VERSION=1.44
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=DEBUG"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
 
-export default async function WorkspaceLayout({ 
-  children,
-  modal
-}: { 
-  children: any;
-  modal: any;
-}) {
-  let notifications = [];
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+
+  neo4j:
+    image: neo4j:5-community
+    container_name: neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/sousToolsPassword
+      # Strict memory limits to protect your 24GB Oracle instance
+      - NEO4J_server_memory_pagecache_size=1G
+      - NEO4J_server_memory_heap_initial__size=1G
+      - NEO4J_server_memory_heap_max__size=2G
+    ports:
+      - "7474:7474" # Neo4j Browser Web UI
+      - "7687:7687" # Bolt protocol for NestJS
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neo4j.rule=Host(graph.sous.tools)"
+      - "traefik.http.routers.neo4j.entrypoints=websecure"
+      - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
+      - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      - redis
+    # healthcheck:
+    #   test:
+    #     [
+    #       "CMD",
+    #       "wget",
+    #       "--no-verbose",
+    #       "--tries=1",
+    #       "--spider",
+    #       "http://localhost:3001/health",
+    #     ]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 15s
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+    environment:
+      # - VISION_PROVIDER=ollama
+      # - OLLAMA_HOST=http://ollama:11434
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api.service=api"
+      - "traefik.http.services.api.loadbalancer.server.port=3001"
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    restart: unless-stopped
+    command:
+      - --config
+      - /app/config.yaml
+      - --detailed_debug
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LITELLM_MASTER_KEY=sk-1234
+    volumes:
+      - /home/ubuntu/prod.sous.tools/litellm_config.yaml:/app/config.yaml
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
+      - "traefik.http.routers.litellm.entrypoints=websecure"
+      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
+      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=n8n.sous.tools
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_COMMAND_ENABLE=true
+      - WEBHOOK_URL=https://n8n.sous.tools
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+    volumes:
+      # Using the named volume you declared at the bottom of the file
+      - n8n_data:/home/node/.n8n
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  editor:
+    build:
+      context: .
+      dockerfile: Dockerfile.editor
+    container_name: code-server
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=America/New_York
+      - PASSWORD=sousToolsPassword
+      - SUDO_PASSWORD=sousToolsPassword
+      - OPENAI_API_BASE=https://ai.sous.tools
+      - OPENAI_API_KEY=sk-1234 # Master key defined in litellm_config.yaml
+    volumes:
+      - /home/ubuntu/dev.sous.tools:/workspace
+      - /home/ubuntu/.config/code-server:/config
+      - /home/ubuntu/.ssh:/config/.ssh:ro
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+
+      # 1. The Code Server UI
+      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
+      - "traefik.http.routers.editor.entrypoints=websecure"
+      - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.editor.service=editor"
+      - "traefik.http.services.editor.loadbalancer.server.port=8443"
+
+      # 2. Dev Web App
+      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
+      - "traefik.http.routers.dev-web.entrypoints=websecure"
+      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-web.service=dev-web"
+      - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
+
+      # 3. Dev API
+      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
+      - "traefik.http.routers.dev-api.entrypoints=websecure"
+      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-api.service=dev-api"
+      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
+
+      # 4. Dev POS Simulator
+      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
+      - "traefik.http.routers.dev-pos.entrypoints=websecure"
+      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-pos.service=dev-pos"
+      - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
+
+      # 5. Dev Setup Portal
+      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
+      - "traefik.http.routers.dev-setup.entrypoints=websecure"
+      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-setup.service=dev-setup"
+      - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: ollama-pull
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - |
+        echo "Waiting for Ollama to boot..."
+        sleep 10
+
+        # Add any new models to this list separated by a space
+        MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
+
+        for model in $$MODELS; do
+          echo "Checking/Pulling $$model..."
+          ollama pull $$model
+        done
+
+        echo "All models verified and ready!"
+
+  agent-runner:
+    build:
+      context: . # Path to the folder containing your new Dockerfile
+      dockerfile: Dockerfile.agentRunner
+      args:
+        - PUID=1001
+        - PGID=1001
+    container_name: agent-runner
+    volumes:
+      # Mount the exact same workspace as your code-server
+      - /home/ubuntu/dev.sous.tools/:/workspace
+      - agent_data:/home/agentuser
+    environment:
+      # Trick the Claude CLI into routing through LiteLLM
+      - ANTHROPIC_BASE_URL=http://litellm:4000
+      - ANTHROPIC_API_KEY=sk-1234 # Your LiteLLM Master Key
+      - GITHUB_TOKEN=${GITHUB_TOKEN} # For the GitHub MCP Server
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - traefik_public
+    restart: unless-stopped
+
+volumes:
+  letsencrypt:
+  redis_data:
+  ollama_data:
+  n8n_data:
+  agent_data:
+  neo4j_data:
+
+networks:
+  traefik_public:
+    external: true
+````
+
+## File: packages/api-client/src/index.ts
+````typescript
+import createClient from "openapi-fetch";
+// "io" and "Socket" are not directly used in this file, but are necessary for the WebSocket functionality to be available.
+import type { paths } from "./schema.js";
+import { config } from "@soustools/config";
+
+declare const process: { env: Record<string, string | undefined> };
+
+export interface ApiClientOptions {
+  baseUrl?: string;
+}
+
+export type ExtendedApiClient = ReturnType<typeof createClient<paths>>;
+
+export const getBrowserApiUrl = (origin: string): string => {
   try {
-    const { data, error } = await api.GET("/notifications/unread", {
-      cache: "no-store",
+    const url = new URL(origin);
+    const { hostname, protocol } = url;
+
+    // Local development (localhost, 127.0.0.1, etc.)
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname.startsWith("192.168.")
+    ) {
+      // If we're on a dev port, the API is always on 3001
+      return `${protocol}//${hostname}:3001`;
+    }
+
+    // Deployed environments under sous.tools
+    if (hostname.endsWith(".sous.tools") || hostname === "sous.tools") {
+      // If it is dev.sous.tools / dev-pos.sous.tools / dev-setup.sous.tools
+      if (hostname.includes("dev")) {
+        return "https://dev-api.sous.tools";
+      }
+      // If it is staging.sous.tools
+      if (hostname.includes("staging")) {
+        return "https://staging-api.sous.tools";
+      }
+      // Production defaults
+      return "https://api.sous.tools";
+    }
+
+    return "";
+  } catch {
+    return "";
+  }
+};
+
+export const getDefaultBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    const origin = window.location.origin;
+    const derivedUrl = getBrowserApiUrl(origin);
+    const finalUrl = (envUrl && envUrl !== "undefined" && envUrl !== "")
+      ? envUrl
+      : (derivedUrl || config.NEXT_PUBLIC_API_URL || "http://localhost:3001");
+
+    console.log("[api-client] getDefaultBaseUrl resolved in browser:", {
+      envUrl,
+      origin,
+      derivedUrl,
+      configUrl: config.NEXT_PUBLIC_API_URL,
+      finalUrl,
     });
-    if (!error && data) {
-      notifications = (data as any).data || [];
+    return finalUrl;
+  }
+  return (
+    config.NEXT_PUBLIC_API_URL ||
+    "http://localhost:3001"
+  );
+};
+
+export const createApiClient = (options: ApiClientOptions = {}) => {
+  const baseUrl = options.baseUrl || getDefaultBaseUrl();
+  
+  const client = createClient<paths>({ 
+    baseUrl,
+    credentials: "include", // Ensure cookies are passed by default in openapi-fetch
+  });
+
+  client.use({
+    onRequest: async ({ request }) => {
+      let nextRequest = request;
+
+      // Ensure credentials include for cookie passing
+      if (nextRequest.credentials !== "include") {
+        nextRequest = new Request(nextRequest, { credentials: "include" });
+      }
+        
+      // Clone the request before it gets consumed by fetch() so we can replay it on 401
+      (nextRequest as any)._retryClone = nextRequest.clone();
+      return nextRequest;
+    },
+    onResponse: async ({ response, request }) => {
+      // If we got a 401 and the request wasn't already trying to refresh the session
+      if (
+        response.status === 401 &&
+        !request.url.includes("/auth/refresh") &&
+        !request.url.includes("/auth/login")
+      ) {
+        try {
+          // Attempt silent refresh using the strongly typed client
+          const refreshRes = await client.POST("/auth/refresh");
+
+          if (refreshRes.response.status === 401 || refreshRes.response.status === 403) {
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
+            }
+            throw new Error("SessionExpiredError");
+          }
+
+          if (!refreshRes.error) {
+            let retryReq = (request as any)._retryClone || request.clone();
+            
+            // Ensure credentials is set on retry
+            if (retryReq.credentials !== "include") {
+              retryReq = new Request(retryReq, { credentials: "include" });
+            }
+
+            return await fetch(retryReq);
+          }
+        } catch (err) {
+          if (err instanceof Error && err.message === "SessionExpiredError") {
+            throw err;
+          }
+          // Fallthrough: If refresh fails, we just return the original 401
+          console.error("Session refresh interceptor caught an error:", err);
+        }
+      }
+      return response;
     }
-  } catch (error: any) {
-    if (error && (error.digest === 'DYNAMIC_SERVER_USAGE' || error.message?.includes('Dynamic server usage') || error.message?.includes('dynamic-server-error'))) {
-      throw error;
+  });
+
+  return client;
+};
+
+const defaultBaseUrl = getDefaultBaseUrl();
+
+// Global singleton client for convenience in browser
+export const api = createApiClient({ baseUrl: defaultBaseUrl });
+
+// Encapsulated socket connection
+// export const socket: Socket = io(defaultBaseUrl, {
+//   withCredentials: true,
+//   autoConnect: false,
+// });
+
+export async function uploadFile(
+  file: File
+): Promise<string> {
+  let attempt = 0;
+  const maxAttempts = 2;
+
+  while (attempt < maxAttempts) {
+    const { data, error } = await api.POST("/storage/upload-url", {
+      body: { fileName: file.name },
+    });
+
+    if (error) {
+      throw new Error(`Failed to retrieve signed upload URL: ${JSON.stringify(error)}`);
     }
-    console.error("Failed to fetch notifications:", error);
+
+    const payload = data as any;
+    if (!payload?.data?.signedUrl || !payload?.data?.publicUrl) {
+      throw new Error("Invalid response structure from API for signed URL");
+    }
+
+    const { signedUrl, publicUrl } = payload.data;
+
+    const uploadRes = await fetch(signedUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+      credentials: "omit", // Omit credentials to prevent browser cookies from causing 401s on the storage gateway
+    });
+
+    if (uploadRes.status === 401 && attempt < maxAttempts - 1) {
+      attempt++;
+      try {
+        const refreshRes = await api.POST("/auth/refresh");
+        if (refreshRes.response.status === 401 || refreshRes.response.status === 403) {
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          throw new Error("SessionExpiredError");
+        }
+      } catch (refreshErr) {
+        if (refreshErr instanceof Error && refreshErr.message === "SessionExpiredError") {
+          throw refreshErr;
+        }
+        console.error("Token refresh failed during file upload retry:", refreshErr);
+      }
+      continue;
+    }
+
+    if (!uploadRes.ok) {
+      throw new Error(`Direct upload failed with status ${uploadRes.status}`);
+    }
+
+    return publicUrl;
   }
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <AppBar 
-        notifications={notifications || []} 
-        onLogoutAction={logoutAction} 
-        isAdmin={true}
-      />
-      <main className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-y-auto min-w-0">
-        <OmniBarProvider>
-          {children}
-          {modal}
-          <GoogleDriveBrowserWrapper />
-        </OmniBarProvider>
-      </main>
-    </div>
-  );
+  throw new Error("File upload failed after maximum retry attempts");
 }
+
+export type { paths };
 ````
 
 ## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
@@ -64564,287 +65039,6 @@ export function OmniBarProvider({
     </>
   );
 }
-````
-
-## File: docker-compose.yml
-````yaml
-services:
-  traefik:
-    image: traefik:latest
-    environment:
-      - DOCKER_API_VERSION=1.44
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--log.level=DEBUG"
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "letsencrypt:/letsencrypt"
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
-
-  redis:
-    image: redis:alpine
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    volumes:
-      - ollama_data:/root/.ollama
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
-
-  neo4j:
-    image: neo4j:5-community
-    container_name: neo4j
-    restart: unless-stopped
-    environment:
-      - NEO4J_AUTH=neo4j/sousToolsPassword
-      # Strict memory limits to protect your 24GB Oracle instance
-      - NEO4J_server_memory_pagecache_size=1G
-      - NEO4J_server_memory_heap_initial__size=1G
-      - NEO4J_server_memory_heap_max__size=2G
-    ports:
-      - "7474:7474" # Neo4j Browser Web UI
-      - "7687:7687" # Bolt protocol for NestJS
-    volumes:
-      - neo4j_data:/data
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.neo4j.rule=Host(graph.sous.tools)"
-      - "traefik.http.routers.neo4j.entrypoints=websecure"
-      - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
-      - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
-
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    depends_on:
-      - redis
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "wget",
-    #       "--no-verbose",
-    #       "--tries=1",
-    #       "--spider",
-    #       "http://localhost:3001/health",
-    #     ]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
-    #   start_period: 15s
-    deploy:
-      update_config:
-        order: start-first
-        failure_action: rollback
-    environment:
-      # - VISION_PROVIDER=ollama
-      # - OLLAMA_HOST=http://ollama:11434
-      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
-      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
-      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
-      - INFISICAL_ENV=${INFISICAL_ENV}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.api.service=api"
-      - "traefik.http.services.api.loadbalancer.server.port=3001"
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
-
-  litellm:
-    image: ghcr.io/berriai/litellm:main-latest
-    container_name: litellm
-    restart: unless-stopped
-    command:
-      - --config
-      - /app/config.yaml
-      - --detailed_debug
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - LITELLM_MASTER_KEY=sk-1234
-    volumes:
-      - /home/ubuntu/prod.sous.tools/litellm_config.yaml:/app/config.yaml
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
-      - "traefik.http.routers.litellm.entrypoints=websecure"
-      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
-      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
-
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: n8n
-    restart: unless-stopped
-    ports:
-      - "5678:5678"
-    environment:
-      - N8N_HOST=n8n.sous.tools
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=https
-      - N8N_COMMAND_ENABLE=true
-      - WEBHOOK_URL=https://n8n.sous.tools
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
-    volumes:
-      # Using the named volume you declared at the bottom of the file
-      - n8n_data:/home/node/.n8n
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
-      - "traefik.http.routers.n8n.entrypoints=websecure"
-      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
-
-  editor:
-    build:
-      context: .
-      dockerfile: Dockerfile.editor
-    container_name: code-server
-    environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=America/New_York
-      - PASSWORD=sousToolsPassword
-      - SUDO_PASSWORD=sousToolsPassword
-      - OPENAI_API_BASE=https://ai.sous.tools
-      - OPENAI_API_KEY=sk-1234 # Master key defined in litellm_config.yaml
-    volumes:
-      - /home/ubuntu/dev.sous.tools:/workspace
-      - /home/ubuntu/.config/code-server:/config
-      - /home/ubuntu/.ssh:/config/.ssh:ro
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-
-      # 1. The Code Server UI
-      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
-      - "traefik.http.routers.editor.entrypoints=websecure"
-      - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.editor.service=editor"
-      - "traefik.http.services.editor.loadbalancer.server.port=8443"
-
-      # 2. Dev Web App
-      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
-      - "traefik.http.routers.dev-web.entrypoints=websecure"
-      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-web.service=dev-web"
-      - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
-
-      # 3. Dev API
-      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
-      - "traefik.http.routers.dev-api.entrypoints=websecure"
-      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-api.service=dev-api"
-      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
-
-      # 4. Dev POS Simulator
-      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
-      - "traefik.http.routers.dev-pos.entrypoints=websecure"
-      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-pos.service=dev-pos"
-      - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
-
-      # 5. Dev Setup Portal
-      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
-      - "traefik.http.routers.dev-setup.entrypoints=websecure"
-      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-setup.service=dev-setup"
-      - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
-
-  ollama-pull:
-    image: ollama/ollama:latest
-    container_name: ollama-pull
-    depends_on:
-      - ollama
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-    entrypoint: /bin/sh
-    command:
-      - "-c"
-      - |
-        echo "Waiting for Ollama to boot..."
-        sleep 10
-
-        # Add any new models to this list separated by a space
-        MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
-
-        for model in $$MODELS; do
-          echo "Checking/Pulling $$model..."
-          ollama pull $$model
-        done
-
-        echo "All models verified and ready!"
-
-  agent-runner:
-    build:
-      context: . # Path to the folder containing your new Dockerfile
-      dockerfile: Dockerfile.agentRunner
-      args:
-        - PUID=1001
-        - PGID=1001
-    container_name: agent-runner
-    volumes:
-      # Mount the exact same workspace as your code-server
-      - /home/ubuntu/dev.sous.tools/:/workspace
-      - agent_data:/home/agentuser
-    environment:
-      # Trick the Claude CLI into routing through LiteLLM
-      - ANTHROPIC_BASE_URL=http://litellm:4000
-      - ANTHROPIC_API_KEY=sk-1234 # Your LiteLLM Master Key
-      - GITHUB_TOKEN=${GITHUB_TOKEN} # For the GitHub MCP Server
-      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
-    networks:
-      - traefik_public
-    restart: unless-stopped
-
-volumes:
-  letsencrypt:
-  redis_data:
-  ollama_data:
-  n8n_data:
-  agent_data:
-  neo4j_data:
-
-networks:
-  traefik_public:
-    external: true
 ````
 
 ## File: .github/workflows/reporting.yml
