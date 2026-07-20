@@ -11,9 +11,54 @@ export interface ApiClientOptions {
 
 export type ExtendedApiClient = ReturnType<typeof createClient<paths>>;
 
+export const getBrowserApiUrl = (origin: string): string => {
+  try {
+    const url = new URL(origin);
+    const { hostname, protocol } = url;
+
+    // Local development (localhost, 127.0.0.1, etc.)
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname.startsWith("192.168.")
+    ) {
+      // If we're on a dev port, the API is always on 3001
+      return `${protocol}//${hostname}:3001`;
+    }
+
+    // Deployed environments under sous.tools
+    if (hostname.endsWith(".sous.tools") || hostname === "sous.tools") {
+      // If it is dev.sous.tools / dev-pos.sous.tools / dev-setup.sous.tools
+      if (hostname.includes("dev")) {
+        return "https://dev-api.sous.tools";
+      }
+      // If it is staging.sous.tools
+      if (hostname.includes("staging")) {
+        return "https://staging-api.sous.tools";
+      }
+      // Production defaults
+      return "https://api.sous.tools";
+    }
+
+    return "";
+  } catch {
+    return "";
+  }
+};
+
 export const getDefaultBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envUrl && envUrl !== "undefined" && envUrl !== "") {
+      return envUrl;
+    }
+    const derivedUrl = getBrowserApiUrl(window.location.origin);
+    if (derivedUrl) {
+      return derivedUrl;
+    }
+  }
   return (
-    (typeof window !== "undefined" ? process.env.NEXT_PUBLIC_API_URL : undefined) ||
     config.NEXT_PUBLIC_API_URL ||
     "http://localhost:3001"
   );
