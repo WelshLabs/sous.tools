@@ -171,6 +171,9 @@ async function run() {
   if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
     childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
   }
+  if (!childEnv.NEXT_PUBLIC_API_URL && childEnv.API_BASE_URL) {
+    childEnv.NEXT_PUBLIC_API_URL = childEnv.API_BASE_URL;
+  }
 
   const [cmd, ...cmdArgs] = args;
 

@@ -14,7 +14,7 @@ const NEW_RELIC_LICENSE_KEY = process.env.NEW_RELIC_LICENSE_KEY;
 const NEW_RELIC_APP_NAME = process.env.NEW_RELIC_APP_NAME;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
 
-const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'http://localhost:3001';
 
 export const config = {
     IS_MOCK_ENV,
