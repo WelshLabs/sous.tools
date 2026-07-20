@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { api } from "@soustools/api-client";
+import { api } from "@/lib/api";
 import { TeamPortalView } from "./team.view";
 
 export function TeamPortalContainer() {

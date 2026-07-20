@@ -4,7 +4,7 @@ import { Trash2 } from "lucide-react";
 import type { OmniMessage } from "@soustools/api-types";
 import { UnifiedReviewPanel } from "./UnifiedReviewPanel";
 import { useOmniActions } from "./use-omni-actions.hook";
-import { api } from "@soustools/api-client";
+import { useOmnibarContext } from "./OmniBarContext";
 import Link from "next/link";
 import {
   ActivityIndicator,
@@ -29,6 +29,17 @@ export function OmniChatWindow({
   const [masterIngredients, setMasterIngredients] = useState<
     Array<{ id: string; name: string }>
   >([]);
+
+  const { apiInstance } = useOmnibarContext();
+
+  if (!apiInstance) {
+    throw new Error(
+      "[OmniChatWindow] apiInstance not found in context. " +
+      "Pass apiInstance to OmniBarProvider from your app entry point."
+    );
+  }
+
+  const api = apiInstance;
 
   // NOTE: pre-existing Container/View violation — do not move without a
   // dedicated container extraction task.

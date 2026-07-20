@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { type OmniMessage } from '@soustools/api-types';
+import { type ExtendedApiClient } from '@soustools/api-client';
 
 export interface StagedFile {
   id: string;
@@ -42,6 +43,10 @@ export interface OmniBarState {
 
   apiClient: typeof fetch;
   setApiClient: (fn: typeof fetch) => void;
+
+  /** Typed openapi-fetch client injected by the host app. */
+  apiInstance: ExtendedApiClient | null;
+  setApiInstance: (client: ExtendedApiClient) => void;
 }
 
 export const useOmnibarContext = create<OmniBarState>((set) => ({
@@ -84,4 +89,7 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
 
   apiClient: typeof window !== 'undefined' ? window.fetch.bind(window) : fetch,
   setApiClient: (fn) => set({ apiClient: fn }),
+
+  apiInstance: null,
+  setApiInstance: (client) => set({ apiInstance: client }),
 }));

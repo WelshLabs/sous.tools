@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { api } from "@soustools/api-client";
+import { api as apiSingleton } from "@soustools/api-client";
+import { useOmnibarContext } from "./OmniBarContext";
 import { CreateItemButton } from "./CreateItemButton";
 import { ItemSelectionDropdown } from "./ItemSelectionDropdown";
 import { type UnifiedLineItem } from "./UnifiedReviewPanel";
@@ -27,6 +28,8 @@ export function UnifiedItemRow({
   isHovered = false,
   onHoverChange,
 }: UnifiedItemRowProps) {
+  const { apiInstance } = useOmnibarContext();
+  const api = apiInstance ?? apiSingleton;
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);

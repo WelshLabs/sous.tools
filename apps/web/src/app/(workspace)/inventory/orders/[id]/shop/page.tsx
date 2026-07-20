@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { type PurchaseOrder, type PurchaseOrderItem, type Vendor } from "@soustools/api-types";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Circle } from "lucide-react";
-import { api } from "@soustools/api-client";
+import { api } from "@/lib/api";
 
 type PopulatedPO = PurchaseOrder & {
   vendors: Vendor;

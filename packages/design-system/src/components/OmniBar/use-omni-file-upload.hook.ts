@@ -1,10 +1,11 @@
 import type React from "react";
 import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
 import { type OmniMessage } from "@soustools/api-types";
-import { api, uploadFile } from "@soustools/api-client";
+import { api as apiSingleton, uploadFile } from "@soustools/api-client";
 
 export function useOmniFileUpload() {
-  const { setStagedFiles, chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
+  const { setStagedFiles, chatHistory, setChatHistory, contextPayload, apiInstance } = useOmnibarContext();
+  const api = apiInstance ?? apiSingleton;
 
   const handleFileUpload = async (file: File) => {
     const fileId = crypto.randomUUID();

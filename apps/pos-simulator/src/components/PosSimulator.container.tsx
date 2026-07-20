@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { type PosItem } from "@soustools/api-types";
-import { api } from "@soustools/api-client";
+import { api as apiSingleton, type ExtendedApiClient } from "@soustools/api-client";
 import { MOCK_POS_ITEMS, mapDbItemToPosItem, type RawDbPosItem } from "./helpers";
 import { PosSimulator } from "./PosSimulator";
 
-export const PosSimulatorContainer: React.FC = () => {
+export const PosSimulatorContainer: React.FC<{ apiInstance?: ExtendedApiClient }> = ({ apiInstance }) => {
+  const api = apiInstance ?? apiSingleton;
   const [items, setItems] = useState<PosItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);

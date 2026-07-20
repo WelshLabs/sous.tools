@@ -1,6 +1,6 @@
 import { config } from "@soustools/config";
 import { SettingsClient } from "./settings-client";
-import { api } from "@soustools/api-client";
+import { api } from "@/lib/api";
 
 export const dynamic = 'force-dynamic';
 

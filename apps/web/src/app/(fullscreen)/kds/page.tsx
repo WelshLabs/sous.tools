@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api } from "@soustools/api-client";
+import { api } from "@/lib/api";
 import { Button, OmniBar } from "@soustools/design-system";
 import { 
   Settings, 

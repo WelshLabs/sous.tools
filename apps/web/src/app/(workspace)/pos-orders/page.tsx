@@ -1,6 +1,6 @@
 import React from "react";
 import { PosOrdersView } from "./PosOrdersView";
-import { api } from "@soustools/api-client";
+import { api } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 

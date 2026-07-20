@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { api } from "@soustools/api-client";
+import { api } from "@/lib/api";
 import { type MenuItemStyles, type PosItem } from "@soustools/api-types";
 import { resolveItemState, buildTitleStyle, buildPriceStyle } from "@/app/display/[id]/menu-item-style-utils";
 

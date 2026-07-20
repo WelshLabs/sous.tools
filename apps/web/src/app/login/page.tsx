@@ -12,7 +12,7 @@ import {
   type LoginState,
   AuroraBackground,
 } from "@soustools/design-system";
-import { api } from "@soustools/api-client";
+import { api } from "@/lib/api";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
