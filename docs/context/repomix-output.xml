@@ -17921,6 +17921,88 @@ export function RecipeSection({
 }
 ````
 
+## File: apps/web/src/app/(workspace)/ingestion/review/[id]/use-auto-mapping.ts
+````typescript
+import { useEffect } from "react";
+
+export function useAutoMapping({
+  parsed,
+  parseError,
+  items,
+  disabled,
+  onChange,
+}: {
+  parsed: Record<string, unknown>;
+  parseError: boolean;
+  items: { id: string; name: string; each_weight_g: number | null }[];
+  disabled: boolean;
+  onChange: (data: string) => void;
+}) {
+  useEffect(() => {
+    if (parseError || items.length === 0 || disabled) return;
+    let modified = false;
+    const newData = { ...parsed };
+
+    if (newData.vendorName && newData.items) {
+      (newData.items as Array<Record<string, unknown>>).forEach((item) => {
+        if (!item.itemId && item.rawName) {
+          const rawName = String(item.rawName);
+          const mappedName = item.mappedName ? String(item.mappedName) : "";
+          const match = items.find((i) =>
+            i.name.toLowerCase() === rawName.toLowerCase() ||
+            (mappedName && i.name.toLowerCase() === mappedName.toLowerCase())
+          );
+          if (match) {
+            item.itemId = match.id;
+            const u = (String(item.unit ?? item.uom ?? "")).toLowerCase();
+            const isWeight = u.startsWith("lb") || u === "oz" || u === "g" || u === "kg";
+
+            if (isWeight && Number(item.quantity) > 0) {
+              item._requiresWeightInput = false;
+              let mult = 1;
+              if (u.startsWith("lb")) mult = 453.592;
+              else if (u === "oz") mult = 28.3495;
+              else if (u === "kg") mult = 1000;
+              item.each_weight_g = Math.round(mult);
+            } else {
+              item._requiresWeightInput = !match.each_weight_g || match.each_weight_g <= 0;
+            }
+            modified = true;
+          }
+        }
+      });
+    } else {
+      const targetRecipes = (newData.recipes
+        ? newData.recipes
+        : newData.title && newData.ingredients
+          ? [newData]
+          : []) as Array<{ ingredients?: Array<Record<string, unknown>> }>;
+
+      targetRecipes.forEach((recipe) => {
+        if (recipe.ingredients) {
+          recipe.ingredients.forEach((ing) => {
+            if (!ing.itemId && ing.name) {
+              const match = items.find(
+                (i) =>
+                  i.name.toLowerCase() === String(ing.name).trim().toLowerCase(),
+              );
+              if (match) {
+                ing.itemId = match.id;
+                modified = true;
+              }
+            }
+          });
+        }
+      });
+    }
+
+    if (modified) {
+      onChange(JSON.stringify(newData, null, 2));
+    }
+    }, [items, disabled, onChange, parseError, parsed]);
+}
+````
+
 ## File: apps/web/src/app/(workspace)/ingestion/review/[id]/use-visual-builder-data.ts
 ````typescript
 import { useState, useEffect } from "react";
@@ -24489,6 +24571,11 @@ This repository is heavily orchestrated by autonomous agents via **n8n**, **Lite
 > **To all Autonomous Agents:** You must strictly adhere to the rules outlined in the [AGENTS](AGENTS) document and enforce our Domain-Driven Design boundaries. Do not bypass the `packages/api-client`.
 ````
 
+## File: packages/api-client/src/schema.js
+````javascript
+// This file is intentionally left blank. It's needed to resolve the types from schema.d.ts.
+````
+
 ## File: packages/api-client/eslint.config.js
 ````javascript
 import { baseConfig } from "@soustools/eslint-config";
@@ -24907,6 +24994,205 @@ export const CreatePurchaseOrderSchema = z.object({
 
 export type OrderItemPayload = z.infer<typeof OrderItemSchema>;
 export type CreatePurchaseOrderPayload = z.infer<typeof CreatePurchaseOrderSchema>;
+````
+
+## File: packages/api-types/src/recipes.ts
+````typescript
+import { z } from "zod";
+
+export interface VesselProfile {
+  id: string;
+  organizationId: string;
+  name: string;
+  shape: "ROUND" | "RECTANGULAR";
+  length: number | null;
+  width: number | null;
+  height: number | null;
+  diameter: number | null;
+  volumeMl: number;
+  createdAt: string;
+}
+
+export interface NutritionMacros {
+  calories: number | null;
+  proteinG: number | null;
+  carbsG: number | null;
+  fatG: number | null;
+}
+
+export interface MasterIngredient {
+  id: string;
+  organizationId: string;
+  name: string;
+  densityGMl: number;
+  nutritionMacros: NutritionMacros | Record<string, unknown>; // USDA FDC JSONB format
+  allergens: string[];
+  ingredientType?: string | null;
+  isAnimalProduct?: boolean;
+  isMeat?: boolean;
+  isSeafood?: boolean;
+  isDairy?: boolean;
+  isEgg?: boolean;
+  isGlutenSource?: boolean;
+  fdcId?: number | null;
+  nutritionVerifiedAt?: string | null;
+  currentCostPerG?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PerServingNutrition {
+  calories?: number;
+  total_fat_g?: number;
+  total_carbohydrate_g?: number;
+  protein_g?: number;
+  [key: string]: unknown;
+}
+
+export interface RecipeNutritionCache {
+  recipeId: string;
+  servings: number;
+  perServingNutrition: PerServingNutrition;
+  per100gNutrition: Record<string, unknown>;
+  dietaryFlags: Record<string, boolean>;
+  computedAt: string | null;
+}
+
+export interface RecipeInstruction {
+  stepNumber: number;
+  text: string;
+  timerDurationSeconds: number | null;
+}
+
+export interface RecipeCategory {
+  id: string;
+  organizationId: string;
+  name: string;
+  parentId: string | null;
+  createdAt: string;
+}
+
+export interface RecipeTag {
+  id: string;
+  organizationId: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface FormulaVersion {
+  id: string;
+  recipeId: string;
+  versionNumber: number;
+  title: string;
+  yieldCount: number;
+  yieldUnit: string;
+  vesselId: string | null;
+  instructions: RecipeInstruction[];
+  ingredients: RecipeIngredient[];
+  createdAt: string;
+}
+
+export interface Recipe {
+  id: string;
+  organizationId: string;
+  title: string;
+  yieldCount: number;
+  yieldUnit: string;
+  vesselId: string | null;
+  instructions: RecipeInstruction[];
+  createdAt: string;
+  categoryId?: string | null;
+  status?: "PENDING_REVIEW" | "APPROVED" | "ARCHIVED";
+  sourceBook?: string | null;
+  sourceAuthor?: string | null;
+  sourcePageStart?: number | null;
+  sourcePageEnd?: number | null;
+  vessel?: VesselProfile;
+  recipeIngredients?: RecipeIngredient[];
+  tagIds?: string[];
+  posItemId?: string | null;
+  suggestedSalePrice?: string | null;
+}
+
+export interface RecipeIngredient {
+  id: string;
+  recipeId: string;
+  masterIngredientId: string | null;
+  subRecipeId: string | null;
+  calculationType: "fixed_weight" | "bakers_percentage";
+  baseCalculationGroup: boolean;
+  amount: number;
+  unit: string;
+  component?: string | null;
+  rawName?: string | null;
+  prepNotes: string | null;
+  createdAt: string;
+  masterIngredient?: MasterIngredient;
+  subRecipe?: Recipe;
+}
+
+export interface KitchenTimerState {
+  id: string;
+  stepIndex: number;
+  durationSeconds: number;
+  startedAt: string | null;
+  pausedAt: string | null;
+  elapsedSeconds: number;
+  isActive: boolean;
+}
+
+export const IngredientSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional(),
+  macros: z
+    .object({
+      calories: z.number().nullable(),
+      proteinG: z.number().nullable(),
+      carbsG: z.number().nullable(),
+      fatG: z.number().nullable(),
+    })
+    .optional(),
+  allergens: z.array(z.string()).optional(),
+  vendorMappings: z
+    .array(
+      z.object({
+        vendorId: z.string(),
+        vendorItemCode: z.string(),
+        vendorItemName: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+
+export const RecipeIngredientSchema = z.object({
+  ingredientId: z.string(),
+  amount: z.number(),
+  unit: z.string(),
+  preparationNote: z.string().optional().nullable(),
+});
+
+export const RecipeVariantSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  ingredients: z.array(RecipeIngredientSchema).optional(),
+});
+
+export const RecipeSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string(),
+  description: z.string().optional(),
+  yield_amount: z.number(),
+  yield_unit: z.string(),
+  tags: z.array(z.string()).optional(),
+  categories: z.array(z.string()).optional(),
+  dietary_restrictions: z.array(z.string()).optional(),
+  ingredients: z.array(RecipeIngredientSchema),
+  variants: z.array(RecipeVariantSchema).optional(),
+});
+
+export type ZodIngredient = z.infer<typeof IngredientSchema>;
+export type ZodRecipe = z.infer<typeof RecipeSchema>;
 ````
 
 ## File: packages/api-types/src/signage-base.ts
@@ -25636,6 +25922,39 @@ export function CreatableSelect({
 }
 ````
 
+## File: packages/design-system/src/components/OmniBar/CreateItemButton.tsx
+````typescript
+"use client";
+
+import { Loader2, Plus } from "lucide-react";
+
+interface CreateItemButtonProps {
+  disabled: boolean;
+  isCreating: boolean;
+  onClick: () => void;
+  suggestedName: string;
+}
+
+export function CreateItemButton({
+  disabled,
+  isCreating,
+  onClick,
+  suggestedName,
+}: CreateItemButtonProps) {
+  return (
+    <button
+      type="button"
+      disabled={disabled || isCreating}
+      onClick={onClick}
+      className="self-start flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 disabled:opacity-50 text-cyan-600 dark:text-cyan-400 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-cyan-500/25 cursor-pointer transition-all active:scale-95"
+    >
+      {isCreating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+      <span>Create: {suggestedName}</span>
+    </button>
+  );
+}
+````
+
 ## File: packages/design-system/src/components/OmniBar/DocumentViewer.tsx
 ````typescript
 "use client";
@@ -25723,6 +26042,83 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
             <button type="button" onClick={() => setScale(1)} className="p-1.5 hover:bg-white/10 rounded-lg text-cyan-400" title="Reset Zoom">
               <RotateCcw className="w-4 h-4" />
             </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+````
+
+## File: packages/design-system/src/components/OmniBar/ItemSelectionDropdown.tsx
+````typescript
+"use client";
+
+import { Plus } from "lucide-react";
+
+interface ItemSelectionDropdownProps {
+  search: string;
+  setSearch: (search: string) => void;
+  suggestions: Array<{ itemId: string; name: string; similarity: number; matchColor: string }> | undefined;
+  filteredItems: Array<{ id: string; name: string }>;
+  onSelectItem: (id: string, confidence: number) => void;
+  onCreateItem: (name: string) => void;
+  currentItemId: string | null;
+}
+
+export function ItemSelectionDropdown({
+  search,
+  setSearch,
+  suggestions,
+  filteredItems,
+  onSelectItem,
+  onCreateItem,
+  currentItemId,
+}: ItemSelectionDropdownProps) {
+  const getB = (c: string) => c === "green" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : c === "yellow" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20";
+
+  return (
+    <div className="absolute z-[100] mt-1 w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-xl flex flex-col overflow-hidden max-h-60">
+      <div className="p-1.5 border-b border-slate-100 dark:border-zinc-900 bg-slate-50 dark:bg-zinc-900/50">
+        <input
+          type="text"
+          placeholder="Search master items..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded px-2 py-1 text-xs outline-none text-slate-900 dark:text-white"
+          autoFocus
+        />
+      </div>
+      <div className="overflow-y-auto flex-1 py-1 text-xs">
+        {suggestions && suggestions.length > 0 && !search && (
+          <div className="border-b border-slate-100 dark:border-zinc-900 pb-1 mb-1 animate-fadeIn">
+            {suggestions.map((sug) => (
+              <div key={sug.itemId} onClick={() => onSelectItem(sug.itemId, sug.similarity)} className="px-3 py-1.5 cursor-pointer hover:bg-sky-500 hover:text-white dark:hover:bg-sky-600 flex items-center justify-between">
+                <span className="truncate mr-2 font-medium">{sug.name}</span>
+                <span className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border ${getB(sug.matchColor)}`}>{Math.round(sug.similarity * 100)}% Match</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="px-3 py-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider font-mono">All Items</div>
+        {filteredItems.length > 0 ? (
+          filteredItems.map((opt) => (
+            <div key={opt.id} onClick={() => onSelectItem(opt.id, 1.0)} className={`px-3 py-1.5 cursor-pointer hover:bg-sky-500 hover:text-white dark:hover:bg-sky-600 flex items-center justify-between ${opt.id === currentItemId ? "bg-slate-100 dark:bg-zinc-800 text-emerald-500 font-semibold" : ""}`}>
+              <span className="truncate">{opt.name}</span>
+            </div>
+          ))
+        ) : (
+          <div className="px-3 py-2 text-zinc-500 italic">No master items found</div>
+        )}
+
+        {search.trim() !== "" && !filteredItems.some((o) => o.name.toLowerCase() === search.trim().toLowerCase()) && (
+          <div
+            onClick={() => onCreateItem(search.trim())}
+            className="px-3 py-2 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white font-semibold cursor-pointer border-t border-slate-100 dark:border-zinc-900 flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Create "{search.trim()}"</span>
           </div>
         )}
       </div>
@@ -40114,6 +40510,21 @@ export class AppService {
 }
 ````
 
+## File: apps/api/src/pre-bootstrap.ts
+````typescript
+import { config } from "@soustools/config";
+
+/**
+ * Pre-bootstrap sequence.
+ * Dynamically loads New Relic APM only if enabled, avoiding loader hook interference
+ * and configuration errors during local development.
+ */
+if (config.NEW_RELIC_ENABLED) {
+  // @ts-expect-error - newrelic lacks type definitions in local compilation scope
+  import("newrelic");
+}
+````
+
 ## File: apps/cli/src/cli.spec.ts
 ````typescript
 describe('CLI', () => {
@@ -41091,88 +41502,6 @@ export default function HomePage() {
       </p>
     </div>
   );
-}
-````
-
-## File: apps/web/src/app/(workspace)/ingestion/review/[id]/use-auto-mapping.ts
-````typescript
-import { useEffect } from "react";
-
-export function useAutoMapping({
-  parsed,
-  parseError,
-  items,
-  disabled,
-  onChange,
-}: {
-  parsed: Record<string, unknown>;
-  parseError: boolean;
-  items: { id: string; name: string; each_weight_g: number | null }[];
-  disabled: boolean;
-  onChange: (data: string) => void;
-}) {
-  useEffect(() => {
-    if (parseError || items.length === 0 || disabled) return;
-    let modified = false;
-    const newData = { ...parsed };
-
-    if (newData.vendorName && newData.items) {
-      (newData.items as Array<Record<string, unknown>>).forEach((item) => {
-        if (!item.itemId && item.rawName) {
-          const rawName = String(item.rawName);
-          const mappedName = item.mappedName ? String(item.mappedName) : "";
-          const match = items.find((i) =>
-            i.name.toLowerCase() === rawName.toLowerCase() ||
-            (mappedName && i.name.toLowerCase() === mappedName.toLowerCase())
-          );
-          if (match) {
-            item.itemId = match.id;
-            const u = (String(item.unit ?? item.uom ?? "")).toLowerCase();
-            const isWeight = u.startsWith("lb") || u === "oz" || u === "g" || u === "kg";
-
-            if (isWeight && Number(item.quantity) > 0) {
-              item._requiresWeightInput = false;
-              let mult = 1;
-              if (u.startsWith("lb")) mult = 453.592;
-              else if (u === "oz") mult = 28.3495;
-              else if (u === "kg") mult = 1000;
-              item.each_weight_g = Math.round(mult);
-            } else {
-              item._requiresWeightInput = !match.each_weight_g || match.each_weight_g <= 0;
-            }
-            modified = true;
-          }
-        }
-      });
-    } else {
-      const targetRecipes = (newData.recipes
-        ? newData.recipes
-        : newData.title && newData.ingredients
-          ? [newData]
-          : []) as Array<{ ingredients?: Array<Record<string, unknown>> }>;
-
-      targetRecipes.forEach((recipe) => {
-        if (recipe.ingredients) {
-          recipe.ingredients.forEach((ing) => {
-            if (!ing.itemId && ing.name) {
-              const match = items.find(
-                (i) =>
-                  i.name.toLowerCase() === String(ing.name).trim().toLowerCase(),
-              );
-              if (match) {
-                ing.itemId = match.id;
-                modified = true;
-              }
-            }
-          });
-        }
-      });
-    }
-
-    if (modified) {
-      onChange(JSON.stringify(newData, null, 2));
-    }
-    }, [items, disabled, onChange, parseError, parsed]);
 }
 ````
 
@@ -42400,11 +42729,6 @@ fi
 
 ````
 
-## File: packages/api-client/src/schema.js
-````javascript
-// This file is intentionally left blank. It's needed to resolve the types from schema.d.ts.
-````
-
 ## File: packages/api-types/src/omnibar.ts
 ````typescript
 import { z } from "zod";
@@ -42429,205 +42753,6 @@ export const OmnibarCommandPayloadSchema = z.object({
 });
 
 export type OmnibarCommandPayload = z.infer<typeof OmnibarCommandPayloadSchema>;
-````
-
-## File: packages/api-types/src/recipes.ts
-````typescript
-import { z } from "zod";
-
-export interface VesselProfile {
-  id: string;
-  organizationId: string;
-  name: string;
-  shape: "ROUND" | "RECTANGULAR";
-  length: number | null;
-  width: number | null;
-  height: number | null;
-  diameter: number | null;
-  volumeMl: number;
-  createdAt: string;
-}
-
-export interface NutritionMacros {
-  calories: number | null;
-  proteinG: number | null;
-  carbsG: number | null;
-  fatG: number | null;
-}
-
-export interface MasterIngredient {
-  id: string;
-  organizationId: string;
-  name: string;
-  densityGMl: number;
-  nutritionMacros: NutritionMacros | Record<string, unknown>; // USDA FDC JSONB format
-  allergens: string[];
-  ingredientType?: string | null;
-  isAnimalProduct?: boolean;
-  isMeat?: boolean;
-  isSeafood?: boolean;
-  isDairy?: boolean;
-  isEgg?: boolean;
-  isGlutenSource?: boolean;
-  fdcId?: number | null;
-  nutritionVerifiedAt?: string | null;
-  currentCostPerG?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PerServingNutrition {
-  calories?: number;
-  total_fat_g?: number;
-  total_carbohydrate_g?: number;
-  protein_g?: number;
-  [key: string]: unknown;
-}
-
-export interface RecipeNutritionCache {
-  recipeId: string;
-  servings: number;
-  perServingNutrition: PerServingNutrition;
-  per100gNutrition: Record<string, unknown>;
-  dietaryFlags: Record<string, boolean>;
-  computedAt: string | null;
-}
-
-export interface RecipeInstruction {
-  stepNumber: number;
-  text: string;
-  timerDurationSeconds: number | null;
-}
-
-export interface RecipeCategory {
-  id: string;
-  organizationId: string;
-  name: string;
-  parentId: string | null;
-  createdAt: string;
-}
-
-export interface RecipeTag {
-  id: string;
-  organizationId: string;
-  name: string;
-  createdAt: string;
-}
-
-export interface FormulaVersion {
-  id: string;
-  recipeId: string;
-  versionNumber: number;
-  title: string;
-  yieldCount: number;
-  yieldUnit: string;
-  vesselId: string | null;
-  instructions: RecipeInstruction[];
-  ingredients: RecipeIngredient[];
-  createdAt: string;
-}
-
-export interface Recipe {
-  id: string;
-  organizationId: string;
-  title: string;
-  yieldCount: number;
-  yieldUnit: string;
-  vesselId: string | null;
-  instructions: RecipeInstruction[];
-  createdAt: string;
-  categoryId?: string | null;
-  status?: "PENDING_REVIEW" | "APPROVED" | "ARCHIVED";
-  sourceBook?: string | null;
-  sourceAuthor?: string | null;
-  sourcePageStart?: number | null;
-  sourcePageEnd?: number | null;
-  vessel?: VesselProfile;
-  recipeIngredients?: RecipeIngredient[];
-  tagIds?: string[];
-  posItemId?: string | null;
-  suggestedSalePrice?: string | null;
-}
-
-export interface RecipeIngredient {
-  id: string;
-  recipeId: string;
-  masterIngredientId: string | null;
-  subRecipeId: string | null;
-  calculationType: "fixed_weight" | "bakers_percentage";
-  baseCalculationGroup: boolean;
-  amount: number;
-  unit: string;
-  component?: string | null;
-  rawName?: string | null;
-  prepNotes: string | null;
-  createdAt: string;
-  masterIngredient?: MasterIngredient;
-  subRecipe?: Recipe;
-}
-
-export interface KitchenTimerState {
-  id: string;
-  stepIndex: number;
-  durationSeconds: number;
-  startedAt: string | null;
-  pausedAt: string | null;
-  elapsedSeconds: number;
-  isActive: boolean;
-}
-
-export const IngredientSchema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  description: z.string().optional(),
-  macros: z
-    .object({
-      calories: z.number().nullable(),
-      proteinG: z.number().nullable(),
-      carbsG: z.number().nullable(),
-      fatG: z.number().nullable(),
-    })
-    .optional(),
-  allergens: z.array(z.string()).optional(),
-  vendorMappings: z
-    .array(
-      z.object({
-        vendorId: z.string(),
-        vendorItemCode: z.string(),
-        vendorItemName: z.string().optional(),
-      }),
-    )
-    .optional(),
-});
-
-export const RecipeIngredientSchema = z.object({
-  ingredientId: z.string(),
-  amount: z.number(),
-  unit: z.string(),
-  preparationNote: z.string().optional().nullable(),
-});
-
-export const RecipeVariantSchema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  ingredients: z.array(RecipeIngredientSchema).optional(),
-});
-
-export const RecipeSchema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string(),
-  description: z.string().optional(),
-  yield_amount: z.number(),
-  yield_unit: z.string(),
-  tags: z.array(z.string()).optional(),
-  categories: z.array(z.string()).optional(),
-  dietary_restrictions: z.array(z.string()).optional(),
-  ingredients: z.array(RecipeIngredientSchema),
-  variants: z.array(RecipeVariantSchema).optional(),
-});
-
-export type ZodIngredient = z.infer<typeof IngredientSchema>;
-export type ZodRecipe = z.infer<typeof RecipeSchema>;
 ````
 
 ## File: packages/design-system/src/components/AppBar/AppBar.spec.tsx
@@ -46061,39 +46186,6 @@ export function AttachmentFlyout({
 }
 ````
 
-## File: packages/design-system/src/components/OmniBar/CreateItemButton.tsx
-````typescript
-"use client";
-
-import { Loader2, Plus } from "lucide-react";
-
-interface CreateItemButtonProps {
-  disabled: boolean;
-  isCreating: boolean;
-  onClick: () => void;
-  suggestedName: string;
-}
-
-export function CreateItemButton({
-  disabled,
-  isCreating,
-  onClick,
-  suggestedName,
-}: CreateItemButtonProps) {
-  return (
-    <button
-      type="button"
-      disabled={disabled || isCreating}
-      onClick={onClick}
-      className="self-start flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 disabled:opacity-50 text-cyan-600 dark:text-cyan-400 text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-cyan-500/25 cursor-pointer transition-all active:scale-95"
-    >
-      {isCreating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-      <span>Create: {suggestedName}</span>
-    </button>
-  );
-}
-````
-
 ## File: packages/design-system/src/components/OmniBar/FloatingOmniTrigger.tsx
 ````typescript
 "use client";
@@ -46145,78 +46237,35 @@ export type { UnifiedReviewPanelProps } from "./UnifiedReviewPanel";
 export { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 ````
 
-## File: packages/design-system/src/components/OmniBar/ItemSelectionDropdown.tsx
+## File: packages/design-system/src/components/OmniBar/NonInventoryExpenseCheckbox.tsx
 ````typescript
 "use client";
 
-import { Plus } from "lucide-react";
-
-interface ItemSelectionDropdownProps {
-  search: string;
-  setSearch: (search: string) => void;
-  suggestions: Array<{ itemId: string; name: string; similarity: number; matchColor: string }> | undefined;
-  filteredItems: Array<{ id: string; name: string }>;
-  onSelectItem: (id: string, confidence: number) => void;
-  onCreateItem: (name: string) => void;
-  currentItemId: string | null;
+interface NonInventoryExpenseCheckboxProps {
+  disabled: boolean;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  itemId: string | null;
 }
 
-export function ItemSelectionDropdown({
-  search,
-  setSearch,
-  suggestions,
-  filteredItems,
-  onSelectItem,
-  onCreateItem,
-  currentItemId,
-}: ItemSelectionDropdownProps) {
-  const getB = (c: string) => c === "green" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : c === "yellow" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20";
-
+export function NonInventoryExpenseCheckbox({
+  disabled,
+  checked,
+  onChange,
+  itemId: _itemId,
+}: NonInventoryExpenseCheckboxProps) {
   return (
-    <div className="absolute z-[100] mt-1 w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-xl flex flex-col overflow-hidden max-h-60">
-      <div className="p-1.5 border-b border-slate-100 dark:border-zinc-900 bg-slate-50 dark:bg-zinc-900/50">
+    <div className="flex items-center gap-2 mt-1.5">
+      <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none">
         <input
-          type="text"
-          placeholder="Search master items..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded px-2 py-1 text-xs outline-none text-slate-900 dark:text-white"
-          autoFocus
+          type="checkbox"
+          disabled={disabled}
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="rounded border-zinc-300 dark:border-zinc-700 bg-transparent text-cyan-500 w-3.5 h-3.5"
         />
-      </div>
-      <div className="overflow-y-auto flex-1 py-1 text-xs">
-        {suggestions && suggestions.length > 0 && !search && (
-          <div className="border-b border-slate-100 dark:border-zinc-900 pb-1 mb-1 animate-fadeIn">
-            {suggestions.map((sug) => (
-              <div key={sug.itemId} onClick={() => onSelectItem(sug.itemId, sug.similarity)} className="px-3 py-1.5 cursor-pointer hover:bg-sky-500 hover:text-white dark:hover:bg-sky-600 flex items-center justify-between">
-                <span className="truncate mr-2 font-medium">{sug.name}</span>
-                <span className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border ${getB(sug.matchColor)}`}>{Math.round(sug.similarity * 100)}% Match</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="px-3 py-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider font-mono">All Items</div>
-        {filteredItems.length > 0 ? (
-          filteredItems.map((opt) => (
-            <div key={opt.id} onClick={() => onSelectItem(opt.id, 1.0)} className={`px-3 py-1.5 cursor-pointer hover:bg-sky-500 hover:text-white dark:hover:bg-sky-600 flex items-center justify-between ${opt.id === currentItemId ? "bg-slate-100 dark:bg-zinc-800 text-emerald-500 font-semibold" : ""}`}>
-              <span className="truncate">{opt.name}</span>
-            </div>
-          ))
-        ) : (
-          <div className="px-3 py-2 text-zinc-500 italic">No master items found</div>
-        )}
-
-        {search.trim() !== "" && !filteredItems.some((o) => o.name.toLowerCase() === search.trim().toLowerCase()) && (
-          <div
-            onClick={() => onCreateItem(search.trim())}
-            className="px-3 py-2 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white font-semibold cursor-pointer border-t border-slate-100 dark:border-zinc-900 flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create "{search.trim()}"</span>
-          </div>
-        )}
-      </div>
+        <span>Non-Inventory Expense</span>
+      </label>
     </div>
   );
 }
@@ -49672,6 +49721,129 @@ export default defineConfig({
 ## File: packages/domain-inventory/vitest.setup.ts
 ````typescript
 import "@testing-library/jest-dom";
+````
+
+## File: packages/domain-pos/src/components/POSRegister/pos.helpers.ts
+````typescript
+import { type ModifierGroup, type ModifierOption } from "./components/pos-modifiers-modal";
+import { type CatalogItem, type CartItem } from "./pos.types";
+
+export const MOCK_BURGER_MODIFIERS: ModifierGroup[] = [
+  {
+    id: "g1",
+    name: "Choose Cheese",
+    required: true,
+    minSelections: 1,
+    maxSelections: 1,
+    options: [
+      { id: "o1", name: "Cheddar", price: 0 },
+      { id: "o2", name: "Swiss", price: 0.5 },
+      { id: "o3", name: "Provolone", price: 0.5 },
+    ],
+  },
+  {
+    id: "g2",
+    name: "Add-ons",
+    required: false,
+    minSelections: 0,
+    maxSelections: 3,
+    options: [
+      { id: "o4", name: "Bacon", price: 1.5 },
+      { id: "o5", name: "Avocado", price: 2.0 },
+      { id: "o6", name: "Extra Patty", price: 3.0 },
+    ],
+  },
+];
+
+export const getCategory = (itemName: string): string => {
+  const name = itemName.toLowerCase();
+  if (name.includes("burger") || name.includes("sandwich") || name.includes("steak") || name.includes("salmon")) {
+    return "Mains";
+  }
+  if (name.includes("salad") || name.includes("fries") || name.includes("soup") || name.includes("tater")) {
+    return "Sides/Salads";
+  }
+  if (name.includes("beer") || name.includes("ipa") || name.includes("drink") || name.includes("soda") || name.includes("water")) {
+    return "Beverages";
+  }
+  return "Other";
+};
+
+export const CATEGORIES = ["Mains", "Sides/Salads", "Beverages", "Other"];
+
+interface WindowWithAudioContext extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
+export function playSuccessSound() {
+  try {
+    const audioCtx = new (window.AudioContext || (window as WindowWithAudioContext).webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+    osc.type = "sine";
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.5);
+  } catch {
+    // ignore
+  }
+}
+
+export function getFilteredItems(items: CatalogItem[], searchQuery: string, selectedCategory: string): CatalogItem[] {
+  const mapped: CatalogItem[] = items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: Number(item.price),
+    category: getCategory(item.name),
+    description: item.description || undefined,
+    isSoldOut: item.isSoldOut || false,
+    image: item.image || undefined,
+  }));
+
+  return mapped.filter((item) => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "" || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+}
+
+export function calculateTotals(cart: CartItem[]) {
+  const subtotal = cart.reduce((sum, item) => sum + (item.price + item.modifiers.reduce((mSum, m) => mSum + m.price, 0)) * item.quantity, 0);
+  const tax = subtotal * 0.0825;
+  const total = subtotal + tax;
+  return { subtotal, tax, total };
+}
+
+export function buildCartWithAddedItem(prevCart: CartItem[], item: CatalogItem, selectedMods: ModifierOption[]): CartItem[] {
+  const cartItemKey = `${item.id}-${selectedMods.map((m) => m.id).sort().join("-")}`;
+  const existingIndex = prevCart.findIndex((ci) => ci.id === cartItemKey);
+  if (existingIndex > -1) {
+    const updated = [...prevCart];
+    updated[existingIndex].quantity += 1;
+    return updated;
+  }
+  return [
+    ...prevCart,
+    {
+      id: cartItemKey,
+      external_id: null,
+      name: item.name,
+      price: item.price,
+      quantity: 1,
+      modifiers: selectedMods.map((m) => ({
+        id: m.id,
+        external_id: null,
+        name: m.name,
+        price: m.price,
+      })),
+    },
+  ];
+}
 ````
 
 ## File: packages/domain-pos/src/components/POSRegister/POSRegister.spec.tsx
@@ -54390,7 +54562,17 @@ export function VesselManagerView({
 // Moved to src/components/RecipeViewer/
 ````
 
+## File: packages/domain-recipes/src/RecipeBuilder.tsx
+````typescript
+// Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.container.tsx
+````
+
 ## File: packages/domain-recipes/src/RecipeBuilderFormFields.tsx
+````typescript
+// Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.view.tsx
+````
+
+## File: packages/domain-recipes/src/RecipeBuilderIngredientRow.tsx
 ````typescript
 // Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.view.tsx
 ````
@@ -54438,6 +54620,11 @@ export function VesselManagerView({
 ## File: packages/domain-recipes/src/RecipeList.tsx
 ````typescript
 // deleted
+````
+
+## File: packages/domain-recipes/src/RecipeNutritionPanel.tsx
+````typescript
+// Moved to src/components/RecipeViewer/
 ````
 
 ## File: packages/domain-recipes/src/RecipeViewerHeader.tsx
@@ -57696,21 +57883,6 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
 export class AppModule {}
 ````
 
-## File: apps/api/src/pre-bootstrap.ts
-````typescript
-import { config } from "@soustools/config";
-
-/**
- * Pre-bootstrap sequence.
- * Dynamically loads New Relic APM only if enabled, avoiding loader hook interference
- * and configuration errors during local development.
- */
-if (config.NEW_RELIC_ENABLED) {
-  // @ts-expect-error - newrelic lacks type definitions in local compilation scope
-  import("newrelic");
-}
-````
-
 ## File: apps/pos-simulator/src/app/page.tsx
 ````typescript
 import React from "react";
@@ -58396,40 +58568,6 @@ export const Default = {
     </div>
   ),
 };
-````
-
-## File: packages/design-system/src/components/OmniBar/NonInventoryExpenseCheckbox.tsx
-````typescript
-"use client";
-
-interface NonInventoryExpenseCheckboxProps {
-  disabled: boolean;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  itemId: string | null;
-}
-
-export function NonInventoryExpenseCheckbox({
-  disabled,
-  checked,
-  onChange,
-  itemId: _itemId,
-}: NonInventoryExpenseCheckboxProps) {
-  return (
-    <div className="flex items-center gap-2 mt-1.5">
-      <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none">
-        <input
-          type="checkbox"
-          disabled={disabled}
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          className="rounded border-zinc-300 dark:border-zinc-700 bg-transparent text-cyan-500 w-3.5 h-3.5"
-        />
-        <span>Non-Inventory Expense</span>
-      </label>
-    </div>
-  );
-}
 ````
 
 ## File: packages/design-system/src/components/OmniBar/OmniBarContext.ts
@@ -59417,129 +59555,6 @@ export { GoogleIcon, GitHubIcon } from "./components/BrandIcons/BrandIcons";
 export { LoginButton, type LoginState } from "./components/LoginButton/LoginButton";
 ````
 
-## File: packages/domain-pos/src/components/POSRegister/pos.helpers.ts
-````typescript
-import { type ModifierGroup, type ModifierOption } from "./components/pos-modifiers-modal";
-import { type CatalogItem, type CartItem } from "./pos.types";
-
-export const MOCK_BURGER_MODIFIERS: ModifierGroup[] = [
-  {
-    id: "g1",
-    name: "Choose Cheese",
-    required: true,
-    minSelections: 1,
-    maxSelections: 1,
-    options: [
-      { id: "o1", name: "Cheddar", price: 0 },
-      { id: "o2", name: "Swiss", price: 0.5 },
-      { id: "o3", name: "Provolone", price: 0.5 },
-    ],
-  },
-  {
-    id: "g2",
-    name: "Add-ons",
-    required: false,
-    minSelections: 0,
-    maxSelections: 3,
-    options: [
-      { id: "o4", name: "Bacon", price: 1.5 },
-      { id: "o5", name: "Avocado", price: 2.0 },
-      { id: "o6", name: "Extra Patty", price: 3.0 },
-    ],
-  },
-];
-
-export const getCategory = (itemName: string): string => {
-  const name = itemName.toLowerCase();
-  if (name.includes("burger") || name.includes("sandwich") || name.includes("steak") || name.includes("salmon")) {
-    return "Mains";
-  }
-  if (name.includes("salad") || name.includes("fries") || name.includes("soup") || name.includes("tater")) {
-    return "Sides/Salads";
-  }
-  if (name.includes("beer") || name.includes("ipa") || name.includes("drink") || name.includes("soda") || name.includes("water")) {
-    return "Beverages";
-  }
-  return "Other";
-};
-
-export const CATEGORIES = ["Mains", "Sides/Salads", "Beverages", "Other"];
-
-interface WindowWithAudioContext extends Window {
-  webkitAudioContext?: typeof AudioContext;
-}
-
-export function playSuccessSound() {
-  try {
-    const audioCtx = new (window.AudioContext || (window as WindowWithAudioContext).webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
-    osc.type = "sine";
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.5);
-  } catch {
-    // ignore
-  }
-}
-
-export function getFilteredItems(items: CatalogItem[], searchQuery: string, selectedCategory: string): CatalogItem[] {
-  const mapped: CatalogItem[] = items.map((item) => ({
-    id: item.id,
-    name: item.name,
-    price: Number(item.price),
-    category: getCategory(item.name),
-    description: item.description || undefined,
-    isSoldOut: item.isSoldOut || false,
-    image: item.image || undefined,
-  }));
-
-  return mapped.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "" || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-}
-
-export function calculateTotals(cart: CartItem[]) {
-  const subtotal = cart.reduce((sum, item) => sum + (item.price + item.modifiers.reduce((mSum, m) => mSum + m.price, 0)) * item.quantity, 0);
-  const tax = subtotal * 0.0825;
-  const total = subtotal + tax;
-  return { subtotal, tax, total };
-}
-
-export function buildCartWithAddedItem(prevCart: CartItem[], item: CatalogItem, selectedMods: ModifierOption[]): CartItem[] {
-  const cartItemKey = `${item.id}-${selectedMods.map((m) => m.id).sort().join("-")}`;
-  const existingIndex = prevCart.findIndex((ci) => ci.id === cartItemKey);
-  if (existingIndex > -1) {
-    const updated = [...prevCart];
-    updated[existingIndex].quantity += 1;
-    return updated;
-  }
-  return [
-    ...prevCart,
-    {
-      id: cartItemKey,
-      external_id: null,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-      modifiers: selectedMods.map((m) => ({
-        id: m.id,
-        external_id: null,
-        name: m.name,
-        price: m.price,
-      })),
-    },
-  ];
-}
-````
-
 ## File: packages/domain-recipes/src/utils/scaling.test.ts
 ````typescript
 import { describe, it, expect } from "vitest";
@@ -60054,17 +60069,12 @@ export * from "./components/ComplianceSearch/ComplianceSearch.view";
 export * from "./utils/scaling";
 ````
 
-## File: packages/domain-recipes/src/RecipeBuilder.tsx
+## File: packages/domain-recipes/src/RecipeScalingPanel.tsx
 ````typescript
-// Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.container.tsx
+// Moved to src/components/RecipeViewer/
 ````
 
-## File: packages/domain-recipes/src/RecipeBuilderIngredientRow.tsx
-````typescript
-// Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.view.tsx
-````
-
-## File: packages/domain-recipes/src/RecipeNutritionPanel.tsx
+## File: packages/domain-recipes/src/RecipeViewer.tsx
 ````typescript
 // Moved to src/components/RecipeViewer/
 ````
@@ -62075,6 +62085,177 @@ export const config = {
 };
 ````
 
+## File: packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx
+````typescript
+"use client";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { Check, ChevronDown } from "lucide-react";
+import { api } from "@soustools/api-client";
+import { CreateItemButton } from "./CreateItemButton";
+import { ItemSelectionDropdown } from "./ItemSelectionDropdown";
+import { type UnifiedLineItem } from "./UnifiedReviewPanel";
+export interface UnifiedItemRowProps {
+  item: UnifiedLineItem;
+  index: number;
+  disabled?: boolean;
+  masterIngredients: Array<{ id: string; name: string }>;
+  onConfirmAlias?: (rawString: string, masterId: string) => void;
+  onUpdateItem?: (index: number, updates: Partial<UnifiedLineItem>) => void;
+  onItemCreated?: (newItem: { id: string; name: string }) => void;
+  isHovered?: boolean;
+  onHoverChange?: (hovered: boolean) => void;
+}
+export function UnifiedItemRow({
+  item,
+  index,
+  disabled = false,
+  masterIngredients,
+  onConfirmAlias,
+  onUpdateItem,
+  onItemCreated,
+  isHovered = false,
+  onHoverChange,
+}: UnifiedItemRowProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [localItems, setLocalItems] = useState<Array<{ id: string; name: string }>>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isExact = item.confidence === 1.0;
+  useEffect(() => {
+    const fetchLocalItems = async () => {
+      try {
+        const { data, error } = await api.GET("/items", { params: { query: { search: "" } } });
+        if (!error && data && data.data) {
+          setLocalItems(data.data as Array<{ id: string; name: string }>);
+        }
+      } catch (err) {
+        console.error("Failed to load local items in UnifiedItemRow", err);
+      }
+    };
+    fetchLocalItems();
+  }, []);
+  const mergedIngredients = useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>();
+    masterIngredients.forEach((i) => map.set(i.id, i));
+    localItems.forEach((i) => map.set(i.id, i));
+    return Array.from(map.values());
+  }, [masterIngredients, localItems]);
+  const currentSelected = mergedIngredients.find((o) => o.id === item.itemId);
+  const selectedSuggestion = item.suggestions?.find((s) => s.itemId === item.itemId);
+  useEffect(() => {
+    if (!item.itemId && !item.isNonInventoryExpense && item.suggestions?.length) {
+      const top = item.suggestions[0];
+      if (top.similarity >= 0.90) {
+        onUpdateItem?.(index, { itemId: top.itemId, confidence: top.similarity });
+      }
+    }
+  }, [item.itemId, item.isNonInventoryExpense, item.suggestions, index, onUpdateItem]);
+  useEffect(() => {
+    const click = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener("mousedown", click);
+    return () => document.removeEventListener("mousedown", click);
+  }, []);
+  const hasHigh = item.suggestions?.some((s) => s.similarity >= 0.90);
+  const filtered = mergedIngredients.filter((opt) =>
+    opt.name.toLowerCase().includes(search.toLowerCase()) &&
+    !item.suggestions?.some((s) => s.itemId === opt.id)
+  );
+  const handleCreate = async (customName?: string) => {
+    setIsCreating(true);
+    try {
+      const name = customName || item.suggestedInternalName || item.rawName;
+      const { data, error } = await api.POST("/items", {
+        body: { name, category: item.category || "INGREDIENT", purchase_unit: item.unit || "EACH", units_per_case: 1 }
+      });
+      if (error) throw new Error(String(error));
+      if (data?.data) {
+        const created = data.data as { id: string; name: string };
+        onItemCreated?.(created);
+        onUpdateItem?.(index, { itemId: created.id, confidence: 1.0 });
+        onConfirmAlias?.(item.rawName, created.id);
+        setSearch("");
+        setIsOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+  const getB = (c: string) => c === "green" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : c === "yellow" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20";
+  const selectItem = (id: string, conf: number) => {
+    onUpdateItem?.(index, { itemId: id, confidence: conf });
+    onConfirmAlias?.(item.rawName, id);
+    setIsOpen(false);
+  };
+  return (
+    <div
+      onMouseEnter={() => onHoverChange?.(true)}
+      onMouseLeave={() => onHoverChange?.(false)}
+      className={`flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-150 ${isHovered
+          ? "bg-cyan-500/5 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
+          : "bg-white/5 dark:bg-black/20 border-white/10 dark:border-zinc-800/80"
+        }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col flex-1 min-w-[200px]">
+          <span className="font-semibold text-sm text-foreground">{item.rawName}</span>
+          {item.suggestedInternalName && (
+            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 italic mt-0.5">
+              AI Suggestion: <strong className="text-cyan-400/80 font-medium not-italic">"{item.suggestedInternalName}"</strong> ({item.category})
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 min-w-[240px] max-w-[320px] relative" ref={containerRef}>
+          <div className="flex-1 relative">
+            <div
+              onClick={() => !disabled && !item.isNonInventoryExpense && setIsOpen(!isOpen)}
+              className={`w-full bg-white/60 dark:bg-black/40 border rounded px-2.5 py-1.5 text-xs outline-none flex items-center justify-between cursor-pointer ${disabled || item.isNonInventoryExpense ? "opacity-50 cursor-not-allowed" : ""
+                } ${!item.itemId && !item.isNonInventoryExpense ? "border-red-500/70 text-red-600 dark:text-red-300" : "border-black/10 dark:border-white/10 text-emerald-600 dark:text-emerald-400"}`}
+            >
+              <span className="truncate">{item.isNonInventoryExpense ? "Expense Bypassed" : currentSelected ? currentSelected.name : "⚠️ Map to Internal Item..."}</span>
+              <ChevronDown size={14} className="text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0" />
+            </div>
+            {isOpen && (
+              <ItemSelectionDropdown
+                search={search}
+                setSearch={setSearch}
+                suggestions={item.suggestions}
+                filteredItems={filtered}
+                onSelectItem={selectItem}
+                onCreateItem={handleCreate}
+                currentItemId={item.itemId ?? null}
+              />
+            )}
+          </div>
+          {item.itemId && !item.isNonInventoryExpense && selectedSuggestion && (
+            <div className={`flex items-center justify-center px-1.5 py-1 rounded border flex-shrink-0 ${getB(selectedSuggestion.matchColor)}`} title={`${Math.round(selectedSuggestion.similarity * 100)}% Match`}>
+              <span className="text-[9px] font-mono font-semibold">{Math.round(selectedSuggestion.similarity * 100)}%</span>
+            </div>
+          )}
+          {isExact && item.itemId && !item.isNonInventoryExpense && (
+            <div className="flex items-center justify-center bg-emerald-500/10 text-emerald-500 p-1.5 rounded-lg border border-emerald-500/20">
+              <Check className="w-3.5 h-3.5" />
+            </div>
+          )}
+        </div>
+      </div>
+      {!item.itemId && !item.isNonInventoryExpense && !hasHigh && item.suggestedInternalName && (
+        <CreateItemButton
+          disabled={disabled}
+          isCreating={isCreating}
+          onClick={() => handleCreate()}
+          suggestedName={item.suggestedInternalName!}
+        />
+      )}
+    </div>
+  );
+}
+````
+
 ## File: packages/design-system/src/components/OmniBar/use-omnibar-hotkeys.hook.ts
 ````typescript
 "use client";
@@ -62644,14 +62825,156 @@ export function useOmniBarHotkeys({
 // Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.view.tsx
 ````
 
-## File: packages/domain-recipes/src/RecipeScalingPanel.tsx
+## File: packages/logger/src/browser.ts
 ````typescript
-// Moved to src/components/RecipeViewer/
+import pino from 'pino';
+import { config } from '@soustools/config';
+
+let worker: Worker | null = null;
+
+if (typeof window !== 'undefined') {
+  try {
+    const workerCode = `
+      self.onmessage = function(e) {
+        const { url, headers, body } = e.data;
+        fetch(url, {
+          method: 'POST',
+          headers: headers,
+          body: body,
+          keepalive: true
+        }).catch(() => {
+          // Silent catch to prevent console output in worker thread
+        });
+      }
+    `;
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    worker = new Worker(URL.createObjectURL(blob));
+  } catch (_err) {
+    // Fail silently in worker setup to prevent loop
+  }
+}
+
+const initializeBrowserLogger = () => {
+  const pinoBrowser = pino({
+    browser: {
+      transmit: {
+        level: 'error',
+        send: (level, logEvent) => {
+          const licenseKey = config.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY;
+          if (!licenseKey) return;
+
+          const payload = {
+            message: logEvent.messages.join(' '),
+            level: level,
+            service: 'soustools-web',
+            environment: config.NODE_ENV === 'development' ? 'remote-dev' : 'production',
+            timestamp: logEvent.ts,
+            bindings: logEvent.bindings
+          };
+
+          if (worker) {
+            worker.postMessage({
+              url: 'https://log-api.newrelic.com/log/v1',
+              headers: {
+                'Content-Type': 'application/json',
+                'Api-Key': licenseKey
+              },
+              body: JSON.stringify(payload)
+            });
+          } else {
+            fetch('https://log-api.newrelic.com/log/v1', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Api-Key': licenseKey
+              },
+              body: JSON.stringify(payload),
+              keepalive: true
+            }).catch(() => {});
+          }
+        },
+      },
+    },
+  });
+
+  let isLogging = false;
+
+  (['log', 'info', 'warn', 'error'] as const).forEach(level => {
+    const originalMethod = console[level];
+        console[level] = (firstArg: unknown, ...restArgs: unknown[]) => {
+      if (isLogging) {
+        originalMethod.apply(console, [firstArg, ...restArgs]);
+        return;
+      }
+      isLogging = true;
+      try {
+        const pinoLevel = level === 'log' ? 'info' : level;
+        if (typeof firstArg === 'string') {
+          (pinoBrowser[pinoLevel] as (...args: unknown[]) => void)(firstArg, ...restArgs);
+        } else {
+          (pinoBrowser[pinoLevel] as (...args: unknown[]) => void)(firstArg, '', ...restArgs);
+        }
+      } catch (_err) {
+        // Fallback
+      } finally {
+        isLogging = false;
+      }
+      originalMethod.apply(console, [firstArg, ...restArgs]);
+    };
+  });
+};
+
+export default initializeBrowserLogger;
 ````
 
-## File: packages/domain-recipes/src/RecipeViewer.tsx
+## File: packages/logger/src/server.ts
 ````typescript
-// Moved to src/components/RecipeViewer/
+import pino from 'pino';
+import { config } from '@soustools/config';
+
+const initializeServerLogger = () => {
+  const pinoServer = pino({
+    level: 'info',
+    formatters: {
+        log(object) {
+            return { 
+                ...object,
+                service: 'soustools-api',
+                environment: config.NODE_ENV === 'development' ? 'remote-dev' : 'production',
+            }
+        }
+    }
+  });
+
+  let isLogging = false;
+
+  // Monkey-patch console methods
+  (['log', 'info', 'warn', 'error'] as const).forEach(level => {
+    const originalMethod = console[level];
+        console[level] = (firstArg: unknown, ...restArgs: unknown[]) => {
+      if (isLogging) {
+        originalMethod.apply(console, [firstArg, ...restArgs]);
+        return;
+      }
+      isLogging = true;
+      try {
+        const pinoLevel = level === 'log' ? 'info' : level;
+        if (typeof firstArg === 'string') {
+          (pinoServer[pinoLevel] as (...args: unknown[]) => void)(firstArg, ...restArgs);
+        } else {
+          (pinoServer[pinoLevel] as (...args: unknown[]) => void)(firstArg, '', ...restArgs);
+        }
+      } catch (_err) {
+        // ignore
+      } finally {
+        isLogging = false;
+      }
+      originalMethod.apply(console, [firstArg, ...restArgs]);
+    };
+  });
+};
+
+export default initializeServerLogger;
 ````
 
 ## File: .gitignore
@@ -62744,88 +63067,6 @@ newrelic_agent.log
 signage_deploy_key*
 .claude
 docs/agents/logs/agent-run-*.log
-````
-
-## File: docker-compose.dev.yml
-````yaml
-services:
-  redis:
-    image: redis:alpine
-    command: redis-server --appendonly yes
-    ports:
-      - "6380:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    profiles: ["home"]
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    restart: unless-stopped
-
-  neo4j:
-    image: neo4j:5-community
-    restart: unless-stopped
-    environment:
-      - NEO4J_AUTH=neo4j/sousToolsPassword
-      # Strict memory limits to protect your 24GB Oracle instance
-      - NEO4J_server_memory_pagecache_size=1G
-      - NEO4J_server_memory_heap_initial__size=1G
-      - NEO4J_server_memory_heap_max__size=2G
-    ports:
-      - "7475:7474" # Neo4j Browser Web UI
-      - "7688:7687" # Bolt protocol for NestJS
-    volumes:
-      - neo4j_dev_data:/data
-    networks:
-      - default
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      # Route the traffic to your staging URL
-      - "traefik.http.routers.neo4j-dev.rule=Host(`dev-graph.sous.tools`)"
-      - "traefik.http.routers.neo4j-dev.entrypoints=websecure"
-      - "traefik.http.routers.neo4j-dev.tls.certresolver=letsencrypt"
-      # Tell Traefik to route to the internal container port (7474), not the host port!
-      - "traefik.http.services.neo4j-dev.loadbalancer.server.port=7474"
-
-  ollama-pull:
-    image: ollama/ollama:latest
-    entrypoint: /bin/sh
-    profiles: ["home"]
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-    depends_on:
-      - ollama
-    command:
-      - "-c"
-      - |
-        echo "Waiting for Ollama to boot..."
-        sleep 10
-
-        # Add any new models to this list separated by a space
-        MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
-
-        for model in $$MODELS; do
-          echo "Checking/Pulling $$model..."
-          ollama pull $$model
-        done
-
-        echo "All models verified and ready!"
-
-networks:
-  traefik_public:
-    external: true
-
-volumes:
-  redis_data:
-  ollama_data:
-  neo4j_dev_data:
 ````
 
 ## File: docs/agents/prompts/implement.md
@@ -63298,367 +63539,19 @@ export function OmniChatWindow({
 }
 ````
 
-## File: packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx
-````typescript
-"use client";
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Check, ChevronDown } from "lucide-react";
-import { api } from "@soustools/api-client";
-import { CreateItemButton } from "./CreateItemButton";
-import { ItemSelectionDropdown } from "./ItemSelectionDropdown";
-import { type UnifiedLineItem } from "./UnifiedReviewPanel";
-export interface UnifiedItemRowProps {
-  item: UnifiedLineItem;
-  index: number;
-  disabled?: boolean;
-  masterIngredients: Array<{ id: string; name: string }>;
-  onConfirmAlias?: (rawString: string, masterId: string) => void;
-  onUpdateItem?: (index: number, updates: Partial<UnifiedLineItem>) => void;
-  onItemCreated?: (newItem: { id: string; name: string }) => void;
-  isHovered?: boolean;
-  onHoverChange?: (hovered: boolean) => void;
-}
-export function UnifiedItemRow({
-  item,
-  index,
-  disabled = false,
-  masterIngredients,
-  onConfirmAlias,
-  onUpdateItem,
-  onItemCreated,
-  isHovered = false,
-  onHoverChange,
-}: UnifiedItemRowProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const [localItems, setLocalItems] = useState<Array<{ id: string; name: string }>>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isExact = item.confidence === 1.0;
-  useEffect(() => {
-    const fetchLocalItems = async () => {
-      try {
-        const { data, error } = await api.GET("/items", { params: { query: { search: "" } } });
-        if (!error && data && data.data) {
-          setLocalItems(data.data as Array<{ id: string; name: string }>);
-        }
-      } catch (err) {
-        console.error("Failed to load local items in UnifiedItemRow", err);
-      }
-    };
-    fetchLocalItems();
-  }, []);
-  const mergedIngredients = useMemo(() => {
-    const map = new Map<string, { id: string; name: string }>();
-    masterIngredients.forEach((i) => map.set(i.id, i));
-    localItems.forEach((i) => map.set(i.id, i));
-    return Array.from(map.values());
-  }, [masterIngredients, localItems]);
-  const currentSelected = mergedIngredients.find((o) => o.id === item.itemId);
-  const selectedSuggestion = item.suggestions?.find((s) => s.itemId === item.itemId);
-  useEffect(() => {
-    if (!item.itemId && !item.isNonInventoryExpense && item.suggestions?.length) {
-      const top = item.suggestions[0];
-      if (top.similarity >= 0.90) {
-        onUpdateItem?.(index, { itemId: top.itemId, confidence: top.similarity });
-      }
-    }
-  }, [item.itemId, item.isNonInventoryExpense, item.suggestions, index, onUpdateItem]);
-  useEffect(() => {
-    const click = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setIsOpen(false);
-    };
-    document.addEventListener("mousedown", click);
-    return () => document.removeEventListener("mousedown", click);
-  }, []);
-  const hasHigh = item.suggestions?.some((s) => s.similarity >= 0.90);
-  const filtered = mergedIngredients.filter((opt) =>
-    opt.name.toLowerCase().includes(search.toLowerCase()) &&
-    !item.suggestions?.some((s) => s.itemId === opt.id)
-  );
-  const handleCreate = async (customName?: string) => {
-    setIsCreating(true);
-    try {
-      const name = customName || item.suggestedInternalName || item.rawName;
-      const { data, error } = await api.POST("/items", {
-        body: { name, category: item.category || "INGREDIENT", purchase_unit: item.unit || "EACH", units_per_case: 1 }
-      });
-      if (error) throw new Error(String(error));
-      if (data?.data) {
-        const created = data.data as { id: string; name: string };
-        onItemCreated?.(created);
-        onUpdateItem?.(index, { itemId: created.id, confidence: 1.0 });
-        onConfirmAlias?.(item.rawName, created.id);
-        setSearch("");
-        setIsOpen(false);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsCreating(false);
-    }
-  };
-  const getB = (c: string) => c === "green" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : c === "yellow" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20";
-  const selectItem = (id: string, conf: number) => {
-    onUpdateItem?.(index, { itemId: id, confidence: conf });
-    onConfirmAlias?.(item.rawName, id);
-    setIsOpen(false);
-  };
-  return (
-    <div
-      onMouseEnter={() => onHoverChange?.(true)}
-      onMouseLeave={() => onHoverChange?.(false)}
-      className={`flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-150 ${isHovered
-          ? "bg-cyan-500/5 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
-          : "bg-white/5 dark:bg-black/20 border-white/10 dark:border-zinc-800/80"
-        }`}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-col flex-1 min-w-[200px]">
-          <span className="font-semibold text-sm text-foreground">{item.rawName}</span>
-          {item.suggestedInternalName && (
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 italic mt-0.5">
-              AI Suggestion: <strong className="text-cyan-400/80 font-medium not-italic">"{item.suggestedInternalName}"</strong> ({item.category})
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 min-w-[240px] max-w-[320px] relative" ref={containerRef}>
-          <div className="flex-1 relative">
-            <div
-              onClick={() => !disabled && !item.isNonInventoryExpense && setIsOpen(!isOpen)}
-              className={`w-full bg-white/60 dark:bg-black/40 border rounded px-2.5 py-1.5 text-xs outline-none flex items-center justify-between cursor-pointer ${disabled || item.isNonInventoryExpense ? "opacity-50 cursor-not-allowed" : ""
-                } ${!item.itemId && !item.isNonInventoryExpense ? "border-red-500/70 text-red-600 dark:text-red-300" : "border-black/10 dark:border-white/10 text-emerald-600 dark:text-emerald-400"}`}
-            >
-              <span className="truncate">{item.isNonInventoryExpense ? "Expense Bypassed" : currentSelected ? currentSelected.name : "⚠️ Map to Internal Item..."}</span>
-              <ChevronDown size={14} className="text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0" />
-            </div>
-            {isOpen && (
-              <ItemSelectionDropdown
-                search={search}
-                setSearch={setSearch}
-                suggestions={item.suggestions}
-                filteredItems={filtered}
-                onSelectItem={selectItem}
-                onCreateItem={handleCreate}
-                currentItemId={item.itemId ?? null}
-              />
-            )}
-          </div>
-          {item.itemId && !item.isNonInventoryExpense && selectedSuggestion && (
-            <div className={`flex items-center justify-center px-1.5 py-1 rounded border flex-shrink-0 ${getB(selectedSuggestion.matchColor)}`} title={`${Math.round(selectedSuggestion.similarity * 100)}% Match`}>
-              <span className="text-[9px] font-mono font-semibold">{Math.round(selectedSuggestion.similarity * 100)}%</span>
-            </div>
-          )}
-          {isExact && item.itemId && !item.isNonInventoryExpense && (
-            <div className="flex items-center justify-center bg-emerald-500/10 text-emerald-500 p-1.5 rounded-lg border border-emerald-500/20">
-              <Check className="w-3.5 h-3.5" />
-            </div>
-          )}
-        </div>
-      </div>
-      {!item.itemId && !item.isNonInventoryExpense && !hasHigh && item.suggestedInternalName && (
-        <CreateItemButton
-          disabled={disabled}
-          isCreating={isCreating}
-          onClick={() => handleCreate()}
-          suggestedName={item.suggestedInternalName!}
-        />
-      )}
-    </div>
-  );
-}
-````
-
 ## File: packages/domain-recipes/src/RecipeCostPanelSummary.tsx
 ````typescript
 // Moved to src/components/RecipeViewer/
 ````
 
-## File: packages/logger/src/browser.ts
-````typescript
-import pino from 'pino';
-import { config } from '@soustools/config';
-
-let worker: Worker | null = null;
-
-if (typeof window !== 'undefined') {
-  try {
-    const workerCode = `
-      self.onmessage = function(e) {
-        const { url, headers, body } = e.data;
-        fetch(url, {
-          method: 'POST',
-          headers: headers,
-          body: body,
-          keepalive: true
-        }).catch(() => {
-          // Silent catch to prevent console output in worker thread
-        });
-      }
-    `;
-    const blob = new Blob([workerCode], { type: 'application/javascript' });
-    worker = new Worker(URL.createObjectURL(blob));
-  } catch (_err) {
-    // Fail silently in worker setup to prevent loop
-  }
-}
-
-const initializeBrowserLogger = () => {
-  const pinoBrowser = pino({
-    browser: {
-      transmit: {
-        level: 'error',
-        send: (level, logEvent) => {
-          const licenseKey = config.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY;
-          if (!licenseKey) return;
-
-          const payload = {
-            message: logEvent.messages.join(' '),
-            level: level,
-            service: 'soustools-web',
-            environment: config.NODE_ENV === 'development' ? 'remote-dev' : 'production',
-            timestamp: logEvent.ts,
-            bindings: logEvent.bindings
-          };
-
-          if (worker) {
-            worker.postMessage({
-              url: 'https://log-api.newrelic.com/log/v1',
-              headers: {
-                'Content-Type': 'application/json',
-                'Api-Key': licenseKey
-              },
-              body: JSON.stringify(payload)
-            });
-          } else {
-            fetch('https://log-api.newrelic.com/log/v1', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Api-Key': licenseKey
-              },
-              body: JSON.stringify(payload),
-              keepalive: true
-            }).catch(() => {});
-          }
-        },
-      },
-    },
-  });
-
-  let isLogging = false;
-
-  (['log', 'info', 'warn', 'error'] as const).forEach(level => {
-    const originalMethod = console[level];
-        console[level] = (firstArg: unknown, ...restArgs: unknown[]) => {
-      if (isLogging) {
-        originalMethod.apply(console, [firstArg, ...restArgs]);
-        return;
-      }
-      isLogging = true;
-      try {
-        const pinoLevel = level === 'log' ? 'info' : level;
-        if (typeof firstArg === 'string') {
-          (pinoBrowser[pinoLevel] as (...args: unknown[]) => void)(firstArg, ...restArgs);
-        } else {
-          (pinoBrowser[pinoLevel] as (...args: unknown[]) => void)(firstArg, '', ...restArgs);
-        }
-      } catch (_err) {
-        // Fallback
-      } finally {
-        isLogging = false;
-      }
-      originalMethod.apply(console, [firstArg, ...restArgs]);
-    };
-  });
-};
-
-export default initializeBrowserLogger;
-````
-
-## File: packages/logger/src/server.ts
-````typescript
-import pino from 'pino';
-import { config } from '@soustools/config';
-
-const initializeServerLogger = () => {
-  const pinoServer = pino({
-    level: 'info',
-    formatters: {
-        log(object) {
-            return { 
-                ...object,
-                service: 'soustools-api',
-                environment: config.NODE_ENV === 'development' ? 'remote-dev' : 'production',
-            }
-        }
-    }
-  });
-
-  let isLogging = false;
-
-  // Monkey-patch console methods
-  (['log', 'info', 'warn', 'error'] as const).forEach(level => {
-    const originalMethod = console[level];
-        console[level] = (firstArg: unknown, ...restArgs: unknown[]) => {
-      if (isLogging) {
-        originalMethod.apply(console, [firstArg, ...restArgs]);
-        return;
-      }
-      isLogging = true;
-      try {
-        const pinoLevel = level === 'log' ? 'info' : level;
-        if (typeof firstArg === 'string') {
-          (pinoServer[pinoLevel] as (...args: unknown[]) => void)(firstArg, ...restArgs);
-        } else {
-          (pinoServer[pinoLevel] as (...args: unknown[]) => void)(firstArg, '', ...restArgs);
-        }
-      } catch (_err) {
-        // ignore
-      } finally {
-        isLogging = false;
-      }
-      originalMethod.apply(console, [firstArg, ...restArgs]);
-    };
-  });
-};
-
-export default initializeServerLogger;
-````
-
-## File: docker-compose.yml
+## File: docker-compose.dev.yml
 ````yaml
 services:
-  traefik:
-    image: traefik:latest
-    environment:
-      - DOCKER_API_VERSION=1.44
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--log.level=DEBUG"
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "letsencrypt:/letsencrypt"
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
-
   redis:
     image: redis:alpine
     command: redis-server --appendonly yes
+    ports:
+      - "6380:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -63666,16 +63559,15 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
+    profiles: ["home"]
+    ports:
+      - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
 
   neo4j:
     image: neo4j:5-community
-    container_name: neo4j
     restart: unless-stopped
     environment:
       - NEO4J_AUTH=neo4j/sousToolsPassword
@@ -63684,178 +63576,31 @@ services:
       - NEO4J_server_memory_heap_initial__size=1G
       - NEO4J_server_memory_heap_max__size=2G
     ports:
-      - "7474:7474" # Neo4j Browser Web UI
-      - "7687:7687" # Bolt protocol for NestJS
+      - "7475:7474" # Neo4j Browser Web UI
+      - "7688:7687" # Bolt protocol for NestJS
     volumes:
-      - neo4j_data:/data
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.neo4j.rule=Host(`graph.sous.tools`)"
-      - "traefik.http.routers.neo4j.entrypoints=websecure"
-      - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
-      - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
-
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    depends_on:
-      - redis
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "wget",
-    #       "--no-verbose",
-    #       "--tries=1",
-    #       "--spider",
-    #       "http://localhost:3001/health",
-    #     ]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
-    #   start_period: 15s
-    deploy:
-      update_config:
-        order: start-first
-        failure_action: rollback
-    environment:
-      # - VISION_PROVIDER=ollama
-      # - OLLAMA_HOST=http://ollama:11434
-      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
-      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
-      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
-      - INFISICAL_ENV=${INFISICAL_ENV}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.api.service=api"
-      - "traefik.http.services.api.loadbalancer.server.port=3001"
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
-
-  litellm:
-    image: ghcr.io/berriai/litellm:main-latest
-    container_name: litellm
-    restart: unless-stopped
-    command:
-      - --config
-      - /app/config.yaml
-      - --detailed_debug
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - LITELLM_MASTER_KEY=sk-1234
-    volumes:
-      - /home/ubuntu/prod.sous.tools/litellm_config.yaml:/app/config.yaml
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
-      - "traefik.http.routers.litellm.entrypoints=websecure"
-      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
-      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
-
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: n8n
-    restart: unless-stopped
-    ports:
-      - "5678:5678"
-    environment:
-      - N8N_HOST=n8n.sous.tools
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=https
-      - N8N_COMMAND_ENABLE=true
-      - WEBHOOK_URL=https://n8n.sous.tools
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
-    volumes:
-      # Using the named volume you declared at the bottom of the file
-      - n8n_data:/home/node/.n8n
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
-      - "traefik.http.routers.n8n.entrypoints=websecure"
-      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
-
-  editor:
-    build:
-      context: .
-      dockerfile: Dockerfile.editor
-    container_name: code-server
-    environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=America/New_York
-      - PASSWORD=sousToolsPassword
-      - SUDO_PASSWORD=sousToolsPassword
-      - OPENAI_API_BASE=https://ai.sous.tools
-      - OPENAI_API_KEY=sk-1234 # Master key defined in litellm_config.yaml
-    volumes:
-      - /home/ubuntu/dev.sous.tools:/workspace
-      - /home/ubuntu/.config/code-server:/config
-      - /home/ubuntu/.ssh:/config/.ssh:ro
-    restart: unless-stopped
+      - neo4j_dev_data:/data
     networks:
       - default
       - traefik_public
     labels:
       - "traefik.enable=true"
-
-      # 1. The Code Server UI
-      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
-      - "traefik.http.routers.editor.entrypoints=websecure"
-      - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.editor.service=editor"
-      - "traefik.http.services.editor.loadbalancer.server.port=8443"
-
-      # 2. Dev Web App
-      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
-      - "traefik.http.routers.dev-web.entrypoints=websecure"
-      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-web.service=dev-web"
-      - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
-
-      # 3. Dev API
-      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
-      - "traefik.http.routers.dev-api.entrypoints=websecure"
-      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-api.service=dev-api"
-      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
-
-      # 4. Dev POS Simulator
-      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
-      - "traefik.http.routers.dev-pos.entrypoints=websecure"
-      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-pos.service=dev-pos"
-      - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
-
-      # 5. Dev Setup Portal
-      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
-      - "traefik.http.routers.dev-setup.entrypoints=websecure"
-      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-setup.service=dev-setup"
-      - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
+      # Route the traffic to your staging URL
+      - "traefik.http.routers.neo4j-dev.rule=Host(`dev-graph.sous.tools`)"
+      - "traefik.http.routers.neo4j-dev.entrypoints=websecure"
+      - "traefik.http.routers.neo4j-dev.tls.certresolver=letsencrypt"
+      # Tell Traefik to route to the internal container port (7474), not the host port!
+      - "traefik.http.services.neo4j-dev.loadbalancer.server.port=7474"
+      - "traefik.docker.network=traefik_public"
 
   ollama-pull:
     image: ollama/ollama:latest
-    container_name: ollama-pull
-    depends_on:
-      - ollama
+    entrypoint: /bin/sh
+    profiles: ["home"]
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    entrypoint: /bin/sh
+    depends_on:
+      - ollama
     command:
       - "-c"
       - |
@@ -63872,56 +63617,14 @@ services:
 
         echo "All models verified and ready!"
 
-  agent-runner:
-    build:
-      context: . # Path to the folder containing your new Dockerfile
-      dockerfile: Dockerfile.agentRunner
-      args:
-        - PUID=1001
-        - PGID=1001
-    container_name: agent-runner
-    volumes:
-      # Mount the exact same workspace as your code-server
-      - /home/ubuntu/dev.sous.tools/:/workspace
-      - agent_data:/home/agentuser
-    environment:
-      # Trick the Claude CLI into routing through LiteLLM
-      - ANTHROPIC_BASE_URL=http://litellm:4000
-      - ANTHROPIC_API_KEY=sk-1234 # Your LiteLLM Master Key
-      - GITHUB_TOKEN=${GITHUB_TOKEN} # For the GitHub MCP Server
-      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
-    networks:
-      - traefik_public
-    restart: unless-stopped
-
-  supabase-studio-bridge:
-    image: alpine/socat
-    container_name: supabase-studio-bridge
-    # Forwards Traefik traffic to the host machine's port 54323
-    command: tcp-listen:54323,fork tcp:host.docker.internal:54323
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.studio.rule=Host(`studio.sous.tools`)"
-      - "traefik.http.routers.studio.entrypoints=websecure"
-      - "traefik.http.routers.studio.tls.certresolver=letsencrypt"
-      - "traefik.http.services.studio.loadbalancer.server.port=54323"
-    networks:
-      - traefik_public
-    restart: unless-stopped
-
-volumes:
-  letsencrypt:
-  redis_data:
-  ollama_data:
-  n8n_data:
-  agent_data:
-  neo4j_data:
-
 networks:
   traefik_public:
     external: true
+
+volumes:
+  redis_data:
+  ollama_data:
+  neo4j_dev_data:
 ````
 
 ## File: apps/web/src/app/(workspace)/layout.tsx
@@ -63971,6 +63674,11 @@ export default async function WorkspaceLayout({
     </div>
   );
 }
+````
+
+## File: packages/domain-inventory/src/items-ledger-table.tsx
+````typescript
+// DELETED
 ````
 
 ## File: packages/mcp-server/index.ts
@@ -64616,9 +64324,305 @@ export async function uploadFile(
 export type { paths };
 ````
 
-## File: packages/domain-inventory/src/items-ledger-table.tsx
-````typescript
-// DELETED
+## File: docker-compose.yml
+````yaml
+services:
+  traefik:
+    image: traefik:latest
+    environment:
+      - DOCKER_API_VERSION=1.44
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=DEBUG"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+
+  neo4j:
+    image: neo4j:5-community
+    container_name: neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/sousToolsPassword
+      # Strict memory limits to protect your 24GB Oracle instance
+      - NEO4J_server_memory_pagecache_size=1G
+      - NEO4J_server_memory_heap_initial__size=1G
+      - NEO4J_server_memory_heap_max__size=2G
+    ports:
+      - "7474:7474" # Neo4j Browser Web UI
+      - "7687:7687" # Bolt protocol for NestJS
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neo4j.rule=Host(`graph.sous.tools`)"
+      - "traefik.http.routers.neo4j.entrypoints=websecure"
+      - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
+      - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
+      - "traefik.docker.network=traefik_public"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      - redis
+    # healthcheck:
+    #   test:
+    #     [
+    #       "CMD",
+    #       "wget",
+    #       "--no-verbose",
+    #       "--tries=1",
+    #       "--spider",
+    #       "http://localhost:3001/health",
+    #     ]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 15s
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+    environment:
+      # - VISION_PROVIDER=ollama
+      # - OLLAMA_HOST=http://ollama:11434
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api.service=api"
+      - "traefik.http.services.api.loadbalancer.server.port=3001"
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    restart: unless-stopped
+    command:
+      - --config
+      - /app/config.yaml
+      - --detailed_debug
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LITELLM_MASTER_KEY=sk-1234
+    volumes:
+      - /home/ubuntu/prod.sous.tools/litellm_config.yaml:/app/config.yaml
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
+      - "traefik.http.routers.litellm.entrypoints=websecure"
+      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
+      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=n8n.sous.tools
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_COMMAND_ENABLE=true
+      - WEBHOOK_URL=https://n8n.sous.tools
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+    volumes:
+      # Using the named volume you declared at the bottom of the file
+      - n8n_data:/home/node/.n8n
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  editor:
+    build:
+      context: .
+      dockerfile: Dockerfile.editor
+    container_name: code-server
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=America/New_York
+      - PASSWORD=sousToolsPassword
+      - SUDO_PASSWORD=sousToolsPassword
+      - OPENAI_API_BASE=https://ai.sous.tools
+      - OPENAI_API_KEY=sk-1234 # Master key defined in litellm_config.yaml
+    volumes:
+      - /home/ubuntu/dev.sous.tools:/workspace
+      - /home/ubuntu/.config/code-server:/config
+      - /home/ubuntu/.ssh:/config/.ssh:ro
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+
+      # 1. The Code Server UI
+      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
+      - "traefik.http.routers.editor.entrypoints=websecure"
+      - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.editor.service=editor"
+      - "traefik.http.services.editor.loadbalancer.server.port=8443"
+
+      # 2. Dev Web App
+      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
+      - "traefik.http.routers.dev-web.entrypoints=websecure"
+      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-web.service=dev-web"
+      - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
+
+      # 3. Dev API
+      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
+      - "traefik.http.routers.dev-api.entrypoints=websecure"
+      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-api.service=dev-api"
+      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
+
+      # 4. Dev POS Simulator
+      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
+      - "traefik.http.routers.dev-pos.entrypoints=websecure"
+      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-pos.service=dev-pos"
+      - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
+
+      # 5. Dev Setup Portal
+      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
+      - "traefik.http.routers.dev-setup.entrypoints=websecure"
+      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dev-setup.service=dev-setup"
+      - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: ollama-pull
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - |
+        echo "Waiting for Ollama to boot..."
+        sleep 10
+
+        # Add any new models to this list separated by a space
+        MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
+
+        for model in $$MODELS; do
+          echo "Checking/Pulling $$model..."
+          ollama pull $$model
+        done
+
+        echo "All models verified and ready!"
+
+  agent-runner:
+    build:
+      context: . # Path to the folder containing your new Dockerfile
+      dockerfile: Dockerfile.agentRunner
+      args:
+        - PUID=1001
+        - PGID=1001
+    container_name: agent-runner
+    volumes:
+      # Mount the exact same workspace as your code-server
+      - /home/ubuntu/dev.sous.tools/:/workspace
+      - agent_data:/home/agentuser
+    environment:
+      # Trick the Claude CLI into routing through LiteLLM
+      - ANTHROPIC_BASE_URL=http://litellm:4000
+      - ANTHROPIC_API_KEY=sk-1234 # Your LiteLLM Master Key
+      - GITHUB_TOKEN=${GITHUB_TOKEN} # For the GitHub MCP Server
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - traefik_public
+    restart: unless-stopped
+
+  supabase-studio-bridge:
+    image: alpine/socat
+    container_name: supabase-studio-bridge
+    # Forwards Traefik traffic to the host machine's port 54323
+    command: tcp-listen:54323,fork tcp:host.docker.internal:54323
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.studio.rule=Host(`studio.sous.tools`)"
+      - "traefik.http.routers.studio.entrypoints=websecure"
+      - "traefik.http.routers.studio.tls.certresolver=letsencrypt"
+      - "traefik.http.services.studio.loadbalancer.server.port=54323"
+    networks:
+      - traefik_public
+    restart: unless-stopped
+
+volumes:
+  letsencrypt:
+  redis_data:
+  ollama_data:
+  n8n_data:
+  agent_data:
+  neo4j_data:
+
+networks:
+  default:
+  traefik_public:
+    name: traefik_public
+    external: true
 ````
 
 ## File: docs/agents/run-agent.sh

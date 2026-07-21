@@ -3,12 +3,12 @@
    • Running typecheck in 20 packages
    • Remote caching disabled
 
-::group::@soustools/config:build
-cache hit, replaying logs 0dbc97f63a9fde3e
-$ tsc
-::endgroup::
 ::group::@soustools/api-types:build
 cache hit, replaying logs e6e3f01e4f9a557a
+$ tsc
+::endgroup::
+::group::@soustools/config:build
+cache hit, replaying logs 0dbc97f63a9fde3e
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
@@ -51,24 +51,24 @@ $ tsc --noEmit
 cache miss, executing 1a073c95ccdd14fa
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing c5f457013135034d
+::group::pos-simulator:typecheck
+cache miss, executing 187d6a86775d3ca4
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 923930703247e0db
+::group::@soustools/domain-settings:typecheck
+cache miss, executing c5f457013135034d
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing f11bfcbd00980fc4
 $ tsc --noEmit
 ::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 187d6a86775d3ca4
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/setup-portal:typecheck
 cache miss, executing da1165efaaf7f314
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 923930703247e0db
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
@@ -86,5 +86,5 @@ $ tsc --noEmit
 
  Tasks:    20 successful, 20 total
 Cached:    3 cached, 20 total
-  Time:    50.553s 
+  Time:    40.85s 
 
