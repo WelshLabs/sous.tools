@@ -28,13 +28,16 @@ const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
  * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
  * In development we omit `domain` so the cookie is scoped to localhost.
  */
-const getCookieOptions = () => ({
-  httpOnly: true,
-  secure: config.IS_PRODUCTION,
-  sameSite: "lax" as const,
-  path: "/",
-  ...(config.IS_PRODUCTION ? { domain: ".sous.tools" } : {}),
-});
+const getCookieOptions = () => {
+  const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || process.env.NODE_ENV === "staging";
+  return {
+    httpOnly: true,
+    secure: isSecureEnv,
+    sameSite: "lax" as const,
+    path: "/",
+    ...(isSecureEnv ? { domain: ".sous.tools" } : {}),
+  };
+};
 
 class LoginDto {
   @ApiProperty()
@@ -54,15 +57,16 @@ export class AuthController {
     @Body() body: Record<string, unknown>,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
+    
     const parsed = LoginSchema.safeParse(body);
     if (!parsed.success) {
       throw new UnauthorizedException("Invalid request body");
     }
 
     const { email, password } = parsed.data;
-
+    
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
+    
     if (error || !data.session) {
       throw new UnauthorizedException("Invalid email or password");
     }

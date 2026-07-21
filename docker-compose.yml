@@ -264,6 +264,23 @@ services:
       - traefik_public
     restart: unless-stopped
 
+  supabase-studio-bridge:
+    image: alpine/socat
+    container_name: supabase-studio-bridge
+    # Forwards Traefik traffic to the host machine's port 54323
+    command: tcp-listen:54323,fork tcp:host.docker.internal:54323
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.studio.rule=Host(`studio.sous.tools`)"
+      - "traefik.http.routers.studio.entrypoints=websecure"
+      - "traefik.http.routers.studio.tls.certresolver=letsencrypt"
+      - "traefik.http.services.studio.loadbalancer.server.port=54323"
+    networks:
+      - traefik_public
+    restart: unless-stopped
+
 volumes:
   letsencrypt:
   redis_data:

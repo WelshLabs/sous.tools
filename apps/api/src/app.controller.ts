@@ -6,13 +6,14 @@ import { supabase } from "./lib/supabase";
 import { config } from "@soustools/config";
 
 const COOKIE_NAME = "sb-access-token";
+const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || process.env.NODE_ENV === "staging";
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  // Only enforce Secure in production — local dev/testing uses plain HTTP
-  secure: config.IS_PRODUCTION,
+  secure: isSecureEnv,
   sameSite: "lax" as const,
   maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
   path: "/",
+  ...(isSecureEnv ? { domain: ".sous.tools" } : {}),
 };
 
 
@@ -82,7 +83,7 @@ export class AppController {
     const { email, password } = parsed.data;
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
+    
     if (error || !data.session) {
       throw new UnauthorizedException("Invalid email or password");
     }
@@ -105,7 +106,12 @@ export class AppController {
   @Post("auth/logout")
   @HttpCode(200)
   logout(@Res({ passthrough: true }) res: Response): ApiResponse<null> {
-    res.clearCookie(COOKIE_NAME, { path: "/" });
+    res.clearCookie(COOKIE_NAME, {
+      path: "/",
+      secure: COOKIE_OPTIONS.secure,
+      sameSite: COOKIE_OPTIONS.sameSite,
+      ...(COOKIE_OPTIONS.domain ? { domain: COOKIE_OPTIONS.domain } : {}),
+    });
     return {
       success: true,
       data: null,
