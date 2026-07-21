@@ -1,4 +1,4 @@
-[93m[4mUnused files[24m[39m (102)
+[93m[4mUnused files[24m[39m (104)
 apps/setup-portal/src/components/PairingStep.tsx                             
 apps/setup-portal/src/components/WifiStep.tsx                                
 apps/storybook/.storybook/__mocks__/next-link.tsx                            
@@ -101,7 +101,9 @@ packages/domain-signage/src/preview-column-layout.tsx
 packages/domain-signage/src/preview-column-renderers.tsx                     
 packages/domain-signage/src/preview-menu-renderer.tsx                        
 scripts/generate-icons.mjs                                                   
-[93m[4mUnused dependencies[24m[39m (24)
+scripts/nuke-neo4j.ts                                                        
+scripts/prepare-seed.ts                                                      
+[93m[4mUnused dependencies[24m[39m (26)
 @as-integrations/express4      apps/api/package.json:20:6                
 @nestjs/platform-express       apps/cli/package.json:25:6                
 @soustools/api-types           apps/cli/package.json:26:6                
@@ -112,7 +114,9 @@ scripts/generate-icons.mjs
 @supabase/supabase-js          apps/web/package.json:27:6                
 recharts                       apps/web/package.json:37:6                
 serwist                        apps/web/package.json:38:6                
-eslint-plugin-react            package.json:51:6                         
+dotenv                         package.json:54:6                         
+eslint-plugin-react            package.json:55:6                         
+neo4j-driver                   package.json:56:6                         
 socket.io-client               packages/api-client/package.json:15:6     
 @infisical/sdk                 packages/config/package.json:14:6         
 dotenv                         packages/config/package.json:15:6         
@@ -126,7 +130,7 @@ sonner                         packages/domain-settings/package.json:41:6
 @modelcontextprotocol/sdk      packages/mcp-server/package.json          
 @octokit/rest                  packages/mcp-server/package.json          
 dotenv                         packages/mcp-server/package.json          
-[93m[4mUnused devDependencies[24m[39m (32)
+[93m[4mUnused devDependencies[24m[39m (33)
 @types/supertest                 apps/api/package.json:63:6              
 source-map-support               apps/api/package.json:66:6              
 supertest                        apps/api/package.json:67:6              
@@ -145,12 +149,13 @@ tailwindcss                      apps/pos-simulator/package.json:33:6
 autoprefixer                     apps/setup-portal/package.json:29:6     
 tailwindcss                      apps/setup-portal/package.json:32:6     
 tailwindcss                      apps/web/package.json:53:6              
-@soustools/tsconfig              package.json:26:6                       
+@soustools/api-types             package.json:26:6                       
 @soustools/config                package.json:27:6                       
-@soustools/api-types             package.json:28:6                       
-eslint-plugin-project-structure  package.json:31:6                       
-png-to-ico                       package.json:38:6                       
-sharp                            package.json:41:6                       
+@soustools/tsconfig              package.json:29:6                       
+eslint-plugin-project-structure  package.json:33:6                       
+png-to-ico                       package.json:40:6                       
+sharp                            package.json:43:6                       
+ts-node                          package.json:44:6                       
 tsx                              packages/config/package.json:21:6       
 autoprefixer                     packages/design-system/package.json:35:6
 postcss                          packages/design-system/package.json:39:6
@@ -204,10 +209,11 @@ next-themes                        apps/storybook/.storybook/preview.tsx:3:32
 @storybook/react                   packages/domain-settings/src/components/SettingsPanel/SettingsPanel.stories.tsx:1:38 
 @storybook/react                   packages/domain-signage/src/components/DisplayManager/DisplayManager.stories.tsx:1:38
 @storybook/react                   packages/domain-signage/src/components/SignagePreview/SignagePreview.stories.tsx:1:38
-[93m[4mUnlisted binaries[24m[39m (2)
-tsx    package.json
-xclip  package.json
-[93m[4mUnused exports[24m[39m (35)
+[93m[4mUnlisted binaries[24m[39m (3)
+supabase  package.json
+tsx       package.json
+xclip     package.json
+[93m[4mUnused exports[24m[39m (39)
 SupabaseClientWrapper                    class     apps/api/src/lib/supabase.ts:20:14                                   
 addToPurchaseOrderTool                             apps/api/src/modules/commands/commands-tools.ts:3:14                 
 addToWhiteboardTool                                apps/api/src/modules/commands/commands-tools.ts:18:14                
@@ -220,6 +226,10 @@ IngestionSuggestionDto                   class     apps/api/src/modules/ingestio
 IngestionLineItemDto                     class     apps/api/src/modules/ingestion/ingestion.controller.ts:34:14         
 PolymorphicExtractionResponseDto         class     apps/api/src/modules/ingestion/ingestion.controller.ts:66:14         
 PolymorphicExtractionResponseWrapperDto  class     apps/api/src/modules/ingestion/ingestion.controller.ts:90:14         
+snakeToCamelCase                         function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:14:17          
+capitalize                               function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:21:17          
+resolveNodeLabel                         function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:26:17          
+serializeProperties                      function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:47:17          
 generatePairingCode                      function  apps/api/src/modules/signage/displays.helpers.ts:26:17               
 dbRegisterPairingCode                    function  apps/api/src/modules/signage/displays.helpers.ts:41:23               
 dbConfirmPairing                         function  apps/api/src/modules/signage/displays.helpers.ts:74:23               
@@ -243,7 +253,7 @@ BLOCK_GROUPS                                       packages/domain-signage/src/b
 default                                            packages/domain-signage/src/editor-top-bar.tsx:124:16                
 default                                            packages/domain-signage/src/layout-preview.tsx:130:16                
 SlideMiniature                           function  packages/domain-signage/src/slide-filmstrip-card.tsx:9:17            
-[93m[4mUnused exported types[24m[39m (81)
+[93m[4mUnused exported types[24m[39m (85)
 SquareCatalogObject         interface  apps/api/src/modules/integrations/square-client.helper.ts:3:18                   
 POSCategoryUpsert           interface  apps/api/src/modules/integrations/square-mapper.helper.ts:74:18                  
 POSDiscountUpsert           interface  apps/api/src/modules/integrations/square-mapper.helper.ts:82:18                  
@@ -262,6 +272,10 @@ ApiResponse                 interface  apps/api/src/modules/items/items.controll
 ApiResponse                 interface  apps/api/src/modules/items/price-history.controller.ts:7:18                      
 ApiResponse                 interface  apps/api/src/modules/items/wastage.controller.ts:4:18                            
 WastageReportRow            interface  apps/api/src/modules/items/wastage.service.ts:22:18                              
+RelationshipConfig          interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:3:18                   
+TableConfig                 interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:10:18                  
+JoinTableConfig             interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:17:18                  
+RegistryConfig              type       apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:31:13                  
 UsdaMatch                   interface  apps/api/src/modules/nutrition/usda-resolver.service.ts:4:18                     
 MockPosItem                 type       apps/api/src/modules/pos-simulator/pos-simulator.helpers.ts:5:15                 
 MockPosItem                 interface  apps/api/src/modules/pos-simulator/pos-simulator.mock.ts:1:18                    

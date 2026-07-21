@@ -139,10 +139,10 @@ edited: true
 status: none
 --
 
-packages/design-system/src/components/InsightsSidebar should be moved into packages/domain-inventory
-so should the quick add bar
-TopProgress should be moved into the Loader component
---
+- packages/design-system/src/components/InsightsSidebar should be moved into packages/domain-inventory
+- so should the quick add bar
+- TopProgress should be moved into the Loader component
+  \--
 
 ---
 

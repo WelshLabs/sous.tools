@@ -142,6 +142,11 @@ apps/
           metrics.controller.ts
           metrics.module.ts
         neo4j-sync/
+          domain/
+            neo4j-sync.repository.interface.ts
+            schema-registry.ts
+          infrastructure/
+            neo4j-sync.repository.ts
           neo4j-sync.controller.ts
           neo4j-sync.module.ts
           neo4j-sync.service.ts
@@ -1098,6 +1103,8 @@ packages/
 scripts/
   audit-secrets.ts
   generate-icons.mjs
+  nuke-neo4j.ts
+  prepare-seed.ts
 supabase/
   .gitignore
   config.toml
@@ -38405,1576 +38412,561 @@ describe("WebhooksController", () => {
 });
 ````
 
-## File: apps/api/src/modules/neo4j-sync/neo4j-sync.controller.ts
+## File: apps/api/src/modules/neo4j-sync/domain/neo4j-sync.repository.interface.ts
 ````typescript
-import {
-  Controller,
-  Post,
-  Body,
-  Headers,
-  UnauthorizedException,
-  Logger,
-  HttpCode,
-  HttpStatus,
-} from "@nestjs/common";
-import { Neo4jSyncService, SupabaseWebhookPayload } from "./neo4j-sync.service";
-import { config } from "@soustools/config";
-
-@Controller("webhooks/neo4j-sync")
-export class Neo4jSyncController {
-  private readonly logger = new Logger(Neo4jSyncController.name);
-
-  constructor(private readonly neo4jSyncService: Neo4jSyncService) {}
-
-  @Post()
-  @HttpCode(HttpStatus.OK)
-  async handleWebhook(
-    @Body() payload: SupabaseWebhookPayload,
-    @Headers("x-supabase-signature") signature: string,
-  ): Promise<{ success: boolean }> {
-    this.logger.log(`Received Neo4j sync webhook request for table: ${payload?.table}`);
-
-    // Strictly enforce signature unless running in mock environment
-    if (!config.IS_MOCK_ENV) {
-      if (!signature || signature !== config.SUPABASE_WEBHOOK_SECRET) {
-        this.logger.warn(`Unauthorized sync attempt. Signature mismatch.`);
-        throw new UnauthorizedException("Invalid webhook signature");
-      }
-    }
-
-    try {
-      await this.neo4jSyncService.handleWebhook(payload);
-      return { success: true };
-    } catch (error) {
-      this.logger.error(
-        `Error processing Neo4j sync webhook payload: ${(error as Error).message}`,
-        (error as Error).stack,
-      );
-      throw error;
-    }
-  }
+export interface INeo4jSyncRepository {
+  upsertNode(label: string, id: string, properties: Record<string, any>): Promise<void>;
+  deleteNode(label: string, id: string): Promise<void>;
+  createRelationship(
+    srcLabel: string,
+    srcId: string,
+    targetLabel: string,
+    targetId: string,
+    relationLabel: string,
+    direction?: "in" | "out",
+  ): Promise<void>;
+  clearRelationship(
+    srcLabel: string,
+    srcId: string,
+    relationLabel: string,
+    direction?: "in" | "out",
+  ): Promise<void>;
+  createDirectRelationship(
+    srcLabel: string,
+    srcId: string,
+    targetLabel: string,
+    targetId: string,
+    relationLabel: string,
+    properties?: Record<string, any>,
+  ): Promise<void>;
+  deleteRelationship(
+    srcLabel: string,
+    srcId: string,
+    targetLabel: string,
+    targetId: string,
+    relationLabel: string,
+  ): Promise<void>;
 }
 ````
 
-## File: apps/api/src/modules/neo4j-sync/neo4j-sync.module.ts
+## File: apps/api/src/modules/neo4j-sync/domain/schema-registry.ts
 ````typescript
-import { Module } from "@nestjs/common";
-import { Neo4jService } from "./neo4j.service";
-import { Neo4jSyncService } from "./neo4j-sync.service";
-import { Neo4jSyncController } from "./neo4j-sync.controller";
+export const IGNORED_FIELDS = ["instance_id"];
 
-@Module({
-  controllers: [Neo4jSyncController],
-  providers: [Neo4jService, Neo4jSyncService],
-  exports: [Neo4jService, Neo4jSyncService],
-})
-export class Neo4jSyncModule {}
-````
-
-## File: apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts
-````typescript
-import { Injectable, Logger, BadRequestException } from "@nestjs/common";
-import { Neo4jService } from "./neo4j.service";
-
-export class SupabaseWebhookPayload {
-  type!: "INSERT" | "UPDATE" | "DELETE";
-  table!: string;
-  schema!: string;
-  record!: Record<string, any> | null;
-  old_record!: Record<string, any> | null;
+export interface RelationshipConfig {
+  fkField: string;
+  relationLabel: string;
+  targetLabel: string;
+  direction?: "in" | "out";
 }
 
-@Injectable()
-export class Neo4jSyncService {
-  private readonly logger = new Logger(Neo4jSyncService.name);
+export interface TableConfig {
+  isJoinTable?: false;
+  nodeLabel: string;
+  relationships: RelationshipConfig[];
+  customProperties?: (record: Record<string, any>) => Record<string, any>;
+}
 
-  constructor(private readonly neo4jService: Neo4jService) {}
+export interface JoinTableConfig {
+  isJoinTable: true;
+  relationLabel: string;
+  source: {
+    fkField: string;
+    targetLabel: string;
+  };
+  target: {
+    fkField: string;
+    targetLabel: string;
+  };
+  customProperties?: (record: Record<string, any>) => Record<string, any>;
+}
 
-  /**
-   * Processes the incoming database webhook payload and translates it to Cypher queries.
-   */
-  async handleWebhook(payload: SupabaseWebhookPayload): Promise<void> {
-    const { table, type, schema } = payload;
-    this.logger.log(`Processing database webhook: [${schema}.${table}] [${type}]`);
+export type RegistryConfig = TableConfig | JoinTableConfig;
 
-    switch (table) {
-      case "users":
-        await this.syncUser(payload);
-        break;
-      case "recipes":
-        await this.syncRecipe(payload);
-        break;
-      case "organizations":
-        await this.syncOrganization(payload);
-        break;
-      case "vendors":
-        await this.syncVendor(payload);
-        break;
-      case "items":
-        await this.syncItem(payload);
-        break;
-      case "recipe_ingredients":
-        await this.syncRecipeIngredient(payload);
-        break;
-      case "inventory_on_hand":
-        await this.syncInventoryOnHand(payload);
-        break;
-      case "purchase_orders":
-        await this.syncPurchaseOrder(payload);
-        break;
-      case "purchase_order_items":
-        await this.syncPurchaseOrderItem(payload);
-        break;
-      case "vendor_item_aliases":
-        await this.syncVendorItemAlias(payload);
-        break;
-      case "tickets":
-        await this.syncTicket(payload);
-        break;
-      case "orders":
-        await this.syncOrder(payload);
-        break;
-      case "order_items":
-        await this.syncOrderItem(payload);
-        break;
-      case "shifts":
-        await this.syncShift(payload);
-        break;
-      case "time_clocks":
-        await this.syncTimeClock(payload);
-        break;
-      case "invoices":
-        await this.syncInvoice(payload);
-        break;
-      case "invoice_items":
-        await this.syncInvoiceItem(payload);
-        break;
-      case "wastage_logs":
-        await this.syncWastageLog(payload);
-        break;
-      default:
-        this.logger.warn(`Received sync request for unhandled table: ${schema}.${table}`);
-        break;
-    }
-  }
-
-  private async syncUser(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing user ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting User node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (u:User {id: $id})
-        DETACH DELETE u
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing user record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
+export const SCHEMA_REGISTRY: Record<string, RegistryConfig> = {
+  users: {
+    nodeLabel: "User",
+    relationships: [],
+    customProperties: (record) => {
       const rawMeta = record.raw_user_meta_data || {};
       const fullName = rawMeta.full_name || rawMeta.name || null;
-
-      const properties = {
+      return {
         email: record.email || null,
         role: record.role || null,
         fullName,
         createdAt: record.created_at || null,
         updatedAt: record.updated_at || null,
       };
-
-      this.logger.log(`Upserting User node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (u:User {id: $id})
-        SET u += $properties
-        `,
-        { id, properties },
-      );
-    }
-  }
-
-  private async syncRecipe(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing recipe ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Recipe node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (r:Recipe {id: $id})
-        DETACH DELETE r
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing recipe record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-
-      if (!organizationId) {
-        throw new BadRequestException("Missing organization_id in recipe record");
-      }
-
-      const properties = {
-        title: record.title || null,
-        yieldCount: record.yield_count ? parseFloat(record.yield_count) : null,
-        yieldUnit: record.yield_unit || null,
-        vesselId: record.vessel_id || null,
-        categoryId: record.category_id || null,
-        status: record.status || null,
-        sourceBook: record.source_book || null,
-        sourceAuthor: record.source_author || null,
-        sourcePageStart: record.source_page_start || null,
-        sourcePageEnd: record.source_page_end || null,
-        sourceDocumentUrl: record.source_document_url || null,
-        posItemId: record.pos_item_id || null,
-        costPerYield: record.cost_per_yield ? parseFloat(record.cost_per_yield) : 0,
-        grossMargin: record.gross_margin ? parseFloat(record.gross_margin) : 0,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting Recipe node and Organization relationship in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (r:Recipe {id: $id})
-        SET r += $properties
-        WITH r
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (r)-[:BELONGS_TO]->(o)
-        `,
-        { id, properties, organizationId },
-      );
-    }
-  }
-
-  private async syncOrganization(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing organization ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Organization node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (o:Organization {id: $id})
-        DETACH DELETE o
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing organization record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const properties = {
-        name: record.name || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting Organization node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (o:Organization {id: $id})
-        SET o += $properties
-        `,
-        { id, properties },
-      );
-    }
-  }
-
-  private async syncVendor(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing vendor ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Vendor node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (v:Vendor {id: $id})
-        DETACH DELETE v
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing vendor record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-
-      if (!organizationId) {
-        throw new BadRequestException("Missing organization_id in vendor record");
-      }
-
-      const properties = {
-        name: record.name || null,
-        orderMethod: record.order_method || null,
-        email: record.email || null,
-        phone: record.phone || null,
-        createdAt: record.created_at || null,
-        updatedAt: record.updated_at || null,
-      };
-
-      this.logger.log(`Upserting Vendor node and Organization relationship in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (v:Vendor {id: $id})
-        SET v += $properties
-        WITH v
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (v)-[:BELONGS_TO]->(o)
-        `,
-        { id, properties, organizationId },
-      );
-    }
-  }
-
-  private async syncItem(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing item ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Item node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (i:Item {id: $id})
-        DETACH DELETE i
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing item record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-
-      if (!organizationId) {
-        throw new BadRequestException("Missing organization_id in item record");
-      }
-
-      const properties = {
-        name: record.name || null,
-        category: record.category || null,
-        purchaseUnit: record.purchase_unit || null,
-        currentCostPerG: record.current_cost_per_g ? parseFloat(record.current_cost_per_g) : null,
-        createdAt: record.created_at || null,
-        updatedAt: record.updated_at || null,
-      };
-
-      this.logger.log(`Upserting Item node and Organization relationship in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (i:Item {id: $id})
-        SET i += $properties
-        WITH i
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (i)-[:BELONGS_TO]->(o)
-        `,
-        { id, properties, organizationId },
-      );
-    }
-  }
-
-  private async syncRecipeIngredient(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing recipe ingredient ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting RecipeIngredient node and USES_INGREDIENT edge in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (ri:RecipeIngredient {id: $id})
-        DETACH DELETE ri
-        WITH $id AS targetId
-        MATCH (:Recipe)-[rel:USES_INGREDIENT {id: $targetId}]->()
-        DELETE rel
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing recipe ingredient record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const recipeId = record.recipe_id;
-      const itemId = record.item_id || null;
-      const masterItemId = record.master_item_id || record.master_ingredient_id || null;
-
-      if (!recipeId) {
-        throw new BadRequestException("Missing recipe_id in recipe ingredient record");
-      }
-
-      const properties = {
-        recipeId,
-        itemId,
-        masterItemId,
-        amount: record.amount ? parseFloat(record.amount) : 0,
-        unit: record.unit || null,
-        prepNotes: record.prep_notes || null,
-        component: record.component || null,
-        rawName: record.raw_name || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting RecipeIngredient node and USES_INGREDIENT edges in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (ri:RecipeIngredient {id: $id})
-        SET ri += $properties
-        WITH ri
-        MATCH (r:Recipe {id: $recipeId})
-        
-        // Link to Item if set
-        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (item:Item {id: $itemId})
-          MERGE (r)-[rel:USES_INGREDIENT {id: $id}]->(item)
-          SET rel.amount = $amount, rel.unit = $unit, rel.prepNotes = $prepNotes
-        )
-        
-        // Link to MasterItem if set
-        FOREACH (x IN CASE WHEN $masterItemId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (m:MasterItem {id: $masterItemId})
-          MERGE (r)-[rel:USES_INGREDIENT {id: $id}]->(m)
-          SET rel.amount = $amount, rel.unit = $unit, rel.prepNotes = $prepNotes
-        )
-        `,
-        {
-          id,
-          recipeId,
-          itemId,
-          masterItemId,
-          amount: properties.amount,
-          unit: properties.unit,
-          prepNotes: properties.prepNotes,
-          properties,
-        },
-      );
-    }
-  }
-
-  private async syncInventoryOnHand(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing inventory record ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting InventoryOnHand node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (ioh:InventoryOnHand {id: $id})
-        DETACH DELETE ioh
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing inventory record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const itemId = record.item_id;
-
-      if (!organizationId || !itemId) {
-        throw new BadRequestException("Missing organization_id or item_id in inventory record");
-      }
-
-      const properties = {
-        quantityG: record.quantity_g ? parseFloat(record.quantity_g) : 0,
-        lotNumber: record.lot_number || null,
-        lotExpiry: record.lot_expiry || null,
-        location: record.location || null,
-        updatedAt: record.updated_at || null,
-      };
-
-      this.logger.log(`Upserting InventoryOnHand node and relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (ioh:InventoryOnHand {id: $id})
-        SET ioh += $properties
-        WITH ioh
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (ioh)-[:BELONGS_TO]->(o)
-        WITH ioh
-        MERGE (i:Item {id: $itemId})
-        MERGE (ioh)-[:OF_ITEM]->(i)
-        `,
-        { id, properties, organizationId, itemId },
-      );
-    }
-  }
-
-  private async syncPurchaseOrder(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing purchase order ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting PurchaseOrder node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (po:PurchaseOrder {id: $id})
-        DETACH DELETE po
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing purchase order record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const vendorId = record.vendor_id;
-
-      if (!organizationId || !vendorId) {
-        throw new BadRequestException("Missing organization_id or vendor_id in purchase order record");
-      }
-
-      const properties = {
-        status: record.status || null,
-        orderDate: record.order_date || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting PurchaseOrder node and relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (po:PurchaseOrder {id: $id})
-        SET po += $properties
-        WITH po
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (po)-[:BELONGS_TO]->(o)
-        WITH po
-        MERGE (v:Vendor {id: $vendorId})
-        MERGE (po)-[:PLACED_WITH]->(v)
-        `,
-        { id, properties, organizationId, vendorId },
-      );
-    }
-  }
-
-  private async syncPurchaseOrderItem(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing purchase order item ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting PurchaseOrderItem node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (poi:PurchaseOrderItem {id: $id})
-        DETACH DELETE poi
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing purchase order item record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const poId = record.po_id;
-
-      if (!poId) {
-        throw new BadRequestException("Missing po_id in purchase order item record");
-      }
-
-      const properties = {
-        rawName: record.raw_name || null,
-        orderedQty: record.ordered_qty ? parseFloat(record.ordered_qty) : 0,
-        pricePerUnit: record.price_per_unit ? parseFloat(record.price_per_unit) : 0,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting PurchaseOrderItem node and relationship in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (poi:PurchaseOrderItem {id: $id})
-        SET poi += $properties
-        WITH poi
-        MERGE (po:PurchaseOrder {id: $poId})
-        MERGE (poi)-[:PART_OF]->(po)
-        `,
-        { id, properties, poId },
-      );
-    }
-  }
-
-  private async syncVendorItemAlias(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing vendor item alias ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting VendorItemAlias node and SUPPLIED_BY edge in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (via:VendorItemAlias {id: $id})
-        DETACH DELETE via
-        WITH $id AS targetId
-        MATCH ()-[rel:SUPPLIED_BY {id: $targetId}]->()
-        DELETE rel
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing vendor item alias record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const vendorId = record.vendor_id;
-      const itemId = record.item_id || null;
-      const internalItemId = record.internal_item_id || null;
-
-      if (!organizationId || !vendorId) {
-        throw new BadRequestException("Missing organization_id or vendor_id in vendor item alias record");
-      }
-
-      const properties = {
-        organizationId,
-        vendorId,
-        vendorItemName: record.vendor_item_name || null,
-        itemId,
-        internalItemId,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting VendorItemAlias node and SUPPLIED_BY relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (via:VendorItemAlias {id: $id})
-        SET via += $properties
-        WITH via
-        MERGE (v:Vendor {id: $vendorId})
-        
-        // Link internal Item if set
-        WITH via, v
-        FOREACH (x IN CASE WHEN $internalItemId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (i:Item {id: $internalItemId})
-          MERGE (i)-[rel:SUPPLIED_BY {id: $id}]->(v)
-          SET rel.vendorItemName = $vendorItemName
-        )
-        
-        // Link MasterItem if set
-        WITH via, v
-        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (m:MasterItem {id: $itemId})
-          MERGE (m)-[rel:SUPPLIED_BY {id: $id}]->(v)
-          SET rel.vendorItemName = $vendorItemName
-        )
-        `,
-        {
-          id,
-          vendorId,
-          internalItemId,
-          itemId,
-          vendorItemName: properties.vendorItemName,
-          properties,
-        },
-      );
-    }
-  }
-
-  private async syncTicket(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing ticket ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Ticket node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (t:Ticket {id: $id})
-        DETACH DELETE t
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing ticket record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const employeeId = record.employee_id || null;
-
-      if (!organizationId) {
-        throw new BadRequestException("Missing organization_id in ticket record");
-      }
-
-      const properties = {
-        tableNumber: record.table_number || null,
-        section: record.section || null,
-        status: record.status || "OPEN",
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting Ticket node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (t:Ticket {id: $id})
-        SET t += $properties
-        WITH t
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (t)-[:BELONGS_TO]->(o)
-        WITH t
-        FOREACH (x IN CASE WHEN $employeeId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (u:User {id: $employeeId})
-          MERGE (u)-[:SOLD]->(t)
-        )
-        `,
-        { id, properties, organizationId, employeeId },
-      );
-    }
-  }
-
-  private async syncOrder(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing order ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Order node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (ord:Order {id: $id})
-        DETACH DELETE ord
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing order record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const ticketId = record.ticket_id;
-
-      if (!ticketId) {
-        throw new BadRequestException("Missing ticket_id in order record");
-      }
-
-      const properties = {
-        status: record.status || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting Order node and relationship in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (ord:Order {id: $id})
-        SET ord += $properties
-        WITH ord
-        MERGE (t:Ticket {id: $ticketId})
-        MERGE (ord)-[:PART_OF]->(t)
-        `,
-        { id, properties, ticketId },
-      );
-    }
-  }
-
-  private async syncOrderItem(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing order item ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting OrderItem node and INCLUDES relationship in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (oi:OrderItem {id: $id})
-        DETACH DELETE oi
-        WITH $id AS targetId
-        MATCH (:Ticket)-[rel:INCLUDES {id: $targetId}]->()
-        DELETE rel
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing order item record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const orderId = record.order_id;
-      const recipeId = record.recipe_id || null;
-
-      if (!orderId) {
-        throw new BadRequestException("Missing order_id in order item record");
-      }
-
-      const properties = {
-        orderId,
-        recipeId,
-        quantity: record.quantity ? parseFloat(record.quantity) : 1,
-        unitPrice: record.unit_price ? parseFloat(record.unit_price) : 0,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting OrderItem node and INCLUDES relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (oi:OrderItem {id: $id})
-        SET oi += $properties
-        WITH oi
-        MERGE (ord:Order {id: $orderId})
-        MERGE (oi)-[:PART_OF]->(ord)
-        WITH oi, ord
-        MATCH (t:Ticket {id: ord.ticketId})
-        FOREACH (x IN CASE WHEN $recipeId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (r:Recipe {id: $recipeId})
-          MERGE (oi)-[:OF_RECIPE]->(r)
-          MERGE (t)-[rel:INCLUDES {id: $id}]->(r)
-          SET rel.quantity = $quantity
-        )
-        `,
-        {
-          id,
-          orderId,
-          recipeId,
-          quantity: properties.quantity,
-          properties,
-        },
-      );
-    }
-  }
-
-  private async syncShift(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing shift ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Shift node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (s:Shift {id: $id})
-        DETACH DELETE s
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing shift record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const userId = record.user_id;
-
-      if (!organizationId || !userId) {
-        throw new BadRequestException("Missing organization_id or user_id in shift record");
-      }
-
-      const properties = {
-        startTime: record.start_time || null,
-        endTime: record.end_time || null,
-        role: record.role || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting Shift node and relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (s:Shift {id: $id})
-        SET s += $properties
-        WITH s
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (s)-[:BELONGS_TO]->(o)
-        WITH s
-        MERGE (u:User {id: $userId})
-        MERGE (u)-[:WORKED]->(s)
-        `,
-        { id, properties, organizationId, userId },
-      );
-    }
-  }
-
-  private async syncTimeClock(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing time clock ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting TimeClock node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (tc:TimeClock {id: $id})
-        DETACH DELETE tc
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing time clock record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const userId = record.user_id;
-
-      if (!organizationId || !userId) {
-        throw new BadRequestException("Missing organization_id or user_id in time clock record");
-      }
-
-      const properties = {
-        clockIn: record.clock_in || null,
-        clockOut: record.clock_out || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting TimeClock node and relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (tc:TimeClock {id: $id})
-        SET tc += $properties
-        WITH tc
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (tc)-[:BELONGS_TO]->(o)
-        WITH tc
-        MERGE (u:User {id: $userId})
-        MERGE (u)-[:CLOCKED]->(tc)
-        `,
-        { id, properties, organizationId, userId },
-      );
-    }
-  }
-
-  private async syncInvoice(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing invoice ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting Invoice node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (inv:Invoice {id: $id})
-        DETACH DELETE inv
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing invoice record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const vendorId = record.vendor_id;
-      const poId = record.po_id || null;
-
-      if (!organizationId || !vendorId) {
-        throw new BadRequestException("Missing organization_id or vendor_id in invoice record");
-      }
-
-      const properties = {
-        invoiceNumber: record.invoice_number || null,
-        totalAmount: record.total_amount ? parseFloat(record.total_amount) : 0,
-        invoiceDate: record.invoice_date || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting Invoice node and relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (inv:Invoice {id: $id})
-        SET inv += $properties
-        WITH inv
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (inv)-[:BELONGS_TO]->(o)
-        WITH inv
-        MERGE (v:Vendor {id: $vendorId})
-        MERGE (inv)-[:FROM_VENDOR]->(v)
-        WITH inv
-        FOREACH (x IN CASE WHEN $poId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (po:PurchaseOrder {id: $poId})
-          MERGE (inv)-[:RECONCILES]->(po)
-        )
-        `,
-        { id, properties, organizationId, vendorId, poId },
-      );
-    }
-  }
-
-  private async syncInvoiceItem(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing invoice item ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting InvoiceItem node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (ii:InvoiceItem {id: $id})
-        DETACH DELETE ii
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing invoice item record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const invoiceId = record.invoice_id;
-      const itemId = record.item_id || null;
-
-      if (!invoiceId) {
-        throw new BadRequestException("Missing invoice_id in invoice item record");
-      }
-
-      const properties = {
-        rawName: record.raw_name || null,
-        quantity: record.quantity ? parseFloat(record.quantity) : 0,
-        unitPrice: record.unit_price ? parseFloat(record.unit_price) : 0,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting InvoiceItem node and relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (ii:InvoiceItem {id: $id})
-        SET ii += $properties
-        WITH ii
-        MERGE (inv:Invoice {id: $invoiceId})
-        MERGE (ii)-[:PART_OF]->(inv)
-        WITH ii
-        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (item:Item {id: $itemId})
-          MERGE (ii)-[:OF_ITEM]->(item)
-        )
-        `,
-        { id, properties, invoiceId, itemId },
-      );
-    }
-  }
-
-  private async syncWastageLog(payload: SupabaseWebhookPayload): Promise<void> {
-    const { type, record, old_record } = payload;
-
-    if (type === "DELETE") {
-      const id = old_record?.id;
-      if (!id) {
-        throw new BadRequestException("Missing wastage log ID in DELETE payload");
-      }
-
-      this.logger.log(`Deleting WastageLog node in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MATCH (wl:WastageLog {id: $id})
-        DETACH DELETE wl
-        `,
-        { id },
-      );
-    } else {
-      if (!record || !record.id) {
-        throw new BadRequestException(`Missing wastage log record or ID in ${type} payload`);
-      }
-
-      const id = record.id;
-      const organizationId = record.organization_id;
-      const itemId = record.item_id || null;
-      const recipeId = record.recipe_id || null;
-      const recordedBy = record.recorded_by || null;
-
-      if (!organizationId) {
-        throw new BadRequestException("Missing organization_id in wastage log record");
-      }
-
-      const properties = {
-        quantity: record.quantity ? parseFloat(record.quantity) : 0,
-        reason: record.reason || null,
-        createdAt: record.created_at || null,
-      };
-
-      this.logger.log(`Upserting WastageLog node and relationships in Neo4j: ${id}`);
-      await this.neo4jService.runQuery(
-        `
-        MERGE (wl:WastageLog {id: $id})
-        SET wl += $properties
-        WITH wl
-        MERGE (o:Organization {id: $organizationId})
-        MERGE (wl)-[:BELONGS_TO]->(o)
-        
-        // Link to Item if set
-        WITH wl
-        FOREACH (x IN CASE WHEN $itemId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (i:Item {id: $itemId})
-          MERGE (wl)-[:WASTED_ITEM]->(i)
-        )
-        
-        // Link to Recipe if set
-        WITH wl
-        FOREACH (x IN CASE WHEN $recipeId IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (r:Recipe {id: $recipeId})
-          MERGE (wl)-[:WASTED_RECIPE]->(r)
-        )
-        
-        // Link to User who reported it if set
-        WITH wl
-        FOREACH (x IN CASE WHEN $recordedBy IS NOT NULL THEN [1] ELSE [] END |
-          MERGE (u:User {id: $recordedBy})
-          MERGE (u)-[:REPORTED]->(wl)
-        )
-        `,
-        {
-          id,
-          properties,
-          organizationId,
-          itemId,
-          recipeId,
-          recordedBy,
-        },
-      );
-    }
-  }
-}
+    },
+  },
+  user_profiles: {
+    nodeLabel: "UserProfile",
+    relationships: [
+      { fkField: "user_id", relationLabel: "PROFILE_OF", targetLabel: "User" },
+    ],
+  },
+  organizations: {
+    nodeLabel: "Organization",
+    relationships: [],
+  },
+  org_members: {
+    isJoinTable: true,
+    relationLabel: "MEMBER_OF",
+    source: { fkField: "user_id", targetLabel: "User" },
+    target: { fkField: "organization_id", targetLabel: "Organization" },
+    customProperties: (record) => ({
+      role: record.role || "MEMBER",
+      createdAt: record.created_at || null,
+    }),
+  },
+  integrations: {
+    nodeLabel: "Integration",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  signage_devices: {
+    nodeLabel: "SignageDevice",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  signage_decks: {
+    nodeLabel: "SignageDeck",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  signage_layouts: {
+    nodeLabel: "SignageLayout",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  signage_displays: {
+    nodeLabel: "SignageDisplay",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "layout_id", relationLabel: "HAS_LAYOUT", targetLabel: "SignageLayout" },
+    ],
+  },
+  vessel_profiles: {
+    nodeLabel: "VesselProfile",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  master_items: {
+    nodeLabel: "MasterItem",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+
+  recipe_categories: {
+    nodeLabel: "RecipeCategory",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  recipe_tags: {
+    nodeLabel: "RecipeTag",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  recipes: {
+    nodeLabel: "Recipe",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "vessel_id", relationLabel: "USES_VESSEL", targetLabel: "VesselProfile" },
+    ],
+  },
+  recipe_ingredients: {
+    nodeLabel: "RecipeIngredient",
+    relationships: [
+      { fkField: "recipe_id", relationLabel: "INGREDIENT_OF", targetLabel: "Recipe" },
+      { fkField: "master_item_id", relationLabel: "OF_INGREDIENT", targetLabel: "MasterItem" },
+      { fkField: "sub_recipe_id", relationLabel: "OF_SUB_RECIPE", targetLabel: "Recipe" },
+      { fkField: "item_id", relationLabel: "OF_ITEM", targetLabel: "Item" },
+    ],
+  },
+  recipe_tag_assignments: {
+    isJoinTable: true,
+    relationLabel: "HAS_TAG",
+    source: { fkField: "recipe_id", targetLabel: "Recipe" },
+    target: { fkField: "tag_id", targetLabel: "RecipeTag" },
+  },
+  formula_versions: {
+    nodeLabel: "FormulaVersion",
+    relationships: [
+      { fkField: "recipe_id", relationLabel: "VERSION_OF", targetLabel: "Recipe" },
+    ],
+  },
+  recipe_nutrition_cache: {
+    nodeLabel: "RecipeNutritionCache",
+    relationships: [
+      { fkField: "recipe_id", relationLabel: "NUTRITION_OF", targetLabel: "Recipe" },
+    ],
+  },
+  vendors: {
+    nodeLabel: "Vendor",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  whiteboard_items: {
+    nodeLabel: "WhiteboardItem",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  purchase_orders: {
+    nodeLabel: "PurchaseOrder",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "vendor_id", relationLabel: "PLACED_WITH", targetLabel: "Vendor" },
+    ],
+  },
+  purchase_order_items: {
+    nodeLabel: "PurchaseOrderItem",
+    relationships: [
+      { fkField: "po_id", relationLabel: "PART_OF", targetLabel: "PurchaseOrder" },
+    ],
+  },
+  pos_items: {
+    nodeLabel: "PosItem",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  pos_categories: {
+    nodeLabel: "PosCategory",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  pos_modifier_groups: {
+    nodeLabel: "PosModifierGroup",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  pos_modifier_options: {
+    nodeLabel: "PosModifierOption",
+    relationships: [
+      { fkField: "modifier_group_id", relationLabel: "PART_OF_GROUP", targetLabel: "PosModifierGroup" },
+    ],
+  },
+  pos_item_modifier_groups: {
+    isJoinTable: true,
+    relationLabel: "HAS_MODIFIER_GROUP",
+    source: { fkField: "pos_item_id", targetLabel: "PosItem" },
+    target: { fkField: "modifier_group_id", targetLabel: "PosModifierGroup" },
+  },
+  pos_item_local_overlays: {
+    nodeLabel: "PosItemLocalOverlay",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "item_id", relationLabel: "OVERLAYS_ITEM", targetLabel: "PosItem" },
+    ],
+  },
+  pos_transactions: {
+    nodeLabel: "PosTransaction",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  pos_item_recipe_links: {
+    isJoinTable: true,
+    relationLabel: "LINKED_TO_RECIPE",
+    source: { fkField: "pos_item_id", targetLabel: "PosItem" },
+    target: { fkField: "recipe_id", targetLabel: "Recipe" },
+  },
+  items: {
+    nodeLabel: "Item",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  price_history: {
+    nodeLabel: "PriceHistory",
+    relationships: [
+      { fkField: "item_id", relationLabel: "PRICE_OF", targetLabel: "Item" },
+    ],
+  },
+  wastage_ledger: {
+    nodeLabel: "WastageLedger",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "item_id", relationLabel: "WASTED_ITEM", targetLabel: "Item" },
+    ],
+  },
+  inventory_on_hand: {
+    nodeLabel: "InventoryOnHand",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "item_id", relationLabel: "OF_ITEM", targetLabel: "Item" },
+    ],
+  },
+  container_mapping: {
+    nodeLabel: "ContainerMapping",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "vessel_id", relationLabel: "MAPPED_VESSEL", targetLabel: "VesselProfile" },
+    ],
+  },
+  par_level_suggestions: {
+    nodeLabel: "ParLevelSuggestion",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "item_id", relationLabel: "SUGGESTED_FOR", targetLabel: "Item" },
+    ],
+  },
+  ingestion_reviews: {
+    nodeLabel: "IngestionReview",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "user_id", relationLabel: "REVIEWED_BY", targetLabel: "User" },
+    ],
+  },
+  vendor_item_aliases: {
+    nodeLabel: "VendorItemAlias",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "vendor_id", relationLabel: "BELONGS_TO_VENDOR", targetLabel: "Vendor" },
+      { fkField: "internal_item_id", relationLabel: "ALIAS_OF", targetLabel: "Item" },
+    ],
+  },
+  notifications: {
+    nodeLabel: "Notification",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "user_id", relationLabel: "NOTIFIED_USER", targetLabel: "User" },
+    ],
+  },
+  pos_discounts: {
+    nodeLabel: "PosDiscount",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  pos_orders: {
+    nodeLabel: "PosOrder",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  tickets: {
+    nodeLabel: "Ticket",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "employee_id", relationLabel: "SOLD_BY", targetLabel: "User" },
+    ],
+  },
+  orders: {
+    nodeLabel: "Order",
+    relationships: [
+      { fkField: "ticket_id", relationLabel: "PART_OF", targetLabel: "Ticket" },
+    ],
+  },
+  order_items: {
+    nodeLabel: "OrderItem",
+    relationships: [
+      { fkField: "order_id", relationLabel: "PART_OF", targetLabel: "Order" },
+      { fkField: "recipe_id", relationLabel: "OF_RECIPE", targetLabel: "Recipe" },
+    ],
+  },
+  shifts: {
+    nodeLabel: "Shift",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "user_id", relationLabel: "WORKED_BY", targetLabel: "User" },
+    ],
+  },
+  time_clocks: {
+    nodeLabel: "TimeClock",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "user_id", relationLabel: "CLOCKED_BY", targetLabel: "User" },
+    ],
+  },
+  invoices: {
+    nodeLabel: "Invoice",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "vendor_id", relationLabel: "FROM_VENDOR", targetLabel: "Vendor" },
+      { fkField: "po_id", relationLabel: "RECONCILES", targetLabel: "PurchaseOrder" },
+    ],
+  },
+  invoice_items: {
+    nodeLabel: "InvoiceItem",
+    relationships: [
+      { fkField: "invoice_id", relationLabel: "PART_OF", targetLabel: "Invoice" },
+      { fkField: "item_id", relationLabel: "OF_ITEM", targetLabel: "Item" },
+    ],
+  },
+  wastage_logs: {
+    nodeLabel: "WastageLog",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "item_id", relationLabel: "WASTED_ITEM", targetLabel: "Item" },
+      { fkField: "recipe_id", relationLabel: "WASTED_RECIPE", targetLabel: "Recipe" },
+      { fkField: "recorded_by", relationLabel: "REPORTED_BY", targetLabel: "User" },
+    ],
+  },
+};
 ````
 
-## File: apps/api/src/modules/neo4j-sync/neo4j-sync.spec.ts
+## File: apps/api/src/modules/neo4j-sync/infrastructure/neo4j-sync.repository.ts
 ````typescript
-import { Test, TestingModule } from "@nestjs/testing";
-import { Neo4jSyncController } from "./neo4j-sync.controller";
-import { Neo4jSyncService } from "./neo4j-sync.service";
-import { Neo4jService } from "./neo4j.service";
-import { UnauthorizedException, BadRequestException } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
+import { INeo4jSyncRepository } from "../domain/neo4j-sync.repository.interface";
+import { Neo4jService } from "../neo4j.service";
 
-// Mock the Neo4jService and config
-jest.mock("./neo4j.service");
-jest.mock("@soustools/config", () => ({
-  config: {
-    IS_MOCK_ENV: false,
-    SUPABASE_WEBHOOK_SECRET: "my-test-secret",
-  },
-}));
+function sanitize(val: string): string {
+  // Safe validation - alphanumeric and underscore only for dynamic SQL/Cypher interpolation
+  return val.replace(/[^a-zA-Z0-9_]/g, "");
+}
 
-describe("Neo4jSync", () => {
-  let controller: Neo4jSyncController;
-  let service: Neo4jSyncService;
+@Injectable()
+export class Neo4jSyncRepository implements INeo4jSyncRepository {
+  private readonly logger = new Logger(Neo4jSyncRepository.name);
 
-  const mockNeo4jService = {
-    runQuery: jest.fn(),
-  };
+  constructor(private readonly neo4jService: Neo4jService) {}
 
-  beforeEach(async () => {
-    mockNeo4jService.runQuery.mockReset();
+  async upsertNode(label: string, id: string, properties: Record<string, any>): Promise<void> {
+    const cleanLabel = sanitize(label);
+    this.logger.log(`Upserting ${cleanLabel} node in Neo4j: ${id}`);
+    const query = `
+      MERGE (n:${cleanLabel} {id: $id})
+      SET n += $properties
+    `;
+    await this.neo4jService.runQuery(query, { id, properties });
+  }
 
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [Neo4jSyncController],
-      providers: [
-        Neo4jSyncService,
-        {
-          provide: Neo4jService,
-          useValue: mockNeo4jService,
-        },
-      ],
-    }).compile();
+  async deleteNode(label: string, id: string): Promise<void> {
+    const cleanLabel = sanitize(label);
+    this.logger.log(`Deleting ${cleanLabel} node in Neo4j: ${id}`);
+    const query = `
+      MATCH (n:${cleanLabel} {id: $id})
+      DETACH DELETE n
+    `;
+    await this.neo4jService.runQuery(query, { id });
+  }
 
-    controller = module.get<Neo4jSyncController>(Neo4jSyncController);
-    service = module.get<Neo4jSyncService>(Neo4jSyncService);
-  });
+  async clearRelationship(
+    srcLabel: string,
+    srcId: string,
+    relationLabel: string,
+    direction: "in" | "out" = "out",
+  ): Promise<void> {
+    const cleanSrc = sanitize(srcLabel);
+    const cleanRel = sanitize(relationLabel);
 
-  describe("Neo4jSyncController", () => {
-    it("should compile and be defined", () => {
-      expect(controller).toBeDefined();
-      expect(service).toBeDefined();
-    });
+    this.logger.log(
+      `Clearing existing relationship of type ${cleanRel} (${
+        direction === "in" ? "incoming" : "outgoing"
+      }) from ${cleanSrc}:${srcId}`
+    );
 
-    it("should throw UnauthorizedException if signature is missing or incorrect", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "users",
-        schema: "auth",
-        record: { id: "user-1" },
-        old_record: null,
-      };
+    const query =
+      direction === "in"
+        ? `
+        MATCH (src:${cleanSrc} {id: $srcId})<-[r:${cleanRel}]-()
+        DELETE r
+      `
+        : `
+        MATCH (src:${cleanSrc} {id: $srcId})-[r:${cleanRel}]->()
+        DELETE r
+      `;
 
-      await expect(
-        controller.handleWebhook(payload, "")
-      ).rejects.toThrow(UnauthorizedException);
+    await this.neo4jService.runQuery(query, { srcId });
+  }
 
-      await expect(
-        controller.handleWebhook(payload, "wrong-sig")
-      ).rejects.toThrow(UnauthorizedException);
-    });
+  async createRelationship(
+    srcLabel: string,
+    srcId: string,
+    targetLabel: string,
+    targetId: string,
+    relationLabel: string,
+    direction: "in" | "out" = "out",
+  ): Promise<void> {
+    const cleanSrc = sanitize(srcLabel);
+    const cleanTarget = sanitize(targetLabel);
+    const cleanRel = sanitize(relationLabel);
 
-    it("should process webhook and return success: true when signature matches", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "users",
-        schema: "auth",
-        record: { id: "user-1", email: "test@example.com" },
-        old_record: null,
-      };
+    this.logger.log(
+      `Creating relationship (${cleanSrc}:${srcId}) ${
+        direction === "in" ? "<-" : "-"
+      }[:${cleanRel}]${direction === "in" ? "-" : "->"} (${cleanTarget}:${targetId})`
+    );
 
-      const result = await controller.handleWebhook(payload, "my-test-secret");
-      expect(result).toEqual({ success: true });
-      expect(mockNeo4jService.runQuery).toHaveBeenCalled();
-    });
-  });
+    const query =
+      direction === "in"
+        ? `
+        MERGE (src:${cleanSrc} {id: $srcId})
+        MERGE (target:${cleanTarget} {id: $targetId})
+        MERGE (src)<-[:${cleanRel}]-(target)
+      `
+        : `
+        MERGE (src:${cleanSrc} {id: $srcId})
+        MERGE (target:${cleanTarget} {id: $targetId})
+        MERGE (src)-[:${cleanRel}]->(target)
+      `;
 
-  describe("Neo4jSyncService", () => {
-    it("should run MERGE on user INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "users",
-        schema: "auth",
-        record: {
-          id: "user-1",
-          email: "test@example.com",
-          role: "authenticated",
-          created_at: "2026-07-19T00:00:00Z",
-          updated_at: "2026-07-19T00:00:00Z",
-          raw_user_meta_data: { full_name: "Conar Welsh" },
-        },
-        old_record: null,
-      };
+    await this.neo4jService.runQuery(query, { srcId, targetId });
+  }
 
-      await service.handleWebhook(payload);
+  async createDirectRelationship(
+    srcLabel: string,
+    srcId: string,
+    targetLabel: string,
+    targetId: string,
+    relationLabel: string,
+    properties: Record<string, any> = {},
+  ): Promise<void> {
+    const cleanSrc = sanitize(srcLabel);
+    const cleanTarget = sanitize(targetLabel);
+    const cleanRel = sanitize(relationLabel);
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (u:User {id: $id})"),
-        expect.objectContaining({
-          id: "user-1",
-          properties: {
-            email: "test@example.com",
-            role: "authenticated",
-            fullName: "Conar Welsh",
-            createdAt: "2026-07-19T00:00:00Z",
-            updatedAt: "2026-07-19T00:00:00Z",
-          },
-        }),
-      );
-    });
+    this.logger.log(
+      `Creating direct relationship (${cleanSrc}:${srcId})-[:${cleanRel}]->(${cleanTarget}:${targetId})`
+    );
 
-    it("should run DETACH DELETE on user DELETE", async () => {
-      const payload = {
-        type: "DELETE" as const,
-        table: "users",
-        schema: "auth",
-        record: null,
-        old_record: { id: "user-1" },
-      };
+    const query = `
+      MERGE (src:${cleanSrc} {id: $srcId})
+      MERGE (target:${cleanTarget} {id: $targetId})
+      MERGE (src)-[r:${cleanRel}]->(target)
+      SET r += $properties
+    `;
 
-      await service.handleWebhook(payload);
+    await this.neo4jService.runQuery(query, { srcId, targetId, properties });
+  }
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MATCH (u:User {id: $id})"),
-        expect.objectContaining({ id: "user-1" }),
-      );
-    });
+  async deleteRelationship(
+    srcLabel: string,
+    srcId: string,
+    targetLabel: string,
+    targetId: string,
+    relationLabel: string,
+  ): Promise<void> {
+    const cleanSrc = sanitize(srcLabel);
+    const cleanTarget = sanitize(targetLabel);
+    const cleanRel = sanitize(relationLabel);
 
-    it("should run MERGE on recipe INSERT/UPDATE", async () => {
-      const payload = {
-        type: "UPDATE" as const,
-        table: "recipes",
-        schema: "public",
-        record: {
-          id: "recipe-1",
-          organization_id: "org-1",
-          title: "Chocolate Cake",
-          yield_count: "8",
-          yield_unit: "slices",
-          status: "APPROVED",
-        },
-        old_record: null,
-      };
+    this.logger.log(
+      `Deleting relationship (${cleanSrc}:${srcId})-[:${cleanRel}]->(${cleanTarget}:${targetId})`
+    );
 
-      await service.handleWebhook(payload);
+    const query = `
+      MATCH (src:${cleanSrc} {id: $srcId})-[r:${cleanRel}]->(target:${cleanTarget} {id: $targetId})
+      DELETE r
+    `;
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (r:Recipe {id: $id})"),
-        expect.objectContaining({
-          id: "recipe-1",
-          organizationId: "org-1",
-          properties: expect.objectContaining({
-            title: "Chocolate Cake",
-            yieldCount: 8,
-            yieldUnit: "slices",
-            status: "APPROVED",
-          }),
-        }),
-      );
-    });
-
-    it("should throw BadRequestException if recipe INSERT is missing organization_id", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "recipes",
-        schema: "public",
-        record: {
-          id: "recipe-1",
-          title: "Chocolate Cake",
-        },
-        old_record: null,
-      };
-
-      await expect(service.handleWebhook(payload)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it("should run DETACH DELETE on recipe DELETE", async () => {
-      const payload = {
-        type: "DELETE" as const,
-        table: "recipes",
-        schema: "public",
-        record: null,
-        old_record: { id: "recipe-1" },
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MATCH (r:Recipe {id: $id})"),
-        expect.objectContaining({ id: "recipe-1" }),
-      );
-    });
-
-    it("should run MERGE on recipe_ingredients INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "recipe_ingredients",
-        schema: "public",
-        record: {
-          id: "ri-1",
-          recipe_id: "recipe-123",
-          item_id: "item-456",
-          amount: "2.5",
-          unit: "oz",
-          prep_notes: "chopped",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (ri:RecipeIngredient {id: $id})"),
-        expect.objectContaining({
-          id: "ri-1",
-          recipeId: "recipe-123",
-          itemId: "item-456",
-          amount: 2.5,
-          unit: "oz",
-          prepNotes: "chopped",
-        }),
-      );
-    });
-
-    it("should run DETACH DELETE on recipe_ingredients DELETE", async () => {
-      const payload = {
-        type: "DELETE" as const,
-        table: "recipe_ingredients",
-        schema: "public",
-        record: null,
-        old_record: { id: "ri-1" },
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MATCH (ri:RecipeIngredient {id: $id})"),
-        expect.objectContaining({ id: "ri-1" }),
-      );
-    });
-
-    it("should run MERGE on vendor_item_aliases INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "vendor_item_aliases",
-        schema: "public",
-        record: {
-          id: "via-1",
-          organization_id: "org-1",
-          vendor_id: "vendor-1",
-          vendor_item_name: "Sysco Potatoes",
-          internal_item_id: "item-123",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (via:VendorItemAlias {id: $id})"),
-        expect.objectContaining({
-          id: "via-1",
-          vendorId: "vendor-1",
-          internalItemId: "item-123",
-          vendorItemName: "Sysco Potatoes",
-        }),
-      );
-    });
-
-    it("should run MERGE on tickets INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "tickets",
-        schema: "public",
-        record: {
-          id: "ticket-1",
-          organization_id: "org-1",
-          employee_id: "employee-123",
-          table_number: "Table 4",
-          section: "Patio",
-          status: "OPEN",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (t:Ticket {id: $id})"),
-        expect.objectContaining({
-          id: "ticket-1",
-          organizationId: "org-1",
-          employeeId: "employee-123",
-          properties: {
-            tableNumber: "Table 4",
-            section: "Patio",
-            status: "OPEN",
-            createdAt: null,
-          },
-        }),
-      );
-    });
-
-    it("should run MERGE on order_items INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "order_items",
-        schema: "public",
-        record: {
-          id: "oi-1",
-          order_id: "order-123",
-          recipe_id: "recipe-456",
-          quantity: "2",
-          unit_price: "15.50",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (oi:OrderItem {id: $id})"),
-        expect.objectContaining({
-          id: "oi-1",
-          orderId: "order-123",
-          recipeId: "recipe-456",
-          quantity: 2,
-        }),
-      );
-    });
-
-    it("should run MERGE on wastage_logs INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "wastage_logs",
-        schema: "public",
-        record: {
-          id: "wl-1",
-          organization_id: "org-1",
-          item_id: "item-123",
-          recipe_id: "recipe-456",
-          quantity: "500",
-          reason: "spoiled",
-          recorded_by: "user-789",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (wl:WastageLog {id: $id})"),
-        expect.objectContaining({
-          id: "wl-1",
-          organizationId: "org-1",
-          itemId: "item-123",
-          recipeId: "recipe-456",
-          recordedBy: "user-789",
-        }),
-      );
-    });
-  });
-});
+    await this.neo4jService.runQuery(query, { srcId, targetId });
+  }
+}
 ````
 
 ## File: apps/api/src/modules/neo4j-sync/neo4j.service.ts
@@ -57092,6 +56084,69 @@ await writeFile(path.join(out, "windows.ico"), await pngToIco(windowsSizes))
 console.log(`Generated ChefOS icon suite in ${out}`)
 ````
 
+## File: scripts/nuke-neo4j.ts
+````typescript
+import neo4j from "neo4j-driver";
+import * as dotenv from "dotenv";
+
+// Load environment variables to ensure portability across your 3-Environment Map
+dotenv.config();
+
+// Pull credentials from the environment, with fallbacks for your local setup
+const URI = process.env.NEO4J_URI || "bolt://127.0.0.1:7687";
+const USER = process.env.NEO4J_USERNAME || "neo4j";
+const PASSWORD = process.env.NEO4J_PASSWORD || "sousToolsPassword";
+console.log("URI", URI);
+async function nukeDatabase() {
+  console.log(`🔌 Connecting to Neo4j at ${URI}...`);
+
+  // Initialize the Neo4j driver
+  const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
+  const session = driver.session();
+
+  try {
+    console.log("🔥 Initiating complete graph deletion (Nuke)...");
+
+    // The Cypher query to instantly delete every node and relationship
+    const result = await session.run("MATCH (n) DETACH DELETE n;");
+
+    console.log(`✅ Neo4j graph successfully nuked. Blank slate achieved.`);
+  } catch (error) {
+    console.error(
+      "❌ Failed to nuke Neo4j database. Is the container running?",
+    );
+    console.error(error);
+    process.exit(1); // Force the npm script to fail so Supabase doesn't seed a broken graph
+  } finally {
+    // Always cleanly close the session and driver
+    await session.close();
+    await driver.close();
+  }
+}
+
+nukeDatabase();
+````
+
+## File: scripts/prepare-seed.ts
+````typescript
+import * as fs from "fs";
+import * as path from "path";
+
+// Pulls from your active .env (Infisical, WSL2, or Code-Server)
+const webhookUrl =
+  process.env.NEO4J_SYNC_URL ||
+  "http://host.docker.internal:3001/webhooks/neo4j-sync";
+
+const templatePath = path.join(process.cwd(), "supabase/seed.template.sql");
+const outputPath = path.join(process.cwd(), "supabase/seed.sql");
+
+const template = fs.readFileSync(templatePath, "utf8");
+const finalSeed = template.replace("{{NEO4J_SYNC_URL}}", webhookUrl);
+
+fs.writeFileSync(outputPath, finalSeed);
+console.log(`✅ Seed generated with Webhook URL: ${webhookUrl}`);
+````
+
 ## File: Dockerfile.agentRunner
 ````
 # /home/ubuntu/agent-runner/Dockerfile
@@ -57446,352 +56501,806 @@ jobs:
             ./deploy.sh
 ````
 
-## File: apps/api/src/modules/auth/auth.controller.ts
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.controller.ts
 ````typescript
 import {
   Controller,
   Post,
-  Get,
   Body,
-  Res,
-  Req,
-  HttpCode,
+  Headers,
   UnauthorizedException,
+  Logger,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
-import type { Response } from "express";
-import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse, ApiProperty } from "@nestjs/swagger";
-import { type ApiResponse, LoginSchema } from "@soustools/api-types";
-import { supabase } from "../../lib/supabase";
+import { Neo4jSyncService, SupabaseWebhookPayload } from "./neo4j-sync.service";
 import { config } from "@soustools/config";
 
-const ACCESS_TOKEN_COOKIE = "sb-access-token";
-const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
+@Controller("webhooks/neo4j-sync")
+export class Neo4jSyncController {
+  private readonly logger = new Logger(Neo4jSyncController.name);
 
-/**
- * Returns cookie options appropriate for the current environment.
- *
- * KEY RULE: `clearCookie` MUST be called with the same `domain`, `path`,
- * `secure`, and `sameSite` values that were used when the cookie was set,
- * otherwise the browser will not match and delete the cookie.
- *
- * In production (behind Traefik on *.sous.tools) we set `Domain: .sous.tools`
- * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
- * In development we omit `domain` so the cookie is scoped to localhost.
- */
-const getCookieOptions = () => {
-  const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || process.env.NODE_ENV === "staging";
-  return {
-    httpOnly: true,
-    secure: isSecureEnv,
-    sameSite: "lax" as const,
-    path: "/",
-    ...(isSecureEnv ? { domain: ".sous.tools" } : {}),
-  };
-};
+  constructor(private readonly neo4jSyncService: Neo4jSyncService) {}
 
-class LoginDto {
-  @ApiProperty()
-  email!: string;
-  @ApiProperty()
-  password!: string;
-}
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  async handleWebhook(
+    @Body() payload: SupabaseWebhookPayload,
+    @Headers("x-supabase-signature") signature: string,
+  ): Promise<{ success: boolean }> {
+    this.logger.log(
+      `Received Neo4j sync webhook request for table: ${payload?.table}`,
+    );
 
-@ApiTags("auth")
-@Controller("auth")
-export class AuthController {
-  @Post("login")
-  @HttpCode(200)
-  @ApiBody({ type: LoginDto })
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async login(
-    @Body() body: Record<string, unknown>,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
-    
-    const parsed = LoginSchema.safeParse(body);
-    if (!parsed.success) {
-      throw new UnauthorizedException("Invalid request body");
-    }
-
-    const { email, password } = parsed.data;
-    
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    if (error || !data.session) {
-      throw new UnauthorizedException("Invalid email or password");
-    }
-
-    const options = getCookieOptions();
-    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
-      ...options,
-      maxAge: data.session.expires_in * 1000,
-    });
-    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
-      ...options,
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-    });
-
-    return {
-      success: true,
-      data: { user: data.user as unknown as Record<string, unknown> },
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Post("refresh")
-  @HttpCode(200)
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async refresh(
-    @Req() req: any,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<null>> {
-    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
-    if (!refreshToken) {
-      throw new UnauthorizedException("No refresh token found");
-    }
-
-    const { data, error } = await supabase.auth.refreshSession({
-      refresh_token: refreshToken,
-    });
-
-    if (error || !data.session) {
-      throw new UnauthorizedException("Session refresh failed");
-    }
-
-    const options = getCookieOptions();
-    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
-      ...options,
-      maxAge: data.session.expires_in * 1000,
-    });
-    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
-      ...options,
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-    });
-
-    return {
-      success: true,
-      data: null,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Post("logout")
-  @HttpCode(200)
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async logout(
-    @Req() req: any,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<null>> {
-    // Attempt to invalidate the Supabase session server-side using the
-    // access token stored in the HttpOnly cookie.
-    const accessToken = req.cookies?.[ACCESS_TOKEN_COOKIE];
-    if (accessToken) {
-      try {
-        await supabase.auth.admin.signOut(accessToken);
-      } catch {
-        // Non-fatal: the tokens may already be expired. We still clear the cookies.
+    // Strictly enforce signature unless running in mock environment
+    if (!config.IS_MOCK_ENV) {
+      if (!signature || signature !== config.SUPABASE_WEBHOOK_SECRET) {
+        this.logger.warn(`Unauthorized sync attempt. Signature mismatch.`);
+        throw new UnauthorizedException("Invalid webhook signature");
       }
     }
 
-    // IMPORTANT: clearCookie MUST receive the exact same domain, path, secure,
-    // and sameSite attributes as the original Set-Cookie call. If any attribute
-    // differs, the browser will not find a matching cookie to delete.
-    const options = getCookieOptions();
-    res.clearCookie(ACCESS_TOKEN_COOKIE, options);
-    res.clearCookie(REFRESH_TOKEN_COOKIE, options);
-
-    return {
-      success: true,
-      data: null,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Get("session")
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
-  async getSession(
-    @Req() req: any,
-  ): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
-    const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
-    if (!token) {
-      return {
-        success: true,
-        data: { user: null },
-        timestamp: new Date().toISOString(),
-      };
+    try {
+      await this.neo4jSyncService.handleWebhook(payload);
+      return { success: true };
+    } catch (error) {
+      this.logger.error(
+        `Error processing Neo4j sync webhook payload: ${(error as Error).message}`,
+        (error as Error).stack,
+      );
+      throw error;
     }
-
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) {
-      return {
-        success: true,
-        data: { user: null },
-        timestamp: new Date().toISOString(),
-      };
-    }
-
-    return {
-      success: true,
-      data: { user: data.user as unknown as Record<string, unknown> },
-      timestamp: new Date().toISOString(),
-    };
   }
 }
 ````
 
-## File: apps/api/src/app.controller.ts
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.module.ts
 ````typescript
-import { Controller, Get, Post, Body, Res, HttpCode, UnauthorizedException, Req } from "@nestjs/common";
-import type { Response } from "express";
-import { AppService } from "./app.service";
-import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/api-types";
-import { supabase } from "./lib/supabase";
-import { config } from "@soustools/config";
+import { Module } from "@nestjs/common";
+import { Neo4jService } from "./neo4j.service";
+import { Neo4jSyncService } from "./neo4j-sync.service";
+import { Neo4jSyncController } from "./neo4j-sync.controller";
+import { Neo4jSyncRepository } from "./infrastructure/neo4j-sync.repository";
 
-const COOKIE_NAME = "sb-access-token";
-const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || process.env.NODE_ENV === "staging";
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: isSecureEnv,
-  sameSite: "lax" as const,
-  maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
-  path: "/",
-  ...(isSecureEnv ? { domain: ".sous.tools" } : {}),
-};
+@Module({
+  controllers: [Neo4jSyncController],
+  providers: [
+    Neo4jService,
+    Neo4jSyncService,
+    {
+      provide: "INeo4jSyncRepository",
+      useClass: Neo4jSyncRepository,
+    },
+  ],
+  exports: [Neo4jService, Neo4jSyncService, "INeo4jSyncRepository"],
+})
+export class Neo4jSyncModule {}
+````
 
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts
+````typescript
+import { Injectable, Logger, BadRequestException, Inject } from "@nestjs/common";
+import type { INeo4jSyncRepository } from "./domain/neo4j-sync.repository.interface";
+import { SCHEMA_REGISTRY, IGNORED_FIELDS } from "./domain/schema-registry";
 
-/**
- * Controller handling root application routes.
- */
-@Controller()
-export class AppController {
-  /**
-   * Initializes the controller with the application service.
-   *
-   * @param {AppService} appService The application service logic provider.
-   */
-  constructor(private readonly appService: AppService) {}
+export class SupabaseWebhookPayload {
+  type!: "INSERT" | "UPDATE" | "DELETE";
+  table!: string;
+  schema!: string;
+  record!: Record<string, any> | null;
+  old_record!: Record<string, any> | null;
+}
 
-  /**
-   * Endpoint exposing the root GET path.
-   *
-   * Renders the standard workspace-defined ApiResponse wrapping HelloResponse.
-   *
-   * @returns {ApiResponse<HelloResponse>} A structured API response.
-   */
-  @Get()
-  getHello(): ApiResponse<HelloResponse> {
-    const helloData = this.appService.getHelloData();
-    return {
-      success: true,
-      data: helloData,
-      timestamp: new Date().toISOString(),
-    };
+// Helper to convert snake_case to camelCase
+export function snakeToCamelCase(str: string): string {
+  return str.replace(/([-_][a-z])/g, (group) =>
+    group.toUpperCase().replace("-", "").replace("_", "")
+  );
+}
+
+// Helper to capitalize the first letter
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Helper to resolve the Node Label for a given table name
+export function resolveNodeLabel(table: string): string {
+  const registered = SCHEMA_REGISTRY[table];
+  if (registered && !registered.isJoinTable) {
+    return registered.nodeLabel;
   }
 
-  @Get("favicon.ico")
-  getFavicon(@Res() res: Response) {
-    const pixel = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-      "base64",
-    );
-    res.type("image/png").send(pixel);
+  // Fallback dynamic mapping: e.g. user_profiles -> UserProfile, users -> User
+  let name = table;
+  if (name.endsWith("ies")) {
+    name = name.slice(0, -3) + "y";
+  } else if (name.endsWith("s") && !name.endsWith("ss")) {
+    name = name.slice(0, -1);
   }
 
-  @Get("notifications/unread")
-  getUnreadNotifications(): ApiResponse<any[]> {
-    return {
-      success: true,
-      data: [],
-      timestamp: new Date().toISOString(),
-    };
-  }
+  return name
+    .split("_")
+    .map(capitalize)
+    .join("");
+}
 
-  /**
-   * Authenticates a user with email + password via Supabase Auth.
-   * On success, sets an HttpOnly session cookie and returns the user profile.
-   * The frontend never sees or handles the raw Supabase token.
-   */
-  @Post("auth/login")
-  @HttpCode(200)
-  async login(
-    @Body() body: Record<string, unknown>,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
-    const parsed = LoginSchema.safeParse(body);
-    if (!parsed.success) {
-      throw new UnauthorizedException("Invalid request body");
+// Helper to serialize nested objects and maps for Neo4j compatibility
+export function serializeProperties(properties: Record<string, any>): Record<string, any> {
+  const serialized: Record<string, any> = {};
+  for (const [key, value] of Object.entries(properties)) {
+    if (value === null || value === undefined) {
+      serialized[key] = null;
+      continue;
     }
 
-    const { email, password } = parsed.data;
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    if (error || !data.session) {
-      throw new UnauthorizedException("Invalid email or password");
+    if (typeof value === "object") {
+      if (value instanceof Date) {
+        serialized[key] = value.toISOString();
+        continue;
+      }
+      if (Array.isArray(value)) {
+        // If it's a primitive array (e.g. string[], number[]), keep it.
+        // If it contains objects, serialize the array.
+        const hasObjects = value.some(
+          (item) => item !== null && typeof item === "object" && !(item instanceof Date)
+        );
+        if (hasObjects) {
+          serialized[key] = JSON.stringify(value);
+        } else {
+          serialized[key] = value;
+        }
+        continue;
+      }
+      // Serialize nested maps/objects to JSON strings
+      serialized[key] = JSON.stringify(value);
+      continue;
     }
 
-    // Set HttpOnly cookie — the frontend never touches the raw token
-    res.cookie(COOKIE_NAME, data.session.access_token, COOKIE_OPTIONS);
-
-    return {
-      success: true,
-      data: { user: data.user as unknown as Record<string, unknown> },
-      timestamp: new Date().toISOString(),
-    };
+    serialized[key] = value;
   }
+  return serialized;
+}
 
+@Injectable()
+export class Neo4jSyncService {
+  private readonly logger = new Logger(Neo4jSyncService.name);
 
+  constructor(
+    @Inject("INeo4jSyncRepository")
+    private readonly repository: INeo4jSyncRepository,
+  ) {}
 
   /**
-   * Destroys the session by clearing the HttpOnly session cookie.
+   * Processes the incoming database webhook payload and translates it dynamically to Neo4j operations.
    */
-  @Post("auth/logout")
-  @HttpCode(200)
-  logout(@Res({ passthrough: true }) res: Response): ApiResponse<null> {
-    res.clearCookie(COOKIE_NAME, {
-      path: "/",
-      secure: COOKIE_OPTIONS.secure,
-      sameSite: COOKIE_OPTIONS.sameSite,
-      ...(COOKIE_OPTIONS.domain ? { domain: COOKIE_OPTIONS.domain } : {}),
-    });
-    return {
-      success: true,
-      data: null,
-      timestamp: new Date().toISOString(),
-    };
+  async handleWebhook(payload: SupabaseWebhookPayload): Promise<void> {
+    const { table, type, schema } = payload;
+    this.logger.log(`Processing database webhook: [${schema}.${table}] [${type}]`);
+
+    const config = SCHEMA_REGISTRY[table];
+
+    // Handle Join Tables (Many-to-Many relationship assignments)
+    if (config && config.isJoinTable) {
+      if (type === "DELETE") {
+        const record = payload.old_record;
+        if (!record) {
+          throw new BadRequestException(`Missing old_record in DELETE payload for join table ${table}`);
+        }
+
+        const srcId = record[config.source.fkField];
+        const targetId = record[config.target.fkField];
+
+        if (!srcId || !targetId) {
+          throw new BadRequestException(
+            `Missing foreign keys (${config.source.fkField} or ${config.target.fkField}) in DELETE payload for join table ${table}`
+          );
+        }
+
+        await this.repository.deleteRelationship(
+          config.source.targetLabel,
+          srcId,
+          config.target.targetLabel,
+          targetId,
+          config.relationLabel
+        );
+      } else {
+        const record = payload.record;
+        if (!record) {
+          throw new BadRequestException(`Missing record in ${type} payload for join table ${table}`);
+        }
+
+        const srcId = record[config.source.fkField];
+        const targetId = record[config.target.fkField];
+
+        if (!srcId || !targetId) {
+          throw new BadRequestException(
+            `Missing foreign keys (${config.source.fkField} or ${config.target.fkField}) in ${type} payload for join table ${table}`
+          );
+        }
+
+        const properties: Record<string, any> = {};
+
+        // 1. Dynamic Edge Properties Mapping (Extract non-foreign-key columns)
+        for (const [key, value] of Object.entries(record)) {
+          if (key === config.source.fkField || key === config.target.fkField) {
+            continue;
+          }
+          if (key === "id" || IGNORED_FIELDS.includes(key)) {
+            continue;
+          }
+          const camelKey = snakeToCamelCase(key);
+          properties[camelKey] = this.coerceValue(key, value);
+        }
+
+        // 2. Custom Properties Override (if any)
+        if (config.customProperties) {
+          const custom = config.customProperties(record);
+          Object.assign(properties, custom);
+        }
+
+        // 3. Serialize properties for Neo4j driver compatibility
+        const serialized = serializeProperties(properties);
+
+        // Join Tables do NOT clear existing edges on UPDATE/INSERT (purely additive M:M links)
+        await this.repository.createDirectRelationship(
+          config.source.targetLabel,
+          srcId,
+          config.target.targetLabel,
+          targetId,
+          config.relationLabel,
+          serialized
+        );
+      }
+      return;
+    }
+
+    // Handle standard Tables (Node Syncing & Foreign Key Relationship Mapping)
+    const nodeLabel = resolveNodeLabel(table);
+
+    if (type === "DELETE") {
+      const record = payload.old_record;
+      // Support primary key 'user_id' for tables like user_profiles, fallback to 'id'
+      const id = record?.id || record?.user_id;
+      if (!id) {
+        throw new BadRequestException(`Missing identifier in DELETE payload for table ${table}`);
+      }
+
+      await this.repository.deleteNode(nodeLabel, id);
+    } else {
+      const record = payload.record;
+      const id = record?.id || record?.user_id;
+      if (!record || !id) {
+        throw new BadRequestException(`Missing record or identifier in ${type} payload for table ${table}`);
+      }
+
+      // Check validation constraints from legacy manual switches
+      if (table === "recipes" && !record.organization_id) {
+        throw new BadRequestException("Missing organization_id in recipe record");
+      }
+      if (table === "vendors" && !record.organization_id) {
+        throw new BadRequestException("Missing organization_id in vendor record");
+      }
+      if (table === "items" && !record.organization_id) {
+        throw new BadRequestException("Missing organization_id in item record");
+      }
+      if (table === "recipe_ingredients" && !record.recipe_id) {
+        throw new BadRequestException("Missing recipe_id in recipe ingredient record");
+      }
+      if (table === "inventory_on_hand" && (!record.organization_id || !record.item_id)) {
+        throw new BadRequestException("Missing organization_id or item_id in inventory record");
+      }
+      if (table === "purchase_orders" && (!record.organization_id || !record.vendor_id)) {
+        throw new BadRequestException("Missing organization_id or vendor_id in purchase order record");
+      }
+      if (table === "purchase_order_items" && !record.po_id) {
+        throw new BadRequestException("Missing po_id in purchase order item record");
+      }
+      if (table === "vendor_item_aliases" && (!record.organization_id || !record.vendor_id)) {
+        throw new BadRequestException("Missing organization_id or vendor_id in vendor item alias record");
+      }
+      if (table === "tickets" && !record.organization_id) {
+        throw new BadRequestException("Missing organization_id in ticket record");
+      }
+      if (table === "orders" && !record.ticket_id) {
+        throw new BadRequestException("Missing ticket_id in order record");
+      }
+      if (table === "order_items" && !record.order_id) {
+        throw new BadRequestException("Missing order_id in order item record");
+      }
+      if (table === "shifts" && (!record.organization_id || !record.user_id)) {
+        throw new BadRequestException("Missing organization_id or user_id in shift record");
+      }
+      if (table === "time_clocks" && (!record.organization_id || !record.user_id)) {
+        throw new BadRequestException("Missing organization_id or user_id in time clock record");
+      }
+      if (table === "invoices" && (!record.organization_id || !record.vendor_id)) {
+        throw new BadRequestException("Missing organization_id or vendor_id in invoice record");
+      }
+      if (table === "invoice_items" && !record.invoice_id) {
+        throw new BadRequestException("Missing invoice_id in invoice item record");
+      }
+      if (table === "wastage_logs" && !record.organization_id) {
+        throw new BadRequestException("Missing organization_id in wastage log record");
+      }
+
+      const properties: Record<string, any> = {};
+
+      // 1. Dynamic Node Properties Mapping (Extract non-foreign-key columns by default)
+      for (const [key, value] of Object.entries(record)) {
+        if (key === "id" || key === "user_id" || IGNORED_FIELDS.includes(key)) {
+          continue;
+        }
+        if (key.endsWith("_id")) {
+          continue;
+        }
+
+        const camelKey = snakeToCamelCase(key);
+        properties[camelKey] = this.coerceValue(key, value);
+      }
+
+      // 2. Custom Properties Override (if any)
+      if (config && !config.isJoinTable && config.customProperties) {
+        const custom = config.customProperties(record);
+        Object.assign(properties, custom);
+      }
+
+      // 3. Serialize properties for Neo4j driver compatibility
+      const serialized = serializeProperties(properties);
+
+      // 4. Upsert the Node in Neo4j using strict idempotency
+      await this.repository.upsertNode(nodeLabel, id, serialized);
+
+      // 5. Draw Relationships (Edges) based on Foreign Keys
+      if (config && !config.isJoinTable && config.relationships.length > 0) {
+        // Use registered relationships
+        for (const rel of config.relationships) {
+          const fkValue = record[rel.fkField];
+          if (fkValue) {
+            // Prevent orphaned edges: Clear old outgoing relationship only if foreign key value changed on UPDATE
+            if (type === "UPDATE" && payload.old_record) {
+              const oldFkValue = payload.old_record[rel.fkField];
+              if (oldFkValue && oldFkValue !== fkValue) {
+                await this.repository.clearRelationship(
+                  nodeLabel,
+                  id,
+                  rel.relationLabel,
+                  rel.direction || "out"
+                );
+              }
+            }
+
+            await this.repository.createRelationship(
+              nodeLabel,
+              id,
+              rel.targetLabel,
+              fkValue,
+              rel.relationLabel,
+              rel.direction || "out"
+            );
+          }
+        }
+      } else {
+        // Fallback dynamic relationship mapping: discover keys ending with _id
+        for (const [key, value] of Object.entries(record)) {
+          if (
+            key === "id" ||
+            key === "user_id" ||
+            IGNORED_FIELDS.includes(key) ||
+            !key.endsWith("_id") ||
+            !value
+          ) {
+            continue;
+          }
+
+          const prefix = key.slice(0, -3); // remove '_id'
+          let targetLabel = prefix
+            .split("_")
+            .map(capitalize)
+            .join("");
+
+          // Align naming deviations to target labels
+          if (targetLabel === "Employee" || targetLabel === "RecordedBy") {
+            targetLabel = "User";
+          } else if (targetLabel === "Po") {
+            targetLabel = "PurchaseOrder";
+          } else if (targetLabel === "InternalItem" || targetLabel === "MasterItem") {
+            targetLabel = "Item";
+          } else if (targetLabel === "SubRecipe") {
+            targetLabel = "Recipe";
+          }
+
+          let relationLabel = "LINKED_TO";
+          if (key === "organization_id") {
+            relationLabel = "BELONGS_TO";
+          } else if (key === "vendor_id") {
+            relationLabel = "PLACED_WITH";
+            if (table === "invoices") {
+              relationLabel = "FROM_VENDOR";
+            }
+          } else if (key === "po_id" && table === "invoices") {
+            relationLabel = "RECONCILES";
+          } else if (key === "user_id" || key === "employee_id" || key === "recorded_by") {
+            if (table === "shifts") relationLabel = "WORKED_BY";
+            else if (table === "time_clocks") relationLabel = "CLOCKED_BY";
+            else if (table === "tickets") relationLabel = "SOLD_BY";
+            else if (table === "wastage_logs") relationLabel = "REPORTED_BY";
+            else relationLabel = "LINKED_TO";
+          } else if (key === "order_id" || key === "invoice_id" || key === "po_id" || key === "ticket_id") {
+            relationLabel = "PART_OF";
+          } else if (key === "item_id") {
+            if (table === "inventory_on_hand") relationLabel = "OF_ITEM";
+            else if (table === "wastage_logs") relationLabel = "WASTED_ITEM";
+            else relationLabel = "OF_ITEM";
+          } else if (key === "recipe_id") {
+            if (table === "order_items") relationLabel = "OF_RECIPE";
+            else if (table === "wastage_logs") relationLabel = "WASTED_RECIPE";
+            else relationLabel = "OF_RECIPE";
+          }
+
+          // Prevent orphaned edges: Clear old dynamic outgoing relationship only if foreign key value changed on UPDATE
+          if (type === "UPDATE" && payload.old_record) {
+            const oldFkValue = payload.old_record[key];
+            if (oldFkValue && oldFkValue !== value) {
+              await this.repository.clearRelationship(
+                nodeLabel,
+                id,
+                relationLabel,
+                "out"
+              );
+            }
+          }
+
+          await this.repository.createRelationship(
+            nodeLabel,
+            id,
+            targetLabel,
+            value,
+            relationLabel,
+            "out"
+          );
+        }
+      }
+    }
   }
 
   /**
-   * Returns current session information by validating the sb-access-token cookie.
+   * Coerces raw postgres database values to appropriate types.
    */
-  @Get("auth/session")
-  async getSession(@Req() req: any): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
-    const token = req.cookies?.[COOKIE_NAME];
-    if (!token) {
-      return {
-        success: true,
-        data: { user: null },
-        timestamp: new Date().toISOString(),
-      };
+  private coerceValue(key: string, value: any): any {
+    if (value === null || value === undefined) {
+      return null;
     }
 
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) {
-      return {
-        success: true,
-        data: { user: null },
-        timestamp: new Date().toISOString(),
-      };
+    // Convert numeric strings to actual Javascript numbers for specific fields
+    if (
+      typeof value === "string" &&
+      !isNaN(Number(value)) &&
+      value.trim() !== "" &&
+      (key.includes("qty") ||
+        key.includes("quantity") ||
+        key.includes("price") ||
+        key.includes("count") ||
+        key.includes("cost") ||
+        key.includes("margin") ||
+        key.includes("amount") ||
+        key.includes("density"))
+    ) {
+      return parseFloat(value);
     }
 
-    return {
-      success: true,
-      data: { user: data.user as unknown as Record<string, unknown> },
-      timestamp: new Date().toISOString(),
-    };
+    return value;
   }
 }
+````
+
+## File: apps/api/src/modules/neo4j-sync/neo4j-sync.spec.ts
+````typescript
+import { Test, TestingModule } from "@nestjs/testing";
+import { Neo4jSyncController } from "./neo4j-sync.controller";
+import { Neo4jSyncService } from "./neo4j-sync.service";
+import { UnauthorizedException, BadRequestException } from "@nestjs/common";
+
+// Mock the config
+jest.mock("@soustools/config", () => ({
+  config: {
+    IS_MOCK_ENV: false,
+    SUPABASE_WEBHOOK_SECRET: "my-test-secret",
+  },
+}));
+
+describe("Neo4jSync", () => {
+  let controller: Neo4jSyncController;
+  let service: Neo4jSyncService;
+
+  const mockRepository = {
+    upsertNode: jest.fn(),
+    deleteNode: jest.fn(),
+    createRelationship: jest.fn(),
+    createDirectRelationship: jest.fn(),
+    deleteRelationship: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [Neo4jSyncController],
+      providers: [
+        Neo4jSyncService,
+        {
+          provide: "INeo4jSyncRepository",
+          useValue: mockRepository,
+        },
+      ],
+    }).compile();
+
+    controller = module.get<Neo4jSyncController>(Neo4jSyncController);
+    service = module.get<Neo4jSyncService>(Neo4jSyncService);
+  });
+
+  describe("Neo4jSyncController", () => {
+    it("should compile and be defined", () => {
+      expect(controller).toBeDefined();
+      expect(service).toBeDefined();
+    });
+
+    it("should throw UnauthorizedException if signature is missing or incorrect", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "users",
+        schema: "auth",
+        record: { id: "user-1" },
+        old_record: null,
+      };
+
+      await expect(
+        controller.handleWebhook(payload, "")
+      ).rejects.toThrow(UnauthorizedException);
+
+      await expect(
+        controller.handleWebhook(payload, "wrong-sig")
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it("should process webhook and return success: true when signature matches", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "users",
+        schema: "auth",
+        record: { id: "user-1", email: "test@example.com" },
+        old_record: null,
+      };
+
+      const result = await controller.handleWebhook(payload, "my-test-secret");
+      expect(result).toEqual({ success: true });
+      expect(mockRepository.upsertNode).toHaveBeenCalled();
+    });
+  });
+
+  describe("Neo4jSyncService", () => {
+    it("should run upsertNode on user INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "users",
+        schema: "auth",
+        record: {
+          id: "user-1",
+          email: "test@example.com",
+          role: "authenticated",
+          created_at: "2026-07-19T00:00:00Z",
+          updated_at: "2026-07-19T00:00:00Z",
+          raw_user_meta_data: { full_name: "Conar Welsh" },
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.upsertNode).toHaveBeenCalledWith(
+        "User",
+        "user-1",
+        {
+          email: "test@example.com",
+          role: "authenticated",
+          fullName: "Conar Welsh",
+          createdAt: "2026-07-19T00:00:00Z",
+          updatedAt: "2026-07-19T00:00:00Z",
+        }
+      );
+    });
+
+    it("should run deleteNode on user DELETE", async () => {
+      const payload = {
+        type: "DELETE" as const,
+        table: "users",
+        schema: "auth",
+        record: null,
+        old_record: { id: "user-1" },
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.deleteNode).toHaveBeenCalledWith("User", "user-1");
+    });
+
+    it("should run upsertNode and create relationships on recipe INSERT/UPDATE", async () => {
+      const payload = {
+        type: "UPDATE" as const,
+        table: "recipes",
+        schema: "public",
+        record: {
+          id: "recipe-1",
+          organization_id: "org-1",
+          vessel_id: "vessel-1",
+          title: "Chocolate Cake",
+          yield_count: "8",
+          yield_unit: "slices",
+          status: "APPROVED",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.upsertNode).toHaveBeenCalledWith(
+        "Recipe",
+        "recipe-1",
+        expect.objectContaining({
+          title: "Chocolate Cake",
+          yieldCount: 8,
+          yieldUnit: "slices",
+          status: "APPROVED",
+        })
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "Recipe",
+        "recipe-1",
+        "Organization",
+        "org-1",
+        "BELONGS_TO",
+        "out"
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "Recipe",
+        "recipe-1",
+        "VesselProfile",
+        "vessel-1",
+        "USES_VESSEL",
+        "out"
+      );
+    });
+
+    it("should throw BadRequestException if recipe INSERT is missing organization_id", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "recipes",
+        schema: "public",
+        record: {
+          id: "recipe-1",
+          title: "Chocolate Cake",
+        },
+        old_record: null,
+      };
+
+      await expect(service.handleWebhook(payload)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("should run deleteNode on recipe DELETE", async () => {
+      const payload = {
+        type: "DELETE" as const,
+        table: "recipes",
+        schema: "public",
+        record: null,
+        old_record: { id: "recipe-1" },
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.deleteNode).toHaveBeenCalledWith("Recipe", "recipe-1");
+    });
+
+    it("should run upsertNode and create relationships on recipe_ingredients INSERT/UPDATE", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "recipe_ingredients",
+        schema: "public",
+        record: {
+          id: "ri-1",
+          recipe_id: "recipe-123",
+          master_item_id: "mi-456",
+          amount: "2.5",
+          unit: "oz",
+          prep_notes: "chopped",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.upsertNode).toHaveBeenCalledWith(
+        "RecipeIngredient",
+        "ri-1",
+        expect.objectContaining({
+          amount: 2.5,
+          unit: "oz",
+          prepNotes: "chopped",
+        })
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "RecipeIngredient",
+        "ri-1",
+        "Recipe",
+        "recipe-123",
+        "INGREDIENT_OF",
+        "out"
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "RecipeIngredient",
+        "ri-1",
+        "MasterItem",
+        "mi-456",
+        "OF_INGREDIENT",
+        "out"
+      );
+    });
+
+    it("should handle Join Tables on INSERT/UPDATE without creating node", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "org_members",
+        schema: "public",
+        record: {
+          user_id: "user-1",
+          organization_id: "org-1",
+          role: "ADMIN",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.upsertNode).not.toHaveBeenCalled();
+      expect(mockRepository.createDirectRelationship).toHaveBeenCalledWith(
+        "User",
+        "user-1",
+        "Organization",
+        "org-1",
+        "MEMBER_OF",
+        { role: "ADMIN" }
+      );
+    });
+
+    it("should handle Join Tables on DELETE", async () => {
+      const payload = {
+        type: "DELETE" as const,
+        table: "org_members",
+        schema: "public",
+        record: null,
+        old_record: {
+          user_id: "user-1",
+          organization_id: "org-1",
+        },
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.deleteNode).not.toHaveBeenCalled();
+      expect(mockRepository.deleteRelationship).toHaveBeenCalledWith(
+        "User",
+        "user-1",
+        "Organization",
+        "org-1",
+        "MEMBER_OF"
+      );
+    });
+  });
+});
 ````
 
 ## File: apps/api/src/app.module.ts
@@ -60310,6 +59819,354 @@ model_list:
 
 general_settings:
   master_key: sk-1234
+````
+
+## File: apps/api/src/modules/auth/auth.controller.ts
+````typescript
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Res,
+  Req,
+  HttpCode,
+  UnauthorizedException,
+} from "@nestjs/common";
+import type { Response } from "express";
+import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse, ApiProperty } from "@nestjs/swagger";
+import { type ApiResponse, LoginSchema } from "@soustools/api-types";
+import { supabase } from "../../lib/supabase";
+import { config } from "@soustools/config";
+
+const ACCESS_TOKEN_COOKIE = "sb-access-token";
+const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
+
+/**
+ * Returns cookie options appropriate for the current environment.
+ *
+ * KEY RULE: `clearCookie` MUST be called with the same `domain`, `path`,
+ * `secure`, and `sameSite` values that were used when the cookie was set,
+ * otherwise the browser will not match and delete the cookie.
+ *
+ * In production (behind Traefik on *.sous.tools) we set `Domain: .sous.tools`
+ * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
+ * In development we omit `domain` so the cookie is scoped to localhost.
+ */
+const getCookieOptions = () => {
+  const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || config.NODE_ENV === "staging";
+  return {
+    httpOnly: true,
+    secure: isSecureEnv,
+    sameSite: "lax" as const,
+    path: "/",
+    ...(isSecureEnv ? { domain: ".sous.tools" } : {}),
+  };
+};
+
+class LoginDto {
+  @ApiProperty()
+  email!: string;
+  @ApiProperty()
+  password!: string;
+}
+
+@ApiTags("auth")
+@Controller("auth")
+export class AuthController {
+  @Post("login")
+  @HttpCode(200)
+  @ApiBody({ type: LoginDto })
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async login(
+    @Body() body: Record<string, unknown>,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
+    
+    const parsed = LoginSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new UnauthorizedException("Invalid request body");
+    }
+
+    const { email, password } = parsed.data;
+    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error || !data.session) {
+      throw new UnauthorizedException("Invalid email or password");
+    }
+
+    const options = getCookieOptions();
+    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
+      ...options,
+      maxAge: data.session.expires_in * 1000,
+    });
+    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
+      ...options,
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+    });
+
+    return {
+      success: true,
+      data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post("refresh")
+  @HttpCode(200)
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async refresh(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<null>> {
+    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
+    if (!refreshToken) {
+      throw new UnauthorizedException("No refresh token found");
+    }
+
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+
+    if (error || !data.session) {
+      throw new UnauthorizedException("Session refresh failed");
+    }
+
+    const options = getCookieOptions();
+    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
+      ...options,
+      maxAge: data.session.expires_in * 1000,
+    });
+    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
+      ...options,
+      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+    });
+
+    return {
+      success: true,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post("logout")
+  @HttpCode(200)
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async logout(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<null>> {
+    // Attempt to invalidate the Supabase session server-side using the
+    // access token stored in the HttpOnly cookie.
+    const accessToken = req.cookies?.[ACCESS_TOKEN_COOKIE];
+    if (accessToken) {
+      try {
+        await supabase.auth.admin.signOut(accessToken);
+      } catch {
+        // Non-fatal: the tokens may already be expired. We still clear the cookies.
+      }
+    }
+
+    // IMPORTANT: clearCookie MUST receive the exact same domain, path, secure,
+    // and sameSite attributes as the original Set-Cookie call. If any attribute
+    // differs, the browser will not find a matching cookie to delete.
+    const options = getCookieOptions();
+    res.clearCookie(ACCESS_TOKEN_COOKIE, options);
+    res.clearCookie(REFRESH_TOKEN_COOKIE, options);
+
+    return {
+      success: true,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get("session")
+  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  async getSession(
+    @Req() req: any,
+  ): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
+    const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
+    if (!token) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    return {
+      success: true,
+      data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
+````
+
+## File: apps/api/src/app.controller.ts
+````typescript
+import { Controller, Get, Post, Body, Res, HttpCode, UnauthorizedException, Req } from "@nestjs/common";
+import type { Response } from "express";
+import { AppService } from "./app.service";
+import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/api-types";
+import { supabase } from "./lib/supabase";
+import { config } from "@soustools/config";
+
+const COOKIE_NAME = "sb-access-token";
+const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || config.NODE_ENV === "staging";
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isSecureEnv,
+  sameSite: "lax" as const,
+  maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days in ms
+  path: "/",
+  ...(isSecureEnv ? { domain: ".sous.tools" } : {}),
+};
+
+
+/**
+ * Controller handling root application routes.
+ */
+@Controller()
+export class AppController {
+  /**
+   * Initializes the controller with the application service.
+   *
+   * @param {AppService} appService The application service logic provider.
+   */
+  constructor(private readonly appService: AppService) {}
+
+  /**
+   * Endpoint exposing the root GET path.
+   *
+   * Renders the standard workspace-defined ApiResponse wrapping HelloResponse.
+   *
+   * @returns {ApiResponse<HelloResponse>} A structured API response.
+   */
+  @Get()
+  getHello(): ApiResponse<HelloResponse> {
+    const helloData = this.appService.getHelloData();
+    return {
+      success: true,
+      data: helloData,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get("favicon.ico")
+  getFavicon(@Res() res: Response) {
+    const pixel = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+      "base64",
+    );
+    res.type("image/png").send(pixel);
+  }
+
+  @Get("notifications/unread")
+  getUnreadNotifications(): ApiResponse<any[]> {
+    return {
+      success: true,
+      data: [],
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Authenticates a user with email + password via Supabase Auth.
+   * On success, sets an HttpOnly session cookie and returns the user profile.
+   * The frontend never sees or handles the raw Supabase token.
+   */
+  @Post("auth/login")
+  @HttpCode(200)
+  async login(
+    @Body() body: Record<string, unknown>,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
+    const parsed = LoginSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new UnauthorizedException("Invalid request body");
+    }
+
+    const { email, password } = parsed.data;
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error || !data.session) {
+      throw new UnauthorizedException("Invalid email or password");
+    }
+
+    // Set HttpOnly cookie — the frontend never touches the raw token
+    res.cookie(COOKIE_NAME, data.session.access_token, COOKIE_OPTIONS);
+
+    return {
+      success: true,
+      data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+
+
+  /**
+   * Destroys the session by clearing the HttpOnly session cookie.
+   */
+  @Post("auth/logout")
+  @HttpCode(200)
+  logout(@Res({ passthrough: true }) res: Response): ApiResponse<null> {
+    res.clearCookie(COOKIE_NAME, {
+      path: "/",
+      secure: COOKIE_OPTIONS.secure,
+      sameSite: COOKIE_OPTIONS.sameSite,
+      ...(COOKIE_OPTIONS.domain ? { domain: COOKIE_OPTIONS.domain } : {}),
+    });
+    return {
+      success: true,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Returns current session information by validating the sb-access-token cookie.
+   */
+  @Get("auth/session")
+  async getSession(@Req() req: any): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
+    const token = req.cookies?.[COOKIE_NAME];
+    if (!token) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return {
+        success: true,
+        data: { user: null },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    return {
+      success: true,
+      data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
 ````
 
 ## File: apps/api/src/main.ts
@@ -62977,98 +62834,6 @@ const initializeServerLogger = () => {
 export default initializeServerLogger;
 ````
 
-## File: .gitignore
-````
-# Dependency directories
-node_modules/
-jspm_packages/
-web_modules/
-
-# Build outputs
-dist/
-build/
-.next/
-out/
-.turbo/
-.nuxt/
-.output/
-
-# IDE files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env*.local
-
-# Logs and databases
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-*.db
-*.sqlite
-
-# Testing coverage
-coverage/
-.nyc_output/
-.vercel
-
-# Ansible secrets — never commit real vault or inventory
-deploy/ansible/group_vars/all/vault.yml
-deploy/ansible/inventory.ini
-
-mcp_config.bu.json
-
-ssh-key.key
-ssh-key.pub
-
-# Repomix Context Files (Massive Markdown files)
-# .context/
-
-# Playwright Test Results & Error Traces
-apps/web/test-results/
-apps/web/playwright-report/
-
-# CLI Textbook Parsing Outputs
-apps/cli/output/
-apps/cli/queue/
-
-# Raspberry Pi OS Build Artifacts
-deploy/pi/pi-gen/deploy/
-deploy/pi/pi-gen/work/*.deb
-
-*.deb
-
-# Auto-generated NestJS GraphQL Schema
-apps/api/src/schema.gql
-apps/api/schema.gql
-
-# Auto-generated Config Secrets
-packages/config/src/secrets.ts
-packages/.secrets.cache.json
-.secrets.cache.json
-
-.pnpm-store
-newrelic_agent.log
-
-.continue/
-
-signage_deploy_key*
-.claude
-docs/agents/logs/agent-run-*.log
-````
-
 ## File: docs/agents/prompts/implement.md
 ````markdown
 <!--
@@ -63542,6 +63307,100 @@ export function OmniChatWindow({
 ## File: packages/domain-recipes/src/RecipeCostPanelSummary.tsx
 ````typescript
 // Moved to src/components/RecipeViewer/
+````
+
+## File: .gitignore
+````
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+.nuxt/
+.output/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs and databases
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.db
+*.sqlite
+
+# Testing coverage
+coverage/
+.nyc_output/
+.vercel
+
+# Ansible secrets — never commit real vault or inventory
+deploy/ansible/group_vars/all/vault.yml
+deploy/ansible/inventory.ini
+
+mcp_config.bu.json
+
+ssh-key.key
+ssh-key.pub
+
+# Repomix Context Files (Massive Markdown files)
+# .context/
+
+# Playwright Test Results & Error Traces
+apps/web/test-results/
+apps/web/playwright-report/
+
+# CLI Textbook Parsing Outputs
+apps/cli/output/
+apps/cli/queue/
+
+# Raspberry Pi OS Build Artifacts
+deploy/pi/pi-gen/deploy/
+deploy/pi/pi-gen/work/*.deb
+
+*.deb
+
+# Auto-generated NestJS GraphQL Schema
+apps/api/src/schema.gql
+apps/api/schema.gql
+
+# Auto-generated Config Secrets
+packages/config/src/secrets.ts
+packages/.secrets.cache.json
+.secrets.cache.json
+
+.pnpm-store
+newrelic_agent.log
+
+.continue/
+
+signage_deploy_key*
+.claude
+docs/agents/logs/agent-run-*.log
+
+supabase/seed.sql
 ````
 
 ## File: docker-compose.dev.yml

@@ -105,6 +105,11 @@
 │   │   │   │   │   ├── metrics.controller.ts
 │   │   │   │   │   └── metrics.module.ts
 │   │   │   │   ├── neo4j-sync
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   ├── neo4j-sync.repository.interface.ts
+│   │   │   │   │   │   └── schema-registry.ts
+│   │   │   │   │   ├── infrastructure
+│   │   │   │   │   │   └── neo4j-sync.repository.ts
 │   │   │   │   │   ├── neo4j-sync.controller.ts
 │   │   │   │   │   ├── neo4j-sync.module.ts
 │   │   │   │   │   ├── neo4j-sync.service.ts
@@ -1332,15 +1337,18 @@
 ├── repomix.config.json
 ├── scripts
 │   ├── audit-secrets.ts
-│   └── generate-icons.mjs
+│   ├── generate-icons.mjs
+│   ├── nuke-neo4j.ts
+│   └── prepare-seed.ts
 ├── sonar-project.properties
 ├── supabase
 │   ├── config.toml
 │   ├── migrations
 │   │   └── 20260719000000_init.sql
 │   ├── seed.sql
+│   ├── seed.template.sql
 │   └── snippets
 │       └── Untitled query 242.sql
 └── turbo.json
 
-313 directories, 1031 files
+315 directories, 1037 files
