@@ -4,11 +4,13 @@ services:
     environment:
       - DOCKER_API_VERSION=1.44
     command:
-      - "--api.insecure=false"
+      - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
@@ -18,6 +20,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "letsencrypt:/letsencrypt"
@@ -181,6 +184,7 @@ services:
     networks:
       - default
       - traefik_public
+      - supabase_network
     labels:
       - "traefik.enable=true"
 
@@ -294,4 +298,7 @@ networks:
   default:
   traefik_public:
     name: traefik_public
+    external: true
+  supabase_network:
+    name: supabase_network_sous.tools
     external: true
