@@ -1,7 +1,3 @@
-networks:
-  traefik_public:
-    external: true
-
 services:
   redis:
     image: redis:alpine
@@ -35,7 +31,18 @@ services:
       - "7475:7474" # Neo4j Browser Web UI
       - "7688:7687" # Bolt protocol for NestJS
     volumes:
-      - neo4j_data:/data
+      - neo4j_dev_data:/data
+    networks:
+      - default
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      # Route the traffic to your staging URL
+      - "traefik.http.routers.neo4j-dev.rule=Host(`dev-graph.sous.tools`)"
+      - "traefik.http.routers.neo4j-dev.entrypoints=websecure"
+      - "traefik.http.routers.neo4j-dev.tls.certresolver=letsencrypt"
+      # Tell Traefik to route to the internal container port (7474), not the host port!
+      - "traefik.http.services.neo4j-dev.loadbalancer.server.port=7474"
 
   ollama-pull:
     image: ollama/ollama:latest
@@ -61,7 +68,11 @@ services:
 
         echo "All models verified and ready!"
 
+networks:
+  traefik_public:
+    external: true
+
 volumes:
   redis_data:
   ollama_data:
-  neo4j_data:
+  neo4j_dev_data:
