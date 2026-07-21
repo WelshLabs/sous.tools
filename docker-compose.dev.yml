@@ -43,6 +43,7 @@ services:
       - "traefik.http.routers.neo4j-dev.tls.certresolver=letsencrypt"
       # Tell Traefik to route to the internal container port (7474), not the host port!
       - "traefik.http.services.neo4j-dev.loadbalancer.server.port=7474"
+      - "traefik.docker.network=traefik_public"
 
   ollama-pull:
     image: ollama/ollama:latest

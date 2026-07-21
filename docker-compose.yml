@@ -66,6 +66,7 @@ services:
       - "traefik.http.routers.neo4j.entrypoints=websecure"
       - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
       - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
+      - "traefik.docker.network=traefik_public"
 
   api:
     build:
