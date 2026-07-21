@@ -26,7 +26,7 @@ $ nest build
 ::group::api:build
 cache miss, executing 827c38495801a981
 $ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 55287 ms
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 53937 ms
 ::endgroup::
 ::group::pos-simulator:build
 cache miss, executing 62a41f020228be70
@@ -42,11 +42,11 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 34.7s
+ ✓ Compiled successfully in 34.5s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8086) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784647221569 is not specified and it doesn't parse as CommonJS.
+(node:8060) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784650928169 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -89,11 +89,11 @@ https://nextjs.org/telemetry
 
    Creating an optimized production build ...
  [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
- ✓ Compiled successfully in 77s
+ ✓ Compiled successfully in 74s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8282) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784647221577 is not specified and it doesn't parse as CommonJS.
+(node:8228) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784650928177 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -168,7 +168,7 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 46s
+ ✓ Compiled successfully in 44s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
@@ -201,5 +201,5 @@ Route (app)                                 Size  First Load JS
 
  Tasks:    9 successful, 9 total
 Cached:    0 cached, 9 total
-  Time:    2m1.213s 
+  Time:    1m53.551s 
 
