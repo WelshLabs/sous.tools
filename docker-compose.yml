@@ -291,5 +291,7 @@ volumes:
   neo4j_data:
 
 networks:
+  default:
   traefik_public:
+    name: traefik_public
     external: true
