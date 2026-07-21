@@ -9,6 +9,7 @@
 -- ---------------------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- ---------------------------------------------------------------------------
 -- 1. ENUMs
@@ -250,9 +251,9 @@ CREATE POLICY "org_members_full_crud_vessel_profiles" ON vessel_profiles
   WITH CHECK (is_org_member(organization_id));
 
 -- ---------------------------------------------------------------------------
--- 10. master_ingredients
+-- 10. master_items
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS master_ingredients (
+CREATE TABLE IF NOT EXISTS master_items (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id       UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   name                  TEXT NOT NULL,
@@ -273,13 +274,14 @@ CREATE TABLE IF NOT EXISTS master_ingredients (
   is_gluten_source      BOOLEAN DEFAULT false,
   fdc_id                INTEGER,
   nutrition_verified_at TIMESTAMP WITH TIME ZONE,
+  embedding             vector(768),
   created_at            TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
   updated_at            TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
 
 
-CREATE POLICY "org_members_full_crud_master_ingredients" ON master_ingredients
+CREATE POLICY "org_members_full_crud_master_items" ON master_items
   FOR ALL USING (is_org_member(organization_id))
   WITH CHECK (is_org_member(organization_id));
 
@@ -356,7 +358,7 @@ CREATE POLICY "org_members_full_crud_recipes" ON recipes
 CREATE TABLE IF NOT EXISTS recipe_ingredients (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   recipe_id             UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-  master_ingredient_id  UUID REFERENCES master_ingredients(id) ON DELETE SET NULL,
+  master_item_id        UUID REFERENCES master_items(id) ON DELETE SET NULL,
   item_id               UUID,  -- FK added after items table below
   calculation_type      TEXT NOT NULL CHECK (calculation_type IN ('fixed_weight', 'bakers_percentage')),
   base_calculation_group BOOLEAN DEFAULT false NOT NULL,
@@ -741,7 +743,7 @@ CREATE INDEX IF NOT EXISTS idx_pos_item_recipe_links_pos    ON pos_item_recipe_l
 CREATE INDEX IF NOT EXISTS idx_pos_item_recipe_links_recipe ON pos_item_recipe_links(recipe_id);
 
 -- ---------------------------------------------------------------------------
--- 29. items (items ledger — successor to master_ingredients for purchasing)
+-- 29. items (items ledger — successor to master_items for purchasing)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS items (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1192,8 +1194,8 @@ ALTER TABLE signage_displays ENABLE ROW LEVEL SECURITY;
 ALTER TABLE signage_displays FORCE ROW LEVEL SECURITY;
 ALTER TABLE vessel_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vessel_profiles FORCE ROW LEVEL SECURITY;
-ALTER TABLE master_ingredients ENABLE ROW LEVEL SECURITY;
-ALTER TABLE master_ingredients FORCE ROW LEVEL SECURITY;
+ALTER TABLE master_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE master_items FORCE ROW LEVEL SECURITY;
 ALTER TABLE recipe_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recipe_categories FORCE ROW LEVEL SECURITY;
 ALTER TABLE recipe_tags ENABLE ROW LEVEL SECURITY;
@@ -1373,7 +1375,7 @@ CREATE TABLE public.vendor_item_aliases (
   organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   vendor_id UUID REFERENCES public.vendors(id) ON DELETE CASCADE,
   vendor_item_string TEXT NOT NULL,
-  master_ingredient_id UUID NOT NULL REFERENCES public.items(id) ON DELETE CASCADE,
+  item_id UUID NOT NULL REFERENCES public.items(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   UNIQUE(organization_id, vendor_id, vendor_item_string)
@@ -1391,7 +1393,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Add embedding vector(768) columns if they do not exist
 ALTER TABLE public.items ADD COLUMN IF NOT EXISTS embedding vector(768);
-ALTER TABLE public.master_ingredients ADD COLUMN IF NOT EXISTS embedding vector(768);
+ALTER TABLE public.master_items ADD COLUMN IF NOT EXISTS embedding vector(768);
 
 -- Create match_items RPC function for cosine similarity search on tenant items
 CREATE OR REPLACE FUNCTION public.match_items(
@@ -1421,44 +1423,6 @@ BEGIN
   LIMIT match_count;
 END;
 $$;
-
--- Create match_master_ingredients RPC function for cosine similarity search on global master_ingredients
-CREATE OR REPLACE FUNCTION public.match_master_ingredients(
-  query_embedding vector(768),
-  match_threshold float,
-  match_count int
-)
-RETURNS TABLE (
-  id uuid,
-  name text,
-  similarity float
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    master_ingredients.id,
-    master_ingredients.name,
-    (1 - (master_ingredients.embedding <=> query_embedding))::float AS similarity
-  FROM public.master_ingredients
-  WHERE master_ingredients.embedding IS NOT NULL
-    AND (1 - (master_ingredients.embedding <=> query_embedding)) > match_threshold
-  ORDER BY master_ingredients.embedding <=> query_embedding
-  LIMIT match_count;
-END;
-$$;
--- Rename the table public.master_ingredients to public.master_items
-ALTER TABLE public.master_ingredients RENAME TO master_items;
-
--- Rename foreign key column master_ingredient_id in recipe_ingredients to master_item_id
-ALTER TABLE public.recipe_ingredients RENAME COLUMN master_ingredient_id TO master_item_id;
-
--- Rename foreign key column master_ingredient_id in vendor_item_aliases to item_id
-ALTER TABLE public.vendor_item_aliases RENAME COLUMN master_ingredient_id TO item_id;
-
--- Drop the old match_master_ingredients function
-DROP FUNCTION IF EXISTS public.match_master_ingredients(vector(768), float, int);
 
 -- Create new match_master_items RPC function for cosine similarity search on global master_items
 CREATE OR REPLACE FUNCTION public.match_master_items(
@@ -1739,4 +1703,190 @@ CREATE TRIGGER on_invoice_item_sync
 
 CREATE TRIGGER on_wastage_log_sync
   AFTER INSERT OR UPDATE OR DELETE ON public.wastage_logs
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for org_members
+DROP TRIGGER IF EXISTS on_org_members_sync ON public.org_members;
+CREATE TRIGGER on_org_members_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.org_members
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for integrations
+DROP TRIGGER IF EXISTS on_integrations_sync ON public.integrations;
+CREATE TRIGGER on_integrations_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.integrations
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for signage_devices
+DROP TRIGGER IF EXISTS on_signage_devices_sync ON public.signage_devices;
+CREATE TRIGGER on_signage_devices_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.signage_devices
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for signage_decks
+DROP TRIGGER IF EXISTS on_signage_decks_sync ON public.signage_decks;
+CREATE TRIGGER on_signage_decks_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.signage_decks
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for signage_layouts
+DROP TRIGGER IF EXISTS on_signage_layouts_sync ON public.signage_layouts;
+CREATE TRIGGER on_signage_layouts_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.signage_layouts
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for signage_displays
+DROP TRIGGER IF EXISTS on_signage_displays_sync ON public.signage_displays;
+CREATE TRIGGER on_signage_displays_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.signage_displays
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for vessel_profiles
+DROP TRIGGER IF EXISTS on_vessel_profiles_sync ON public.vessel_profiles;
+CREATE TRIGGER on_vessel_profiles_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.vessel_profiles
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for master_items
+DROP TRIGGER IF EXISTS on_master_items_sync ON public.master_items;
+CREATE TRIGGER on_master_items_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.master_items
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for recipe_categories
+DROP TRIGGER IF EXISTS on_recipe_categories_sync ON public.recipe_categories;
+CREATE TRIGGER on_recipe_categories_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.recipe_categories
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for recipe_tags
+DROP TRIGGER IF EXISTS on_recipe_tags_sync ON public.recipe_tags;
+CREATE TRIGGER on_recipe_tags_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.recipe_tags
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for recipe_tag_assignments
+DROP TRIGGER IF EXISTS on_recipe_tag_assignments_sync ON public.recipe_tag_assignments;
+CREATE TRIGGER on_recipe_tag_assignments_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.recipe_tag_assignments
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for formula_versions
+DROP TRIGGER IF EXISTS on_formula_versions_sync ON public.formula_versions;
+CREATE TRIGGER on_formula_versions_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.formula_versions
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for recipe_nutrition_cache
+DROP TRIGGER IF EXISTS on_recipe_nutrition_cache_sync ON public.recipe_nutrition_cache;
+CREATE TRIGGER on_recipe_nutrition_cache_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.recipe_nutrition_cache
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for whiteboard_items
+DROP TRIGGER IF EXISTS on_whiteboard_items_sync ON public.whiteboard_items;
+CREATE TRIGGER on_whiteboard_items_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.whiteboard_items
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_items
+DROP TRIGGER IF EXISTS on_pos_items_sync ON public.pos_items;
+CREATE TRIGGER on_pos_items_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_items
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_modifier_groups
+DROP TRIGGER IF EXISTS on_pos_modifier_groups_sync ON public.pos_modifier_groups;
+CREATE TRIGGER on_pos_modifier_groups_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_modifier_groups
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_modifier_options
+DROP TRIGGER IF EXISTS on_pos_modifier_options_sync ON public.pos_modifier_options;
+CREATE TRIGGER on_pos_modifier_options_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_modifier_options
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_item_modifier_groups
+DROP TRIGGER IF EXISTS on_pos_item_modifier_groups_sync ON public.pos_item_modifier_groups;
+CREATE TRIGGER on_pos_item_modifier_groups_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_item_modifier_groups
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_item_local_overlays
+DROP TRIGGER IF EXISTS on_pos_item_local_overlays_sync ON public.pos_item_local_overlays;
+CREATE TRIGGER on_pos_item_local_overlays_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_item_local_overlays
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_transactions
+DROP TRIGGER IF EXISTS on_pos_transactions_sync ON public.pos_transactions;
+CREATE TRIGGER on_pos_transactions_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_transactions
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_item_recipe_links
+DROP TRIGGER IF EXISTS on_pos_item_recipe_links_sync ON public.pos_item_recipe_links;
+CREATE TRIGGER on_pos_item_recipe_links_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_item_recipe_links
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for price_history
+DROP TRIGGER IF EXISTS on_price_history_sync ON public.price_history;
+CREATE TRIGGER on_price_history_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.price_history
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for wastage_ledger
+DROP TRIGGER IF EXISTS on_wastage_ledger_sync ON public.wastage_ledger;
+CREATE TRIGGER on_wastage_ledger_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.wastage_ledger
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for container_mapping
+DROP TRIGGER IF EXISTS on_container_mapping_sync ON public.container_mapping;
+CREATE TRIGGER on_container_mapping_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.container_mapping
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for par_level_suggestions
+DROP TRIGGER IF EXISTS on_par_level_suggestions_sync ON public.par_level_suggestions;
+CREATE TRIGGER on_par_level_suggestions_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.par_level_suggestions
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for ingestion_reviews
+DROP TRIGGER IF EXISTS on_ingestion_reviews_sync ON public.ingestion_reviews;
+CREATE TRIGGER on_ingestion_reviews_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.ingestion_reviews
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for notifications
+DROP TRIGGER IF EXISTS on_notifications_sync ON public.notifications;
+CREATE TRIGGER on_notifications_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.notifications
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for user_profiles
+DROP TRIGGER IF EXISTS on_user_profiles_sync ON public.user_profiles;
+CREATE TRIGGER on_user_profiles_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.user_profiles
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_categories
+DROP TRIGGER IF EXISTS on_pos_categories_sync ON public.pos_categories;
+CREATE TRIGGER on_pos_categories_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_categories
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_discounts
+DROP TRIGGER IF EXISTS on_pos_discounts_sync ON public.pos_discounts;
+CREATE TRIGGER on_pos_discounts_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_discounts
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+-- Trigger for pos_orders
+DROP TRIGGER IF EXISTS on_pos_orders_sync ON public.pos_orders;
+CREATE TRIGGER on_pos_orders_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.pos_orders
   FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();

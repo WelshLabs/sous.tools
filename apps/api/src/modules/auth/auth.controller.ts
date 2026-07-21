@@ -29,7 +29,7 @@ const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
  * In development we omit `domain` so the cookie is scoped to localhost.
  */
 const getCookieOptions = () => {
-  const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || process.env.NODE_ENV === "staging";
+  const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || config.NODE_ENV === "staging";
   return {
     httpOnly: true,
     secure: isSecureEnv,

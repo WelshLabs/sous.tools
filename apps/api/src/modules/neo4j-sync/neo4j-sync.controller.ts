@@ -23,7 +23,9 @@ export class Neo4jSyncController {
     @Body() payload: SupabaseWebhookPayload,
     @Headers("x-supabase-signature") signature: string,
   ): Promise<{ success: boolean }> {
-    this.logger.log(`Received Neo4j sync webhook request for table: ${payload?.table}`);
+    this.logger.log(
+      `Received Neo4j sync webhook request for table: ${payload?.table}`,
+    );
 
     // Strictly enforce signature unless running in mock environment
     if (!config.IS_MOCK_ENV) {

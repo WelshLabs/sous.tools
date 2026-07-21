@@ -1,11 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { Neo4jSyncController } from "./neo4j-sync.controller";
 import { Neo4jSyncService } from "./neo4j-sync.service";
-import { Neo4jService } from "./neo4j.service";
 import { UnauthorizedException, BadRequestException } from "@nestjs/common";
 
-// Mock the Neo4jService and config
-jest.mock("./neo4j.service");
+// Mock the config
 jest.mock("@soustools/config", () => ({
   config: {
     IS_MOCK_ENV: false,
@@ -17,20 +15,24 @@ describe("Neo4jSync", () => {
   let controller: Neo4jSyncController;
   let service: Neo4jSyncService;
 
-  const mockNeo4jService = {
-    runQuery: jest.fn(),
+  const mockRepository = {
+    upsertNode: jest.fn(),
+    deleteNode: jest.fn(),
+    createRelationship: jest.fn(),
+    createDirectRelationship: jest.fn(),
+    deleteRelationship: jest.fn(),
   };
 
   beforeEach(async () => {
-    mockNeo4jService.runQuery.mockReset();
+    jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [Neo4jSyncController],
       providers: [
         Neo4jSyncService,
         {
-          provide: Neo4jService,
-          useValue: mockNeo4jService,
+          provide: "INeo4jSyncRepository",
+          useValue: mockRepository,
         },
       ],
     }).compile();
@@ -74,12 +76,12 @@ describe("Neo4jSync", () => {
 
       const result = await controller.handleWebhook(payload, "my-test-secret");
       expect(result).toEqual({ success: true });
-      expect(mockNeo4jService.runQuery).toHaveBeenCalled();
+      expect(mockRepository.upsertNode).toHaveBeenCalled();
     });
   });
 
   describe("Neo4jSyncService", () => {
-    it("should run MERGE on user INSERT/UPDATE", async () => {
+    it("should run upsertNode on user INSERT/UPDATE", async () => {
       const payload = {
         type: "INSERT" as const,
         table: "users",
@@ -97,22 +99,20 @@ describe("Neo4jSync", () => {
 
       await service.handleWebhook(payload);
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (u:User {id: $id})"),
-        expect.objectContaining({
-          id: "user-1",
-          properties: {
-            email: "test@example.com",
-            role: "authenticated",
-            fullName: "Conar Welsh",
-            createdAt: "2026-07-19T00:00:00Z",
-            updatedAt: "2026-07-19T00:00:00Z",
-          },
-        }),
+      expect(mockRepository.upsertNode).toHaveBeenCalledWith(
+        "User",
+        "user-1",
+        {
+          email: "test@example.com",
+          role: "authenticated",
+          fullName: "Conar Welsh",
+          createdAt: "2026-07-19T00:00:00Z",
+          updatedAt: "2026-07-19T00:00:00Z",
+        }
       );
     });
 
-    it("should run DETACH DELETE on user DELETE", async () => {
+    it("should run deleteNode on user DELETE", async () => {
       const payload = {
         type: "DELETE" as const,
         table: "users",
@@ -123,13 +123,10 @@ describe("Neo4jSync", () => {
 
       await service.handleWebhook(payload);
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MATCH (u:User {id: $id})"),
-        expect.objectContaining({ id: "user-1" }),
-      );
+      expect(mockRepository.deleteNode).toHaveBeenCalledWith("User", "user-1");
     });
 
-    it("should run MERGE on recipe INSERT/UPDATE", async () => {
+    it("should run upsertNode and create relationships on recipe INSERT/UPDATE", async () => {
       const payload = {
         type: "UPDATE" as const,
         table: "recipes",
@@ -137,6 +134,7 @@ describe("Neo4jSync", () => {
         record: {
           id: "recipe-1",
           organization_id: "org-1",
+          vessel_id: "vessel-1",
           title: "Chocolate Cake",
           yield_count: "8",
           yield_unit: "slices",
@@ -147,18 +145,33 @@ describe("Neo4jSync", () => {
 
       await service.handleWebhook(payload);
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (r:Recipe {id: $id})"),
+      expect(mockRepository.upsertNode).toHaveBeenCalledWith(
+        "Recipe",
+        "recipe-1",
         expect.objectContaining({
-          id: "recipe-1",
-          organizationId: "org-1",
-          properties: expect.objectContaining({
-            title: "Chocolate Cake",
-            yieldCount: 8,
-            yieldUnit: "slices",
-            status: "APPROVED",
-          }),
-        }),
+          title: "Chocolate Cake",
+          yieldCount: 8,
+          yieldUnit: "slices",
+          status: "APPROVED",
+        })
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "Recipe",
+        "recipe-1",
+        "Organization",
+        "org-1",
+        "BELONGS_TO",
+        "out"
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "Recipe",
+        "recipe-1",
+        "VesselProfile",
+        "vessel-1",
+        "USES_VESSEL",
+        "out"
       );
     });
 
@@ -179,7 +192,7 @@ describe("Neo4jSync", () => {
       );
     });
 
-    it("should run DETACH DELETE on recipe DELETE", async () => {
+    it("should run deleteNode on recipe DELETE", async () => {
       const payload = {
         type: "DELETE" as const,
         table: "recipes",
@@ -190,13 +203,10 @@ describe("Neo4jSync", () => {
 
       await service.handleWebhook(payload);
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MATCH (r:Recipe {id: $id})"),
-        expect.objectContaining({ id: "recipe-1" }),
-      );
+      expect(mockRepository.deleteNode).toHaveBeenCalledWith("Recipe", "recipe-1");
     });
 
-    it("should run MERGE on recipe_ingredients INSERT/UPDATE", async () => {
+    it("should run upsertNode and create relationships on recipe_ingredients INSERT/UPDATE", async () => {
       const payload = {
         type: "INSERT" as const,
         table: "recipe_ingredients",
@@ -204,7 +214,7 @@ describe("Neo4jSync", () => {
         record: {
           id: "ri-1",
           recipe_id: "recipe-123",
-          item_id: "item-456",
+          master_item_id: "mi-456",
           amount: "2.5",
           unit: "oz",
           prep_notes: "chopped",
@@ -214,154 +224,82 @@ describe("Neo4jSync", () => {
 
       await service.handleWebhook(payload);
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (ri:RecipeIngredient {id: $id})"),
+      expect(mockRepository.upsertNode).toHaveBeenCalledWith(
+        "RecipeIngredient",
+        "ri-1",
         expect.objectContaining({
-          id: "ri-1",
-          recipeId: "recipe-123",
-          itemId: "item-456",
           amount: 2.5,
           unit: "oz",
           prepNotes: "chopped",
-        }),
+        })
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "RecipeIngredient",
+        "ri-1",
+        "Recipe",
+        "recipe-123",
+        "INGREDIENT_OF",
+        "out"
+      );
+
+      expect(mockRepository.createRelationship).toHaveBeenCalledWith(
+        "RecipeIngredient",
+        "ri-1",
+        "MasterItem",
+        "mi-456",
+        "OF_INGREDIENT",
+        "out"
       );
     });
 
-    it("should run DETACH DELETE on recipe_ingredients DELETE", async () => {
+    it("should handle Join Tables on INSERT/UPDATE without creating node", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "org_members",
+        schema: "public",
+        record: {
+          user_id: "user-1",
+          organization_id: "org-1",
+          role: "ADMIN",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.upsertNode).not.toHaveBeenCalled();
+      expect(mockRepository.createDirectRelationship).toHaveBeenCalledWith(
+        "User",
+        "user-1",
+        "Organization",
+        "org-1",
+        "MEMBER_OF",
+        { role: "ADMIN" }
+      );
+    });
+
+    it("should handle Join Tables on DELETE", async () => {
       const payload = {
         type: "DELETE" as const,
-        table: "recipe_ingredients",
+        table: "org_members",
         schema: "public",
         record: null,
-        old_record: { id: "ri-1" },
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MATCH (ri:RecipeIngredient {id: $id})"),
-        expect.objectContaining({ id: "ri-1" }),
-      );
-    });
-
-    it("should run MERGE on vendor_item_aliases INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "vendor_item_aliases",
-        schema: "public",
-        record: {
-          id: "via-1",
+        old_record: {
+          user_id: "user-1",
           organization_id: "org-1",
-          vendor_id: "vendor-1",
-          vendor_item_name: "Sysco Potatoes",
-          internal_item_id: "item-123",
         },
-        old_record: null,
       };
 
       await service.handleWebhook(payload);
 
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (via:VendorItemAlias {id: $id})"),
-        expect.objectContaining({
-          id: "via-1",
-          vendorId: "vendor-1",
-          internalItemId: "item-123",
-          vendorItemName: "Sysco Potatoes",
-        }),
-      );
-    });
-
-    it("should run MERGE on tickets INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "tickets",
-        schema: "public",
-        record: {
-          id: "ticket-1",
-          organization_id: "org-1",
-          employee_id: "employee-123",
-          table_number: "Table 4",
-          section: "Patio",
-          status: "OPEN",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (t:Ticket {id: $id})"),
-        expect.objectContaining({
-          id: "ticket-1",
-          organizationId: "org-1",
-          employeeId: "employee-123",
-          properties: {
-            tableNumber: "Table 4",
-            section: "Patio",
-            status: "OPEN",
-            createdAt: null,
-          },
-        }),
-      );
-    });
-
-    it("should run MERGE on order_items INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "order_items",
-        schema: "public",
-        record: {
-          id: "oi-1",
-          order_id: "order-123",
-          recipe_id: "recipe-456",
-          quantity: "2",
-          unit_price: "15.50",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (oi:OrderItem {id: $id})"),
-        expect.objectContaining({
-          id: "oi-1",
-          orderId: "order-123",
-          recipeId: "recipe-456",
-          quantity: 2,
-        }),
-      );
-    });
-
-    it("should run MERGE on wastage_logs INSERT/UPDATE", async () => {
-      const payload = {
-        type: "INSERT" as const,
-        table: "wastage_logs",
-        schema: "public",
-        record: {
-          id: "wl-1",
-          organization_id: "org-1",
-          item_id: "item-123",
-          recipe_id: "recipe-456",
-          quantity: "500",
-          reason: "spoiled",
-          recorded_by: "user-789",
-        },
-        old_record: null,
-      };
-
-      await service.handleWebhook(payload);
-
-      expect(mockNeo4jService.runQuery).toHaveBeenCalledWith(
-        expect.stringContaining("MERGE (wl:WastageLog {id: $id})"),
-        expect.objectContaining({
-          id: "wl-1",
-          organizationId: "org-1",
-          itemId: "item-123",
-          recipeId: "recipe-456",
-          recordedBy: "user-789",
-        }),
+      expect(mockRepository.deleteNode).not.toHaveBeenCalled();
+      expect(mockRepository.deleteRelationship).toHaveBeenCalledWith(
+        "User",
+        "user-1",
+        "Organization",
+        "org-1",
+        "MEMBER_OF"
       );
     });
   });

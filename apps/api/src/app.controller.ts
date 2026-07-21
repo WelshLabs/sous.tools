@@ -6,7 +6,7 @@ import { supabase } from "./lib/supabase";
 import { config } from "@soustools/config";
 
 const COOKIE_NAME = "sb-access-token";
-const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || process.env.NODE_ENV === "staging";
+const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || config.NODE_ENV === "staging";
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: isSecureEnv,

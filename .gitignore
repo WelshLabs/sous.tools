@@ -86,3 +86,5 @@ newrelic_agent.log
 signage_deploy_key*
 .claude
 docs/agents/logs/agent-run-*.log
+
+supabase/seed.sql

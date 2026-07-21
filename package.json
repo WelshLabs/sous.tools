@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "db:reset": "node packages/config/dist/cli.js ts-node scripts/nuke-neo4j.ts && node packages/config/dist/cli.js ts-node scripts/prepare-seed.ts && npx supabase db reset",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
@@ -22,10 +23,11 @@
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.61.1",
+    "@soustools/api-types": "workspace:*",
+    "@soustools/config": "workspace:*",
     "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
-    "@soustools/config": "workspace:*",
-    "@soustools/api-types": "workspace:*",
+    "@types/node": "^26.1.1",
     "eslint": "^9.39.5",
     "eslint-plugin-boundaries": "^7.0.2",
     "eslint-plugin-project-structure": "^3.14.3",
@@ -39,6 +41,7 @@
     "prettier": "^3.9.5",
     "repomix": "^1.16.1",
     "sharp": "^0.35.3",
+    "ts-node": "^10.9.2",
     "turbo": "latest",
     "typescript": "^5.9.3",
     "typescript-eslint": "^7.18.0"
@@ -48,7 +51,9 @@
   },
   "packageManager": "pnpm@11.5.2",
   "dependencies": {
-    "eslint-plugin-react": "^7.37.5"
+    "dotenv": "^16.6.1",
+    "eslint-plugin-react": "^7.37.5",
+    "neo4j-driver": "^6.2.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
