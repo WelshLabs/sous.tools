@@ -24,9 +24,9 @@ cache miss, executing 067d94e31f16a224
 $ nest build
 ::endgroup::
 ::group::api:build
-cache miss, executing e7b2d845b7259efc
+cache miss, executing 827c38495801a981
 $ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 50995 ms
+webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 55287 ms
 ::endgroup::
 ::group::pos-simulator:build
 cache miss, executing 62a41f020228be70
@@ -42,11 +42,11 @@ https://nextjs.org/telemetry
    ▲ Next.js 15.5.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 35.5s
+ ✓ Compiled successfully in 34.7s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8110) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784556486243 is not specified and it doesn't parse as CommonJS.
+(node:8086) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784647221569 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -72,50 +72,8 @@ Route (app)                                 Size  First Load JS
 ○  (Static)  prerendered as static content
 
 ::endgroup::
-::group::@soustools/setup-portal:build
-cache miss, executing d1f6f8b82a96fb13
-$ next build
-⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
-   ▲ Next.js 15.5.18
-
-   Creating an optimized production build ...
- ✓ Compiled successfully in 45s
-   Linting and checking validity of types ...
-
- ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-   Collecting page data ...
-   Generating static pages (0/4) ...
-   Generating static pages (1/4) 
-   Generating static pages (2/4) 
-   Generating static pages (3/4) 
- ✓ Generating static pages (4/4)
-   Finalizing page optimization ...
-   Collecting build traces ...
-
-Route (app)                                 Size  First Load JS
-┌ ○ /                                    2.39 kB         105 kB
-├ ○ /_not-found                            998 B         103 kB
-├ ƒ /api/finalize                          134 B         102 kB
-├ ƒ /api/pairing                           134 B         102 kB
-├ ƒ /api/progress                          134 B         102 kB
-└ ƒ /api/wifi                              134 B         102 kB
-+ First Load JS shared by all             102 kB
-  ├ chunks/17-f1e459edfc6b2fb0.js        46.2 kB
-  ├ chunks/c320de20-99bdec68132def0c.js  54.2 kB
-  └ other shared chunks (total)          1.88 kB
-
-
-○  (Static)   prerendered as static content
-ƒ  (Dynamic)  server-rendered on demand
-
-::endgroup::
 ::group::web:build
-cache miss, executing d41e6c99dae0ee21
+cache miss, executing c0e4f95a65217550
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] INFISICAL_MOCK detected. Using defaults.
 [@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
@@ -131,11 +89,11 @@ https://nextjs.org/telemetry
 
    Creating an optimized production build ...
  [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
- ✓ Compiled successfully in 74s
+ ✓ Compiled successfully in 77s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8279) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784556486251 is not specified and it doesn't parse as CommonJS.
+(node:8282) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784647221577 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -198,8 +156,50 @@ Route (app)                                 Size  First Load JS
 ƒ  (Dynamic)  server-rendered on demand
 
 ::endgroup::
+::group::@soustools/setup-portal:build
+cache miss, executing d1f6f8b82a96fb13
+$ next build
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+   ▲ Next.js 15.5.18
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 46s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/4) ...
+   Generating static pages (1/4) 
+   Generating static pages (2/4) 
+   Generating static pages (3/4) 
+ ✓ Generating static pages (4/4)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    2.39 kB         105 kB
+├ ○ /_not-found                            998 B         103 kB
+├ ƒ /api/finalize                          134 B         102 kB
+├ ƒ /api/pairing                           134 B         102 kB
+├ ƒ /api/progress                          134 B         102 kB
+└ ƒ /api/wifi                              134 B         102 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/17-f1e459edfc6b2fb0.js        46.2 kB
+  ├ chunks/c320de20-99bdec68132def0c.js  54.2 kB
+  └ other shared chunks (total)          1.88 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+::endgroup::
 
  Tasks:    9 successful, 9 total
 Cached:    0 cached, 9 total
-  Time:    1m55.568s 
+  Time:    2m1.213s 
 

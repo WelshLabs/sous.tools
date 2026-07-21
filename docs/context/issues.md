@@ -14,6 +14,8 @@
 
 ---
 
+---
+
 author: conarwelsh
 association: owner
 edited: false
@@ -115,86 +117,6 @@ Here is the implementation plan:
     - Commit the changes with a clear message indicating that `eslint-disable` comments have been removed and underlying issues fixed.
     - Create a pull request for these changes.
       \--
-
----
-
-author: conarwelsh
-association: owner
-edited: false
-status: none
---
-
-I want to retain the icons with a background as an optional fallback, but want the default icons to be the transparent ones where possible, as some environments dictate different rules and guidelines for icons.
---
-
-author: conarwelsh
-association: owner
-edited: false
-status: none
---
-
-## Implementation Plan: Environment-Aware Transparent Favicons
-
-**Objective:**
-To ensure favicons render with transparent backgrounds and dynamically apply environment-specific colors (Green for Dev, Orange for Staging, gradient for Prod), with existing icons as a fallback.
-
-**Phased Approach:**
-
-**Phase 1: Refactor Icon Generation Script**
-
-1.  **Analyze `scripts/generate-icons.mjs`**:
-    - Understand the current icon generation process.
-    - Identify how backgrounds are currently handled.
-2.  **Implement Transparency**:
-    - Modify `scripts/generate-icons.mjs` to ensure all generated PNG, ICO, and SVG files have strictly transparent backgrounds. This may involve adjusting image manipulation libraries or parameters.
-3.  **Test Icon Generation**:
-    - Run `scripts/generate-icons.mjs` and verify that the output files (PNG, ICO, SVG) have transparent backgrounds.
-
-**Phase 2: Integrate Environment Colors**
-
-1.  **Determine Color Application Method**:
-    - Assess whether to modify `scripts/generate-icons.mjs` further or use `packages/design-system/src/utils/favicon-canvas.ts` for applying environment colors. The latter seems more appropriate for dynamic coloring.
-2.  **Implement Environment Color Logic in `favicon-canvas.ts`**:
-    - Add logic to `packages/design-system/src/utils/favicon-canvas.ts` that checks the `process.env.NODE_ENV` variable.
-    - Based on the environment:
-      - **Development (`dev`)**: Apply a green color.
-      - **Staging (`staging`)**: Apply an orange color.
-      - **Production (`prod`)**: Apply the standard gradient.
-    - Ensure this logic correctly overlays or modifies the transparent favicon.
-3.  **Integrate `favicon-canvas.ts` with Icon Generation**:
-    - Update `scripts/generate-icons.mjs` to call the new logic in `favicon-canvas.ts` during the generation process, ensuring the environment colors are applied to the transparent base.
-4.  **Test Environment Color Application**:
-    - Run the icon generation script in different simulated environments (e.g., by setting `NODE_ENV` to `dev`, `staging`, `prod`) and verify that the correct colors are applied to the generated icons.
-
-**Phase 3: Dynamic Icon Loading in Application**
-
-1.  **Locate Dynamic Loading Point**:
-    - Identify the relevant file for dynamic favicon loading, which is specified as `apps/web/src/app/layout.tsx`.
-2.  **Implement Dynamic Loading Logic**:
-    - Within `apps/web/src/app/layout.tsx`, implement logic to dynamically select and load the appropriate favicon based on `process.env.NODE_ENV`. This might involve conditionally setting `link` tags in the head or using a server-side rendering approach to inject the correct favicon.
-    - Ensure that if an environment-specific icon is not found (e.g., during a transition or for an unhandled `NODE_ENV`), the original fallback icon is used.
-3.  **Test Dynamic Loading**:
-    - Build and run the application in each environment (`dev`, `staging`, `prod`).
-    - Verify that the correct favicon (transparent with environment color) is displayed in the browser tab for each environment.
-    - Test the fallback mechanism by temporarily removing or renaming an environment-specific icon to ensure the default is loaded.
-
-**Phase 4: Fallback and Final Review**
-
-1.  **Confirm Fallback Behavior**:
-    - Re-verify that the original icons are still available and function as a fallback if needed, as per the issue comment.
-2.  **Code Review and Cleanup**:
-    - Perform a code review of all changes, focusing on adherence to the architecture, code quality, and clarity.
-    - Ensure that any newly introduced files or modifications are well-documented.
-3.  **Final Testing**:
-    - Conduct a comprehensive test across all environments to confirm the transparency, environment colors, and dynamic loading are working as expected.
-
-**Potential Challenges**:
-
-- **Build Tool Configuration**: Ensuring that `process.env.NODE_ENV` is correctly set and accessible in both the icon generation scripts and the main application.
-- **Image Manipulation Library Compatibility**: If `scripts/generate-icons.mjs` uses a specific library, ensuring it supports transparency and color manipulation effectively.
-- **Caching**: Browser and server-side caching might interfere with seeing favicon changes immediately. Appropriate cache-busting strategies might be needed.
-
---
 
 ---
 
