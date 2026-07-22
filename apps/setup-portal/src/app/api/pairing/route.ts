@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readFileSync } from 'fs';
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

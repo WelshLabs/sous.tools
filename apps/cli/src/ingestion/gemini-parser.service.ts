@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { geminiParserSchema } from './gemini-parser.schemas';
 import * as crypto from 'crypto';
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 import { GEMINI_SPREAD_PROMPT } from './prompt-templates';
 
 @Injectable()

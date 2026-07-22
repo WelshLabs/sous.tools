@@ -1,5 +1,5 @@
 import React from "react";
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 import { DisplayPlayer } from "./display-player";
 
 export interface DisplayPageProps {
@@ -11,7 +11,7 @@ export interface DisplayPageProps {
 export default async function DisplayPage({ params }: DisplayPageProps) {
   const resolvedParams = await params;
   const displayId = resolvedParams.id;
-  const baseUrl = config.API_BASE_URL;
+  const baseUrl = config.NEXT_PUBLIC_API_URL;
 
   let initialDisplay = null;
   let initialLayout = null;

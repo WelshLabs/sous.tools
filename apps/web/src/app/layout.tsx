@@ -1,6 +1,3 @@
-import { initializeLogger } from "@soustools/logger";
-initializeLogger();
-
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";

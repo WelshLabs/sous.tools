@@ -1,10 +1,10 @@
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 import { RecipeBuilderClient } from "@/app/(workspace)/recipes/RecipeBuilderClient";
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewRecipePage() {
-  const baseUrl = config.API_BASE_URL;
+  const baseUrl = config.NEXT_PUBLIC_API_URL;
   
   let vessels = [];
   let masterIngredients = [];

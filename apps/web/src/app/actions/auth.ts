@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 export async function logoutAction() {
   // Forward the user's HttpOnly session cookies to the NestJS API so it can
@@ -16,7 +16,7 @@ export async function logoutAction() {
 
   try {
     await fetch(
-      `${config.API_BASE_URL}/auth/logout`,
+      `${config.NEXT_PUBLIC_API_URL}/auth/logout`,
       {
         method: "POST",
         headers: {

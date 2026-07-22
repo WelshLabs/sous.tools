@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 @Controller("health")
 export class HealthController {

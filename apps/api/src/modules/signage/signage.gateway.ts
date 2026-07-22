@@ -96,15 +96,15 @@ export class SignageGateway
    * Broadcasts pairing confirmation to a device listening on its pairing room.
    */
   broadcastDevicePaired(deviceId: string, orgId: string): void {
-    import("@soustools/config").then(({ config }) => {
+    import("@soustools/config/server").then(({ serverConfig: config }) => {
       if (this.server) {
         this.server
           .to(`pairing:${deviceId}`)
           .emit("device_paired", { 
             deviceId, 
             orgId,
-            supabaseUrl: config.SUPABASE_URL,
-            supabaseAnonKey: config.SUPABASE_ANON_KEY
+            supabaseUrl: config.NEXT_PUBLIC_SUPABASE_URL,
+            supabaseAnonKey: config.NEXT_PUBLIC_SUPABASE_ANON_KEY
           });
       }
     });

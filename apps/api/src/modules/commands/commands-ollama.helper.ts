@@ -1,7 +1,7 @@
 import { OmniMessage } from '@soustools/api-types';
 import { Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 
 export async function fallbackToOllama(
   history: OmniMessage[],

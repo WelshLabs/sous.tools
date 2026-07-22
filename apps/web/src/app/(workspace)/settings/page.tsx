@@ -1,4 +1,3 @@
-import { config } from "@soustools/config";
 import { SettingsClient } from "./settings-client";
 import { api } from "@soustools/api-client";
 
@@ -25,7 +24,7 @@ export default async function SettingsPage() {
     role: "admin",
   };
 
-  const isDev = config.NODE_ENV === "development";
+  const isDev = process.env.NODE_ENV === "development";
 
   return (
     <SettingsClient

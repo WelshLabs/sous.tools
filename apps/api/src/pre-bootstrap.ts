@@ -1,4 +1,4 @@
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 /**
  * Pre-bootstrap sequence.

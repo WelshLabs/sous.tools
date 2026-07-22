@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import { IVisionService } from "./IVisionService";
 
 @Injectable()

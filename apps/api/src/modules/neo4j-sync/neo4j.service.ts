@@ -1,6 +1,6 @@
 import { Injectable, OnApplicationShutdown, Logger } from "@nestjs/common";
 import neo4j, { Driver } from "neo4j-driver";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 @Injectable()
 export class Neo4jService implements OnApplicationShutdown {

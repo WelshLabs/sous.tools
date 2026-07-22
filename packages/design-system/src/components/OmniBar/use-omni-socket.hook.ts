@@ -2,44 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { io, type Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
-import { getDefaultBaseUrl } from "@soustools/api-client";
-
-export function resolveSocketUrl(apiUrl?: string, currentOrigin?: string) {
-  const configuredBase = apiUrl?.trim();
-  const fallbackBase = currentOrigin?.trim();
-
-  if (configuredBase) {
-    const normalizedBase = configuredBase.replace(/\/$/, "");
-
-    if (/^wss?:\/\//i.test(normalizedBase)) {
-      return normalizedBase.endsWith("/commands")
-        ? normalizedBase
-        : `${normalizedBase}/commands`;
-    }
-
-    if (/^https?:\/\//i.test(normalizedBase)) {
-      const protocol = normalizedBase.startsWith("https://")
-        ? "wss://"
-        : "ws://";
-      return `${protocol}${normalizedBase.replace(/^https?:\/\//i, "")}/commands`;
-    }
-
-    return `https://${normalizedBase}/commands`;
-  }
-
-  if (fallbackBase) {
-    const normalizedBase = fallbackBase.replace(/\/$/, "");
-    return normalizedBase.endsWith("/commands")
-      ? normalizedBase
-      : `${normalizedBase}/commands`;
-  }
-
-  return "/commands";
-}
+import { createWebSocketClient } from "@soustools/api-client";
 
 export function useOmniSocket(token?: string): {
   socket: Socket | null;
@@ -64,109 +31,96 @@ export function useOmniSocket(token?: string): {
     setChatHistory,
   } = useOmnibarContext();
 
-  // Initialize WebSocket connection
+  // Initialize WebSocket connection & manage listeners cleanly
   useEffect(() => {
-    let newSocket: Socket | null = null;
-    const initSocket = async () => {
-      try {
-        const socketUrl = resolveSocketUrl(
-          getDefaultBaseUrl(),
-          typeof window !== "undefined" ? window.location.origin : undefined,
-        );
+    const wsSocket = createWebSocketClient({
+      namespace: "/commands",
+      token,
+    });
 
-        // The HttpOnly session cookie is automatically sent by the browser.
-        // No JS-accessible token is needed — NestJS validates commands gateway via WsSupabaseAuthGuard.
-        newSocket = io(socketUrl, {
-          auth: {
-            token: token || "", // Provide a default empty string if token is undefined
-          },
-          transports: ["websocket"],
-          withCredentials: true,
-        });
-
-        // Capture outgoing executeCommand payloads for silent retries on token expiration
-        const originalEmit = newSocket.emit.bind(newSocket);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        newSocket.emit = (event: string, ...args: any[]) => {
-          if (event === "executeCommand") {
-            lastPayloadRef.current = args[0] as Record<string, unknown>;
-          }
-          return originalEmit(event, ...args);
-        };
-
-        // Listen for standard chat stream
-        newSocket.on("chat_message", (message: OmniMessage) => {
-          addMessage(message);
-          if (message.role === "model") {
-            setIsProcessing(false);
-            markLoadingComplete();
-          }
-        });
-
-        // Listen for explicit errors
-        newSocket.on(
-          "command_status",
-          (data: { state: string; message: string }) => {
-            if (data.state === "error") {
-              setErrorMessage(data.message);
-              setIsProcessing(false);
-              setIsListening(false);
-              markLoadingComplete();
-            }
-          },
-        );
-
-        // Global socket error & exception handlers
-        newSocket.on("exception", async (error: { message?: string }) => {
-          console.error("NestJS Guard/Pipe Exception:", error);
-          if (
-            error.message?.includes("Unauthorized") ||
-            error.message?.includes("expired")
-          ) {
-            setErrorMessage(error.message || "A server error occurred.");
-            setIsProcessing(false);
-            markLoadingComplete();
-          }
-        });
-
-        newSocket.on("error", (error) => {
-          console.error("Socket Error:", error);
-          setErrorMessage("A network error occurred.");
-          setIsProcessing(false);
-          markLoadingComplete();
-        });
-
-        newSocket.on("connect_error", (error) => {
-          console.error("Socket Connect Error:", error);
-          setErrorMessage("Failed to connect to the server.");
-          setIsProcessing(false);
-          markLoadingComplete();
-        });
-
-        newSocket.on("disconnect", (reason) => {
-          console.warn("Socket Disconnected:", reason);
-          if (reason !== "io client disconnect") {
-            setErrorMessage("Lost connection to the server.");
-            setIsProcessing(false);
-            markLoadingComplete();
-          }
-        });
-
-        setSocket(newSocket);
-      } catch (err: unknown) {
-        console.error("Failed to initialize WebSocket:", err);
+    const handleChatMessage = (message: OmniMessage) => {
+      addMessage(message);
+      if (message.role === "model") {
+        setIsProcessing(false);
+        markLoadingComplete();
       }
     };
 
-    initSocket();
+    const handleCommandStatus = (data: { state: string; message: string }) => {
+      if (data.state === "error") {
+        setErrorMessage(data.message);
+        setIsProcessing(false);
+        setIsListening(false);
+        markLoadingComplete();
+      }
+    };
 
-    // Cleanup on component unmount
+    const handleException = (error: { message?: string }) => {
+      console.error("[OmniBar] WebSocket exception:", error);
+      if (
+        error.message?.includes("Unauthorized") ||
+        error.message?.includes("expired")
+      ) {
+        setErrorMessage(error.message || "Session error occurred.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleError = (error: unknown) => {
+      console.error("[OmniBar] Socket error:", error);
+      setErrorMessage("A network error occurred.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleConnectError = (error: unknown) => {
+      console.error("[OmniBar] Socket connect error:", error);
+      setErrorMessage("Failed to connect to the server.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleDisconnect = (reason: string) => {
+      console.warn("[OmniBar] Socket disconnected:", reason);
+      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
+        setErrorMessage("Lost connection to the server.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleReauthenticated = () => {
+      if (lastPayloadRef.current && wsSocket.connected) {
+        console.log("[OmniBar] Resending pending command after re-authentication.");
+        wsSocket.emit("executeCommand", lastPayloadRef.current);
+      }
+    };
+
+    wsSocket.on("chat_message", handleChatMessage);
+    wsSocket.on("command_status", handleCommandStatus);
+    wsSocket.on("exception", handleException);
+    wsSocket.on("error", handleError);
+    wsSocket.on("connect_error", handleConnectError);
+    wsSocket.on("disconnect", handleDisconnect);
+    wsSocket.on("reauthenticated", handleReauthenticated);
+
+    setSocket(wsSocket);
+
+    // Guaranteed teardown: remove every registered event listener & disconnect socket
     return () => {
-      if (newSocket) newSocket.disconnect();
+      wsSocket.off("chat_message", handleChatMessage);
+      wsSocket.off("command_status", handleCommandStatus);
+      wsSocket.off("exception", handleException);
+      wsSocket.off("error", handleError);
+      wsSocket.off("connect_error", handleConnectError);
+      wsSocket.off("disconnect", handleDisconnect);
+      wsSocket.off("reauthenticated", handleReauthenticated);
+      wsSocket.disconnect();
     };
   }, [addMessage, setIsProcessing, markLoadingComplete, token]);
 
-  // Execute Background Command
+  // Execute Background Command handler
   useEffect(() => {
     const executeBackgroundCommand = (text: string) => {
       if (!text.trim()) return;
@@ -180,19 +134,21 @@ export function useOmniSocket(token?: string): {
       const updatedHistory = [...chatHistory, newUserMessage];
       setChatHistory(updatedHistory);
 
+      const payload = {
+        chatHistory: updatedHistory,
+        source: "omnibar",
+        path: pathname,
+        context: contextPayload,
+      };
+      lastPayloadRef.current = payload;
+
       try {
         if (!socket || !socket.connected) {
           socket?.connect();
         }
-
-        socket?.emit("executeCommand", {
-          chatHistory: updatedHistory,
-          source: "omnibar",
-          path: pathname,
-          context: contextPayload,
-        });
+        socket?.emit("executeCommand", payload);
       } catch (error: unknown) {
-        console.error("Failed to emit background command:", error);
+        console.error("[OmniBar] Failed to emit command:", error);
         setIsProcessing(false);
       }
     };

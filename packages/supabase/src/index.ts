@@ -4,29 +4,29 @@ import {
   createBrowserClient as createSupabaseBrowserClient,
   createServerClient as createSupabaseServerClient,
 } from "@supabase/ssr";
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 
 function validateConfig(): void {
   if (config.IS_MOCK_ENV) {
     return;
   }
-  if (!config.SUPABASE_URL || config.SUPABASE_URL.includes("placeholder-project.supabase.co")) {
+  if (!config.NEXT_PUBLIC_SUPABASE_URL || config.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder-project.supabase.co")) {
     throw new Error(
       "Supabase configuration is missing or placeholder values are being used. " +
-        "Ensure SUPABASE_URL and SUPABASE_ANON_KEY are correctly configured in Infisical and synced."
+        "Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are correctly configured in Infisical and synced."
     );
   }
 }
 
 /**
  * Creates a Supabase client instance for use in browser/client-side components.
- * Automatically loads configurations from `@soustools/config`.
+ * Automatically loads configurations from `@soustools/config/client`.
  */
 export function createBrowserClient(): ReturnType<typeof createSupabaseBrowserClient> {
   validateConfig();
   return createSupabaseBrowserClient(
-    config.SUPABASE_URL,
-    config.SUPABASE_ANON_KEY,
+    config.NEXT_PUBLIC_SUPABASE_URL,
+    config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
 }
 
@@ -50,8 +50,8 @@ interface CookieItem {
 export function createServerClient(cookieStore: CookieStore): ReturnType<typeof createSupabaseServerClient> {
   validateConfig();
   return createSupabaseServerClient(
-    config.SUPABASE_URL,
-    config.SUPABASE_ANON_KEY,
+    config.NEXT_PUBLIC_SUPABASE_URL,
+    config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -74,12 +74,13 @@ export function createServerClient(cookieStore: CookieStore): ReturnType<typeof 
 /**
  * Creates an administrative or backend Supabase client instance for NestJS or background script execution.
  *
- * @param serviceRoleKey Optional override service role key. Defaults to service role key from config.
+ * @param serviceRoleKey Optional override service role key.
  */
 export function createAdminClient(serviceRoleKey?: string): SupabaseClient {
   validateConfig();
+  const key = serviceRoleKey || config.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return createClient(
-    config.SUPABASE_URL,
-    serviceRoleKey || config.SUPABASE_SERVICE_ROLE_KEY || config.SUPABASE_ANON_KEY,
+    config.NEXT_PUBLIC_SUPABASE_URL,
+    key,
   );
 }

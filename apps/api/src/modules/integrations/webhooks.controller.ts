@@ -14,7 +14,7 @@ import { type Request } from "express";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import * as crypto from "crypto";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import { supabase } from "../../lib/supabase";
 
 interface WebhookPayload {
@@ -114,7 +114,7 @@ export class WebhooksController {
     const signatureKey =
       (settings.webhook_signature_key as unknown as string) ||
       config.SQUARE_WEBHOOK_SIGNATURE_KEY;
-    const notificationUrl = `${config.API_BASE_URL}/integrations/webhooks/square`;
+    const notificationUrl = `${config.NEXT_PUBLIC_API_URL}/integrations/webhooks/square`;
 
     if (!config.IS_MOCK_ENV && signatureKey) {
       if (!signature) {

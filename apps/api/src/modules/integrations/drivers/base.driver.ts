@@ -1,4 +1,4 @@
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 
 export abstract class BaseIntegrationDriver {
   abstract exchangeTokens(code: string, orgId: string): Promise<any>;

@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 
 const initializeServerLogger = () => {
   const pinoServer = pino({

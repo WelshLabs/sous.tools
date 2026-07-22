@@ -1,4 +1,4 @@
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 import { RecipeBuilderClient } from "@/app/(workspace)/recipes/RecipeBuilderClient";
 
 interface EditRecipePageProps {
@@ -7,7 +7,7 @@ interface EditRecipePageProps {
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { id } = await params;
-  const baseUrl = config.API_BASE_URL;
+  const baseUrl = config.NEXT_PUBLIC_API_URL;
   
   let recipe = null;
   let vessels = [];

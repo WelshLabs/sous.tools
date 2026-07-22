@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, Inject } from "@nestjs/common";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import { IntegrationStatus } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
 import { seedSquareCatalog, syncSquareCatalog } from "./square-sync.helper";
@@ -21,13 +21,13 @@ export class IntegrationsService {
       const baseUrl = "https://connect.squareup.com";
       const scope =
         "MERCHANT_PROFILE_READ+ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE";
-      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${config.API_BASE_URL}/integrations/callback/square&session=false`;
+      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${config.NEXT_PUBLIC_API_URL}/integrations/callback/square&session=false`;
     } else if (provider === "google") {
       const scope = encodeURIComponent(
         "openid email profile https://www.googleapis.com/auth/drive.readonly",
       );
       const redirectUri = encodeURIComponent(
-        `${config.API_BASE_URL}/integrations/callback/google`,
+        `${config.NEXT_PUBLIC_API_URL}/integrations/callback/google`,
       );
       return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${config.GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&state=${state}`;
     }
@@ -42,7 +42,7 @@ export class IntegrationsService {
         code,
         client_id: config.GOOGLE_CLIENT_ID,
         client_secret: config.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${config.API_BASE_URL}/integrations/callback/google`,
+        redirect_uri: `${config.NEXT_PUBLIC_API_URL}/integrations/callback/google`,
         grant_type: "authorization_code",
       }),
     });

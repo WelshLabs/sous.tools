@@ -1,5 +1,5 @@
 import React from "react";
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 import { 
   RevenueChart, 
   TicketTimeChart, 
@@ -26,7 +26,7 @@ interface DashboardStats {
 }
 
 async function getDashboardStats(): Promise<DashboardStats> {
-  const baseUrl = config.API_BASE_URL;
+  const baseUrl = config.NEXT_PUBLIC_API_URL;
   try {
     const res = await fetch(`${baseUrl}/dashboard/stats`, {
       cache: "no-store",

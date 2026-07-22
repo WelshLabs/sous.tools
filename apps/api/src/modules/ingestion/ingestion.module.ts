@@ -9,7 +9,7 @@ import { NutritionModule } from "../nutrition/nutrition.module";
 import { CloudVisionService } from "./CloudVisionService";
 import { OllamaVisionService } from "./OllamaVisionService";
 import { NormalizationService } from "./normalization.service";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 @Module({
   imports: [

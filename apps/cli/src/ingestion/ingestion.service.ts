@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { type PlaywrightFlipperService } from './playwright-flipper.service';
 import { GoogleGenAI } from '@google/genai';
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 import * as fs from 'fs';
 import * as path from 'path';
 

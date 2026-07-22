@@ -10,7 +10,7 @@ import { RecipeCostService } from "../recipe/recipe-cost.service";
 import { randomUUID } from "crypto";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { type Cache } from "cache-manager";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { supabase } from "../../lib/supabase";

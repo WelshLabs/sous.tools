@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { type Response } from "express";
 import { ApiResponse, IntegrationStatus } from "@soustools/api-types";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import { randomUUID } from "crypto";
 import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
@@ -54,12 +54,12 @@ export class IntegrationsController {
         throw new Error(`Unsupported provider: ${provider}`);
       }
       res.redirect(
-        `${config.APP_BASE_URL}/settings?tab=integrations&status=success`,
+        `${config.NEXT_PUBLIC_APP_URL}/settings?tab=integrations&status=success`,
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       res.redirect(
-        `${config.APP_BASE_URL}/settings?tab=integrations&status=error&message=${encodeURIComponent(msg)}`,
+        `${config.NEXT_PUBLIC_APP_URL}/settings?tab=integrations&status=error&message=${encodeURIComponent(msg)}`,
       );
     }
   }

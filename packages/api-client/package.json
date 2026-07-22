@@ -8,7 +8,8 @@
   "scripts": {
     "generate": "openapi-typescript ../../apps/api/openapi.json -o ./src/schema.d.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run"
   },
   "dependencies": {
     "openapi-fetch": "^0.11.1",
@@ -18,6 +19,7 @@
   "devDependencies": {
     "openapi-typescript": "^7.3.0",
     "typescript": "^5.4.0",
+    "vitest": "^4.1.9",
     "@soustools/tsconfig": "workspace:*"
   }
 }

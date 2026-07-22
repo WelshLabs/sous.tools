@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { IVisionService } from "./IVisionService";
 import { GoogleGenAI, Type } from "@google/genai";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 const unifiedExtractionSchema = {
   type: Type.OBJECT,

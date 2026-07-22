@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { config } from '@soustools/config';
+import { clientConfig as config } from '@soustools/config/client';
 
 let worker: Worker | null = null;
 

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { HelloResponse } from "@soustools/api-types";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 /**
  * Service managing logic for base application endpoints.

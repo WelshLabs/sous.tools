@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import { accessSync, constants } from 'fs';
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

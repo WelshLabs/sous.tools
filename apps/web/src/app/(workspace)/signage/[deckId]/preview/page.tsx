@@ -1,7 +1,7 @@
 import React from "react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 
 interface Params {
   deckId: string;
@@ -16,7 +16,7 @@ interface DeckData {
 
 async function fetchDeck(deckId: string): Promise<DeckData | null> {
   try {
-    const base = config.APP_BASE_URL;
+    const base = config.NEXT_PUBLIC_APP_URL;
     const res = await fetch(`${base}/api/signage/layouts/${deckId}`, {
       cache: "no-store",
     });
@@ -36,7 +36,7 @@ export default async function DeckPreviewPage({
   const { deckId } = await params;
   const deck = await fetchDeck(deckId);
 
-  const liveBase = config.TV_BASE_URL;
+  const liveBase = config.NEXT_PUBLIC_APP_URL;
   const liveUrl = deck
     ? `${liveBase}/s/dtown-cafe/${deck.slug}`
     : null;

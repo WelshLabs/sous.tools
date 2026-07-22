@@ -3,7 +3,7 @@ import type { Response } from "express";
 import { AppService } from "./app.service";
 import { type ApiResponse, type HelloResponse, LoginSchema } from "@soustools/api-types";
 import { supabase } from "./lib/supabase";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 const COOKIE_NAME = "sb-access-token";
 const isSecureEnv = config.IS_PRODUCTION || config.IS_SECURE_ENV || config.NODE_ENV === "staging";

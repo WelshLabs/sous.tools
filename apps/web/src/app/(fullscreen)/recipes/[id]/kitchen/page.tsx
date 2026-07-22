@@ -1,4 +1,4 @@
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 import { KitchenClientPage } from "./KitchenClientPage";
 
 interface KitchenPageProps {
@@ -7,7 +7,7 @@ interface KitchenPageProps {
 
 export default async function KitchenPage({ params }: KitchenPageProps) {
   const { id } = await params;
-  const baseUrl = (config as any).API_BASE_URL || "http://127.0.0.1:6001";
+  const baseUrl = config.NEXT_PUBLIC_API_URL;
   
   let recipe = null;
   try {

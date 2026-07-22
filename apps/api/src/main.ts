@@ -4,7 +4,7 @@ initializeServerLogger();
 
 import "reflect-metadata";
 import "./pre-bootstrap";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";

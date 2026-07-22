@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 
 @Injectable()

@@ -3,8 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
@@ -16,12 +24,12 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "@types/node": "^20.11.0",
+    "eslint": "^9",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",
-    "@soustools/eslint-config": "workspace:*",
-    "eslint": "^9",
     "typescript-eslint": "^8"
   }
 }

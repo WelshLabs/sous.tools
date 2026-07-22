@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { SignageDevice } from "@soustools/api-types";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import Redis from "ioredis";
 import * as jwt from "jsonwebtoken";
 
@@ -105,8 +105,8 @@ export class DevicesService {
     if (data.is_paired) {
       return {
         paired: true,
-        supabaseUrl: config.SUPABASE_URL,
-        supabaseAnonKey: config.SUPABASE_ANON_KEY,
+        supabaseUrl: config.NEXT_PUBLIC_SUPABASE_URL,
+        supabaseAnonKey: config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       };
     }
     return { paired: false };
@@ -208,7 +208,7 @@ export class DevicesService {
         data.deviceType === "wearos"
           ? { sub: data.userId, deviceType: "wearos" }
           : { orgId: data.orgId, deviceType: "rpi" };
-      const token = jwt.sign(payload, config.SUPABASE_ANON_KEY || "secret", {
+      const token = jwt.sign(payload, config.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
         expiresIn: "1y",
       });
 

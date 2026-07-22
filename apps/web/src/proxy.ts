@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { config as appConfig } from "@soustools/config";
+import { serverConfig as appConfig } from "@soustools/config/server";
 
 // Must match ACCESS_TOKEN_COOKIE in apps/api/src/modules/auth/auth.controller.ts
 // @todo: extract to a shared @soustools/auth-constants package

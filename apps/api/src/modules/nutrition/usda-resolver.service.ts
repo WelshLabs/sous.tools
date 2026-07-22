@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 export interface UsdaMatch {
   serving_size_g?: number;

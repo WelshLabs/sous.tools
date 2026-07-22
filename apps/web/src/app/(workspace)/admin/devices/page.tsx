@@ -1,5 +1,5 @@
 import React from "react";
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 import { createApiClient } from "@soustools/api-client";
 import { DevicesClientWrapper } from "./devices-client-wrapper";
 
@@ -9,8 +9,7 @@ export const dynamic = 'force-dynamic';
  * DevicesPage mounts the signage physical displays pairing and status manager.
  */
 export default async function DevicesPage() {
-  const baseUrl = config.API_BASE_URL || "http://127.0.0.1:6001";
-  const serverApi = createApiClient({ baseUrl });
+  const serverApi = createApiClient({ baseUrl: config.NEXT_PUBLIC_API_URL });
 
   let displays = [];
   let layouts = [];

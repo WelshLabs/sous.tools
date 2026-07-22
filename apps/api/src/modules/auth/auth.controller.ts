@@ -12,7 +12,7 @@ import type { Response } from "express";
 import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse, ApiProperty } from "@nestjs/swagger";
 import { type ApiResponse, LoginSchema } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 const ACCESS_TOKEN_COOKIE = "sb-access-token";
 const REFRESH_TOKEN_COOKIE = "sb-refresh-token";

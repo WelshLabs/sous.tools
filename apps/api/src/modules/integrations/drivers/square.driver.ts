@@ -1,6 +1,6 @@
 import { BaseIntegrationDriver } from './base.driver';
 import { Injectable } from '@nestjs/common';
-import { config } from '@soustools/config';
+import { serverConfig as config } from '@soustools/config/server';
 import { supabase } from '../../../lib/supabase';
 import * as crypto from 'crypto';
 

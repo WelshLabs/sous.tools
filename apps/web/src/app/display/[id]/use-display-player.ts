@@ -1,9 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { io } from "socket.io-client";
 import { type SignageDisplay, type PosItem, type SignageLayoutConfig } from "@soustools/api-types";
 import { type SignageLayout } from "./types";
 import { mapDbItemToPosItem, registerDisplayDevice, type RawDbPosItem } from "./helpers";
-import { getDefaultBaseUrl } from "@soustools/api-client";
+import { createWebSocketClient } from "@soustools/api-client";
 
 export function useDisplayPlayer(
   displayId: string,
@@ -109,33 +108,41 @@ export function useDisplayPlayer(
   }, [displayId, fetchDisplayAndLayout]);
 
   useEffect(() => {
-    const socketUrl = getDefaultBaseUrl();
-    const socket = io(socketUrl, {
+    const socket = createWebSocketClient({
       query: { displayId, deckId: display?.deckId || "" },
     });
 
-    socket.on("connect", () => {
+    const handleConnect = () => {
       socket.emit("join", { displayId, deckId: display?.deckId });
-    });
+    };
 
-    socket.on("deck_updated", (payload: { deckId: string; config: SignageLayoutConfig }) => {
+    const handleDeckUpdated = (payload: { deckId: string; config: SignageLayoutConfig }) => {
       if (payload.deckId === display?.deckId) {
-        setLayout((prev) => prev ? { ...prev, config: payload.config } : null);
+        setLayout((prev) => (prev ? { ...prev, config: payload.config } : null));
       }
-    });
+    };
 
-    socket.on("items_updated", (payload: { deckId: string; items: RawDbPosItem[] }) => {
+    const handleItemsUpdated = (payload: { deckId: string; items: RawDbPosItem[] }) => {
       if (payload.deckId === display?.deckId && payload.items) {
         const parsedItems = payload.items.map(mapDbItemToPosItem);
         setItems(parsedItems);
       }
-    });
+    };
 
-    socket.on("layout_updated", () => {
+    const handleLayoutUpdated = () => {
       fetchDisplayAndLayout();
-    });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("deck_updated", handleDeckUpdated);
+    socket.on("items_updated", handleItemsUpdated);
+    socket.on("layout_updated", handleLayoutUpdated);
 
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("deck_updated", handleDeckUpdated);
+      socket.off("items_updated", handleItemsUpdated);
+      socket.off("layout_updated", handleLayoutUpdated);
       socket.disconnect();
     };
   }, [displayId, display?.deckId, fetchDisplayAndLayout]);

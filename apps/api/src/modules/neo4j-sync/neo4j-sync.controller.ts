@@ -9,7 +9,7 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { Neo4jSyncService, SupabaseWebhookPayload } from "./neo4j-sync.service";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 
 @Controller("webhooks/neo4j-sync")
 export class Neo4jSyncController {

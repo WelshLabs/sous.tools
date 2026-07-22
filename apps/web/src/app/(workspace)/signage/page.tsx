@@ -1,11 +1,11 @@
-import { config } from "@soustools/config";
+import { clientConfig as config } from "@soustools/config/client";
 import { TwoToneHeader } from "@soustools/design-system";
 import { DecksListClient } from "./decks-list-client";
 
 export const dynamic = 'force-dynamic';
 
 export default async function TVSignageListPage() {
-  const baseUrl = config.API_BASE_URL;
+  const baseUrl = config.NEXT_PUBLIC_API_URL;
   let decks = [];
 
   try {

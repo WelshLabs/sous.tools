@@ -3,7 +3,7 @@ import { BullModule } from "@nestjs/bullmq";
 import { CacheModule } from "@nestjs/cache-manager";
 // @ts-expect-error cache-manager-ioredis is missing types
 import * as redisStore from "cache-manager-ioredis";
-import { config } from "@soustools/config";
+import { serverConfig as config } from "@soustools/config/server";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { SignageModule } from "./modules/signage/signage.module";

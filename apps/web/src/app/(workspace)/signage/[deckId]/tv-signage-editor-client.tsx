@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
 import { type SignageLayoutConfig, type PosItem } from "@soustools/api-types";
-import { io } from "socket.io-client";
 import { mapDbItemToPosItem, type RawDbPosItem } from "@/app/display/[id]/helpers";
-import { getDefaultBaseUrl } from "@soustools/api-client";
+import { createWebSocketClient } from "@soustools/api-client";
 import { useRouter } from "next/navigation";
 
 interface SignageDeck {
@@ -46,23 +45,27 @@ export default function TVSignageEditorClient({ deckId, initialDeck, initialItem
   }, [initialItems]);
 
   useEffect(() => {
-    const socketUrl = getDefaultBaseUrl();
-    const socket = io(socketUrl, {
+    const socket = createWebSocketClient({
       query: { deckId },
     });
 
-    socket.on("connect", () => {
+    const handleConnect = () => {
       socket.emit("join", { deckId });
-    });
+    };
 
-    socket.on("items_updated", (payload: { deckId: string; items: RawDbPosItem[] }) => {
+    const handleItemsUpdated = (payload: { deckId: string; items: RawDbPosItem[] }) => {
       if (payload.deckId === deckId && payload.items) {
         const parsedItems = payload.items.map(mapDbItemToPosItem);
         setItems(parsedItems);
       }
-    });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("items_updated", handleItemsUpdated);
 
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("items_updated", handleItemsUpdated);
       socket.disconnect();
     };
   }, [deckId]);
