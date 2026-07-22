@@ -1,4 +1,4 @@
-[93m[4mUnused files[24m[39m (104)
+[93m[4mUnused files[24m[39m (105)
 apps/setup-portal/src/components/PairingStep.tsx                             
 apps/setup-portal/src/components/WifiStep.tsx                                
 apps/storybook/.storybook/__mocks__/next-link.tsx                            
@@ -24,6 +24,7 @@ apps/web/src/components/layout/bottom-nav.tsx
 apps/web/src/components/layout/hamburger.tsx                                 
 apps/web/src/components/layout/sidebar.tsx                                   
 apps/web/src/components/layout/theme-toggle.tsx                              
+apps/web/src/lib/api.ts                                                      
 apps/web/src/sw.ts                                                           
 ecosystem.config.js                                                          
 packages/config/src/cli.ts                                                   
@@ -103,24 +104,21 @@ packages/domain-signage/src/preview-menu-renderer.tsx
 scripts/generate-icons.mjs                                                   
 scripts/nuke-neo4j.ts                                                        
 scripts/prepare-seed.ts                                                      
-[93m[4mUnused dependencies[24m[39m (26)
+[93m[4mUnused dependencies[24m[39m (23)
 @as-integrations/express4      apps/api/package.json:20:6                
 @nestjs/platform-express       apps/cli/package.json:25:6                
 @soustools/api-types           apps/cli/package.json:26:6                
 @soustools/logger              apps/cli/package.json:28:6                
 @soustools/config              apps/pos-simulator/package.json:15:6      
-@supabase/supabase-js          apps/pos-simulator/package.json:17:6      
 @hello-pangea/dnd              apps/web/package.json:14:6                
-@supabase/supabase-js          apps/web/package.json:27:6                
-recharts                       apps/web/package.json:37:6                
-serwist                        apps/web/package.json:38:6                
+recharts                       apps/web/package.json:36:6                
+serwist                        apps/web/package.json:37:6                
+socket.io-client               apps/web/package.json:38:6                
 dotenv                         package.json:54:6                         
 eslint-plugin-react            package.json:55:6                         
 neo4j-driver                   package.json:56:6                         
-socket.io-client               packages/api-client/package.json:15:6     
-@infisical/sdk                 packages/config/package.json:14:6         
-dotenv                         packages/config/package.json:15:6         
-zod                            packages/config/package.json:16:6         
+@infisical/sdk                 packages/config/package.json:22:6         
+dotenv                         packages/config/package.json:23:6         
 @radix-ui/react-dropdown-menu  packages/design-system/package.json:49:6  
 @radix-ui/react-tooltip        packages/design-system/package.json:53:6  
 @soustools/config              packages/design-system/package.json:56:6  
@@ -145,10 +143,10 @@ webpack-node-externals           apps/api/package.json:75:6
 source-map-support               apps/cli/package.json:45:6              
 supertest                        apps/cli/package.json:46:6              
 ts-loader                        apps/cli/package.json:48:6              
-tailwindcss                      apps/pos-simulator/package.json:33:6    
+tailwindcss                      apps/pos-simulator/package.json:32:6    
 autoprefixer                     apps/setup-portal/package.json:29:6     
 tailwindcss                      apps/setup-portal/package.json:32:6     
-tailwindcss                      apps/web/package.json:53:6              
+tailwindcss                      apps/web/package.json:52:6              
 @soustools/api-types             package.json:26:6                       
 @soustools/config                package.json:27:6                       
 @soustools/tsconfig              package.json:29:6                       
@@ -156,7 +154,7 @@ eslint-plugin-project-structure  package.json:33:6
 png-to-ico                       package.json:40:6                       
 sharp                            package.json:43:6                       
 ts-node                          package.json:44:6                       
-tsx                              packages/config/package.json:21:6       
+tsx                              packages/config/package.json:31:6       
 autoprefixer                     packages/design-system/package.json:35:6
 postcss                          packages/design-system/package.json:39:6
 @soustools/tsconfig              packages/eslint-config/package.json:22:6
@@ -339,15 +337,16 @@ PairDisplayDialogProps      interface  packages/domain-signage/src/pair-display-
 RightSidePanelProps         interface  packages/domain-signage/src/right-side-panel.tsx:17:18                           
 SlideFilmstripProps         interface  packages/domain-signage/src/slide-filmstrip.tsx:13:18                            
 StylesPanelProps            interface  packages/domain-signage/src/styles-panel.tsx:11:18                               
-[93m[4mDuplicate exports[24m[39m (9)
-GEMINI_SPREAD_PROMPT|default   apps/cli/src/ingestion/prompt-templates.ts                                        
-PosSimulatorContainer|default  apps/pos-simulator/src/components/PosSimulator.container.tsx                      
-PosSimulator|default           apps/pos-simulator/src/components/PosSimulator.tsx                                
-SignagePreview|default         packages/domain-signage/src/components/SignagePreview/SignagePreview.container.tsx
-EditorTopBar|default           packages/domain-signage/src/editor-top-bar.tsx                                    
-LayoutPreview|default          packages/domain-signage/src/layout-preview.tsx                                    
-baseConfig|default             packages/eslint-config/base.js                                                    
-nestjsConfig|default           packages/eslint-config/nestjs.js                                                  
-nextConfig|default             packages/eslint-config/next.js                                                    
-[33m[4mConfiguration hints[24m (39)[39m
+[93m[4mDuplicate exports[24m[39m (10)
+GEMINI_SPREAD_PROMPT|default      apps/cli/src/ingestion/prompt-templates.ts                                        
+PosSimulatorContainer|default     apps/pos-simulator/src/components/PosSimulator.container.tsx                      
+PosSimulator|default              apps/pos-simulator/src/components/PosSimulator.tsx                                
+createRestClient|createApiClient  packages/api-client/src/rest.ts                                                   
+SignagePreview|default            packages/domain-signage/src/components/SignagePreview/SignagePreview.container.tsx
+EditorTopBar|default              packages/domain-signage/src/editor-top-bar.tsx                                    
+LayoutPreview|default             packages/domain-signage/src/layout-preview.tsx                                    
+baseConfig|default                packages/eslint-config/base.js                                                    
+nestjsConfig|default              packages/eslint-config/nestjs.js                                                  
+nextConfig|default                packages/eslint-config/next.js                                                    
+[33m[4mConfiguration hints[24m (38)[39m
 [ELIFECYCLE] Command failed with exit code 1.

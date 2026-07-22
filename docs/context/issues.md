@@ -14,8 +14,6 @@
 
 ---
 
----
-
 author: conarwelsh
 association: owner
 edited: false
@@ -117,8 +115,6 @@ Here is the implementation plan:
     - Commit the changes with a clear message indicating that `eslint-disable` comments have been removed and underlying issues fixed.
     - Create a pull request for these changes.
       \--
-
----
 
 ---
 

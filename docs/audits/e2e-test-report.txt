@@ -1,205 +1,48 @@
 
-   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/mcp-server, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
-   • Running e2e in 20 packages
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/mcp-server, @soustools/setup-portal, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
+   • Running e2e in 19 packages
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing 1a95a6504e427efe
+cache miss, executing 8062582ad4f6573d
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing 9a7e19bc15085d99
+cache miss, executing 558fe019a87868cc
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing e6e473d76442edae
+cache miss, executing b0829986e89a458c
 $ tsc
 ::endgroup::
-::group::@soustools/supabase:build
-cache miss, executing 95b5a0de819c8494
-$ tsc
-::endgroup::
-::group::cli:build
-cache miss, executing f7702da84a700402
-$ nest build
-::endgroup::
-::group::api:build
-cache miss, executing 5f245e3bac3b43ec
-$ nest build
-webpack 5.97.1 compiled [1m[32msuccessfully[39m[22m in 56586 ms
-::endgroup::
-::group::pos-simulator:build
-cache miss, executing 2b365450d97e99ad
+[;31mpos-simulator:build[;0m
+cache miss, executing 8c13226c18d2316a
 $ node ../../packages/config/dist/cli.js next build
-[@soustools/config] INFISICAL_MOCK detected. Using defaults.
-[@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
-⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
-   ▲ Next.js 15.5.18
-
-   Creating an optimized production build ...
- ✓ Compiled successfully in 35.9s
-   Linting and checking validity of types ...
-
- ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8011) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784669399414 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-   Collecting page data ...
-   Generating static pages (0/5) ...
-   Generating static pages (1/5) 
-   Generating static pages (2/5) 
-   Generating static pages (3/5) 
- ✓ Generating static pages (5/5)
-   Finalizing page optimization ...
-   Collecting build traces ...
-
-Route (app)                                 Size  First Load JS
-┌ ○ /                                    95.9 kB         198 kB
-├ ○ /_not-found                            992 B         103 kB
-└ ○ /test                                  122 B         102 kB
-+ First Load JS shared by all             102 kB
-  ├ chunks/236-5caa8f56cc2653e3.js         46 kB
-  ├ chunks/c1ced9cb-d98a9da30eb7cdc9.js  54.2 kB
-  └ other shared chunks (total)          1.86 kB
-
-
-○  (Static)  prerendered as static content
-
-::endgroup::
+[@soustools/config] FATAL: Missing Infisical credentials (INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). Process execution halted immediately.
+[ELIFECYCLE] Command failed with exit code 1.
 ::group::web:build
-cache miss, executing 0a7872231dfcf05d
+cache miss, executing dd9c39fdfafd9e50
 $ node ../../packages/config/dist/cli.js next build
-[@soustools/config] INFISICAL_MOCK detected. Using defaults.
-[@soustools/config] Spawning command "next build" with NODE_ENV="production" (host process.env.NODE_ENV="undefined")
-⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
-   ▲ Next.js 15.5.18
-   - Experiments (use with caution):
-     · optimizePackageImports
-
-   Creating an optimized production build ...
- [32m[1m✓[22m[39m (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
- ✓ Compiled successfully in 76s
-   Linting and checking validity of types ...
-
- ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-(node:8205) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784669399422 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-   Collecting page data ...
-   Generating static pages (0/18) ...
-   Generating static pages (4/18) 
-   Generating static pages (8/18) 
-   Generating static pages (13/18) 
- ✓ Generating static pages (18/18)
-   Finalizing page optimization ...
-   Collecting build traces ...
-
-Route (app)                                 Size  First Load JS
-┌ ○ /                                    3.19 kB         354 kB
-├ ○ /_not-found                            999 B         109 kB
-├ ƒ /(.)ingestion/review/[id]            2.42 kB         616 kB
-├ ƒ /admin/devices                       1.25 kB         609 kB
-├ ƒ /admin/users                           304 B         347 kB
-├ ƒ /catalog                             3.46 kB         354 kB
-├ ƒ /dashboard                             304 B         347 kB
-├ ○ /display                               825 B         352 kB
-├ ƒ /display/[id]                        4.87 kB         613 kB
-├ ƒ /home                                1.06 kB         352 kB
-├ ƒ /ingestion/review/[id]               3.17 kB         360 kB
-├ ƒ /ingestions                            165 B         112 kB
-├ ƒ /inventory                           2.05 kB         353 kB
-├ ƒ /inventory/(.)vendors/add            1.89 kB         353 kB
-├ ƒ /inventory/invoices                  2.72 kB         354 kB
-├ ƒ /inventory/items                     2.11 kB         362 kB
-├ ƒ /inventory/orders                      958 B         361 kB
-├ ƒ /inventory/orders/[id]/shop          3.24 kB         118 kB
-├ ƒ /inventory/vendors                     680 B         361 kB
-├ ƒ /inventory/vendors/add               2.01 kB         353 kB
-├ ○ /kds                                 5.53 kB         356 kB
-├ ○ /login                               2.33 kB         353 kB
-├ ○ /manifest.webmanifest                  139 B         108 kB
-├ ○ /pos                                 7.37 kB         358 kB
-├ ƒ /pos-orders                          1.06 kB         352 kB
-├ ○ /privacy-policy                        319 B         347 kB
-├ ƒ /recipes                               495 B         365 kB
-├ ƒ /recipes/[id]                           1 kB         366 kB
-├ ƒ /recipes/[id]/edit                     738 B         366 kB
-├ ƒ /recipes/[id]/kitchen                  524 B         365 kB
-├ ƒ /recipes/new                           738 B         366 kB
-├ ƒ /settings                            13.1 kB         385 kB
-├ ○ /showcase                            12.2 kB         363 kB
-├ ƒ /signage                             1.68 kB         609 kB
-├ ƒ /signage/[deckId]                    1.36 kB         609 kB
-├ ƒ /signage/[deckId]/preview              939 B         112 kB
-├ ƒ /team                                1.57 kB         352 kB
-├ ƒ /transactions                         2.5 kB         353 kB
-└ ƒ /vendors                             1.53 kB         114 kB
-+ First Load JS shared by all             108 kB
-  ├ chunks/5585-8b10fddf9da850e8.js      50.3 kB
-  ├ chunks/c1ced9cb-9608bf2c58bd2ad6.js  54.2 kB
-  └ other shared chunks (total)          3.64 kB
-
-
-○  (Static)   prerendered as static content
-ƒ  (Dynamic)  server-rendered on demand
-
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/setup-portal:build
-cache miss, executing 361d427a2f74a64d
+cache miss, executing 8f99d386a9238f38
 $ next build
-⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
-   ▲ Next.js 15.5.18
-
-   Creating an optimized production build ...
- ✓ Compiled successfully in 44s
-   Linting and checking validity of types ...
-
- ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-   Collecting page data ...
-   Generating static pages (0/4) ...
-   Generating static pages (1/4) 
-   Generating static pages (2/4) 
-   Generating static pages (3/4) 
- ✓ Generating static pages (4/4)
-   Finalizing page optimization ...
-   Collecting build traces ...
-
-Route (app)                                 Size  First Load JS
-┌ ○ /                                    2.39 kB         105 kB
-├ ○ /_not-found                            995 B         103 kB
-├ ƒ /api/finalize                          134 B         102 kB
-├ ƒ /api/pairing                           134 B         102 kB
-├ ƒ /api/progress                          134 B         102 kB
-└ ƒ /api/wifi                              134 B         102 kB
-+ First Load JS shared by all             102 kB
-  ├ chunks/236-6e944717b7d44255.js       46.1 kB
-  ├ chunks/c1ced9cb-e45ce61b6415495d.js  54.2 kB
-  └ other shared chunks (total)          1.88 kB
-
-
-○  (Static)   prerendered as static content
-ƒ  (Dynamic)  server-rendered on demand
-
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::cli:build
+cache miss, executing e9cae18d6ef27df6
+$ nest build
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::api:build
+cache miss, executing 243020086f3321dc
+$ nest build
+[ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    9 successful, 9 total
-Cached:    0 cached, 9 total
-  Time:    1m55.854s 
+ Tasks:    3 successful, 8 total
+Cached:    0 cached, 8 total
+  Time:    6.544s 
+Failed:    pos-simulator#build
 
