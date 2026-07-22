@@ -69,13 +69,13 @@ jobs:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       #   continue-on-error: true
 
-      - name: Build Applications (Required for Lighthouse)
-        run: pnpm turbo build
+      # - name: Build Applications (Required for Lighthouse)
+      #   run: pnpm turbo build
 
-      - name: Run Lighthouse (PWA Metrics)
-        run: |
-          npm install -g @lhci/cli
-          lhci autorun > docs/audits/lighthouse-report.txt || true
+      # - name: Run Lighthouse (PWA Metrics)
+      #   run: |
+      #     npm install -g @lhci/cli
+      #     lhci autorun > docs/audits/lighthouse-report.txt || true
 
       # ==========================================
       # 3. AI CONTEXT GENERATION (Architecture & State)
