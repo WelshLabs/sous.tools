@@ -19,12 +19,8 @@ interface IntegrationStatus {
 
 export function OmniBarProvider({
   children,
-  token,
-  apiClient,
 }: {
   children?: React.ReactNode;
-  token?: string;
-  apiClient?: typeof fetch;
 }) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
@@ -39,20 +35,14 @@ export function OmniBarProvider({
     setInputText,
     setIsGoogleDriveConnected,
     setChatHistory,
-    setApiClient,
-    apiClient: ctxApiClient,
   } = useOmnibarContext();
 
   const handleClearHistory = () => setChatHistory([]);
 
-  useEffect(() => {
-    if (apiClient && apiClient !== ctxApiClient) {
-      setApiClient(apiClient);
-    }
-  }, [apiClient, setApiClient, ctxApiClient]);
+
 
   const { socket, errorMessage, setErrorMessage } =
-    useOmniSocket(token);
+    useOmniSocket();
 
   
   useGlobalDrag(
@@ -69,8 +59,7 @@ export function OmniBarProvider({
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const fetcher = apiClient || fetch;
-        const res = await fetcher("/api/integrations/status");
+        const res = await fetch("/api/integrations/status");
         if (res.ok) {
           const payload = await res.json() as { data: IntegrationStatus[] } | IntegrationStatus[];
           const list: IntegrationStatus[] = Array.isArray(payload) ? payload : payload.data || [];
@@ -82,7 +71,7 @@ export function OmniBarProvider({
       }
     };
     fetchStatus();
-  }, [setIsGoogleDriveConnected, apiClient]);
+  }, [setIsGoogleDriveConnected]);
 
   
   // Sync expanded state if user navigates to/from /home

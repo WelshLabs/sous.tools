@@ -4,10 +4,7 @@ import { NutritionService } from "./nutrition.service";
 import { DietaryClassifierService } from "./dietary-classifier.service";
 import { UsdaResolverService } from "./usda-resolver.service";
 import { LabelRendererService } from "./label-renderer.service";
-// import { SupabaseModule } from '@soustools/supabase';
-
 @Module({
-  // imports: [SupabaseModule],
   controllers: [NutritionController],
   providers: [
     NutritionService,
@@ -18,3 +15,4 @@ import { LabelRendererService } from "./label-renderer.service";
   exports: [NutritionService, UsdaResolverService, DietaryClassifierService],
 })
 export class NutritionModule {}
+

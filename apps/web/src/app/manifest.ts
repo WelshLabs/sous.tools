@@ -17,6 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
     share_target: {
       action: '/home',
       method: 'GET',
+      enctype: 'multipart/form-data',
       params: {
         title: 'title',
         text: 'text',

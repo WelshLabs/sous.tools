@@ -8,7 +8,7 @@ import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
 import { createWebSocketClient } from "@soustools/api-client";
 
-export function useOmniSocket(token?: string): {
+export function useOmniSocket(): {
   socket: Socket | null;
   errorMessage: string | null;
   setErrorMessage: Dispatch<SetStateAction<string | null>>;
@@ -35,7 +35,6 @@ export function useOmniSocket(token?: string): {
   useEffect(() => {
     const wsSocket = createWebSocketClient({
       namespace: "/commands",
-      token,
     });
 
     const handleChatMessage = (message: OmniMessage) => {
@@ -118,7 +117,7 @@ export function useOmniSocket(token?: string): {
       wsSocket.off("reauthenticated", handleReauthenticated);
       wsSocket.disconnect();
     };
-  }, [addMessage, setIsProcessing, markLoadingComplete, token]);
+  }, [addMessage, setIsProcessing, markLoadingComplete]);
 
   // Execute Background Command handler
   useEffect(() => {

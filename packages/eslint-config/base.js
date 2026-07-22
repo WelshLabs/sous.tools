@@ -28,12 +28,7 @@ const BOUNDARY_ELEMENTS = [
     type: "ui",
     pattern: ["packages/design-system/**"],
   },
-  // Infrastructure layer: ONLY place Supabase/Redis clients live.
-  // Only 'backend' apps may import from here.
-  {
-    type: "infrastructure",
-    pattern: ["packages/supabase/**"],
-  },
+  
   {
     type: "shared",
     pattern: [
@@ -87,22 +82,16 @@ export const baseConfig = [
           default: "allow",
           rules: [
             {
-              from: "app",
-              disallow: ["infrastructure"],
-              message:
-                "Next.js apps cannot import from @soustools/supabase directly. Use the NestJS API for data fetching.",
-            },
-            {
               from: "domain",
-              disallow: ["infrastructure", "backend"],
+              disallow: ["backend"],
               message:
-                "Domain packages cannot import from infrastructure or backend apps.",
+                "Domain packages cannot import from backend apps.",
             },
             {
               from: "ui",
-              disallow: ["infrastructure", "backend"],
+              disallow: ["backend"],
               message:
-                "Design system cannot import from infrastructure or backend apps.",
+                "Design system cannot import from backend apps.",
             },
           ],
         },

@@ -176,10 +176,13 @@ services:
       - SUDO_PASSWORD=sousToolsPassword
       - OPENAI_API_BASE=https://ai.sous.tools
       - OPENAI_API_KEY=sk-1234 # Master key defined in litellm_config.yaml
+      - DOCKER_MODS=linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-docker
+      - DOCKER_GROUP=111
     volumes:
       - /home/ubuntu/dev.sous.tools:/workspace
       - /home/ubuntu/.config/code-server:/config
       - /home/ubuntu/.ssh:/config/.ssh:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     networks:
       - default

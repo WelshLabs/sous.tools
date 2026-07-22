@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node ../../packages/config/dist/cli.js next dev -p 3000",
+    "dev": "node ../../packages/config/dist/cli.js next dev -p 3000 -H 0.0.0.0",
     "build": "node ../../packages/config/dist/cli.js next build",
     "start": "node ../../packages/config/dist/cli.js next start",
     "typecheck": "tsc --noEmit",
@@ -24,7 +24,6 @@
     "@soustools/domain-signage": "workspace:*",
     "@soustools/logger": "workspace:*",
     "@soustools/config": "workspace:*",
-    "@supabase/supabase-js": "^2.43.0",
     "@vercel/analytics": "^1.2.2",
     "@vercel/speed-insights": "^1.3.1",
     "framer-motion": "^12.42.2",

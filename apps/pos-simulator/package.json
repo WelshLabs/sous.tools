@@ -14,7 +14,6 @@
     "@soustools/api-types": "workspace:*",
     "@soustools/config": "workspace:*",
     "@soustools/design-system": "workspace:*",
-    "@supabase/supabase-js": "^2.43.0",
     "lucide-react": "^1.17.0",
     "next": "^15.5.18",
     "react": "^19.0.0",

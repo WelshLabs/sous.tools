@@ -1,10 +1,41 @@
 import type React from "react";
+import { useRef, useEffect } from "react";
 import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
 import { type OmniMessage } from "@soustools/api-types";
 import { api, uploadFile } from "@soustools/api-client";
 
 export function useOmniFileUpload() {
   const { setStagedFiles, chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
+  const objectUrlsRef = useRef<string[]>([]);
+
+  const trackObjectURL = (url: string) => {
+    objectUrlsRef.current.push(url);
+  };
+
+  const revokeAllTrackedURLs = () => {
+    objectUrlsRef.current.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Failed to revoke object URL:", err);
+      }
+    });
+    objectUrlsRef.current = [];
+  };
+
+  // Revoke URLs on unmount
+  useEffect(() => {
+    return () => {
+      revokeAllTrackedURLs();
+    };
+  }, []);
+
+  // Revoke URLs if chatHistory is cleared
+  useEffect(() => {
+    if (chatHistory.length === 0 && objectUrlsRef.current.length > 0) {
+      revokeAllTrackedURLs();
+    }
+  }, [chatHistory]);
 
   const handleFileUpload = async (file: File) => {
     const fileId = crypto.randomUUID();
@@ -32,6 +63,9 @@ export function useOmniFileUpload() {
 
   const handleAutoExtract = async (file: StagedFile) => {
     const imageUrl = file.file ? URL.createObjectURL(file.file) : file.url;
+    if (file.file && imageUrl) {
+      trackObjectURL(imageUrl);
+    }
     const userMsg: OmniMessage = {
       id: file.id,
       role: 'user',

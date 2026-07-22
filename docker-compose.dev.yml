@@ -68,9 +68,27 @@ services:
         done
 
         echo "All models verified and ready!"
+  
+  supabase-proxy:
+    image: nginx:alpine
+    # Replace the container name below with your exact Kong container name from Step 1
+    command: /bin/sh -c "echo 'server { listen 80; location / { proxy_pass http://kong:8000; proxy_set_header Host \$$host; } }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_public"
+      - "traefik.http.routers.dev-supabase.rule=Host(`dev-supabase.sous.tools`)"
+      - "traefik.http.routers.dev-supabase.entrypoints=websecure"
+      - "traefik.http.routers.dev-supabase.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-supabase.loadbalancer.server.port=80"
+    networks:
+      - traefik_public
+      - supabase_network
 
 networks:
   traefik_public:
+    external: true
+  supabase_network:
+    name: supabase_network_sous.tools
     external: true
 
 volumes:

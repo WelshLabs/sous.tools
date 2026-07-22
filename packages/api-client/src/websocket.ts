@@ -31,8 +31,14 @@ export function createWebSocketClient(
   const targetUrl = `${baseUrl.replace(/\/$/, "")}${namespace}`;
 
   const socket = io(targetUrl, {
-    auth: {
-      token: options.token || "",
+    // auth: {
+    //   token: options.token || "",
+    // },
+    auth: async (cb) => {
+      // This function runs every single time socket.connect() fires
+      const token = options.token;
+      
+      cb({ token });
     },
     query: options.query,
     transports: ["websocket"],

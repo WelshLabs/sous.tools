@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "db:reset": "node packages/config/dist/cli.js ts-node scripts/nuke-neo4j.ts && node packages/config/dist/cli.js ts-node scripts/prepare-seed.ts && npx supabase db reset",
+    "db:reset": "node packages/config/dist/cli.js npx ts-node scripts/nuke-neo4j.ts && node packages/config/dist/cli.js npx ts-node scripts/prepare-seed.ts && npx supabase db reset",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
