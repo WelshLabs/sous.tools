@@ -1199,6 +1199,31 @@ type Query {
 }
 ````
 
+## File: apps/api/src/common/filters/ws-exception.filter.ts
+````typescript
+import { Catch, ArgumentsHost, Logger } from '@nestjs/common';
+import { BaseWsExceptionFilter } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
+
+@Catch()
+export class AllWsExceptionsFilter extends BaseWsExceptionFilter {
+  private readonly logger = new Logger(AllWsExceptionsFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost) {
+    const client = host.switchToWs().getClient<Socket>();
+    
+    this.logger.error('WebSocket Exception:', exception);
+    
+    const errorMsg = exception instanceof Error ? exception.message : 'Internal server error';
+
+    client.emit('exception', {
+      state: 'error',
+      message: errorMsg,
+    });
+  }
+}
+````
+
 ## File: apps/api/src/common/guards/admin.guard.ts
 ````typescript
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
@@ -1580,6 +1605,79 @@ export class CommandsController {
         "d0000000-0000-0000-0000-000000000000";
       return this.commandsService.handleCommand(payload, orgId);
     });
+  }
+}
+````
+
+## File: apps/api/src/modules/commands/commands.gateway.ts
+````typescript
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+} from "@nestjs/websockets";
+import { UseGuards, Logger } from "@nestjs/common";
+import { Socket } from "socket.io";
+import { WsSupabaseAuthGuard } from "../../lib/ws-supabase-auth.guard";
+import { CommandsService } from "./commands.service";
+import { type OmnibarCommandPayload,
+  OmnibarCommandPayloadSchema, type OmniMessage,
+} from "@soustools/api-types";
+import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { UseFilters } from "@nestjs/common";
+import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter";
+
+@UseFilters(new AllWsExceptionsFilter())
+
+@WebSocketGateway({
+  namespace: "/commands",
+  cors: {
+    origin: [
+      "https://dev.sous.tools",
+      "https://sous.tools",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  },
+})
+export class CommandsGateway {
+  private readonly logger = new Logger(CommandsGateway.name);
+
+  constructor(private readonly commandsService: CommandsService) {}
+
+  @UseGuards(WsSupabaseAuthGuard)
+  @SubscribeMessage("executeCommand")
+  async handleExecuteCommand(
+    @MessageBody(new ZodValidationPipe(OmnibarCommandPayloadSchema))
+    payload: OmnibarCommandPayload,
+    @ConnectedSocket() client: Socket & { user?: any },
+  ) {
+    this.logger.log(
+      `Received chat history via WebSocket (${payload.chatHistory?.length || 0} messages)`,
+    );
+
+    // orgId from authenticated user
+    const orgId =
+      client.user?.user_metadata?.organization_id ||
+      "d0000000-0000-0000-0000-000000000000";
+
+    // Emitter callback for real-time ReAct loop
+    const emitMessage = (message: OmniMessage) => {
+      client.emit("chat_message", message);
+    };
+
+    try {
+      await this.commandsService.handleCommand(payload, orgId, emitMessage);
+    } catch (error: any) {
+      this.logger.error("Error processing command stream", error);
+      client.emit("command_status", {
+        state: "error",
+        message:
+          error.message ||
+          "An unexpected error occurred while executing the command",
+      });
+    }
   }
 }
 ````
@@ -13744,6 +13842,68 @@ export function SystemHealth() {
 }
 ````
 
+## File: apps/web/src/app/(workspace)/home/page.tsx
+````typescript
+"use client";
+
+import React, { useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  AuroraBackground,
+  PrimaryLogo,
+  useOmnibarContext,
+} from "@soustools/design-system";
+
+export const dynamic = "force-dynamic";
+
+function ShareTargetHandler() {
+  const searchParams = useSearchParams();
+  const { setInputText, setIsOpen } = useOmnibarContext();
+
+  useEffect(() => {
+    const title = searchParams.get("title");
+    const text = searchParams.get("text");
+    const url = searchParams.get("url");
+
+    if (title || text || url) {
+      const shareContent = [
+        title ? `Title: ${title}` : "",
+        text ? `Text: ${text}` : "",
+        url ? `URL: ${url}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      setInputText(
+        `I shared this with you:\n${shareContent}\n\nCan you analyze it?`,
+      );
+      setIsOpen(true);
+    }
+  }, [searchParams, setInputText, setIsOpen]);
+
+  return null;
+}
+
+export default function HomePage() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4">
+      <AuroraBackground />
+      <Suspense fallback={null}>
+        <ShareTargetHandler />
+      </Suspense>
+      <PrimaryLogo gradient className="h-24 w-auto mb-8" />
+      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        Your <span className="ds-text-neon">sous chef</span> for every shift
+      </h1>
+      <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
+        Ask questions, upload invoices and recipes, review metrics, and control
+        your restaurant—all from one conversation.
+      </p>
+    </div>
+  );
+}
+````
+
 ## File: apps/web/src/app/(workspace)/ingestion/review/[id]/creatable-select.tsx
 ````typescript
 "use client";
@@ -21181,6 +21341,32 @@ export const RecipeExtractionDTOSchema = z.object({
 export type RecipeExtractionDTO = z.infer<typeof RecipeExtractionDTOSchema>;
 ````
 
+## File: packages/api-types/src/omnibar.ts
+````typescript
+import { z } from "zod";
+
+export const OmniMessageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "model", "agent_step", "ingestion", "metrics", "change"]),
+  content: z.string(),
+  timestamp: z.date().or(z.string().transform((v) => new Date(v))),
+  isLoading: z.boolean().optional(),
+  recipeData: z.any().optional(),
+  invoiceData: z.any().optional(),
+});
+
+export type OmniMessage = z.infer<typeof OmniMessageSchema>;
+
+export const OmnibarCommandPayloadSchema = z.object({
+  chatHistory: z.array(OmniMessageSchema),
+  source: z.enum(["omnibar", "wearos"]),
+  path: z.string().optional(),
+  context: z.record(z.any()).nullish(),
+});
+
+export type OmnibarCommandPayload = z.infer<typeof OmnibarCommandPayloadSchema>;
+````
+
 ## File: packages/api-types/src/purchasing.ts
 ````typescript
 import { z } from "zod";
@@ -22035,6 +22221,129 @@ export default [
 ];
 ````
 
+## File: packages/design-system/src/components/OmniBar/AttachmentFlyout.tsx
+````typescript
+"use client";
+
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { UploadCloud, Camera, Paperclip } from "lucide-react";
+import { useOmnibarContext } from "./OmniBarContext";
+
+export interface AttachmentFlyoutProps {
+  isOpen: boolean;
+  onToggle: () => void;
+  onUploadClick: () => void;
+  onCameraClick: () => void;
+  onGoogleDriveClick: () => void;
+}
+
+const GoogleDriveIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 1443 1250" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M481 0h481l481 833H962L481 0z" fill="#0066da" />
+    <path d="M241 1250L0 833l481-833 240 417-480 833z" fill="#00a852" />
+    <path d="M962 1250l241-417H481l-240 417h721z" fill="#ffcc00" />
+  </svg>
+);
+
+const iconButtonClass =
+  "text-muted-foreground hover:text-primary p-1.5 hover:bg-muted rounded-full transition-colors";
+
+export function AttachmentFlyout({
+  isOpen,
+  onToggle,
+  onUploadClick,
+  onCameraClick,
+  onGoogleDriveClick,
+}: AttachmentFlyoutProps) {
+  // ── Capability checks (preserved — DO NOT REMOVE) ──────────────────────
+  const { isGoogleDriveConnected } = useOmnibarContext();
+  const [hasCamera, setHasCamera] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+          const videoDevices = devices.filter((d) => d.kind === "videoinput");
+          setHasCamera(videoDevices.length > 0);
+        })
+        .catch(() => {
+          setHasCamera(false);
+        });
+    }
+  }, []);
+  // ──────────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="flex items-center gap-1.5 flex-shrink-0">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 20, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="flex items-center gap-1.5 ds-glass px-2 py-1 rounded-full shadow-glow-accent"
+          >
+            <motion.button
+              type="button"
+              onClick={onUploadClick}
+              className={iconButtonClass}
+              title="Upload File"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <UploadCloud className="w-4 h-4" />
+            </motion.button>
+
+            {/* Only rendered when device has a camera */}
+            {hasCamera && (
+              <motion.button
+                type="button"
+                onClick={onCameraClick}
+                className={iconButtonClass}
+                title="Use Camera"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Camera className="w-4 h-4" />
+              </motion.button>
+            )}
+
+            {/* Only rendered when Google Drive integration is connected */}
+            {isGoogleDriveConnected && (
+              <motion.button
+                type="button"
+                onClick={onGoogleDriveClick}
+                className={`${iconButtonClass} flex items-center justify-center`}
+                title="Google Drive"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <GoogleDriveIcon className="w-4 h-4" />
+              </motion.button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`p-2 rounded-full transition-colors flex-shrink-0 ${
+          isOpen
+            ? "bg-primary/15 text-primary"
+            : "text-muted-foreground hover:text-primary hover:bg-muted"
+        }`}
+      >
+        <Paperclip className="w-5 h-5" />
+      </button>
+    </div>
+  );
+}
+````
+
 ## File: packages/design-system/src/components/OmniBar/CreatableSelect.tsx
 ````typescript
 "use client";
@@ -22294,6 +22603,57 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
 }
 ````
 
+## File: packages/design-system/src/components/OmniBar/FloatingOmniTrigger.tsx
+````typescript
+"use client";
+
+import { motion } from "framer-motion";
+import { OmniBar } from "./index";
+
+const shellTransition = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.9 };
+
+export function FloatingOmniTrigger() {
+  return (
+    <motion.div
+      className="fixed bottom-6 right-6 z-omnibar rounded-full"
+      whileHover={{ y: -2, scale: 1.025 }}
+      whileTap={{ scale: 0.96 }}
+      transition={shellTransition}
+      animate={{
+        boxShadow: [
+          "var(--ds-glow-sm)",
+          "var(--ds-glow-accent)",
+          "var(--ds-glow-sm)",
+        ],
+      }}
+      style={{ animationTimingFunction: "var(--ds-ease)" }}
+    >
+      <OmniBar />
+    </motion.div>
+  );
+}
+````
+
+## File: packages/design-system/src/components/OmniBar/index.ts
+````typescript
+export { OmniBarProvider, OmniBarProvider as OmniBar } from "./OmniBarProvider";
+export { OmniBarPresentation } from "./OmniBarPresentation";
+export type { OmniBarPresentationProps } from "./OmniBarPresentation";
+export type { OmniMetric, OmniChatWindowProps } from "./OmniChatWindow";
+export { FloatingOmniTrigger } from "./FloatingOmniTrigger";
+export { useOmnibarContext } from "./OmniBarContext";
+export { AttachmentFlyout } from "./AttachmentFlyout";
+export type { AttachmentFlyoutProps } from "./AttachmentFlyout";
+export type { StagedFile } from "./OmniBarContext";
+export { VerificationPanel } from "./VerificationPanel";
+export type { VerificationPanelProps } from "./VerificationPanel";
+export { CreatableSelect } from "./CreatableSelect";
+export type { CreatableSelectProps, CreatableSelectOption } from "./CreatableSelect";
+export { UnifiedReviewPanel } from "./UnifiedReviewPanel";
+export type { UnifiedReviewPanelProps } from "./UnifiedReviewPanel";
+export { OmnibarPerimeterView } from "./OmnibarPerimeterView";
+````
+
 ## File: packages/design-system/src/components/OmniBar/ItemSelectionDropdown.tsx
 ````typescript
 "use client";
@@ -22400,6 +22760,218 @@ export function NonInventoryExpenseCheckbox({
         />
         <span>Non-Inventory Expense</span>
       </label>
+    </div>
+  );
+}
+````
+
+## File: packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx
+````typescript
+"use client";
+
+import { motion } from "framer-motion";
+import {
+  Bot,
+  UserRound,
+  Sparkles,
+  FileCheck2,
+  Gauge,
+  Check,
+  TrendingUp,
+} from "lucide-react";
+import type { OmniMessage } from "@soustools/api-types";
+
+// ── OmniMetric shape (presentational — no fetching) ───────────────────────
+
+export interface OmniMetric {
+  label: string;
+  value: string;
+  change?: string;
+  positive?: boolean;
+}
+
+// ── ActivityIndicator ─────────────────────────────────────────────────────
+
+export function ActivityIndicator() {
+  return (
+    <span className="flex items-center gap-1" aria-label="Agent is working">
+      {[0, 1, 2].map((dot) => (
+        <motion.span
+          key={dot}
+          className="h-1 w-1 rounded-full bg-primary"
+          animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
+          transition={{ duration: 1.1, repeat: Infinity, delay: dot * 0.14 }}
+        />
+      ))}
+    </span>
+  );
+}
+
+// ── EventIcon — semantic icon per message role ─────────────────────────────
+
+const ROLE_ICONS: Record<string, React.ElementType> = {
+  user: UserRound,
+  model: Bot,
+  agent_step: Sparkles,
+  ingestion: FileCheck2,
+  metrics: Gauge,
+  change: Check,
+};
+
+export function EventIcon({ role }: { role: OmniMessage["role"] | "metrics" }) {
+  const Icon = ROLE_ICONS[role] ?? Bot;
+  const isAgent = role === "model" || role === "agent_step";
+  return (
+    <span
+      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground ${isAgent ? "border-primary/25 text-primary" : ""}`}
+    >
+      <Icon className="h-3.5 w-3.5" />
+    </span>
+  );
+}
+
+// ── MetricCard — single metric tile ───────────────────────────────────────
+
+export function MetricCard({ metric }: { metric: OmniMetric }) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-muted/35 p-3">
+      <p className="text-[10px] font-medium uppercase tracking-[.14em] text-muted-foreground">
+        {metric.label}
+      </p>
+      <p className="mt-1 font-display text-lg font-bold text-foreground">
+        {metric.value}
+      </p>
+      {metric.change && (
+        <p
+          className={`text-xs font-medium ${metric.positive === false ? "text-destructive" : "text-success"}`}
+        >
+          {metric.change}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── MetricEventCard — grid of metric tiles inside the chat stream ──────────
+// Purely presentational. Data arrives via metricsData on the OmniMessage.
+
+export function MetricEventCard({ metrics }: { metrics: OmniMetric[] }) {
+  return (
+    <article className="flex gap-3 w-full">
+      <EventIcon role="metrics" />
+      <div className="min-w-0 flex-1 rounded-xl border border-border bg-card/82 p-4 backdrop-blur-xl">
+        <div className="flex items-center gap-2 mb-3 text-muted-foreground">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-[.14em]">
+            Metrics snapshot
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {metrics.map((m) => (
+            <MetricCard key={m.label} metric={m} />
+          ))}
+        </div>
+      </div>
+    </article>
+  );
+}
+````
+
+## File: packages/design-system/src/components/OmniBar/PillActions.tsx
+````typescript
+"use client";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { Mic, X, ArrowUp } from "lucide-react";
+import { AttachmentFlyout } from "./AttachmentFlyout";
+
+interface PillActionsProps {
+  isListening: boolean;
+  isProcessing: boolean;
+  canSend: boolean;
+  showClose: boolean;
+  hasToggle: boolean;
+  isAttachmentOpen: boolean;
+  onMicClick: () => void;
+  onSubmit: () => void;
+  onToggle: (() => void) | undefined;
+  onAttachmentToggle: () => void;
+  onUploadClick: () => void;
+  onCameraClick: () => void;
+  onGoogleDriveClick: () => void;
+}
+
+/**
+ * PillActions — right-side button cluster for OmniInputPill.
+ * Extracted to keep OmniInputPill under the 200-line max.
+ * Pure presentational — no hooks or data fetching.
+ */
+export function PillActions({
+  isListening,
+  isProcessing,
+  canSend,
+  showClose,
+  hasToggle,
+  isAttachmentOpen,
+  onMicClick,
+  onSubmit,
+  onToggle,
+  onAttachmentToggle,
+  onUploadClick,
+  onCameraClick,
+  onGoogleDriveClick,
+}: PillActionsProps) {
+  return (
+    <div className="flex shrink-0 items-center gap-0.5">
+      {/* Mic */}
+      <button
+        onClick={onMicClick}
+        type="button"
+        aria-label={isListening ? "Stop listening" : "Start voice input"}
+        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none"
+        disabled={isProcessing}
+      >
+        <Mic className={`w-5 h-5 ${isListening ? "text-primary" : ""}`} />
+      </button>
+
+      {/* Attachment flyout */}
+      <AttachmentFlyout
+        isOpen={isAttachmentOpen}
+        onToggle={onAttachmentToggle}
+        onUploadClick={onUploadClick}
+        onCameraClick={onCameraClick}
+        onGoogleDriveClick={onGoogleDriveClick}
+      />
+
+      {/* Submit — conditionally visible when there is content */}
+      <AnimatePresence>
+        {canSend && (
+          <motion.button
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.7, opacity: 0 }}
+            type="submit"
+            onClick={onSubmit}
+            disabled={isProcessing}
+            aria-label="Send message"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow-sm focus-visible:outline-none disabled:opacity-50"
+          >
+            <ArrowUp className="h-5 w-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Close */}
+      {showClose && hasToggle && (
+        <button
+          onClick={onToggle}
+          type="button"
+          aria-label="Close"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
     </div>
   );
 }
@@ -23020,6 +23592,98 @@ export function drawBadge(
     ctx.textBaseline = "middle";
     ctx.fillText(label, x, y + 0.5 * scale);
   }
+}
+````
+
+## File: packages/design-system/src/utils/favicon-status.ts
+````typescript
+import { drawBase, drawBadge, drawLoadingFrame } from "./favicon-canvas";
+
+export type FaviconStatus =
+  | { type: "idle" }
+  | { type: "loading" }
+  | { type: "count"; count: number }
+  | { type: "completed" }
+  | { type: "alert" };
+
+const STATIC_FAVICON = "/icons/favicon.svg";
+let loadingFrame: number | null = null;
+
+function stopLoadingAnimation() {
+  if (loadingFrame !== null) cancelAnimationFrame(loadingFrame);
+  loadingFrame = null;
+}
+
+function faviconLink() {
+  let link = document.querySelector<HTMLLinkElement>(
+    'link[data-runtime-favicon="true"]',
+  );
+
+  if (!link) {
+    const existing = document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]');
+    if (existing.length > 0) {
+      link = existing[0];
+      for (let i = 1; i < existing.length; i++) {
+        existing[i].remove();
+      }
+    } else {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.dataset.runtimeFavicon = "true";
+  }
+  return link;
+}
+
+function startLoadingAnimation(link: HTMLLinkElement) {
+  stopLoadingAnimation();
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const startedAt = performance.now();
+  let lastUpdate = 0;
+  const render = (now: number) => {
+    if (now - lastUpdate >= 90) {
+      drawLoadingFrame(ctx, 64, ((now - startedAt) % 1200) / 1200);
+      link.type = "image/png";
+      link.href = canvas.toDataURL("image/png");
+      lastUpdate = now;
+    }
+    loadingFrame = requestAnimationFrame(render);
+  };
+  loadingFrame = requestAnimationFrame(render);
+}
+
+export function setFaviconStatus(status: FaviconStatus) {
+  if (typeof document === "undefined") return;
+  const link = faviconLink();
+  stopLoadingAnimation();
+
+  if (status.type === "idle") {
+    link.type = "image/svg+xml";
+    link.href = STATIC_FAVICON;
+    return;
+  }
+  if (status.type === "loading") {
+    startLoadingAnimation(link);
+    return;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  drawBase(ctx, 64);
+  drawBadge(ctx, 64, status);
+  link.type = "image/png";
+  link.href = canvas.toDataURL("image/png");
+}
+
+export function resetFaviconStatus() {
+  setFaviconStatus({ type: "idle" });
 }
 ````
 
@@ -34424,6 +35088,67 @@ RUN usermod -s /bin/zsh abc
 }
 ````
 
+## File: litellm_config.yaml
+````yaml
+model_list:
+  # --- Route to your local Ollama container ---
+  - model_name: qwen2.5-coder:7b
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b
+      api_base: http://ollama:11434
+  - model_name: deepseek-coder-v2
+    litellm_params:
+      model: ollama/deepseek-coder-v2
+      api_base: http://ollama:11434
+
+  # --- Route to Google Gemini (2026 Models) ---
+  - model_name: gemini-3.5-flash
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-pro
+    litellm_params:
+      model: gemini/gemini-3.1-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-flash-lite
+    litellm_params:
+      model: gemini/gemini-3.1-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  # === THE CLAUDE CLI ALIASES ===
+  # The Claude CLI hardcodes requests for these model names.
+  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-opus-4-8
+    litellm_params:
+      model: gemini/gemini-3.1-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+general_settings:
+  master_key: sk-1234
+````
+
 ## File: sonar-project.properties
 ````
 # Required metadata
@@ -34573,31 +35298,6 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
 ````
 
-## File: apps/api/src/common/filters/ws-exception.filter.ts
-````typescript
-import { Catch, ArgumentsHost, Logger } from '@nestjs/common';
-import { BaseWsExceptionFilter } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
-
-@Catch()
-export class AllWsExceptionsFilter extends BaseWsExceptionFilter {
-  private readonly logger = new Logger(AllWsExceptionsFilter.name);
-
-  catch(exception: unknown, host: ArgumentsHost) {
-    const client = host.switchToWs().getClient<Socket>();
-    
-    this.logger.error('WebSocket Exception:', exception);
-    
-    const errorMsg = exception instanceof Error ? exception.message : 'Internal server error';
-
-    client.emit('exception', {
-      state: 'error',
-      message: errorMsg,
-    });
-  }
-}
-````
-
 ## File: apps/api/src/lib/supabase.ts
 ````typescript
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
@@ -34675,79 +35375,6 @@ export async function fallbackToOllama(
       emitMessage({ id: randomUUID(), role: 'model', content: fallbackMsg, timestamp: new Date() });
     }
     return { action: 'ERROR', message: fallbackMsg };
-  }
-}
-````
-
-## File: apps/api/src/modules/commands/commands.gateway.ts
-````typescript
-import {
-  WebSocketGateway,
-  SubscribeMessage,
-  MessageBody,
-  ConnectedSocket,
-} from "@nestjs/websockets";
-import { UseGuards, Logger } from "@nestjs/common";
-import { Socket } from "socket.io";
-import { WsSupabaseAuthGuard } from "../../lib/ws-supabase-auth.guard";
-import { CommandsService } from "./commands.service";
-import { type OmnibarCommandPayload,
-  OmnibarCommandPayloadSchema, type OmniMessage,
-} from "@soustools/api-types";
-import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
-import { UseFilters } from "@nestjs/common";
-import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter";
-
-@UseFilters(new AllWsExceptionsFilter())
-
-@WebSocketGateway({
-  namespace: "/commands",
-  cors: {
-    origin: [
-      "https://dev.sous.tools",
-      "https://sous.tools",
-      "http://localhost:3000",
-    ],
-    credentials: true,
-  },
-})
-export class CommandsGateway {
-  private readonly logger = new Logger(CommandsGateway.name);
-
-  constructor(private readonly commandsService: CommandsService) {}
-
-  @UseGuards(WsSupabaseAuthGuard)
-  @SubscribeMessage("executeCommand")
-  async handleExecuteCommand(
-    @MessageBody(new ZodValidationPipe(OmnibarCommandPayloadSchema))
-    payload: OmnibarCommandPayload,
-    @ConnectedSocket() client: Socket & { user?: any },
-  ) {
-    this.logger.log(
-      `Received chat history via WebSocket (${payload.chatHistory?.length || 0} messages)`,
-    );
-
-    // orgId from authenticated user
-    const orgId =
-      client.user?.user_metadata?.organization_id ||
-      "d0000000-0000-0000-0000-000000000000";
-
-    // Emitter callback for real-time ReAct loop
-    const emitMessage = (message: OmniMessage) => {
-      client.emit("chat_message", message);
-    };
-
-    try {
-      await this.commandsService.handleCommand(payload, orgId, emitMessage);
-    } catch (error: any) {
-      this.logger.error("Error processing command stream", error);
-      client.emit("command_status", {
-        state: "error",
-        message:
-          error.message ||
-          "An unexpected error occurred while executing the command",
-      });
-    }
   }
 }
 ````
@@ -39768,68 +40395,6 @@ export default async function DashboardPage() {
 }
 ````
 
-## File: apps/web/src/app/(workspace)/home/page.tsx
-````typescript
-"use client";
-
-import React, { useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import {
-  AuroraBackground,
-  PrimaryLogo,
-  useOmnibarContext,
-} from "@soustools/design-system";
-
-export const dynamic = "force-dynamic";
-
-function ShareTargetHandler() {
-  const searchParams = useSearchParams();
-  const { setInputText, setIsOpen } = useOmnibarContext();
-
-  useEffect(() => {
-    const title = searchParams.get("title");
-    const text = searchParams.get("text");
-    const url = searchParams.get("url");
-
-    if (title || text || url) {
-      const shareContent = [
-        title ? `Title: ${title}` : "",
-        text ? `Text: ${text}` : "",
-        url ? `URL: ${url}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n");
-
-      setInputText(
-        `I shared this with you:\n${shareContent}\n\nCan you analyze it?`,
-      );
-      setIsOpen(true);
-    }
-  }, [searchParams, setInputText, setIsOpen]);
-
-  return null;
-}
-
-export default function HomePage() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4">
-      <AuroraBackground />
-      <Suspense fallback={null}>
-        <ShareTargetHandler />
-      </Suspense>
-      <PrimaryLogo gradient className="h-24 w-auto mb-8" />
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-        Your <span className="ds-text-neon">sous chef</span> for every shift
-      </h1>
-      <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
-        Ask questions, upload invoices and recipes, review metrics, and control
-        your restaurant—all from one conversation.
-      </p>
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/(workspace)/inventory/items/items-ledger-client.tsx
 ````typescript
 "use client";
@@ -41055,23 +41620,6 @@ export default [
 ];
 ````
 
-## File: deploy/pi/stage-sous/00-install/00-packages
-````
-sway
-swaybg
-swayidle
-wl-mirror
-foot
-network-manager
-jq
-curl
-git
-ansible
-moreutils
-xdg-utils
-libinput-tools
-````
-
 ## File: deploy/pi/stage-sous/00-install/01-run.sh
 ````bash
 #!/bin/bash -e
@@ -41261,15 +41809,6 @@ chown sous:sous /var/log/sous-bootstrap.log
 chmod 644 /var/log/sous-bootstrap.log
 
 echo "=== [stage-sous chroot] Configuration complete ==="
-````
-
-## File: deploy/pi/stage-sous/prerun.sh
-````bash
-#!/bin/bash -e
-
-if [ ! -d "${ROOTFS_DIR}" ]; then
-	copy_previous
-fi
 ````
 
 ## File: docs/agents/logs/.gitkeep
@@ -41572,32 +42111,6 @@ export async function uploadFile(file: File): Promise<string> {
 
   throw new Error("File upload failed after maximum retry attempts");
 }
-````
-
-## File: packages/api-types/src/omnibar.ts
-````typescript
-import { z } from "zod";
-
-export const OmniMessageSchema = z.object({
-  id: z.string(),
-  role: z.enum(["user", "model", "agent_step", "ingestion", "metrics", "change"]),
-  content: z.string(),
-  timestamp: z.date().or(z.string().transform((v) => new Date(v))),
-  isLoading: z.boolean().optional(),
-  recipeData: z.any().optional(),
-  invoiceData: z.any().optional(),
-});
-
-export type OmniMessage = z.infer<typeof OmniMessageSchema>;
-
-export const OmnibarCommandPayloadSchema = z.object({
-  chatHistory: z.array(OmniMessageSchema),
-  source: z.enum(["omnibar", "wearos"]),
-  path: z.string().optional(),
-  context: z.record(z.any()).nullish(),
-});
-
-export type OmnibarCommandPayload = z.infer<typeof OmnibarCommandPayloadSchema>;
 ````
 
 ## File: packages/config/src/client.ts
@@ -44897,180 +45410,6 @@ export const AllLogos = () => (
 );
 ````
 
-## File: packages/design-system/src/components/OmniBar/AttachmentFlyout.tsx
-````typescript
-"use client";
-
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, Camera, Paperclip } from "lucide-react";
-import { useOmnibarContext } from "./OmniBarContext";
-
-export interface AttachmentFlyoutProps {
-  isOpen: boolean;
-  onToggle: () => void;
-  onUploadClick: () => void;
-  onCameraClick: () => void;
-  onGoogleDriveClick: () => void;
-}
-
-const GoogleDriveIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 1443 1250" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M481 0h481l481 833H962L481 0z" fill="#0066da" />
-    <path d="M241 1250L0 833l481-833 240 417-480 833z" fill="#00a852" />
-    <path d="M962 1250l241-417H481l-240 417h721z" fill="#ffcc00" />
-  </svg>
-);
-
-const iconButtonClass =
-  "text-muted-foreground hover:text-primary p-1.5 hover:bg-muted rounded-full transition-colors";
-
-export function AttachmentFlyout({
-  isOpen,
-  onToggle,
-  onUploadClick,
-  onCameraClick,
-  onGoogleDriveClick,
-}: AttachmentFlyoutProps) {
-  // ── Capability checks (preserved — DO NOT REMOVE) ──────────────────────
-  const { isGoogleDriveConnected } = useOmnibarContext();
-  const [hasCamera, setHasCamera] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
-      navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) => {
-          const videoDevices = devices.filter((d) => d.kind === "videoinput");
-          setHasCamera(videoDevices.length > 0);
-        })
-        .catch(() => {
-          setHasCamera(false);
-        });
-    }
-  }, []);
-  // ──────────────────────────────────────────────────────────────────────
-
-  return (
-    <div className="flex items-center gap-1.5 flex-shrink-0">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 20, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="flex items-center gap-1.5 ds-glass px-2 py-1 rounded-full shadow-glow-accent"
-          >
-            <motion.button
-              type="button"
-              onClick={onUploadClick}
-              className={iconButtonClass}
-              title="Upload File"
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <UploadCloud className="w-4 h-4" />
-            </motion.button>
-
-            {/* Only rendered when device has a camera */}
-            {hasCamera && (
-              <motion.button
-                type="button"
-                onClick={onCameraClick}
-                className={iconButtonClass}
-                title="Use Camera"
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Camera className="w-4 h-4" />
-              </motion.button>
-            )}
-
-            {/* Only rendered when Google Drive integration is connected */}
-            {isGoogleDriveConnected && (
-              <motion.button
-                type="button"
-                onClick={onGoogleDriveClick}
-                className={`${iconButtonClass} flex items-center justify-center`}
-                title="Google Drive"
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <GoogleDriveIcon className="w-4 h-4" />
-              </motion.button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`p-2 rounded-full transition-colors flex-shrink-0 ${
-          isOpen
-            ? "bg-primary/15 text-primary"
-            : "text-muted-foreground hover:text-primary hover:bg-muted"
-        }`}
-      >
-        <Paperclip className="w-5 h-5" />
-      </button>
-    </div>
-  );
-}
-````
-
-## File: packages/design-system/src/components/OmniBar/FloatingOmniTrigger.tsx
-````typescript
-"use client";
-
-import { motion } from "framer-motion";
-import { OmniBar } from "./index";
-
-const shellTransition = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.9 };
-
-export function FloatingOmniTrigger() {
-  return (
-    <motion.div
-      className="fixed bottom-6 right-6 z-omnibar rounded-full"
-      whileHover={{ y: -2, scale: 1.025 }}
-      whileTap={{ scale: 0.96 }}
-      transition={shellTransition}
-      animate={{
-        boxShadow: [
-          "var(--ds-glow-sm)",
-          "var(--ds-glow-accent)",
-          "var(--ds-glow-sm)",
-        ],
-      }}
-      style={{ animationTimingFunction: "var(--ds-ease)" }}
-    >
-      <OmniBar />
-    </motion.div>
-  );
-}
-````
-
-## File: packages/design-system/src/components/OmniBar/index.ts
-````typescript
-export { OmniBarProvider, OmniBarProvider as OmniBar } from "./OmniBarProvider";
-export { OmniBarPresentation } from "./OmniBarPresentation";
-export type { OmniBarPresentationProps } from "./OmniBarPresentation";
-export type { OmniMetric, OmniChatWindowProps } from "./OmniChatWindow";
-export { FloatingOmniTrigger } from "./FloatingOmniTrigger";
-export { useOmnibarContext } from "./OmniBarContext";
-export { AttachmentFlyout } from "./AttachmentFlyout";
-export type { AttachmentFlyoutProps } from "./AttachmentFlyout";
-export type { StagedFile } from "./OmniBarContext";
-export { VerificationPanel } from "./VerificationPanel";
-export type { VerificationPanelProps } from "./VerificationPanel";
-export { CreatableSelect } from "./CreatableSelect";
-export type { CreatableSelectProps, CreatableSelectOption } from "./CreatableSelect";
-export { UnifiedReviewPanel } from "./UnifiedReviewPanel";
-export type { UnifiedReviewPanelProps } from "./UnifiedReviewPanel";
-export { OmnibarPerimeterView } from "./OmnibarPerimeterView";
-````
-
 ## File: packages/design-system/src/components/OmniBar/OmniBar.spec.tsx
 ````typescript
 import React from 'react';
@@ -45164,214 +45503,301 @@ export const Default = () => (
 );
 ````
 
-## File: packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx
+## File: packages/design-system/src/components/OmniBar/OmnibarPerimeterView.tsx
 ````typescript
 "use client";
 
-import { motion } from "framer-motion";
-import {
-  Bot,
-  UserRound,
-  Sparkles,
-  FileCheck2,
-  Gauge,
-  Check,
-  TrendingUp,
-} from "lucide-react";
-import type { OmniMessage } from "@soustools/api-types";
+import { useId, useLayoutEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
-// ── OmniMetric shape (presentational — no fetching) ───────────────────────
+/**
+ * OmnibarPerimeterView
+ *
+ * Animated SVG border that traces a neon gradient around its parent
+ * container. Uses a ResizeObserver to stay in sync with any layout
+ * changes (idle pill ↔ active pill ↔ droplet morph).
+ *
+ * - `busy=false` → subtle idle shimmer that fires on a slow repeat cycle
+ * - `busy=true`  → continuous gradient chase (processing state)
+ *
+ * Ported from the v0 Neon-Glass design system. All tokens are semantic.
+ */
+export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
+  const reducedMotion = useReducedMotion();
+  const gradientId = useId();
+  const frameRef = useRef<HTMLSpanElement>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
-export interface OmniMetric {
-  label: string;
-  value: string;
-  change?: string;
-  positive?: boolean;
-}
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const update = () =>
+      setSize({ width: frame.clientWidth, height: frame.clientHeight });
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
 
-// ── ActivityIndicator ─────────────────────────────────────────────────────
+  if (!size || size.width === 0 || size.height === 0) {
+    return (
+      <span
+        ref={frameRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border/90"
+      />
+    );
+  }
 
-export function ActivityIndicator() {
-  return (
-    <span className="flex items-center gap-1" aria-label="Agent is working">
-      {[0, 1, 2].map((dot) => (
-        <motion.span
-          key={dot}
-          className="h-1 w-1 rounded-full bg-primary"
-          animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
-          transition={{ duration: 1.1, repeat: Infinity, delay: dot * 0.14 }}
-        />
-      ))}
-    </span>
-  );
-}
+  const inset = 1;
+  const width = Math.max(1, size.width - inset * 2);
+  const height = Math.max(1, size.height - inset * 2);
+  const radius = height / 2;
+  const perimeter = 2 * (width - 2 * radius) + 2 * Math.PI * radius;
 
-// ── EventIcon — semantic icon per message role ─────────────────────────────
-
-const ROLE_ICONS: Record<string, React.ElementType> = {
-  user: UserRound,
-  model: Bot,
-  agent_step: Sparkles,
-  ingestion: FileCheck2,
-  metrics: Gauge,
-  change: Check,
-};
-
-export function EventIcon({ role }: { role: OmniMessage["role"] | "metrics" }) {
-  const Icon = ROLE_ICONS[role] ?? Bot;
-  const isAgent = role === "model" || role === "agent_step";
   return (
     <span
-      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground ${isAgent ? "border-primary/25 text-primary" : ""}`}
+      ref={frameRef}
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border/90"
     >
-      <Icon className="h-3.5 w-3.5" />
-    </span>
-  );
-}
-
-// ── MetricCard — single metric tile ───────────────────────────────────────
-
-export function MetricCard({ metric }: { metric: OmniMetric }) {
-  return (
-    <div className="rounded-xl border border-border/70 bg-muted/35 p-3">
-      <p className="text-[10px] font-medium uppercase tracking-[.14em] text-muted-foreground">
-        {metric.label}
-      </p>
-      <p className="mt-1 font-display text-lg font-bold text-foreground">
-        {metric.value}
-      </p>
-      {metric.change && (
-        <p
-          className={`text-xs font-medium ${metric.positive === false ? "text-destructive" : "text-success"}`}
+      <svg
+        className="absolute inset-0 h-full w-full overflow-visible"
+        viewBox={`0 0 ${size.width} ${size.height}`}
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="var(--primary)" />
+            <stop offset="0.55" stopColor="var(--accent)" />
+            <stop offset="1" stopColor="var(--primary)" />
+          </linearGradient>
+        </defs>
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={
+            reducedMotion
+              ? { opacity: busy ? 1 : 0, strokeDashoffset: 0 }
+              : busy
+                ? { opacity: 1, strokeDashoffset: -perimeter }
+                : {
+                    opacity: [0, 0, 1, 1, 0],
+                    strokeDashoffset: [0, 0, -perimeter * 0.12, -perimeter],
+                  }
+          }
+          transition={
+            reducedMotion
+              ? { duration: 0 }
+              : busy
+                ? {
+                    strokeDashoffset: {
+                      duration: 2.8,
+                      repeat: Number.POSITIVE_INFINITY,
+                      ease: "linear",
+                    },
+                    opacity: { duration: 0.15 },
+                  }
+                : {
+                    opacity: {
+                      duration: 6.2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      times: [0, 0.55, 0.63, 0.89, 1],
+                      ease: "linear",
+                    },
+                    strokeDashoffset: {
+                      duration: 6.2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      times: [0, 0.55, 0.63, 1],
+                      ease: "linear",
+                    },
+                  }
+          }
         >
-          {metric.change}
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ── MetricEventCard — grid of metric tiles inside the chat stream ──────────
-// Purely presentational. Data arrives via metricsData on the OmniMessage.
-
-export function MetricEventCard({ metrics }: { metrics: OmniMetric[] }) {
-  return (
-    <article className="flex gap-3 w-full">
-      <EventIcon role="metrics" />
-      <div className="min-w-0 flex-1 rounded-xl border border-border bg-card/82 p-4 backdrop-blur-xl">
-        <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-[.14em]">
-            Metrics snapshot
-          </span>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {metrics.map((m) => (
-            <MetricCard key={m.label} metric={m} />
-          ))}
-        </div>
-      </div>
-    </article>
+          <rect
+            x={inset}
+            y={inset}
+            width={width}
+            height={height}
+            rx={radius}
+            fill="none"
+            stroke={`url(#${gradientId})`}
+            strokeLinecap="round"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+            style={{ filter: "blur(0.35px)" }}
+            strokeDasharray={`${perimeter * 0.18} ${perimeter * 0.82}`}
+          />
+        </motion.g>
+      </svg>
+    </span>
   );
 }
 ````
 
-## File: packages/design-system/src/components/OmniBar/PillActions.tsx
+## File: packages/design-system/src/components/OmniBar/OmniInputPill.tsx
 ````typescript
 "use client";
 
+import React, { useState } from "react";
+import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, X, ArrowUp } from "lucide-react";
-import { AttachmentFlyout } from "./AttachmentFlyout";
+import { UploadCloud } from "lucide-react";
+import { useOmniFileUpload } from "./use-omni-file-upload.hook";
+import { useOmnibarContext } from "./OmniBarContext";
+import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
+import { PillActions } from "./PillActions";
+import { Lettermark } from "../Logos/Logo";
+import type { StagedFile } from "./OmniBarContext";
 
-interface PillActionsProps {
+export interface OmniInputPillProps {
+  inputText: string;
   isListening: boolean;
   isProcessing: boolean;
-  canSend: boolean;
-  showClose: boolean;
-  hasToggle: boolean;
-  isAttachmentOpen: boolean;
+  errorMessage?: string | null;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onMicClick: () => void;
   onSubmit: () => void;
-  onToggle: (() => void) | undefined;
-  onAttachmentToggle: () => void;
-  onUploadClick: () => void;
-  onCameraClick: () => void;
-  onGoogleDriveClick: () => void;
+  onToggle?: () => void;
+  showClose?: boolean;
+  isDragging?: boolean;
+  stagedFiles?: StagedFile[];
 }
 
-/**
- * PillActions — right-side button cluster for OmniInputPill.
- * Extracted to keep OmniInputPill under the 200-line max.
- * Pure presentational — no hooks or data fetching.
- */
-export function PillActions({
+export function OmniInputPill({
+  inputText,
   isListening,
   isProcessing,
-  canSend,
-  showClose,
-  hasToggle,
-  isAttachmentOpen,
+  errorMessage,
+  onChange,
+  onKeyDown,
   onMicClick,
   onSubmit,
   onToggle,
-  onAttachmentToggle,
-  onUploadClick,
-  onCameraClick,
-  onGoogleDriveClick,
-}: PillActionsProps) {
+  showClose = true,
+  isDragging = false,
+  stagedFiles = [],
+}: OmniInputPillProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
+  const { onFileSelect, handleDrop, handleFileUpload } = useOmniFileUpload();
+  const { setShowGoogleDriveBrowser } = useOmnibarContext();
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [inputText]);
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith("image/") || item.type === "application/pdf") {
+        const file = item.getAsFile();
+        if (file) { e.preventDefault(); handleFileUpload(file); }
+      }
+    }
+  };
+
+  const canSend = inputText.trim().length > 0 || stagedFiles.length > 0;
+
   return (
-    <div className="flex shrink-0 items-center gap-0.5">
-      {/* Mic */}
-      <button
-        onClick={onMicClick}
-        type="button"
-        aria-label={isListening ? "Stop listening" : "Start voice input"}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none"
-        disabled={isProcessing}
-      >
-        <Mic className={`w-5 h-5 ${isListening ? "text-primary" : ""}`} />
-      </button>
+    <motion.div
+      layoutId="omnibar-input-pill"
+      variants={{
+        idle:    { width: "100%",  minHeight: "64px",  borderRadius: "32px", backgroundColor: "var(--color-card)",    borderStyle: "solid"  },
+        dragging:{ width: "300px", minHeight: "300px", borderRadius: "16px", backgroundColor: "var(--color-popover)", borderStyle: "dashed" },
+        droplet: { width: "380px", minHeight: "300px", borderRadius: "24px", backgroundColor: "var(--color-card)",    borderStyle: "solid"  },
+      }}
+      initial="idle"
+      animate={isDragging ? "dragging" : "idle"}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      onDrop={handleDrop}
+      className="border border-border p-2 pointer-events-auto flex flex-col justify-center overflow-hidden relative mx-auto max-w-[92vw] sm:max-w-full backdrop-blur-xl"
+      style={{
+        borderColor: isDragging || isProcessing ? "var(--color-primary)" : "var(--color-border)",
+      }}
+    >
+      <OmnibarPerimeterView busy={isProcessing} />
+      <input type="file" ref={fileInputRef} onChange={onFileSelect} className="hidden" accept="image/*,application/pdf" />
 
-      {/* Attachment flyout */}
-      <AttachmentFlyout
-        isOpen={isAttachmentOpen}
-        onToggle={onAttachmentToggle}
-        onUploadClick={onUploadClick}
-        onCameraClick={onCameraClick}
-        onGoogleDriveClick={onGoogleDriveClick}
-      />
-
-      {/* Submit — conditionally visible when there is content */}
+      {/* Drop-zone overlay */}
       <AnimatePresence>
-        {canSend && (
-          <motion.button
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.7, opacity: 0 }}
-            type="submit"
-            onClick={onSubmit}
-            disabled={isProcessing}
-            aria-label="Send message"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow-sm focus-visible:outline-none disabled:opacity-50"
+        {isDragging && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute inset-0 flex flex-col items-center justify-center text-accent pointer-events-none"
           >
-            <ArrowUp className="h-5 w-5" />
-          </motion.button>
+            <UploadCloud className="w-12 h-12 mb-4 animate-bounce" />
+            <span className="font-semibold text-lg tracking-wide">Drop file to analyze</span>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Close */}
-      {showClose && hasToggle && (
-        <button
-          onClick={onToggle}
-          type="button"
-          aria-label="Close"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      )}
-    </div>
+      <div className={`w-full flex flex-col gap-4 px-2 z-10 ${isDragging ? "opacity-0" : "opacity-100"}`}>
+        {/* ── Main row ── */}
+        <div className="flex items-center gap-2">
+          {/* Lettermark — pulses while processing */}
+          <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center">
+            <Lettermark gradient className={`w-7 h-7 transition-opacity ${isProcessing ? "animate-pulse opacity-60" : "opacity-100"}`} />
+          </span>
+
+          {/* Textarea */}
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            onPaste={handlePaste}
+            disabled={isProcessing}
+            placeholder={isProcessing ? "Chef is thinking..." : "Ask your sous chef"}
+            className={`w-full bg-transparent border-none text-foreground text-lg outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light flex-1 py-3 leading-snug ${isProcessing ? "opacity-50" : ""}`}
+            rows={1}
+            autoFocus
+          />
+
+          {/* Button cluster (mic | attach | submit | close) */}
+          <PillActions
+            isListening={isListening}
+            isProcessing={isProcessing}
+            canSend={canSend}
+            showClose={showClose}
+            hasToggle={!!onToggle}
+            isAttachmentOpen={isAttachmentOpen}
+            onMicClick={onMicClick}
+            onSubmit={onSubmit}
+            onToggle={onToggle}
+            onAttachmentToggle={() => setIsAttachmentOpen(!isAttachmentOpen)}
+            onUploadClick={() => {
+              setIsAttachmentOpen(false);
+              if (fileInputRef.current) fileInputRef.current.removeAttribute("capture");
+              fileInputRef.current?.click();
+            }}
+            onCameraClick={() => {
+              setIsAttachmentOpen(false);
+              if (fileInputRef.current) fileInputRef.current.setAttribute("capture", "environment");
+              fileInputRef.current?.click();
+            }}
+            onGoogleDriveClick={() => {
+              setIsAttachmentOpen(false);
+              setShowGoogleDriveBrowser(true);
+            }}
+          />
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            className="text-destructive text-sm font-medium px-4 pb-2"
+          >
+            {errorMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 ````
@@ -45386,6 +45812,105 @@ describe("useOmniSocket", () => {
     expect(typeof useOmniSocket).toBe("function");
   });
 });
+````
+
+## File: packages/design-system/src/components/OmniBar/use-omnibar-hotkeys.hook.ts
+````typescript
+"use client";
+
+import { useOmnibarContext } from "./OmniBarContext";
+import { type OmniMessage } from "@soustools/api-types";
+import { type Socket } from "socket.io-client";
+
+export function useOmniBarHotkeys({
+  socket,
+  isFocusPage,
+  pathname,
+  setErrorMessage,
+}: {
+  socket: Socket | null;
+  isFocusPage: boolean;
+  pathname: string;
+  setErrorMessage: (msg: string | null) => void;
+}) {
+  const {
+    isProcessing,
+    inputText,
+    setInputText,
+    setIsProcessing,
+    setIsOpen,
+    chatHistory,
+    setChatHistory,
+    contextPayload,
+  } = useOmnibarContext();
+
+  /**
+   * Core submit logic — shared between Enter keypress and the Submit button.
+   * Reads the current inputText from Zustand, emits over the socket.
+   */
+  const handleSubmit = async () => {
+    if (isProcessing) return;
+
+    const textToSubmit = inputText.trim();
+    if (!textToSubmit) return;
+
+    setInputText("");
+    setIsProcessing(true);
+    setErrorMessage(null);
+    if (!isFocusPage) {
+      setIsOpen(true);
+    }
+
+    const newUserMessage: OmniMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: textToSubmit,
+      timestamp: new Date(),
+    };
+
+    const updatedHistory = [...chatHistory, newUserMessage];
+    setChatHistory(updatedHistory);
+
+    try {
+      if (!socket || !socket.connected) {
+        setErrorMessage("WebSocket not connected. Attempting reconnect...");
+        socket?.connect();
+        setIsProcessing(false);
+        return;
+      }
+
+      socket.emit("executeCommand", {
+        chatHistory: updatedHistory,
+        source: "omnibar",
+        path: pathname,
+        context: contextPayload,
+      });
+    } catch (err: unknown) {
+      console.error("Failed to emit command:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Network error occurred.";
+      setErrorMessage(errorMessage);
+      setIsProcessing(false);
+    }
+  };
+
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      await handleSubmit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      if (isFocusPage) {
+        setChatHistory([]);
+        setInputText("");
+      } else {
+        setIsOpen(false);
+      }
+    }
+  };
+
+  return { handleKeyDown, handleSubmit };
+}
 ````
 
 ## File: packages/design-system/src/components/PinInput/PinInput.spec.tsx
@@ -46843,98 +47368,6 @@ export function TwoToneHeader({
       )}
     </div>
   );
-}
-````
-
-## File: packages/design-system/src/utils/favicon-status.ts
-````typescript
-import { drawBase, drawBadge, drawLoadingFrame } from "./favicon-canvas";
-
-export type FaviconStatus =
-  | { type: "idle" }
-  | { type: "loading" }
-  | { type: "count"; count: number }
-  | { type: "completed" }
-  | { type: "alert" };
-
-const STATIC_FAVICON = "/icons/favicon.svg";
-let loadingFrame: number | null = null;
-
-function stopLoadingAnimation() {
-  if (loadingFrame !== null) cancelAnimationFrame(loadingFrame);
-  loadingFrame = null;
-}
-
-function faviconLink() {
-  let link = document.querySelector<HTMLLinkElement>(
-    'link[data-runtime-favicon="true"]',
-  );
-
-  if (!link) {
-    const existing = document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]');
-    if (existing.length > 0) {
-      link = existing[0];
-      for (let i = 1; i < existing.length; i++) {
-        existing[i].remove();
-      }
-    } else {
-      link = document.createElement("link");
-      link.rel = "icon";
-      document.head.appendChild(link);
-    }
-    link.dataset.runtimeFavicon = "true";
-  }
-  return link;
-}
-
-function startLoadingAnimation(link: HTMLLinkElement) {
-  stopLoadingAnimation();
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const startedAt = performance.now();
-  let lastUpdate = 0;
-  const render = (now: number) => {
-    if (now - lastUpdate >= 90) {
-      drawLoadingFrame(ctx, 64, ((now - startedAt) % 1200) / 1200);
-      link.type = "image/png";
-      link.href = canvas.toDataURL("image/png");
-      lastUpdate = now;
-    }
-    loadingFrame = requestAnimationFrame(render);
-  };
-  loadingFrame = requestAnimationFrame(render);
-}
-
-export function setFaviconStatus(status: FaviconStatus) {
-  if (typeof document === "undefined") return;
-  const link = faviconLink();
-  stopLoadingAnimation();
-
-  if (status.type === "idle") {
-    link.type = "image/svg+xml";
-    link.href = STATIC_FAVICON;
-    return;
-  }
-  if (status.type === "loading") {
-    startLoadingAnimation(link);
-    return;
-  }
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  drawBase(ctx, 64);
-  drawBadge(ctx, 64, status);
-  link.type = "image/png";
-  link.href = canvas.toDataURL("image/png");
-}
-
-export function resetFaviconStatus() {
-  setFaviconStatus({ type: "idle" });
 }
 ````
 
@@ -58433,6 +58866,40 @@ const nextConfig = {
 export default withSerwist(nextConfig);
 ````
 
+## File: deploy/pi/stage-sous/00-install/00-packages
+````
+sway
+swaybg
+swayidle
+foot
+network-manager
+jq
+curl
+git
+ansible
+moreutils
+xdg-utils
+libinput-tools
+````
+
+## File: deploy/pi/stage-sous/prerun.sh
+````bash
+#!/bin/bash -e
+
+# Install wl-mirror dependencies
+apt-get install -y cmake meson wayland-protocols libwayland-dev libgles2-mesa-dev
+# Clone and build wl-mirror
+git clone https://github.com/Ferdi265/wl-mirror.git /tmp/wl-mirror
+cd /tmp/wl-mirror
+mkdir build && cd build
+cmake ..
+make && make install
+
+if [ ! -d "${ROOTFS_DIR}" ]; then
+	copy_previous
+fi
+````
+
 ## File: docs/agents/prompts/audit.md
 ````markdown
 <!--
@@ -58796,301 +59263,234 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = "Input";
 ````
 
-## File: packages/design-system/src/components/OmniBar/OmnibarPerimeterView.tsx
+## File: packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx
 ````typescript
 "use client";
 
-import { useId, useLayoutEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-
-/**
- * OmnibarPerimeterView
- *
- * Animated SVG border that traces a neon gradient around its parent
- * container. Uses a ResizeObserver to stay in sync with any layout
- * changes (idle pill ↔ active pill ↔ droplet morph).
- *
- * - `busy=false` → subtle idle shimmer that fires on a slow repeat cycle
- * - `busy=true`  → continuous gradient chase (processing state)
- *
- * Ported from the v0 Neon-Glass design system. All tokens are semantic.
- */
-export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
-  const reducedMotion = useReducedMotion();
-  const gradientId = useId();
-  const frameRef = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-
-  useLayoutEffect(() => {
-    const frame = frameRef.current;
-    if (!frame) return;
-    const update = () =>
-      setSize({ width: frame.clientWidth, height: frame.clientHeight });
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(frame);
-    return () => observer.disconnect();
-  }, []);
-
-  if (!size || size.width === 0 || size.height === 0) {
-    return (
-      <span
-        ref={frameRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border/90"
-      />
-    );
-  }
-
-  const inset = 1;
-  const width = Math.max(1, size.width - inset * 2);
-  const height = Math.max(1, size.height - inset * 2);
-  const radius = height / 2;
-  const perimeter = 2 * (width - 2 * radius) + 2 * Math.PI * radius;
-
-  return (
-    <span
-      ref={frameRef}
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border/90"
-    >
-      <svg
-        className="absolute inset-0 h-full w-full overflow-visible"
-        viewBox={`0 0 ${size.width} ${size.height}`}
-      >
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="var(--primary)" />
-            <stop offset="0.55" stopColor="var(--accent)" />
-            <stop offset="1" stopColor="var(--primary)" />
-          </linearGradient>
-        </defs>
-        <motion.g
-          initial={{ opacity: 0 }}
-          animate={
-            reducedMotion
-              ? { opacity: busy ? 1 : 0, strokeDashoffset: 0 }
-              : busy
-                ? { opacity: 1, strokeDashoffset: -perimeter }
-                : {
-                    opacity: [0, 0, 1, 1, 0],
-                    strokeDashoffset: [0, 0, -perimeter * 0.12, -perimeter],
-                  }
-          }
-          transition={
-            reducedMotion
-              ? { duration: 0 }
-              : busy
-                ? {
-                    strokeDashoffset: {
-                      duration: 2.8,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "linear",
-                    },
-                    opacity: { duration: 0.15 },
-                  }
-                : {
-                    opacity: {
-                      duration: 6.2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      times: [0, 0.55, 0.63, 0.89, 1],
-                      ease: "linear",
-                    },
-                    strokeDashoffset: {
-                      duration: 6.2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      times: [0, 0.55, 0.63, 1],
-                      ease: "linear",
-                    },
-                  }
-          }
-        >
-          <rect
-            x={inset}
-            y={inset}
-            width={width}
-            height={height}
-            rx={radius}
-            fill="none"
-            stroke={`url(#${gradientId})`}
-            strokeLinecap="round"
-            strokeWidth="1.5"
-            vectorEffect="non-scaling-stroke"
-            style={{ filter: "blur(0.35px)" }}
-            strokeDasharray={`${perimeter * 0.18} ${perimeter * 0.82}`}
-          />
-        </motion.g>
-      </svg>
-    </span>
-  );
-}
-````
-
-## File: packages/design-system/src/components/OmniBar/OmniInputPill.tsx
-````typescript
-"use client";
-
-import React, { useState } from "react";
-import { useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud } from "lucide-react";
-import { useOmniFileUpload } from "./use-omni-file-upload.hook";
-import { useOmnibarContext } from "./OmniBarContext";
+import React from "react";
+import { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { type OmniMessage } from "@soustools/api-types";
+import { OmniChatWindow } from "./OmniChatWindow";
+import { OmniInputPill } from "./OmniInputPill";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
-import { PillActions } from "./PillActions";
+import { useOmnibarContext } from "./OmniBarContext";
 import { Lettermark } from "../Logos/Logo";
-import type { StagedFile } from "./OmniBarContext";
 
-export interface OmniInputPillProps {
-  inputText: string;
+export interface OmniBarPresentationProps {
+  isOpen: boolean;
   isListening: boolean;
-  isProcessing: boolean;
+  isProcessing?: boolean;
+  chatHistory: OmniMessage[];
   errorMessage?: string | null;
+  inputText: string;
+  isFocusPage?: boolean;
+  onToggle: () => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onMicClick: () => void;
   onSubmit: () => void;
-  onToggle?: () => void;
-  showClose?: boolean;
-  isDragging?: boolean;
-  stagedFiles?: StagedFile[];
+  onClearHistory: () => void;
 }
 
-export function OmniInputPill({
-  inputText,
+// Spring for positional/scale transitions (not used for keyframe arrays).
+const springTransition = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.9 };
+
+// Tween used for any multi-keyframe property — springs can't do keyframe arrays.
+const glowLoopTransition = {
+  boxShadow: {
+    type: "tween" as const,
+    ease: "linear" as const,
+    repeat: Infinity,
+    duration: 2.4,
+  },
+};
+
+export function OmniBarPresentation({
+  isOpen,
   isListening,
-  isProcessing,
-  errorMessage,
+  isProcessing = false,
+  chatHistory = [],
+  errorMessage = null,
+  inputText,
+  isFocusPage = false,
+  onToggle,
   onChange,
   onKeyDown,
   onMicClick,
   onSubmit,
-  onToggle,
-  showClose = true,
-  isDragging = false,
-  stagedFiles = [],
-}: OmniInputPillProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
-  const { onFileSelect, handleDrop, handleFileUpload } = useOmniFileUpload();
-  const { setShowGoogleDriveBrowser } = useOmnibarContext();
+  onClearHistory,
+}: OmniBarPresentationProps) {
+  const { isDragging, stagedFiles } = useOmnibarContext();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => { setMounted(true); }, []);
+
+  // Auto-scroll chat history
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [inputText]);
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.type.startsWith("image/") || item.type === "application/pdf") {
-        const file = item.getAsFile();
-        if (file) { e.preventDefault(); handleFileUpload(file); }
-      }
-    }
-  };
-
-  const canSend = inputText.trim().length > 0 || stagedFiles.length > 0;
+  }, [chatHistory.length, isOpen]);
 
   return (
-    <motion.div
-      layoutId="omnibar-input-pill"
-      variants={{
-        idle:    { width: "100%",  minHeight: "64px",  borderRadius: "32px", backgroundColor: "var(--color-card)",    borderStyle: "solid"  },
-        dragging:{ width: "300px", minHeight: "300px", borderRadius: "16px", backgroundColor: "var(--color-popover)", borderStyle: "dashed" },
-        droplet: { width: "380px", minHeight: "300px", borderRadius: "24px", backgroundColor: "var(--color-card)",    borderStyle: "solid"  },
-      }}
-      initial="idle"
-      animate={isDragging ? "dragging" : "idle"}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      onDrop={handleDrop}
-      className="border border-border p-2 pointer-events-auto flex flex-col justify-center overflow-hidden relative mx-auto max-w-[92vw] sm:max-w-full backdrop-blur-xl"
-      style={{
-        borderColor: isDragging || isProcessing ? "var(--color-primary)" : "var(--color-border)",
-      }}
-    >
-      <OmnibarPerimeterView busy={isProcessing} />
-      <input type="file" ref={fileInputRef} onChange={onFileSelect} className="hidden" accept="image/*,application/pdf" />
-
-      {/* Drop-zone overlay */}
-      <AnimatePresence>
-        {isDragging && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col items-center justify-center text-accent pointer-events-none"
-          >
-            <UploadCloud className="w-12 h-12 mb-4 animate-bounce" />
-            <span className="font-semibold text-lg tracking-wide">Drop file to analyze</span>
-          </motion.div>
+    <>
+      {/* ── Backdrop ──────────────────────────────────────────────────────── */}
+      {mounted && !isFocusPage &&
+        createPortal(
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                key="backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="fixed inset-0 w-screen h-screen backdrop-blur-md bg-background/72 pointer-events-auto z-40"
+                onClick={() => onToggle()}
+              />
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
 
-      <div className={`w-full flex flex-col gap-4 px-2 z-10 ${isDragging ? "opacity-0" : "opacity-100"}`}>
-        {/* ── Main row ── */}
-        <div className="flex items-center gap-2">
-          {/* Lettermark — pulses while processing */}
-          <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center">
-            <Lettermark gradient className={`w-7 h-7 transition-opacity ${isProcessing ? "animate-pulse opacity-60" : "opacity-100"}`} />
-          </span>
-
-          {/* Textarea */}
-          <textarea
-            ref={textareaRef}
-            value={inputText}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-            onPaste={handlePaste}
-            disabled={isProcessing}
-            placeholder={isProcessing ? "Chef is thinking..." : "Ask your sous chef"}
-            className={`w-full bg-transparent border-none text-foreground text-lg outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50 font-light flex-1 py-3 leading-snug ${isProcessing ? "opacity-50" : ""}`}
-            rows={1}
-            autoFocus
-          />
-
-          {/* Button cluster (mic | attach | submit | close) */}
-          <PillActions
-            isListening={isListening}
-            isProcessing={isProcessing}
-            canSend={canSend}
-            showClose={showClose}
-            hasToggle={!!onToggle}
-            isAttachmentOpen={isAttachmentOpen}
-            onMicClick={onMicClick}
-            onSubmit={onSubmit}
-            onToggle={onToggle}
-            onAttachmentToggle={() => setIsAttachmentOpen(!isAttachmentOpen)}
-            onUploadClick={() => {
-              setIsAttachmentOpen(false);
-              if (fileInputRef.current) fileInputRef.current.removeAttribute("capture");
-              fileInputRef.current?.click();
-            }}
-            onCameraClick={() => {
-              setIsAttachmentOpen(false);
-              if (fileInputRef.current) fileInputRef.current.setAttribute("capture", "environment");
-              fileInputRef.current?.click();
-            }}
-            onGoogleDriveClick={() => {
-              setIsAttachmentOpen(false);
-              setShowGoogleDriveBrowser(true);
-            }}
-          />
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {errorMessage && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-            className="text-destructive text-sm font-medium px-4 pb-2"
-          >
-            {errorMessage}
-          </motion.div>
+      {/* ── FAB (collapsed) + Expanded panel ─────────────────────────────── */}
+      {/* LayoutGroup couples the shared layoutId="omnibar-input-pill" across   */}
+      {/* the two portals so Framer can perform the shared-layout morph.         */}
+      {mounted && !isFocusPage &&
+        createPortal(
+          <LayoutGroup id="omnibar-morph">
+            <AnimatePresence mode="popLayout">
+              {!isOpen ? (
+                /* ── Collapsed FAB — bottom-right ── */
+                <motion.button
+                  key="fab"
+                  layoutId="omnibar-input-pill"
+                  type="button"
+                  aria-label="Open sous chef"
+                  // Explicit borderRadius in animate+initial+exit prevents Framer
+                  // from interpolating back to the pill's rectangular radius on close.
+                  initial={{ opacity: 0, scale: 0.85, borderRadius: "9999px" }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    borderRadius: "9999px",
+                    // Keyframe array → MUST use tween (not spring).
+                    boxShadow: isProcessing
+                      ? "var(--ds-glow-md)"
+                      : [
+                          "var(--ds-glow-sm)",
+                          "var(--ds-glow-accent)",
+                          "var(--ds-glow-sm)",
+                        ],
+                  }}
+                  exit={{ opacity: 0, scale: 0.85, borderRadius: "9999px" }}
+                  transition={{
+                    ...springTransition,
+                    ...glowLoopTransition,
+                  }}
+                  whileHover={{ y: -3, scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={onToggle}
+                  // w-16 h-16 = 64px — proper FAB touch target.
+                  // No overflow-hidden: allows OmnibarPerimeterView SVG to render outside.
+                  className="fixed bottom-6 right-6 z-50 w-16 h-16 ds-glass flex items-center justify-center cursor-pointer pointer-events-auto"
+                  style={{
+                    borderColor: isProcessing
+                      ? "var(--color-primary)"
+                      : "var(--color-border)",
+                  }}
+                >
+                  <OmnibarPerimeterView busy={isProcessing} />
+                  <Lettermark
+                    gradient
+                    className={`w-8 h-8 relative z-10 ${isProcessing ? "animate-pulse" : ""}`}
+                  />
+                </motion.button>
+              ) : (
+                /* ── Expanded: chat timeline + input pill ── */
+                <motion.div
+                  key="expanded-container"
+                  // z-50 ensures the chat window sits above regular page content.
+                  className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={springTransition}
+                >
+                  <OmniChatWindow
+                    chatHistory={chatHistory}
+                    scrollRef={scrollRef}
+                    onClearHistory={onClearHistory}
+                  />
+                  <OmniInputPill
+                    inputText={inputText}
+                    isListening={isListening}
+                    isProcessing={isProcessing}
+                    errorMessage={errorMessage}
+                    onChange={onChange}
+                    onKeyDown={onKeyDown}
+                    onMicClick={onMicClick}
+                    onSubmit={onSubmit}
+                    onToggle={onToggle}
+                    showClose={true}
+                    isDragging={isDragging}
+                    stagedFiles={stagedFiles}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </LayoutGroup>,
+          document.body,
         )}
-      </AnimatePresence>
-    </motion.div>
+
+      {/* ── Focus Page (Inline — full-width centered) ─────────────────────── */}
+      {isFocusPage && (
+        <>
+          <AnimatePresence>
+            {chatHistory.length > 0 && (
+              <motion.div
+                key="home-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="fixed inset-0 top-[64px] bg-background/82 backdrop-blur-md pointer-events-auto z-40"
+                onClick={onClearHistory}
+              />
+            )}
+          </AnimatePresence>
+          <motion.div
+            layout
+            transition={springTransition}
+            className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
+          >
+            <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
+              <OmniChatWindow
+                chatHistory={chatHistory}
+                scrollRef={scrollRef}
+                onClearHistory={onClearHistory}
+              />
+              <OmniInputPill
+                inputText={inputText}
+                isListening={isListening}
+                isProcessing={isProcessing}
+                errorMessage={errorMessage}
+                onChange={onChange}
+                onKeyDown={onKeyDown}
+                onMicClick={onMicClick}
+                onSubmit={onSubmit}
+                showClose={false}
+                isDragging={isDragging}
+                stagedFiles={stagedFiles}
+              />
+            </motion.div>
+          </motion.div>
+        </>
+      )}
+    </>
   );
 }
 ````
@@ -59444,105 +59844,6 @@ export function useOmniActions() {
     handleSaveInvoice,
     handleSaveRecipe,
   };
-}
-````
-
-## File: packages/design-system/src/components/OmniBar/use-omnibar-hotkeys.hook.ts
-````typescript
-"use client";
-
-import { useOmnibarContext } from "./OmniBarContext";
-import { type OmniMessage } from "@soustools/api-types";
-import { type Socket } from "socket.io-client";
-
-export function useOmniBarHotkeys({
-  socket,
-  isFocusPage,
-  pathname,
-  setErrorMessage,
-}: {
-  socket: Socket | null;
-  isFocusPage: boolean;
-  pathname: string;
-  setErrorMessage: (msg: string | null) => void;
-}) {
-  const {
-    isProcessing,
-    inputText,
-    setInputText,
-    setIsProcessing,
-    setIsOpen,
-    chatHistory,
-    setChatHistory,
-    contextPayload,
-  } = useOmnibarContext();
-
-  /**
-   * Core submit logic — shared between Enter keypress and the Submit button.
-   * Reads the current inputText from Zustand, emits over the socket.
-   */
-  const handleSubmit = async () => {
-    if (isProcessing) return;
-
-    const textToSubmit = inputText.trim();
-    if (!textToSubmit) return;
-
-    setInputText("");
-    setIsProcessing(true);
-    setErrorMessage(null);
-    if (!isFocusPage) {
-      setIsOpen(true);
-    }
-
-    const newUserMessage: OmniMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: textToSubmit,
-      timestamp: new Date(),
-    };
-
-    const updatedHistory = [...chatHistory, newUserMessage];
-    setChatHistory(updatedHistory);
-
-    try {
-      if (!socket || !socket.connected) {
-        setErrorMessage("WebSocket not connected. Attempting reconnect...");
-        socket?.connect();
-        setIsProcessing(false);
-        return;
-      }
-
-      socket.emit("executeCommand", {
-        chatHistory: updatedHistory,
-        source: "omnibar",
-        path: pathname,
-        context: contextPayload,
-      });
-    } catch (err: unknown) {
-      console.error("Failed to emit command:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Network error occurred.";
-      setErrorMessage(errorMessage);
-      setIsProcessing(false);
-    }
-  };
-
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      await handleSubmit();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      if (isFocusPage) {
-        setChatHistory([]);
-        setInputText("");
-      } else {
-        setIsOpen(false);
-      }
-    }
-  };
-
-  return { handleKeyDown, handleSubmit };
 }
 ````
 
@@ -59908,67 +60209,6 @@ module.exports = {
     },
   ],
 };
-````
-
-## File: litellm_config.yaml
-````yaml
-model_list:
-  # --- Route to your local Ollama container ---
-  - model_name: qwen2.5-coder:7b
-    litellm_params:
-      model: ollama/qwen2.5-coder:7b
-      api_base: http://ollama:11434
-  - model_name: deepseek-coder-v2
-    litellm_params:
-      model: ollama/deepseek-coder-v2
-      api_base: http://ollama:11434
-
-  # --- Route to Google Gemini (2026 Models) ---
-  - model_name: gemini-3.5-flash
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-3.1-pro
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-3.1-flash-lite
-    litellm_params:
-      model: gemini/gemini-3.1-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-2.5-pro
-    litellm_params:
-      model: gemini/gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: gemini/gemini-2.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  # === THE CLAUDE CLI ALIASES ===
-  # The Claude CLI hardcodes requests for these model names.
-  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
-  - model_name: claude-3-5-sonnet-20241022
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: claude-3-5-haiku-20241022
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: claude-opus-4-8
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-general_settings:
-  master_key: sk-1234
 ````
 
 ## File: apps/api/src/modules/auth/auth.controller.ts
@@ -62415,636 +62655,6 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
 }));
 ````
 
-## File: packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { useRef, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { type OmniMessage } from "@soustools/api-types";
-import { OmniChatWindow } from "./OmniChatWindow";
-import { OmniInputPill } from "./OmniInputPill";
-import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
-import { useOmnibarContext } from "./OmniBarContext";
-import { Lettermark } from "../Logos/Logo";
-
-export interface OmniBarPresentationProps {
-  isOpen: boolean;
-  isListening: boolean;
-  isProcessing?: boolean;
-  chatHistory: OmniMessage[];
-  errorMessage?: string | null;
-  inputText: string;
-  isFocusPage?: boolean;
-  onToggle: () => void;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  onMicClick: () => void;
-  onSubmit: () => void;
-  onClearHistory: () => void;
-}
-
-// Spring for positional/scale transitions (not used for keyframe arrays).
-const springTransition = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.9 };
-
-// Tween used for any multi-keyframe property — springs can't do keyframe arrays.
-const glowLoopTransition = {
-  boxShadow: {
-    type: "tween" as const,
-    ease: "linear" as const,
-    repeat: Infinity,
-    duration: 2.4,
-  },
-};
-
-export function OmniBarPresentation({
-  isOpen,
-  isListening,
-  isProcessing = false,
-  chatHistory = [],
-  errorMessage = null,
-  inputText,
-  isFocusPage = false,
-  onToggle,
-  onChange,
-  onKeyDown,
-  onMicClick,
-  onSubmit,
-  onClearHistory,
-}: OmniBarPresentationProps) {
-  const { isDragging, stagedFiles } = useOmnibarContext();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
-
-  // Auto-scroll chat history
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [chatHistory.length, isOpen]);
-
-  return (
-    <>
-      {/* ── Backdrop ──────────────────────────────────────────────────────── */}
-      {mounted && !isFocusPage &&
-        createPortal(
-          <AnimatePresence>
-            {isOpen && (
-              <motion.div
-                key="backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
-                className="fixed inset-0 w-screen h-screen backdrop-blur-md bg-background/72 pointer-events-auto z-40"
-                onClick={() => onToggle()}
-              />
-            )}
-          </AnimatePresence>,
-          document.body,
-        )}
-
-      {/* ── FAB (collapsed) + Expanded panel ─────────────────────────────── */}
-      {/* LayoutGroup couples the shared layoutId="omnibar-input-pill" across   */}
-      {/* the two portals so Framer can perform the shared-layout morph.         */}
-      {mounted && !isFocusPage &&
-        createPortal(
-          <LayoutGroup id="omnibar-morph">
-            <AnimatePresence mode="popLayout">
-              {!isOpen ? (
-                /* ── Collapsed FAB — bottom-right ── */
-                <motion.button
-                  key="fab"
-                  layoutId="omnibar-input-pill"
-                  type="button"
-                  aria-label="Open sous chef"
-                  // Explicit borderRadius in animate+initial+exit prevents Framer
-                  // from interpolating back to the pill's rectangular radius on close.
-                  initial={{ opacity: 0, scale: 0.85, borderRadius: "9999px" }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    borderRadius: "9999px",
-                    // Keyframe array → MUST use tween (not spring).
-                    boxShadow: isProcessing
-                      ? "var(--ds-glow-md)"
-                      : [
-                          "var(--ds-glow-sm)",
-                          "var(--ds-glow-accent)",
-                          "var(--ds-glow-sm)",
-                        ],
-                  }}
-                  exit={{ opacity: 0, scale: 0.85, borderRadius: "9999px" }}
-                  transition={{
-                    ...springTransition,
-                    ...glowLoopTransition,
-                  }}
-                  whileHover={{ y: -3, scale: 1.06 }}
-                  whileTap={{ scale: 0.94 }}
-                  onClick={onToggle}
-                  // w-16 h-16 = 64px — proper FAB touch target.
-                  // No overflow-hidden: allows OmnibarPerimeterView SVG to render outside.
-                  className="fixed bottom-6 right-6 z-50 w-16 h-16 ds-glass flex items-center justify-center cursor-pointer pointer-events-auto"
-                  style={{
-                    borderColor: isProcessing
-                      ? "var(--color-primary)"
-                      : "var(--color-border)",
-                  }}
-                >
-                  <OmnibarPerimeterView busy={isProcessing} />
-                  <Lettermark
-                    gradient
-                    className={`w-8 h-8 relative z-10 ${isProcessing ? "animate-pulse" : ""}`}
-                  />
-                </motion.button>
-              ) : (
-                /* ── Expanded: chat timeline + input pill ── */
-                <motion.div
-                  key="expanded-container"
-                  // z-50 ensures the chat window sits above regular page content.
-                  className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={springTransition}
-                >
-                  <OmniChatWindow
-                    chatHistory={chatHistory}
-                    scrollRef={scrollRef}
-                    onClearHistory={onClearHistory}
-                  />
-                  <OmniInputPill
-                    inputText={inputText}
-                    isListening={isListening}
-                    isProcessing={isProcessing}
-                    errorMessage={errorMessage}
-                    onChange={onChange}
-                    onKeyDown={onKeyDown}
-                    onMicClick={onMicClick}
-                    onSubmit={onSubmit}
-                    onToggle={onToggle}
-                    showClose={true}
-                    isDragging={isDragging}
-                    stagedFiles={stagedFiles}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </LayoutGroup>,
-          document.body,
-        )}
-
-      {/* ── Focus Page (Inline — full-width centered) ─────────────────────── */}
-      {isFocusPage && (
-        <>
-          <AnimatePresence>
-            {chatHistory.length > 0 && (
-              <motion.div
-                key="home-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
-                className="fixed inset-0 top-[64px] bg-background/82 backdrop-blur-md pointer-events-auto z-40"
-                onClick={onClearHistory}
-              />
-            )}
-          </AnimatePresence>
-          <motion.div
-            layout
-            transition={springTransition}
-            className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
-          >
-            <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
-              <OmniChatWindow
-                chatHistory={chatHistory}
-                scrollRef={scrollRef}
-                onClearHistory={onClearHistory}
-              />
-              <OmniInputPill
-                inputText={inputText}
-                isListening={isListening}
-                isProcessing={isProcessing}
-                errorMessage={errorMessage}
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                onMicClick={onMicClick}
-                onSubmit={onSubmit}
-                showClose={false}
-                isDragging={isDragging}
-                stagedFiles={stagedFiles}
-              />
-            </motion.div>
-          </motion.div>
-        </>
-      )}
-    </>
-  );
-}
-````
-
-## File: packages/design-system/src/components/OmniBar/use-omni-file-upload.hook.ts
-````typescript
-import type React from "react";
-import { useRef, useEffect } from "react";
-import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
-import { type OmniMessage } from "@soustools/api-types";
-import { api, uploadFile } from "@soustools/api-client";
-
-export function useOmniFileUpload() {
-  const { setStagedFiles, chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
-  const objectUrlsRef = useRef<string[]>([]);
-
-  const trackObjectURL = (url: string) => {
-    objectUrlsRef.current.push(url);
-  };
-
-  const revokeAllTrackedURLs = () => {
-    objectUrlsRef.current.forEach((url) => {
-      try {
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error("Failed to revoke object URL:", err);
-      }
-    });
-    objectUrlsRef.current = [];
-  };
-
-  // Revoke URLs on unmount
-  useEffect(() => {
-    return () => {
-      revokeAllTrackedURLs();
-    };
-  }, []);
-
-  // Revoke URLs if chatHistory is cleared
-  useEffect(() => {
-    if (chatHistory.length === 0 && objectUrlsRef.current.length > 0) {
-      revokeAllTrackedURLs();
-    }
-  }, [chatHistory]);
-
-  const handleFileUpload = async (file: File) => {
-    const fileId = crypto.randomUUID();
-    const newStagedFile: StagedFile = { id: fileId, url: null, status: 'complete', file };
-    
-    // Immediately stage file
-    setStagedFiles((prev) => [...prev, newStagedFile]);
-
-    // Immediately trigger unified extraction
-    await handleAutoExtract(newStagedFile);
-  };
-
-  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFileUpload(e.target.files[0]);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileUpload(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleAutoExtract = async (file: StagedFile) => {
-    const imageUrl = file.file ? URL.createObjectURL(file.file) : file.url;
-    if (file.file && imageUrl) {
-      trackObjectURL(imageUrl);
-    }
-    const userMsg: OmniMessage = {
-      id: file.id,
-      role: 'user',
-      content: `Extract Document: ${imageUrl || "Image"}`,
-      timestamp: new Date()
-    };
-
-    const loadingMessageId = crypto.randomUUID();
-    const pendingMsg: OmniMessage = {
-      id: loadingMessageId,
-      role: 'agent_step',
-      content: "Analyzing document...",
-      isLoading: true,
-      timestamp: new Date()
-    };
-
-    // Show loading state right away and remove staged file from input queue
-    setChatHistory([...chatHistory, userMsg, pendingMsg]);
-    setStagedFiles([]);
-
-    try {
-      let publicUrl: string | undefined;
-      if (file.file) {
-        publicUrl = await uploadFile(file.file);
-      }
-
-      const orgId = (contextPayload.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
-
-      // Call the unified extraction endpoint (which is polymorphic)
-      const { data, error } = await api.POST("/ingestion/invoice", {
-        body: {
-          organizationId: orgId,
-          sourceUrl: publicUrl,
-          sourceName: file.file?.name,
-        },
-      });
-
-      if (error) throw new Error("Failed to extract document");
-
-      const extractedData = (data.data || data) as {
-        documentType?: string;
-        lineItems?: unknown[];
-        extractedMetadata?: Record<string, unknown>;
-      };
-      
-      if (extractedData && extractedData.extractedMetadata) {
-        extractedData.extractedMetadata.sourceUrl = imageUrl;
-      }
-
-      const isRecipe = extractedData?.documentType === "RECIPE";
-      
-      const successMsg: OmniMessage = {
-        id: loadingMessageId,
-        role: 'model',
-        content: isRecipe 
-          ? "Heard, Chef! I've extracted the recipe details. Please verify the ingredient mappings below:"
-          : `Invoice extracted successfully! Found ${extractedData?.lineItems?.length || 0} items. Please verify the mappings below:`,
-        invoiceData: !isRecipe ? extractedData : undefined,
-        recipeData: isRecipe ? extractedData : undefined,
-        timestamp: new Date()
-      };
-
-      setChatHistory([...chatHistory, userMsg, successMsg]);
-    } catch (err) {
-      console.error(err);
-      const errorMsg: OmniMessage = {
-        id: loadingMessageId,
-        role: 'model',
-        content: "Sorry Chef, I encountered an error while analyzing the document.",
-        timestamp: new Date()
-      };
-      setChatHistory([...chatHistory, userMsg, errorMsg]);
-    }
-  };
-
-  return { onFileSelect, handleDrop, handleFileUpload };
-}
-````
-
-## File: packages/domain-recipes/src/AutoCalculateButton.tsx
-````typescript
-// Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.view.tsx
-````
-
-## File: apps/api/src/main.ts
-````typescript
-import "newrelic";
-import initializeServerLogger from "@soustools/logger/server";
-initializeServerLogger();
-
-import "reflect-metadata";
-import "./pre-bootstrap";
-import { serverConfig as config } from "@soustools/config/server";
-
-import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import * as fs from "fs";
-import { AppModule } from "./app.module";
-import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
-import cookieParser from "cookie-parser";
-
-import * as express from "express";
-
-/**
- * Boots the NestJS application.
- *
- * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
- * and starts listening on the configured PORT.
- *
- * @returns {Promise<void>} Resolves when the application has successfully started.
- */
-async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
-
-  /**
-   * Trust the first proxy hop (Traefik) so that Express reads
-   * X-Forwarded-Proto and considers the request HTTPS. Without this,
-   * Express refuses to set Secure cookies because it thinks the
-   * connection is plain HTTP.
-   */
-  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
-  expressApp.set('trust proxy', 1);
-
-  app.use(express.json({ limit: "2mb" }));
-  app.use(express.urlencoded({ limit: "2mb", extended: true }));
-
-  // Parse cookies so guards can read HttpOnly session tokens
-  app.use(cookieParser());
-
-  // Use global exception filter
-  app.useGlobalFilters(new AllExceptionsFilter());
-
-  // Allow credentials for cookie-based auth.
-  // In production we restrict origins to known frontends; in dev we reflect
-  // the request origin so any localhost port works.
-  const allowedOrigins = config.IS_PRODUCTION
-    ? [
-        'https://sous.tools',
-        'https://app.sous.tools',
-        'https://pos.sous.tools',
-        'https://tv.sous.tools',
-        'https://setup.sous.tools',
-        'https://editor.sous.tools',
-        'android-app://com.sous.wearos',
-        'app://com.sous.wearos'
-      ]
-    : (origin: string | undefined, callback: (err: Error | null, allow?: any) => void) => {
-        callback(null, origin || "*");
-      };
-
-  app.enableCors({
-    origin: allowedOrigins,
-    credentials: true,
-  });
-
-  // Setup Swagger / OpenAPI
-  const options = new DocumentBuilder()
-    .setTitle("Sous Tools API")
-    .setDescription("The global API for Sous Tools")
-    .setVersion("1.0")
-    .build();
-  const document = SwaggerModule.createDocument(app, options);
-  if (config.NODE_ENV !== 'production') {
-    fs.writeFileSync('openapi.json', JSON.stringify(document));
-  }
-  
-  const port = config.PORT;
-  await app.listen(config.PORT, "0.0.0.0");
-  console.log(`Application is running on: http://0.0.0.0:${port}`);
-}
-
-bootstrap().catch((err: unknown) => {
-  console.error(err, "Failed to start the application");
-  process.exit(1);
-});
-````
-
-## File: apps/web/src/app/(workspace)/settings/page.tsx
-````typescript
-import { SettingsClient } from "./settings-client";
-import { api } from "@soustools/api-client";
-
-export const dynamic = 'force-dynamic';
-
-export default async function SettingsPage() {
-  let integrations = [];
-  try {
-    const { data, error } = await (api.GET as any)("/integrations/status", { cache: "no-store" });
-    if (!error && data) {
-      integrations = (data as any).data || [];
-    }
-  } catch (err) {
-    console.error("Failed to load integrations status", err);
-  }
-
-  // Stub data for global styling tokens and user profile
-  // In a real app, these would be fetched from the API as well
-
-  const initialTokens = {};
-  const userProfile = {
-    name: "Admin User",
-    email: "admin@soustools.local",
-    role: "admin",
-  };
-
-  const isDev = process.env.NODE_ENV === "development";
-
-  return (
-    <SettingsClient
-      integrations={integrations}
-      isDev={isDev}
-      initialTokens={initialTokens}
-      userProfile={userProfile}
-    />
-  );
-}
-````
-
-## File: apps/web/src/lib/api.ts
-````typescript
-import { createRestClient } from "@soustools/api-client";
-
-/**
- * Reads a specific cookie by name in a browser environment.
- */
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return decodeURIComponent(parts.pop()?.split(";").shift() || "");
-  }
-  return null;
-}
-
-/**
- * Clears the access token cookie by setting its expiration in the past.
- */
-function clearCookie(name: string): void {
-  if (typeof document !== "undefined") {
-    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
-  }
-}
-
-/**
- * Handles clearing credentials and redirecting to the login screen.
- */
-export async function onLogout(): Promise<void> {
-  clearCookie("soustools_access_token");
-  clearCookie("sb-access-token");
-  clearCookie("sous_session");
-  
-  if (typeof document !== "undefined") {
-    // Clear all readable cookies
-    document.cookie.split(";").forEach((cookie) => {
-      const eqPos = cookie.indexOf("=");
-      const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
-      if (name) {
-        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
-      }
-    });
-  }
-
-  try {
-    await fetch("/api/auth/logout", { method: "POST" });
-  } catch (_e) {
-    // Ignore API errors during client logout
-  }
-
-  if (typeof window !== "undefined") {
-    window.location.href = "/login";
-  }
-}
-
-/**
- * Retrieve the current access token.
- */
-export function getToken(): string | null {
-  return getCookie("soustools_access_token") || getCookie("sb-access-token");
-}
-
-/**
- * Singleton API Client instance for the web frontend.
- * Totally disconnected from Supabase browser clients.
- */
-export const api = createRestClient({
-  credentials: "include",
-});
-````
-
-## File: docs/agents/prompts/implement.md
-````markdown
-<!--
-File: /workspace/docs/agents/prompts/implement.md
-Usage: Triggered by n8n when the label "agent:implement" is applied to a GitHub Issue.
--->
-BOOT SEQUENCE: Silently read .cursorrules. 
-
-THEN: Review your available MCP tools. You MUST use your custom MCP tools (they may be prefixed, e.g., `soustools_get_issue` and `soustools_read_local_context`) to:
-1. Fetch the data for Issue #{ISSUE_NUMBER} from the "conarwelsh/sous.tools" repository to read the approved plan in the comments.
-2. Read the local context to understand the codebase.
-
-Create a new git branch named "feature/issue-{ISSUE_NUMBER}" and execute the code changes. You MUST use `-y` for all `npx` commands. 
-
-Once complete, run "pnpm turbo lint" and "pnpm turbo typecheck". If they fail, fix the errors. Commit changes and push the branch. 
-
-CRITICAL INSTRUCTION: Review your available MCP tools and use the correct tool to open a Pull Request for your branch. If the code completely fails and you cannot push, use the MCP tool to post a comment to detail the errors. Execute the tools and stop.
-````
-
-## File: docs/agents/prompts/plan.md
-````markdown
-<!--
-File: /workspace/docs/agents/prompts/plan.md
-Usage: Triggered by n8n when the label "agent:plan" is applied to a GitHub Issue.
--->
-BOOT SEQUENCE: Silently read .cursorrules. 
-
-THEN: Review your available MCP tools. You MUST use your custom MCP tools (they may be prefixed, e.g., `soustools_get_issue` and `soustools_read_local_context`) to:
-1. Fetch the data for Issue #{ISSUE_NUMBER} from the "conarwelsh/sous.tools" repository to get the issue details and all comment history.
-2. Read the local context to understand the current file structure and dependency graph.
-
-You MUST read the issue body and ALL comments in detail to understand the historical context, requirements, design decisions, and any approved plans. 
-
-Write a step-by-step implementation plan compliant with our architecture. DO NOT write or modify any code. 
-
-CRITICAL INSTRUCTION: Review your available MCP tools and use the correct tool (e.g., `soustools_post_comment`) to post your final plan directly to the issue. Execute the tools and stop.
-````
-
 ## File: packages/design-system/src/components/OmniBar/OmniChatWindow.tsx
 ````typescript
 import React, { useState, useEffect } from "react";
@@ -63254,6 +62864,612 @@ export function OmniChatWindow({
         </AnimatePresence>
       </div>
     </section>
+  );
+}
+````
+
+## File: packages/design-system/src/components/OmniBar/use-omni-file-upload.hook.ts
+````typescript
+import type React from "react";
+import { useRef, useEffect } from "react";
+import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
+import { type OmniMessage } from "@soustools/api-types";
+import { api, uploadFile } from "@soustools/api-client";
+
+export function useOmniFileUpload() {
+  const { setStagedFiles, chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
+  const objectUrlsRef = useRef<string[]>([]);
+
+  const trackObjectURL = (url: string) => {
+    objectUrlsRef.current.push(url);
+  };
+
+  const revokeAllTrackedURLs = () => {
+    objectUrlsRef.current.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Failed to revoke object URL:", err);
+      }
+    });
+    objectUrlsRef.current = [];
+  };
+
+  // Revoke URLs on unmount
+  useEffect(() => {
+    return () => {
+      revokeAllTrackedURLs();
+    };
+  }, []);
+
+  // Revoke URLs if chatHistory is cleared
+  useEffect(() => {
+    if (chatHistory.length === 0 && objectUrlsRef.current.length > 0) {
+      revokeAllTrackedURLs();
+    }
+  }, [chatHistory]);
+
+  const handleFileUpload = async (file: File) => {
+    const fileId = crypto.randomUUID();
+    const newStagedFile: StagedFile = { id: fileId, url: null, status: 'complete', file };
+    
+    // Immediately stage file
+    setStagedFiles((prev) => [...prev, newStagedFile]);
+
+    // Immediately trigger unified extraction
+    await handleAutoExtract(newStagedFile);
+  };
+
+  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileUpload(e.target.files[0]);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleAutoExtract = async (file: StagedFile) => {
+    const imageUrl = file.file ? URL.createObjectURL(file.file) : file.url;
+    if (file.file && imageUrl) {
+      trackObjectURL(imageUrl);
+    }
+    const userMsg: OmniMessage = {
+      id: file.id,
+      role: 'user',
+      content: `Extract Document: ${imageUrl || "Image"}`,
+      timestamp: new Date()
+    };
+
+    const loadingMessageId = crypto.randomUUID();
+    const pendingMsg: OmniMessage = {
+      id: loadingMessageId,
+      role: 'agent_step',
+      content: "Analyzing document...",
+      isLoading: true,
+      timestamp: new Date()
+    };
+
+    // Show loading state right away and remove staged file from input queue
+    setChatHistory([...chatHistory, userMsg, pendingMsg]);
+    setStagedFiles([]);
+
+    try {
+      let publicUrl: string | undefined;
+      if (file.file) {
+        publicUrl = await uploadFile(file.file);
+      }
+
+      const orgId = (contextPayload.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
+
+      // Call the unified extraction endpoint (which is polymorphic)
+      const { data, error } = await api.POST("/ingestion/invoice", {
+        body: {
+          organizationId: orgId,
+          sourceUrl: publicUrl,
+          sourceName: file.file?.name,
+        },
+      });
+
+      if (error) throw new Error("Failed to extract document");
+
+      const extractedData = (data.data || data) as {
+        documentType?: string;
+        lineItems?: unknown[];
+        extractedMetadata?: Record<string, unknown>;
+      };
+      
+      if (extractedData && extractedData.extractedMetadata) {
+        extractedData.extractedMetadata.sourceUrl = imageUrl;
+      }
+
+      const isRecipe = extractedData?.documentType === "RECIPE";
+      
+      const successMsg: OmniMessage = {
+        id: loadingMessageId,
+        role: 'model',
+        content: isRecipe 
+          ? "Heard, Chef! I've extracted the recipe details. Please verify the ingredient mappings below:"
+          : `Invoice extracted successfully! Found ${extractedData?.lineItems?.length || 0} items. Please verify the mappings below:`,
+        invoiceData: !isRecipe ? extractedData : undefined,
+        recipeData: isRecipe ? extractedData : undefined,
+        timestamp: new Date()
+      };
+
+      setChatHistory([...chatHistory, userMsg, successMsg]);
+    } catch (err) {
+      console.error(err);
+      const errorMsg: OmniMessage = {
+        id: loadingMessageId,
+        role: 'model',
+        content: "Sorry Chef, I encountered an error while analyzing the document.",
+        timestamp: new Date()
+      };
+      setChatHistory([...chatHistory, userMsg, errorMsg]);
+    }
+  };
+
+  return { onFileSelect, handleDrop, handleFileUpload };
+}
+````
+
+## File: packages/domain-inventory/src/items-ledger-table.tsx
+````typescript
+// DELETED
+````
+
+## File: packages/domain-recipes/src/AutoCalculateButton.tsx
+````typescript
+// Deprecated: Consolidated into components/RecipeBuilder/RecipeBuilder.view.tsx
+````
+
+## File: apps/api/src/main.ts
+````typescript
+import "newrelic";
+import initializeServerLogger from "@soustools/logger/server";
+initializeServerLogger();
+
+import "reflect-metadata";
+import "./pre-bootstrap";
+import { serverConfig as config } from "@soustools/config/server";
+
+import { NestFactory } from "@nestjs/core";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import * as fs from "fs";
+import { AppModule } from "./app.module";
+import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
+import cookieParser from "cookie-parser";
+
+import * as express from "express";
+
+/**
+ * Boots the NestJS application.
+ *
+ * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
+ * and starts listening on the configured PORT.
+ *
+ * @returns {Promise<void>} Resolves when the application has successfully started.
+ */
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+
+  /**
+   * Trust the first proxy hop (Traefik) so that Express reads
+   * X-Forwarded-Proto and considers the request HTTPS. Without this,
+   * Express refuses to set Secure cookies because it thinks the
+   * connection is plain HTTP.
+   */
+  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
+  expressApp.set('trust proxy', 1);
+
+  app.use(express.json({ limit: "2mb" }));
+  app.use(express.urlencoded({ limit: "2mb", extended: true }));
+
+  // Parse cookies so guards can read HttpOnly session tokens
+  app.use(cookieParser());
+
+  // Use global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Allow credentials for cookie-based auth.
+  // In production we restrict origins to known frontends; in dev we reflect
+  // the request origin so any localhost port works.
+  const allowedOrigins = config.IS_PRODUCTION
+    ? [
+        'https://sous.tools',
+        'https://app.sous.tools',
+        'https://pos.sous.tools',
+        'https://tv.sous.tools',
+        'https://setup.sous.tools',
+        'https://editor.sous.tools',
+        'android-app://com.sous.wearos',
+        'app://com.sous.wearos'
+      ]
+    : (origin: string | undefined, callback: (err: Error | null, allow?: any) => void) => {
+        callback(null, origin || "*");
+      };
+
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
+
+  // Setup Swagger / OpenAPI
+  const options = new DocumentBuilder()
+    .setTitle("Sous Tools API")
+    .setDescription("The global API for Sous Tools")
+    .setVersion("1.0")
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  if (config.NODE_ENV !== 'production') {
+    fs.writeFileSync('openapi.json', JSON.stringify(document));
+  }
+  
+  const port = config.PORT;
+  await app.listen(config.PORT, "0.0.0.0");
+  console.log(`Application is running on: http://0.0.0.0:${port}`);
+}
+
+bootstrap().catch((err: unknown) => {
+  console.error(err, "Failed to start the application");
+  process.exit(1);
+});
+````
+
+## File: apps/web/src/app/(workspace)/settings/page.tsx
+````typescript
+import { SettingsClient } from "./settings-client";
+import { api } from "@soustools/api-client";
+
+export const dynamic = 'force-dynamic';
+
+export default async function SettingsPage() {
+  let integrations = [];
+  try {
+    const { data, error } = await (api.GET as any)("/integrations/status", { cache: "no-store" });
+    if (!error && data) {
+      integrations = (data as any).data || [];
+    }
+  } catch (err) {
+    console.error("Failed to load integrations status", err);
+  }
+
+  // Stub data for global styling tokens and user profile
+  // In a real app, these would be fetched from the API as well
+
+  const initialTokens = {};
+  const userProfile = {
+    name: "Admin User",
+    email: "admin@soustools.local",
+    role: "admin",
+  };
+
+  const isDev = process.env.NODE_ENV === "development";
+
+  return (
+    <SettingsClient
+      integrations={integrations}
+      isDev={isDev}
+      initialTokens={initialTokens}
+      userProfile={userProfile}
+    />
+  );
+}
+````
+
+## File: apps/web/src/app/(workspace)/layout.tsx
+````typescript
+import React from "react";
+import { AppBar, OmniBarProvider } from "@soustools/design-system";
+import { logoutAction } from "@/app/actions/auth";
+import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
+import { api } from "@soustools/api-client";
+
+export default async function WorkspaceLayout({ 
+  children,
+  modal
+}: { 
+  children: any;
+  modal: any;
+}) {
+  let notifications = [];
+  try {
+    const { data, error } = await api.GET("/notifications/unread", {
+      cache: "no-store",
+    });
+    if (!error && data) {
+      notifications = (data as any).data || [];
+    }
+  } catch (error: any) {
+    if (error && (error.digest === 'DYNAMIC_SERVER_USAGE' || error.message?.includes('Dynamic server usage') || error.message?.includes('dynamic-server-error'))) {
+      throw error;
+    }
+    console.error("Failed to fetch notifications:", error);
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AppBar 
+        notifications={notifications || []} 
+        onLogoutAction={logoutAction} 
+        isAdmin={true}
+      />
+      <main className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-y-auto min-w-0">
+        <OmniBarProvider>
+          {children}
+          {modal}
+          <GoogleDriveBrowserWrapper />
+        </OmniBarProvider>
+      </main>
+    </div>
+  );
+}
+````
+
+## File: apps/web/src/lib/api.ts
+````typescript
+import { createRestClient } from "@soustools/api-client";
+
+/**
+ * Reads a specific cookie by name in a browser environment.
+ */
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return decodeURIComponent(parts.pop()?.split(";").shift() || "");
+  }
+  return null;
+}
+
+/**
+ * Clears the access token cookie by setting its expiration in the past.
+ */
+function clearCookie(name: string): void {
+  if (typeof document !== "undefined") {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+  }
+}
+
+/**
+ * Handles clearing credentials and redirecting to the login screen.
+ */
+export async function onLogout(): Promise<void> {
+  clearCookie("soustools_access_token");
+  clearCookie("sb-access-token");
+  clearCookie("sous_session");
+  
+  if (typeof document !== "undefined") {
+    // Clear all readable cookies
+    document.cookie.split(";").forEach((cookie) => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
+      if (name) {
+        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+      }
+    });
+  }
+
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch (_e) {
+    // Ignore API errors during client logout
+  }
+
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+}
+
+/**
+ * Retrieve the current access token.
+ */
+export function getToken(): string | null {
+  return getCookie("soustools_access_token") || getCookie("sb-access-token");
+}
+
+/**
+ * Singleton API Client instance for the web frontend.
+ * Totally disconnected from Supabase browser clients.
+ */
+export const api = createRestClient({
+  credentials: "include",
+});
+````
+
+## File: docs/agents/prompts/implement.md
+````markdown
+<!--
+File: /workspace/docs/agents/prompts/implement.md
+Usage: Triggered by n8n when the label "agent:implement" is applied to a GitHub Issue.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
+
+THEN: Review your available MCP tools. You MUST use your custom MCP tools (they may be prefixed, e.g., `soustools_get_issue` and `soustools_read_local_context`) to:
+1. Fetch the data for Issue #{ISSUE_NUMBER} from the "conarwelsh/sous.tools" repository to read the approved plan in the comments.
+2. Read the local context to understand the codebase.
+
+Create a new git branch named "feature/issue-{ISSUE_NUMBER}" and execute the code changes. You MUST use `-y` for all `npx` commands. 
+
+Once complete, run "pnpm turbo lint" and "pnpm turbo typecheck". If they fail, fix the errors. Commit changes and push the branch. 
+
+CRITICAL INSTRUCTION: Review your available MCP tools and use the correct tool to open a Pull Request for your branch. If the code completely fails and you cannot push, use the MCP tool to post a comment to detail the errors. Execute the tools and stop.
+````
+
+## File: docs/agents/prompts/plan.md
+````markdown
+<!--
+File: /workspace/docs/agents/prompts/plan.md
+Usage: Triggered by n8n when the label "agent:plan" is applied to a GitHub Issue.
+-->
+BOOT SEQUENCE: Silently read .cursorrules. 
+
+THEN: Review your available MCP tools. You MUST use your custom MCP tools (they may be prefixed, e.g., `soustools_get_issue` and `soustools_read_local_context`) to:
+1. Fetch the data for Issue #{ISSUE_NUMBER} from the "conarwelsh/sous.tools" repository to get the issue details and all comment history.
+2. Read the local context to understand the current file structure and dependency graph.
+
+You MUST read the issue body and ALL comments in detail to understand the historical context, requirements, design decisions, and any approved plans. 
+
+Write a step-by-step implementation plan compliant with our architecture. DO NOT write or modify any code. 
+
+CRITICAL INSTRUCTION: Review your available MCP tools and use the correct tool (e.g., `soustools_post_comment`) to post your final plan directly to the issue. Execute the tools and stop.
+````
+
+## File: packages/design-system/src/components/OmniBar/OmniBarProvider.tsx
+````typescript
+"use client";
+
+import React from "react";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { OmniBarPresentation } from "./OmniBarPresentation";
+import { useOmnibarContext } from "./OmniBarContext";
+import { useOmniBarHotkeys } from "./use-omnibar-hotkeys.hook";
+import { useSpeechRecognition } from "./use-speech-recognition.hook";
+import { useGlobalDrag } from "./use-global-drag.hook";
+import { useOmniSocket } from "./use-omni-socket.hook";
+import { motion, AnimatePresence } from "framer-motion";
+
+
+interface IntegrationStatus {
+  provider: string;
+  connected: boolean;
+}
+
+export function OmniBarProvider({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const isFocusPage = pathname === "/home";
+
+  const {
+    chatHistory,
+    isOpen,
+    isProcessing,
+    setIsOpen,
+    setIsDragging,
+    inputText,
+    setInputText,
+    setIsGoogleDriveConnected,
+    setChatHistory,
+  } = useOmnibarContext();
+
+  const handleClearHistory = () => setChatHistory([]);
+
+
+
+  const { socket, errorMessage, setErrorMessage } =
+    useOmniSocket();
+
+  
+  useGlobalDrag(
+    () => {
+      setIsDragging(true);
+      if (!isFocusPage) {
+        setIsOpen(true);
+      }
+    },
+    () => {
+      setIsDragging(false);
+    }
+  );
+
+  // Fetch integration status for Google Drive
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/integrations/status");
+        if (res.ok) {
+          const payload = await res.json() as { data: IntegrationStatus[] } | IntegrationStatus[];
+          const list: IntegrationStatus[] = Array.isArray(payload) ? payload : payload.data || [];
+          const google = list.find((item) => item.provider === "GOOGLE");
+          setIsGoogleDriveConnected(!!google?.connected);
+        }
+      } catch (err) {
+        console.error("Failed to fetch Google Drive integration status:", err);
+      }
+    };
+    fetchStatus();
+  }, [setIsGoogleDriveConnected]);
+
+  
+  // Ensure modal overlay is closed on route changes to prevent backdrop flashes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname, setIsOpen]);
+
+  const handleToggle = () => {
+    if (!isFocusPage) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+  };
+
+  const { handleKeyDown, handleSubmit } = useOmniBarHotkeys({ socket, isFocusPage, pathname, setErrorMessage });
+  const { isListening, handleMicClick } = useSpeechRecognition({ onTranscript: setInputText });
+
+  // Global escape listener for when textarea is not focused
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isFocusPage) {
+          setChatHistory([]);
+          setInputText("");
+        } else if (isOpen) {
+          setIsOpen(false);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [isOpen, isFocusPage, setIsOpen, setChatHistory, setInputText]);
+
+  return (
+    <>
+      {/* Global Top Progress Bar */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ width: "0%", opacity: 1 }}
+            animate={{ width: "80%", opacity: 1 }}
+            exit={{ width: "100%", opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="fixed top-0 left-0 h-[2px] bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-pulse z-[100000]"
+            style={{
+              boxShadow:
+                "0 0 10px var(--color-primary), 0 0 20px var(--color-accent)",
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {children}
+      <OmniBarPresentation
+        isOpen={isOpen}
+        isListening={isListening}
+        isProcessing={isProcessing}
+        chatHistory={chatHistory}
+        errorMessage={errorMessage}
+        inputText={inputText}
+        isFocusPage={isFocusPage}
+        onToggle={handleToggle}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onMicClick={handleMicClick}
+        onSubmit={handleSubmit}
+        onClearHistory={handleClearHistory}
+      />
+    </>
   );
 }
 ````
@@ -63787,11 +64003,6 @@ export function OmniChatWindow({
 }
 ````
 
-## File: packages/domain-inventory/src/items-ledger-table.tsx
-````typescript
-// DELETED
-````
-
 ## File: packages/domain-recipes/src/RecipeCostPanelSummary.tsx
 ````typescript
 // Moved to src/components/RecipeViewer/
@@ -63889,55 +64100,6 @@ signage_deploy_key*
 docs/agents/logs/agent-run-*.log
 
 supabase/seed.sql
-````
-
-## File: apps/web/src/app/(workspace)/layout.tsx
-````typescript
-import React from "react";
-import { AppBar, OmniBarProvider } from "@soustools/design-system";
-import { logoutAction } from "@/app/actions/auth";
-import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
-import { api } from "@soustools/api-client";
-
-export default async function WorkspaceLayout({ 
-  children,
-  modal
-}: { 
-  children: any;
-  modal: any;
-}) {
-  let notifications = [];
-  try {
-    const { data, error } = await api.GET("/notifications/unread", {
-      cache: "no-store",
-    });
-    if (!error && data) {
-      notifications = (data as any).data || [];
-    }
-  } catch (error: any) {
-    if (error && (error.digest === 'DYNAMIC_SERVER_USAGE' || error.message?.includes('Dynamic server usage') || error.message?.includes('dynamic-server-error'))) {
-      throw error;
-    }
-    console.error("Failed to fetch notifications:", error);
-  }
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      <AppBar 
-        notifications={notifications || []} 
-        onLogoutAction={logoutAction} 
-        isAdmin={true}
-      />
-      <main className="flex-1 flex flex-col relative h-[calc(100vh-64px)] overflow-y-auto min-w-0">
-        <OmniBarProvider>
-          {children}
-          {modal}
-          <GoogleDriveBrowserWrapper />
-        </OmniBarProvider>
-      </main>
-    </div>
-  );
-}
 ````
 
 ## File: packages/config/src/cli.ts
@@ -64072,160 +64234,6 @@ run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-````
-
-## File: packages/design-system/src/components/OmniBar/OmniBarProvider.tsx
-````typescript
-"use client";
-
-import React from "react";
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
-import { OmniBarPresentation } from "./OmniBarPresentation";
-import { useOmnibarContext } from "./OmniBarContext";
-import { useOmniBarHotkeys } from "./use-omnibar-hotkeys.hook";
-import { useSpeechRecognition } from "./use-speech-recognition.hook";
-import { useGlobalDrag } from "./use-global-drag.hook";
-import { useOmniSocket } from "./use-omni-socket.hook";
-import { motion, AnimatePresence } from "framer-motion";
-
-
-interface IntegrationStatus {
-  provider: string;
-  connected: boolean;
-}
-
-export function OmniBarProvider({
-  children,
-}: {
-  children?: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const isFocusPage = pathname === "/home";
-
-  const {
-    chatHistory,
-    isOpen,
-    isProcessing,
-    setIsOpen,
-    setIsDragging,
-    inputText,
-    setInputText,
-    setIsGoogleDriveConnected,
-    setChatHistory,
-  } = useOmnibarContext();
-
-  const handleClearHistory = () => setChatHistory([]);
-
-
-
-  const { socket, errorMessage, setErrorMessage } =
-    useOmniSocket();
-
-  
-  useGlobalDrag(
-    () => {
-      setIsDragging(true);
-      if (!isFocusPage) {
-        setIsOpen(true);
-      }
-    },
-    () => {
-      setIsDragging(false);
-    }
-  );
-
-  // Fetch integration status for Google Drive
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch("/api/integrations/status");
-        if (res.ok) {
-          const payload = await res.json() as { data: IntegrationStatus[] } | IntegrationStatus[];
-          const list: IntegrationStatus[] = Array.isArray(payload) ? payload : payload.data || [];
-          const google = list.find((item) => item.provider === "GOOGLE");
-          setIsGoogleDriveConnected(!!google?.connected);
-        }
-      } catch (err) {
-        console.error("Failed to fetch Google Drive integration status:", err);
-      }
-    };
-    fetchStatus();
-  }, [setIsGoogleDriveConnected]);
-
-  
-  // Ensure modal overlay is closed on route changes to prevent backdrop flashes
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname, setIsOpen]);
-
-  const handleToggle = () => {
-    if (!isFocusPage) {
-      setIsOpen(!isOpen);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(e.target.value);
-  };
-
-  const { handleKeyDown, handleSubmit } = useOmniBarHotkeys({ socket, isFocusPage, pathname, setErrorMessage });
-  const { isListening, handleMicClick } = useSpeechRecognition({ onTranscript: setInputText });
-
-  // Global escape listener for when textarea is not focused
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (isFocusPage) {
-          setChatHistory([]);
-          setInputText("");
-        } else if (isOpen) {
-          setIsOpen(false);
-        }
-      }
-    };
-    window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [isOpen, isFocusPage, setIsOpen, setChatHistory, setInputText]);
-
-  return (
-    <>
-      {/* Global Top Progress Bar */}
-      <AnimatePresence>
-        {isProcessing && (
-          <motion.div
-            initial={{ width: "0%", opacity: 1 }}
-            animate={{ width: "80%", opacity: 1 }}
-            exit={{ width: "100%", opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="fixed top-0 left-0 h-[2px] bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-pulse z-[100000]"
-            style={{
-              boxShadow:
-                "0 0 10px var(--color-primary), 0 0 20px var(--color-accent)",
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {children}
-      <OmniBarPresentation
-        isOpen={isOpen}
-        isListening={isListening}
-        isProcessing={isProcessing}
-        chatHistory={chatHistory}
-        errorMessage={errorMessage}
-        inputText={inputText}
-        isFocusPage={isFocusPage}
-        onToggle={handleToggle}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onMicClick={handleMicClick}
-        onSubmit={handleSubmit}
-        onClearHistory={handleClearHistory}
-      />
-    </>
-  );
-}
 ````
 
 ## File: packages/mcp-server/index.ts
@@ -65055,165 +65063,6 @@ export function POSRegisterContainer() {
 POSRegisterContainer.displayName = "POSRegisterContainer";
 ````
 
-## File: .github/workflows/reporting.yml
-````yaml
-name: Reporting
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-  workflow_dispatch:
-
-jobs:
-  master-gauntlet:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: read # Required to fetch issues (project: read has been removed)
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # CRITICAL: Required for SonarCloud analysis
-
-      # --- FETCH SECRETS EARLY SO ALL STEPS CAN USE THEM ---
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "prod"
-          export-env: true
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Setup pnpm and turbo
-        run: npm install -g pnpm turbo
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Prepare Docs Directories
-        run: mkdir -p docs/audits docs/context docs/wiki
-
-      # ==========================================
-      # 1. THE CODE QUALITY GAUNTLET (Tests & Lint)
-      # ==========================================
-      - name: Run Linters & Typecheck
-        run: |
-          pnpm turbo lint > docs/audits/lint-report.txt || true
-          pnpm turbo typecheck > docs/audits/typecheck-report.txt || true
-
-      - name: Run Unit Tests & Check Coverage
-        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage --passWithNoTests > docs/audits/unit-test-coverage.txt || true
-
-      - name: Install Playwright Browsers (For E2E)
-        run: npx playwright install --with-deps
-
-      - name: Run E2E Tests
-        run: INFISICAL_MOCK=true pnpm turbo e2e > docs/audits/e2e-test-report.txt || true
-
-      # ==========================================
-      # 2. EXTERNAL SCANNERS (SonarCloud & Lighthouse)
-      # ==========================================
-      # - name: Run SonarCloud Scan
-      #   uses: SonarSource/sonarcloud-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   continue-on-error: true
-
-      # - name: Build Applications (Required for Lighthouse)
-      #   run: pnpm turbo build
-
-      # - name: Run Lighthouse (PWA Metrics)
-      #   run: |
-      #     npm install -g @lhci/cli
-      #     lhci autorun > docs/audits/lighthouse-report.txt || true
-
-      # ==========================================
-      # 3. AI CONTEXT GENERATION (Architecture & State)
-      # ==========================================
-      - name: Install tree utility
-        run: sudo apt-get update && sudo apt-get install -y tree
-
-      - name: Generate Tech Debt, Graph Context & Rules
-        run: |
-          pnpm run knip > docs/audits/knip-report.txt || true
-          npx turbo graph > docs/context/turbo-graph.txt || true
-          tree -I 'node_modules|.git|.next|dist|out|.turbo|docs' > docs/context/directory-tree.txt || true
-
-          # CRITICAL: Copy .cursorrules to a markdown file for NotebookLM
-          cat .cursorrules > docs/context/cursorrules.md || true
-
-      - name: Run Repomix (Full Codebase Snapshot)
-        run: npx repomix --output docs/context/repomix-output.xml || true
-
-      - name: Dump Database Schema
-        run: |
-          cat packages/supabase/schema.sql > docs/context/db-schema.sql || true
-
-      - name: Fetch GitHub State (Issues & Kanban)
-        env:
-          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-        run: |
-          # 1. Clear or create the issues markdown file
-          > docs/context/issues.md
-
-          # 2. Get the ID numbers of all open issues
-          ISSUE_NUMBERS=$(gh issue list --state open --limit 100 --json number --jq '.[].number')
-
-          # 3. Loop through each issue and download its full body AND comments
-          for ISSUE in $ISSUE_NUMBERS; do
-            gh issue view $ISSUE --comments >> docs/context/issues.md || true
-            echo -e "\n---\n" >> docs/context/issues.md
-          done
-
-          # 4. Fetch the Kanban Project Board state
-          gh project item-list 1 --owner conarwelsh --format markdown > docs/context/project.md || true
-
-      # ==========================================
-      # 4. SYNC TO REPO, WIKI, & TRIGGER AGENTS
-      # ==========================================
-      - name: Commit and Push Docs and Context to Main Repo
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          git commit -m "chore(ai): auto-update tech debt, architecture, rules, and kanban states [skip ci]" || echo "No changes to commit"
-          git push
-
-      - name: Sync docs/wiki to GitHub Wiki Repository
-        env:
-          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
-          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-        run: |
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
-          if [ -d "/tmp/wiki" ]; then
-            cp -R docs/wiki/* /tmp/wiki/ || true
-            cd /tmp/wiki
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git add .
-            git commit -m "chore(docs): sync wiki from main repo [skip ci]" || echo "No changes to commit"
-            git push origin HEAD:master || git push origin HEAD:main || true
-          else
-            echo "Wiki repository not found. Ensure the Wiki feature is enabled in GitHub settings and initialized."
-          fi
-
-      # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
-      - name: Trigger n8n CTO Summary
-        run: |
-          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
-          -H "Content-Type: application/json" \
-          -d '{"status": "${{ job.status }}"}'
-````
-
 ## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
 ````typescript
 "use client";
@@ -65382,6 +65231,165 @@ export function useOmniSocket(): {
 
   return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
 }
+````
+
+## File: .github/workflows/reporting.yml
+````yaml
+name: Reporting
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  master-gauntlet:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read # Required to fetch issues (project: read has been removed)
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # CRITICAL: Required for SonarCloud analysis
+
+      # --- FETCH SECRETS EARLY SO ALL STEPS CAN USE THEM ---
+      - name: Fetch Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm and turbo
+        run: npm install -g pnpm turbo
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Prepare Docs Directories
+        run: mkdir -p docs/audits docs/context docs/wiki
+
+      # ==========================================
+      # 1. THE CODE QUALITY GAUNTLET (Tests & Lint)
+      # ==========================================
+      - name: Run Linters & Typecheck
+        run: |
+          pnpm turbo lint > docs/audits/lint-report.txt || true
+          pnpm turbo typecheck > docs/audits/typecheck-report.txt || true
+
+      - name: Run Unit Tests & Check Coverage
+        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage --passWithNoTests > docs/audits/unit-test-coverage.txt || true
+
+      - name: Install Playwright Browsers (For E2E)
+        run: npx playwright install --with-deps
+
+      - name: Run E2E Tests
+        run: INFISICAL_MOCK=true pnpm turbo e2e > docs/audits/e2e-test-report.txt || true
+
+      # ==========================================
+      # 2. EXTERNAL SCANNERS (SonarCloud & Lighthouse)
+      # ==========================================
+      # - name: Run SonarCloud Scan
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   continue-on-error: true
+
+      # - name: Build Applications (Required for Lighthouse)
+      #   run: pnpm turbo build
+
+      # - name: Run Lighthouse (PWA Metrics)
+      #   run: |
+      #     npm install -g @lhci/cli
+      #     lhci autorun > docs/audits/lighthouse-report.txt || true
+
+      # ==========================================
+      # 3. AI CONTEXT GENERATION (Architecture & State)
+      # ==========================================
+      - name: Install tree utility
+        run: sudo apt-get update && sudo apt-get install -y tree
+
+      - name: Generate Tech Debt, Graph Context & Rules
+        run: |
+          pnpm run knip > docs/audits/knip-report.txt || true
+          npx turbo graph > docs/context/turbo-graph.txt || true
+          tree -I 'node_modules|.git|.next|dist|out|.turbo|docs' > docs/context/directory-tree.txt || true
+
+          # CRITICAL: Copy .cursorrules to a markdown file for NotebookLM
+          cat .cursorrules > docs/context/cursorrules.md || true
+
+      - name: Run Repomix (Full Codebase Snapshot)
+        run: npx repomix --output docs/context/repomix-output.xml || true
+
+      - name: Dump Database Schema
+        run: |
+          cat packages/supabase/schema.sql > docs/context/db-schema.sql || true
+
+      - name: Fetch GitHub State (Issues & Kanban)
+        env:
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+        run: |
+          # 1. Clear or create the issues markdown file
+          > docs/context/issues.md
+
+          # 2. Get the ID numbers of all open issues
+          ISSUE_NUMBERS=$(gh issue list --state open --limit 100 --json number --jq '.[].number')
+
+          # 3. Loop through each issue and download its full body AND comments
+          for ISSUE in $ISSUE_NUMBERS; do
+            gh issue view $ISSUE --comments >> docs/context/issues.md || true
+            echo -e "\n---\n" >> docs/context/issues.md
+          done
+
+          # 4. Fetch the Kanban Project Board state
+          gh project item-list 1 --owner conarwelsh --format markdown > docs/context/project.md || true
+
+      # ==========================================
+      # 4. SYNC TO REPO, WIKI, & TRIGGER AGENTS
+      # ==========================================
+      - name: Commit and Push Docs and Context to Main Repo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "chore(ai): auto-update tech debt, architecture, rules, and kanban states [skip ci]" || echo "No changes to commit"
+          git push
+
+      - name: Sync docs/wiki to GitHub Wiki Repository
+        env:
+          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+        run: |
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
+          if [ -d "/tmp/wiki" ]; then
+            cp -R docs/wiki/* /tmp/wiki/ || true
+            cd /tmp/wiki
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(docs): sync wiki from main repo [skip ci]" || echo "No changes to commit"
+            git push origin HEAD:master || git push origin HEAD:main || true
+          else
+            echo "Wiki repository not found. Ensure the Wiki feature is enabled in GitHub settings and initialized."
+          fi
+
+      # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
+      - name: Trigger n8n CTO Summary
+        run: |
+          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
+          -H "Content-Type: application/json" \
+          -d '{"status": "${{ job.status }}"}'
 ````
 
 ## File: docker-compose.yml

@@ -7,16 +7,16 @@
 cache miss, executing d4fa233f43f5b321
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/config:lint
-cache miss, executing d61b95c1537cc1c1
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing 7a7a6be166eeeb85
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:lint
 cache miss, executing d819098ff9fd519a
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:lint
+cache miss, executing d61b95c1537cc1c1
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:lint
@@ -27,20 +27,16 @@ $ eslint . --max-warnings 0
 cache miss, executing 362349980b8e5d0e
 $ tsc
 ::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 6ee486856bc9116d
+::group::@soustools/api-client:lint
+cache miss, executing ed494a0d3d7cc5aa
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/logger:build
 cache miss, executing 0f332528610809d9
 $ tsc
 ::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing ed494a0d3d7cc5aa
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 4a4d7a8a8ef20ac6
+::group::@soustools/logger:lint
+cache miss, executing 6ee486856bc9116d
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-settings:lint
@@ -51,8 +47,16 @@ $ eslint . --max-warnings 0
 cache miss, executing cf1a00f6698f1e7f
 $ eslint . --max-warnings 0
 ::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 4a4d7a8a8ef20ac6
+$ eslint . --max-warnings 0
+::endgroup::
 ::group::@soustools/domain-recipes:lint
 cache miss, executing 3d5b91e9c7459fa1
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing aa8df1743f6d0ba3
 $ eslint . --max-warnings 0
 ::endgroup::
 [;31m@soustools/design-system:lint[;0m
@@ -65,26 +69,6 @@ $ eslint . --max-warnings 0
 ✖ 1 problem (1 error, 0 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/setup-portal:lint
-cache miss, executing d9262c48baad7115
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::api:lint
-cache miss, executing 613032723e490ade
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing 6b33ac85b9bf1953
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing aa8df1743f6d0ba3
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::cli:lint
 cache miss, executing e96b0c46557e778a
 $ eslint . --max-warnings 0
@@ -95,9 +79,28 @@ cache miss, executing ea05a56c15f8fe94
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 6b33ac85b9bf1953
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:lint
+cache miss, executing d9262c48baad7115
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::api:lint
+cache miss, executing 613032723e490ade
+$ eslint . --max-warnings 0
+(node:3272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784754712509 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[ELIFECYCLE] Command failed.
+::endgroup::
 
- Tasks:    13 successful, 20 total
+ Tasks:    14 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    19.451s 
+  Time:    19.821s 
 Failed:    @soustools/design-system#lint
 
