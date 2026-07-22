@@ -7,6 +7,7 @@ export interface WebSocketClientOptions {
   url?: string;
   namespace?: string;
   token?: string;
+  getToken?: () => string | Promise<string>;
   query?: Record<string, string>;
   socketOptions?: Partial<ManagerOptions & SocketOptions>;
 }
@@ -18,6 +19,9 @@ export interface WebSocketClientOptions {
  * Handles formatting credentials (`withCredentials: true`), connecting, and
  * automatically refreshing the auth session token via `refreshAuthSession()`
  * when encountering a 401 / Unauthorized exception.
+ *
+ * Fixes stale socket token trap by dynamically updating socket.auth with the new token
+ * before reconnecting.
  */
 export function createWebSocketClient(
   options: WebSocketClientOptions = {}
@@ -43,7 +47,9 @@ export function createWebSocketClient(
     if (
       errorMsg.includes("Unauthorized") ||
       errorMsg.includes("expired") ||
-      errorMsg.includes("No token provided")
+      errorMsg.includes("No token provided") ||
+      errorMsg.includes("401") ||
+      errorMsg.includes("jwt expired")
     ) {
       if (isRefreshing) return;
       isRefreshing = true;
@@ -53,12 +59,29 @@ export function createWebSocketClient(
         const refreshed = await refreshAuthSession();
 
         if (refreshed) {
-          console.log("[api-client] Auth session refreshed. Reconnecting WebSocket...");
+          console.log("[api-client] Auth session refreshed. Updating socket auth and reconnecting...");
           socket.disconnect();
+
+          let newToken = options.token;
+          if (options.getToken) {
+            try {
+              newToken = await options.getToken();
+            } catch (err) {
+              console.error("[api-client] Failed to retrieve new token via getToken():", err);
+            }
+          }
+
+          if (typeof socket.auth === "object" && socket.auth !== null) {
+            socket.auth = {
+              ...socket.auth,
+              ...(newToken ? { token: newToken } : {}),
+            };
+          }
+
           socket.connect();
           socket.emit("reauthenticated");
         } else {
-          console.error("[api-client] Auth session refresh failed for WebSocket.");
+          console.warn("[api-client] Auth session refresh returned false. Socket remains disconnected without forced logout.");
         }
       } catch (err) {
         console.error("[api-client] Error during WebSocket auth refresh:", err);

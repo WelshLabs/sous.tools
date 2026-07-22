@@ -5,6 +5,7 @@ import { refreshAuthSession } from "./auth-session";
 
 export interface RestClientOptions {
   baseUrl?: string;
+  credentials?: RequestCredentials;
 }
 
 export type RestApiClient = ReturnType<typeof createClient<paths>>;
@@ -14,7 +15,7 @@ export function createRestClient(options: RestClientOptions = {}): RestApiClient
 
   const client = createClient<paths>({
     baseUrl,
-    credentials: "include",
+    credentials: options.credentials || "include",
   });
 
   client.use({
