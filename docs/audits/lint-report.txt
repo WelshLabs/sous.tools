@@ -1,110 +1,103 @@
 
-   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/mcp-server, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
-   • Running lint in 20 packages
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/mcp-server, @soustools/setup-portal, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
+   • Running lint in 19 packages
    • Remote caching disabled
 
 ::group::@soustools/eslint-config:lint
-cache miss, executing cee5aebff4281385
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/mcp-server:lint
-cache miss, executing 6a87efb14f6eae8b
+cache miss, executing d4fa233f43f5b321
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:lint
-cache miss, executing ce56469da22ce48a
+cache miss, executing d61b95c1537cc1c1
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing 643516a854539fbb
+cache miss, executing 7a7a6be166eeeb85
 $ tsc
 ::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing d819098ff9fd519a
+$ eslint . --max-warnings 0
+::endgroup::
 ::group::@soustools/api-types:lint
-cache miss, executing 3d8f14778d29356e
+cache miss, executing d5ad631ac41a93c0
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing 8175f9694f2a2f7c
+cache miss, executing 362349980b8e5d0e
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:lint
-cache miss, executing d041b046ce4bf432
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/supabase:lint
-cache miss, executing 0e7ecede93c8f11f
+cache miss, executing 6ee486856bc9116d
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 84a8bd60fad980b0
+cache miss, executing 0f332528610809d9
 $ tsc
 ::endgroup::
 ::group::@soustools/api-client:lint
-cache miss, executing 50b87ae15b898950
+cache miss, executing ed494a0d3d7cc5aa
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-inventory:lint
-cache miss, executing f5842588b1aae2d4
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing 8a05ee490d10fab2
+cache miss, executing 4a4d7a8a8ef20ac6
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-settings:lint
-cache miss, executing f01246e6bc58c669
+cache miss, executing ec8391d6a727d0c8
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing cf1a00f6698f1e7f
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing ece0d4e52a67b3e7
+cache miss, executing 3d5b91e9c7459fa1
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing d750bf5595f3659c
+[;31m@soustools/design-system:lint[;0m
+cache miss, executing 926a46ea01b41d24
 $ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing 61e6b5403660a3bd
-$ eslint . --max-warnings 0
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing 9e691effbcfe8673
-$ eslint . --max-warnings 0
-(node:3306) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/pos-simulator/eslint.config.js?mtime=1784669399414 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/pos-simulator/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-::endgroup::
+
+/home/runner/work/sous.tools/sous.tools/packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx
+  222:1  error  File has too many lines (207). Maximum allowed is 200  max-lines
+
+✖ 1 problem (1 error, 0 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.
 ::group::@soustools/setup-portal:lint
-cache miss, executing 91d561bc7fc2914c
+cache miss, executing d9262c48baad7115
 $ eslint . --max-warnings 0
-::endgroup::
-::group::cli:lint
-cache miss, executing 3c4a993c7fb6e438
-$ eslint . --max-warnings 0
-(node:3322) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/cli/eslint.config.js?mtime=1784669399413 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/cli/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::api:lint
-cache miss, executing d8da24c9a92f5ca8
+cache miss, executing 613032723e490ade
 $ eslint . --max-warnings 0
-(node:3254) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784669399405 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 6b33ac85b9bf1953
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing aa8df1743f6d0ba3
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::cli:lint
+cache miss, executing e96b0c46557e778a
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::web:lint
-cache miss, executing 6f23d4b0e213849a
+cache miss, executing ea05a56c15f8fe94
 $ eslint . --max-warnings 0
-(node:3285) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/web/eslint.config.js?mtime=1784669399422 is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/web/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
+[ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    21 successful, 21 total
-Cached:    0 cached, 21 total
-  Time:    23.329s 
+ Tasks:    13 successful, 20 total
+Cached:    0 cached, 20 total
+  Time:    19.451s 
+Failed:    @soustools/design-system#lint
 

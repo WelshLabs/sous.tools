@@ -549,6 +549,8 @@
 │       │   │       └── confirm-modal.tsx
 │       │   ├── instrumentation-client.tsx
 │       │   ├── instrumentation.ts
+│       │   ├── lib
+│       │   │   └── api.ts
 │       │   ├── proxy.ts
 │       │   └── sw.ts
 │       ├── tsconfig.json
@@ -819,9 +821,15 @@
 │   │   ├── eslint.config.js
 │   │   ├── package.json
 │   │   ├── src
+│   │   │   ├── auth-session.ts
+│   │   │   ├── graphql.ts
+│   │   │   ├── index.test.ts
 │   │   │   ├── index.ts
+│   │   │   ├── rest.ts
 │   │   │   ├── schema.d.ts
-│   │   │   └── schema.js
+│   │   │   ├── schema.js
+│   │   │   ├── upload.ts
+│   │   │   └── websocket.ts
 │   │   └── tsconfig.json
 │   ├── api-types
 │   │   ├── eslint.config.js
@@ -845,7 +853,8 @@
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── cli.ts
-│   │   │   └── index.ts
+│   │   │   ├── client.ts
+│   │   │   └── server.ts
 │   │   └── tsconfig.json
 │   ├── design-system
 │   │   ├── components.json
@@ -1319,13 +1328,6 @@
 │   │   ├── index.ts
 │   │   ├── package.json
 │   │   └── tsconfig.json
-│   ├── supabase
-│   │   ├── eslint.config.js
-│   │   ├── package.json
-│   │   ├── schema.sql
-│   │   ├── src
-│   │   │   └── index.ts
-│   │   └── tsconfig.json
 │   └── tsconfig
 │       ├── base.json
 │       ├── nestjs.json
@@ -1351,4 +1353,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-315 directories, 1037 files
+314 directories, 1040 files

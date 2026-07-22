@@ -1,90 +1,86 @@
 
-   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/mcp-server, @soustools/setup-portal, @soustools/supabase, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
-   • Running typecheck in 20 packages
+   • Packages in scope: @soustools/api-client, @soustools/api-types, @soustools/config, @soustools/design-system, @soustools/domain-inventory, @soustools/domain-pos, @soustools/domain-recipes, @soustools/domain-settings, @soustools/domain-signage, @soustools/eslint-config, @soustools/logger, @soustools/mcp-server, @soustools/setup-portal, @soustools/tsconfig, api, cli, pos-simulator, storybook, web
+   • Running typecheck in 19 packages
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache hit, replaying logs 643516a854539fbb
+cache hit, replaying logs 7a7a6be166eeeb85
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache hit, replaying logs 8175f9694f2a2f7c
+cache hit, replaying logs 362349980b8e5d0e
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache hit, replaying logs 84a8bd60fad980b0
+cache hit, replaying logs 0f332528610809d9
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
-cache miss, executing 8db688fa2cd6f714
+cache miss, executing a05431afa8a56086
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/logger:typecheck
-cache miss, executing 479cfdeffe6def05
+cache miss, executing 1d6c7850819e52be
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-client:typecheck
-cache miss, executing ccc2eddb4ded3ec4
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/supabase:typecheck
-cache miss, executing 53a0fa66a62890db
+cache miss, executing 257fae906d3bd091
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-types:typecheck
-cache miss, executing f88a3da9c5476906
+cache miss, executing 33945f94abe92520
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
-cache miss, executing b1c778eb449e4f25
+cache miss, executing ea1e2ed7cf1600a1
 $ tsc --noEmit
 ::endgroup::
 ::group::cli:typecheck
-cache miss, executing 3795c5c114ebcb31
+cache miss, executing a40ee81d90d2fce3
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/design-system:typecheck
-cache miss, executing b56404905ada91ce
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 62d988a8b92b7f8b
-$ tsc --noEmit
-::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing e72aa0de376bf3c7
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing cbe29a152effe1ce
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing e4bcb1d24503a350
+cache miss, executing 75a3a0569839d16b
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-settings:typecheck
-cache miss, executing be830c0e8b50f99b
+cache miss, executing fa236001a04a1ac4
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing 292c6904327e4a72
+::group::pos-simulator:typecheck
+cache miss, executing 63c056b3ca8d6326
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 1a22ee4508889d24
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing d323c987a06ffc6f
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
-cache miss, executing 4d7625cd4aa0a8b7
+cache miss, executing ba5fce8a5a7d3c4e
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing 3836cb8db3cc6c48
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 977bc9d37a89853b
 $ tsc --noEmit
 ::endgroup::
 ::group::api:typecheck
-cache miss, executing 7997ac50f3ae84d4
+cache miss, executing 68f6f99ee9fd9a4b
 $ tsc --noEmit
 ::endgroup::
 ::group::web:typecheck
-cache miss, executing 30f1960760f32ebe
+cache miss, executing c83f6a3ff1bb34f1
 $ tsc --noEmit
 ::endgroup::
 
- Tasks:    20 successful, 20 total
-Cached:    3 cached, 20 total
-  Time:    52.119s 
+ Tasks:    19 successful, 19 total
+Cached:    3 cached, 19 total
+  Time:    51.246s 
 
