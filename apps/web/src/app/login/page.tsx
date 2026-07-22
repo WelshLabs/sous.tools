@@ -62,13 +62,16 @@ export default function LoginPage() {
       if (apiError || !data?.success) {
         const payload = apiError as { message?: string } | undefined;
         setError(payload?.message || "Invalid email or password.");
+        setState("error");
       } else {
+        setState("success");
         const urlParams = new URLSearchParams(window.location.search);
         const returnTo = urlParams.get("returnTo");
         router.push(returnTo ? returnTo : "/home");
       }
     } catch (_err: unknown) {
       setError("An unexpected error occurred during login.");
+      setState("error");
     } finally {
       setLoading(false);
     }

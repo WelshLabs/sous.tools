@@ -47,11 +47,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div
           className={cn(
             "group relative flex items-center rounded-[var(--radius-md)] border bg-[var(--ds-glass-fill)] px-3.5 shadow-[inset_0_1px_0_var(--ds-glass-highlight)] transition-[border-color,box-shadow,background-color] duration-[--ds-duration]",
-            "h-14 backdrop-blur-xl",
+            "h-14 backdrop-blur-xl focus-within:border-primary focus-within:shadow-[var(--ds-glow-sm)]",
             invalid
               ? "border-destructive"
               : focused
-                ? "border-primary shadow-glow-sm"
+                ? "border-primary shadow-[var(--ds-glow-sm)]"
                 : "border-input hover:border-[color-mix(in_srgb,var(--primary)_45%,var(--border))]",
             disabled && "pointer-events-none opacity-50",
             className,

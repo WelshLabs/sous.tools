@@ -48,7 +48,9 @@ export function OmniBarProvider({
   useGlobalDrag(
     () => {
       setIsDragging(true);
-      setIsOpen(true);
+      if (!isFocusPage) {
+        setIsOpen(true);
+      }
     },
     () => {
       setIsDragging(false);
@@ -74,14 +76,10 @@ export function OmniBarProvider({
   }, [setIsGoogleDriveConnected]);
 
   
-  // Sync expanded state if user navigates to/from /home
+  // Ensure modal overlay is closed on route changes to prevent backdrop flashes
   useEffect(() => {
-    if (isFocusPage) {
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-    }
-  }, [isFocusPage, setIsOpen]);
+    setIsOpen(false);
+  }, [pathname, setIsOpen]);
 
   const handleToggle = () => {
     if (!isFocusPage) {
@@ -99,13 +97,18 @@ export function OmniBarProvider({
   // Global escape listener for when textarea is not focused
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen && !isFocusPage) {
-        setIsOpen(false);
+      if (e.key === "Escape") {
+        if (isFocusPage) {
+          setChatHistory([]);
+          setInputText("");
+        } else if (isOpen) {
+          setIsOpen(false);
+        }
       }
     };
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [isOpen, isFocusPage, setIsOpen]);
+  }, [isOpen, isFocusPage, setIsOpen, setChatHistory, setInputText]);
 
   return (
     <>

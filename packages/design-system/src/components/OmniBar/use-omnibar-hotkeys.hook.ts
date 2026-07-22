@@ -39,7 +39,9 @@ export function useOmniBarHotkeys({
     setInputText("");
     setIsProcessing(true);
     setErrorMessage(null);
-    setIsOpen(true);
+    if (!isFocusPage) {
+      setIsOpen(true);
+    }
 
     const newUserMessage: OmniMessage = {
       id: crypto.randomUUID(),
@@ -80,7 +82,12 @@ export function useOmniBarHotkeys({
       await handleSubmit();
     } else if (e.key === "Escape") {
       e.preventDefault();
-      if (!isFocusPage) setIsOpen(false);
+      if (isFocusPage) {
+        setChatHistory([]);
+        setInputText("");
+      } else {
+        setIsOpen(false);
+      }
     }
   };
 

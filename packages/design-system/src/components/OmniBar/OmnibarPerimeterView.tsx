@@ -19,7 +19,7 @@ export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
   const reducedMotion = useReducedMotion();
   const gradientId = useId();
   const frameRef = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState({ width: 56, height: 56 });
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
   useLayoutEffect(() => {
     const frame = frameRef.current;
@@ -31,6 +31,16 @@ export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
     observer.observe(frame);
     return () => observer.disconnect();
   }, []);
+
+  if (!size || size.width === 0 || size.height === 0) {
+    return (
+      <span
+        ref={frameRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border/90"
+      />
+    );
+  }
 
   const inset = 1;
   const width = Math.max(1, size.width - inset * 2);
@@ -56,6 +66,7 @@ export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
           </linearGradient>
         </defs>
         <motion.g
+          initial={{ opacity: 0 }}
           animate={
             reducedMotion
               ? { opacity: busy ? 1 : 0, strokeDashoffset: 0 }

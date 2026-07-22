@@ -26,8 +26,12 @@ export async function logoutAction() {
       },
     );
   } catch (error) {
-    // Non-fatal — still redirect to login so the user is not stuck.
     console.error("Logout API call failed", error);
+  }
+
+  // Clear all cookies in cookieStore so session cookies are wiped
+  for (const c of cookieStore.getAll()) {
+    cookieStore.delete(c.name);
   }
 
   // Redirect to login regardless of API outcome.

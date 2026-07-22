@@ -68,8 +68,8 @@ export default function RootLayout({ children }: { children: any }) {
         <ClientInitializersWrapper />
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           {children}

@@ -181,32 +181,47 @@ export function OmniBarPresentation({
 
       {/* ── Focus Page (Inline — full-width centered) ─────────────────────── */}
       {isFocusPage && (
-        <motion.div
-          layout
-          transition={springTransition}
-          className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
-        >
-          <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
-            <OmniChatWindow
-              chatHistory={chatHistory}
-              scrollRef={scrollRef}
-              onClearHistory={onClearHistory}
-            />
-            <OmniInputPill
-              inputText={inputText}
-              isListening={isListening}
-              isProcessing={isProcessing}
-              errorMessage={errorMessage}
-              onChange={onChange}
-              onKeyDown={onKeyDown}
-              onMicClick={onMicClick}
-              onSubmit={onSubmit}
-              showClose={false}
-              isDragging={isDragging}
-              stagedFiles={stagedFiles}
-            />
+        <>
+          <AnimatePresence>
+            {chatHistory.length > 0 && (
+              <motion.div
+                key="home-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="fixed inset-0 top-[64px] bg-background/82 backdrop-blur-md pointer-events-auto z-40"
+                onClick={onClearHistory}
+              />
+            )}
+          </AnimatePresence>
+          <motion.div
+            layout
+            transition={springTransition}
+            className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
+          >
+            <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
+              <OmniChatWindow
+                chatHistory={chatHistory}
+                scrollRef={scrollRef}
+                onClearHistory={onClearHistory}
+              />
+              <OmniInputPill
+                inputText={inputText}
+                isListening={isListening}
+                isProcessing={isProcessing}
+                errorMessage={errorMessage}
+                onChange={onChange}
+                onKeyDown={onKeyDown}
+                onMicClick={onMicClick}
+                onSubmit={onSubmit}
+                showClose={false}
+                isDragging={isDragging}
+                stagedFiles={stagedFiles}
+              />
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </>
   );
