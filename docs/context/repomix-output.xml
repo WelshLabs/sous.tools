@@ -33414,67 +33414,6 @@ RUN usermod -s /bin/zsh abc
 }
 ````
 
-## File: litellm_config.yaml
-````yaml
-model_list:
-  # --- Route to your local Ollama container ---
-  - model_name: qwen2.5-coder:7b
-    litellm_params:
-      model: ollama/qwen2.5-coder:7b
-      api_base: http://ollama:11434
-  - model_name: deepseek-coder-v2
-    litellm_params:
-      model: ollama/deepseek-coder-v2
-      api_base: http://ollama:11434
-
-  # --- Route to Google Gemini (2026 Models) ---
-  - model_name: gemini-3.5-flash
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-3.1-pro
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-3.1-flash-lite
-    litellm_params:
-      model: gemini/gemini-3.1-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-2.5-pro
-    litellm_params:
-      model: gemini/gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: gemini/gemini-2.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  # === THE CLAUDE CLI ALIASES ===
-  # The Claude CLI hardcodes requests for these model names.
-  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
-  - model_name: claude-3-5-sonnet-20241022
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: claude-3-5-haiku-20241022
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: claude-opus-4-8
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
-
-general_settings:
-  master_key: sk-1234
-````
-
 ## File: sonar-project.properties
 ````
 # Required metadata
@@ -33490,95 +33429,6 @@ sonar.sources=.
 
 # Tells SonarCloud to ignore the build outputs and node_modules
 sonar.exclusions=**/node_modules/**, **/.next/**, **/dist/**, **/coverage/**
-````
-
-## File: .config/terminal/.zsh_aliases
-````
-# curl -sS https://starship.rs/install.sh | sh
-# eval "$(starship init zsh)"
-
-# The Smart Context Engine
-function ctx() {
-  pnpm run context:all
-  if grep -q "microsoft" /proc/version; then
-    explorer.exe .context/
-    cat .context/context-agents.md | clip.exe
-  else
-    xdg-open .context/
-    cat .context/context-agents.md | xclip -selection clipboard
-  fi
-  echo "Context generated, folder opened, and AGENTS context copied to clipboard!"
-}
-
-alias zshconfig="code ~/.zshrc"
-alias ohmyzsh="code ~/.oh-my-zsh"
-
-alias c="clear"
-alias ls="ls -lah"
-alias szsh="source ~/.zshrc"
-
-# Project Specific Aliases
-alias sous="cd ~/code/sous.tools"
-
-# Dev Workflow
-# alias dev="pnpm dev"
-# alias clean-dev="pnpm clean && pnpm dev"
-alias gship='git add . && git commit -m "chore: auto-sync update" && git push origin main'
-
-# The CLI Tool (Must remain local to WSL for textbook scraping)
-alias cli="pnpm --filter @soustools/cli run start"
-
-# Database
-# Supabase Local Management
-alias db-up="npx supabase start"
-alias db-stop="npx supabase stop"
-alias db-nuke="npx supabase db reset"
-alias db-types="npx supabase gen types typescript --local > packages/supabase/src/database.types.ts"
-
-# WearOS ADB
-alias watch-connect="adb connect 192.168.x.x:5555"
-alias watch-push="adb install -r apps/wearos/app/build/outputs/apk/debug/app-debug.apk"
-alias connect-watch="cmd.exe /c adb kill-server && adb kill-server && adb connect 192.168.1.9:42285"
-
-# SSH Aliases
-alias prod="cd ~/code/sous.tools && ssh -i ssh-key.key ubuntu@129.158.244.62"
-
-# Intelligent Docker Aliases
-alias dco='docker compose'
-alias docker-nuke='docker system prune -af'
-
-# Stack Aliases
-alias up='docker compose -f docker-compose.dev.yml up -d && pm2 start ecosystem.config.js'
-alias monit='pm2 monit'
-alias logs='pm2 logs'
-
-if [ "$USER" = "ubuntu" ]; then
-    # Oracle Cloud (Production) Environment
-    # Oracle Cloud (Production) Environment
-    alias dprod='sudo docker compose up -d'
-    alias dprod-rebuild='sudo docker compose pull && sudo docker compose up -d'
-    alias prodlogs='sudo docker compose logs -f'
-    
-    # Because Staging and Prod share the same Oracle server
-    alias apilogs='sudo docker compose logs -f api-prod'
-    alias traefiklogs='sudo docker compose logs -f traefik'
-    
-    # Fast container restarts without rebuilding
-    alias restart-api='sudo docker compose restart api-prod'
-else
-    # Local WSL Environment
-    alias dev='docker compose -f docker-compose.dev.yml up -d --build && up'
-    alias ddown='docker compose -f docker-compose.dev.yml down'
-    alias dlogs='docker compose -f docker-compose.dev.yml logs'
-    alias apilogs='docker compose -f docker-compose.dev.yml logs -f api'
-    alias weblogs='docker compose -f docker-compose.dev.yml logs -f web'
-    
-    # Ollama Local Shortcuts
-    alias ollama-logs='docker compose -f docker-compose.dev.yml logs -f ollama'
-fi
-
-export ANTHROPIC_BASE_URL="https://ai.sous.tools"
-export ANTHROPIC_API_KEY="sk-1234"
 ````
 
 ## File: .github/workflows/deploy-storybook.yml
@@ -55312,6 +55162,67 @@ export default [
 ];
 ````
 
+## File: litellm_config.yaml
+````yaml
+model_list:
+  # --- Route to your local Ollama container ---
+  - model_name: qwen2.5-coder:7b
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b
+      api_base: http://ollama:11434
+  - model_name: deepseek-coder-v2
+    litellm_params:
+      model: ollama/deepseek-coder-v2
+      api_base: http://ollama:11434
+
+  # --- Route to Google Gemini (2026 Models) ---
+  - model_name: gemini-3.5-flash
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-pro
+    litellm_params:
+      model: gemini/gemini-3.1-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-flash-lite
+    litellm_params:
+      model: gemini/gemini-3.1-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  # === THE CLAUDE CLI ALIASES ===
+  # The Claude CLI hardcodes requests for these model names.
+  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-opus-4-8[1m]
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+general_settings:
+  master_key: sk-1234
+````
+
 ## File: pnpm-workspace.yaml
 ````yaml
 packages:
@@ -55352,6 +55263,120 @@ This repository uses GitHub Issues as the central nervous system for autonomous 
 6. **`agent:test`** - _The QA._ Mocks data and writes Playwright/Jest tests to achieve 100% coverage.
 7. **`agent:review`** - _The Gatekeeper._ Reviews PRs specifically looking for architectural boundary or Tailwind token violations.
 8. **`agent:audit`** - _The Janitor._ A cron-friendly agent that fixes exactly one tech-debt item (dead code/lint error) and opens a PR.
+````
+
+## File: .config/terminal/.zsh_aliases
+````
+# curl -sS https://starship.rs/install.sh | sh
+# eval "$(starship init zsh)"
+
+# The Smart Context Engine
+function ctx() {
+  pnpm run context:all
+  if grep -q "microsoft" /proc/version; then
+    explorer.exe .context/
+    cat .context/context-agents.md | clip.exe
+  else
+    xdg-open .context/
+    cat .context/context-agents.md | xclip -selection clipboard
+  fi
+  echo "Context generated, folder opened, and AGENTS context copied to clipboard!"
+}
+
+alias zshconfig="code ~/.zshrc"
+alias ohmyzsh="code ~/.oh-my-zsh"
+
+alias c="clear"
+alias ls="ls -lah"
+alias szsh="source ~/.zshrc"
+
+# Project Specific Aliases
+alias sous="cd ~/code/sous.tools"
+
+# Dev Workflow
+# alias dev="pnpm dev"
+# alias clean-dev="pnpm clean && pnpm dev"
+alias gship='git add . && git commit -m "chore: auto-sync update" && git push origin main'
+
+# The CLI Tool (Must remain local to WSL for textbook scraping)
+alias cli="pnpm --filter @soustools/cli run start"
+
+# Database
+# Supabase Local Management
+alias db-up="npx supabase start"
+alias db-stop="npx supabase stop"
+alias db-nuke="npx supabase db reset"
+alias db-types="npx supabase gen types typescript --local > packages/supabase/src/database.types.ts"
+
+# WearOS ADB
+alias watch-connect="adb connect 192.168.x.x:5555"
+alias watch-push="adb install -r apps/wearos/app/build/outputs/apk/debug/app-debug.apk"
+alias connect-watch="cmd.exe /c adb kill-server && adb kill-server && adb connect 192.168.1.9:42285"
+
+# SSH Aliases
+alias prod="cd ~/code/sous.tools && ssh -i ssh-key.key ubuntu@129.158.244.62"
+
+# Intelligent Docker Aliases
+alias dco='docker compose'
+alias docker-nuke='docker system prune -af'
+
+# Stack Aliases
+alias up='docker compose -f docker-compose.dev.yml up -d && pm2 start ecosystem.config.js'
+alias monit='pm2 monit'
+alias logs='pm2 logs'
+
+if [ "$USER" = "ubuntu" ]; then
+    # Oracle Cloud (Production) Environment
+    # Oracle Cloud (Production) Environment
+    alias dprod='sudo docker compose up -d'
+    alias dprod-rebuild='sudo docker compose pull && sudo docker compose up -d'
+    alias prodlogs='sudo docker compose logs -f'
+    
+    # Because Staging and Prod share the same Oracle server
+    alias apilogs='sudo docker compose logs -f api-prod'
+    alias traefiklogs='sudo docker compose logs -f traefik'
+    
+    # Fast container restarts without rebuilding
+    alias restart-api='sudo docker compose restart api-prod'
+else
+    # Local WSL Environment
+    alias dev='docker compose -f docker-compose.dev.yml up -d --build && up'
+    alias ddown='docker compose -f docker-compose.dev.yml down'
+    alias dlogs='docker compose -f docker-compose.dev.yml logs'
+    alias apilogs='docker compose -f docker-compose.dev.yml logs -f api'
+    alias weblogs='docker compose -f docker-compose.dev.yml logs -f web'
+    
+    # Ollama Local Shortcuts
+    alias ollama-logs='docker compose -f docker-compose.dev.yml logs -f ollama'
+fi
+
+export ANTHROPIC_BASE_URL="https://ai.sous.tools"
+export ANTHROPIC_API_KEY="sk-1234"
+
+# Git Add, Commit, Rebase, and Push in one command
+gpush() {
+  if [ -z "$1" ]; then
+    echo "Error: You must provide a commit message."
+    echo "Usage: gpush \"your commit message\""
+    return 1
+  fi
+  
+  git add .
+  git commit -m "$1"
+  git pull origin main --rebase
+  git push origin main
+}
+
+# AI Auto-Commit, Rebase, and Push
+gauto() {
+  git add .
+  
+  # Tell Claude to explicitly read the staged diff
+  claude --model claude-3-5-sonnet-20241022 "Read the output of 'git diff --staged'. Write a conventional commit message for these changes and execute the git commit. Do not ask for confirmation."
+  
+  git pull origin main --rebase
+  git push origin main
+}
 ````
 
 ## File: .github/workflows/build-and-deploy-rpi-os.yml
@@ -65574,6 +65599,165 @@ volumes:
   neo4j_dev_data:
 ````
 
+## File: .github/workflows/reporting.yml
+````yaml
+name: Reporting
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  master-gauntlet:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read # Required to fetch issues (project: read has been removed)
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # CRITICAL: Required for SonarCloud analysis
+
+      # --- FETCH SECRETS EARLY SO ALL STEPS CAN USE THEM ---
+      - name: Fetch Secrets from Infisical
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "sous-tools-1cd-a"
+          env-slug: "prod"
+          export-env: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm and turbo
+        run: npm install -g pnpm turbo
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Prepare Docs Directories
+        run: mkdir -p docs/audits docs/context docs/wiki
+
+      # ==========================================
+      # 1. THE CODE QUALITY GAUNTLET (Tests & Lint)
+      # ==========================================
+      - name: Run Linters & Typecheck
+        run: |
+          pnpm turbo lint > docs/audits/lint-report.txt || true
+          pnpm turbo typecheck > docs/audits/typecheck-report.txt || true
+
+      - name: Run Unit Tests & Check Coverage
+        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage --passWithNoTests > docs/audits/unit-test-coverage.txt || true
+
+      - name: Install Playwright Browsers (For E2E)
+        run: npx playwright install --with-deps
+
+      - name: Run E2E Tests
+        run: INFISICAL_MOCK=true pnpm turbo e2e > docs/audits/e2e-test-report.txt || true
+
+      # ==========================================
+      # 2. EXTERNAL SCANNERS (SonarCloud & Lighthouse)
+      # ==========================================
+      # - name: Run SonarCloud Scan
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   continue-on-error: true
+
+      # - name: Build Applications (Required for Lighthouse)
+      #   run: pnpm turbo build
+
+      # - name: Run Lighthouse (PWA Metrics)
+      #   run: |
+      #     npm install -g @lhci/cli
+      #     lhci autorun > docs/audits/lighthouse-report.txt || true
+
+      # ==========================================
+      # 3. AI CONTEXT GENERATION (Architecture & State)
+      # ==========================================
+      - name: Install tree utility
+        run: sudo apt-get update && sudo apt-get install -y tree
+
+      - name: Generate Tech Debt, Graph Context & Rules
+        run: |
+          pnpm run knip > docs/audits/knip-report.txt || true
+          npx turbo graph > docs/context/turbo-graph.txt || true
+          tree -I 'node_modules|.git|.next|dist|out|.turbo|docs' > docs/context/directory-tree.txt || true
+
+          # CRITICAL: Copy .cursorrules to a markdown file for NotebookLM
+          cat .cursorrules > docs/context/cursorrules.md || true
+
+      - name: Run Repomix (Full Codebase Snapshot)
+        run: npx repomix --output docs/context/repomix-output.xml || true
+
+      - name: Dump Database Schema
+        run: |
+          cat packages/supabase/schema.sql > docs/context/db-schema.sql || true
+
+      - name: Fetch GitHub State (Issues & Kanban)
+        env:
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+        run: |
+          # 1. Clear or create the issues markdown file
+          > docs/context/issues.md
+
+          # 2. Get the ID numbers of all open issues
+          ISSUE_NUMBERS=$(gh issue list --state open --limit 100 --json number --jq '.[].number')
+
+          # 3. Loop through each issue and download its full body AND comments
+          for ISSUE in $ISSUE_NUMBERS; do
+            gh issue view $ISSUE --comments >> docs/context/issues.md || true
+            echo -e "\n---\n" >> docs/context/issues.md
+          done
+
+          # 4. Fetch the Kanban Project Board state
+          gh project item-list 1 --owner conarwelsh --format markdown > docs/context/project.md || true
+
+      # ==========================================
+      # 4. SYNC TO REPO, WIKI, & TRIGGER AGENTS
+      # ==========================================
+      - name: Commit and Push Docs and Context to Main Repo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "chore(ai): auto-update tech debt, architecture, rules, and kanban states [skip ci]" || echo "No changes to commit"
+          git push
+
+      - name: Sync docs/wiki to GitHub Wiki Repository
+        env:
+          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
+          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
+        run: |
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
+          if [ -d "/tmp/wiki" ]; then
+            cp -R docs/wiki/* /tmp/wiki/ || true
+            cd /tmp/wiki
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "chore(docs): sync wiki from main repo [skip ci]" || echo "No changes to commit"
+            git push origin HEAD:master || git push origin HEAD:main || true
+          else
+            echo "Wiki repository not found. Ensure the Wiki feature is enabled in GitHub settings and initialized."
+          fi
+
+      # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
+      - name: Trigger n8n CTO Summary
+        run: |
+          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
+          -H "Content-Type: application/json" \
+          -d '{"status": "${{ job.status }}"}'
+````
+
 ## File: docs/agents/run-agent.sh
 ````bash
 #!/bin/bash
@@ -66038,165 +66222,6 @@ export function POSRegisterContainer() {
   );
 }
 POSRegisterContainer.displayName = "POSRegisterContainer";
-````
-
-## File: .github/workflows/reporting.yml
-````yaml
-name: Reporting
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-  workflow_dispatch:
-
-jobs:
-  master-gauntlet:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: read # Required to fetch issues (project: read has been removed)
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # CRITICAL: Required for SonarCloud analysis
-
-      # --- FETCH SECRETS EARLY SO ALL STEPS CAN USE THEM ---
-      - name: Fetch Secrets from Infisical
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "sous-tools-1cd-a"
-          env-slug: "prod"
-          export-env: true
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Setup pnpm and turbo
-        run: npm install -g pnpm turbo
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Prepare Docs Directories
-        run: mkdir -p docs/audits docs/context docs/wiki
-
-      # ==========================================
-      # 1. THE CODE QUALITY GAUNTLET (Tests & Lint)
-      # ==========================================
-      - name: Run Linters & Typecheck
-        run: |
-          pnpm turbo lint > docs/audits/lint-report.txt || true
-          pnpm turbo typecheck > docs/audits/typecheck-report.txt || true
-
-      - name: Run Unit Tests & Check Coverage
-        run: INFISICAL_MOCK=true pnpm turbo test -- --coverage --passWithNoTests > docs/audits/unit-test-coverage.txt || true
-
-      - name: Install Playwright Browsers (For E2E)
-        run: npx playwright install --with-deps
-
-      - name: Run E2E Tests
-        run: INFISICAL_MOCK=true pnpm turbo e2e > docs/audits/e2e-test-report.txt || true
-
-      # ==========================================
-      # 2. EXTERNAL SCANNERS (SonarCloud & Lighthouse)
-      # ==========================================
-      # - name: Run SonarCloud Scan
-      #   uses: SonarSource/sonarcloud-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   continue-on-error: true
-
-      # - name: Build Applications (Required for Lighthouse)
-      #   run: pnpm turbo build
-
-      # - name: Run Lighthouse (PWA Metrics)
-      #   run: |
-      #     npm install -g @lhci/cli
-      #     lhci autorun > docs/audits/lighthouse-report.txt || true
-
-      # ==========================================
-      # 3. AI CONTEXT GENERATION (Architecture & State)
-      # ==========================================
-      - name: Install tree utility
-        run: sudo apt-get update && sudo apt-get install -y tree
-
-      - name: Generate Tech Debt, Graph Context & Rules
-        run: |
-          pnpm run knip > docs/audits/knip-report.txt || true
-          npx turbo graph > docs/context/turbo-graph.txt || true
-          tree -I 'node_modules|.git|.next|dist|out|.turbo|docs' > docs/context/directory-tree.txt || true
-
-          # CRITICAL: Copy .cursorrules to a markdown file for NotebookLM
-          cat .cursorrules > docs/context/cursorrules.md || true
-
-      - name: Run Repomix (Full Codebase Snapshot)
-        run: npx repomix --output docs/context/repomix-output.xml || true
-
-      - name: Dump Database Schema
-        run: |
-          cat packages/supabase/schema.sql > docs/context/db-schema.sql || true
-
-      - name: Fetch GitHub State (Issues & Kanban)
-        env:
-          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-        run: |
-          # 1. Clear or create the issues markdown file
-          > docs/context/issues.md
-
-          # 2. Get the ID numbers of all open issues
-          ISSUE_NUMBERS=$(gh issue list --state open --limit 100 --json number --jq '.[].number')
-
-          # 3. Loop through each issue and download its full body AND comments
-          for ISSUE in $ISSUE_NUMBERS; do
-            gh issue view $ISSUE --comments >> docs/context/issues.md || true
-            echo -e "\n---\n" >> docs/context/issues.md
-          done
-
-          # 4. Fetch the Kanban Project Board state
-          gh project item-list 1 --owner conarwelsh --format markdown > docs/context/project.md || true
-
-      # ==========================================
-      # 4. SYNC TO REPO, WIKI, & TRIGGER AGENTS
-      # ==========================================
-      - name: Commit and Push Docs and Context to Main Repo
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          git commit -m "chore(ai): auto-update tech debt, architecture, rules, and kanban states [skip ci]" || echo "No changes to commit"
-          git push
-
-      - name: Sync docs/wiki to GitHub Wiki Repository
-        env:
-          # Pulls the GITHUB_PAT we fetched from Infisical into the environment
-          GITHUB_TOKEN: ${{ env.GITHUB_PAT }}
-        run: |
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
-          if [ -d "/tmp/wiki" ]; then
-            cp -R docs/wiki/* /tmp/wiki/ || true
-            cd /tmp/wiki
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git add .
-            git commit -m "chore(docs): sync wiki from main repo [skip ci]" || echo "No changes to commit"
-            git push origin HEAD:master || git push origin HEAD:main || true
-          else
-            echo "Wiki repository not found. Ensure the Wiki feature is enabled in GitHub settings and initialized."
-          fi
-
-      # Since we moved the Infisical step to the very top, we don't need to fetch it again here!
-      - name: Trigger n8n CTO Summary
-        run: |
-          curl -X POST https://n8n.sous.tools/webhook/cto-summary \
-          -H "Content-Type: application/json" \
-          -d '{"status": "${{ job.status }}"}'
 ````
 
 ## File: docker-compose.yml
