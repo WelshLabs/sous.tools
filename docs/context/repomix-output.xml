@@ -59049,24 +59049,6 @@ xdg-utils
 libinput-tools
 ````
 
-## File: deploy/pi/stage-sous/prerun.sh
-````bash
-#!/bin/bash -e
-
-# Install wl-mirror dependencies
-apt-get install -y cmake meson wayland-protocols libwayland-dev libgles2-mesa-dev
-# Clone and build wl-mirror
-git clone https://github.com/Ferdi265/wl-mirror.git /tmp/wl-mirror
-cd /tmp/wl-mirror
-mkdir build && cd build
-cmake ..
-make && make install
-
-if [ ! -d "${ROOTFS_DIR}" ]; then
-	copy_previous
-fi
-````
-
 ## File: docs/agents/prompts/audit.md
 ````markdown
 <!--
@@ -59560,6 +59542,219 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 );
 Input.displayName = "Input";
+````
+
+## File: packages/design-system/src/components/OmniBar/OmniChatWindow.tsx
+````typescript
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trash2 } from "lucide-react";
+import type { OmniMessage } from "@soustools/api-types";
+import { UnifiedReviewPanel } from "./UnifiedReviewPanel";
+import { useOmniActions } from "./use-omni-actions.hook";
+import { api } from "@soustools/api-client";
+import Link from "next/link";
+import {
+  ActivityIndicator,
+  EventIcon,
+  MetricEventCard,
+  type OmniMetric,
+} from "./OmniChatAtoms";
+
+export type { OmniMetric } from "./OmniChatAtoms";
+
+export interface OmniChatWindowProps {
+  chatHistory: OmniMessage[];
+  scrollRef: React.RefObject<HTMLDivElement | null>;
+  onClearHistory: () => void;
+}
+
+export function OmniChatWindow({
+  chatHistory,
+  scrollRef,
+  onClearHistory,
+}: OmniChatWindowProps) {
+  const [masterIngredients, setMasterIngredients] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+
+  // NOTE: pre-existing Container/View violation — do not move without a
+  // dedicated container extraction task.
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const { data, error } = await api.GET("/items", {
+          params: { query: { search: "" } },
+        });
+        if (error) throw new Error(String(error));
+        if (data && data.data) {
+          const items = data.data as Array<{ id: string; name: string }>;
+          setMasterIngredients(items.map((d) => ({ id: d.id, name: d.name })));
+        }
+      } catch (err) {
+        console.error("Failed to load items in OmniChatWindow", err);
+      }
+    };
+    fetchItems();
+  }, []);
+
+  const {
+    handleConfirmAlias,
+    handleUpdateIngredient,
+    handleUpdateInvoiceItem,
+    handleSaveInvoice,
+    handleSaveRecipe,
+  } = useOmniActions();
+
+  if (chatHistory.length === 0) return null;
+
+  return (
+    <section
+      aria-label="Conversation with sous chef"
+      className="relative w-full pointer-events-auto"
+    >
+      {/* ── Header + clear ── */}
+      <div className="mb-2 flex items-center justify-between px-1">
+        <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-muted-foreground">
+          Sous chef
+        </p>
+        <button
+          type="button"
+          onClick={onClearHistory}
+          className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Clear conversation"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Clear
+        </button>
+      </div>
+
+      {/* ── Scrollable timeline ── */}
+      <div
+        ref={scrollRef}
+        className="flex flex-col gap-3 max-h-[min(62vh,520px)] overflow-y-auto px-1 pb-4
+          [mask-image:linear-gradient(to_bottom,transparent_0,black_6%,black_100%)]
+          [&::-webkit-scrollbar]:w-2
+          [&::-webkit-scrollbar-track]:bg-transparent
+          [&::-webkit-scrollbar-thumb]:bg-accent/50
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          hover:[&::-webkit-scrollbar-thumb]:bg-accent/70
+          transition-colors"
+      >
+        <AnimatePresence initial={false}>
+          {chatHistory.map((msg, index) => {
+            const isUser = msg.role === "user";
+            const isAgentStep = msg.role === "agent_step";
+            const metrics = (
+              msg as OmniMessage & { metricsData?: OmniMetric[] }
+            ).metricsData;
+
+            if (metrics && metrics.length > 0) {
+              return (
+                <motion.div
+                  key={msg.id || index}
+                  initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <MetricEventCard metrics={metrics} />
+                </motion.div>
+              );
+            }
+
+            return (
+              <motion.div
+                key={msg.id || index}
+                initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}
+              >
+                <EventIcon role={msg.role} />
+
+                <div
+                  className={`min-w-0 w-fit flex flex-col gap-1.5 ${msg.recipeData || msg.invoiceData ? "max-w-none" : "max-w-[85%]"}`}
+                >
+                  {isAgentStep ? (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono rounded-xl px-3 py-1.5 border border-border/70 bg-muted/45">
+                      {msg.isLoading !== false && <ActivityIndicator />}
+                      {msg.content}
+                    </div>
+                  ) : msg.recipeData || msg.invoiceData ? (
+                    <UnifiedReviewPanel
+                      payload={msg.recipeData || msg.invoiceData}
+                      masterIngredients={masterIngredients}
+                      onConfirmAlias={(raw, id) => handleConfirmAlias(raw, id)}
+                      onUpdateItem={(itemIndex, updates) => {
+                        if (msg.recipeData) {
+                          handleUpdateIngredient(index, itemIndex, updates);
+                        } else {
+                          handleUpdateInvoiceItem(index, itemIndex, updates);
+                        }
+                      }}
+                      onSaveRecipe={handleSaveRecipe}
+                      onSaveInvoice={handleSaveInvoice}
+                      onItemCreated={(newItem) => {
+                        setMasterIngredients((prev) => [...prev, newItem]);
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className={`px-4 py-3 rounded-xl text-sm leading-6 shadow-sm ${
+                        isUser
+                          ? "bg-primary/[.08] border border-primary/15 text-foreground rounded-tr-sm"
+                          : "bg-card/78 border border-border text-foreground rounded-tl-sm backdrop-blur-xl"
+                      }`}
+                    >
+                      {msg.content.match(/(https?|blob|data):[^\s]+/) && (
+                        <motion.div
+                          layoutId={`active-task-container-${msg.id}`}
+                          className="mb-2 w-48 h-32 rounded-xl overflow-hidden border border-accent/30 shadow-glow-accent relative"
+                        >
+                          <img src={msg.content.match(/(https?|blob|data):[^\s]+/)![0]} alt="Uploaded file" className="w-full h-full object-cover" />
+                        </motion.div>
+                      )}
+                      <span>
+                        {msg.content
+                          .split(/(\[[^\]]+\]\([^)]+\))/g)
+                          .map((part, i) => {
+                            const match = part.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                            if (match) {
+                              return (
+                                <Link
+                                  key={i}
+                                  href={match[2]}
+                                  className="text-accent hover:underline font-medium"
+                                >
+                                  {match[1]}
+                                </Link>
+                              );
+                            }
+                            return (
+                              <span key={i}>
+                                {part.replace(/(https?|blob|data):[^\s]+/, "")}
+                              </span>
+                            );
+                          })}
+                      </span>
+                      {msg.timestamp && (
+                        <span className="mt-1.5 block text-[10px] uppercase tracking-[.16em] text-muted-foreground">
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+    </section>
+  );
+}
 ````
 
 ## File: packages/domain-recipes/src/ActionButtons.tsx
@@ -61959,6 +62154,25 @@ export function ModifierGroupBlock({
 }
 ````
 
+## File: deploy/pi/stage-sous/prerun.sh
+````bash
+#!/bin/bash -e
+
+# Install wl-mirror dependencies
+apt-get install -y cmake meson wayland-protocols libwayland-dev libgles2-mesa-dev pkg-config
+
+# Clone and build wl-mirror
+git clone https://github.com/Ferdi265/wl-mirror.git /tmp/wl-mirror
+cd /tmp/wl-mirror
+mkdir build && cd build
+cmake ..
+make && make install
+
+if [ ! -d "${ROOTFS_DIR}" ]; then
+	copy_previous
+fi
+````
+
 ## File: docs/agents/prompts/ui.md
 ````markdown
 <!--
@@ -62403,219 +62617,6 @@ export function OmniBarPresentation({
         </>
       )}
     </>
-  );
-}
-````
-
-## File: packages/design-system/src/components/OmniBar/OmniChatWindow.tsx
-````typescript
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Trash2 } from "lucide-react";
-import type { OmniMessage } from "@soustools/api-types";
-import { UnifiedReviewPanel } from "./UnifiedReviewPanel";
-import { useOmniActions } from "./use-omni-actions.hook";
-import { api } from "@soustools/api-client";
-import Link from "next/link";
-import {
-  ActivityIndicator,
-  EventIcon,
-  MetricEventCard,
-  type OmniMetric,
-} from "./OmniChatAtoms";
-
-export type { OmniMetric } from "./OmniChatAtoms";
-
-export interface OmniChatWindowProps {
-  chatHistory: OmniMessage[];
-  scrollRef: React.RefObject<HTMLDivElement | null>;
-  onClearHistory: () => void;
-}
-
-export function OmniChatWindow({
-  chatHistory,
-  scrollRef,
-  onClearHistory,
-}: OmniChatWindowProps) {
-  const [masterIngredients, setMasterIngredients] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-
-  // NOTE: pre-existing Container/View violation — do not move without a
-  // dedicated container extraction task.
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const { data, error } = await api.GET("/items", {
-          params: { query: { search: "" } },
-        });
-        if (error) throw new Error(String(error));
-        if (data && data.data) {
-          const items = data.data as Array<{ id: string; name: string }>;
-          setMasterIngredients(items.map((d) => ({ id: d.id, name: d.name })));
-        }
-      } catch (err) {
-        console.error("Failed to load items in OmniChatWindow", err);
-      }
-    };
-    fetchItems();
-  }, []);
-
-  const {
-    handleConfirmAlias,
-    handleUpdateIngredient,
-    handleUpdateInvoiceItem,
-    handleSaveInvoice,
-    handleSaveRecipe,
-  } = useOmniActions();
-
-  if (chatHistory.length === 0) return null;
-
-  return (
-    <section
-      aria-label="Conversation with sous chef"
-      className="relative w-full pointer-events-auto"
-    >
-      {/* ── Header + clear ── */}
-      <div className="mb-2 flex items-center justify-between px-1">
-        <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-muted-foreground">
-          Sous chef
-        </p>
-        <button
-          type="button"
-          onClick={onClearHistory}
-          className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Clear conversation"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Clear
-        </button>
-      </div>
-
-      {/* ── Scrollable timeline ── */}
-      <div
-        ref={scrollRef}
-        className="flex flex-col gap-3 max-h-[min(62vh,520px)] overflow-y-auto px-1 pb-4
-          [mask-image:linear-gradient(to_bottom,transparent_0,black_6%,black_100%)]
-          [&::-webkit-scrollbar]:w-2
-          [&::-webkit-scrollbar-track]:bg-transparent
-          [&::-webkit-scrollbar-thumb]:bg-accent/50
-          [&::-webkit-scrollbar-thumb]:rounded-full
-          hover:[&::-webkit-scrollbar-thumb]:bg-accent/70
-          transition-colors"
-      >
-        <AnimatePresence initial={false}>
-          {chatHistory.map((msg, index) => {
-            const isUser = msg.role === "user";
-            const isAgentStep = msg.role === "agent_step";
-            const metrics = (
-              msg as OmniMessage & { metricsData?: OmniMetric[] }
-            ).metricsData;
-
-            if (metrics && metrics.length > 0) {
-              return (
-                <motion.div
-                  key={msg.id || index}
-                  initial={{ opacity: 0, y: 12, scale: 0.985 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <MetricEventCard metrics={metrics} />
-                </motion.div>
-              );
-            }
-
-            return (
-              <motion.div
-                key={msg.id || index}
-                initial={{ opacity: 0, y: 12, scale: 0.985 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}
-              >
-                <EventIcon role={msg.role} />
-
-                <div
-                  className={`min-w-0 w-fit flex flex-col gap-1.5 ${msg.recipeData || msg.invoiceData ? "max-w-none" : "max-w-[85%]"}`}
-                >
-                  {isAgentStep ? (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono rounded-xl px-3 py-1.5 border border-border/70 bg-muted/45">
-                      {msg.isLoading !== false && <ActivityIndicator />}
-                      {msg.content}
-                    </div>
-                  ) : msg.recipeData || msg.invoiceData ? (
-                    <UnifiedReviewPanel
-                      payload={msg.recipeData || msg.invoiceData}
-                      masterIngredients={masterIngredients}
-                      onConfirmAlias={(raw, id) => handleConfirmAlias(raw, id)}
-                      onUpdateItem={(itemIndex, updates) => {
-                        if (msg.recipeData) {
-                          handleUpdateIngredient(index, itemIndex, updates);
-                        } else {
-                          handleUpdateInvoiceItem(index, itemIndex, updates);
-                        }
-                      }}
-                      onSaveRecipe={handleSaveRecipe}
-                      onSaveInvoice={handleSaveInvoice}
-                      onItemCreated={(newItem) => {
-                        setMasterIngredients((prev) => [...prev, newItem]);
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className={`px-4 py-3 rounded-xl text-sm leading-6 shadow-sm ${
-                        isUser
-                          ? "bg-primary/[.08] border border-primary/15 text-foreground rounded-tr-sm"
-                          : "bg-card/78 border border-border text-foreground rounded-tl-sm backdrop-blur-xl"
-                      }`}
-                    >
-                      {msg.content.match(/(https?|blob|data):[^\s]+/) && (
-                        <motion.div
-                          layoutId={`active-task-container-${msg.id}`}
-                          className="mb-2 w-48 h-32 rounded-xl overflow-hidden border border-accent/30 shadow-glow-accent relative"
-                        >
-                          <img src={msg.content.match(/(https?|blob|data):[^\s]+/)![0]} alt="Uploaded file" className="w-full h-full object-cover" />
-                        </motion.div>
-                      )}
-                      <span>
-                        {msg.content
-                          .split(/(\[[^\]]+\]\([^)]+\))/g)
-                          .map((part, i) => {
-                            const match = part.match(/\[([^\]]+)\]\(([^)]+)\)/);
-                            if (match) {
-                              return (
-                                <Link
-                                  key={i}
-                                  href={match[2]}
-                                  className="text-accent hover:underline font-medium"
-                                >
-                                  {match[1]}
-                                </Link>
-                              );
-                            }
-                            return (
-                              <span key={i}>
-                                {part.replace(/(https?|blob|data):[^\s]+/, "")}
-                              </span>
-                            );
-                          })}
-                      </span>
-                      {msg.timestamp && (
-                        <span className="mt-1.5 block text-[10px] uppercase tracking-[.16em] text-muted-foreground">
-                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
-    </section>
   );
 }
 ````
@@ -64124,6 +64125,140 @@ Write a step-by-step implementation plan compliant with our architecture. DO NOT
 CRITICAL INSTRUCTION: Review your available MCP tools and use the correct tool (e.g., `soustools_post_comment`) to post your final plan directly to the issue. Execute the tools and stop.
 ````
 
+## File: packages/config/src/cli.ts
+````typescript
+#!/usr/bin/env node
+import { spawn } from "child_process";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { InfisicalSDK } from "@infisical/sdk";
+import * as dotenv from "dotenv";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load local .env file inside workspace root if present
+dotenv.config({ path: path.join(__dirname, "../../../.env") });
+
+/**
+ * Fetches secrets from Infisical and returns them as an in-memory object.
+ *
+ * Strict "Fail Fast" Architecture:
+ * - Requires INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID.
+ * - If credentials are missing or if the fetch fails, halts immediately with process.exit(1).
+ * - ZERO hardcoded fallbacks or defaults objects.
+ */
+async function fetchSecretsStrict(): Promise<Record<string, string>> {
+  const clientId = process.env.INFISICAL_CLIENT_ID;
+  const clientSecret = process.env.INFISICAL_CLIENT_SECRET;
+  const projectId = process.env.INFISICAL_PROJECT_ID;
+
+  if (!clientId || !clientSecret || !projectId) {
+    console.error(
+      "[@soustools/config] FATAL: Missing Infisical credentials " +
+      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
+      "Process execution halted immediately."
+    );
+    process.exit(1);
+  }
+
+  try {
+    const client = new InfisicalSDK();
+    await client.auth().universalAuth.login({ clientId, clientSecret });
+
+    const secretsResponse = await client.secrets().listSecrets({
+      environment: process.env.INFISICAL_ENV || "dev",
+      projectId,
+    });
+
+    const secretsArray =
+      (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
+
+    const fetchedSecrets: Record<string, string> = {};
+    for (const secret of secretsArray) {
+      if (secret.secretKey && secret.secretValue !== undefined) {
+        fetchedSecrets[secret.secretKey] = secret.secretValue;
+      }
+    }
+
+    return fetchedSecrets;
+  } catch (error) {
+    console.error(
+      "[@soustools/config] FATAL: Infisical secret fetch failed:",
+      (error as Error).message
+    );
+    process.exit(1);
+  }
+}
+
+async function run() {
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    console.error("Usage: sous-config <command> [args...]");
+    process.exit(1);
+  }
+
+  const secrets = await fetchSecretsStrict();
+
+  const childEnv: Record<string, string> = {
+    ...secrets,
+    ...(process.env as Record<string, string>),
+  };
+
+  // Explicit URL & Supabase key mapping for client environment
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_URL && childEnv.SUPABASE_URL) {
+    childEnv.NEXT_PUBLIC_SUPABASE_URL = childEnv.SUPABASE_URL;
+  }
+  if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
+    childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
+  }
+  if (!childEnv.NEXT_PUBLIC_API_URL) {
+    childEnv.NEXT_PUBLIC_API_URL = childEnv.API_BASE_URL || childEnv.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  }
+  if (!childEnv.NEXT_PUBLIC_APP_URL) {
+    childEnv.NEXT_PUBLIC_APP_URL = childEnv.APP_BASE_URL || childEnv.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:3000";
+  }
+
+  const [cmd, ...cmdArgs] = args;
+
+  if (cmd === "next" && (cmdArgs.includes("build") || cmdArgs.includes("start"))) {
+    childEnv.NODE_ENV = "production";
+  } else if (!childEnv.NODE_ENV) {
+    childEnv.NODE_ENV = "development";
+  }
+
+  console.log(
+    `[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}"`
+  );
+
+  const child = spawn(cmd, cmdArgs, {
+    stdio: "inherit",
+    env: childEnv,
+    shell: process.platform === "win32",
+  });
+
+  child.on("close", (code, signal) => {
+    if (signal) {
+      console.error(`\n[FATAL CRASH] Child process killed by signal: ${signal}`);
+    }
+    process.exit(code !== null ? code : 1);
+  });
+
+  ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
+    process.on(signal, () => {
+      if (!child.killed) {
+        child.kill(signal as NodeJS.Signals);
+      }
+    });
+  });
+}
+
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+````
+
 ## File: packages/design-system/src/components/OmniBar/OmniBarProvider.tsx
 ````typescript
 "use client";
@@ -64906,140 +65041,6 @@ docs/agents/logs/agent-run-*.log
 supabase/seed.sql
 ````
 
-## File: packages/config/src/cli.ts
-````typescript
-#!/usr/bin/env node
-import { spawn } from "child_process";
-import * as path from "path";
-import { fileURLToPath } from "url";
-import { InfisicalSDK } from "@infisical/sdk";
-import * as dotenv from "dotenv";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load local .env file inside workspace root if present
-dotenv.config({ path: path.join(__dirname, "../../../.env") });
-
-/**
- * Fetches secrets from Infisical and returns them as an in-memory object.
- *
- * Strict "Fail Fast" Architecture:
- * - Requires INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, and INFISICAL_PROJECT_ID.
- * - If credentials are missing or if the fetch fails, halts immediately with process.exit(1).
- * - ZERO hardcoded fallbacks or defaults objects.
- */
-async function fetchSecretsStrict(): Promise<Record<string, string>> {
-  const clientId = process.env.INFISICAL_CLIENT_ID;
-  const clientSecret = process.env.INFISICAL_CLIENT_SECRET;
-  const projectId = process.env.INFISICAL_PROJECT_ID;
-
-  if (!clientId || !clientSecret || !projectId) {
-    console.error(
-      "[@soustools/config] FATAL: Missing Infisical credentials " +
-      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
-      "Process execution halted immediately."
-    );
-    process.exit(1);
-  }
-
-  try {
-    const client = new InfisicalSDK();
-    await client.auth().universalAuth.login({ clientId, clientSecret });
-
-    const secretsResponse = await client.secrets().listSecrets({
-      environment: process.env.INFISICAL_ENV || "dev",
-      projectId,
-    });
-
-    const secretsArray =
-      (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
-
-    const fetchedSecrets: Record<string, string> = {};
-    for (const secret of secretsArray) {
-      if (secret.secretKey && secret.secretValue !== undefined) {
-        fetchedSecrets[secret.secretKey] = secret.secretValue;
-      }
-    }
-
-    return fetchedSecrets;
-  } catch (error) {
-    console.error(
-      "[@soustools/config] FATAL: Infisical secret fetch failed:",
-      (error as Error).message
-    );
-    process.exit(1);
-  }
-}
-
-async function run() {
-  const args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error("Usage: sous-config <command> [args...]");
-    process.exit(1);
-  }
-
-  const secrets = await fetchSecretsStrict();
-
-  const childEnv: Record<string, string> = {
-    ...secrets,
-    ...(process.env as Record<string, string>),
-  };
-
-  // Explicit URL & Supabase key mapping for client environment
-  if (!childEnv.NEXT_PUBLIC_SUPABASE_URL && childEnv.SUPABASE_URL) {
-    childEnv.NEXT_PUBLIC_SUPABASE_URL = childEnv.SUPABASE_URL;
-  }
-  if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
-    childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
-  }
-  if (!childEnv.NEXT_PUBLIC_API_URL) {
-    childEnv.NEXT_PUBLIC_API_URL = childEnv.API_BASE_URL || childEnv.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-  }
-  if (!childEnv.NEXT_PUBLIC_APP_URL) {
-    childEnv.NEXT_PUBLIC_APP_URL = childEnv.APP_BASE_URL || childEnv.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:3000";
-  }
-
-  const [cmd, ...cmdArgs] = args;
-
-  if (cmd === "next" && (cmdArgs.includes("build") || cmdArgs.includes("start"))) {
-    childEnv.NODE_ENV = "production";
-  } else if (!childEnv.NODE_ENV) {
-    childEnv.NODE_ENV = "development";
-  }
-
-  console.log(
-    `[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}"`
-  );
-
-  const child = spawn(cmd, cmdArgs, {
-    stdio: "inherit",
-    env: childEnv,
-    shell: process.platform === "win32",
-  });
-
-  child.on("close", (code, signal) => {
-    if (signal) {
-      console.error(`\n[FATAL CRASH] Child process killed by signal: ${signal}`);
-    }
-    process.exit(code !== null ? code : 1);
-  });
-
-  ["SIGINT", "SIGTERM", "SIGQUIT"].forEach((signal) => {
-    process.on(signal, () => {
-      if (!child.killed) {
-        child.kill(signal as NodeJS.Signals);
-      }
-    });
-  });
-}
-
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
-````
-
 ## File: packages/mcp-server/index.ts
 ````typescript
 // import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -65678,6 +65679,176 @@ export const getDefaultBaseUrl = (): string => config.NEXT_PUBLIC_API_URL;
 export type { paths } from "./schema";
 ````
 
+## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
+````typescript
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { type Socket } from "socket.io-client";
+import { type OmniMessage } from "@soustools/api-types";
+import { useOmnibarContext } from "./OmniBarContext";
+import { usePathname } from "next/navigation";
+import { createWebSocketClient } from "@soustools/api-client";
+
+export function useOmniSocket(): {
+  socket: Socket | null;
+  errorMessage: string | null;
+  setErrorMessage: Dispatch<SetStateAction<string | null>>;
+  isListening: boolean;
+  setIsListening: Dispatch<SetStateAction<boolean>>;
+} {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const pathname = usePathname();
+  const lastPayloadRef = useRef<Record<string, unknown> | null>(null);
+
+  const {
+    contextPayload,
+    chatHistory,
+    addMessage,
+    setIsProcessing,
+    markLoadingComplete,
+    setExecuteBackgroundCommand,
+    setChatHistory,
+  } = useOmnibarContext();
+
+  // Initialize WebSocket connection & manage listeners cleanly
+  useEffect(() => {
+    const wsSocket = createWebSocketClient({
+      namespace: "/commands",
+    });
+
+    const handleChatMessage = (message: OmniMessage) => {
+      addMessage(message);
+      if (message.role === "model") {
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleCommandStatus = (data: { state: string; message: string }) => {
+      if (data.state === "error") {
+        setErrorMessage(data.message);
+        setIsProcessing(false);
+        setIsListening(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleException = (error: { message?: string }) => {
+      console.error("[OmniBar] WebSocket exception:", error);
+      if (
+        error.message?.includes("Unauthorized") ||
+        error.message?.includes("expired")
+      ) {
+        setErrorMessage(error.message || "Session error occurred.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleError = (error: unknown) => {
+      console.error("[OmniBar] Socket error:", error);
+      setErrorMessage("A network error occurred.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleConnectError = (error: unknown) => {
+      console.error("[OmniBar] Socket connect error:", error);
+      setErrorMessage("Failed to connect to the server.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleDisconnect = (reason: string) => {
+      console.warn("[OmniBar] Socket disconnected:", reason);
+      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
+        setErrorMessage("Lost connection to the server.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleReauthenticated = () => {
+      if (lastPayloadRef.current && wsSocket.connected) {
+        console.log("[OmniBar] Resending pending command after re-authentication.");
+        wsSocket.emit("executeCommand", lastPayloadRef.current);
+      }
+    };
+
+    wsSocket.on("chat_message", handleChatMessage);
+    wsSocket.on("command_status", handleCommandStatus);
+    wsSocket.on("exception", handleException);
+    wsSocket.on("error", handleError);
+    wsSocket.on("connect_error", handleConnectError);
+    wsSocket.on("disconnect", handleDisconnect);
+    wsSocket.on("reauthenticated", handleReauthenticated);
+
+    setSocket(wsSocket);
+
+    // Guaranteed teardown: remove every registered event listener & disconnect socket
+    return () => {
+      wsSocket.off("chat_message", handleChatMessage);
+      wsSocket.off("command_status", handleCommandStatus);
+      wsSocket.off("exception", handleException);
+      wsSocket.off("error", handleError);
+      wsSocket.off("connect_error", handleConnectError);
+      wsSocket.off("disconnect", handleDisconnect);
+      wsSocket.off("reauthenticated", handleReauthenticated);
+      wsSocket.disconnect();
+    };
+  }, [addMessage, setIsProcessing, markLoadingComplete]);
+
+  // Execute Background Command handler
+  useEffect(() => {
+    const executeBackgroundCommand = (text: string) => {
+      if (!text.trim()) return;
+      setIsProcessing(true);
+      const newUserMessage: OmniMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: text,
+        timestamp: new Date(),
+      };
+      const updatedHistory = [...chatHistory, newUserMessage];
+      setChatHistory(updatedHistory);
+
+      const payload = {
+        chatHistory: updatedHistory,
+        source: "omnibar",
+        path: pathname,
+        context: contextPayload,
+      };
+      lastPayloadRef.current = payload;
+
+      try {
+        if (!socket || !socket.connected) {
+          socket?.connect();
+        }
+        socket?.emit("executeCommand", payload);
+      } catch (error: unknown) {
+        console.error("[OmniBar] Failed to emit command:", error);
+        setIsProcessing(false);
+      }
+    };
+    setExecuteBackgroundCommand(executeBackgroundCommand);
+  }, [
+    socket,
+    chatHistory,
+    pathname,
+    contextPayload,
+    setExecuteBackgroundCommand,
+    setChatHistory,
+    setIsProcessing,
+  ]);
+
+  return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
+}
+````
+
 ## File: packages/domain-pos/src/components/POSRegister/pos.container.tsx
 ````typescript
 "use client";
@@ -65865,176 +66036,6 @@ export function POSRegisterContainer() {
   );
 }
 POSRegisterContainer.displayName = "POSRegisterContainer";
-````
-
-## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
-````typescript
-"use client";
-
-import { useState, useEffect, useRef } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import { type Socket } from "socket.io-client";
-import { type OmniMessage } from "@soustools/api-types";
-import { useOmnibarContext } from "./OmniBarContext";
-import { usePathname } from "next/navigation";
-import { createWebSocketClient } from "@soustools/api-client";
-
-export function useOmniSocket(): {
-  socket: Socket | null;
-  errorMessage: string | null;
-  setErrorMessage: Dispatch<SetStateAction<string | null>>;
-  isListening: boolean;
-  setIsListening: Dispatch<SetStateAction<boolean>>;
-} {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const pathname = usePathname();
-  const lastPayloadRef = useRef<Record<string, unknown> | null>(null);
-
-  const {
-    contextPayload,
-    chatHistory,
-    addMessage,
-    setIsProcessing,
-    markLoadingComplete,
-    setExecuteBackgroundCommand,
-    setChatHistory,
-  } = useOmnibarContext();
-
-  // Initialize WebSocket connection & manage listeners cleanly
-  useEffect(() => {
-    const wsSocket = createWebSocketClient({
-      namespace: "/commands",
-    });
-
-    const handleChatMessage = (message: OmniMessage) => {
-      addMessage(message);
-      if (message.role === "model") {
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleCommandStatus = (data: { state: string; message: string }) => {
-      if (data.state === "error") {
-        setErrorMessage(data.message);
-        setIsProcessing(false);
-        setIsListening(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleException = (error: { message?: string }) => {
-      console.error("[OmniBar] WebSocket exception:", error);
-      if (
-        error.message?.includes("Unauthorized") ||
-        error.message?.includes("expired")
-      ) {
-        setErrorMessage(error.message || "Session error occurred.");
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleError = (error: unknown) => {
-      console.error("[OmniBar] Socket error:", error);
-      setErrorMessage("A network error occurred.");
-      setIsProcessing(false);
-      markLoadingComplete();
-    };
-
-    const handleConnectError = (error: unknown) => {
-      console.error("[OmniBar] Socket connect error:", error);
-      setErrorMessage("Failed to connect to the server.");
-      setIsProcessing(false);
-      markLoadingComplete();
-    };
-
-    const handleDisconnect = (reason: string) => {
-      console.warn("[OmniBar] Socket disconnected:", reason);
-      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
-        setErrorMessage("Lost connection to the server.");
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleReauthenticated = () => {
-      if (lastPayloadRef.current && wsSocket.connected) {
-        console.log("[OmniBar] Resending pending command after re-authentication.");
-        wsSocket.emit("executeCommand", lastPayloadRef.current);
-      }
-    };
-
-    wsSocket.on("chat_message", handleChatMessage);
-    wsSocket.on("command_status", handleCommandStatus);
-    wsSocket.on("exception", handleException);
-    wsSocket.on("error", handleError);
-    wsSocket.on("connect_error", handleConnectError);
-    wsSocket.on("disconnect", handleDisconnect);
-    wsSocket.on("reauthenticated", handleReauthenticated);
-
-    setSocket(wsSocket);
-
-    // Guaranteed teardown: remove every registered event listener & disconnect socket
-    return () => {
-      wsSocket.off("chat_message", handleChatMessage);
-      wsSocket.off("command_status", handleCommandStatus);
-      wsSocket.off("exception", handleException);
-      wsSocket.off("error", handleError);
-      wsSocket.off("connect_error", handleConnectError);
-      wsSocket.off("disconnect", handleDisconnect);
-      wsSocket.off("reauthenticated", handleReauthenticated);
-      wsSocket.disconnect();
-    };
-  }, [addMessage, setIsProcessing, markLoadingComplete]);
-
-  // Execute Background Command handler
-  useEffect(() => {
-    const executeBackgroundCommand = (text: string) => {
-      if (!text.trim()) return;
-      setIsProcessing(true);
-      const newUserMessage: OmniMessage = {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: text,
-        timestamp: new Date(),
-      };
-      const updatedHistory = [...chatHistory, newUserMessage];
-      setChatHistory(updatedHistory);
-
-      const payload = {
-        chatHistory: updatedHistory,
-        source: "omnibar",
-        path: pathname,
-        context: contextPayload,
-      };
-      lastPayloadRef.current = payload;
-
-      try {
-        if (!socket || !socket.connected) {
-          socket?.connect();
-        }
-        socket?.emit("executeCommand", payload);
-      } catch (error: unknown) {
-        console.error("[OmniBar] Failed to emit command:", error);
-        setIsProcessing(false);
-      }
-    };
-    setExecuteBackgroundCommand(executeBackgroundCommand);
-  }, [
-    socket,
-    chatHistory,
-    pathname,
-    contextPayload,
-    setExecuteBackgroundCommand,
-    setChatHistory,
-    setIsProcessing,
-  ]);
-
-  return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
-}
 ````
 
 ## File: .github/workflows/reporting.yml

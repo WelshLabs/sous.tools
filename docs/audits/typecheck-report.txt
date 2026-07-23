@@ -3,12 +3,12 @@
    • Running typecheck in 19 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:build
-cache hit, replaying logs ccf5f7eecb500272
-$ tsc
-::endgroup::
 ::group::@soustools/config:build
 cache hit, replaying logs 562a5c7a96d5aefc
+$ tsc
+::endgroup::
+::group::@soustools/api-types:build
+cache hit, replaying logs ccf5f7eecb500272
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
@@ -19,16 +19,16 @@ $ tsc
 cache miss, executing 52c846f4b55bd709
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/api-types:typecheck
-cache miss, executing 7981fb5a93cefb2f
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/logger:typecheck
 cache miss, executing ae53da8adfd54c8a
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-client:typecheck
 cache miss, executing b1f4243f8fecae7d
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing 7981fb5a93cefb2f
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
@@ -39,34 +39,19 @@ $ tsc --noEmit
 cache miss, executing 047763b8a4c3abcf
 $ tsc --noEmit
 ::endgroup::
-[;31m@soustools/design-system:typecheck[;0m
+[;31m@soustools/domain-pos:typecheck[;0m
+cache miss, executing ffd0862d32e30e4d
+$ tsc --noEmit
+../design-system/src/components/OmniBar/use-omni-actions.hook.ts(19,11): error TS2353: Object literal may only specify known properties, and 'itemId' does not exist in type '{ organizationId: string; vendorName: string; vendorItemString: string; masterIngredientId: string; }'.
+[ELIFECYCLE] Command failed with exit code 2.
+::group::@soustools/design-system:typecheck
 cache miss, executing fc56215cb7fcfa81
 $ tsc --noEmit
 src/components/OmniBar/use-omni-actions.hook.ts(19,11): error TS2353: Object literal may only specify known properties, and 'itemId' does not exist in type '{ organizationId: string; vendorName: string; vendorItemString: string; masterIngredientId: string; }'.
 [ELIFECYCLE] Command failed with exit code 2.
-::group::pos-simulator:typecheck
-cache miss, executing c92aca3d95c4c0d4
-$ tsc --noEmit
-../../packages/design-system/src/components/OmniBar/use-omni-actions.hook.ts(19,11): error TS2353: Object literal may only specify known properties, and 'itemId' does not exist in type '{ organizationId: string; vendorName: string; vendorItemString: string; masterIngredientId: string; }'.
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 1c7ea09693b9e8ef
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::web:typecheck
-cache miss, executing f92cd3c7a09160a3
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-recipes:typecheck
 cache miss, executing af3df4ff858883d8
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing ffd0862d32e30e4d
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -75,13 +60,28 @@ cache miss, executing f0dc840c531bf9d2
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing d64b1e4b1af66293
+::group::web:typecheck
+cache miss, executing f92cd3c7a09160a3
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing c92aca3d95c4c0d4
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
 cache miss, executing e45d9df56d9c2361
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing d64b1e4b1af66293
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 1c7ea09693b9e8ef
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -93,6 +93,6 @@ $ tsc --noEmit
 
  Tasks:    9 successful, 19 total
 Cached:    3 cached, 19 total
-  Time:    27.318s 
-Failed:    @soustools/design-system#typecheck
+  Time:    36.167s 
+Failed:    @soustools/domain-pos#typecheck
 
