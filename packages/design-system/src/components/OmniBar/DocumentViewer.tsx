@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { type UnifiedLineItem } from "./UnifiedReviewPanel";
@@ -13,6 +13,34 @@ export interface DocumentViewerProps {
 
 export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null }: DocumentViewerProps) {
   const [scale, setScale] = useState(1);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
+
+  // Measure the actual rendered image size so bounding boxes
+  // are positioned relative to the image pixels, not the container.
+  const measureImage = useCallback(() => {
+    if (imgRef.current) {
+      setImgSize({
+        w: imgRef.current.offsetWidth,
+        h: imgRef.current.offsetHeight,
+      });
+    }
+  }, []);
+
+  // Re-measure whenever zoom scale changes
+  useEffect(() => {
+    if (!imgRef.current) return;
+    // Brief delay allows Framer's scale animation to settle
+    const timer = setTimeout(measureImage, 120);
+    return () => clearTimeout(timer);
+  }, [scale, measureImage]);
+
+  // Re-measure on window resize
+  useEffect(() => {
+    window.addEventListener("resize", measureImage);
+    return () => window.removeEventListener("resize", measureImage);
+  }, [measureImage]);
+
   return (
     <div className="flex flex-col gap-3 h-[450px] lg:h-[620px] relative">
       <div className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">Document Viewer</div>
@@ -25,37 +53,44 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
               dragMomentum={false}
               animate={{ scale }}
               transition={{ duration: 0.1 }}
+              // inline-block so the div shrinks to the image's rendered size,
+              // which lets absolute children (bounding boxes) be positioned
+              // relative to the image, not the outer flex container.
               className="relative inline-block select-none"
             >
               <img
+                ref={imgRef}
                 src={sourceUrl}
                 alt="Uploaded source document"
-                className="max-h-[380px] lg:max-h-[530px] w-auto object-contain pointer-events-none select-none rounded-lg"
+                onLoad={measureImage}
+                className="max-h-[380px] lg:max-h-[530px] w-auto object-contain pointer-events-none select-none rounded-lg block"
               />
-              
-              {/* Render Bounding Boxes */}
-              {lineItems.map((item, idx) => {
-                if (!item.boundingBox || item.boundingBox.length !== 4) return null;
-                const [ymin, xmin, ymax, xmax] = item.boundingBox;
-                const isHoveredItem = hoveredIndex === idx;
-                
-                return (
-                  <div
-                    key={idx}
-                    className={`absolute rounded border transition-all duration-150 pointer-events-none ${
-                      isHoveredItem
-                        ? "border-cyan-400 bg-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.6)] z-30 scale-[1.01]"
-                        : "border-cyan-500 bg-cyan-500/10 z-20"
-                    }`}
-                    style={{
-                      top: `${ymin * 100}%`,
-                      left: `${xmin * 100}%`,
-                      height: `${(ymax - ymin) * 100}%`,
-                      width: `${(xmax - xmin) * 100}%`,
-                    }}
-                  />
-                );
-              })}
+
+              {/* Bounding Boxes — positioned in image-pixel space */}
+              {imgSize &&
+                lineItems.map((item, idx) => {
+                  if (!item.boundingBox || item.boundingBox.length !== 4) return null;
+                  // Coordinates are normalised [0,1] in [ymin, xmin, ymax, xmax] order
+                  const [ymin, xmin, ymax, xmax] = item.boundingBox;
+                  const isHoveredItem = hoveredIndex === idx;
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`absolute rounded border transition-all duration-150 pointer-events-none ${
+                        isHoveredItem
+                          ? "border-cyan-400 bg-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.6)] z-30 scale-[1.01]"
+                          : "border-cyan-500 bg-cyan-500/10 z-20"
+                      }`}
+                      style={{
+                        top:    `${ymin * imgSize.h}px`,
+                        left:   `${xmin * imgSize.w}px`,
+                        height: `${(ymax - ymin) * imgSize.h}px`,
+                        width:  `${(xmax - xmin) * imgSize.w}px`,
+                      }}
+                    />
+                  );
+                })}
             </motion.div>
           </div>
         ) : (

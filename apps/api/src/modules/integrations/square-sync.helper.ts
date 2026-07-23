@@ -15,6 +15,24 @@ import {
 export { getSquareBaseUrl, getVariationAndLocationId } from "./square-client.helper";
 export { seedSquareCatalog } from "./square-seed.helper";
 
+async function bulkUpsert<T>(
+  supabaseClient: SupabaseClient,
+  table: string,
+  data: T[],
+  onConflict: string,
+  chunkSize = 500
+): Promise<void> {
+  for (let i = 0; i < data.length; i += chunkSize) {
+    const chunk = data.slice(i, i + chunkSize);
+    const { error } = await supabaseClient
+      .from(table)
+      .upsert(chunk as any, { onConflict });
+    if (error) {
+      console.error(`Failed to bulk upsert into ${table}: ${error.message}`);
+    }
+  }
+}
+
 export async function syncSquareCatalog(
   accessToken: string,
   orgId: string,
@@ -22,51 +40,69 @@ export async function syncSquareCatalog(
 ): Promise<void> {
   const baseUrl = getSquareBaseUrl();
 
-  // 1. Fetch Catalog Items, Modifier Lists, Categories & Discounts
-  const listRes = await fetch(`${baseUrl}/v2/catalog/list?types=ITEM,MODIFIER_LIST,CATEGORY,DISCOUNT`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!listRes.ok) {
-    throw new Error(`Square catalog list failed: ${await listRes.text()}`);
-  }
-  const listData = (await listRes.json()) as { objects?: SquareCatalogObject[] };
-  const objects = listData.objects || [];
+  // 1. Fetch ALL Catalog Items, Modifier Lists, Categories & Discounts with pagination cursor
+  const allObjects: SquareCatalogObject[] = [];
+  let cursor: string | undefined = undefined;
 
-  const items = objects.filter((o) => o.type === "ITEM");
-  const modifierLists = objects.filter((o) => o.type === "MODIFIER_LIST");
-  const categories = objects.filter((o) => o.type === "CATEGORY");
-  const discounts = objects.filter((o) => o.type === "DISCOUNT");
+  do {
+    const url = new URL(`${baseUrl}/v2/catalog/list`);
+    url.searchParams.set("types", "ITEM,MODIFIER_LIST,CATEGORY,DISCOUNT");
+    if (cursor) {
+      url.searchParams.set("cursor", cursor);
+    }
 
-  // 2. Fetch Inventory Counts for Variation IDs
+    const listRes = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!listRes.ok) {
+      throw new Error(`Square catalog list failed: ${await listRes.text()}`);
+    }
+
+    const listData = (await listRes.json()) as {
+      objects?: SquareCatalogObject[];
+      cursor?: string;
+    };
+    if (listData.objects && listData.objects.length > 0) {
+      allObjects.push(...listData.objects);
+    }
+    cursor = listData.cursor;
+  } while (cursor);
+
+  const items = allObjects.filter((o) => o.type === "ITEM");
+  const modifierLists = allObjects.filter((o) => o.type === "MODIFIER_LIST");
+  const categories = allObjects.filter((o) => o.type === "CATEGORY");
+  const discounts = allObjects.filter((o) => o.type === "DISCOUNT");
+
+  // 2. Fetch Inventory Counts for Variation IDs (chunked in batches of 100)
   const variationIds = items.flatMap((item) =>
     (item.item_data?.variations || []).map((v) => v.id)
   );
   const countsMap: Record<string, number> = {};
 
   if (variationIds.length > 0) {
-    const countsRes = await fetch(`${baseUrl}/v2/inventory/batch-retrieve-counts`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ catalog_object_ids: variationIds }),
-    });
-    if (countsRes.ok) {
-      const countsData = (await countsRes.json()) as { counts?: SquareInventoryCount[] };
-      (countsData.counts || []).forEach((c) => {
-        countsMap[c.catalog_object_id] = parseInt(c.quantity || "0", 10);
+    for (let i = 0; i < variationIds.length; i += 100) {
+      const chunk = variationIds.slice(i, i + 100);
+      const countsRes = await fetch(`${baseUrl}/v2/inventory/batch-retrieve-counts`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ catalog_object_ids: chunk }),
       });
+      if (countsRes.ok) {
+        const countsData = (await countsRes.json()) as { counts?: SquareInventoryCount[] };
+        (countsData.counts || []).forEach((c) => {
+          countsMap[c.catalog_object_id] = parseInt(c.quantity || "0", 10);
+        });
+      }
     }
   }
 
-  // 3. Upsert Categories & Discounts
+  // 3. Bulk Upsert Categories & Discounts
   const categoriesToUpsert = mapSquareCategories(categories, orgId);
   if (categoriesToUpsert.length > 0) {
-    const { error: catErr } = await supabaseClient
-      .from("pos_categories")
-      .upsert(categoriesToUpsert, { onConflict: "organization_id,pos_provider,external_id" });
-    if (catErr) console.error(`Failed to upsert categories: ${catErr.message}`);
+    await bulkUpsert(supabaseClient, "pos_categories", categoriesToUpsert, "organization_id,pos_provider,external_id");
   }
 
   const { data: dbCategories } = await supabaseClient
@@ -78,19 +114,13 @@ export async function syncSquareCatalog(
 
   const discountsToUpsert = mapSquareDiscounts(discounts, orgId);
   if (discountsToUpsert.length > 0) {
-    const { error: discErr } = await supabaseClient
-      .from("pos_discounts")
-      .upsert(discountsToUpsert, { onConflict: "organization_id,pos_provider,external_id" });
-    if (discErr) console.error(`Failed to upsert discounts: ${discErr.message}`);
+    await bulkUpsert(supabaseClient, "pos_discounts", discountsToUpsert, "organization_id,pos_provider,external_id");
   }
 
-  // 4. Upsert Modifier Groups
+  // 4. Bulk Upsert Modifier Groups
   const modifierGroupsToUpsert = mapSquareModifierGroups(modifierLists, orgId);
   if (modifierGroupsToUpsert.length > 0) {
-    const { error: mgErr } = await supabaseClient
-      .from("pos_modifier_groups")
-      .upsert(modifierGroupsToUpsert, { onConflict: "organization_id,pos_provider,external_id" });
-    if (mgErr) console.error(`Failed to upsert modifier groups: ${mgErr.message}`);
+    await bulkUpsert(supabaseClient, "pos_modifier_groups", modifierGroupsToUpsert, "organization_id,pos_provider,external_id");
   }
 
   const { data: dbModifierGroups } = await supabaseClient
@@ -101,22 +131,16 @@ export async function syncSquareCatalog(
   
   const mgMap = new Map((dbModifierGroups || []).map((g) => [g.external_id, g.id]));
 
-  // 5. Upsert Modifier Options
+  // 5. Bulk Upsert Modifier Options
   const modifierOptionsToUpsert = mapSquareModifierOptions(modifierLists, mgMap, orgId);
   if (modifierOptionsToUpsert.length > 0) {
-    const { error: moErr } = await supabaseClient
-      .from("pos_modifier_options")
-      .upsert(modifierOptionsToUpsert, { onConflict: "organization_id,pos_provider,external_id" });
-    if (moErr) console.error(`Failed to upsert modifier options: ${moErr.message}`);
+    await bulkUpsert(supabaseClient, "pos_modifier_options", modifierOptionsToUpsert, "organization_id,pos_provider,external_id");
   }
 
-  // 6. Upsert POS Items
+  // 6. Bulk Upsert POS Items
   const posItemsToUpsert = mapSquarePosItems(items, countsMap, catMap, orgId);
   if (posItemsToUpsert.length > 0) {
-    const { error: itemErr } = await supabaseClient
-      .from("pos_items")
-      .upsert(posItemsToUpsert, { onConflict: "organization_id,pos_provider,external_id" });
-    if (itemErr) throw new Error(`Failed to upsert POS items: ${itemErr.message}`);
+    await bulkUpsert(supabaseClient, "pos_items", posItemsToUpsert, "organization_id,pos_provider,external_id");
   }
 
   const { data: dbPosItems } = await supabaseClient
@@ -125,17 +149,32 @@ export async function syncSquareCatalog(
     .eq("organization_id", orgId)
     .eq("pos_provider", "SQUARE");
   
-  const itemMap = new Map((dbPosItems || []).map((i) => [i.external_id, i.id]));
+  // Build DUAL itemMap: both Square Item ID and Variation IDs -> pos_item.id
+  const itemMap = new Map<string, string>();
+  const dbItemMap = new Map((dbPosItems || []).map((i) => [i.external_id, i.id]));
 
-  // 7. Upsert POS Item Modifier Groups
+  dbItemMap.forEach((localId, extItemId) => {
+    itemMap.set(extItemId, localId);
+  });
+
+  items.forEach((item) => {
+    const localId = dbItemMap.get(item.id);
+    if (localId && item.item_data?.variations) {
+      item.item_data.variations.forEach((v) => {
+        if (v.id) {
+          itemMap.set(v.id, localId);
+        }
+      });
+    }
+  });
+
+  // 7. Bulk Upsert POS Item Modifier Groups
   const itemModifierGroupsToUpsert = mapSquareItemModifierGroups(items, itemMap, mgMap);
   if (itemModifierGroupsToUpsert.length > 0) {
-    await supabaseClient
-      .from("pos_item_modifier_groups")
-      .upsert(itemModifierGroupsToUpsert, { onConflict: "pos_item_id,modifier_group_id" });
+    await bulkUpsert(supabaseClient, "pos_item_modifier_groups", itemModifierGroupsToUpsert, "pos_item_id,modifier_group_id");
   }
 
-  // 8. Sync Transactions / Orders
+  // 8. Sync Sales, Orders, and Transactions
   await syncSquareTransactions(accessToken, orgId, supabaseClient, itemMap);
 }
 
@@ -157,13 +196,11 @@ async function syncSquareTransactions(
   if (locationIds.length === 0) return;
 
   const beginTime = new Date(Date.now() - 1000 * 3600 * 24 * 30).toISOString();
-  const ordersRes = await fetch(`${baseUrl}/v2/orders/search`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const allOrders: SquareOrder[] = [];
+  let orderCursor: string | undefined = undefined;
+
+  do {
+    const bodyPayload: Record<string, any> = {
       location_ids: locationIds,
       query: {
         filter: {
@@ -181,31 +218,39 @@ async function syncSquareTransactions(
           sort_order: "DESC",
         },
       },
-    }),
-  });
+    };
+    if (orderCursor) {
+      bodyPayload.cursor = orderCursor;
+    }
 
-  if (!ordersRes.ok) {
-    console.error(`Square orders search failed: ${await ordersRes.text()}`);
-    return;
-  }
+    const ordersRes = await fetch(`${baseUrl}/v2/orders/search`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(bodyPayload),
+    });
 
-  const ordersData = (await ordersRes.json()) as { orders?: SquareOrder[] };
-  const orders = ordersData.orders || [];
+    if (!ordersRes.ok) {
+      console.error(`Square orders search failed: ${await ordersRes.text()}`);
+      break;
+    }
 
-  const ordersToUpsert = mapSquareOrders(orders, orgId);
+    const ordersData = (await ordersRes.json()) as { orders?: SquareOrder[]; cursor?: string };
+    if (ordersData.orders && ordersData.orders.length > 0) {
+      allOrders.push(...ordersData.orders);
+    }
+    orderCursor = ordersData.cursor;
+  } while (orderCursor);
+
+  const ordersToUpsert = mapSquareOrders(allOrders, orgId);
   if (ordersToUpsert.length > 0) {
-    const { error: ordErr } = await supabaseClient
-      .from("pos_orders")
-      .upsert(ordersToUpsert, { onConflict: "organization_id,pos_provider,external_id" });
-    if (ordErr) console.error(`Failed to sync orders: ${ordErr.message}`);
+    await bulkUpsert(supabaseClient, "pos_orders", ordersToUpsert, "organization_id,pos_provider,external_id");
   }
 
-  const transactionsToUpsert = mapSquareTransactions(orders, itemMap, orgId);
+  const transactionsToUpsert = mapSquareTransactions(allOrders, itemMap, orgId);
   if (transactionsToUpsert.length > 0) {
-    const { error: txnErr } = await supabaseClient
-      .from("pos_transactions")
-      .upsert(transactionsToUpsert, { onConflict: "external_transaction_id" });
-    if (txnErr) console.error(`Failed to sync transactions: ${txnErr.message}`);
+    await bulkUpsert(supabaseClient, "pos_transactions", transactionsToUpsert, "external_transaction_id");
   }
 }
-

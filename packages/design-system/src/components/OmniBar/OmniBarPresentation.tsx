@@ -147,7 +147,7 @@ export function OmniBarPresentation({
                 <motion.div
                   key="expanded-container"
                   // z-50 ensures the chat window sits above regular page content.
-                  className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
+                  className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -198,7 +198,7 @@ export function OmniBarPresentation({
           <motion.div
             layout
             transition={springTransition}
-            className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-3xl mx-auto px-4"
+            className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4"
           >
             <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
               <OmniChatWindow

@@ -20,7 +20,16 @@ interface WaffleMenuDropdownProps {
 
 export function WaffleMenuDropdown({ onCloseMenus, isAdmin }: WaffleMenuDropdownProps) {
   return (
-    <div className="absolute right-0 mt-2 w-64 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)] grid grid-cols-3 gap-2 p-4">
+    <>
+      {/* Full-viewport click-outside overlay — sits above page content (z-overlay)
+          but below the dropdown itself (z-modal), so any click outside the grid
+          reliably fires onCloseMenus regardless of the header's stacking context. */}
+      <div
+        className="fixed inset-0 z-[var(--z-overlay)]"
+        aria-hidden="true"
+        onClick={onCloseMenus}
+      />
+      <div className="absolute right-0 mt-2 w-64 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)] grid grid-cols-3 gap-2 p-4">
       <Link
         href="/home"
         onClick={onCloseMenus}
@@ -113,6 +122,7 @@ export function WaffleMenuDropdown({ onCloseMenus, isAdmin }: WaffleMenuDropdown
           <span className="text-xs font-medium">Admin</span>
         </Link>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -133,12 +133,14 @@ export function SettingsClient({
     }
   };
 
+  const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
   const handleConnectIntegration = (provider: string) => {
-    window.location.href = `/api/integrations/connect/${provider.toLowerCase()}?orgId=default`;
+    window.location.href = `${getApiBase()}/integrations/connect/${provider.toLowerCase()}?orgId=default`;
   };
 
   const handleDisconnectIntegration = async (provider: string) => {
-    const res = await fetch(`/api/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
+    const res = await fetch(`${getApiBase()}/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
       method: "DELETE",
     });
     if (!res.ok) throw new Error("Failed to disconnect");
@@ -159,7 +161,7 @@ export function SettingsClient({
   };
 
   const handleSquareAction = async (action: "sync" | "seed") => {
-    const res = await fetch(`/api/integrations/square/${action}?orgId=default`, {
+    const res = await fetch(`${getApiBase()}/integrations/square/${action}?orgId=default`, {
       method: "POST",
     });
     if (!res.ok) throw new Error(`Failed to ${action}`);

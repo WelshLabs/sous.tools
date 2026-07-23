@@ -185,6 +185,7 @@ export const SCHEMA_REGISTRY: Record<string, RegistryConfig> = {
     nodeLabel: "PosItem",
     relationships: [
       { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "category_id", relationLabel: "IN_CATEGORY", targetLabel: "PosCategory" },
     ],
   },
   pos_categories: {
@@ -222,6 +223,7 @@ export const SCHEMA_REGISTRY: Record<string, RegistryConfig> = {
     nodeLabel: "PosTransaction",
     relationships: [
       { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "pos_item_id", relationLabel: "FOR_POS_ITEM", targetLabel: "PosItem" },
     ],
   },
   pos_item_recipe_links: {

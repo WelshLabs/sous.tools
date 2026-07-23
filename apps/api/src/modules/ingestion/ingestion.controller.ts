@@ -484,9 +484,9 @@ export class IngestionController {
         organizationId: { type: "string" },
         vendorName: { type: "string" },
         vendorItemString: { type: "string" },
-        masterIngredientId: { type: "string" },
+        itemId: { type: "string" },
       },
-      required: ["organizationId", "vendorName", "vendorItemString", "masterIngredientId"]
+      required: ["organizationId", "vendorName", "vendorItemString", "itemId"]
     }
   })
   @NestjsApiResponse({ status: 201, description: "Success", schema: { type: "object", additionalProperties: true } })
@@ -495,12 +495,12 @@ export class IngestionController {
       organizationId: string;
       vendorName: string;
       vendorItemString: string;
-      masterIngredientId: string;
+      itemId: string;
     }
   ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
-      const { organizationId, vendorName, vendorItemString, masterIngredientId } = body;
-      if (!organizationId || !vendorName || !vendorItemString || !masterIngredientId) {
+      const { organizationId, vendorName, vendorItemString, itemId } = body;
+      if (!organizationId || !vendorName || !vendorItemString || !itemId) {
         throw new Error("Missing required fields");
       }
 
@@ -533,12 +533,43 @@ export class IngestionController {
           organization_id: organizationId,
           vendor_id: vendor!.id,
           vendor_item_string: vendorItemString,
-          item_id: masterIngredientId,
+          item_id: itemId,
           updated_at: new Date().toISOString(),
         }, {
           onConflict: "organization_id,vendor_id,vendor_item_string"
         })
         .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    });
+  }
+
+  @Post("link-usda")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        itemId: { type: "string", description: "Tenant items.id to update" },
+        fdcId:  { type: "number", description: "USDA FDC id to link" },
+      },
+      required: ["itemId", "fdcId"],
+    },
+  })
+  @NestjsApiResponse({ status: 201, description: "Updated fdc_id on tenant item", schema: { type: "object", additionalProperties: true } })
+  async linkUsdaToItem(
+    @Body() body: { itemId: string; fdcId: number }
+  ): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      const { itemId, fdcId } = body;
+      if (!itemId || !fdcId) throw new Error("Missing itemId or fdcId");
+
+      const { data, error } = await supabase
+        .from("items")
+        .update({ fdc_id: fdcId })
+        .eq("id", itemId)
+        .select("id, fdc_id, name")
         .single();
 
       if (error) throw new Error(error.message);

@@ -20,7 +20,7 @@ export class IntegrationsService {
     if (provider === "square") {
       const baseUrl = "https://connect.squareup.com";
       const scope =
-        "MERCHANT_PROFILE_READ+ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE";
+        "MERCHANT_PROFILE_READ+ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE+ORDERS_READ+ORDERS_WRITE+PAYMENTS_READ";
       return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${config.NEXT_PUBLIC_API_URL}/integrations/callback/square&session=false`;
     } else if (provider === "google") {
       const scope = encodeURIComponent(
@@ -137,6 +137,9 @@ export class IntegrationsService {
           "ITEMS_WRITE",
           "INVENTORY_READ",
           "INVENTORY_WRITE",
+          "ORDERS_READ",
+          "ORDERS_WRITE",
+          "PAYMENTS_READ",
         ],
         metadata: {
           connectedAs:

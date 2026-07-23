@@ -17,6 +17,13 @@ export interface UnifiedLineItem {
   confidence?: number | null;
   isNonInventoryExpense?: boolean;
   boundingBox?: number[] | null;
+  /** USDA FDC id — present when the tenant item has a verified USDA link */
+  usdaFdcId?: number | null;
+  /** Canonical USDA food name for display in the Double Match UI */
+  usdaName?: string | null;
+  /** True when the normalization waterfall resolved a USDA link on this call
+   *  and the UI must present the second (USDA) confirmation step */
+  needsUsdaVerification?: boolean;
   suggestions?: Array<{
     itemId: string;
     name: string;
@@ -131,6 +138,65 @@ export function UnifiedReviewPanel({
                 : payload.recipeName || (extractedMetadata?.recipeName as string) || "Untitled Recipe"}
             </h2>
           </div>
+        </div>
+
+        {/* Metadata strip — peripheral fields outside the line-items loop */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 px-1">
+          {isInvoice ? (
+            <>
+              {(() => {
+                const invNum = payload.invoiceNumber ||
+                  (extractedMetadata?.invoiceNumber as string) ||
+                  ((extractedMetadata?.invoice_metadata as Record<string,unknown>)?.invoice_number as string);
+                return invNum ? (
+                  <span className="text-[11px] text-zinc-400">
+                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Invoice #</span>
+                    <span className="font-semibold text-foreground">{invNum}</span>
+                  </span>
+                ) : null;
+              })()}
+              {(() => {
+                const dateStr =
+                  (extractedMetadata?.date as string) ||
+                  ((extractedMetadata?.invoice_metadata as Record<string,unknown>)?.date as string);
+                return dateStr ? (
+                  <span className="text-[11px] text-zinc-400">
+                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Date</span>
+                    <span className="font-semibold text-foreground">{dateStr}</span>
+                  </span>
+                ) : null;
+              })()}
+              {(() => {
+                const total = (extractedMetadata?.financials as Record<string,unknown>)?.invoice_total as number | undefined;
+                return total != null ? (
+                  <span className="text-[11px] text-zinc-400">
+                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Total</span>
+                    <span className="font-semibold text-foreground">${total.toFixed(2)}</span>
+                  </span>
+                ) : null;
+              })()}
+            </>
+          ) : (
+            <>
+              {(payload.yieldAmount || (extractedMetadata?.yieldAmount as number)) && (
+                <span className="text-[11px] text-zinc-400">
+                  <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Yield</span>
+                  <span className="font-semibold text-foreground">
+                    {payload.yieldAmount || (extractedMetadata?.yieldAmount as number)}{" "}
+                    {payload.yieldUnit || (extractedMetadata?.yieldUnit as string) || ""}
+                  </span>
+                </span>
+              )}
+              {(payload.prepTimeMinutes || (extractedMetadata?.prepTimeMinutes as number)) && (
+                <span className="text-[11px] text-zinc-400">
+                  <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Prep</span>
+                  <span className="font-semibold text-foreground">
+                    {payload.prepTimeMinutes || (extractedMetadata?.prepTimeMinutes as number)} min
+                  </span>
+                </span>
+              )}
+            </>
+          )}
         </div>
 
         <div className="flex-1 flex flex-col gap-3 min-h-0">

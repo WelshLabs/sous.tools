@@ -51,8 +51,19 @@ export class SquareDriver extends BaseIntegrationDriver {
   }
 
   async syncData(orgId: string): Promise<void> {
-    // Sync logic here
-    console.log(`Syncing data for ${orgId}`);
+    const { syncSquareCatalog } = await import("../square-sync.helper");
+    const { data: integration, error } = await supabase
+      .from("integrations")
+      .select("access_token")
+      .eq("organization_id", orgId)
+      .eq("provider", "SQUARE")
+      .single();
+
+    if (error || !integration) {
+      throw new Error(`No Square integration found for organization ${orgId}`);
+    }
+
+    await syncSquareCatalog(integration.access_token, orgId, supabase);
   }
 
   async createOrder(orgId: string, orderData: { items: any[] }): Promise<any> {

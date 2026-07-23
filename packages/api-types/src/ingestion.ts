@@ -52,7 +52,8 @@ export interface VendorItemAlias {
   organizationId: string;
   vendorId: string;
   vendorItemString: string;
-  masterIngredientId: string;
+  /** Renamed from masterIngredientId — matches the `item_id` column on vendor_item_aliases */
+  itemId: string;
   createdAt: string;
   updatedAt: string;
 }
