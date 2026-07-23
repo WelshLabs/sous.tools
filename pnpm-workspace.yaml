@@ -1,13 +1,14 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - "apps/*"
+  - "packages/*"
 allowBuilds:
-  '@apollo/protobufjs': true
-  '@google/genai': true
-  '@nestjs/core': true
-  '@newrelic/fn-inspect': true
-  '@newrelic/native-metrics': true
-  '@scarf/scarf': true
+  "@apollo/protobufjs": true
+  "@google/genai": true
+  "@nestjs/core": true
+  "@newrelic/fn-inspect": true
+  "@newrelic/native-metrics": true
+  "@scarf/scarf": true
+  "@swc/core": set this to true or false
   core-js-pure: true
   esbuild: true
   msgpackr-extract: true
