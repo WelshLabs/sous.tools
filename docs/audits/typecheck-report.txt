@@ -3,95 +3,95 @@
    • Running typecheck in 19 packages
    • Remote caching disabled
 
+::group::@soustools/api-types:build
+cache hit, replaying logs b1b36220d97a0925
+$ tsc
+::endgroup::
 ::group::@soustools/config:build
-cache hit, replaying logs 562a5c7a96d5aefc
+cache hit, replaying logs 8a110c0aad723a35
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache hit, replaying logs 7fdd12d25cbf2007
-$ tsc
-::endgroup::
-::group::@soustools/api-types:build
-cache hit, replaying logs ccf5f7eecb500272
+cache hit, replaying logs 93ce180210d7d0f3
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
-cache miss, executing 52c846f4b55bd709
+cache miss, executing ff9c14190bc4e55f
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/logger:typecheck
-cache miss, executing ae53da8adfd54c8a
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/api-client:typecheck
-cache miss, executing b1f4243f8fecae7d
+cache miss, executing 3b56d38fd10a46dc
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-types:typecheck
-cache miss, executing 7981fb5a93cefb2f
+cache miss, executing a28b1016bed5de48
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/api-client:typecheck
+cache miss, executing 4d6e81625a4db217
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
-cache miss, executing 4aa0825316aa9b48
+cache miss, executing 94b53c385980716d
 $ tsc --noEmit
 ::endgroup::
 ::group::cli:typecheck
-cache miss, executing 047763b8a4c3abcf
+cache miss, executing e484b26a8c0e728a
 $ tsc --noEmit
 ::endgroup::
 [;31m@soustools/design-system:typecheck[;0m
-cache miss, executing fc56215cb7fcfa81
+cache miss, executing 28668b7ea0b0139e
 $ tsc --noEmit
 src/components/OmniBar/use-omni-actions.hook.ts(19,11): error TS2353: Object literal may only specify known properties, and 'itemId' does not exist in type '{ organizationId: string; vendorName: string; vendorItemString: string; masterIngredientId: string; }'.
 [ELIFECYCLE] Command failed with exit code 2.
-::group::pos-simulator:typecheck
-cache miss, executing c92aca3d95c4c0d4
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::@soustools/domain-recipes:typecheck
-cache miss, executing af3df4ff858883d8
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::web:typecheck
-cache miss, executing f92cd3c7a09160a3
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::api:typecheck
-cache miss, executing 8055867a2f548dc9
+cache miss, executing 1552e616844619fc
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-inventory:typecheck
-cache miss, executing f0dc840c531bf9d2
+cache miss, executing 663c55868af7460f
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing d64b1e4b1af66293
+::group::pos-simulator:typecheck
+cache miss, executing a500dba5c766dbcc
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-pos:typecheck
-cache miss, executing ffd0862d32e30e4d
+cache miss, executing 8ae7be1e7d84f491
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing e45d9df56d9c2361
+::group::api:typecheck
+cache miss, executing 9dd658b9f28ec221
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/setup-portal:typecheck
-cache miss, executing 1c7ea09693b9e8ef
+cache miss, executing 799111cd0c821584
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::web:typecheck
+cache miss, executing c79a7a8d2e6d3ac1
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing e009e8e48f8d3748
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 6d3fbab1f4d30c0a
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    9 successful, 19 total
 Cached:    3 cached, 19 total
-  Time:    34.606s 
+  Time:    37.094s 
 Failed:    @soustools/design-system#typecheck
 

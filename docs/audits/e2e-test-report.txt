@@ -4,45 +4,45 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing 821a1a9f0fe3c0a9
+cache miss, executing 5b0b254988a29a4b
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing 15ade4a2f1139ab6
+cache miss, executing b0d2a2e94f9346cb
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing daf8eceafc46b634
+cache miss, executing fc84bb0aaa81af5e
 $ tsc
 ::endgroup::
 [;31mpos-simulator:build[;0m
-cache miss, executing 183db5bd078c8b10
+cache miss, executing 7ff76bb3ee10fe6e
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] FATAL: Missing Infisical credentials (INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). Process execution halted immediately.
 [ELIFECYCLE] Command failed with exit code 1.
-::group::api:build
-cache miss, executing d824dc59066579d3
-$ nest build
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::web:build
-cache miss, executing 99bc42f64a8d5353
+cache miss, executing 48b1a4552c716e13
 $ node ../../packages/config/dist/cli.js next build
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/setup-portal:build
-cache miss, executing 52b38969f11f40f7
+cache miss, executing faa793ea28b34bf5
 $ next build
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::api:build
+cache miss, executing 031af42a8b999a57
+$ nest build
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::cli:build
-cache miss, executing dfb6f0ad4e6e46e3
+cache miss, executing e7a8170572ad7b9b
 $ nest build
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    3 successful, 8 total
 Cached:    0 cached, 8 total
-  Time:    6.673s 
+  Time:    7.191s 
 Failed:    pos-simulator#build
 

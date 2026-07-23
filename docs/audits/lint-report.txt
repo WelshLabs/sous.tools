@@ -4,59 +4,59 @@
    • Remote caching disabled
 
 ::group::@soustools/eslint-config:lint
-cache miss, executing 4962c0514f846b44
+cache miss, executing 60604c477b0d9b8a
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/mcp-server:lint
-cache miss, executing 0f4983d4737f512a
+cache miss, executing 6232875d2cefce4a
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:lint
+cache miss, executing 04db233bd1a26144
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:lint
-cache miss, executing 8797564eac19d7ae
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/api-types:build
-cache miss, executing ccf5f7eecb500272
-$ tsc
-::endgroup::
-::group::@soustools/config:lint
-cache miss, executing 5db32b102ce1bf91
+cache miss, executing 754f155d540ad09e
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing 562a5c7a96d5aefc
+cache miss, executing 8a110c0aad723a35
 $ tsc
 ::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing d24ba45c99f05b99
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing ab9b7e61be443bc2
-$ eslint . --max-warnings 0
+::group::@soustools/api-types:build
+cache miss, executing b1b36220d97a0925
+$ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 7fdd12d25cbf2007
+cache miss, executing 93ce180210d7d0f3
 $ tsc
 ::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing 4a1eeced5574b492
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-client:lint
+cache miss, executing f64f6e5bdd6660a1
+$ eslint . --max-warnings 0
+::endgroup::
 ::group::@soustools/domain-inventory:lint
-cache miss, executing 7decc08eca171ce6
+cache miss, executing 385e16e741a8187c
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-pos:lint
-cache miss, executing 90e8f4eb1a66926e
+cache miss, executing 68ca58a3e5a6eca1
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-settings:lint
-cache miss, executing e405c5fb22664fdb
+cache miss, executing 309fbd582cacea98
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing 4494d9a88268a290
+cache miss, executing ecd72737c2bfc6e0
 $ eslint . --max-warnings 0
 ::endgroup::
 [;31m@soustools/design-system:lint[;0m
-cache miss, executing b6b1357a2f4848d8
+cache miss, executing c50b7bf674805e35
 $ eslint . --max-warnings 0
 
 /home/runner/work/sous.tools/sous.tools/packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx
@@ -71,39 +71,39 @@ $ eslint . --max-warnings 0
 ✖ 3 problems (3 errors, 0 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
-::group::pos-simulator:lint
-cache miss, executing 1568a2d8800b61a3
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::web:lint
-cache miss, executing 4dc745a6ebce427b
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::cli:lint
-cache miss, executing 98ae719bb4830f62
+cache miss, executing 7fe001a43a9d0eee
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::api:lint
-cache miss, executing f9d4d40e4078b936
+cache miss, executing 4c06450c784dc38a
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::web:lint
+cache miss, executing 7e8d1ff4cdb5c32a
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/setup-portal:lint
-cache miss, executing 5a4c0d7b0b013269
+cache miss, executing 38b7ec68eb46a8b6
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 88e71e65112585a9
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-signage:lint
-cache miss, executing 9bcce38da6c04196
+cache miss, executing 866e2caabb76df7a
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    13 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    18.746s 
+  Time:    19.895s 
 Failed:    @soustools/design-system#lint
 

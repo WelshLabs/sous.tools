@@ -114,7 +114,7 @@ scripts/generate-icons.mjs
 recharts                       apps/web/package.json:36:6                
 serwist                        apps/web/package.json:37:6                
 socket.io-client               apps/web/package.json:38:6                
-eslint-plugin-react            package.json:56:6                         
+eslint-plugin-react            package.json:57:6                         
 @infisical/sdk                 packages/config/package.json:22:6         
 dotenv                         packages/config/package.json:23:6         
 @radix-ui/react-dropdown-menu  packages/design-system/package.json:49:6  
@@ -145,12 +145,12 @@ tailwindcss                      apps/pos-simulator/package.json:32:6
 autoprefixer                     apps/setup-portal/package.json:29:6     
 tailwindcss                      apps/setup-portal/package.json:32:6     
 tailwindcss                      apps/web/package.json:52:6              
-@soustools/api-types             package.json:27:6                       
-@soustools/config                package.json:28:6                       
-@soustools/tsconfig              package.json:30:6                       
-eslint-plugin-project-structure  package.json:34:6                       
-png-to-ico                       package.json:41:6                       
-sharp                            package.json:44:6                       
+@soustools/api-types             package.json:28:6                       
+@soustools/config                package.json:29:6                       
+@soustools/tsconfig              package.json:31:6                       
+eslint-plugin-project-structure  package.json:35:6                       
+png-to-ico                       package.json:42:6                       
+sharp                            package.json:45:6                       
 tsx                              packages/config/package.json:31:6       
 autoprefixer                     packages/design-system/package.json:35:6
 postcss                          packages/design-system/package.json:39:6
