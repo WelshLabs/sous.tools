@@ -1,4 +1,4 @@
-[93m[4mUnused files[24m[39m (105)
+[93m[4mUnused files[24m[39m (107)
 apps/setup-portal/src/components/PairingStep.tsx                             
 apps/setup-portal/src/components/WifiStep.tsx                                
 apps/storybook/.storybook/__mocks__/next-link.tsx                            
@@ -29,6 +29,8 @@ apps/web/src/sw.ts
 ecosystem.config.js                                                          
 packages/config/src/cli.ts                                                   
 packages/design-system/src/components/Logos/index.ts                         
+packages/design-system/src/components/OmniBar/CreateItemButton.tsx           
+packages/design-system/src/components/OmniBar/ItemSelectionDropdown.tsx      
 packages/design-system/src/components/OmniBar/NonInventoryExpenseCheckbox.tsx
 packages/domain-inventory/src/components/OrdersPanel/DraftPoModal.tsx        
 packages/domain-inventory/src/draft-po-modal.tsx                             
@@ -243,7 +245,7 @@ DialogPortal                                       packages/design-system/src/co
 DialogOverlay                                      packages/design-system/src/components/Dialog/Dialog.tsx:113:3        
 DialogClose                                        packages/design-system/src/components/Dialog/Dialog.tsx:115:3        
 OmnibarPerimeterView                               packages/design-system/src/components/OmniBar/index.ts:16:10         
-MetricCard                               function  packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx:66:17
+MetricCard                               function  packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx:72:17
 getCategory                                        packages/domain-pos/src/components/POSRegister/pos.helpers.ts:31:14  
 playSuccessSound                         function  packages/domain-pos/src/components/POSRegister/pos.helpers.ts:51:17  
 MenuItemContext                                    packages/domain-signage/src/block-editor-node.tsx:25:14              
@@ -312,7 +314,7 @@ OmniBarState                interface  packages/design-system/src/components/Omn
 OmniMetric                  type       packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:16:15           
 OmniChatWindowProps         interface  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:18:18           
 OmniInputPillProps          interface  packages/design-system/src/components/OmniBar/OmniInputPill.tsx:14:18            
-UnifiedItemRowProps         interface  packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx:8:18            
+UnifiedItemRowProps         interface  packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx:16:18           
 QuickAddBarProps            interface  packages/design-system/src/components/QuickAddBar/QuickAddBar.tsx:14:18          
 UsdaSearchResult            interface  …ckages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx:20:18
 ItemEditorProps             interface  …ckages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx:32:18

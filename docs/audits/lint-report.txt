@@ -4,103 +4,109 @@
    • Remote caching disabled
 
 ::group::@soustools/eslint-config:lint
-cache miss, executing d4fa233f43f5b321
+cache miss, executing 4962c0514f846b44
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing 7a7a6be166eeeb85
+cache miss, executing ccf5f7eecb500272
+$ tsc
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing 562a5c7a96d5aefc
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:lint
-cache miss, executing d819098ff9fd519a
+cache miss, executing 0f4983d4737f512a
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:lint
-cache miss, executing d61b95c1537cc1c1
+cache miss, executing 5db32b102ce1bf91
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:lint
-cache miss, executing d5ad631ac41a93c0
+cache miss, executing 8797564eac19d7ae
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/config:build
-cache miss, executing 362349980b8e5d0e
-$ tsc
-::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing ed494a0d3d7cc5aa
+::group::@soustools/logger:lint
+cache miss, executing ab9b7e61be443bc2
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 0f332528610809d9
+cache miss, executing 7fdd12d25cbf2007
 $ tsc
 ::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 6ee486856bc9116d
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing ec8391d6a727d0c8
+::group::@soustools/api-client:lint
+cache miss, executing d24ba45c99f05b99
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-pos:lint
-cache miss, executing cf1a00f6698f1e7f
+cache miss, executing 90e8f4eb1a66926e
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing e405c5fb22664fdb
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-inventory:lint
-cache miss, executing 4a4d7a8a8ef20ac6
+cache miss, executing 7decc08eca171ce6
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing 3d5b91e9c7459fa1
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing aa8df1743f6d0ba3
+cache miss, executing 4494d9a88268a290
 $ eslint . --max-warnings 0
 ::endgroup::
 [;31m@soustools/design-system:lint[;0m
-cache miss, executing 926a46ea01b41d24
+cache miss, executing b6b1357a2f4848d8
 $ eslint . --max-warnings 0
 
 /home/runner/work/sous.tools/sous.tools/packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx
   222:1  error  File has too many lines (207). Maximum allowed is 200  max-lines
 
-✖ 1 problem (1 error, 0 warnings)
+/home/runner/work/sous.tools/sous.tools/packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx
+  230:1  error  File has too many lines (469). Maximum allowed is 200  max-lines
+
+/home/runner/work/sous.tools/sous.tools/packages/design-system/src/components/OmniBar/UnifiedReviewPanel.tsx
+  216:1  error  File has too many lines (239). Maximum allowed is 200  max-lines
+
+✖ 3 problems (3 errors, 0 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
+::group::@soustools/domain-signage:lint
+cache miss, executing 9bcce38da6c04196
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/setup-portal:lint
+cache miss, executing 5a4c0d7b0b013269
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::cli:lint
-cache miss, executing e96b0c46557e778a
+cache miss, executing 98ae719bb4830f62
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::web:lint
-cache miss, executing ea05a56c15f8fe94
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing 6b33ac85b9bf1953
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing d9262c48baad7115
+cache miss, executing 4dc745a6ebce427b
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::api:lint
-cache miss, executing 613032723e490ade
+cache miss, executing f9d4d40e4078b936
 $ eslint . --max-warnings 0
-(node:3272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784754712509 is not specified and it doesn't parse as CommonJS.
+(node:3012) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/sous.tools/sous.tools/apps/api/eslint.config.js?mtime=1784815323143 is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/sous.tools/sous.tools/apps/api/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 1568a2d8800b61a3
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 
- Tasks:    14 successful, 20 total
+ Tasks:    13 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    19.821s 
+  Time:    15.809s 
 Failed:    @soustools/design-system#lint
 
