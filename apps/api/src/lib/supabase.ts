@@ -3,7 +3,7 @@ import { serverConfig as config } from "@soustools/config/server";
 
 export function createAdminClient(): SupabaseClient {
   return createClient(
-    config.NEXT_PUBLIC_SUPABASE_URL,
+    config.SUPABASE_URL,
     config.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );

@@ -90,7 +90,6 @@ export class DevicesService {
   async getStatus(id: string): Promise<{
     paired: boolean;
     supabaseUrl?: string;
-    supabaseAnonKey?: string;
   }> {
     const { data, error } = await supabase
       .from("signage_devices")
@@ -106,7 +105,6 @@ export class DevicesService {
       return {
         paired: true,
         supabaseUrl: config.NEXT_PUBLIC_SUPABASE_URL,
-        supabaseAnonKey: config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       };
     }
     return { paired: false };

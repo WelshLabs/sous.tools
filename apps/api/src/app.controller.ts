@@ -83,7 +83,6 @@ export class AppController {
     const { email, password } = parsed.data;
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
     if (error || !data.session) {
       throw new UnauthorizedException("Invalid email or password");
     }

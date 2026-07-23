@@ -13,10 +13,14 @@ export const serverSchema = z.object({
   NEXT_PUBLIC_API_URL: z.string().default("http://localhost:3001"),
   NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
   NEXT_PUBLIC_SUPABASE_URL: z.string().default("https://placeholder-project.supabase.co"),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().default("placeholder-anon-key-from-mock-sync"),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().default("https://placeholder-project.supabase.co"),
   NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY: z.string().optional().default(""),
 
+  SUPABASE_ACCESS_TOKEN: z.string().default("placeholder-service-role-key-from-mock-sync"),
+  SUPABASE_PROJECT_TOKEN: z.string().default("placeholder-service-role-key-from-mock-sync"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().default("placeholder-service-role-key-from-mock-sync"),
+  SUPABASE_URL: z.string().default("https://placeholder-project.supabase.co"),
+  SUPABASE_DIRECT_URL: z.string().default("https://placeholder-project.supabase.co"),
   SUPABASE_WEBHOOK_SECRET: z.string().default("sous-tools-neo4j-sync-secret-key"),
 
   GITHUB_ID: z.string().optional().default(""),
@@ -70,11 +74,15 @@ export const serverConfig: ServerConfig = serverSchema.parse({
 
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY: process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
 
+  SUPABASE_ACCESS_TOKEN: process.env.SUPABASE_ACCESS_TOKEN,
+  SUPABASE_PROJECT_TOKEN: process.env.SUPABASE_PROJECT_TOKEN,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_DIRECT_URL: process.env.SUPABASE_DIRECT_URL,
   SUPABASE_WEBHOOK_SECRET: process.env.SUPABASE_WEBHOOK_SECRET,
 
   GITHUB_ID: process.env.GITHUB_ID,
