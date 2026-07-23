@@ -45,12 +45,12 @@ model_list:
 
   - model_name: claude-3-5-haiku-20241022
     litellm_params:
-      model: gemini/gemini-3.5-flash
+      model: gemini/gemini-2.5-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
-  - model_name: claude-opus-4-8
+  - model_name: claude-opus-4-8[1m]
     litellm_params:
-      model: gemini/gemini-3.1-pro
+      model: gemini/gemini-2.5-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
 general_settings:

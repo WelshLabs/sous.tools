@@ -83,3 +83,28 @@ fi
 
 export ANTHROPIC_BASE_URL="https://ai.sous.tools"
 export ANTHROPIC_API_KEY="sk-1234"
+
+# Git Add, Commit, Rebase, and Push in one command
+gpush() {
+  if [ -z "$1" ]; then
+    echo "Error: You must provide a commit message."
+    echo "Usage: gpush \"your commit message\""
+    return 1
+  fi
+  
+  git add .
+  git commit -m "$1"
+  git pull origin main --rebase
+  git push origin main
+}
+
+# AI Auto-Commit, Rebase, and Push
+gauto() {
+  git add .
+  
+  # Tell Claude to explicitly read the staged diff
+  claude --model claude-3-5-sonnet-20241022 "Read the output of 'git diff --staged'. Write a conventional commit message for these changes and execute the git commit. Do not ask for confirmation."
+  
+  git pull origin main --rebase
+  git push origin main
+}
