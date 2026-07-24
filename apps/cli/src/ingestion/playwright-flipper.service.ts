@@ -47,10 +47,50 @@ export class PlaywrightFlipperService {
     await activePage.goto(url);
     await activePage.waitForTimeout(3000);
 
-    this.logger.log(`Injecting CSS to hide Google Books UI elements...`);
-    await activePage.addStyleTag({
-      content: 'reader-app-bar, reader-scrubber { display: none !important; }',
-    });
+    this.logger.log(
+      `Injecting CSS into page and reader iframe to hide Google Books UI elements...`,
+    );
+    const hideCss =
+      'reader-app-bar, reader-scrubber { display: none !important; }';
+
+    try {
+      await activePage.addStyleTag({ content: hideCss });
+    } catch (e: unknown) {
+      this.logger.warn(
+        `Failed to inject CSS into active page: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+      );
+    }
+
+    try {
+      const frameElement = await activePage
+        .waitForSelector('iframe', { timeout: 5000 })
+        .catch(() => null);
+      if (frameElement) {
+        const frame = await frameElement.contentFrame();
+        if (frame) {
+          await frame.addStyleTag({ content: hideCss });
+          this.logger.log(
+            `Successfully injected CSS into iframe content frame.`,
+          );
+        }
+      }
+
+      for (const frame of activePage.frames()) {
+        try {
+          await frame.addStyleTag({ content: hideCss });
+        } catch (_e) {
+          // Ignore cross-origin or detached frame errors
+        }
+      }
+    } catch (e: unknown) {
+      this.logger.warn(
+        `Failed to inject CSS into iframe frames: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+      );
+    }
 
     const pdfDoc = await PDFDocument.create();
     let previousBuffer: Buffer | null = null;
