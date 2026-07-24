@@ -8,6 +8,7 @@ import { type OmniMessage } from "@soustools/api-types";
 import { OmniChatWindow } from "./OmniChatWindow";
 import { OmniInputPill } from "./OmniInputPill";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
+import { StagingArea } from "./StagingArea";
 import { useOmnibarContext } from "./OmniBarContext";
 import { Lettermark } from "../Logos/Logo";
 
@@ -147,7 +148,7 @@ export function OmniBarPresentation({
                 <motion.div
                   key="expanded-container"
                   // z-50 ensures the chat window sits above regular page content.
-                  className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4"
+                  className="fixed inset-0 flex flex-col items-end justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -158,20 +159,24 @@ export function OmniBarPresentation({
                     scrollRef={scrollRef}
                     onClearHistory={onClearHistory}
                   />
-                  <OmniInputPill
-                    inputText={inputText}
-                    isListening={isListening}
-                    isProcessing={isProcessing}
-                    errorMessage={errorMessage}
-                    onChange={onChange}
-                    onKeyDown={onKeyDown}
-                    onMicClick={onMicClick}
-                    onSubmit={onSubmit}
-                    onToggle={onToggle}
-                    showClose={true}
-                    isDragging={isDragging}
-                    stagedFiles={stagedFiles}
-                  />
+                  {/* StagingArea lives ABOVE the pill; layout pushes pill down gracefully */}
+                  <motion.div layout className="w-full flex flex-col gap-0 pointer-events-auto">
+                    <StagingArea files={stagedFiles} />
+                    <OmniInputPill
+                      inputText={inputText}
+                      isListening={isListening}
+                      isProcessing={isProcessing}
+                      errorMessage={errorMessage}
+                      onChange={onChange}
+                      onKeyDown={onKeyDown}
+                      onMicClick={onMicClick}
+                      onSubmit={onSubmit}
+                      onToggle={onToggle}
+                      showClose={true}
+                      isDragging={isDragging}
+                      stagedFiles={stagedFiles}
+                    />
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -206,19 +211,23 @@ export function OmniBarPresentation({
                 scrollRef={scrollRef}
                 onClearHistory={onClearHistory}
               />
-              <OmniInputPill
-                inputText={inputText}
-                isListening={isListening}
-                isProcessing={isProcessing}
-                errorMessage={errorMessage}
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                onMicClick={onMicClick}
-                onSubmit={onSubmit}
-                showClose={false}
-                isDragging={isDragging}
-                stagedFiles={stagedFiles}
-              />
+              {/* StagingArea lives ABOVE the pill; layout pushes pill down gracefully */}
+              <motion.div layout className="w-full flex flex-col gap-0">
+                <StagingArea files={stagedFiles} />
+                <OmniInputPill
+                  inputText={inputText}
+                  isListening={isListening}
+                  isProcessing={isProcessing}
+                  errorMessage={errorMessage}
+                  onChange={onChange}
+                  onKeyDown={onKeyDown}
+                  onMicClick={onMicClick}
+                  onSubmit={onSubmit}
+                  showClose={false}
+                  isDragging={isDragging}
+                  stagedFiles={stagedFiles}
+                />
+              </motion.div>
             </motion.div>
           </motion.div>
         </>

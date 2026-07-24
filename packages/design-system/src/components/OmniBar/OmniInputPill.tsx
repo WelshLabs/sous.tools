@@ -9,7 +9,6 @@ import { useOmnibarContext } from "./OmniBarContext";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { PillActions } from "./PillActions";
 import { Lettermark } from "../Logos/Logo";
-import { StagingArea } from "./StagingArea";
 import type { StagedFile } from "./OmniBarContext";
 
 export interface OmniInputPillProps {
@@ -86,7 +85,7 @@ export function OmniInputPill({
       }}
     >
       <OmnibarPerimeterView busy={isProcessing} />
-      <input type="file" ref={fileInputRef} onChange={onFileSelect} className="hidden" accept="image/*,application/pdf" />
+      <input type="file" ref={fileInputRef} onChange={onFileSelect} className="hidden" accept="image/*,application/pdf" multiple />
 
       {/* Drop-zone overlay */}
       <AnimatePresence>
@@ -101,8 +100,6 @@ export function OmniInputPill({
       </AnimatePresence>
 
       <div className={`w-full flex flex-col px-2 z-10 ${isDragging ? "opacity-0" : "opacity-100"}`}>
-        {/* ── Staging area (thumbnails) ── */}
-        <StagingArea files={stagedFiles} />
         {/* ── Main row ── */}
         <div className="flex items-center gap-2">
           {/* Lettermark — pulses while processing */}
