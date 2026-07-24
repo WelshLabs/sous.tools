@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@soustools/api-client";
 import { type KDSTicket, type KDSTicketItem } from "./kds.types";
@@ -110,7 +110,7 @@ export function KDSContainer() {
   }, [orgId]);
 
   const handleToggleLineItem = async (ticketId: string, item: KDSTicketItem) => {
-    const nextStatus = item.status === "COMPLETED" ? "OPEN" : "COMPLETED";
+    const nextStatus: "OPEN" | "COMPLETED" = item.status === "COMPLETED" ? "OPEN" : "COMPLETED";
 
     setTickets((prev) =>
       prev.map((ticket) => {

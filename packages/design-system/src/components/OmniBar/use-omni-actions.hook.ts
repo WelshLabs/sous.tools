@@ -16,7 +16,7 @@ export function useOmniActions() {
           organizationId,
           vendorName: "Internal Ingredients",
           vendorItemString: rawName,
-          itemId,
+          masterIngredientId: itemId,
         },
       });
       if (error) throw new Error("Failed to save alias mapping");

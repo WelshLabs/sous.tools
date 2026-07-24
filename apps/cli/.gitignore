@@ -1,7 +1,0 @@
-dist/
-node_modules/
-ingestion-queue/
-processed.json
-encyclopedia_output.json
-playwright-session/
-cookies.json
