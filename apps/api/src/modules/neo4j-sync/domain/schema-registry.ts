@@ -52,6 +52,12 @@ export const SCHEMA_REGISTRY: Record<string, RegistryConfig> = {
       { fkField: "user_id", relationLabel: "PROFILE_OF", targetLabel: "User" },
     ],
   },
+  user_roles: {
+    nodeLabel: "UserRole",
+    relationships: [
+      { fkField: "user_id", relationLabel: "ROLE_OF", targetLabel: "User" },
+    ],
+  },
   organizations: {
     nodeLabel: "Organization",
     relationships: [],

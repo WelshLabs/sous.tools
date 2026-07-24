@@ -171,6 +171,41 @@ CREATE POLICY "user_profiles_self_or_org_admin" ON user_profiles
 CREATE INDEX IF NOT EXISTS idx_user_profiles_user ON user_profiles(user_id);
 
 -- ---------------------------------------------------------------------------
+-- 5.1 user_roles + is_superadmin helper function
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_roles (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role       TEXT NOT NULL CHECK (role IN ('SUPERADMIN', 'ADMIN', 'TENANT_MEMBER')) DEFAULT 'TENANT_MEMBER',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
+  CONSTRAINT uq_user_roles UNIQUE (user_id, role)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_role    ON user_roles(role);
+
+CREATE OR REPLACE FUNCTION is_superadmin()
+  RETURNS BOOLEAN
+  LANGUAGE sql STABLE SECURITY DEFINER
+  SET search_path = public
+  SET row_security = off
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM user_roles
+    WHERE user_id = auth.uid() AND role = 'SUPERADMIN'
+  );
+$$;
+
+DROP POLICY IF EXISTS "Users can view own user roles or superadmin view all" ON user_roles;
+CREATE POLICY "Users can view own user roles or superadmin view all" ON user_roles
+  FOR SELECT USING (user_id = auth.uid() OR is_superadmin());
+
+DROP POLICY IF EXISTS "Superadmins can manage user roles" ON user_roles;
+CREATE POLICY "Superadmins can manage user roles" ON user_roles
+  FOR ALL USING (is_superadmin())
+  WITH CHECK (is_superadmin());
+
+-- ---------------------------------------------------------------------------
 -- 6. integrations
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS integrations (
@@ -324,6 +359,7 @@ CREATE TABLE IF NOT EXISTS master_items (
   is_gluten_source      BOOLEAN DEFAULT false,
   abv_percentage        NUMERIC DEFAULT 0.0,
   is_alcoholic          BOOLEAN DEFAULT false,
+  is_global             BOOLEAN DEFAULT false,
   fdc_id                INTEGER,
   nutrition_verified_at TIMESTAMP WITH TIME ZONE,
   embedding             vector(768),
@@ -334,9 +370,29 @@ CREATE TABLE IF NOT EXISTS master_items (
 CREATE OR REPLACE VIEW master_ingredients AS SELECT * FROM master_items;
 
 DROP POLICY IF EXISTS "org_members_full_crud_master_items" ON master_items;
-CREATE POLICY "org_members_full_crud_master_items" ON master_items
-  FOR ALL USING (organization_id IS NULL OR is_org_member(organization_id))
-  WITH CHECK (organization_id IS NOT NULL AND is_org_member(organization_id));
+DROP POLICY IF EXISTS "master_items_select_policy" ON master_items;
+CREATE POLICY "master_items_select_policy" ON master_items
+  FOR SELECT USING (
+    is_global = true OR organization_id IS NULL OR is_org_member(organization_id)
+  );
+
+DROP POLICY IF EXISTS "superadmin_manage_global_master_items" ON master_items;
+CREATE POLICY "superadmin_manage_global_master_items" ON master_items
+  FOR ALL USING (
+    (is_global = true OR organization_id IS NULL) AND is_superadmin()
+  )
+  WITH CHECK (
+    (is_global = true OR organization_id IS NULL) AND is_superadmin()
+  );
+
+DROP POLICY IF EXISTS "org_members_manage_tenant_master_items" ON master_items;
+CREATE POLICY "org_members_manage_tenant_master_items" ON master_items
+  FOR ALL USING (
+    (is_global = false OR is_global IS NULL) AND organization_id IS NOT NULL AND is_org_member(organization_id)
+  )
+  WITH CHECK (
+    (is_global = false OR is_global IS NULL) AND organization_id IS NOT NULL AND is_org_member(organization_id)
+  );
 
 -- ---------------------------------------------------------------------------
 -- 13. recipe_categories
@@ -385,6 +441,7 @@ CREATE TABLE IF NOT EXISTS recipes (
   category_id         UUID REFERENCES recipe_categories(id) ON DELETE SET NULL,
   instructions        JSONB NOT NULL DEFAULT '[]'::jsonb,
   status              TEXT CHECK (status IN ('GLOBAL', 'REFERENCE', 'ACTIVE')) DEFAULT 'ACTIVE',
+  is_global           BOOLEAN DEFAULT false,
   source_book         TEXT,
   source_author       TEXT,
   source_page_start   INTEGER,
@@ -402,13 +459,27 @@ COMMENT ON COLUMN recipes.pos_item_id IS 'Links recipe to a synced POS item cata
 DROP POLICY IF EXISTS "recipes_select_policy" ON recipes;
 CREATE POLICY "recipes_select_policy" ON recipes
   FOR SELECT USING (
-    status = 'GLOBAL' OR (organization_id IS NOT NULL AND is_org_member(organization_id))
+    is_global = true OR status = 'GLOBAL' OR (organization_id IS NOT NULL AND is_org_member(organization_id))
+  );
+
+DROP POLICY IF EXISTS "superadmin_manage_global_recipes" ON recipes;
+CREATE POLICY "superadmin_manage_global_recipes" ON recipes
+  FOR ALL USING (
+    (is_global = true OR status = 'GLOBAL') AND is_superadmin()
+  )
+  WITH CHECK (
+    (is_global = true OR status = 'GLOBAL') AND is_superadmin()
   );
 
 DROP POLICY IF EXISTS "org_members_full_crud_recipes" ON recipes;
-CREATE POLICY "org_members_full_crud_recipes" ON recipes
-  FOR ALL USING (organization_id IS NOT NULL AND is_org_member(organization_id))
-  WITH CHECK (organization_id IS NOT NULL AND is_org_member(organization_id));
+DROP POLICY IF EXISTS "org_members_manage_tenant_recipes" ON recipes;
+CREATE POLICY "org_members_manage_tenant_recipes" ON recipes
+  FOR ALL USING (
+    (is_global = false OR is_global IS NULL) AND status != 'GLOBAL' AND organization_id IS NOT NULL AND is_org_member(organization_id)
+  )
+  WITH CHECK (
+    (is_global = false OR is_global IS NULL) AND status != 'GLOBAL' AND organization_id IS NOT NULL AND is_org_member(organization_id)
+  );
 
 -- ---------------------------------------------------------------------------
 -- 16. items (Tenant Items Ledger)
@@ -1317,12 +1388,28 @@ CREATE TABLE IF NOT EXISTS public.core_knowledge_vectors (
 
 DROP POLICY IF EXISTS "core_knowledge_vectors_select_policy" ON public.core_knowledge_vectors;
 CREATE POLICY "core_knowledge_vectors_select_policy" ON public.core_knowledge_vectors
-  FOR SELECT USING (is_global OR organization_id IS NULL OR is_org_member(organization_id));
+  FOR SELECT USING (
+    is_global = true OR organization_id IS NULL OR is_org_member(organization_id)
+  );
+
+DROP POLICY IF EXISTS "superadmin_manage_global_core_knowledge_vectors" ON public.core_knowledge_vectors;
+CREATE POLICY "superadmin_manage_global_core_knowledge_vectors" ON public.core_knowledge_vectors
+  FOR ALL USING (
+    is_global = true AND is_superadmin()
+  )
+  WITH CHECK (
+    is_global = true AND is_superadmin()
+  );
 
 DROP POLICY IF EXISTS "org_members_crud_core_knowledge_vectors" ON public.core_knowledge_vectors;
-CREATE POLICY "org_members_crud_core_knowledge_vectors" ON public.core_knowledge_vectors
-  FOR ALL USING (organization_id IS NOT NULL AND is_org_member(organization_id))
-  WITH CHECK (organization_id IS NOT NULL AND is_org_member(organization_id));
+DROP POLICY IF EXISTS "org_members_manage_tenant_core_knowledge_vectors" ON public.core_knowledge_vectors;
+CREATE POLICY "org_members_manage_tenant_core_knowledge_vectors" ON public.core_knowledge_vectors
+  FOR ALL USING (
+    (is_global = false OR is_global IS NULL) AND organization_id IS NOT NULL AND is_org_member(organization_id)
+  )
+  WITH CHECK (
+    (is_global = false OR is_global IS NULL) AND organization_id IS NOT NULL AND is_org_member(organization_id)
+  );
 
 CREATE INDEX IF NOT EXISTS idx_core_knowledge_vectors_org ON public.core_knowledge_vectors(organization_id);
 CREATE INDEX IF NOT EXISTS idx_core_knowledge_vectors_global ON public.core_knowledge_vectors(is_global);
@@ -1548,6 +1635,11 @@ CREATE TRIGGER on_org_members_sync
 DROP TRIGGER IF EXISTS on_user_profiles_sync ON public.user_profiles;
 CREATE TRIGGER on_user_profiles_sync
   AFTER INSERT OR UPDATE OR DELETE ON public.user_profiles
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+DROP TRIGGER IF EXISTS on_user_roles_sync ON public.user_roles;
+CREATE TRIGGER on_user_roles_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.user_roles
   FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
 
 DROP TRIGGER IF EXISTS on_integrations_sync ON public.integrations;
@@ -1856,6 +1948,8 @@ ALTER TABLE org_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE org_members FORCE ROW LEVEL SECURITY;
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profiles FORCE ROW LEVEL SECURITY;
+ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_roles FORCE ROW LEVEL SECURITY;
 ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integrations FORCE ROW LEVEL SECURITY;
 ALTER TABLE signage_devices ENABLE ROW LEVEL SECURITY;
@@ -1967,6 +2061,7 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;
 
 GRANT EXECUTE ON FUNCTION is_org_member(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION is_org_admin(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION is_superadmin() TO authenticated;
 GRANT EXECUTE ON FUNCTION update_item_current_cost() TO service_role;
 
 GRANT SELECT ON sales_velocity_7d  TO anon, authenticated, service_role;
