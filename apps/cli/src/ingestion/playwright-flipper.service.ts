@@ -11,7 +11,7 @@ export class PlaywrightFlipperService {
   async flipAndExportPdf(
     bookSlug: string,
     url: string,
-    pageCount: number,
+    maxPages?: number,
     readingAreaSelector?: string,
     customOutputPath?: string,
   ): Promise<string> {
@@ -48,12 +48,12 @@ export class PlaywrightFlipperService {
     await activePage.waitForTimeout(3000);
 
     const pdfDoc = await PDFDocument.create();
+    let previousBuffer: Buffer | null = null;
+    const limit = maxPages && maxPages > 0 ? maxPages : 2000;
 
-    for (let i = 1; i <= pageCount; i++) {
+    for (let i = 1; i <= limit; i++) {
       const paddedI = i.toString().padStart(3, '0');
-      this.logger.log(
-        `Capturing screenshot for spread ${paddedI} (${i}/${pageCount})...`,
-      );
+      this.logger.log(`Capturing screenshot for spread ${paddedI}...`);
 
       let imageBuffer: Buffer;
       if (readingAreaSelector) {
@@ -70,6 +70,13 @@ export class PlaywrightFlipperService {
         imageBuffer = await activePage.screenshot();
       }
 
+      if (previousBuffer && Buffer.compare(imageBuffer, previousBuffer) === 0) {
+        this.logger.log(
+          `Identical screenshot detected at spread ${paddedI}. End of book reached. Stopping capture loop.`,
+        );
+        break;
+      }
+
       this.logger.log(`Embedding spread ${paddedI} into PDF document...`);
       const image = await pdfDoc.embedPng(imageBuffer);
       const pdfPage = pdfDoc.addPage([image.width, image.height]);
@@ -80,14 +87,14 @@ export class PlaywrightFlipperService {
         height: image.height,
       });
 
-      if (i < pageCount) {
-        this.logger.log(`Turning page horizontally...`);
-        await activePage.keyboard.press('ArrowRight');
-        this.logger.log(
-          `Waiting 2000ms for high-resolution images to lazy load...`,
-        );
-        await activePage.waitForTimeout(2000);
-      }
+      previousBuffer = imageBuffer;
+
+      this.logger.log(`Turning page horizontally...`);
+      await activePage.keyboard.press('ArrowRight');
+      this.logger.log(
+        `Waiting 2000ms for high-resolution images to lazy load...`,
+      );
+      await activePage.waitForTimeout(2000);
     }
 
     await browser.close();

@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { PlaywrightFlipperService } from '../ingestion/playwright-flipper.service';
 
 interface ImportTextbookOptions {
-  pages: number;
+  pages?: number;
   area?: string;
   slug: string;
   output?: string;
@@ -34,12 +34,14 @@ export class ImportTextbookCommand extends CommandRunner {
       return;
     }
 
-    const pages = options?.pages || 10;
+    const pages = options?.pages;
     const readingAreaSelector = options?.area;
     const customOutputPath = options?.output;
 
     this.logger.log(
-      `Initiating PDF export for book: ${bookSlug}, URL: ${url} with ${pages} pages.`,
+      `Initiating PDF export for book: ${bookSlug}, URL: ${url}${
+        pages ? ` (max pages: ${pages})` : ' (auto-detecting end of book)'
+      }.`,
     );
     const outputPath = await this.flipperService.flipAndExportPdf(
       bookSlug,
@@ -53,8 +55,7 @@ export class ImportTextbookCommand extends CommandRunner {
 
   @Option({
     flags: '-p, --pages <number>',
-    description: 'Number of pages to capture and stitch into PDF',
-    defaultValue: 10,
+    description: 'Maximum number of pages to capture (optional fallback limit)',
   })
   parsePages(val: string): number {
     return parseInt(val, 10);
