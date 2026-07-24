@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { chromium } from 'playwright';
+import { PDFDocument } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -7,16 +8,20 @@ import * as path from 'path';
 export class PlaywrightFlipperService {
   private readonly logger = new Logger(PlaywrightFlipperService.name);
 
-  async flipAndScreenshot(
+  async flipAndExportPdf(
     bookSlug: string,
     url: string,
     pageCount: number,
     readingAreaSelector?: string,
+    customOutputPath?: string,
   ): Promise<string> {
-    const queueDir = path.join(process.cwd(), 'queue', bookSlug);
-    if (!fs.existsSync(queueDir)) {
-      fs.mkdirSync(queueDir, { recursive: true });
+    const outputDir = path.join(process.cwd(), 'output');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
     }
+
+    const outputPath =
+      customOutputPath || path.join(outputDir, `${bookSlug}.pdf`);
 
     this.logger.log(`Connecting Playwright Chromium browser to CDP...`);
     // 1. Manually fetch the JSON to securely spoof the Host header
@@ -26,7 +31,9 @@ export class PlaywrightFlipperService {
     const data: unknown = await response.json();
 
     // 2. Extract the browser UUID path and force it to use our WSL proxy IP
-    const wsPath = new URL((data as { webSocketDebuggerUrl: string }).webSocketDebuggerUrl).pathname;
+    const wsPath = new URL(
+      (data as { webSocketDebuggerUrl: string }).webSocketDebuggerUrl,
+    ).pathname;
     const fixedWsUrl = `ws://172.18.16.1:9222${wsPath}`;
 
     // 3. Connect Playwright directly to the raw WebSocket
@@ -40,28 +47,38 @@ export class PlaywrightFlipperService {
     await activePage.goto(url);
     await activePage.waitForTimeout(3000);
 
+    const pdfDoc = await PDFDocument.create();
+
     for (let i = 1; i <= pageCount; i++) {
       const paddedI = i.toString().padStart(3, '0');
-      const outputPath = path.join(queueDir, `spread-${paddedI}.png`);
       this.logger.log(
-        `Taking screenshot for spread ${paddedI} (${i}/${pageCount})...`,
+        `Capturing screenshot for spread ${paddedI} (${i}/${pageCount})...`,
       );
 
+      let imageBuffer: Buffer;
       if (readingAreaSelector) {
         try {
           const element = activePage.locator(readingAreaSelector);
-          await element.screenshot({ path: outputPath });
+          imageBuffer = await element.screenshot();
         } catch (e: unknown) {
           this.logger.warn(
             `Failed to screenshot reading area selector "${readingAreaSelector}": ${e instanceof Error ? e.message : String(e)}. Falling back to page screenshot.`,
           );
-          await activePage.screenshot({ path: outputPath });
+          imageBuffer = await activePage.screenshot();
         }
       } else {
-        await activePage.screenshot({ path: outputPath });
+        imageBuffer = await activePage.screenshot();
       }
 
-      this.logger.log(`Saved screenshot to: ${outputPath}`);
+      this.logger.log(`Embedding spread ${paddedI} into PDF document...`);
+      const image = await pdfDoc.embedPng(imageBuffer);
+      const pdfPage = pdfDoc.addPage([image.width, image.height]);
+      pdfPage.drawImage(image, {
+        x: 0,
+        y: 0,
+        width: image.width,
+        height: image.height,
+      });
 
       if (i < pageCount) {
         this.logger.log(`Turning page horizontally...`);
@@ -74,7 +91,14 @@ export class PlaywrightFlipperService {
     }
 
     await browser.close();
-    this.logger.log('Playwright Flipper Service completed.');
-    return queueDir;
+
+    this.logger.log(`Compiling and saving PDF document to ${outputPath}...`);
+    const pdfBytes = await pdfDoc.save();
+    fs.writeFileSync(outputPath, pdfBytes);
+
+    this.logger.log(
+      'Playwright Flipper Service PDF export completed successfully.',
+    );
+    return outputPath;
   }
 }

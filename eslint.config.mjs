@@ -3,6 +3,7 @@ import js from "@eslint/js";
 // import projectStructure from "eslint-plugin-project-structure";
 import boundaries from "eslint-plugin-boundaries";
 import tailwindcss from "eslint-plugin-tailwindcss";
+import tseslint from "typescript-eslint";
 
 export default [
   // Global ignores — files that should never be linted
@@ -25,10 +26,14 @@ export default [
   // 🚨 SOUSTOOLS ARCHITECTURAL PHYSICAL WALLS 🚨
   {
     files: ["**/*.ts", "**/*.tsx"], // Apply strictly to all TypeScript/React files
+    languageOptions: {
+      parser: tseslint.parser,
+    },
     plugins: {
       // "project-structure": projectStructure,
       boundaries: boundaries,
       tailwindcss: tailwindcss,
+      "@typescript-eslint": tseslint.plugin,
     },
     settings: {
       // Define our workspaces so the boundaries plugin knows what is what
