@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
 import { IngestionController } from "./ingestion.controller";
 import { IngestionProcessor } from "./ingestion.processor";
+import { KnowledgeIngestionProcessor } from "./knowledge-ingestion.processor";
 import { IngestionGateway } from "./ingestion.gateway";
 import { IntegrationsModule } from "../integrations/integrations.module";
 import { ItemsModule } from "../items/items.module";
@@ -13,22 +14,40 @@ import { serverConfig as config } from "@soustools/config/server";
 
 @Module({
   imports: [
-    BullModule.registerQueue({
-      name: "ingestion",
-      defaultJobOptions: {
-        attempts: 3,
-        backoff: {
-          type: "exponential",
-          delay: 1000,
-        },
-        removeOnComplete: {
-          count: 100,
-        },
-        removeOnFail: {
-          count: 500,
+    BullModule.registerQueue(
+      {
+        name: "ingestion",
+        defaultJobOptions: {
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 1000,
+          },
+          removeOnComplete: {
+            count: 100,
+          },
+          removeOnFail: {
+            count: 500,
+          },
         },
       },
-    }),
+      {
+        name: "knowledge-ingestion",
+        defaultJobOptions: {
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 1000,
+          },
+          removeOnComplete: {
+            count: 100,
+          },
+          removeOnFail: {
+            count: 500,
+          },
+        },
+      },
+    ),
     IntegrationsModule,
     ItemsModule,
     NutritionModule,
@@ -36,6 +55,7 @@ import { serverConfig as config } from "@soustools/config/server";
   controllers: [IngestionController],
   providers: [
     IngestionProcessor,
+    KnowledgeIngestionProcessor,
     IngestionGateway,
     NormalizationService,
     {
@@ -48,7 +68,6 @@ import { serverConfig as config } from "@soustools/config/server";
       },
     },
   ],
-  exports: ["IVisionService", NormalizationService],
+  exports: ["IVisionService", NormalizationService, BullModule],
 })
 export class IngestionModule {}
-
