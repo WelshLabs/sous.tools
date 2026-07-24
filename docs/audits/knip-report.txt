@@ -114,7 +114,7 @@ scripts/generate-icons.mjs
 recharts                       apps/web/package.json:36:6                
 serwist                        apps/web/package.json:37:6                
 socket.io-client               apps/web/package.json:38:6                
-eslint-plugin-react            package.json:57:6                         
+eslint-plugin-react            package.json:59:6                         
 @infisical/sdk                 packages/config/package.json:22:6         
 dotenv                         packages/config/package.json:23:6         
 @radix-ui/react-dropdown-menu  packages/design-system/package.json:49:6  
@@ -126,7 +126,7 @@ sonner                         packages/domain-settings/package.json:41:6
 @modelcontextprotocol/sdk      packages/mcp-server/package.json          
 @octokit/rest                  packages/mcp-server/package.json          
 dotenv                         packages/mcp-server/package.json          
-[93m[4mUnused devDependencies[24m[39m (32)
+[93m[4mUnused devDependencies[24m[39m (33)
 @types/supertest                 apps/api/package.json:63:6              
 source-map-support               apps/api/package.json:66:6              
 supertest                        apps/api/package.json:67:6              
@@ -148,9 +148,10 @@ tailwindcss                      apps/web/package.json:52:6
 @soustools/api-types             package.json:28:6                       
 @soustools/config                package.json:29:6                       
 @soustools/tsconfig              package.json:31:6                       
-eslint-plugin-project-structure  package.json:35:6                       
-png-to-ico                       package.json:42:6                       
-sharp                            package.json:45:6                       
+@swc/cli                         package.json:32:6                       
+eslint-plugin-project-structure  package.json:37:6                       
+png-to-ico                       package.json:44:6                       
+sharp                            package.json:47:6                       
 tsx                              packages/config/package.json:31:6       
 autoprefixer                     packages/design-system/package.json:35:6
 postcss                          packages/design-system/package.json:39:6
@@ -248,19 +249,17 @@ BLOCK_GROUPS                                       packages/domain-signage/src/b
 default                                            packages/domain-signage/src/editor-top-bar.tsx:124:16                
 default                                            packages/domain-signage/src/layout-preview.tsx:130:16                
 SlideMiniature                           function  packages/domain-signage/src/slide-filmstrip-card.tsx:9:17            
-[93m[4mUnused exported types[24m[39m (85)
-SquareCatalogObject         interface  apps/api/src/modules/integrations/square-client.helper.ts:3:18                   
-POSCategoryUpsert           interface  apps/api/src/modules/integrations/square-mapper.helper.ts:74:18                  
-POSDiscountUpsert           interface  apps/api/src/modules/integrations/square-mapper.helper.ts:82:18                  
-POSOrderUpsert              interface  apps/api/src/modules/integrations/square-mapper.helper.ts:92:18                  
-POSModifierGroupUpsert      interface  apps/api/src/modules/integrations/square-mapper.helper.ts:106:18                 
-POSModifierOptionUpsert     interface  apps/api/src/modules/integrations/square-mapper.helper.ts:116:18                 
-POSItemUpsert               interface  apps/api/src/modules/integrations/square-mapper.helper.ts:127:18                 
-POSItemModifierGroupUpsert  interface  apps/api/src/modules/integrations/square-mapper.helper.ts:140:18                 
-POSTransactionUpsert        interface  apps/api/src/modules/integrations/square-mapper.helper.ts:145:18                 
-SquareModifier              interface  apps/api/src/modules/integrations/square-seed-types.ts:1:18                      
-SquareModifierListInfo      interface  apps/api/src/modules/integrations/square-seed-types.ts:10:18                     
-SquareVariation             interface  apps/api/src/modules/integrations/square-seed-types.ts:17:18                     
+[93m[4mUnused exported types[24m[39m (83)
+SquareCatalogObject         interface  apps/api/src/modules/integrations/drivers/square/square-client.helper.ts:3:18    
+POSOrderLineItemUpsert      interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:78:18   
+POSCategoryUpsert           interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:91:18   
+POSDiscountUpsert           interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:99:18   
+POSOrderUpsert              interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:109:18  
+POSModifierGroupUpsert      interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:123:18  
+POSModifierOptionUpsert     interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:133:18  
+POSItemUpsert               interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:144:18  
+POSItemModifierGroupUpsert  interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:157:18  
+POSTransactionUpsert        interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:162:18  
 StockRow                    interface  apps/api/src/modules/items/inventory.service.ts:29:18                            
 ClassifiedDietInfo          interface  apps/api/src/modules/items/items-query.helper.ts:22:18                           
 ApiResponse                 interface  apps/api/src/modules/items/items.controller.ts:14:18                             
