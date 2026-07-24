@@ -307,6 +307,7 @@ CREATE TABLE IF NOT EXISTS master_items (
   organization_id       UUID REFERENCES organizations(id) ON DELETE CASCADE,
   name                  TEXT NOT NULL,
   density_g_ml          NUMERIC NOT NULL DEFAULT 1.0,
+  standard_units        JSONB NOT NULL DEFAULT '{}'::jsonb,
   nutrition_macros      JSONB NOT NULL DEFAULT '{}'::jsonb,
   allergens             JSONB NOT NULL DEFAULT '[]'::jsonb,
   ingredient_type       TEXT CHECK (ingredient_type IN (
@@ -329,6 +330,8 @@ CREATE TABLE IF NOT EXISTS master_items (
   created_at            TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
   updated_at            TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
+
+CREATE OR REPLACE VIEW master_ingredients AS SELECT * FROM master_items;
 
 DROP POLICY IF EXISTS "org_members_full_crud_master_items" ON master_items;
 CREATE POLICY "org_members_full_crud_master_items" ON master_items
@@ -1299,7 +1302,81 @@ CREATE POLICY "org_members_full_crud_wastage_logs" ON public.wastage_logs
   WITH CHECK (is_org_member(organization_id));
 
 -- ---------------------------------------------------------------------------
--- 53. Functions & Vector RPCs
+-- 53. core_knowledge_vectors
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.core_knowledge_vectors (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE,
+  content         TEXT NOT NULL,
+  embedding       vector(768),
+  source_meta     JSONB NOT NULL DEFAULT '{}'::jsonb,
+  is_global       BOOLEAN DEFAULT false,
+  document_type   TEXT,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+DROP POLICY IF EXISTS "core_knowledge_vectors_select_policy" ON public.core_knowledge_vectors;
+CREATE POLICY "core_knowledge_vectors_select_policy" ON public.core_knowledge_vectors
+  FOR SELECT USING (is_global OR organization_id IS NULL OR is_org_member(organization_id));
+
+DROP POLICY IF EXISTS "org_members_crud_core_knowledge_vectors" ON public.core_knowledge_vectors;
+CREATE POLICY "org_members_crud_core_knowledge_vectors" ON public.core_knowledge_vectors
+  FOR ALL USING (organization_id IS NOT NULL AND is_org_member(organization_id))
+  WITH CHECK (organization_id IS NOT NULL AND is_org_member(organization_id));
+
+CREATE INDEX IF NOT EXISTS idx_core_knowledge_vectors_org ON public.core_knowledge_vectors(organization_id);
+CREATE INDEX IF NOT EXISTS idx_core_knowledge_vectors_global ON public.core_knowledge_vectors(is_global);
+CREATE INDEX IF NOT EXISTS idx_core_knowledge_vectors_doc_type ON public.core_knowledge_vectors(document_type);
+
+-- ---------------------------------------------------------------------------
+-- 54. tenant_library_books
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.tenant_library_books (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  title           TEXT NOT NULL,
+  file_url        TEXT NOT NULL,
+  total_pages     INTEGER DEFAULT 0,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
+  updated_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+);
+
+DROP POLICY IF EXISTS "org_members_full_crud_tenant_library_books" ON public.tenant_library_books;
+CREATE POLICY "org_members_full_crud_tenant_library_books" ON public.tenant_library_books
+  FOR ALL USING (is_org_member(organization_id))
+  WITH CHECK (is_org_member(organization_id));
+
+CREATE INDEX IF NOT EXISTS idx_tenant_library_books_org ON public.tenant_library_books(organization_id);
+
+-- ---------------------------------------------------------------------------
+-- 55. ingredient_substitutions
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.ingredient_substitutions (
+  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id          UUID REFERENCES public.organizations(id) ON DELETE CASCADE,
+  parent_ingredient_id     UUID NOT NULL REFERENCES public.master_items(id) ON DELETE CASCADE,
+  substitute_ingredient_id UUID NOT NULL REFERENCES public.master_items(id) ON DELETE CASCADE,
+  multiplier               NUMERIC NOT NULL DEFAULT 1.0,
+  impact_metrics           JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at               TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
+  updated_at               TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL,
+  CONSTRAINT uq_ingredient_substitutions UNIQUE NULLS NOT DISTINCT (organization_id, parent_ingredient_id, substitute_ingredient_id)
+);
+
+DROP POLICY IF EXISTS "ingredient_substitutions_select_policy" ON public.ingredient_substitutions;
+CREATE POLICY "ingredient_substitutions_select_policy" ON public.ingredient_substitutions
+  FOR SELECT USING (organization_id IS NULL OR is_org_member(organization_id));
+
+DROP POLICY IF EXISTS "org_members_crud_ingredient_substitutions" ON public.ingredient_substitutions;
+CREATE POLICY "org_members_crud_ingredient_substitutions" ON public.ingredient_substitutions
+  FOR ALL USING (organization_id IS NOT NULL AND is_org_member(organization_id))
+  WITH CHECK (organization_id IS NOT NULL AND is_org_member(organization_id));
+
+CREATE INDEX IF NOT EXISTS idx_ingredient_subs_parent ON public.ingredient_substitutions(parent_ingredient_id);
+CREATE INDEX IF NOT EXISTS idx_ingredient_subs_sub    ON public.ingredient_substitutions(substitute_ingredient_id);
+
+-- ---------------------------------------------------------------------------
+-- 56. Functions & Vector RPCs
 -- ---------------------------------------------------------------------------
 
 -- update_item_current_cost
@@ -1703,6 +1780,21 @@ CREATE TRIGGER on_wastage_log_sync
   AFTER INSERT OR UPDATE OR DELETE ON public.wastage_logs
   FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
 
+DROP TRIGGER IF EXISTS on_core_knowledge_vectors_sync ON public.core_knowledge_vectors;
+CREATE TRIGGER on_core_knowledge_vectors_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.core_knowledge_vectors
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+DROP TRIGGER IF EXISTS on_tenant_library_books_sync ON public.tenant_library_books;
+CREATE TRIGGER on_tenant_library_books_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.tenant_library_books
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
+DROP TRIGGER IF EXISTS on_ingredient_substitutions_sync ON public.ingredient_substitutions;
+CREATE TRIGGER on_ingredient_substitutions_sync
+  AFTER INSERT OR UPDATE OR DELETE ON public.ingredient_substitutions
+  FOR EACH ROW EXECUTE FUNCTION public.handle_neo4j_sync();
+
 -- ---------------------------------------------------------------------------
 -- 55. Views
 -- ---------------------------------------------------------------------------
@@ -1858,6 +1950,12 @@ ALTER TABLE invoice_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoice_items FORCE ROW LEVEL SECURITY;
 ALTER TABLE wastage_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wastage_logs FORCE ROW LEVEL SECURITY;
+ALTER TABLE core_knowledge_vectors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE core_knowledge_vectors FORCE ROW LEVEL SECURITY;
+ALTER TABLE tenant_library_books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tenant_library_books FORCE ROW LEVEL SECURITY;
+ALTER TABLE ingredient_substitutions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ingredient_substitutions FORCE ROW LEVEL SECURITY;
 
 -- ---------------------------------------------------------------------------
 -- 58. Schema Grants & Default Privileges

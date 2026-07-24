@@ -375,4 +375,24 @@ export const SCHEMA_REGISTRY: Record<string, RegistryConfig> = {
       { fkField: "recorded_by", relationLabel: "REPORTED_BY", targetLabel: "User" },
     ],
   },
+  core_knowledge_vectors: {
+    nodeLabel: "CoreKnowledgeVector",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  tenant_library_books: {
+    nodeLabel: "TenantLibraryBook",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
+  ingredient_substitutions: {
+    nodeLabel: "IngredientSubstitution",
+    relationships: [
+      { fkField: "parent_ingredient_id", relationLabel: "SUBSTITUTES_FOR", targetLabel: "MasterItem" },
+      { fkField: "substitute_ingredient_id", relationLabel: "SUBSTITUTE_WITH", targetLabel: "MasterItem" },
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+    ],
+  },
 };
