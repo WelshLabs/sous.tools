@@ -70,18 +70,18 @@
 │   │   │   │   ├── integrations
 │   │   │   │   │   ├── drivers
 │   │   │   │   │   │   ├── base.driver.ts
-│   │   │   │   │   │   └── square.driver.ts
-│   │   │   │   │   ├── google-drive.service.ts
+│   │   │   │   │   │   ├── google-drive
+│   │   │   │   │   │   │   └── google-drive.service.ts
+│   │   │   │   │   │   └── square
+│   │   │   │   │   │       ├── square-client.helper.ts
+│   │   │   │   │   │       ├── square-mapper.helper.ts
+│   │   │   │   │   │       ├── square-sync.helper.ts
+│   │   │   │   │   │       └── square.driver.ts
 │   │   │   │   │   ├── integrations.controller.ts
 │   │   │   │   │   ├── integrations.module.ts
 │   │   │   │   │   ├── integrations.service.ts
 │   │   │   │   │   ├── integrations.spec.ts
 │   │   │   │   │   ├── pos-sync.processor.ts
-│   │   │   │   │   ├── square-client.helper.ts
-│   │   │   │   │   ├── square-mapper.helper.ts
-│   │   │   │   │   ├── square-seed-types.ts
-│   │   │   │   │   ├── square-seed.helper.ts
-│   │   │   │   │   ├── square-sync.helper.ts
 │   │   │   │   │   ├── webhooks.controller.ts
 │   │   │   │   │   └── webhooks.spec.ts
 │   │   │   │   ├── items
@@ -1346,11 +1346,12 @@
 ├── supabase
 │   ├── config.toml
 │   ├── migrations
-│   │   └── 20260719000000_init.sql
+│   │   ├── 20260719000000_init.sql
+│   │   └── 20260724000000_create_pos_order_line_items.sql
 │   ├── seed.sql
 │   ├── seed.template.sql
 │   └── snippets
 │       └── Untitled query 242.sql
 └── turbo.json
 
-314 directories, 1040 files
+316 directories, 1039 files

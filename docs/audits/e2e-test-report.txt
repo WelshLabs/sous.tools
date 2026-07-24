@@ -4,45 +4,54 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing 5b0b254988a29a4b
+cache miss, executing be1d871e9e273df6
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing b0d2a2e94f9346cb
+cache miss, executing 1afb01851d3e67bb
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing fc84bb0aaa81af5e
+cache miss, executing 12707c983734c6e3
 $ tsc
 ::endgroup::
 [;31mpos-simulator:build[;0m
-cache miss, executing 7ff76bb3ee10fe6e
+cache miss, executing 2032a7039c87e0c4
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] FATAL: Missing Infisical credentials (INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). Process execution halted immediately.
 [ELIFECYCLE] Command failed with exit code 1.
-::group::web:build
-cache miss, executing 48b1a4552c716e13
-$ node ../../packages/config/dist/cli.js next build
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/setup-portal:build
-cache miss, executing faa793ea28b34bf5
-$ next build
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::api:build
-cache miss, executing 031af42a8b999a57
+cache miss, executing 5d79e632c29411e7
 $ nest build
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::cli:build
-cache miss, executing e7a8170572ad7b9b
+cache miss, executing c7f6346cf4fb4d33
 $ nest build
+-  TSC  Initializing type checker...
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::web:build
+cache miss, executing 9a7a43faab7f0c5f
+$ node ../../packages/config/dist/cli.js next build
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:build
+cache miss, executing 5450d09bad09477b
+$ next build
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+   ▲ Next.js 15.5.18
+
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    3 successful, 8 total
 Cached:    0 cached, 8 total
-  Time:    7.191s 
+  Time:    7.118s 
 Failed:    pos-simulator#build
 
