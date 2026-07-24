@@ -1,6 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { IntegrationsController } from "./integrations.controller";
 import { IntegrationsService } from "./integrations.service";
+import { SquareDriver } from "./drivers/square/square.driver";
+import { GoogleDriveService } from "./drivers/google-drive/google-drive.service";
 import { supabase } from "../../lib/supabase";
 
 jest.mock("../../lib/supabase", () => ({
@@ -21,7 +23,24 @@ describe("Integrations", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [IntegrationsController],
-      providers: [IntegrationsService],
+      providers: [
+        IntegrationsService,
+        {
+          provide: SquareDriver,
+          useValue: {
+            exchangeTokens: jest.fn(),
+            syncData: jest.fn(),
+            createOrder: jest.fn(),
+          },
+        },
+        {
+          provide: GoogleDriveService,
+          useValue: {
+            exchangeTokens: jest.fn(),
+            syncData: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<IntegrationsController>(IntegrationsController);

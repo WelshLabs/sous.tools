@@ -1,5 +1,6 @@
 import React from "react";
 import { clientConfig as config } from "@soustools/config/client";
+import { graphqlClient } from "@soustools/api-client/graphql";
 import { 
   RevenueChart, 
   TicketTimeChart, 
@@ -11,7 +12,7 @@ import {
 import type { RevenueData, TicketTimeData } from "@soustools/design-system";
 import { Activity, CircleDollarSign, Clock, Users } from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface DashboardStats {
   revenue: RevenueData[];
@@ -25,7 +26,46 @@ interface DashboardStats {
   };
 }
 
+const DASHBOARD_GRAPHQL_QUERY = `
+  query GetDashboardStats {
+    dashboardStats {
+      revenue {
+        name
+        value
+      }
+      ticketTimes {
+        time
+        minutes
+      }
+      inventoryAlerts {
+        item
+        status
+        quantity
+      }
+      summary {
+        totalOrders
+        averageTicketTime
+        dailyRevenue
+        activeTables
+      }
+    }
+  }
+`;
+
 async function getDashboardStats(): Promise<DashboardStats> {
+  // 1. Try GraphQL Query first via api-client
+  try {
+    const gqlRes = await graphqlClient.request<{ dashboardStats: DashboardStats }>(
+      DASHBOARD_GRAPHQL_QUERY
+    );
+    if (gqlRes.data?.dashboardStats) {
+      return gqlRes.data.dashboardStats;
+    }
+  } catch (gqlErr) {
+    console.warn("GraphQL Dashboard fetch failed, attempting REST fallback...", gqlErr);
+  }
+
+  // 2. REST Fallback
   const baseUrl = config.NEXT_PUBLIC_API_URL;
   try {
     const res = await fetch(`${baseUrl}/dashboard/stats`, {
@@ -36,18 +76,17 @@ async function getDashboardStats(): Promise<DashboardStats> {
     }
     return res.json();
   } catch (err) {
-    console.error("Dashboard fetch error:", err);
-    // Return fallback mock data if API is down
+    console.error("Dashboard REST fetch error:", err);
     return {
       revenue: [],
       ticketTimes: [],
       inventoryAlerts: [],
       summary: {
         totalOrders: 0,
-        averageTicketTime: 'N/A',
-        dailyRevenue: '$0',
+        averageTicketTime: "N/A",
+        dailyRevenue: "$0",
         activeTables: 0,
-      }
+      },
     };
   }
 }
@@ -155,9 +194,9 @@ export default async function DashboardPage() {
                     <span className="text-xs text-muted-foreground">Remaining: {alert.quantity}</span>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    alert.status === 'Critical' 
-                      ? 'bg-destructive/10 text-destructive' 
-                      : 'bg-primary/10 text-primary'
+                    alert.status === "Critical" 
+                      ? "bg-destructive/10 text-destructive" 
+                      : "bg-primary/10 text-primary"
                   }`}>
                     {alert.status}
                   </div>

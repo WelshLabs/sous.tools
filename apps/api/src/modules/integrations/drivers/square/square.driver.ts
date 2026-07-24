@@ -1,11 +1,60 @@
 import { BaseIntegrationDriver } from "../base.driver";
+import { IPosDriver, NormalizedPosEvent } from "../pos-driver.interface";
 import { Injectable } from "@nestjs/common";
 import { serverConfig as config } from "@soustools/config/server";
 import { supabase } from "../../../../lib/supabase";
 import * as crypto from "crypto";
 
 @Injectable()
-export class SquareDriver extends BaseIntegrationDriver {
+export class SquareDriver extends BaseIntegrationDriver implements IPosDriver {
+  verifyWebhookSignature(
+    signature: string,
+    rawBody: string,
+    signatureKey?: string
+  ): boolean {
+    const key = signatureKey || config.SQUARE_WEBHOOK_SIGNATURE_KEY;
+    if (config.IS_MOCK_ENV || !key) {
+      return true;
+    }
+    if (!signature) {
+      return false;
+    }
+
+    const notificationUrl = `${config.NEXT_PUBLIC_API_URL}/integrations/webhooks/square`;
+    const hash = crypto
+      .createHmac("sha256", String(key))
+      .update(notificationUrl + rawBody)
+      .digest("base64");
+
+    return hash === signature;
+  }
+
+  normalizeWebhookEvent(rawPayload: Record<string, unknown>): NormalizedPosEvent {
+    const eventId = String(rawPayload.event_id || rawPayload.eventId || "");
+    const merchantId = (rawPayload.merchant_id || rawPayload.merchantId) as string | undefined;
+    const rawType = String(rawPayload.type || "");
+
+    let eventType: NormalizedPosEvent["eventType"] = "unknown";
+    if (rawType.includes("catalog")) {
+      eventType = "catalog.updated";
+    } else if (rawType.includes("order")) {
+      eventType = "order.updated";
+    } else if (rawType.includes("inventory")) {
+      eventType = "inventory.updated";
+    }
+
+    const dataObj = (rawPayload.data || {}) as Record<string, unknown>;
+
+    return {
+      eventId,
+      merchantId,
+      eventType,
+      rawType,
+      data: dataObj,
+      createdAt: rawPayload.created_at as string | undefined,
+    };
+  }
+
   async exchangeTokens(code: string, orgId: string): Promise<any> {
     const isProd = config.SQUARE_ENVIRONMENT === "production";
     const baseUrl = isProd
@@ -46,7 +95,7 @@ export class SquareDriver extends BaseIntegrationDriver {
           merchant_id: data.merchant_id,
         },
       },
-      { onConflict: "organization_id,provider" },
+      { onConflict: "organization_id,provider" }
     );
 
     return data;
@@ -94,7 +143,7 @@ export class SquareDriver extends BaseIntegrationDriver {
     });
     if (!locRes.ok) {
       throw new Error(
-        `Failed to fetch Square locations: ${await locRes.text()}`,
+        `Failed to fetch Square locations: ${await locRes.text()}`
       );
     }
     const locData = await locRes.json();
@@ -116,7 +165,7 @@ export class SquareDriver extends BaseIntegrationDriver {
         name: item.name,
         quantity: String(item.quantity || 1),
         base_price_money: {
-          amount: Math.round(Number(item.price || 0) * 100), // convert to cents
+          amount: Math.round(Number(item.price || 0) * 100),
           currency: "USD",
         },
         modifiers: modifiers.length > 0 ? modifiers : undefined,

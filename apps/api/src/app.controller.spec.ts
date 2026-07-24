@@ -1,9 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-
-
-
+import { serverConfig as config } from "@soustools/config/server";
 
 describe("AppController", () => {
   let appController: AppController;
@@ -22,7 +20,7 @@ describe("AppController", () => {
       const response = appController.getHello();
       expect(response.success).toBe(true);
       expect(response.data?.message).toBe("Hello World from Sous Tools API!");
-      expect(response.data?.version).toBe("1.0.0");
+      expect(response.data?.version).toBe(config.APP_VERSION);
       expect(response.data?.status).toBe("healthy");
       expect(response.timestamp).toBeDefined();
     });

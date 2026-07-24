@@ -1,6 +1,6 @@
 "use client";
 
-
+import React, { useMemo } from "react";
 import {
   Input,
   Chip,
@@ -30,6 +30,31 @@ export function POSCatalog({
   onCategorySelect,
   onItemClick,
 }: POSCatalogProps) {
+  // Deduplicate and filter out empty or non-string categories
+  const sanitizedCategories = useMemo(() => {
+    const validCats = (categories || []).filter(
+      (cat): cat is string => typeof cat === "string" && cat.trim().length > 0
+    );
+    return Array.from(new Set(validCats));
+  }, [categories]);
+
+  // Deduplicate items based on id/name and filter out corrupt items
+  const sanitizedItems = useMemo(() => {
+    const seenIds = new Set<string>();
+    const validItems: CatalogItem[] = [];
+
+    (items || []).forEach((item) => {
+      if (!item || (!item.id && !item.name)) return;
+      const dedupeKey = item.id ? String(item.id) : item.name;
+      if (!seenIds.has(dedupeKey)) {
+        seenIds.add(dedupeKey);
+        validItems.push(item);
+      }
+    });
+
+    return validItems;
+  }, [items]);
+
   return (
     <div className="flex flex-col gap-6">
       {/* Search Bar */}
@@ -50,9 +75,9 @@ export function POSCatalog({
         >
           All Items
         </Chip>
-        {categories.map((category) => (
+        {sanitizedCategories.map((category, index) => (
           <Chip
-            key={category}
+            key={`${category}-${index}`}
             selected={selectedCategory === category}
             onClick={() => onCategorySelect(category)}
           >
@@ -63,11 +88,12 @@ export function POSCatalog({
 
       {/* Catalog Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {items.map((item) => {
+        {sanitizedItems.map((item, index) => {
           const isSoldOut = item.isSoldOut ?? false;
+          const compositeKey = `${item.id || item.name || "item"}-${index}`;
           return (
             <button
-              key={item.id}
+              key={compositeKey}
               disabled={isSoldOut}
               onClick={() => onItemClick(item)}
               className="group text-left transition-transform duration-100 hover:scale-[1.01] active:scale-95 disabled:pointer-events-none disabled:opacity-50"

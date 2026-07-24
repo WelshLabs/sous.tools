@@ -1,42 +1,56 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { WebhooksController } from "./webhooks.controller";
+import { PosWebhookController } from "./pos-webhook.controller";
 import { Queue } from "bullmq";
 import { getQueueToken } from "@nestjs/bullmq";
 import { supabase } from "../../lib/supabase";
 import { UnauthorizedException, NotFoundException } from "@nestjs/common";
 import { Request } from "express";
+import { SquareDriver } from "./drivers/square/square.driver";
 
 jest.mock("../../lib/supabase", () => ({
   supabase: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    delete: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    from: jest.fn(),
   },
 }));
 
-describe("WebhooksController", () => {
-  let controller: WebhooksController;
+describe("PosWebhookController", () => {
+  let controller: PosWebhookController;
   let queue: Queue;
 
   const mockQueue = {
     add: jest.fn(),
   };
 
+  const mockSquareDriver = {
+    verifyWebhookSignature: jest.fn().mockReturnValue(true),
+    normalizeWebhookEvent: jest.fn((payload) => ({
+      eventId: payload.event_id || "",
+      merchantId: payload.merchant_id,
+      eventType: "catalog.updated",
+      data: payload.data || {},
+    })),
+  };
+
   beforeEach(async () => {
     mockQueue.add.mockReset();
+    jest.clearAllMocks();
+    mockSquareDriver.verifyWebhookSignature.mockReturnValue(true);
+
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [WebhooksController],
+      controllers: [PosWebhookController],
       providers: [
         {
           provide: getQueueToken("pos-sync"),
           useValue: mockQueue,
         },
+        {
+          provide: SquareDriver,
+          useValue: mockSquareDriver,
+        },
       ],
     }).compile();
 
-    controller = module.get<WebhooksController>(WebhooksController);
+    controller = module.get<PosWebhookController>(PosWebhookController);
     queue = module.get<Queue>(getQueueToken("pos-sync"));
   });
 
@@ -66,10 +80,19 @@ describe("WebhooksController", () => {
       ),
     } as unknown as Request;
 
-    (supabase.from as jest.Mock).mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
+      if (table === "processed_webhook_events") {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
     });
 
     await expect(
@@ -89,14 +112,30 @@ describe("WebhooksController", () => {
       ),
     } as unknown as Request;
 
-    (supabase.from as jest.Mock).mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockResolvedValue({ error: null }),
-      maybeSingle: jest.fn().mockResolvedValue({
-        data: { organization_id: "org-uuid-123" },
-        error: null,
-      }),
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
+      if (table === "processed_webhook_events") {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          insert: jest.fn().mockResolvedValue({ error: null }),
+          maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+        };
+      }
+      if (table === "integrations") {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({
+            data: { organization_id: "org-uuid-123", settings: {} },
+            error: null,
+          }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+      };
     });
 
     const result = await controller.handleWebhook("square", "sig", "", mockReq);
@@ -104,6 +143,7 @@ describe("WebhooksController", () => {
     expect(queue.add).toHaveBeenCalledWith("pos-sync-job", {
       orgId: "org-uuid-123",
       type: "webhook-inventory",
+      eventType: "catalog.updated",
       payload: { id: "event-1", object: { key: "val" } },
     });
   });
