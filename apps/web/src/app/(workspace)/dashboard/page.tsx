@@ -1,6 +1,6 @@
 import React from "react";
 import { clientConfig as config } from "@soustools/config/client";
-import { graphqlClient } from "@soustools/api-client/graphql";
+import { graphqlClient } from "@soustools/api-client";
 import { 
   RevenueChart, 
   TicketTimeChart, 
