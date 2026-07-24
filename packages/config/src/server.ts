@@ -12,16 +12,30 @@ export const serverSchema = z.object({
 
   NEXT_PUBLIC_API_URL: z.string().default("http://localhost:3001"),
   NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
-  NEXT_PUBLIC_SUPABASE_URL: z.string().default("https://placeholder-project.supabase.co"),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().default("https://placeholder-project.supabase.co"),
+  NEXT_PUBLIC_SUPABASE_URL: z
+    .string()
+    .default("https://placeholder-project.supabase.co"),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z
+    .string()
+    .default("https://placeholder-project.supabase.co"),
   NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY: z.string().optional().default(""),
 
-  SUPABASE_ACCESS_TOKEN: z.string().default("placeholder-service-role-key-from-mock-sync"),
-  SUPABASE_PROJECT_TOKEN: z.string().default("placeholder-service-role-key-from-mock-sync"),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().default("placeholder-service-role-key-from-mock-sync"),
+  SUPABASE_ACCESS_TOKEN: z
+    .string()
+    .default("placeholder-service-role-key-from-mock-sync"),
+  SUPABASE_PROJECT_TOKEN: z
+    .string()
+    .default("placeholder-service-role-key-from-mock-sync"),
+  SUPABASE_SERVICE_ROLE_KEY: z
+    .string()
+    .default("placeholder-service-role-key-from-mock-sync"),
   SUPABASE_URL: z.string().default("https://placeholder-project.supabase.co"),
-  SUPABASE_DIRECT_URL: z.string().default("https://placeholder-project.supabase.co"),
-  SUPABASE_WEBHOOK_SECRET: z.string().default("sous-tools-neo4j-sync-secret-key"),
+  SUPABASE_DIRECT_URL: z
+    .string()
+    .default("https://placeholder-project.supabase.co"),
+  SUPABASE_WEBHOOK_SECRET: z
+    .string()
+    .default("sous-tools-neo4j-sync-secret-key"),
 
   GITHUB_ID: z.string().optional().default(""),
   GITHUB_SECRET: z.string().optional().default(""),
@@ -38,7 +52,7 @@ export const serverSchema = z.object({
   SQUARE_CLIENT_ID: z.string().optional().default(""),
   SQUARE_CLIENT_SECRET: z.string().optional().default(""),
   SQUARE_ENVIRONMENT: z.string().default("sandbox"),
-  PRODUCTION_SQUARE_ACCESS_TOKEN: z.string().optional().default(""),
+  SQUARE_ACCESS_TOKEN: z.string().optional().default(""),
   SQUARE_WEBHOOK_SIGNATURE_KEY: z.string().optional().default(""),
 
   USDA_FDC_API_KEY: z.string().optional().default("DEMO_KEY"),
@@ -76,7 +90,8 @@ export const serverConfig: ServerConfig = serverSchema.parse({
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY: process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
+  NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY:
+    process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
 
   SUPABASE_ACCESS_TOKEN: process.env.SUPABASE_ACCESS_TOKEN,
   SUPABASE_PROJECT_TOKEN: process.env.SUPABASE_PROJECT_TOKEN,
@@ -100,7 +115,7 @@ export const serverConfig: ServerConfig = serverSchema.parse({
   SQUARE_CLIENT_ID: process.env.SQUARE_CLIENT_ID,
   SQUARE_CLIENT_SECRET: process.env.SQUARE_CLIENT_SECRET,
   SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT,
-  PRODUCTION_SQUARE_ACCESS_TOKEN: process.env.PRODUCTION_SQUARE_ACCESS_TOKEN,
+  SQUARE_ACCESS_TOKEN: process.env.SQUARE_ACCESS_TOKEN,
   SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY,
 
   USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY,

@@ -2,14 +2,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 
-// Mock the config module to provide SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
-// Ensure the path to config is correct relative to app.controller.spec.ts
-jest.mock("../lib/config", () => ({
-  config: {
-    SUPABASE_URL: "http://localhost:54321", // Dummy URL for testing
-    SUPABASE_SERVICE_ROLE_KEY: "dummy-service-role-key",
-  },
-}));
+
+
 
 describe("AppController", () => {
   let appController: AppController;

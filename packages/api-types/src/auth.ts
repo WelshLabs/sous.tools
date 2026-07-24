@@ -16,3 +16,9 @@ export const PasswordUpdateSchema = z.object({
 });
 
 export type PasswordUpdateDto = z.infer<typeof PasswordUpdateSchema>;
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export type ForgotPasswordDto = z.infer<typeof ForgotPasswordSchema>;

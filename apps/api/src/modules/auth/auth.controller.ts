@@ -7,10 +7,12 @@ import {
   Req,
   HttpCode,
   UnauthorizedException,
+  BadRequestException,
+  Query,
 } from "@nestjs/common";
-import type { Response } from "express";
+import type { Response, Request } from "express";
 import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse, ApiProperty } from "@nestjs/swagger";
-import { type ApiResponse, LoginSchema } from "@soustools/api-types";
+import { type ApiResponse, LoginSchema, ForgotPasswordSchema } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
 import { serverConfig as config } from "@soustools/config/server";
 
@@ -39,6 +41,21 @@ const getCookieOptions = () => {
   };
 };
 
+/** Applies both access and refresh token cookies from a Supabase session. */
+const setSessionCookies = (res: Response, session: { access_token: string; refresh_token: string; expires_in: number }) => {
+  const options = getCookieOptions();
+  res.cookie(ACCESS_TOKEN_COOKIE, session.access_token, {
+    ...options,
+    maxAge: session.expires_in * 1000,
+  });
+  res.cookie(REFRESH_TOKEN_COOKIE, session.refresh_token, {
+    ...options,
+    maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
+  });
+};
+
+// ── Swagger DTOs ──────────────────────────────────────────────────────────────
+
 class LoginDto {
   @ApiProperty()
   email!: string;
@@ -46,9 +63,18 @@ class LoginDto {
   password!: string;
 }
 
+class ForgotPasswordDto {
+  @ApiProperty()
+  email!: string;
+}
+
+// ── Controller ────────────────────────────────────────────────────────────────
+
 @ApiTags("auth")
 @Controller("auth")
 export class AuthController {
+  // ── Email / Password ──────────────────────────────────────────────────────
+
   @Post("login")
   @HttpCode(200)
   @ApiBody({ type: LoginDto })
@@ -57,29 +83,20 @@ export class AuthController {
     @Body() body: Record<string, unknown>,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
-    
     const parsed = LoginSchema.safeParse(body);
     if (!parsed.success) {
       throw new UnauthorizedException("Invalid request body");
     }
 
     const { email, password } = parsed.data;
-    
+
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
+
     if (error || !data.session) {
       throw new UnauthorizedException("Invalid email or password");
     }
 
-    const options = getCookieOptions();
-    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
-      ...options,
-      maxAge: data.session.expires_in * 1000,
-    });
-    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
-      ...options,
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-    });
+    setSessionCookies(res, data.session);
 
     return {
       success: true,
@@ -92,10 +109,10 @@ export class AuthController {
   @HttpCode(200)
   @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
   async refresh(
-    @Req() req: any,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<null>> {
-    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE];
+    const refreshToken = (req.cookies as Record<string, string>)?.[REFRESH_TOKEN_COOKIE];
     if (!refreshToken) {
       throw new UnauthorizedException("No refresh token found");
     }
@@ -108,15 +125,7 @@ export class AuthController {
       throw new UnauthorizedException("Session refresh failed");
     }
 
-    const options = getCookieOptions();
-    res.cookie(ACCESS_TOKEN_COOKIE, data.session.access_token, {
-      ...options,
-      maxAge: data.session.expires_in * 1000,
-    });
-    res.cookie(REFRESH_TOKEN_COOKIE, data.session.refresh_token, {
-      ...options,
-      maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
-    });
+    setSessionCookies(res, data.session);
 
     return {
       success: true,
@@ -129,12 +138,12 @@ export class AuthController {
   @HttpCode(200)
   @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
   async logout(
-    @Req() req: any,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<null>> {
     // Attempt to invalidate the Supabase session server-side using the
     // access token stored in the HttpOnly cookie.
-    const accessToken = req.cookies?.[ACCESS_TOKEN_COOKIE];
+    const accessToken = (req.cookies as Record<string, string>)?.[ACCESS_TOKEN_COOKIE];
     if (accessToken) {
       try {
         await supabase.auth.admin.signOut(accessToken);
@@ -160,9 +169,9 @@ export class AuthController {
   @Get("session")
   @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
   async getSession(
-    @Req() req: any,
+    @Req() req: Request,
   ): Promise<ApiResponse<{ user: Record<string, unknown> | null }>> {
-    const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
+    const token = (req.cookies as Record<string, string>)?.[ACCESS_TOKEN_COOKIE];
     if (!token) {
       return {
         success: true,
@@ -185,5 +194,130 @@ export class AuthController {
       data: { user: data.user as unknown as Record<string, unknown> },
       timestamp: new Date().toISOString(),
     };
+  }
+
+  // ── Forgot Password ───────────────────────────────────────────────────────
+
+  /**
+   * Accepts an email address and triggers a Supabase password-reset email.
+   * Always returns success (200) to prevent user enumeration — the caller
+   * should display "check your inbox" regardless of whether the address exists.
+   */
+  @Post("forgot-password")
+  @HttpCode(200)
+  @ApiBody({ type: ForgotPasswordDto })
+  @NestjsApiResponse({ status: 200, description: "Reset email sent (or silently skipped if user not found)", schema: { type: "object", additionalProperties: true } })
+  async forgotPassword(
+    @Body() body: Record<string, unknown>,
+  ): Promise<ApiResponse<null>> {
+    const parsed = ForgotPasswordSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException("A valid email address is required");
+    }
+
+    const redirectTo = `${config.NEXT_PUBLIC_APP_URL}/reset-password`;
+
+    // Fire-and-forget: we intentionally swallow errors to prevent user enumeration.
+    try {
+      await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo });
+    } catch {
+      // Silently swallowed — do not leak whether the address exists.
+    }
+
+    return {
+      success: true,
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // ── OAuth ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Initiates a Supabase OAuth sign-in for Google.
+   * The browser is redirected to Google's consent screen; after approval
+   * Google redirects back to GET /auth/callback which exchanges the code
+   * for a session and sets HttpOnly cookies.
+   */
+  @Get("google")
+  @NestjsApiResponse({ status: 302, description: "Redirect to Google OAuth" })
+  async googleOAuth(@Res() res: Response): Promise<void> {
+    return this.initiateOAuth(res, "google");
+  }
+
+  /**
+   * Initiates a Supabase OAuth sign-in for GitHub.
+   * The browser is redirected to GitHub's consent screen; after approval
+   * GitHub redirects back to GET /auth/callback which exchanges the code
+   * for a session and sets HttpOnly cookies.
+   */
+  @Get("github")
+  @NestjsApiResponse({ status: 302, description: "Redirect to GitHub OAuth" })
+  async githubOAuth(@Res() res: Response): Promise<void> {
+    return this.initiateOAuth(res, "github");
+  }
+
+  /**
+   * OAuth callback — receives the authorization code from Supabase after the
+   * user consents on the provider's screen. Exchanges the code for a full
+   * Supabase session, writes HttpOnly cookies, then redirects the user to
+   * the Next.js app.
+   *
+   * The `redirectTo` passed during initiation must match the value registered
+   * in the Supabase dashboard under Authentication → URL Configuration →
+   * Redirect URLs.
+   */
+  @Get("callback")
+  @NestjsApiResponse({ status: 302, description: "Exchange OAuth code for session and redirect to app" })
+  async oauthCallback(
+    @Query("code") code: string,
+    @Query("error") oauthError: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    // Surface provider-level errors back to the login page.
+    if (oauthError || !code) {
+      const errorMsg = encodeURIComponent(oauthError ?? "OAuth sign-in was cancelled or failed.");
+      res.redirect(`${config.NEXT_PUBLIC_APP_URL}/login?error=${errorMsg}`);
+      return;
+    }
+
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error || !data.session) {
+      const errorMsg = encodeURIComponent("Failed to complete OAuth sign-in. Please try again.");
+      res.redirect(`${config.NEXT_PUBLIC_APP_URL}/login?error=${errorMsg}`);
+      return;
+    }
+
+    setSessionCookies(res, data.session);
+
+    // Redirect the browser to the main app — the HttpOnly session cookies are
+    // now set and the Next.js app will detect the active session on the next
+    // page load.
+    res.redirect(`${config.NEXT_PUBLIC_APP_URL}/home`);
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  private async initiateOAuth(
+    res: Response,
+    provider: "google" | "github",
+  ): Promise<void> {
+    const callbackUrl = `${config.NEXT_PUBLIC_API_URL}/auth/callback`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: callbackUrl,
+        // Skip the browser prompt on re-auth when a valid session already exists.
+        skipBrowserRedirect: true,
+      },
+    });
+
+    if (error || !data.url) {
+      throw new UnauthorizedException(`Failed to initiate ${provider} OAuth flow`);
+    }
+
+    res.redirect(data.url);
   }
 }

@@ -14,32 +14,64 @@ interface StaticSeedItem {
 }
 
 const STATIC_SEED_ITEMS: StaticSeedItem[] = [
-  { name: "Truffle Burger", description: "Rich truffle burger", price: 1800, squareId: "item_truffle_burger" },
-  { name: "Maine Lobster Roll", description: "Fresh Maine lobster roll", price: 2600, squareId: "item_lobster_roll" },
-  { name: "Caesar Salad", description: "Classic caesar salad", price: 1200, squareId: "item_caesar_salad" },
-  { name: "Latte", description: "Espresso with steamed milk", price: 450, squareId: "item_latte" },
-  { name: "Croissant", description: "Flaky butter croissant", price: 400, squareId: "item_croissant" },
+  {
+    name: "Truffle Burger",
+    description: "Rich truffle burger",
+    price: 1800,
+    squareId: "item_truffle_burger",
+  },
+  {
+    name: "Maine Lobster Roll",
+    description: "Fresh Maine lobster roll",
+    price: 2600,
+    squareId: "item_lobster_roll",
+  },
+  {
+    name: "Caesar Salad",
+    description: "Classic caesar salad",
+    price: 1200,
+    squareId: "item_caesar_salad",
+  },
+  {
+    name: "Latte",
+    description: "Espresso with steamed milk",
+    price: 450,
+    squareId: "item_latte",
+  },
+  {
+    name: "Croissant",
+    description: "Flaky butter croissant",
+    price: 400,
+    squareId: "item_croissant",
+  },
 ];
 
 export async function seedSquareCatalog(accessToken: string): Promise<void> {
   const sandboxBaseUrl = getSquareBaseUrl();
-  const prodToken = config.PRODUCTION_SQUARE_ACCESS_TOKEN;
+  const prodToken = config.SQUARE_ACCESS_TOKEN;
 
   let objects: SquareObject[] = [];
 
   if (prodToken && !prodToken.includes("placeholder")) {
-    console.log("[Square Seeding] Production token found. Querying production catalog...");
+    console.log(
+      "[Square Seeding] Production token found. Querying production catalog...",
+    );
     try {
-      const itemsRes = await fetch("https://connect.squareup.com/v2/catalog/list?types=ITEM", {
-        headers: {
-          Authorization: `Bearer ${prodToken}`,
-          "Square-Version": "2024-03-20",
-          "Content-Type": "application/json",
+      const itemsRes = await fetch(
+        "https://connect.squareup.com/v2/catalog/list?types=ITEM",
+        {
+          headers: {
+            Authorization: `Bearer ${prodToken}`,
+            "Square-Version": "2024-03-20",
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (itemsRes.ok) {
-        const itemsData = (await itemsRes.json()) as { objects?: SquareObject[] };
+        const itemsData = (await itemsRes.json()) as {
+          objects?: SquareObject[];
+        };
         const prodItems = (itemsData.objects || []).slice(0, 8);
 
         if (prodItems.length > 0) {
@@ -54,16 +86,23 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
 
           const modLists: SquareObject[] = [];
           if (referencedModListIds.size > 0) {
-            console.log(`[Square Seeding] Fetching ${referencedModListIds.size} referenced modifier lists...`);
-            const modListsRes = await fetch("https://connect.squareup.com/v2/catalog/list?types=MODIFIER_LIST", {
-              headers: {
-                Authorization: `Bearer ${prodToken}`,
-                "Square-Version": "2024-03-20",
-                "Content-Type": "application/json",
+            console.log(
+              `[Square Seeding] Fetching ${referencedModListIds.size} referenced modifier lists...`,
+            );
+            const modListsRes = await fetch(
+              "https://connect.squareup.com/v2/catalog/list?types=MODIFIER_LIST",
+              {
+                headers: {
+                  Authorization: `Bearer ${prodToken}`,
+                  "Square-Version": "2024-03-20",
+                  "Content-Type": "application/json",
+                },
               },
-            });
+            );
             if (modListsRes.ok) {
-              const modListsData = (await modListsRes.json()) as { objects?: SquareObject[] };
+              const modListsData = (await modListsRes.json()) as {
+                objects?: SquareObject[];
+              };
               (modListsData.objects || []).forEach((modList) => {
                 if (referencedModListIds.has(modList.id)) {
                   modLists.push(modList);
@@ -80,11 +119,16 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
             objects.push(mapItemToSandbox(item));
           });
 
-          console.log(`[Square Seeding] Successfully mapped ${objects.length} objects from production.`);
+          console.log(
+            `[Square Seeding] Successfully mapped ${objects.length} objects from production.`,
+          );
         }
       }
     } catch (err) {
-      console.error("[Square Seeding] Failed to read production catalog. Falling back to static seed...", err);
+      console.error(
+        "[Square Seeding] Failed to read production catalog. Falling back to static seed...",
+        err,
+      );
     }
   }
 
@@ -111,7 +155,9 @@ export async function seedSquareCatalog(accessToken: string): Promise<void> {
     }));
   }
 
-  console.log(`[Square Seeding] Sending batch-upsert with ${objects.length} objects to Sandbox...`);
+  console.log(
+    `[Square Seeding] Sending batch-upsert with ${objects.length} objects to Sandbox...`,
+  );
   const res = await fetch(`${sandboxBaseUrl}/v2/catalog/batch-upsert`, {
     method: "POST",
     headers: {
