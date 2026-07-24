@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { Settings, CheckCircle, AlertTriangle, Clock, ChevronLeft, Check, StrikeThrough } from "lucide-react";
+import { Settings, CheckCircle, AlertTriangle, Clock, ChevronLeft, Check } from "lucide-react";
 import { Button, OmniBar } from "@soustools/design-system";
 import { type KDSTicket, type KDSTicketItem } from "./kds.types";
 

@@ -92,20 +92,6 @@ export const reconcileInventoryTool: FunctionDeclaration = {
   },
 };
 
-export const ALL_COMMAND_TOOLS: FunctionDeclaration[] = [
-  addToPurchaseOrderTool,
-  addToWhiteboardTool,
-  getRecipeCostTool,
-  ingestVendorInvoiceTool,
-  updateItemStatusTool,
-  adjustThrottleTimeTool,
-  reconcileInventoryTool,
-  executeCypherQueryTool,
-  renderUiComponentTool,
-  enqueueBackgroundTaskTool,
-  ingestKnowledgeSourceTool,
-  searchTheWebTool,
-];
 
 // ─── V1 ReAct Tool Registry ───────────────────────────────────────────────────
 
@@ -216,3 +202,17 @@ export const searchTheWebTool: FunctionDeclaration = {
   },
 };
 
+export const ALL_COMMAND_TOOLS: FunctionDeclaration[] = [
+  addToPurchaseOrderTool,
+  addToWhiteboardTool,
+  getRecipeCostTool,
+  ingestVendorInvoiceTool,
+  updateItemStatusTool,
+  adjustThrottleTimeTool,
+  reconcileInventoryTool,
+  executeCypherQueryTool,
+  renderUiComponentTool,
+  enqueueBackgroundTaskTool,
+  ingestKnowledgeSourceTool,
+  searchTheWebTool,
+];

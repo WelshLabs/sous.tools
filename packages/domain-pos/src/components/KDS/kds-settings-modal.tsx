@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Settings, Volume2, VolumeX, Search, PackageX, Eye, EyeOff } from "lucide-react";
 
 interface KDSSettingsModalProps {
