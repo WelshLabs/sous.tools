@@ -306,6 +306,17 @@ export const SCHEMA_REGISTRY: Record<string, RegistryConfig> = {
       { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
     ],
   },
+  pos_order_line_items: {
+    isJoinTable: true,
+    relationLabel: "CONTAINS_ITEM",
+    source: { fkField: "pos_order_id", targetLabel: "PosOrder" },
+    target: { fkField: "pos_item_id", targetLabel: "PosItem" },
+    customProperties: (record) => ({
+      quantity: record.quantity ? parseFloat(record.quantity) : 1,
+      basePriceMoney: record.base_price_money ? parseFloat(record.base_price_money) : 0,
+      grossSalesMoney: record.gross_sales_money ? parseFloat(record.gross_sales_money) : 0,
+    }),
+  },
   tickets: {
     nodeLabel: "Ticket",
     relationships: [

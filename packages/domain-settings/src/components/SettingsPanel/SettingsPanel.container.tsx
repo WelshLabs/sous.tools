@@ -35,7 +35,7 @@ export interface SettingsPanelProps {
   integrations: IntegrationStatus[];
   onConnectIntegration: (provider: string) => void;
   onDisconnectIntegration: (provider: string) => Promise<void>;
-  onSquareAction: (action: "sync" | "seed") => Promise<void>;
+  onSquareAction: (action: "sync") => Promise<void>;
   isDev?: boolean;
   
   isDriveOpen?: boolean;
@@ -150,13 +150,13 @@ export function SettingsPanel({
     }
   };
 
-  const handleSquareAction = async (action: "sync" | "seed") => {
+  const handleSquareAction = async (action: "sync") => {
     setActionLoading(true); setNotification(null);
     try {
       await onSquareAction(action);
-      setNotification({ type: "success", message: action === "sync" ? "Square menu catalog synchronized successfully!" : "Square sandbox catalog seeded successfully!" });
+      setNotification({ type: "success", message: "Square menu catalog synchronized successfully!" });
     } catch (err: any) {
-      setNotification({ type: "error", message: err.message || `Failed to ${action} catalog.` });
+      setNotification({ type: "error", message: err.message || "Failed to sync catalog." });
     } finally {
       setActionLoading(false);
     }

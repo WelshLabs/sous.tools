@@ -160,26 +160,24 @@ export function SettingsClient({
     }
   };
 
-  const handleSquareAction = async (action: "sync" | "seed") => {
+  const handleSquareAction = async (action: "sync") => {
     const res = await fetch(`${getApiBase()}/integrations/square/${action}?orgId=default`, {
       method: "POST",
     });
-    if (!res.ok) throw new Error(`Failed to ${action}`);
+    if (!res.ok) throw new Error("Failed to sync catalog");
   };
 
-  const handleSquareActionWrapper = async (action: "sync" | "seed") => {
+  const handleSquareActionWrapper = async (action: "sync") => {
     setActionLoading(true);
     setNotification(null);
     try {
       await handleSquareAction(action);
       setNotification({
         type: "success",
-        message: action === "sync"
-          ? "Square menu catalog synchronized successfully!"
-          : "Square sandbox catalog seeded successfully!",
+        message: "Square menu catalog synchronized successfully!",
       });
     } catch (err: any) {
-      setNotification({ type: "error", message: err.message || `Failed to ${action} catalog.` });
+      setNotification({ type: "error", message: err.message || "Failed to sync catalog." });
     } finally {
       setActionLoading(false);
     }

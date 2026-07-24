@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { getSquareBaseUrl, getVariationAndLocationId } from "../integrations/square-sync.helper";
+import { getSquareBaseUrl, getVariationAndLocationId } from "../integrations/drivers/square/square-sync.helper";
 
 export { getMockItems } from "./pos-simulator.mock";
 export type { MockPosItem } from "./pos-simulator.mock";

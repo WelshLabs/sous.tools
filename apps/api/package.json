@@ -89,6 +89,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@soustools/config$": "<rootDir>/../../../packages/config/src/server.ts",
+      "^@soustools/config/(.*)$": "<rootDir>/../../../packages/config/src/$1"
+    }
   }
 }

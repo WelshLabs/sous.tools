@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 import { IngestionPayload } from "@soustools/api-types";
-import { GoogleDriveService } from "../integrations/google-drive.service";
+import { GoogleDriveService } from "../integrations/drivers/google-drive/google-drive.service";
 import { supabase } from "../../lib/supabase";
 import { Inject } from "@nestjs/common";
 import { type IVisionService } from "./IVisionService";

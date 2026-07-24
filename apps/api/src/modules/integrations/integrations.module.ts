@@ -4,8 +4,8 @@ import { IntegrationsController } from "./integrations.controller";
 import { IntegrationsService } from "./integrations.service";
 import { WebhooksController } from "./webhooks.controller";
 import { PosSyncProcessor } from "./pos-sync.processor";
-import { GoogleDriveService } from "./google-drive.service";
-import { SquareDriver } from "./drivers/square.driver";
+import { GoogleDriveService } from "./drivers/google-drive/google-drive.service";
+import { SquareDriver } from "./drivers/square/square.driver";
 
 /**
  * Module responsible for third-party integrations and POS synchronization.

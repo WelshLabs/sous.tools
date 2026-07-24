@@ -2,8 +2,8 @@ import { Injectable, NotFoundException, Inject } from "@nestjs/common";
 import { serverConfig as config } from "@soustools/config/server";
 import { IntegrationStatus } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
-import { seedSquareCatalog, syncSquareCatalog } from "./square-sync.helper";
-import { SquareDriver } from "./drivers/square.driver";
+import { syncSquareCatalog } from "./drivers/square/square-sync.helper";
+import { SquareDriver } from "./drivers/square/square.driver";
 
 @Injectable()
 export class IntegrationsService {
@@ -16,7 +16,10 @@ export class IntegrationsService {
     return this.squareDriver.createOrder(orgId, orderData);
   }
   getOAuthUrl(provider: string, orgId?: string): string {
-    const state = !orgId || orgId === "default" ? "d0000000-0000-0000-0000-000000000000" : orgId;
+    const state =
+      !orgId || orgId === "default"
+        ? "d0000000-0000-0000-0000-000000000000"
+        : orgId;
     if (provider === "square") {
       const baseUrl = "https://connect.squareup.com";
       const scope =
@@ -93,6 +96,7 @@ export class IntegrationsService {
     const baseUrl = isProd
       ? "https://connect.squareup.com"
       : "https://connect.squareupsandbox.com";
+
     const res = await fetch(`${baseUrl}/oauth2/token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -101,11 +105,14 @@ export class IntegrationsService {
         client_secret: config.SQUARE_CLIENT_SECRET,
         code,
         grant_type: "authorization_code",
+        redirect_uri: `${config.NEXT_PUBLIC_API_URL}/integrations/callback/square`,
         short_lived: false,
       }),
     });
+
     if (!res.ok)
       throw new Error(`Square token exchange failed: ${await res.text()}`);
+
     const tokenData = (await res.json()) as {
       access_token: string;
       refresh_token?: string;
@@ -209,19 +216,5 @@ export class IntegrationsService {
         "No active Square integration found for this organization",
       );
     await syncSquareCatalog(integration.access_token, orgId, supabase);
-  }
-
-  async seedSquareCatalog(orgId: string): Promise<void> {
-    const { data: integration } = await supabase
-      .from("integrations")
-      .select("access_token")
-      .eq("organization_id", orgId)
-      .eq("provider", "SQUARE")
-      .single();
-    if (!integration)
-      throw new NotFoundException(
-        "No active Square integration found for this organization",
-      );
-    await seedSquareCatalog(integration.access_token);
   }
 }

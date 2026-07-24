@@ -1,7 +1,7 @@
-import { BaseIntegrationDriver } from "./base.driver";
+import { BaseIntegrationDriver } from "../base.driver";
 import { Injectable } from "@nestjs/common";
 import { serverConfig as config } from "@soustools/config/server";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "../../../../lib/supabase";
 import * as crypto from "crypto";
 
 @Injectable()
@@ -53,7 +53,7 @@ export class SquareDriver extends BaseIntegrationDriver {
   }
 
   async syncData(orgId: string): Promise<void> {
-    const { syncSquareCatalog } = await import("../square-sync.helper");
+    const { syncSquareCatalog } = await import("./square-sync.helper");
     const { data: integration, error } = await supabase
       .from("integrations")
       .select("access_token")

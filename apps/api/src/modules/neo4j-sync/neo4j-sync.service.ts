@@ -110,9 +110,10 @@ export class Neo4jSyncService {
         const targetId = record[config.target.fkField];
 
         if (!srcId || !targetId) {
-          throw new BadRequestException(
-            `Missing foreign keys (${config.source.fkField} or ${config.target.fkField}) in DELETE payload for join table ${table}`
+          this.logger.warn(
+            `Skipping join table deleteRelationship for ${table}: missing ${config.source.fkField} or ${config.target.fkField}`
           );
+          return;
         }
 
         await this.repository.deleteRelationship(
@@ -132,9 +133,10 @@ export class Neo4jSyncService {
         const targetId = record[config.target.fkField];
 
         if (!srcId || !targetId) {
-          throw new BadRequestException(
-            `Missing foreign keys (${config.source.fkField} or ${config.target.fkField}) in ${type} payload for join table ${table}`
+          this.logger.warn(
+            `Skipping join table createDirectRelationship for ${table}: missing ${config.source.fkField} or ${config.target.fkField}`
           );
+          return;
         }
 
         const properties: Record<string, any> = {};

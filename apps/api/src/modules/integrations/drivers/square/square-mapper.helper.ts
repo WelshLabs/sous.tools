@@ -59,9 +59,13 @@ export interface SquareOrder {
     amount: number;
   };
   line_items?: Array<{
-    catalog_object_id: string;
+    catalog_object_id?: string;
+    name?: string;
     uid?: string;
     quantity?: string;
+    base_price_money?: {
+      amount: number;
+    };
     gross_sales_money?: {
       amount: number;
     };
@@ -69,6 +73,19 @@ export interface SquareOrder {
       amount: number;
     };
   }>;
+}
+
+export interface POSOrderLineItemUpsert {
+  organization_id: string;
+  pos_order_id: string;
+  pos_item_id: string | null;
+  external_id: string;
+  name: string;
+  quantity: number;
+  base_price_money: number;
+  gross_sales_money: number;
+  total_discount_money: number;
+  updated_at: string;
 }
 
 export interface POSCategoryUpsert {
@@ -318,8 +335,8 @@ export function mapSquareTransactions(
   orders.forEach((order) => {
     const lineItems = order.line_items || [];
     lineItems.forEach((line, idx: number) => {
-      const externalItemId = line.catalog_object_id;
-      const posItemId = itemMap.get(externalItemId) || null;
+      const externalItemId = line.catalog_object_id || "";
+      const posItemId = externalItemId ? (itemMap.get(externalItemId) || null) : null;
 
       const grossRevenue = (line.gross_sales_money?.amount || 0) / 100;
       const discountAmount = (line.total_discount_money?.amount || 0) / 100;
@@ -338,4 +355,43 @@ export function mapSquareTransactions(
   });
   return result;
 }
+
+export function mapSquareOrderLineItems(
+  orders: SquareOrder[],
+  orderMap: Map<string, string>,
+  itemMap: Map<string, string>,
+  orgId: string
+): POSOrderLineItemUpsert[] {
+  const result: POSOrderLineItemUpsert[] = [];
+  orders.forEach((order) => {
+    const posOrderId = orderMap.get(order.id);
+    if (!posOrderId) return;
+
+    const lineItems = order.line_items || [];
+    lineItems.forEach((line, idx: number) => {
+      const externalItemId = line.catalog_object_id || "";
+      const posItemId = externalItemId ? (itemMap.get(externalItemId) || null) : null;
+
+      const basePrice = (line.base_price_money?.amount || 0) / 100;
+      const grossSales = (line.gross_sales_money?.amount || 0) / 100;
+      const totalDiscount = (line.total_discount_money?.amount || 0) / 100;
+      const quantity = parseFloat(line.quantity || "1");
+
+      result.push({
+        organization_id: orgId,
+        pos_order_id: posOrderId,
+        pos_item_id: posItemId,
+        external_id: line.uid || `line_${idx}`,
+        name: line.name || "Unnamed Item",
+        quantity: isNaN(quantity) ? 1 : quantity,
+        base_price_money: basePrice,
+        gross_sales_money: grossSales,
+        total_discount_money: totalDiscount,
+        updated_at: new Date().toISOString(),
+      });
+    });
+  });
+  return result;
+}
+
 

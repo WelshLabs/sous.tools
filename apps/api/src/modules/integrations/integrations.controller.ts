@@ -14,10 +14,12 @@ import { serverConfig as config } from "@soustools/config/server";
 import { randomUUID } from "crypto";
 import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
-import { GoogleDriveService } from "./google-drive.service";
+import { GoogleDriveService } from "./drivers/google-drive/google-drive.service";
 
 function getOrgId(orgId?: string): string {
-  return !orgId || orgId === "default" ? "d0000000-0000-0000-0000-000000000000" : orgId;
+  return !orgId || orgId === "default"
+    ? "d0000000-0000-0000-0000-000000000000"
+    : orgId;
 }
 
 @Controller("integrations")
@@ -90,12 +92,6 @@ export class IntegrationsController {
     });
   }
 
-  @Post("square/seed")
-  async seedSquare(@Query("orgId") orgId?: string): Promise<ApiResponse<void>> {
-    return runControllerAction(async () => {
-      await this.service.seedSquareCatalog(getOrgId(orgId));
-    });
-  }
 
   @Get("google/files")
   async getGoogleFiles(
@@ -107,12 +103,14 @@ export class IntegrationsController {
   }
 
   @Post("google/import-file")
-  async importGoogleFile(
-    @Body() body: { fileId: string; orgId?: string },
-  ) {
+  async importGoogleFile(@Body() body: { fileId: string; orgId?: string }) {
     return runControllerAction(async () => {
       const reviewId = randomUUID();
-      const result = await this.driveService.processDriveFile(body.fileId, getOrgId(body.orgId), reviewId);
+      const result = await this.driveService.processDriveFile(
+        body.fileId,
+        getOrgId(body.orgId),
+        reviewId,
+      );
       if (!result.sourceDocumentUrl) {
         throw new Error("Failed to process Google Drive file");
       }

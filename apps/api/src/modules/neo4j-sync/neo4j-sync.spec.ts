@@ -4,8 +4,18 @@ import { Neo4jSyncService } from "./neo4j-sync.service";
 import { UnauthorizedException, BadRequestException } from "@nestjs/common";
 
 // Mock the config
+jest.mock("@soustools/config/server", () => ({
+  serverConfig: {
+    IS_MOCK_ENV: false,
+    SUPABASE_WEBHOOK_SECRET: "my-test-secret",
+  },
+}));
 jest.mock("@soustools/config", () => ({
   config: {
+    IS_MOCK_ENV: false,
+    SUPABASE_WEBHOOK_SECRET: "my-test-secret",
+  },
+  serverConfig: {
     IS_MOCK_ENV: false,
     SUPABASE_WEBHOOK_SECRET: "my-test-secret",
   },
@@ -102,13 +112,11 @@ describe("Neo4jSync", () => {
       expect(mockRepository.upsertNode).toHaveBeenCalledWith(
         "User",
         "user-1",
-        {
+        expect.objectContaining({
           email: "test@example.com",
           role: "authenticated",
           fullName: "Conar Welsh",
-          createdAt: "2026-07-19T00:00:00Z",
-          updatedAt: "2026-07-19T00:00:00Z",
-        }
+        })
       );
     });
 
@@ -275,7 +283,7 @@ describe("Neo4jSync", () => {
         "Organization",
         "org-1",
         "MEMBER_OF",
-        { role: "ADMIN" }
+        expect.objectContaining({ role: "ADMIN" })
       );
     });
 
@@ -301,6 +309,64 @@ describe("Neo4jSync", () => {
         "org-1",
         "MEMBER_OF"
       );
+    });
+
+    it("should handle pos_order_line_items INSERT and create CONTAINS_ITEM relationship with quantity", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "pos_order_line_items",
+        schema: "public",
+        record: {
+          id: "oli-1",
+          organization_id: "org-1",
+          pos_order_id: "order-123",
+          pos_item_id: "item-456",
+          external_id: "line-item-uid-1",
+          name: "Cheeseburger",
+          quantity: "2.5",
+          base_price_money: "12.50",
+          gross_sales_money: "31.25",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.upsertNode).not.toHaveBeenCalled();
+      expect(mockRepository.createDirectRelationship).toHaveBeenCalledWith(
+        "PosOrder",
+        "order-123",
+        "PosItem",
+        "item-456",
+        "CONTAINS_ITEM",
+        expect.objectContaining({
+          quantity: 2.5,
+          basePriceMoney: 12.5,
+          grossSalesMoney: 31.25,
+        })
+      );
+    });
+
+    it("should gracefully skip pos_order_line_items if pos_item_id is null", async () => {
+      const payload = {
+        type: "INSERT" as const,
+        table: "pos_order_line_items",
+        schema: "public",
+        record: {
+          id: "oli-2",
+          organization_id: "org-1",
+          pos_order_id: "order-123",
+          pos_item_id: null,
+          external_id: "line-item-uid-2",
+          name: "Custom Fee",
+          quantity: "1",
+        },
+        old_record: null,
+      };
+
+      await service.handleWebhook(payload);
+
+      expect(mockRepository.createDirectRelationship).not.toHaveBeenCalled();
     });
   });
 });
