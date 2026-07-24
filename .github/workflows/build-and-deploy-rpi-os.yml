@@ -22,6 +22,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
       - name: Fetch Infisical Secrets
@@ -51,9 +53,15 @@ jobs:
       - name: Inject stage SKIP flags for base layers (Caching)
         run: |
           cd deploy/pi/pi-gen
-          touch stage0/SKIP
-          touch stage1/SKIP
-          touch stage2/SKIP
+          if [ -d "work" ] && [ -d "work/stage2" ]; then
+            echo "Cache found! Skipping base stages..."
+            touch stage0/SKIP
+            touch stage1/SKIP
+            touch stage2/SKIP
+          else
+            echo "No cache found. Rebuilding base layers..."
+            rm -f stage0/SKIP stage1/SKIP stage2/SKIP
+          fi
 
       - name: Install native pi-gen dependencies
         run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
