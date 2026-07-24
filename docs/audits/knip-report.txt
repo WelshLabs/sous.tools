@@ -104,11 +104,13 @@ packages/domain-signage/src/preview-column-layout.tsx
 packages/domain-signage/src/preview-column-renderers.tsx                     
 packages/domain-signage/src/preview-menu-renderer.tsx                        
 scripts/generate-icons.mjs                                                   
-[93m[4mUnused dependencies[24m[39m (21)
+[93m[4mUnused dependencies[24m[39m (23)
 @as-integrations/express4      apps/api/package.json:20:6                
-@nestjs/platform-express       apps/cli/package.json:25:6                
-@soustools/api-types           apps/cli/package.json:26:6                
-@soustools/logger              apps/cli/package.json:28:6                
+@nestjs/platform-express       apps/cli/package.json:24:6                
+@soustools/api-types           apps/cli/package.json:25:6                
+@soustools/config              apps/cli/package.json:26:6                
+@soustools/logger              apps/cli/package.json:27:6                
+zod                            apps/cli/package.json:33:6                
 @soustools/config              apps/pos-simulator/package.json:15:6      
 @hello-pangea/dnd              apps/web/package.json:14:6                
 recharts                       apps/web/package.json:36:6                
@@ -126,7 +128,7 @@ sonner                         packages/domain-settings/package.json:41:6
 @modelcontextprotocol/sdk      packages/mcp-server/package.json          
 @octokit/rest                  packages/mcp-server/package.json          
 dotenv                         packages/mcp-server/package.json          
-[93m[4mUnused devDependencies[24m[39m (33)
+[93m[4mUnused devDependencies[24m[39m (34)
 @types/supertest                 apps/api/package.json:63:6              
 source-map-support               apps/api/package.json:66:6              
 supertest                        apps/api/package.json:67:6              
@@ -150,6 +152,7 @@ tailwindcss                      apps/web/package.json:52:6
 @soustools/tsconfig              package.json:31:6                       
 @swc/cli                         package.json:32:6                       
 eslint-plugin-project-structure  package.json:37:6                       
+globals                          package.json:40:6                       
 png-to-ico                       package.json:44:6                       
 sharp                            package.json:47:6                       
 tsx                              packages/config/package.json:31:6       
@@ -160,56 +163,55 @@ eslint-plugin-prettier           packages/eslint-config/package.json:23:6
 eslint-config-prettier           packages/eslint-config/package.json:24:6
 prettier                         packages/eslint-config/package.json:25:6
 pino-pretty                      packages/logger/package.json:34:6       
-[93m[4mUnlisted dependencies[24m[39m (44)
-[90m[39m[97meslint-plugin-prettier[39m[90m/recommend…[39m  apps/cli/eslint.config.mjs:3:46                                                      
-@tailwindcss/postcss               apps/setup-portal/postcss.config.mjs                                                 
-next-themes                        apps/storybook/.storybook/preview.tsx:3:32                                           
-@storybook/react                   packages/design-system/src/components/AppBar/AppBar.stories.tsx:1:38                 
-@storybook/react                   …ages/design-system/src/components/AuroraBackground/AuroraBackground.stories.tsx:1:28
-@storybook/react                   packages/design-system/src/components/BottomNav/BottomNav.stories.tsx:1:38           
-@storybook/react                   packages/design-system/src/components/BrandIcons/BrandIcons.stories.tsx:2:28         
-@storybook/react                   packages/design-system/src/components/Button/Button.stories.tsx:2:38                 
-@storybook/react                   packages/design-system/src/components/Card/Card.stories.tsx:2:38                     
-@storybook/react                   packages/design-system/src/components/Chip/Chip.stories.tsx:1:38                     
-@storybook/react                   packages/design-system/src/components/ConfirmModal/ConfirmModal.stories.tsx:1:38     
-@storybook/react                   …ckages/design-system/src/components/DashboardCharts/DashboardCharts.stories.tsx:1:38
-@storybook/react                   packages/design-system/src/components/Dialog/Dialog.stories.tsx:2:38                 
-@storybook/react                   packages/design-system/src/components/Hamburger/Hamburger.stories.tsx:1:28           
-@storybook/react                   packages/design-system/src/components/Input/Input.stories.tsx:2:38                   
-@storybook/react                   …ckages/design-system/src/components/InsightsSidebar/InsightsSidebar.stories.tsx:1:38
-@storybook/react                   packages/design-system/src/components/Label/Label.stories.tsx:1:38                   
-@storybook/react                   packages/design-system/src/components/Loader/Loader.stories.tsx:1:28                 
-@storybook/react                   packages/design-system/src/components/LoginButton/LoginButton.stories.tsx:1:28       
-@storybook/react                   packages/design-system/src/components/Logos/Logos.stories.tsx:1:28                   
-@storybook/react                   packages/design-system/src/components/OmniBar/OmniBar.stories.tsx:1:28               
-@storybook/react                   packages/design-system/src/components/PinInput/PinInput.stories.tsx:1:38             
-@storybook/react                   packages/design-system/src/components/Popover/Popover.stories.tsx:2:38               
-@storybook/react                   packages/design-system/src/components/QuickAddBar/QuickAddBar.stories.tsx:1:38       
-@storybook/react                   packages/design-system/src/components/Sidebar/Sidebar.stories.tsx:1:38               
-@storybook/react                   packages/design-system/src/components/Table/Table.stories.tsx:2:38                   
-@storybook/react                   packages/design-system/src/components/ThemeToggle/ThemeToggle.stories.tsx:1:38       
-@storybook/react                   packages/design-system/src/components/TopProgress/TopProgress.stories.tsx:1:28       
-@storybook/react                   packages/design-system/src/components/TwoToneHeader/TwoToneHeader.stories.tsx:1:28   
-@storybook/react                   packages/domain-inventory/src/components/ItemEditor/ItemEditor.stories.tsx:1:38      
-@storybook/react                   packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.stories.tsx:1:38    
-@storybook/react                   packages/domain-inventory/src/components/OrdersPanel/OrdersPanel.stories.tsx:1:38    
-@storybook/react                   packages/domain-inventory/src/components/Supplier/Supplier.stories.tsx:1:38          
-@storybook/react                   packages/domain-inventory/src/components/VendorsPanel/VendorsPanel.stories.tsx:1:38  
-@storybook/react                   packages/domain-pos/src/components/POSRegister/POSRegister.stories.tsx:1:38          
-@storybook/react                   packages/domain-recipes/src/components/ActiveKitchen/ActiveKitchen.stories.tsx:1:38  
-@storybook/react                   …ges/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.stories.tsx:1:38
-@storybook/react                   packages/domain-recipes/src/components/RecipeBuilder/RecipeBuilder.stories.tsx:1:38  
-@storybook/react                   packages/domain-recipes/src/components/RecipeList/RecipeList.stories.tsx:3:38        
-@storybook/react                   packages/domain-recipes/src/components/RecipeViewer/RecipeViewer.stories.tsx:1:38    
-@storybook/react                   packages/domain-recipes/src/components/VesselManager/VesselManager.stories.tsx:1:38  
-@storybook/react                   packages/domain-settings/src/components/SettingsPanel/SettingsPanel.stories.tsx:1:38 
-@storybook/react                   packages/domain-signage/src/components/DisplayManager/DisplayManager.stories.tsx:1:38
-@storybook/react                   packages/domain-signage/src/components/SignagePreview/SignagePreview.stories.tsx:1:38
+[93m[4mUnlisted dependencies[24m[39m (43)
+@tailwindcss/postcss  apps/setup-portal/postcss.config.mjs                                                     
+next-themes           apps/storybook/.storybook/preview.tsx:3:32                                               
+@storybook/react      packages/design-system/src/components/AppBar/AppBar.stories.tsx:1:38                     
+@storybook/react      packages/design-system/src/components/AuroraBackground/AuroraBackground.stories.tsx:1:28 
+@storybook/react      packages/design-system/src/components/BottomNav/BottomNav.stories.tsx:1:38               
+@storybook/react      packages/design-system/src/components/BrandIcons/BrandIcons.stories.tsx:2:28             
+@storybook/react      packages/design-system/src/components/Button/Button.stories.tsx:2:38                     
+@storybook/react      packages/design-system/src/components/Card/Card.stories.tsx:2:38                         
+@storybook/react      packages/design-system/src/components/Chip/Chip.stories.tsx:1:38                         
+@storybook/react      packages/design-system/src/components/ConfirmModal/ConfirmModal.stories.tsx:1:38         
+@storybook/react      packages/design-system/src/components/DashboardCharts/DashboardCharts.stories.tsx:1:38   
+@storybook/react      packages/design-system/src/components/Dialog/Dialog.stories.tsx:2:38                     
+@storybook/react      packages/design-system/src/components/Hamburger/Hamburger.stories.tsx:1:28               
+@storybook/react      packages/design-system/src/components/Input/Input.stories.tsx:2:38                       
+@storybook/react      packages/design-system/src/components/InsightsSidebar/InsightsSidebar.stories.tsx:1:38   
+@storybook/react      packages/design-system/src/components/Label/Label.stories.tsx:1:38                       
+@storybook/react      packages/design-system/src/components/Loader/Loader.stories.tsx:1:28                     
+@storybook/react      packages/design-system/src/components/LoginButton/LoginButton.stories.tsx:1:28           
+@storybook/react      packages/design-system/src/components/Logos/Logos.stories.tsx:1:28                       
+@storybook/react      packages/design-system/src/components/OmniBar/OmniBar.stories.tsx:1:28                   
+@storybook/react      packages/design-system/src/components/PinInput/PinInput.stories.tsx:1:38                 
+@storybook/react      packages/design-system/src/components/Popover/Popover.stories.tsx:2:38                   
+@storybook/react      packages/design-system/src/components/QuickAddBar/QuickAddBar.stories.tsx:1:38           
+@storybook/react      packages/design-system/src/components/Sidebar/Sidebar.stories.tsx:1:38                   
+@storybook/react      packages/design-system/src/components/Table/Table.stories.tsx:2:38                       
+@storybook/react      packages/design-system/src/components/ThemeToggle/ThemeToggle.stories.tsx:1:38           
+@storybook/react      packages/design-system/src/components/TopProgress/TopProgress.stories.tsx:1:28           
+@storybook/react      packages/design-system/src/components/TwoToneHeader/TwoToneHeader.stories.tsx:1:28       
+@storybook/react      packages/domain-inventory/src/components/ItemEditor/ItemEditor.stories.tsx:1:38          
+@storybook/react      packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.stories.tsx:1:38        
+@storybook/react      packages/domain-inventory/src/components/OrdersPanel/OrdersPanel.stories.tsx:1:38        
+@storybook/react      packages/domain-inventory/src/components/Supplier/Supplier.stories.tsx:1:38              
+@storybook/react      packages/domain-inventory/src/components/VendorsPanel/VendorsPanel.stories.tsx:1:38      
+@storybook/react      packages/domain-pos/src/components/POSRegister/POSRegister.stories.tsx:1:38              
+@storybook/react      packages/domain-recipes/src/components/ActiveKitchen/ActiveKitchen.stories.tsx:1:38      
+@storybook/react      packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.stories.tsx:1:38
+@storybook/react      packages/domain-recipes/src/components/RecipeBuilder/RecipeBuilder.stories.tsx:1:38      
+@storybook/react      packages/domain-recipes/src/components/RecipeList/RecipeList.stories.tsx:3:38            
+@storybook/react      packages/domain-recipes/src/components/RecipeViewer/RecipeViewer.stories.tsx:1:38        
+@storybook/react      packages/domain-recipes/src/components/VesselManager/VesselManager.stories.tsx:1:38      
+@storybook/react      packages/domain-settings/src/components/SettingsPanel/SettingsPanel.stories.tsx:1:38     
+@storybook/react      packages/domain-signage/src/components/DisplayManager/DisplayManager.stories.tsx:1:38    
+@storybook/react      packages/domain-signage/src/components/SignagePreview/SignagePreview.stories.tsx:1:38    
 [93m[4mUnlisted binaries[24m[39m (3)
 supabase  package.json
 tsx       package.json
 xclip     package.json
-[93m[4mUnused exports[24m[39m (39)
+[93m[4mUnused exports[24m[39m (40)
 SupabaseClientWrapper                    class     apps/api/src/lib/supabase.ts:20:14                                   
 addToPurchaseOrderTool                             apps/api/src/modules/commands/commands-tools.ts:3:14                 
 addToWhiteboardTool                                apps/api/src/modules/commands/commands-tools.ts:18:14                
@@ -218,6 +220,11 @@ ingestVendorInvoiceTool                            apps/api/src/modules/commands
 updateItemStatusTool                               apps/api/src/modules/commands/commands-tools.ts:56:14                
 adjustThrottleTimeTool                             apps/api/src/modules/commands/commands-tools.ts:69:14                
 reconcileInventoryTool                             apps/api/src/modules/commands/commands-tools.ts:81:14                
+executeCypherQueryTool                             apps/api/src/modules/commands/commands-tools.ts:98:14                
+renderUiComponentTool                              apps/api/src/modules/commands/commands-tools.ts:117:14               
+enqueueBackgroundTaskTool                          apps/api/src/modules/commands/commands-tools.ts:136:14               
+ingestKnowledgeSourceTool                          apps/api/src/modules/commands/commands-tools.ts:159:14               
+searchTheWebTool                                   apps/api/src/modules/commands/commands-tools.ts:186:14               
 IngestionSuggestionDto                   class     apps/api/src/modules/ingestion/ingestion.controller.ts:20:14         
 IngestionLineItemDto                     class     apps/api/src/modules/ingestion/ingestion.controller.ts:34:14         
 PolymorphicExtractionResponseDto         class     apps/api/src/modules/ingestion/ingestion.controller.ts:66:14         
@@ -229,12 +236,6 @@ serializeProperties                      function  apps/api/src/modules/neo4j-sy
 generatePairingCode                      function  apps/api/src/modules/signage/displays.helpers.ts:26:17               
 dbRegisterPairingCode                    function  apps/api/src/modules/signage/displays.helpers.ts:41:23               
 dbConfirmPairing                         function  apps/api/src/modules/signage/displays.helpers.ts:74:23               
-baseContentBlock                                   apps/cli/src/ingestion/gemini-parser.schemas.ts:3:14                 
-ingredientSchema                                   apps/cli/src/ingestion/gemini-parser.schemas.ts:8:14                 
-preprocessArray                                    apps/cli/src/ingestion/gemini-parser.schemas.ts:15:14                
-preprocessStringArray                              apps/cli/src/ingestion/gemini-parser.schemas.ts:25:14                
-contentBlockSchema                                 apps/cli/src/ingestion/gemini-parser.schemas.ts:35:14                
-default                                            apps/cli/src/ingestion/prompt-templates.ts:55:16                     
 default                                            apps/pos-simulator/src/components/PosSimulator.container.tsx:111:16  
 default                                            apps/pos-simulator/src/components/PosSimulator.tsx:70:16             
 DialogPortal                                       packages/design-system/src/components/Dialog/Dialog.tsx:112:3        
@@ -242,7 +243,9 @@ DialogOverlay                                      packages/design-system/src/co
 DialogClose                                        packages/design-system/src/components/Dialog/Dialog.tsx:115:3        
 OmnibarPerimeterView                               packages/design-system/src/components/OmniBar/index.ts:16:10         
 MetricCard                               function  packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx:72:17
+MOCK_BURGER_MODIFIERS                              packages/domain-pos/src/components/POSRegister/pos.helpers.ts:4:14   
 getCategory                                        packages/domain-pos/src/components/POSRegister/pos.helpers.ts:31:14  
+CATEGORIES                                         packages/domain-pos/src/components/POSRegister/pos.helpers.ts:45:14  
 playSuccessSound                         function  packages/domain-pos/src/components/POSRegister/pos.helpers.ts:51:17  
 MenuItemContext                                    packages/domain-signage/src/block-editor-node.tsx:25:14              
 BLOCK_GROUPS                                       packages/domain-signage/src/block-palette-items.ts:31:14             
@@ -304,10 +307,10 @@ OrderSupplier               interface  packages/design-system/src/components/Ins
 DocumentViewerProps         interface  packages/design-system/src/components/OmniBar/DocumentViewer.tsx:8:18            
 OmniMetric                  type       packages/design-system/src/components/OmniBar/index.ts:4:15                      
 OmniChatWindowProps         type       packages/design-system/src/components/OmniBar/index.ts:4:27                      
-OmniBarState                interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:11:18            
+OmniBarState                interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:13:18            
 OmniMetric                  type       packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:16:15           
 OmniChatWindowProps         interface  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:18:18           
-OmniInputPillProps          interface  packages/design-system/src/components/OmniBar/OmniInputPill.tsx:14:18            
+OmniInputPillProps          interface  packages/design-system/src/components/OmniBar/OmniInputPill.tsx:15:18            
 UnifiedItemRowProps         interface  packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx:16:18           
 QuickAddBarProps            interface  packages/design-system/src/components/QuickAddBar/QuickAddBar.tsx:14:18          
 UsdaSearchResult            interface  …ckages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx:20:18
@@ -333,8 +336,7 @@ PairDisplayDialogProps      interface  packages/domain-signage/src/pair-display-
 RightSidePanelProps         interface  packages/domain-signage/src/right-side-panel.tsx:17:18                           
 SlideFilmstripProps         interface  packages/domain-signage/src/slide-filmstrip.tsx:13:18                            
 StylesPanelProps            interface  packages/domain-signage/src/styles-panel.tsx:11:18                               
-[93m[4mDuplicate exports[24m[39m (10)
-GEMINI_SPREAD_PROMPT|default      apps/cli/src/ingestion/prompt-templates.ts                                        
+[93m[4mDuplicate exports[24m[39m (9)
 PosSimulatorContainer|default     apps/pos-simulator/src/components/PosSimulator.container.tsx                      
 PosSimulator|default              apps/pos-simulator/src/components/PosSimulator.tsx                                
 createRestClient|createApiClient  packages/api-client/src/rest.ts                                                   

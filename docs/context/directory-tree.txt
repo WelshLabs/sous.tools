@@ -169,7 +169,6 @@
 │   ├── cli
 │   │   ├── README.md
 │   │   ├── eslint.config.js
-│   │   ├── eslint.config.mjs
 │   │   ├── nest-cli.json
 │   │   ├── package.json
 │   │   ├── src
@@ -177,16 +176,10 @@
 │   │   │   ├── cli.spec.ts
 │   │   │   ├── commands
 │   │   │   │   ├── commands.module.ts
-│   │   │   │   ├── import-textbook.command.ts
-│   │   │   │   ├── import.command.ts
-│   │   │   │   └── parse-textbook.command.ts
+│   │   │   │   └── import-textbook.command.ts
 │   │   │   ├── ingestion
-│   │   │   │   ├── gemini-parser.schemas.ts
-│   │   │   │   ├── gemini-parser.service.ts
 │   │   │   │   ├── ingestion.module.ts
-│   │   │   │   ├── ingestion.service.ts
-│   │   │   │   ├── playwright-flipper.service.ts
-│   │   │   │   └── prompt-templates.ts
+│   │   │   │   └── playwright-flipper.service.ts
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── app.e2e-spec.ts
@@ -954,6 +947,7 @@
 │   │   │   │   │   ├── OmniInputPill.tsx
 │   │   │   │   │   ├── OmnibarPerimeterView.tsx
 │   │   │   │   │   ├── PillActions.tsx
+│   │   │   │   │   ├── StagingArea.tsx
 │   │   │   │   │   ├── UnifiedItemRow.tsx
 │   │   │   │   │   ├── UnifiedReviewPanel.tsx
 │   │   │   │   │   ├── VerificationPanel.tsx
@@ -1070,6 +1064,11 @@
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── components
+│   │   │   │   ├── KDS
+│   │   │   │   │   ├── kds-settings-modal.tsx
+│   │   │   │   │   ├── kds.container.tsx
+│   │   │   │   │   ├── kds.types.ts
+│   │   │   │   │   └── kds.view.tsx
 │   │   │   │   └── POSRegister
 │   │   │   │       ├── POSRegister.spec.tsx
 │   │   │   │       ├── POSRegister.stories.tsx
@@ -1346,12 +1345,11 @@
 ├── supabase
 │   ├── config.toml
 │   ├── migrations
-│   │   ├── 20260719000000_init.sql
-│   │   └── 20260724000000_create_pos_order_line_items.sql
+│   │   └── 00000_v1_init.sql
 │   ├── seed.sql
 │   ├── seed.template.sql
 │   └── snippets
 │       └── Untitled query 242.sql
 └── turbo.json
 
-316 directories, 1039 files
+317 directories, 1036 files
