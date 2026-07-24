@@ -88,3 +88,5 @@ signage_deploy_key*
 docs/agents/logs/agent-run-*.log
 
 supabase/seed.sql
+
+chat.txt
