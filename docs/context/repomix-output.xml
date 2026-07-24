@@ -58981,150 +58981,6 @@ export default [
 ];
 ````
 
-## File: .github/workflows/build-and-deploy-rpi-os.yml
-````yaml
-name: Build and Release RPi OS Image
-
-on:
-  push:
-    branches: ["main"]
-    paths:
-      - "deploy/pi/**"
-      - "deploy/ansible/**"
-      - "apps/setup-portal/**"
-      - ".github/workflows/build-and-deploy-rpi-os.yml"
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: [self-hosted, linux, arm64]
-    steps:
-      - name: Who am I?
-        run: whoami
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
-      - name: Fetch Infisical Secrets
-        uses: infisical/secrets-action@v1.0.8
-        with:
-          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
-          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: "prod"
-          project-slug: "sous-tools-1cd-a"
-
-      - name: Inject static deploy key into stage-sous/00-install/files/
-        run: |
-          # Write the Ed25519 read-only deploy key from Infisical.
-          # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
-          # with chmod 600 inside the chroot. The file is scrubbed after build.
-          printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
-            > deploy/pi/stage-sous/00-install/files/signage-deploy-key
-          chmod 600 deploy/pi/stage-sous/00-install/files/signage-deploy-key
-
-      - name: Stage stage-sous inside pi-gen (runtime injection)
-        run: |
-          # pi-gen expects custom stages to live alongside stage0–stage5.
-          # We keep ours in deploy/pi/stage-sous/ and copy at CI time so
-          # it never pollutes the upstream pi-gen checkout.
-          cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
-
-      - name: Inject stage SKIP flags for base layers (Caching)
-        run: |
-          cd deploy/pi/pi-gen
-          touch stage0/SKIP
-          touch stage1/SKIP
-          touch stage2/SKIP
-
-      - name: Install native pi-gen dependencies
-        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
-
-      - name: Build OS Image natively with pi-gen
-        env:
-          PI_GEN_CONFIG: |
-            IMG_NAME=soustools-signage
-            TARGET_HOSTNAME=signage
-            TARGET_ARCH=arm64
-            ARCH=arm64
-            ENABLE_SSH=1
-            CONTINUE=1
-            DEPLOY_COMPRESSION=none
-            FIRST_USER_NAME=sous
-            FIRST_USER_PASS=bootstrap123
-            # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
-            STAGE_LIST="stage0 stage1 stage2 stage-sous"
-          CHROOT_SCRIPT: |
-            #!/bin/bash
-            # B. Mask interactive first-boot screens
-            systemctl mask userconfig.service || true
-            systemctl mask piwiz.service      || true
-        run: |
-          cd deploy/pi/pi-gen
-          touch stage-sous/EXPORT_IMAGE
-
-          # 1. Scaffold the mandatory config file that git ignores
-          echo "$PI_GEN_CONFIG" > config
-
-          # 2. Restore executable flags (git strips them on checkout)
-          echo "Restoring +x permissions to all pi-gen scripts..."
-          sudo find . -type f -name "*.sh" -exec chmod +x {} +
-          sudo chmod +x stage*/prerun.sh             || true
-          sudo chmod +x stage-sous/00-install/*.sh   || true
-          sudo chmod +x stage-sous/00-install/files/*.sh || true
-
-          # 3. Hard-bake the 'sous' user and kill first-boot wizards
-          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
-          sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
-
-          # 4. Run the NATIVE pi-gen build
-          sudo ./build.sh
-
-      - name: Scrub deploy key from workspace (security)
-        if: always()
-        run: |
-          rm -f deploy/pi/stage-sous/00-install/files/signage-deploy-key           || true
-          rm -f deploy/pi/pi-gen/stage-sous/00-install/files/signage-deploy-key    || true
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: soustools-signage-os-image
-          path: deploy/pi/pi-gen/deploy/*.img
-          if-no-files-found: warn
-
-      - name: Release image to GitHub (conarwelsh/signage-os)
-        uses: softprops/action-gh-release@v2
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-        with:
-          repository: conarwelsh/signage-os
-          token: ${{ env.SIGNAGE_GITHUB_PAT }}
-          tag_name: v${{ github.run_number }}
-          name: Signage OS v${{ github.run_number }}
-          files: deploy/pi/pi-gen/deploy/*.img
-          make_latest: true
-
-      # THE ARMOR: Forcefully detach all system mounts BEFORE workspace cleanup
-      - name: Cleanup and Protect Host Mounts
-        if: always()
-        run: |
-          echo "Detaching any lingering pi-gen bind mounts..."
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/sys || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/proc || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
-          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
-
-          echo "Restoring +x permissions on pi-gen scripts for future runs..."
-          sudo find ${{ github.workspace }}/deploy/pi/pi-gen -type f -name "*.sh" -exec chmod +x {} + || true
-
-          echo "Wiping temporary staging directory..."
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
-````
-
 ## File: apps/api/src/modules/integrations/integrations.service.ts
 ````typescript
 import { Injectable, NotFoundException, Inject } from "@nestjs/common";
@@ -63332,6 +63188,158 @@ overrides:
   "@types/react-dom": "19.0.3"
 ````
 
+## File: .github/workflows/build-and-deploy-rpi-os.yml
+````yaml
+name: Build and Release RPi OS Image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "deploy/pi/**"
+      - "deploy/ansible/**"
+      - "apps/setup-portal/**"
+      - ".github/workflows/build-and-deploy-rpi-os.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, arm64]
+    steps:
+      - name: Who am I?
+        run: whoami
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          clean: false
+
+      # ── SECRETS: Must run BEFORE pi-gen so the deploy key can be injected ──
+      - name: Fetch Infisical Secrets
+        uses: infisical/secrets-action@v1.0.8
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: "prod"
+          project-slug: "sous-tools-1cd-a"
+
+      - name: Inject static deploy key into stage-sous/00-install/files/
+        run: |
+          # Write the Ed25519 read-only deploy key from Infisical.
+          # 02-run-chroot.sh will install this to /home/sous/.ssh/id_ed25519
+          # with chmod 600 inside the chroot. The file is scrubbed after build.
+          printf '%s\n' "${{ env.SIGNAGE_DEPLOY_KEY_PRIVATE }}" \
+            > deploy/pi/stage-sous/00-install/files/signage-deploy-key
+          chmod 600 deploy/pi/stage-sous/00-install/files/signage-deploy-key
+
+      - name: Stage stage-sous inside pi-gen (runtime injection)
+        run: |
+          # pi-gen expects custom stages to live alongside stage0–stage5.
+          # We keep ours in deploy/pi/stage-sous/ and copy at CI time so
+          # it never pollutes the upstream pi-gen checkout.
+          cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
+
+      - name: Inject stage SKIP flags for base layers (Caching)
+        run: |
+          cd deploy/pi/pi-gen
+          if [ -d "work" ] && [ -d "work/stage2" ]; then
+            echo "Cache found! Skipping base stages..."
+            touch stage0/SKIP
+            touch stage1/SKIP
+            touch stage2/SKIP
+          else
+            echo "No cache found. Rebuilding base layers..."
+            rm -f stage0/SKIP stage1/SKIP stage2/SKIP
+          fi
+
+      - name: Install native pi-gen dependencies
+        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
+
+      - name: Build OS Image natively with pi-gen
+        env:
+          PI_GEN_CONFIG: |
+            IMG_NAME=soustools-signage
+            TARGET_HOSTNAME=signage
+            TARGET_ARCH=arm64
+            ARCH=arm64
+            ENABLE_SSH=1
+            CONTINUE=1
+            DEPLOY_COMPRESSION=none
+            FIRST_USER_NAME=sous
+            FIRST_USER_PASS=bootstrap123
+            # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
+            STAGE_LIST="stage0 stage1 stage2 stage-sous"
+          CHROOT_SCRIPT: |
+            #!/bin/bash
+            # B. Mask interactive first-boot screens
+            systemctl mask userconfig.service || true
+            systemctl mask piwiz.service      || true
+        run: |
+          cd deploy/pi/pi-gen
+          touch stage-sous/EXPORT_IMAGE
+
+          # 1. Scaffold the mandatory config file that git ignores
+          echo "$PI_GEN_CONFIG" > config
+
+          # 2. Restore executable flags (git strips them on checkout)
+          echo "Restoring +x permissions to all pi-gen scripts..."
+          sudo find . -type f -name "*.sh" -exec chmod +x {} +
+          sudo chmod +x stage*/prerun.sh             || true
+          sudo chmod +x stage-sous/00-install/*.sh   || true
+          sudo chmod +x stage-sous/00-install/files/*.sh || true
+
+          # 3. Hard-bake the 'sous' user and kill first-boot wizards
+          echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
+          sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
+
+          # 4. Run the NATIVE pi-gen build
+          sudo ./build.sh
+
+      - name: Scrub deploy key from workspace (security)
+        if: always()
+        run: |
+          rm -f deploy/pi/stage-sous/00-install/files/signage-deploy-key           || true
+          rm -f deploy/pi/pi-gen/stage-sous/00-install/files/signage-deploy-key    || true
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soustools-signage-os-image
+          path: deploy/pi/pi-gen/deploy/*.img
+          if-no-files-found: warn
+
+      - name: Release image to GitHub (conarwelsh/signage-os)
+        uses: softprops/action-gh-release@v2
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        with:
+          repository: conarwelsh/signage-os
+          token: ${{ env.SIGNAGE_GITHUB_PAT }}
+          tag_name: v${{ github.run_number }}
+          name: Signage OS v${{ github.run_number }}
+          files: deploy/pi/pi-gen/deploy/*.img
+          make_latest: true
+
+      # THE ARMOR: Forcefully detach all system mounts BEFORE workspace cleanup
+      - name: Cleanup and Protect Host Mounts
+        if: always()
+        run: |
+          echo "Detaching any lingering pi-gen bind mounts..."
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/sys || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/proc || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
+          sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
+
+          echo "Restoring +x permissions on pi-gen scripts for future runs..."
+          sudo find ${{ github.workspace }}/deploy/pi/pi-gen -type f -name "*.sh" -exec chmod +x {} + || true
+
+          echo "Wiping temporary staging directory..."
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
+````
+
 ## File: apps/api/src/modules/auth/auth.controller.ts
 ````typescript
 import {
@@ -65577,6 +65585,8 @@ signage_deploy_key*
 docs/agents/logs/agent-run-*.log
 
 supabase/seed.sql
+
+chat.txt
 ````
 
 ## File: apps/api/src/app.controller.ts
@@ -65635,6 +65645,176 @@ export class AppController {
       timestamp: new Date().toISOString(),
     };
   }
+}
+````
+
+## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
+````typescript
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { type Socket } from "socket.io-client";
+import { type OmniMessage } from "@soustools/api-types";
+import { useOmnibarContext } from "./OmniBarContext";
+import { usePathname } from "next/navigation";
+import { createWebSocketClient } from "@soustools/api-client";
+
+export function useOmniSocket(): {
+  socket: Socket | null;
+  errorMessage: string | null;
+  setErrorMessage: Dispatch<SetStateAction<string | null>>;
+  isListening: boolean;
+  setIsListening: Dispatch<SetStateAction<boolean>>;
+} {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const pathname = usePathname();
+  const lastPayloadRef = useRef<Record<string, unknown> | null>(null);
+
+  const {
+    contextPayload,
+    chatHistory,
+    addMessage,
+    setIsProcessing,
+    markLoadingComplete,
+    setExecuteBackgroundCommand,
+    setChatHistory,
+  } = useOmnibarContext();
+
+  // Initialize WebSocket connection & manage listeners cleanly
+  useEffect(() => {
+    const wsSocket = createWebSocketClient({
+      namespace: "/commands",
+    });
+
+    const handleChatMessage = (message: OmniMessage) => {
+      addMessage(message);
+      if (message.role === "model") {
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleCommandStatus = (data: { state: string; message: string }) => {
+      if (data.state === "error") {
+        setErrorMessage(data.message);
+        setIsProcessing(false);
+        setIsListening(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleException = (error: { message?: string }) => {
+      console.error("[OmniBar] WebSocket exception:", error);
+      if (
+        error.message?.includes("Unauthorized") ||
+        error.message?.includes("expired")
+      ) {
+        setErrorMessage(error.message || "Session error occurred.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleError = (error: unknown) => {
+      console.error("[OmniBar] Socket error:", error);
+      setErrorMessage("A network error occurred.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleConnectError = (error: unknown) => {
+      console.error("[OmniBar] Socket connect error:", error);
+      setErrorMessage("Failed to connect to the server.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleDisconnect = (reason: string) => {
+      console.warn("[OmniBar] Socket disconnected:", reason);
+      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
+        setErrorMessage("Lost connection to the server.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleReauthenticated = () => {
+      if (lastPayloadRef.current && wsSocket.connected) {
+        console.log("[OmniBar] Resending pending command after re-authentication.");
+        wsSocket.emit("executeCommand", lastPayloadRef.current);
+      }
+    };
+
+    wsSocket.on("chat_message", handleChatMessage);
+    wsSocket.on("command_status", handleCommandStatus);
+    wsSocket.on("exception", handleException);
+    wsSocket.on("error", handleError);
+    wsSocket.on("connect_error", handleConnectError);
+    wsSocket.on("disconnect", handleDisconnect);
+    wsSocket.on("reauthenticated", handleReauthenticated);
+
+    setSocket(wsSocket);
+
+    // Guaranteed teardown: remove every registered event listener & disconnect socket
+    return () => {
+      wsSocket.off("chat_message", handleChatMessage);
+      wsSocket.off("command_status", handleCommandStatus);
+      wsSocket.off("exception", handleException);
+      wsSocket.off("error", handleError);
+      wsSocket.off("connect_error", handleConnectError);
+      wsSocket.off("disconnect", handleDisconnect);
+      wsSocket.off("reauthenticated", handleReauthenticated);
+      wsSocket.disconnect();
+    };
+  }, [addMessage, setIsProcessing, markLoadingComplete]);
+
+  // Execute Background Command handler
+  useEffect(() => {
+    const executeBackgroundCommand = (text: string) => {
+      if (!text.trim()) return;
+      setIsProcessing(true);
+      const newUserMessage: OmniMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: text,
+        timestamp: new Date(),
+      };
+      const updatedHistory = [...chatHistory, newUserMessage];
+      setChatHistory(updatedHistory);
+
+      const payload = {
+        chatHistory: updatedHistory,
+        source: "omnibar",
+        path: pathname,
+        context: contextPayload,
+      };
+      lastPayloadRef.current = payload;
+
+      try {
+        if (!socket || !socket.connected) {
+          socket?.connect();
+        }
+        socket?.emit("executeCommand", payload);
+      } catch (error: unknown) {
+        console.error("[OmniBar] Failed to emit command:", error);
+        setIsProcessing(false);
+      }
+    };
+    setExecuteBackgroundCommand(executeBackgroundCommand);
+  }, [
+    socket,
+    chatHistory,
+    pathname,
+    contextPayload,
+    setExecuteBackgroundCommand,
+    setChatHistory,
+    setIsProcessing,
+  ]);
+
+  return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
 }
 ````
 
@@ -66068,174 +66248,38 @@ export class AppController {
 export {};
 ````
 
-## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
+## File: packages/api-client/src/index.ts
 ````typescript
-"use client";
+import { clientConfig as config } from "@soustools/config/client";
 
-import { useState, useEffect, useRef } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import { type Socket } from "socket.io-client";
-import { type OmniMessage } from "@soustools/api-types";
-import { useOmnibarContext } from "./OmniBarContext";
-import { usePathname } from "next/navigation";
-import { createWebSocketClient } from "@soustools/api-client";
+export { refreshAuthSession } from "./auth-session";
+export {
+  createRestClient,
+  createApiClient,
+  api,
+  type RestApiClient,
+  type RestClientOptions,
+} from "./rest";
+export {
+  createWebSocketClient,
+  type WebSocketClientOptions,
+} from "./websocket";
+export {
+  createGraphQLClient,
+  graphqlClient,
+  GraphQLClient,
+  type GraphQLResponse,
+  type GraphQLClientOptions,
+} from "./graphql";
+export { uploadFile } from "./upload";
 
-export function useOmniSocket(): {
-  socket: Socket | null;
-  errorMessage: string | null;
-  setErrorMessage: Dispatch<SetStateAction<string | null>>;
-  isListening: boolean;
-  setIsListening: Dispatch<SetStateAction<boolean>>;
-} {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const pathname = usePathname();
-  const lastPayloadRef = useRef<Record<string, unknown> | null>(null);
+/**
+ * Backward compatibility alias directly exposing config value.
+ * No parsing or fallback guesswork logic.
+ */
+export const getDefaultBaseUrl = (): string => config.NEXT_PUBLIC_API_URL;
 
-  const {
-    contextPayload,
-    chatHistory,
-    addMessage,
-    setIsProcessing,
-    markLoadingComplete,
-    setExecuteBackgroundCommand,
-    setChatHistory,
-  } = useOmnibarContext();
-
-  // Initialize WebSocket connection & manage listeners cleanly
-  useEffect(() => {
-    const wsSocket = createWebSocketClient({
-      namespace: "/commands",
-    });
-
-    const handleChatMessage = (message: OmniMessage) => {
-      addMessage(message);
-      if (message.role === "model") {
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleCommandStatus = (data: { state: string; message: string }) => {
-      if (data.state === "error") {
-        setErrorMessage(data.message);
-        setIsProcessing(false);
-        setIsListening(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleException = (error: { message?: string }) => {
-      console.error("[OmniBar] WebSocket exception:", error);
-      if (
-        error.message?.includes("Unauthorized") ||
-        error.message?.includes("expired")
-      ) {
-        setErrorMessage(error.message || "Session error occurred.");
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleError = (error: unknown) => {
-      console.error("[OmniBar] Socket error:", error);
-      setErrorMessage("A network error occurred.");
-      setIsProcessing(false);
-      markLoadingComplete();
-    };
-
-    const handleConnectError = (error: unknown) => {
-      console.error("[OmniBar] Socket connect error:", error);
-      setErrorMessage("Failed to connect to the server.");
-      setIsProcessing(false);
-      markLoadingComplete();
-    };
-
-    const handleDisconnect = (reason: string) => {
-      console.warn("[OmniBar] Socket disconnected:", reason);
-      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
-        setErrorMessage("Lost connection to the server.");
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleReauthenticated = () => {
-      if (lastPayloadRef.current && wsSocket.connected) {
-        console.log("[OmniBar] Resending pending command after re-authentication.");
-        wsSocket.emit("executeCommand", lastPayloadRef.current);
-      }
-    };
-
-    wsSocket.on("chat_message", handleChatMessage);
-    wsSocket.on("command_status", handleCommandStatus);
-    wsSocket.on("exception", handleException);
-    wsSocket.on("error", handleError);
-    wsSocket.on("connect_error", handleConnectError);
-    wsSocket.on("disconnect", handleDisconnect);
-    wsSocket.on("reauthenticated", handleReauthenticated);
-
-    setSocket(wsSocket);
-
-    // Guaranteed teardown: remove every registered event listener & disconnect socket
-    return () => {
-      wsSocket.off("chat_message", handleChatMessage);
-      wsSocket.off("command_status", handleCommandStatus);
-      wsSocket.off("exception", handleException);
-      wsSocket.off("error", handleError);
-      wsSocket.off("connect_error", handleConnectError);
-      wsSocket.off("disconnect", handleDisconnect);
-      wsSocket.off("reauthenticated", handleReauthenticated);
-      wsSocket.disconnect();
-    };
-  }, [addMessage, setIsProcessing, markLoadingComplete]);
-
-  // Execute Background Command handler
-  useEffect(() => {
-    const executeBackgroundCommand = (text: string) => {
-      if (!text.trim()) return;
-      setIsProcessing(true);
-      const newUserMessage: OmniMessage = {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: text,
-        timestamp: new Date(),
-      };
-      const updatedHistory = [...chatHistory, newUserMessage];
-      setChatHistory(updatedHistory);
-
-      const payload = {
-        chatHistory: updatedHistory,
-        source: "omnibar",
-        path: pathname,
-        context: contextPayload,
-      };
-      lastPayloadRef.current = payload;
-
-      try {
-        if (!socket || !socket.connected) {
-          socket?.connect();
-        }
-        socket?.emit("executeCommand", payload);
-      } catch (error: unknown) {
-        console.error("[OmniBar] Failed to emit command:", error);
-        setIsProcessing(false);
-      }
-    };
-    setExecuteBackgroundCommand(executeBackgroundCommand);
-  }, [
-    socket,
-    chatHistory,
-    pathname,
-    contextPayload,
-    setExecuteBackgroundCommand,
-    setChatHistory,
-    setIsProcessing,
-  ]);
-
-  return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
-}
+export type { paths } from "./schema";
 ````
 
 ## File: docker-compose.dev.yml
@@ -66410,40 +66454,6 @@ PROMPT=$(sed "s/{ISSUE_NUMBER}/$ISSUE/g" "$PROMPT_FILE")
 
 # Execute Claude, pipe output to log, and pass /dev/null to prevent interactive hanging
 timeout 15m claude --dangerously-skip-permissions --model claude-3-5-sonnet-20241022 "$PROMPT" < /dev/null >> "$LOG_FILE" 2>&1
-````
-
-## File: packages/api-client/src/index.ts
-````typescript
-import { clientConfig as config } from "@soustools/config/client";
-
-export { refreshAuthSession } from "./auth-session";
-export {
-  createRestClient,
-  createApiClient,
-  api,
-  type RestApiClient,
-  type RestClientOptions,
-} from "./rest";
-export {
-  createWebSocketClient,
-  type WebSocketClientOptions,
-} from "./websocket";
-export {
-  createGraphQLClient,
-  graphqlClient,
-  GraphQLClient,
-  type GraphQLResponse,
-  type GraphQLClientOptions,
-} from "./graphql";
-export { uploadFile } from "./upload";
-
-/**
- * Backward compatibility alias directly exposing config value.
- * No parsing or fallback guesswork logic.
- */
-export const getDefaultBaseUrl = (): string => config.NEXT_PUBLIC_API_URL;
-
-export type { paths } from "./schema";
 ````
 
 ## File: packages/domain-pos/src/components/POSRegister/pos.container.tsx
