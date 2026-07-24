@@ -4,96 +4,83 @@
    • Remote caching disabled
 
 ::group::@soustools/config:build
-cache hit, replaying logs 7bfeb20600aa1014
-$ tsc
-::endgroup::
-::group::@soustools/logger:build
-cache hit, replaying logs 8931a7a7ccbf6fe7
+cache hit, replaying logs 7c3d16b801abc636
 $ tsc
 ::endgroup::
 ::group::@soustools/api-types:build
-cache hit, replaying logs d959c9212747823a
+cache hit, replaying logs e665743f21ca3a0d
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
-cache miss, executing e4575f0ee4f5551b
+cache miss, executing 74e4643e23983674
 $ tsc --noEmit
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 7ddedbceab3a9685
+$ tsc
 ::endgroup::
 ::group::@soustools/logger:typecheck
-cache miss, executing 0d724e633cd58473
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/api-client:typecheck
-cache miss, executing 381568f07c9311ec
+cache miss, executing 9ca278e48f2c1e30
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-types:typecheck
-cache miss, executing 5ddc884de481dc30
+cache miss, executing 0d71fa29f82d7876
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/api-client:typecheck
+cache miss, executing ad4d8af38b807751
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
-cache miss, executing 76afc8628cb817eb
+cache miss, executing cf92f011f7e6e13e
 $ tsc --noEmit
 ::endgroup::
 ::group::cli:typecheck
-cache miss, executing 4f2b036aad13584c
+cache miss, executing 8520196c8885789c
 $ tsc --noEmit
 ::endgroup::
-[;31m@soustools/design-system:typecheck[;0m
-cache miss, executing 117c81c072c38680
+::group::@soustools/design-system:typecheck
+cache miss, executing f8ead7e5a19a7409
 $ tsc --noEmit
-src/components/OmniBar/use-omni-actions.hook.ts(19,11): error TS2353: Object literal may only specify known properties, and 'itemId' does not exist in type '{ organizationId: string; vendorName: string; vendorItemString: string; masterIngredientId: string; }'.
-[ELIFECYCLE] Command failed with exit code 2.
-::group::@soustools/setup-portal:typecheck
-cache miss, executing ffa00baa7d33188e
-$ tsc --noEmit
-../../packages/design-system/src/components/OmniBar/use-omni-actions.hook.ts(19,11): error TS2353: Object literal may only specify known properties, and 'itemId' does not exist in type '{ organizationId: string; vendorName: string; vendorItemString: string; masterIngredientId: string; }'.
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing b2e459f3f7d3207e
-$ tsc --noEmit
-../design-system/src/components/OmniBar/use-omni-actions.hook.ts(19,11): error TS2353: Object literal may only specify known properties, and 'itemId' does not exist in type '{ organizationId: string; vendorName: string; vendorItemString: string; masterIngredientId: string; }'.
-[ELIFECYCLE] Command failed with exit code 2.
-::endgroup::
-::group::web:typecheck
-cache miss, executing a628591035462bb3
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 4768f1af8bfd94c0
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-inventory:typecheck
-cache miss, executing 6c6ab08ec3274855
+cache miss, executing c048a4fabd9522f3
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-recipes:typecheck
-cache miss, executing e7e6c72ae1f69130
+cache miss, executing da911cb9ef3f90f8
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 0fbf28427168b774
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 9c1866e0d603b166
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 8c488b4bbd442b68
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 9e9819c5163d21ed
+$ tsc --noEmit
 ::endgroup::
 ::group::pos-simulator:typecheck
-cache miss, executing 2f201c9396732f7f
+cache miss, executing 7d0bf1b08535e73b
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing cf030d8910ec2214
+$ tsc --noEmit
+::endgroup::
+::group::web:typecheck
+cache miss, executing b42c702521a571bb
+$ tsc --noEmit
 ::endgroup::
 ::group::api:typecheck
-cache miss, executing e1fd2e97e279a6b9
+cache miss, executing dd1e54660042db5a
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    9 successful, 19 total
-Cached:    3 cached, 19 total
-  Time:    35.338s 
-Failed:    @soustools/design-system#typecheck
+ Tasks:    19 successful, 19 total
+Cached:    2 cached, 19 total
+  Time:    58.28s 
 
