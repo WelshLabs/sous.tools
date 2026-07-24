@@ -60,7 +60,6 @@ export default async function LibraryPage() {
                 style={{ background: "var(--color-muted)" }}
               >
                 {book.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
                 ) : (
                   <BookOpen className="w-10 h-10 text-muted-foreground" />
