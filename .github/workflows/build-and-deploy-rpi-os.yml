@@ -48,8 +48,15 @@ jobs:
           # it never pollutes the upstream pi-gen checkout.
           cp -r deploy/pi/stage-sous deploy/pi/pi-gen/stage-sous
 
+      - name: Inject stage SKIP flags for base layers (Caching)
+        run: |
+          cd deploy/pi/pi-gen
+          touch stage0/SKIP
+          touch stage1/SKIP
+          touch stage2/SKIP
+
       - name: Install native pi-gen dependencies
-        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted qemu-user-static debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
+        run: sudo apt-get update && sudo apt-get install -y coreutils quilt parted debootstrap zerofree zip dosfstools libarchive-tools libcap2-bin grep rsync xz-utils curl bc gpg
 
       - name: Build OS Image natively with pi-gen
         env:
@@ -60,6 +67,7 @@ jobs:
             ARCH=arm64
             ENABLE_SSH=1
             CONTINUE=1
+            DEPLOY_COMPRESSION=none
             FIRST_USER_NAME=sous
             FIRST_USER_PASS=bootstrap123
             # Lean Lite image: skip desktop stages (3/4/5). stage-sous adds the kiosk stack.
@@ -87,7 +95,7 @@ jobs:
           echo "$CHROOT_SCRIPT" > stage2/01-sys-tweaks/99-run-chroot.sh
           sudo chmod +x stage2/01-sys-tweaks/99-run-chroot.sh
 
-          # 4. Run the NATIVE pi-gen build (Bypassing Docker)
+          # 4. Run the NATIVE pi-gen build
           sudo ./build.sh
 
       - name: Scrub deploy key from workspace (security)
@@ -95,6 +103,13 @@ jobs:
         run: |
           rm -f deploy/pi/stage-sous/00-install/files/signage-deploy-key           || true
           rm -f deploy/pi/pi-gen/stage-sous/00-install/files/signage-deploy-key    || true
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soustools-signage-os-image
+          path: deploy/pi/pi-gen/deploy/*.img
+          if-no-files-found: warn
 
       - name: Release image to GitHub (conarwelsh/signage-os)
         uses: softprops/action-gh-release@v2
@@ -105,10 +120,10 @@ jobs:
           token: ${{ env.SIGNAGE_GITHUB_PAT }}
           tag_name: v${{ github.run_number }}
           name: Signage OS v${{ github.run_number }}
-          files: deploy/pi/pi-gen/deploy/*.zip
+          files: deploy/pi/pi-gen/deploy/*.img
           make_latest: true
 
-      # THE ARMOR: Forcefully detach all system mounts BEFORE wiping the work directory
+      # THE ARMOR: Forcefully detach all system mounts BEFORE workspace cleanup
       - name: Cleanup and Protect Host Mounts
         if: always()
         run: |
@@ -118,7 +133,9 @@ jobs:
           sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev/pts || true
           sudo umount -l ${{ github.workspace }}/deploy/pi/pi-gen/work/*/stage*/rootfs/dev || true
 
-          echo "Wiping pi-gen work directories safely..."
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work       || true
-          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/deploy     || true
+          echo "Restoring +x permissions on pi-gen scripts for future runs..."
+          sudo find ${{ github.workspace }}/deploy/pi/pi-gen -type f -name "*.sh" -exec chmod +x {} + || true
+
+          echo "Wiping temporary staging directory..."
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
+
