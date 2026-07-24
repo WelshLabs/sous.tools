@@ -10,4 +10,7 @@ export type { POSModifiersModalProps, ModifierOption, ModifierGroup } from "./co
 export { POSTenderModal } from "./components/POSRegister/components/pos-tender-modal";
 export type { POSTenderModalProps } from "./components/POSRegister/components/pos-tender-modal";
 export { POSRegisterContainer } from "./components/POSRegister/pos.container";
+export { KDSContainer } from "./components/KDS/kds.container";
+export * from "./components/KDS/kds.types";
+
 

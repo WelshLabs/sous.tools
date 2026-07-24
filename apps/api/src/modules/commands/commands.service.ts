@@ -7,6 +7,7 @@ import { PurchaseOrdersService } from "../items/purchase-orders.service";
 import { VendorsService } from "../items/vendors.service";
 import { WhiteboardService } from "../items/whiteboard.service";
 import { RecipeCostService } from "../recipe/recipe-cost.service";
+import { Neo4jService } from "../neo4j-sync/neo4j.service";
 import { randomUUID } from "crypto";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { type Cache } from "cache-manager";
@@ -26,6 +27,7 @@ export class CommandsService {
     private readonly vendorsService: VendorsService,
     private readonly whiteboardService: WhiteboardService,
     private readonly recipeCostService: RecipeCostService,
+    private readonly neo4jService: Neo4jService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectQueue("ingestion") private ingestionQueue: Queue,
   ) {}
@@ -270,6 +272,89 @@ export class CommandsService {
                 error: `Failed to create ingestion review: ${error?.message}`,
               };
             }
+
+          // ─── V1 ReAct Tool Routing ────────────────────────────────────────────
+
+          } else if (functionName === "execute_cypher_query") {
+            agentMessageContent = `Querying the Core Matrix...`;
+            if (emitMessage)
+              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+
+            try {
+              const result = await this.neo4jService.runQuery(
+                args.query as string,
+                (args.params as Record<string, any>) ?? {},
+              );
+              const records = result.records.map((r: any) => r.toObject());
+              toolResponseData = { success: true, records, count: records.length };
+            } catch (err: any) {
+              toolResponseData = { success: false, error: err.message };
+            }
+
+          } else if (functionName === "render_ui_component") {
+            agentMessageContent = `Rendering ${args.componentName} component...`;
+            if (emitMessage) {
+              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+              // Emit a dedicated socket event so the frontend can intercept and swap the bubble
+              emitMessage({
+                id: randomUUID(),
+                role: "render_component" as any,
+                content: JSON.stringify({ componentName: args.componentName, props: args.props }),
+                timestamp: new Date(),
+              });
+            }
+            toolResponseData = { success: true, rendered: true, componentName: args.componentName };
+
+          } else if (functionName === "enqueue_background_task") {
+            agentMessageContent = `Queuing background task: ${args.jobName}...`;
+            if (emitMessage)
+              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+
+            try {
+              const job = await this.ingestionQueue.add(
+                args.jobName as string,
+                args.payload as Record<string, any>,
+                { priority: (args.priority as number) ?? 5, attempts: 3, backoff: { type: "exponential", delay: 2000 } },
+              );
+              toolResponseData = { success: true, jobId: job.id, jobName: args.jobName };
+            } catch (err: any) {
+              toolResponseData = { success: false, error: err.message };
+            }
+
+          } else if (functionName === "ingest_knowledge_source") {
+            agentMessageContent = `Ingesting knowledge source (${args.scope} scope)...`;
+            if (emitMessage)
+              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+
+            try {
+              const job = await this.ingestionQueue.add(
+                "ingest-knowledge",
+                {
+                  organizationId: orgId,
+                  sourceUrl: args.sourceUrl,
+                  sourceName: args.sourceName ?? null,
+                  scope: args.scope,
+                  instructions: args.instructions,
+                },
+                { attempts: 3, backoff: { type: "exponential", delay: 2000 } },
+              );
+              toolResponseData = { success: true, jobId: job.id, scope: args.scope };
+            } catch (err: any) {
+              toolResponseData = { success: false, error: err.message };
+            }
+
+          } else if (functionName === "search_the_web") {
+            agentMessageContent = `Searching the web for: "${args.query}"...`;
+            if (emitMessage)
+              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+
+            // TODO: Integrate Serper/Brave Search API when key is provisioned in Infisical
+            this.logger.warn(`[search_the_web] No search API key configured — returning stub. Query: ${args.query}`);
+            toolResponseData = {
+              success: true,
+              results: [],
+              message: "No web search API is configured yet. Please ask the user to provide the information directly.",
+            };
           }
 
           // Append model's full response content to history to preserve thought_signature, text, and functionCall

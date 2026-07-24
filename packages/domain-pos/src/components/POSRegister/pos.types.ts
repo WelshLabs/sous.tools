@@ -25,7 +25,8 @@ export const CatalogItemSchema = z.object({
   category: z.string(),
   image: z.string().optional(),
   isSoldOut: z.boolean().optional(),
-  description: z.string().optional()
+  description: z.string().optional(),
+  modifierGroupIds: z.array(z.string()).optional()
 });
 
 export type CartItemModifier = z.infer<typeof CartItemModifierSchema>;

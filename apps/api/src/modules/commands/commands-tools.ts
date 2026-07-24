@@ -100,4 +100,119 @@ export const ALL_COMMAND_TOOLS: FunctionDeclaration[] = [
   updateItemStatusTool,
   adjustThrottleTimeTool,
   reconcileInventoryTool,
+  executeCypherQueryTool,
+  renderUiComponentTool,
+  enqueueBackgroundTaskTool,
+  ingestKnowledgeSourceTool,
+  searchTheWebTool,
 ];
+
+// ─── V1 ReAct Tool Registry ───────────────────────────────────────────────────
+
+export const executeCypherQueryTool: FunctionDeclaration = {
+  name: 'execute_cypher_query',
+  description: 'Executes a raw Cypher query against the Neo4j Core Matrix to read or write graph data. Use for relationship traversal, knowledge lookups, or schema inspection.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      query: {
+        type: Type.STRING,
+        description: 'The Cypher query string to execute (e.g., MATCH (n:Ingredient) RETURN n LIMIT 10)',
+      },
+      params: {
+        type: Type.OBJECT,
+        description: 'Optional named parameters to bind into the Cypher query (e.g., { "id": "abc-123" })',
+      },
+    },
+    required: ['query'],
+  },
+};
+
+export const renderUiComponentTool: FunctionDeclaration = {
+  name: 'render_ui_component',
+  description: 'Instructs the frontend to swap the current chat bubble for a rich interactive component. Use when the response is better represented as a UI widget (e.g., a POS ticket, a metric chart, an ingredient table).',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      componentName: {
+        type: Type.STRING,
+        description: 'The name of the registered frontend component to render (e.g., "PosTicket", "MetricChart", "IngredientTable")',
+      },
+      props: {
+        type: Type.OBJECT,
+        description: 'The data props to pass into the component',
+      },
+    },
+    required: ['componentName', 'props'],
+  },
+};
+
+export const enqueueBackgroundTaskTool: FunctionDeclaration = {
+  name: 'enqueue_background_task',
+  description: 'Offloads a heavy or long-running operation to the Redis/BullMQ background queue. Use for tasks that would block the real-time response (e.g., bulk PDF parsing, large dataset sync).',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      jobName: {
+        type: Type.STRING,
+        description: 'The registered BullMQ job name (e.g., "process-ingestion", "sync-square-catalog")',
+      },
+      payload: {
+        type: Type.OBJECT,
+        description: 'The job payload to enqueue',
+      },
+      priority: {
+        type: Type.NUMBER,
+        description: 'Optional job priority (lower number = higher priority). Defaults to 5.',
+      },
+    },
+    required: ['jobName', 'payload'],
+  },
+};
+
+export const ingestKnowledgeSourceTool: FunctionDeclaration = {
+  name: 'ingest_knowledge_source',
+  description: 'Parses and ingests a knowledge source (book, URL, PDF) into the Neo4j knowledge graph. Routes to the correct namespace: "tenant" for restaurant-specific data or "global" for shared culinary knowledge.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      sourceUrl: {
+        type: Type.STRING,
+        description: 'The URL or file URL of the knowledge source to ingest',
+      },
+      scope: {
+        type: Type.STRING,
+        description: 'Routing scope: "tenant" (organization-specific) or "global" (shared across all tenants)',
+      },
+      instructions: {
+        type: Type.STRING,
+        description: 'Natural language instructions for the parser (e.g., "Extract all recipes and map ingredients to master list")',
+      },
+      sourceName: {
+        type: Type.STRING,
+        description: 'Optional human-readable name for the source (e.g., "The French Laundry Cookbook")',
+      },
+    },
+    required: ['sourceUrl', 'scope', 'instructions'],
+  },
+};
+
+export const searchTheWebTool: FunctionDeclaration = {
+  name: 'search_the_web',
+  description: 'Searches the internet for missing culinary data such as recipes, ingredient substitutions, or supplier information. Use when internal knowledge is insufficient.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      query: {
+        type: Type.STRING,
+        description: 'The search query string (e.g., "classic beef bourguignon recipe ingredients")',
+      },
+      maxResults: {
+        type: Type.NUMBER,
+        description: 'Maximum number of results to return. Defaults to 5.',
+      },
+    },
+    required: ['query'],
+  },
+};
+

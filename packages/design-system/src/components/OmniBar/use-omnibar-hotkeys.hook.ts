@@ -24,34 +24,55 @@ export function useOmniBarHotkeys({
     chatHistory,
     setChatHistory,
     contextPayload,
+    stagedFiles,
+    setStagedFiles,
   } = useOmnibarContext();
 
   /**
    * Core submit logic — shared between Enter keypress and the Submit button.
-   * Reads the current inputText from Zustand, emits over the socket.
+   * Sends both the text prompt AND any staged file attachments in a single payload.
+   * Clears the staging area after dispatch.
    */
   const handleSubmit = async () => {
     if (isProcessing) return;
 
     const textToSubmit = inputText.trim();
-    if (!textToSubmit) return;
+    const hasFiles = stagedFiles.length > 0;
+
+    // Allow submit if there is text OR staged files (or both)
+    if (!textToSubmit && !hasFiles) return;
 
     setInputText("");
+    setStagedFiles([]);
     setIsProcessing(true);
     setErrorMessage(null);
     if (!isFocusPage) {
       setIsOpen(true);
     }
 
+    // Build a human-readable user message that reflects what was submitted
+    const attachmentSummary = hasFiles
+      ? `[${stagedFiles.length} attachment${stagedFiles.length > 1 ? "s" : ""}]`
+      : "";
+    const userContent = [attachmentSummary, textToSubmit].filter(Boolean).join(" ");
+
     const newUserMessage: OmniMessage = {
       id: crypto.randomUUID(),
       role: "user",
-      content: textToSubmit,
+      content: userContent,
       timestamp: new Date(),
     };
 
     const updatedHistory = [...chatHistory, newUserMessage];
     setChatHistory(updatedHistory);
+
+    // Build attachments array from staged files for the backend
+    const attachments = stagedFiles.map((f) => ({
+      id: f.id,
+      name: f.file?.name ?? "unknown",
+      mimeType: f.file?.type ?? "application/octet-stream",
+      url: f.url ?? f.previewUrl ?? null,
+    }));
 
     try {
       if (!socket || !socket.connected) {
@@ -66,6 +87,7 @@ export function useOmniBarHotkeys({
         source: "omnibar",
         path: pathname,
         context: contextPayload,
+        attachments,
       });
     } catch (err: unknown) {
       console.error("Failed to emit command:", err);

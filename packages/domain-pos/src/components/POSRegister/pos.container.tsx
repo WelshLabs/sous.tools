@@ -9,13 +9,15 @@ import { OmniBar } from "@soustools/design-system";
 import { POSRegisterView } from "./pos.view";
 import { POSCatalog } from "./components/pos-catalog";
 import { POSTicket } from "./components/pos-ticket";
-import { POSModifiersModal, type ModifierOption } from "./components/pos-modifiers-modal";
+import { POSModifiersModal, type ModifierGroup, type ModifierOption } from "./components/pos-modifiers-modal";
 import { POSTenderModal } from "./components/pos-tender-modal";
 import { type CatalogItem, type CartItem } from "./pos.types";
-import { MOCK_BURGER_MODIFIERS, CATEGORIES, getFilteredItems, calculateTotals, buildCartWithAddedItem } from "./pos.helpers";
+import { getFilteredItems, calculateTotals, buildCartWithAddedItem } from "./pos.helpers";
 
 export function POSRegisterContainer() {
   const [items, setItems] = useState<CatalogItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [modifierGroups, setModifierGroups] = useState<ModifierGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -24,6 +26,7 @@ export function POSRegisterContainer() {
 
   // Modals Local State
   const [selectedItemForModifiers, setSelectedItemForModifiers] = useState<CatalogItem | null>(null);
+  const [activeModifiersForModal, setActiveModifiersForModal] = useState<ModifierGroup[]>([]);
   const [isModifiersOpen, setIsModifiersOpen] = useState(false);
   const [isTenderOpen, setIsTenderOpen] = useState(false);
 
@@ -32,14 +35,53 @@ export function POSRegisterContainer() {
       setLoading(true);
       try {
         const targetOrgId = "d0000000-0000-0000-0000-000000000000";
-        const { data, error } = await api.GET("/pos-simulator/items", {
-          params: { query: { organizationId: targetOrgId } },
+        const { data, error } = await api.GET("/pos/catalog", {
+          params: { query: { orgId: targetOrgId } },
         });
 
         if (error) {
           throw new Error(typeof error === "string" ? error : JSON.stringify(error));
         }
-        if (data) setItems(data);
+        if (data) {
+          const payload = (data as any).data || data;
+          const rawCategories = payload.categories || [];
+          const rawItems = payload.items || [];
+          const rawGroups = payload.modifierGroups || [];
+
+          const categoryMap = new Map<string, string>();
+          const catNames: string[] = [];
+          rawCategories.forEach((c: any) => {
+            categoryMap.set(c.id, c.name);
+            catNames.push(c.name);
+          });
+          setCategories(catNames);
+
+          const mappedGroups: ModifierGroup[] = rawGroups.map((mg: any) => ({
+            id: mg.id,
+            name: mg.name,
+            required: (mg.min_selected_modifiers || 0) > 0,
+            minSelections: mg.min_selected_modifiers || 0,
+            maxSelections: mg.max_selected_modifiers || 10,
+            options: (mg.pos_modifier_options || []).map((mo: any) => ({
+              id: mo.id,
+              name: mo.name,
+              price: Number(mo.price || 0),
+            })),
+          }));
+          setModifierGroups(mappedGroups);
+
+          const mappedItems: CatalogItem[] = rawItems.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            price: Number(item.price || 0),
+            category: item.category_id ? categoryMap.get(item.category_id) || "Other" : "Other",
+            image: item.image_url || undefined,
+            isSoldOut: item.is_sold_out || false,
+            description: item.description || undefined,
+            modifierGroupIds: (item.pos_item_modifier_groups || []).map((g: any) => g.modifier_group_id),
+          }));
+          setItems(mappedItems);
+        }
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : String(e);
         toast.error(`Failed to load POS catalog: ${message}`);
@@ -59,8 +101,14 @@ export function POSRegisterContainer() {
   };
 
   const handleItemClick = (item: CatalogItem) => {
-    if (item.name.toLowerCase().includes("burger") || item.name.toLowerCase().includes("sandwich")) {
+    const itemMgIds = item.modifierGroupIds || [];
+    const matchingGroups = itemMgIds.length > 0
+      ? modifierGroups.filter((g) => itemMgIds.includes(g.id))
+      : modifierGroups;
+
+    if (matchingGroups.length > 0) {
       setSelectedItemForModifiers(item);
+      setActiveModifiersForModal(matchingGroups);
       setIsModifiersOpen(true);
     } else {
       addToCartDirect(item, []);
@@ -87,29 +135,26 @@ export function POSRegisterContainer() {
   const handleCheckoutSubmit = async (_paymentType: string, _amountTendered: number) => {
     if (cart.length === 0) return;
     setIsCheckingOut(true);
-    const orderData = {
-      items: cart.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        modifiers: item.modifiers.map((m) => ({
-          external_id: m.external_id,
-          name: m.name,
-        })),
-      })),
-    };
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (api.POST as any)("/integrations/checkout", {
-        body: { orgId: "d0000000-0000-0000-0000-000000000000", orderData },
+      const transactionsToInsert = cart.map((item) => ({
+        organization_id: "d0000000-0000-0000-0000-000000000000",
+        pos_item_id: item.id.split("-")[0],
+        quantity_sold: item.quantity,
+        gross_revenue: (item.price + item.modifiers.reduce((s, m) => s + m.price, 0)) * item.quantity,
+        transaction_time: new Date().toISOString(),
+        source: "pos_register",
+      }));
+
+      const { error } = await api.POST("/pos/transactions/bulk", {
+        body: transactionsToInsert as any,
       });
 
       if (error) {
         throw new Error(typeof error === "string" ? error : JSON.stringify(error));
       }
 
-      toast.success("Order processed successfully. Synced to Square POS API.");
+      toast.success("Order processed successfully. Synced to POS transactions.");
       setCart([]);
       setIsTenderOpen(false);
     } catch (e: unknown) {
@@ -144,7 +189,7 @@ export function POSRegisterContainer() {
           ) : (
             <POSCatalog
               items={filteredItems}
-              categories={CATEGORIES}
+              categories={categories}
               selectedCategory={selectedCategory}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
@@ -169,7 +214,7 @@ export function POSRegisterContainer() {
         isOpen={isModifiersOpen}
         onClose={() => setIsModifiersOpen(false)}
         item={selectedItemForModifiers}
-        groups={MOCK_BURGER_MODIFIERS}
+        groups={activeModifiersForModal}
         onSubmit={handleModifierSubmit}
       />
 
@@ -183,3 +228,4 @@ export function POSRegisterContainer() {
   );
 }
 POSRegisterContainer.displayName = "POSRegisterContainer";
+

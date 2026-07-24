@@ -56,4 +56,52 @@ export class PosTransactionsService {
       revenue: Number(days === 7 ? row.revenue_7d : row.revenue_30d) || 0,
     }));
   }
+
+  async completeOrder(orderId: string, orgId: string): Promise<void> {
+    const closedAt = new Date().toISOString();
+    const { error: orderError } = await supabase
+      .from('pos_orders')
+      .update({ state: 'COMPLETED', closed_at: closedAt })
+      .eq('id', orderId)
+      .eq('organization_id', orgId);
+
+    if (orderError) {
+      throw new Error(orderError.message);
+    }
+
+    await supabase
+      .from('pos_order_line_items')
+      .update({ status: 'COMPLETED', updated_at: closedAt })
+      .eq('pos_order_id', orderId);
+
+    const { data: lineItems } = await supabase
+      .from('pos_order_line_items')
+      .select('*')
+      .eq('pos_order_id', orderId);
+
+    if (lineItems && lineItems.length > 0) {
+      const txRows = lineItems.map((item: any) => ({
+        organization_id: orgId,
+        pos_item_id: item.pos_item_id || null,
+        quantity_sold: Number(item.quantity || 1),
+        gross_revenue: Number(item.gross_sales_money || item.base_price_money || 0),
+        transaction_time: closedAt,
+        source: 'kds',
+      }));
+
+      await supabase.from('pos_transactions').insert(txRows);
+    }
+  }
+
+  async updateLineItemStatus(lineItemId: string, status: string): Promise<void> {
+    const { error } = await supabase
+      .from('pos_order_line_items')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', lineItemId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
 }
+

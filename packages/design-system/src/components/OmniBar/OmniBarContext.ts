@@ -6,6 +6,8 @@ export interface StagedFile {
   url: string | null;
   status: 'uploading' | 'complete' | 'error';
   file?: File;
+  /** Local object URL for image thumbnail preview. Revoked on unmount. */
+  previewUrl?: string;
 }
 
 export interface OmniBarState {

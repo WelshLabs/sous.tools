@@ -68,17 +68,7 @@ export function playSuccessSound() {
 }
 
 export function getFilteredItems(items: CatalogItem[], searchQuery: string, selectedCategory: string): CatalogItem[] {
-  const mapped: CatalogItem[] = items.map((item) => ({
-    id: item.id,
-    name: item.name,
-    price: Number(item.price),
-    category: getCategory(item.name),
-    description: item.description || undefined,
-    isSoldOut: item.isSoldOut || false,
-    image: item.image || undefined,
-  }));
-
-  return mapped.filter((item) => {
+  return items.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "" || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
