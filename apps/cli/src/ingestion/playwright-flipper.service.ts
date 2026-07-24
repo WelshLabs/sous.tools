@@ -47,6 +47,11 @@ export class PlaywrightFlipperService {
     await activePage.goto(url);
     await activePage.waitForTimeout(3000);
 
+    this.logger.log(`Injecting CSS to hide Google Books UI elements...`);
+    await activePage.addStyleTag({
+      content: 'reader-app-bar, reader-scrubber { display: none !important; }',
+    });
+
     const pdfDoc = await PDFDocument.create();
     let previousBuffer: Buffer | null = null;
     const limit = maxPages && maxPages > 0 ? maxPages : 2000;
