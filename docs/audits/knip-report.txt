@@ -1,4 +1,4 @@
-[93m[4mUnused files[24m[39m (105)
+[93m[4mUnused files[24m[39m (106)
 apps/setup-portal/src/components/PairingStep.tsx                             
 apps/setup-portal/src/components/WifiStep.tsx                                
 apps/storybook/.storybook/__mocks__/next-link.tsx                            
@@ -24,6 +24,7 @@ apps/web/src/components/layout/bottom-nav.tsx
 apps/web/src/components/layout/hamburger.tsx                                 
 apps/web/src/components/layout/sidebar.tsx                                   
 apps/web/src/components/layout/theme-toggle.tsx                              
+apps/web/src/components/ui/confirm-modal.tsx                                 
 apps/web/src/lib/api.ts                                                      
 apps/web/src/sw.ts                                                           
 ecosystem.config.js                                                          
@@ -104,8 +105,10 @@ packages/domain-signage/src/preview-column-layout.tsx
 packages/domain-signage/src/preview-column-renderers.tsx                     
 packages/domain-signage/src/preview-menu-renderer.tsx                        
 scripts/generate-icons.mjs                                                   
-[93m[4mUnused dependencies[24m[39m (23)
+[93m[4mUnused dependencies[24m[39m (25)
 @as-integrations/express4      apps/api/package.json:20:6                
+@types/pdf-parse               apps/api/package.json:37:6                
+pdf-parse                      apps/api/package.json:49:6                
 @nestjs/platform-express       apps/cli/package.json:24:6                
 @soustools/api-types           apps/cli/package.json:25:6                
 @soustools/config              apps/cli/package.json:26:6                
@@ -129,14 +132,14 @@ sonner                         packages/domain-settings/package.json:41:6
 @octokit/rest                  packages/mcp-server/package.json          
 dotenv                         packages/mcp-server/package.json          
 [93m[4mUnused devDependencies[24m[39m (34)
-@types/supertest                 apps/api/package.json:63:6              
-source-map-support               apps/api/package.json:66:6              
-supertest                        apps/api/package.json:67:6              
-ts-loader                        apps/api/package.json:69:6              
-ts-node                          apps/api/package.json:70:6              
-tsconfig-paths                   apps/api/package.json:71:6              
-webpack                          apps/api/package.json:74:6              
-webpack-node-externals           apps/api/package.json:75:6              
+@types/supertest                 apps/api/package.json:65:6              
+source-map-support               apps/api/package.json:68:6              
+supertest                        apps/api/package.json:69:6              
+ts-loader                        apps/api/package.json:71:6              
+ts-node                          apps/api/package.json:72:6              
+tsconfig-paths                   apps/api/package.json:73:6              
+webpack                          apps/api/package.json:76:6              
+webpack-node-externals           apps/api/package.json:77:6              
 @nestjs/testing                  apps/cli/package.json:38:6              
 @types/express                   apps/cli/package.json:40:6              
 @types/supertest                 apps/cli/package.json:43:6              
@@ -211,131 +214,137 @@ next-themes           apps/storybook/.storybook/preview.tsx:3:32
 supabase  package.json
 tsx       package.json
 xclip     package.json
-[93m[4mUnused exports[24m[39m (40)
-SupabaseClientWrapper                    class     apps/api/src/lib/supabase.ts:20:14                                   
-addToPurchaseOrderTool                             apps/api/src/modules/commands/commands-tools.ts:3:14                 
-addToWhiteboardTool                                apps/api/src/modules/commands/commands-tools.ts:18:14                
-getRecipeCostTool                                  apps/api/src/modules/commands/commands-tools.ts:32:14                
-ingestVendorInvoiceTool                            apps/api/src/modules/commands/commands-tools.ts:44:14                
-updateItemStatusTool                               apps/api/src/modules/commands/commands-tools.ts:56:14                
-adjustThrottleTimeTool                             apps/api/src/modules/commands/commands-tools.ts:69:14                
-reconcileInventoryTool                             apps/api/src/modules/commands/commands-tools.ts:81:14                
-executeCypherQueryTool                             apps/api/src/modules/commands/commands-tools.ts:98:14                
-renderUiComponentTool                              apps/api/src/modules/commands/commands-tools.ts:117:14               
-enqueueBackgroundTaskTool                          apps/api/src/modules/commands/commands-tools.ts:136:14               
-ingestKnowledgeSourceTool                          apps/api/src/modules/commands/commands-tools.ts:159:14               
-searchTheWebTool                                   apps/api/src/modules/commands/commands-tools.ts:186:14               
-IngestionSuggestionDto                   class     apps/api/src/modules/ingestion/ingestion.controller.ts:20:14         
-IngestionLineItemDto                     class     apps/api/src/modules/ingestion/ingestion.controller.ts:34:14         
-PolymorphicExtractionResponseDto         class     apps/api/src/modules/ingestion/ingestion.controller.ts:66:14         
-PolymorphicExtractionResponseWrapperDto  class     apps/api/src/modules/ingestion/ingestion.controller.ts:90:14         
-snakeToCamelCase                         function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:14:17          
-capitalize                               function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:21:17          
-resolveNodeLabel                         function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:26:17          
-serializeProperties                      function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:47:17          
-generatePairingCode                      function  apps/api/src/modules/signage/displays.helpers.ts:26:17               
-dbRegisterPairingCode                    function  apps/api/src/modules/signage/displays.helpers.ts:41:23               
-dbConfirmPairing                         function  apps/api/src/modules/signage/displays.helpers.ts:74:23               
-default                                            apps/pos-simulator/src/components/PosSimulator.container.tsx:111:16  
-default                                            apps/pos-simulator/src/components/PosSimulator.tsx:70:16             
-DialogPortal                                       packages/design-system/src/components/Dialog/Dialog.tsx:112:3        
-DialogOverlay                                      packages/design-system/src/components/Dialog/Dialog.tsx:113:3        
-DialogClose                                        packages/design-system/src/components/Dialog/Dialog.tsx:115:3        
-OmnibarPerimeterView                               packages/design-system/src/components/OmniBar/index.ts:16:10         
-MetricCard                               function  packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx:72:17
-MOCK_BURGER_MODIFIERS                              packages/domain-pos/src/components/POSRegister/pos.helpers.ts:4:14   
-getCategory                                        packages/domain-pos/src/components/POSRegister/pos.helpers.ts:31:14  
-CATEGORIES                                         packages/domain-pos/src/components/POSRegister/pos.helpers.ts:45:14  
-playSuccessSound                         function  packages/domain-pos/src/components/POSRegister/pos.helpers.ts:51:17  
-MenuItemContext                                    packages/domain-signage/src/block-editor-node.tsx:25:14              
-BLOCK_GROUPS                                       packages/domain-signage/src/block-palette-items.ts:31:14             
-default                                            packages/domain-signage/src/editor-top-bar.tsx:124:16                
-default                                            packages/domain-signage/src/layout-preview.tsx:130:16                
-SlideMiniature                           function  packages/domain-signage/src/slide-filmstrip-card.tsx:9:17            
-[93m[4mUnused exported types[24m[39m (83)
-SquareCatalogObject         interface  apps/api/src/modules/integrations/drivers/square/square-client.helper.ts:3:18    
-POSOrderLineItemUpsert      interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:78:18   
-POSCategoryUpsert           interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:91:18   
-POSDiscountUpsert           interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:99:18   
-POSOrderUpsert              interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:109:18  
-POSModifierGroupUpsert      interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:123:18  
-POSModifierOptionUpsert     interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:133:18  
-POSItemUpsert               interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:144:18  
-POSItemModifierGroupUpsert  interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:157:18  
-POSTransactionUpsert        interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:162:18  
-StockRow                    interface  apps/api/src/modules/items/inventory.service.ts:29:18                            
-ClassifiedDietInfo          interface  apps/api/src/modules/items/items-query.helper.ts:22:18                           
-ApiResponse                 interface  apps/api/src/modules/items/items.controller.ts:14:18                             
-ApiResponse                 interface  apps/api/src/modules/items/price-history.controller.ts:7:18                      
-ApiResponse                 interface  apps/api/src/modules/items/wastage.controller.ts:4:18                            
-WastageReportRow            interface  apps/api/src/modules/items/wastage.service.ts:22:18                              
-RelationshipConfig          interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:3:18                   
-TableConfig                 interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:10:18                  
-JoinTableConfig             interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:17:18                  
-RegistryConfig              type       apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:31:13                  
-UsdaMatch                   interface  apps/api/src/modules/nutrition/usda-resolver.service.ts:4:18                     
-MockPosItem                 type       apps/api/src/modules/pos-simulator/pos-simulator.helpers.ts:5:15                 
-MockPosItem                 interface  apps/api/src/modules/pos-simulator/pos-simulator.mock.ts:1:18                    
-LinkRecipeDto               interface  apps/api/src/modules/pos/pos-links.service.ts:4:18                               
-RecordTransactionDto        interface  apps/api/src/modules/pos/pos-transactions.service.ts:4:18                        
-VelocityRow                 interface  apps/api/src/modules/pos/pos-transactions.service.ts:14:18                       
-CostIngredient              interface  apps/api/src/modules/recipe/recipe-cost.service.ts:4:18                          
-RecipeCost                  interface  apps/api/src/modules/recipe/recipe-cost.service.ts:11:18                         
-ApiResponse                 interface  apps/api/src/modules/recipe/recipe-versions.controller.ts:4:18                   
-PosItemCardProps            interface  apps/pos-simulator/src/components/PosItemCard.tsx:7:18                           
-PosSimulatorProps           interface  apps/pos-simulator/src/components/PosSimulator.tsx:9:18                          
-PosItem                     interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:9:18                        
-PosCategory                 interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:18:18                       
-PosModifierGroup            interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:24:18                       
-PosDiscount                 interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:31:18                       
-InvoiceItemRowProps         interface  apps/web/src/app/(workspace)/ingestion/review/[id]/invoice-item-row.tsx:8:18     
-PageHeaderProps             interface  apps/web/src/app/(workspace)/ingestion/review/[id]/page-header.tsx:7:18          
-RecipeIngredientRowProps    interface  apps/web/src/app/(workspace)/ingestion/review/[id]/recipe-ingredient-row.tsx:6:18
-RecipeSectionProps          interface  apps/web/src/app/(workspace)/ingestion/review/[id]/recipe-section.tsx:7:18       
-VendorSectionProps          interface  apps/web/src/app/(workspace)/ingestion/review/[id]/vendor-section.tsx:8:18       
-OrdersClientProps           interface  apps/web/src/app/(workspace)/inventory/orders/OrdersClient.tsx:9:18              
-VendorsClientProps          interface  apps/web/src/app/(workspace)/inventory/vendors/vendors-client.tsx:9:18           
-PosOrder                    interface  apps/web/src/app/(workspace)/pos-orders/PosOrdersView.tsx:13:18                  
-RecipeViewerClientProps     interface  apps/web/src/app/(workspace)/recipes/[id]/RecipeViewerClient.tsx:8:18            
-RecipeBuilderClientProps    interface  apps/web/src/app/(workspace)/recipes/RecipeBuilderClient.tsx:9:18                
-SettingsClientProps         interface  apps/web/src/app/(workspace)/settings/settings-client.tsx:35:18                  
-TeamPortalViewProps         interface  apps/web/src/app/(workspace)/team/team.view.tsx:7:18                             
-Transaction                 interface  apps/web/src/app/(workspace)/transactions/TransactionsView.tsx:21:18             
-MenuItemCardProps           interface  apps/web/src/app/display/[id]/menu-item-card.tsx:14:18                           
-ConfirmModalProps           type       apps/web/src/components/ui/confirm-modal.tsx:7:15                                
-OrderSupplier               interface  packages/design-system/src/components/InsightsSidebar/InsightsSidebar.tsx:3:18   
-DocumentViewerProps         interface  packages/design-system/src/components/OmniBar/DocumentViewer.tsx:8:18            
-OmniMetric                  type       packages/design-system/src/components/OmniBar/index.ts:4:15                      
-OmniChatWindowProps         type       packages/design-system/src/components/OmniBar/index.ts:4:27                      
-OmniBarState                interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:13:18            
-OmniMetric                  type       packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:16:15           
-OmniChatWindowProps         interface  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:18:18           
-OmniInputPillProps          interface  packages/design-system/src/components/OmniBar/OmniInputPill.tsx:15:18            
-UnifiedItemRowProps         interface  packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx:16:18           
-QuickAddBarProps            interface  packages/design-system/src/components/QuickAddBar/QuickAddBar.tsx:14:18          
-UsdaSearchResult            interface  …ckages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx:20:18
-ItemEditorProps             interface  …ckages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx:32:18
-LedgerItem                  interface  packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.view.tsx:4:18   
-ItemsLedgerViewProps        interface  packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.view.tsx:13:18  
-OrdersPanelProps            interface  …ages/domain-inventory/src/components/OrdersPanel/OrdersPanel.container.tsx:20:18
-SupplierHeaderProps         interface  packages/domain-inventory/src/components/Supplier/SupplierHeader.tsx:6:18        
-OrderItemRowProps           interface  packages/domain-inventory/src/components/Supplier/SupplierLineItem.tsx:7:18      
-VendorCardFormProps         interface  packages/domain-inventory/src/components/VendorsPanel/VendorCardForm.tsx:8:18    
-VendorsPanelProps           interface  …ges/domain-inventory/src/components/VendorsPanel/VendorsPanel.container.tsx:7:18
-AddBlocksPaletteProps       interface  packages/domain-signage/src/add-blocks-palette.tsx:10:18                         
-AtomEditorPopoverProps      interface  packages/domain-signage/src/atom-editor-popover.tsx:18:18                        
-BlockSettingsPanelProps     interface  packages/domain-signage/src/block-settings-panel.tsx:13:18                       
-BlockTypeConfigFieldsProps  interface  packages/domain-signage/src/block-type-config-fields.tsx:21:18                   
-DeviceSettingsDialogProps   interface  packages/domain-signage/src/device-settings-dialog.tsx:8:18                      
-EditorTopBarProps           interface  packages/domain-signage/src/editor-top-bar.tsx:8:18                              
-FontPickerPopoverProps      interface  packages/domain-signage/src/font-picker-popover.tsx:7:18                         
-LayersTreeProps             interface  packages/domain-signage/src/layers-tree.tsx:7:18                                 
-LayoutPreviewProps          interface  packages/domain-signage/src/layout-preview.tsx:8:18                              
-MenuItemPreviewCardProps    interface  packages/domain-signage/src/menu-item-preview-card.tsx:14:18                     
-PairDisplayDialogProps      interface  packages/domain-signage/src/pair-display-dialog.tsx:7:18                         
-RightSidePanelProps         interface  packages/domain-signage/src/right-side-panel.tsx:17:18                           
-SlideFilmstripProps         interface  packages/domain-signage/src/slide-filmstrip.tsx:13:18                            
-StylesPanelProps            interface  packages/domain-signage/src/styles-panel.tsx:11:18                               
+[93m[4mUnused exports[24m[39m (43)
+SupabaseClientWrapper      class     apps/api/src/lib/supabase.ts:20:14                                    
+addToPurchaseOrderTool               apps/api/src/modules/commands/commands-tools.ts:3:14                  
+addToWhiteboardTool                  apps/api/src/modules/commands/commands-tools.ts:18:14                 
+getRecipeCostTool                    apps/api/src/modules/commands/commands-tools.ts:32:14                 
+ingestVendorInvoiceTool              apps/api/src/modules/commands/commands-tools.ts:44:14                 
+updateItemStatusTool                 apps/api/src/modules/commands/commands-tools.ts:56:14                 
+adjustThrottleTimeTool               apps/api/src/modules/commands/commands-tools.ts:69:14                 
+reconcileInventoryTool               apps/api/src/modules/commands/commands-tools.ts:81:14                 
+executeCypherQueryTool               apps/api/src/modules/commands/commands-tools.ts:98:14                 
+renderUiComponentTool                apps/api/src/modules/commands/commands-tools.ts:117:14                
+enqueueBackgroundTaskTool            apps/api/src/modules/commands/commands-tools.ts:136:14                
+ingestKnowledgeSourceTool            apps/api/src/modules/commands/commands-tools.ts:159:14                
+searchTheWebTool                     apps/api/src/modules/commands/commands-tools.ts:186:14                
+updateReviewStateTool                apps/api/src/modules/commands/commands-tools.ts:205:14                
+getPosSalesStatsTool                 apps/api/src/modules/commands/commands-tools.ts:232:14                
+RevenueChartItem           class     apps/api/src/modules/dashboard/dashboard.types.ts:4:14                
+TicketTimeChartItem        class     apps/api/src/modules/dashboard/dashboard.types.ts:13:14               
+InventoryAlertItem         class     apps/api/src/modules/dashboard/dashboard.types.ts:22:14               
+DashboardSummary           class     apps/api/src/modules/dashboard/dashboard.types.ts:34:14               
+snakeToCamelCase           function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:14:17           
+capitalize                 function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:21:17           
+resolveNodeLabel           function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:26:17           
+serializeProperties        function  apps/api/src/modules/neo4j-sync/neo4j-sync.service.ts:47:17           
+generatePairingCode        function  apps/api/src/modules/signage/displays.helpers.ts:26:17                
+dbRegisterPairingCode      function  apps/api/src/modules/signage/displays.helpers.ts:41:23                
+dbConfirmPairing           function  apps/api/src/modules/signage/displays.helpers.ts:74:23                
+default                              apps/pos-simulator/src/components/PosSimulator.container.tsx:111:16   
+default                              apps/pos-simulator/src/components/PosSimulator.tsx:70:16              
+DialogPortal                         packages/design-system/src/components/Dialog/Dialog.tsx:112:3         
+DialogOverlay                        packages/design-system/src/components/Dialog/Dialog.tsx:113:3         
+DialogClose                          packages/design-system/src/components/Dialog/Dialog.tsx:115:3         
+OmnibarPerimeterView                 packages/design-system/src/components/OmniBar/index.ts:16:10          
+MetricCard                 function  packages/design-system/src/components/OmniBar/OmniChatAtoms.tsx:72:17 
+OmniChatWindow             function  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:24:17
+MOCK_BURGER_MODIFIERS                packages/domain-pos/src/components/POSRegister/pos.helpers.ts:4:14    
+getCategory                          packages/domain-pos/src/components/POSRegister/pos.helpers.ts:31:14   
+CATEGORIES                           packages/domain-pos/src/components/POSRegister/pos.helpers.ts:45:14   
+playSuccessSound           function  packages/domain-pos/src/components/POSRegister/pos.helpers.ts:51:17   
+MenuItemContext                      packages/domain-signage/src/block-editor-node.tsx:25:14               
+BLOCK_GROUPS                         packages/domain-signage/src/block-palette-items.ts:31:14              
+default                              packages/domain-signage/src/editor-top-bar.tsx:124:16                 
+default                              packages/domain-signage/src/layout-preview.tsx:130:16                 
+SlideMiniature             function  packages/domain-signage/src/slide-filmstrip-card.tsx:9:17             
+[93m[4mUnused exported types[24m[39m (86)
+SquareCatalogObject        interface  apps/api/src/modules/integrations/drivers/square/square-client.helper.ts:3:18     
+POSOrderLineItemUpsert     interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:78:18    
+POSCategoryUpsert          interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:91:18    
+POSDiscountUpsert          interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:99:18    
+POSOrderUpsert             interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:109:18   
+POSModifierGroupUpsert     interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:123:18   
+POSModifierOptionUpsert    interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:133:18   
+POSItemUpsert              interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:144:18   
+POSItemModifierGroupUpse…  interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:157:18   
+POSTransactionUpsert       interface  apps/api/src/modules/integrations/drivers/square/square-mapper.helper.ts:162:18   
+StockRow                   interface  apps/api/src/modules/items/inventory.service.ts:29:18                             
+ClassifiedDietInfo         interface  apps/api/src/modules/items/items-query.helper.ts:22:18                            
+ApiResponse                interface  apps/api/src/modules/items/items.controller.ts:14:18                              
+ApiResponse                interface  apps/api/src/modules/items/price-history.controller.ts:7:18                       
+ApiResponse                interface  apps/api/src/modules/items/wastage.controller.ts:4:18                             
+WastageReportRow           interface  apps/api/src/modules/items/wastage.service.ts:22:18                               
+RelationshipConfig         interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:3:18                    
+TableConfig                interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:10:18                   
+JoinTableConfig            interface  apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:17:18                   
+RegistryConfig             type       apps/api/src/modules/neo4j-sync/domain/schema-registry.ts:31:13                   
+UsdaMatch                  interface  apps/api/src/modules/nutrition/usda-resolver.service.ts:4:18                      
+MockPosItem                type       apps/api/src/modules/pos-simulator/pos-simulator.helpers.ts:5:15                  
+MockPosItem                interface  apps/api/src/modules/pos-simulator/pos-simulator.mock.ts:1:18                     
+LinkRecipeDto              interface  apps/api/src/modules/pos/pos-links.service.ts:4:18                                
+RecordTransactionDto       interface  apps/api/src/modules/pos/pos-transactions.service.ts:4:18                         
+VelocityRow                interface  apps/api/src/modules/pos/pos-transactions.service.ts:14:18                        
+CostIngredient             interface  apps/api/src/modules/recipe/recipe-cost.service.ts:4:18                           
+RecipeCost                 interface  apps/api/src/modules/recipe/recipe-cost.service.ts:11:18                          
+ApiResponse                interface  apps/api/src/modules/recipe/recipe-versions.controller.ts:4:18                    
+UnifiedIngestionJobData    interface  apps/api/src/modules/unified-ingestion/unified-ingestion.processor.ts:13:18       
+PosItemCardProps           interface  apps/pos-simulator/src/components/PosItemCard.tsx:7:18                            
+PosSimulatorProps          interface  apps/pos-simulator/src/components/PosSimulator.tsx:9:18                           
+PosItem                    interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:9:18                         
+PosCategory                interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:18:18                        
+PosModifierGroup           interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:24:18                        
+PosDiscount                interface  apps/web/src/app/(workspace)/catalog/CatalogView.tsx:31:18                        
+OrdersClientProps          interface  apps/web/src/app/(workspace)/inventory/orders/OrdersClient.tsx:9:18               
+VendorsClientProps         interface  apps/web/src/app/(workspace)/inventory/vendors/vendors-client.tsx:9:18            
+LibraryReaderViewProps     interface  apps/web/src/app/(workspace)/library/[bookId]/LibraryReaderView.tsx:8:18          
+PosOrder                   interface  apps/web/src/app/(workspace)/pos-orders/PosOrdersView.tsx:13:18                   
+RecipeViewerClientProps    interface  apps/web/src/app/(workspace)/recipes/[id]/RecipeViewerClient.tsx:8:18             
+RecipeBuilderClientProps   interface  apps/web/src/app/(workspace)/recipes/RecipeBuilderClient.tsx:9:18                 
+SettingsClientProps        interface  apps/web/src/app/(workspace)/settings/settings-client.tsx:35:18                   
+TeamPortalViewProps        interface  apps/web/src/app/(workspace)/team/team.view.tsx:7:18                              
+Transaction                interface  apps/web/src/app/(workspace)/transactions/TransactionsView.tsx:21:18              
+MenuItemCardProps          interface  apps/web/src/app/display/[id]/menu-item-card.tsx:14:18                            
+OrderSupplier              interface  packages/design-system/src/components/InsightsSidebar/InsightsSidebar.tsx:3:18    
+DocumentViewerProps        interface  packages/design-system/src/components/OmniBar/DocumentViewer.tsx:8:18             
+OmniMetric                 type       packages/design-system/src/components/OmniBar/index.ts:4:15                       
+OmniChatWindowProps        type       packages/design-system/src/components/OmniBar/index.ts:4:27                       
+OmniBarState               interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:13:18             
+OmniMetric                 type       packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:16:15            
+OmniChatWindowProps        interface  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:18:18            
+OmniInputPillProps         interface  packages/design-system/src/components/OmniBar/OmniInputPill.tsx:14:18             
+UnifiedItemRowProps        interface  packages/design-system/src/components/OmniBar/UnifiedItemRow.tsx:16:18            
+QuickAddBarProps           interface  packages/design-system/src/components/QuickAddBar/QuickAddBar.tsx:14:18           
+UsdaSearchResult           interface  packages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx:20:18
+ItemEditorProps            interface  packages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx:32:18
+LedgerItem                 interface  packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.view.tsx:4:18    
+ItemsLedgerViewProps       interface  packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.view.tsx:13:18   
+OrdersPanelProps           interface  …kages/domain-inventory/src/components/OrdersPanel/OrdersPanel.container.tsx:20:18
+BoundingBox                interface  …ges/domain-inventory/src/components/ReviewComponent/ReviewDocumentCanvas.tsx:3:18
+ReviewDocumentCanvasProps  interface  …ges/domain-inventory/src/components/ReviewComponent/ReviewDocumentCanvas.tsx:9:18
+LineItemData               interface  …kages/domain-inventory/src/components/ReviewComponent/ReviewInvoiceBlock.tsx:3:18
+ReviewInvoiceBlockProps    interface  …ages/domain-inventory/src/components/ReviewComponent/ReviewInvoiceBlock.tsx:15:18
+ReviewProseBlockProps      interface  packages/domain-inventory/src/components/ReviewComponent/ReviewProseBlock.tsx:3:18
+RecipeIngredientData       interface  …ckages/domain-inventory/src/components/ReviewComponent/ReviewRecipeBlock.tsx:3:18
+ReviewRecipeBlockProps     interface  …kages/domain-inventory/src/components/ReviewComponent/ReviewRecipeBlock.tsx:14:18
+SupplierHeaderProps        interface  packages/domain-inventory/src/components/Supplier/SupplierHeader.tsx:6:18         
+OrderItemRowProps          interface  packages/domain-inventory/src/components/Supplier/SupplierLineItem.tsx:7:18       
+VendorCardFormProps        interface  packages/domain-inventory/src/components/VendorsPanel/VendorCardForm.tsx:8:18     
+VendorsPanelProps          interface  …ages/domain-inventory/src/components/VendorsPanel/VendorsPanel.container.tsx:7:18
+AddBlocksPaletteProps      interface  packages/domain-signage/src/add-blocks-palette.tsx:10:18                          
+AtomEditorPopoverProps     interface  packages/domain-signage/src/atom-editor-popover.tsx:18:18                         
+BlockSettingsPanelProps    interface  packages/domain-signage/src/block-settings-panel.tsx:13:18                        
+BlockTypeConfigFieldsPro…  interface  packages/domain-signage/src/block-type-config-fields.tsx:21:18                    
+DeviceSettingsDialogProps  interface  packages/domain-signage/src/device-settings-dialog.tsx:8:18                       
+EditorTopBarProps          interface  packages/domain-signage/src/editor-top-bar.tsx:8:18                               
+FontPickerPopoverProps     interface  packages/domain-signage/src/font-picker-popover.tsx:7:18                          
+LayersTreeProps            interface  packages/domain-signage/src/layers-tree.tsx:7:18                                  
+LayoutPreviewProps         interface  packages/domain-signage/src/layout-preview.tsx:8:18                               
+MenuItemPreviewCardProps   interface  packages/domain-signage/src/menu-item-preview-card.tsx:14:18                      
+PairDisplayDialogProps     interface  packages/domain-signage/src/pair-display-dialog.tsx:7:18                          
+RightSidePanelProps        interface  packages/domain-signage/src/right-side-panel.tsx:17:18                            
+SlideFilmstripProps        interface  packages/domain-signage/src/slide-filmstrip.tsx:13:18                             
+StylesPanelProps           interface  packages/domain-signage/src/styles-panel.tsx:11:18                                
 [93m[4mDuplicate exports[24m[39m (9)
 PosSimulatorContainer|default     apps/pos-simulator/src/components/PosSimulator.container.tsx                      
 PosSimulator|default              apps/pos-simulator/src/components/PosSimulator.tsx                                

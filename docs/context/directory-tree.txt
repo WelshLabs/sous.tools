@@ -52,26 +52,21 @@
 │   │   │   │   │   └── commands.service.ts
 │   │   │   │   ├── dashboard
 │   │   │   │   │   ├── dashboard.controller.ts
-│   │   │   │   │   └── dashboard.module.ts
+│   │   │   │   │   ├── dashboard.module.ts
+│   │   │   │   │   ├── dashboard.resolver.ts
+│   │   │   │   │   ├── dashboard.service.ts
+│   │   │   │   │   └── dashboard.types.ts
 │   │   │   │   ├── devices
 │   │   │   │   │   ├── devices.controller.ts
 │   │   │   │   │   ├── devices.module.ts
 │   │   │   │   │   ├── devices.service.ts
 │   │   │   │   │   └── devices.spec.ts
-│   │   │   │   ├── ingestion
-│   │   │   │   │   ├── CloudVisionService.ts
-│   │   │   │   │   ├── IVisionService.ts
-│   │   │   │   │   ├── OllamaVisionService.ts
-│   │   │   │   │   ├── ingestion.controller.ts
-│   │   │   │   │   ├── ingestion.gateway.ts
-│   │   │   │   │   ├── ingestion.module.ts
-│   │   │   │   │   ├── ingestion.processor.ts
-│   │   │   │   │   └── normalization.service.ts
 │   │   │   │   ├── integrations
 │   │   │   │   │   ├── drivers
 │   │   │   │   │   │   ├── base.driver.ts
 │   │   │   │   │   │   ├── google-drive
 │   │   │   │   │   │   │   └── google-drive.service.ts
+│   │   │   │   │   │   ├── pos-driver.interface.ts
 │   │   │   │   │   │   └── square
 │   │   │   │   │   │       ├── square-client.helper.ts
 │   │   │   │   │   │       ├── square-mapper.helper.ts
@@ -82,8 +77,8 @@
 │   │   │   │   │   ├── integrations.service.ts
 │   │   │   │   │   ├── integrations.spec.ts
 │   │   │   │   │   ├── pos-sync.processor.ts
-│   │   │   │   │   ├── webhooks.controller.ts
-│   │   │   │   │   └── webhooks.spec.ts
+│   │   │   │   │   ├── pos-webhook.controller.ts
+│   │   │   │   │   └── pos-webhook.spec.ts
 │   │   │   │   ├── items
 │   │   │   │   │   ├── inventory.controller.ts
 │   │   │   │   │   ├── inventory.service.ts
@@ -161,6 +156,11 @@
 │   │   │   │   ├── storage
 │   │   │   │   │   ├── storage.controller.ts
 │   │   │   │   │   └── storage.module.ts
+│   │   │   │   ├── unified-ingestion
+│   │   │   │   │   ├── unified-ingestion.controller.ts
+│   │   │   │   │   ├── unified-ingestion.module.ts
+│   │   │   │   │   ├── unified-ingestion.processor.ts
+│   │   │   │   │   └── unified-ingestion.service.ts
 │   │   │   │   └── users
 │   │   │   │       ├── users.controller.ts
 │   │   │   │       └── users.module.ts
@@ -382,10 +382,6 @@
 │       │   │   │       └── page.tsx
 │       │   │   ├── (workspace)
 │       │   │   │   ├── @modal
-│       │   │   │   │   ├── (.)ingestion
-│       │   │   │   │   │   └── review
-│       │   │   │   │   │       └── [id]
-│       │   │   │   │   │           └── page.tsx
 │       │   │   │   │   ├── default.tsx
 │       │   │   │   │   └── signage
 │       │   │   │   │       └── [deckId]
@@ -399,6 +395,8 @@
 │       │   │   │   │   ├── layout.tsx
 │       │   │   │   │   └── users
 │       │   │   │   │       └── page.tsx
+│       │   │   │   ├── answer
+│       │   │   │   │   └── page.tsx
 │       │   │   │   ├── catalog
 │       │   │   │   │   ├── CatalogView.tsx
 │       │   │   │   │   └── page.tsx
@@ -410,23 +408,6 @@
 │       │   │   │   │   │   ├── MenuProfitability.tsx
 │       │   │   │   │   │   ├── PurchasingAlerts.tsx
 │       │   │   │   │   │   └── SystemHealth.tsx
-│       │   │   │   │   └── page.tsx
-│       │   │   │   ├── ingestion
-│       │   │   │   │   └── review
-│       │   │   │   │       └── [id]
-│       │   │   │   │           ├── creatable-select.tsx
-│       │   │   │   │           ├── fix_vb.py
-│       │   │   │   │           ├── invoice-item-row.tsx
-│       │   │   │   │           ├── page-header.tsx
-│       │   │   │   │           ├── page.tsx
-│       │   │   │   │           ├── recipe-ingredient-row.tsx
-│       │   │   │   │           ├── recipe-section.tsx
-│       │   │   │   │           ├── use-auto-mapping.ts
-│       │   │   │   │           ├── use-visual-builder-data.ts
-│       │   │   │   │           ├── vendor-section.tsx
-│       │   │   │   │           ├── visual-builder.tsx
-│       │   │   │   │           └── visual-builder.types.ts
-│       │   │   │   ├── ingestions
 │       │   │   │   │   └── page.tsx
 │       │   │   │   ├── inventory
 │       │   │   │   │   ├── @modal
@@ -454,6 +435,11 @@
 │       │   │   │   │       ├── page.tsx
 │       │   │   │   │       └── vendors-client.tsx
 │       │   │   │   ├── layout.tsx
+│       │   │   │   ├── library
+│       │   │   │   │   ├── [bookId]
+│       │   │   │   │   │   ├── LibraryReaderView.tsx
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   └── page.tsx
 │       │   │   │   ├── pos-orders
 │       │   │   │   │   ├── PosOrdersView.tsx
 │       │   │   │   │   └── page.tsx
@@ -548,6 +534,7 @@
 │       │   └── sw.ts
 │       ├── tsconfig.json
 │       └── tsconfig.tsbuildinfo
+├── chat.txt
 ├── deploy
 │   ├── ansible
 │   │   ├── README.md
@@ -808,6 +795,7 @@
 ├── knip.jsonc
 ├── lighthouserc.json
 ├── litellm_config.yaml
+├── mcp-config.json
 ├── package.json
 ├── packages
 │   ├── api-client
@@ -1009,6 +997,8 @@
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── components
+│   │   │   │   ├── AnswerView
+│   │   │   │   │   └── AnswerView.tsx
 │   │   │   │   ├── ItemEditor
 │   │   │   │   │   ├── ItemEditor.container.tsx
 │   │   │   │   │   ├── ItemEditor.spec.tsx
@@ -1031,6 +1021,13 @@
 │   │   │   │   │   ├── OrdersPanel.stories.tsx
 │   │   │   │   │   ├── OrdersPanel.view.tsx
 │   │   │   │   │   └── index.ts
+│   │   │   │   ├── ReviewComponent
+│   │   │   │   │   ├── ReviewDocumentCanvas.tsx
+│   │   │   │   │   ├── ReviewInvoiceBlock.tsx
+│   │   │   │   │   ├── ReviewProseBlock.tsx
+│   │   │   │   │   ├── ReviewRecipeBlock.tsx
+│   │   │   │   │   ├── SearchReviewLayout.tsx
+│   │   │   │   │   └── UniversalReviewComponent.tsx
 │   │   │   │   ├── Supplier
 │   │   │   │   │   ├── Supplier.spec.tsx
 │   │   │   │   │   ├── Supplier.stories.tsx
@@ -1352,4 +1349,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-317 directories, 1036 files
+315 directories, 1035 files
