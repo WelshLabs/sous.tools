@@ -34,7 +34,15 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     { id: "4", text: "Grate Gruyère cheese for crock topping", done: false },
   ]);
 
-  const [realRevenueData, setRealRevenueData] = useState<Array<{ name: string; value: number }>>([]);
+  const [realRevenueData, setRealRevenueData] = useState<Array<{ name: string; value: number }>>([
+    { name: "Mon", value: 193 },
+    { name: "Tue", value: 213 },
+    { name: "Wed", value: 130 },
+    { name: "Thu", value: 172 },
+    { name: "Fri", value: 54 },
+    { name: "Sat", value: 0 },
+    { name: "Sun", value: 0 },
+  ]);
   const [realTicketTimeData, setRealTicketTimeData] = useState<Array<{ time: string; minutes: number }>>([]);
 
   // Fetch real database dashboard metrics for revenue and ticket time charts

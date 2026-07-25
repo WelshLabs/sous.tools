@@ -31,18 +31,7 @@ interface TicketTimeChartProps {
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
-  const chartData =
-    data && data.length > 0 && data.some((d) => d.value > 0)
-      ? data
-      : [
-          { name: "Mon", value: 3400 },
-          { name: "Tue", value: 4200 },
-          { name: "Wed", value: 3900 },
-          { name: "Thu", value: 5100 },
-          { name: "Fri", value: 7800 },
-          { name: "Sat", value: 8900 },
-          { name: "Sun", value: 6500 },
-        ];
+  const chartData = data || [];
 
   return (
     <div className="w-full h-[320px]">
@@ -81,19 +70,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
 }
 
 export function TicketTimeChart({ data }: TicketTimeChartProps) {
-  const chartData =
-    data && data.length > 0 && data.some((d) => d.minutes > 0)
-      ? data
-      : [
-          { time: "11:00 AM", minutes: 8 },
-          { time: "12:00 PM", minutes: 14 },
-          { time: "1:00 PM", minutes: 18 },
-          { time: "2:00 PM", minutes: 10 },
-          { time: "5:00 PM", minutes: 12 },
-          { time: "6:00 PM", minutes: 22 },
-          { time: "7:00 PM", minutes: 26 },
-          { time: "8:00 PM", minutes: 15 },
-        ];
+  const chartData = data || [];
 
   return (
     <div className="w-full h-[320px]">
