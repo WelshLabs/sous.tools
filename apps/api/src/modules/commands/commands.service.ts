@@ -381,6 +381,39 @@ export class CommandsService {
               itemIndex: args.itemIndex,
               targetName: args.targetName,
             };
+          } else if (functionName === "get_pos_sales_stats") {
+            agentMessageContent = `Querying real POS sales from Postgres database...`;
+            if (emitMessage) {
+              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+            }
+
+            const { data: dbOrders } = await supabase
+              .from("pos_orders")
+              .select("*")
+              .eq("state", "COMPLETED");
+
+            const orders = dbOrders || [];
+            const totalRevenueVal = orders.reduce((sum, o) => sum + Number(o.total_money || 0), 0);
+
+            const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const weeklyRevenueMap: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+            orders.forEach((o) => {
+              const day = daysOfWeek[new Date(o.created_at).getDay()];
+              weeklyRevenueMap[day] = (weeklyRevenueMap[day] || 0) + Number(o.total_money || 0);
+            });
+
+            const orderedDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+            const revenueChartData = orderedDays.map((day) => ({
+              name: day,
+              value: Math.round(weeklyRevenueMap[day] || 0),
+            }));
+
+            toolResponseData = {
+              success: true,
+              totalRevenue: totalRevenueVal.toFixed(2),
+              totalCompletedOrders: orders.length,
+              weeklyBreakdown: revenueChartData,
+            };
           }
 
           // Append model's full response content to history to preserve thought_signature, text, and functionCall

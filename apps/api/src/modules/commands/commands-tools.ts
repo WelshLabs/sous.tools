@@ -229,6 +229,17 @@ export const updateReviewStateTool: FunctionDeclaration = {
   },
 };
 
+export const getPosSalesStatsTool: FunctionDeclaration = {
+  name: 'get_pos_sales_stats',
+  description: 'Queries real POS orders from Supabase Postgres database to calculate sales totals, order counts, and daily revenue metrics.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      days: { type: Type.NUMBER, description: 'Number of past days to calculate sales for (defaults to 7)' },
+    },
+  },
+};
+
 export const ALL_COMMAND_TOOLS: FunctionDeclaration[] = [
   addToPurchaseOrderTool,
   addToWhiteboardTool,
@@ -243,4 +254,5 @@ export const ALL_COMMAND_TOOLS: FunctionDeclaration[] = [
   ingestKnowledgeSourceTool,
   searchTheWebTool,
   updateReviewStateTool,
+  getPosSalesStatsTool,
 ];
