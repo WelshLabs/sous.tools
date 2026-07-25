@@ -78,7 +78,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
 
   private async extractPageBlocks(
     rawText: string,
-    imageUrl?: string
+    _imageUrl?: string
   ): Promise<ExtractedBlock[]> {
     const host = config.OLLAMA_HOST || "http://127.0.0.1:11434";
     let ollamaResponse: any = null;

@@ -178,9 +178,9 @@ export function OmniBarPresentation({
           document.body,
         )}
 
-      {/* ── Focus Page (Inline — full-width centered) ─────────────────────── */}
+      {/* ── Focus Page (Inline — Dead Center) ─────────────────────── */}
       {isFocusPage && (
-        <>
+        <LayoutGroup id="omnibar-morph">
           <AnimatePresence>
             {chatHistory.length > 0 && (
               <motion.div
@@ -196,11 +196,11 @@ export function OmniBarPresentation({
           </AnimatePresence>
           <motion.div
             layout
+            layoutId="omnibar-container"
             transition={springTransition}
-            className="fixed inset-x-0 bottom-6 flex flex-col items-center justify-end pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl mx-auto px-4"
+            className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl mx-auto px-4"
           >
             <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
-              {/* StagingArea lives ABOVE the pill; layout pushes pill down gracefully */}
               <motion.div layout className="w-full flex flex-col gap-0">
                 <StagingArea files={stagedFiles} />
                 <OmniInputPill
@@ -219,7 +219,7 @@ export function OmniBarPresentation({
               </motion.div>
             </motion.div>
           </motion.div>
-        </>
+        </LayoutGroup>
       )}
     </>
   );

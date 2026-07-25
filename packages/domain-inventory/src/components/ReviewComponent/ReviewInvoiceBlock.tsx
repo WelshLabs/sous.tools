@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export interface LineItemData {
   rawName: string;
   guessName: string;

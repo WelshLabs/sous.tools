@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export interface BoundingBox {
   id: string;
   type: "PROSE" | "RECIPE" | "INVOICE";

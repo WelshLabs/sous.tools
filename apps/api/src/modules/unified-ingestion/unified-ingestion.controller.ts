@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   Headers,
@@ -48,6 +49,17 @@ export class UnifiedIngestionController {
   @Get("review/:id")
   async getReview(@Param("id") id: string) {
     return this.ingestionService.getReviewRecord(id);
+  }
+
+  @Patch("review/:id")
+  async updateReview(
+    @Param("id") id: string,
+    @Body() body: { parsedData: IngestionReviewPayload }
+  ) {
+    if (!body.parsedData) {
+      throw new BadRequestException("parsedData is required");
+    }
+    return this.ingestionService.updateReviewRecordState(id, body.parsedData);
   }
 
   @Post("commit")

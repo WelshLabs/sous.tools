@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useOmnibarContext } from "./OmniBarContext";
 import { type OmniMessage } from "@soustools/api-types";
 import { type Socket } from "socket.io-client";
@@ -15,6 +16,7 @@ export function useOmniBarHotkeys({
   pathname: string;
   setErrorMessage: (msg: string | null) => void;
 }) {
+  const router = useRouter();
   const {
     isProcessing,
     inputText,
@@ -46,7 +48,10 @@ export function useOmniBarHotkeys({
     setStagedFiles([]);
     setIsProcessing(true);
     setErrorMessage(null);
-    if (!isFocusPage) {
+
+    if (isFocusPage) {
+      router.push(textToSubmit ? `/answer?q=${encodeURIComponent(textToSubmit)}` : "/answer");
+    } else {
       setIsOpen(true);
     }
 

@@ -1,7 +1,6 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
-import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 import { serverConfig as config } from "@soustools/config/server";
 
 export interface ExtractedBlock {
@@ -56,7 +55,6 @@ export class UnifiedIngestionService {
   private readonly logger = new Logger(UnifiedIngestionService.name);
 
   constructor(
-    private readonly usdaResolver: UsdaResolverService,
     private readonly neo4jSync: Neo4jSyncService
   ) {}
 
@@ -128,11 +126,27 @@ export class UnifiedIngestionService {
       throw error;
     }
 
-    await this.neo4jSync.syncTableRecord("ingestion_reviews", data);
+    if (data) {
+      await this.neo4jSync.handleWebhook({ type: "INSERT", table: "ingestion_reviews", schema: "public", record: data, old_record: null });
+    }
     return data;
   }
 
   async getReviewRecord(id: string) {
+    if (id === "latest") {
+      const { data } = await supabase
+        .from("ingestion_reviews")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!data) {
+        throw new NotFoundException("No ingestion reviews found");
+      }
+      return data;
+    }
+
     const { data, error } = await supabase
       .from("ingestion_reviews")
       .select("*")
@@ -183,7 +197,7 @@ export class UnifiedIngestionService {
       .single();
 
     if (data) {
-      await this.neo4jSync.syncTableRecord("ingestion_reviews", data);
+      await this.neo4jSync.handleWebhook({ type: "UPDATE", table: "ingestion_reviews", schema: "public", record: data, old_record: null });
     }
     return { success: true, reviewId };
   }
@@ -208,10 +222,11 @@ export class UnifiedIngestionService {
           .single();
         if (newVendor) {
           vendorId = newVendor.id;
-          await this.neo4jSync.syncTableRecord("vendors", newVendor);
+          await this.neo4jSync.handleWebhook({ type: "INSERT", table: "vendors", schema: "public", record: newVendor, old_record: null });
         }
       }
     }
+    this.logger.log(`Invoice block vendor resolved: ${vendorId || "None"}`);
 
     if (block.lineItems) {
       for (const item of block.lineItems) {
@@ -240,7 +255,7 @@ export class UnifiedIngestionService {
       .single();
 
     if (recipe) {
-      await this.neo4jSync.syncTableRecord("recipes", recipe);
+      await this.neo4jSync.handleWebhook({ type: "INSERT", table: "recipes", schema: "public", record: recipe, old_record: null });
 
       if (block.ingredients) {
         for (const ing of block.ingredients) {
@@ -258,7 +273,7 @@ export class UnifiedIngestionService {
             .single();
 
           if (ingRecord) {
-            await this.neo4jSync.syncTableRecord("recipe_ingredients", ingRecord);
+            await this.neo4jSync.handleWebhook({ type: "INSERT", table: "recipe_ingredients", schema: "public", record: ingRecord, old_record: null });
           }
         }
       }
@@ -281,7 +296,7 @@ export class UnifiedIngestionService {
       .single();
 
     if (vectorRecord) {
-      await this.neo4jSync.syncTableRecord("core_knowledge_vectors", vectorRecord);
+      await this.neo4jSync.handleWebhook({ type: "INSERT", table: "core_knowledge_vectors", schema: "public", record: vectorRecord, old_record: null });
     }
   }
 }

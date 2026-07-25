@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export interface ReviewProseBlockProps {
   content: string;
   onChange: (newContent: string) => void;

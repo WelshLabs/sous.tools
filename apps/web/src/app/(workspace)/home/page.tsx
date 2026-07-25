@@ -1,17 +1,7 @@
 import React from "react";
-import { SearchReviewLayout } from "@soustools/domain-inventory";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; reviewId?: string };
-}) {
-  return (
-    <SearchReviewLayout
-      initialQuery={searchParams?.q}
-      initialReviewId={searchParams?.reviewId}
-    />
-  );
+export default function HomePage() {
+  return <div className="w-full min-h-[calc(100vh-64px)] flex items-center justify-center pointer-events-none" />;
 }
