@@ -291,6 +291,53 @@ services:
       - traefik_public
     restart: unless-stopped
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    volumes:
+      - open-webui_data:/app/backend/data
+    environment:
+      - OPENAI_API_BASE_URL=http://litellm:4000/v1
+      - OPENAI_API_KEY=sk-litellm-secure-token-123!
+      - WEBUI_SECRET_KEY=super_secret_session_encryption_key_changeme
+      - WEBUI_AUTH=true
+    networks:
+      - proxy
+    restart: always
+    depends_on:
+      - litellm
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.open-webui.rule=Host(`webui.sous.tools`)"
+      - "traefik.http.routers.open-webui.entrypoints=websecure"
+      - "traefik.http.routers.open-webui.tls.certresolver=myresolver"
+      - "traefik.http.services.open-webui.loadbalancer.server.port=8080"
+
+  # Open Terminal (Internal traffic only, no public Traefik labels required!)
+  open-terminal:
+    image: ghcr.io/open-webui/open-terminal:latest
+    container_name: open-terminal
+    volumes:
+      - ./staging-sandbox:/home/user
+    environment:
+      - OPEN_TERMINAL_API_KEY=terminal_guard_password_99!
+    networks:
+      - proxy
+    restart: always
+
+  # Fast MCPO bridge (Internal traffic only, no public Traefik labels required!)
+  mcpo-bridge:
+    image: python:3.11-slim
+    container_name: mcpo-bridge
+    volumes:
+      - ./mcp-config.json:/app/mcp-config.json
+    working_dir: /app
+    command: >
+      sh -c "pip install mcpo && mcpo --port 8000 --config /app/mcp-config.json"
+    networks:
+      - proxy
+    restart: always
+
 volumes:
   letsencrypt:
   redis_data:
@@ -298,6 +345,7 @@ volumes:
   n8n_data:
   agent_data:
   neo4j_data:
+  open-webui_data:
 
 networks:
   default:
