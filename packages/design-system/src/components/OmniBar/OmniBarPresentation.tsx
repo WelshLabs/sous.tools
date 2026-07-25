@@ -5,7 +5,6 @@ import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
-import { OmniChatWindow } from "./OmniChatWindow";
 import { OmniInputPill } from "./OmniInputPill";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { StagingArea } from "./StagingArea";
@@ -147,18 +146,13 @@ export function OmniBarPresentation({
                 /* ── Expanded: chat timeline + input pill ── */
                 <motion.div
                   key="expanded-container"
-                  // z-50 ensures the chat window sits above regular page content.
-                  className="fixed inset-0 flex flex-col items-end justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4"
+                  // z-50 ensures the pill sits above regular page content.
+                  className="fixed inset-x-0 bottom-6 flex flex-col items-center justify-end pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl mx-auto px-4"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   transition={springTransition}
                 >
-                  <OmniChatWindow
-                    chatHistory={chatHistory}
-                    scrollRef={scrollRef}
-                    onClearHistory={onClearHistory}
-                  />
                   {/* StagingArea lives ABOVE the pill; layout pushes pill down gracefully */}
                   <motion.div layout className="w-full flex flex-col gap-0 pointer-events-auto">
                     <StagingArea files={stagedFiles} />
@@ -203,14 +197,9 @@ export function OmniBarPresentation({
           <motion.div
             layout
             transition={springTransition}
-            className="fixed inset-0 top-[64px] flex flex-col items-center justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4"
+            className="fixed inset-x-0 bottom-6 flex flex-col items-center justify-end pointer-events-none z-50 max-w-lg sm:max-w-2xl lg:max-w-4xl mx-auto px-4"
           >
             <motion.div layout className="w-full flex flex-col justify-center gap-4 pointer-events-auto">
-              <OmniChatWindow
-                chatHistory={chatHistory}
-                scrollRef={scrollRef}
-                onClearHistory={onClearHistory}
-              />
               {/* StagingArea lives ABOVE the pill; layout pushes pill down gracefully */}
               <motion.div layout className="w-full flex flex-col gap-0">
                 <StagingArea files={stagedFiles} />

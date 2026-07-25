@@ -75,20 +75,15 @@ export default function InvoicesHubPage() {
 
   const submitIngestionPayload = async (payload: any) => {
     try {
-      const res = await fetch("/api/ingestion/submit", {
+      const res = await fetch("/api/unified-ingestion/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
       if (res.ok) {
         const payloadData = await res.json();
-        // Extract reviewId from the returned ApiResponse
-        const reviewId = payloadData.data?.reviewId || payloadData.reviewId;
-        if (reviewId) {
-          router.push(`/ingestion/review/${reviewId}`);
-        } else {
-          router.push("/ingestion");
-        }
+        const reviewId = payloadData.reviewId || payloadData.data?.reviewId;
+        router.push(`/home${reviewId ? `?reviewId=${reviewId}` : ""}`);
       } else {
         toast.error("Failed to ingest invoice.");
       }
@@ -108,11 +103,9 @@ export default function InvoicesHubPage() {
     reader.onload = async () => {
       const base64String = reader.result as string;
       await submitIngestionPayload({
-        organizationId: "d0000000-0000-0000-0000-000000000000",
-        userId: "d0000000-0000-0000-0000-000000000000",
         source,
-        documentType: "invoice",
-        imagesBase64: [base64String]
+        sourceName: file.name,
+        pagesInput: [{ pageNumber: 1, rawText: base64String }]
       });
     };
     reader.onerror = () => {
@@ -176,7 +169,7 @@ export default function InvoicesHubPage() {
         </Link>
         
         {/* Processing Queue Link */}
-        <Link href="/ingestion" className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border bg-card/50">
+        <Link href="/home" className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border bg-card/50">
           <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <FileText className="w-6 h-6" />
           </div>

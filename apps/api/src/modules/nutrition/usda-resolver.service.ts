@@ -54,6 +54,23 @@ export class UsdaResolverService {
     }
   }
 
+  async searchTop5(query: string): Promise<Array<{ fdcId: number; description: string }>> {
+    try {
+      const url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&pageSize=5&api_key=${this.apiKey}`;
+      const response = await fetch(url);
+      if (!response.ok) return [];
+      const data = await response.json();
+      if (!data.foods || !Array.isArray(data.foods)) return [];
+      return data.foods.slice(0, 5).map((f: any) => ({
+        fdcId: f.fdcId,
+        description: f.description,
+      }));
+    } catch (err) {
+      this.logger.error(`USDA searchTop5 failed for "${query}":`, err);
+      return [];
+    }
+  }
+
   private mapUsdaToMacros(foodItem: {
     fdcId: number;
     description: string;

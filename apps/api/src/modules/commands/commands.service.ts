@@ -356,6 +356,31 @@ export class CommandsService {
               results: searchResults,
               count: searchResults.length,
             };
+          } else if (functionName === "update_review_state") {
+            agentMessageContent = `Updating review state: ${args.action}...`;
+            if (emitMessage) {
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+                uiAction: {
+                  type: "UPDATE_REVIEW_STATE",
+                  action: args.action,
+                  pageNumber: args.pageNumber,
+                  itemIndex: args.itemIndex,
+                  targetName: args.targetName,
+                },
+              } as any);
+            }
+            toolResponseData = {
+              success: true,
+              message: `Review state updated: ${args.action}`,
+              action: args.action,
+              pageNumber: args.pageNumber,
+              itemIndex: args.itemIndex,
+              targetName: args.targetName,
+            };
           }
 
           // Append model's full response content to history to preserve thought_signature, text, and functionCall

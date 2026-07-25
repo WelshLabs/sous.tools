@@ -4,3 +4,5 @@ export * from "./components/OrdersPanel";
 export * from "./components/VendorsPanel";
 export * from "./components/Supplier/SupplierOrderGroup";
 export * from "./components/Supplier/SupplierOrderGroup.types";
+export * from "./components/ReviewComponent/UniversalReviewComponent";
+export * from "./components/ReviewComponent/SearchReviewLayout";

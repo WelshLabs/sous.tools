@@ -202,6 +202,33 @@ export const searchTheWebTool: FunctionDeclaration = {
   },
 };
 
+export const updateReviewStateTool: FunctionDeclaration = {
+  name: 'update_review_state',
+  description: 'Dynamically updates page navigation or item mappings on the active UniversalReviewComponent UI based on natural language instructions.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      action: {
+        type: Type.STRING,
+        description: 'The action type: "TURN_PAGE", "ACCEPT_ALL_PAGE", or "MAP_ITEM"',
+      },
+      pageNumber: {
+        type: Type.NUMBER,
+        description: 'The target page number to navigate to (1-indexed)',
+      },
+      itemIndex: {
+        type: Type.NUMBER,
+        description: 'The zero-indexed or 1-indexed item number to map',
+      },
+      targetName: {
+        type: Type.STRING,
+        description: 'Target master item or ingredient name',
+      },
+    },
+    required: ['action'],
+  },
+};
+
 export const ALL_COMMAND_TOOLS: FunctionDeclaration[] = [
   addToPurchaseOrderTool,
   addToWhiteboardTool,
@@ -215,4 +242,5 @@ export const ALL_COMMAND_TOOLS: FunctionDeclaration[] = [
   enqueueBackgroundTaskTool,
   ingestKnowledgeSourceTool,
   searchTheWebTool,
+  updateReviewStateTool,
 ];

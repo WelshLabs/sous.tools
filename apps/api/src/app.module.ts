@@ -10,7 +10,7 @@ import { SignageModule } from "./modules/signage/signage.module";
 import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
 import { IntegrationsModule } from "./modules/integrations/integrations.module";
 import { RecipeModule } from "./modules/recipe/recipe.module";
-import { IngestionModule } from "./modules/ingestion/ingestion.module";
+import { UnifiedIngestionModule } from "./modules/unified-ingestion/unified-ingestion.module";
 import { NutritionModule } from "./modules/nutrition/nutrition.module";
 import { ItemsModule } from "./modules/items/items.module";
 import { PosModule } from "./modules/pos/pos.module";
@@ -66,7 +66,7 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
     PosSimulatorModule,
     IntegrationsModule,
     RecipeModule,
-    IngestionModule,
+    UnifiedIngestionModule,
     NutritionModule,
     ItemsModule,
     PosModule,
