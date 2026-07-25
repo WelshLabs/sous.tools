@@ -69,7 +69,12 @@ export function UniversalReviewComponent({
 
   useEffect(() => {
     fetchReview();
-  }, [fetchReview]);
+    if (!isProcessing) return;
+    const interval = setInterval(() => {
+      fetchReview();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [fetchReview, isProcessing]);
 
   // Persist updated payload state to Postgres backend
   const persistPayloadToBackend = async (newPayload: any) => {

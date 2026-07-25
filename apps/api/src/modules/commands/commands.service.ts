@@ -262,8 +262,34 @@ export class CommandsService {
                 },
                 { attempts: 3, backoff: { type: "exponential", delay: 2000 } },
               );
+
+              // Create real-time notification record in Postgres
+              try {
+                await supabase.from("notifications").insert({
+                  organization_id: orgId,
+                  user_id: userId,
+                  title: "Document Ingestion Started",
+                  message: `Invoice file processing queued (${review.id.substring(0, 8)}).`,
+                  link: `/answer?reviewId=${review.id}`,
+                  is_read: false,
+                });
+              } catch (notifErr) {
+                this.logger.warn("Failed to create notification record:", notifErr);
+              }
+
+              // Emit render_component message so /answer UI switches to UniversalReviewComponent skeleton loader
+              if (emitMessage) {
+                emitMessage({
+                  id: randomUUID(),
+                  role: "render_component" as any,
+                  content: JSON.stringify({ componentName: "INGESTION_REVIEW", props: { reviewId: review.id } }),
+                  timestamp: new Date(),
+                });
+              }
+
               toolResponseData = {
                 success: true,
+                reviewId: review.id,
                 message: `Successfully queued invoice for ingestion.`,
               };
             } else {

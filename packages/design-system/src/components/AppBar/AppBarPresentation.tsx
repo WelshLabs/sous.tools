@@ -46,17 +46,17 @@ export function AppBarPresentation({
   const isAnyMenuOpen = isProfileOpen || isNotificationsOpen || isWaffleOpen;
 
   return (
-    <header className="sticky top-0 z-[var(--z-appbar)] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">
-      {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself (z-auto or 0) but sits under z-modal */}
+    <header className="sticky top-0 z-[100000] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">
+      {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself */}
       {isAnyMenuOpen && (
         <div
-          className="fixed inset-0 z-[var(--z-overlay)]"
+          className="fixed inset-0 z-[100001]"
           onClick={onCloseMenus}
         />
       )}
 
       {/* Left: Brand Logo & Hamburger */}
-      <div className="flex items-center gap-2 relative z-10">
+      <div className="flex items-center gap-2 relative z-[100002]">
         {hasSidebar && (
           <Hamburger
             isOpen={isExpanded}
@@ -89,11 +89,11 @@ export function AppBarPresentation({
         )}
       </div>
 
-      {/* Center/Right-Align: OmniBar mounts at the layout level and uses Portals, so we don't render it here */}
+      {/* Center/Right-Align: OmniBar mounts at the layout level */}
       <div className="flex-1 flex justify-end mr-4 relative z-10"></div>
 
-      {/* Right: Action Group - Elevated above the overlay */}
-      <div className="flex items-center gap-2 md:gap-4 relative z-[var(--z-modal)]">
+      {/* Right: Action Group — Elevated above Omnibar */}
+      <div className="flex items-center gap-2 md:gap-4 relative z-[100002]">
         <ThemeToggle />
 
         {/* Notifications */}
@@ -112,7 +112,7 @@ export function AppBarPresentation({
           </button>
 
           {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[var(--z-modal)]">
+            <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[100003]">
               <div className="px-4 py-2 border-b border-border flex justify-between items-center">
                 <span className="text-sm font-semibold text-foreground">
                   Notifications
@@ -178,7 +178,7 @@ export function AppBarPresentation({
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-1 z-[var(--z-modal)]">
+            <div className="absolute right-0 mt-2 w-48 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-1 z-[100003]">
               <Link
                 href="/settings"
                 onClick={onCloseMenus}

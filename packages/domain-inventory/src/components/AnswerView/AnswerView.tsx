@@ -213,7 +213,7 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
 
       {/* ── Polymorphic Data Views (ONLY rendered when real matched data exists) ── */}
       {track2Type === "INGESTION_REVIEW" && (
-        <UniversalReviewComponent reviewId={activeReviewId} />
+        <UniversalReviewComponent reviewId={componentDirective?.props?.reviewId || activeReviewId} />
       )}
 
       {track2Type === "REVENUE_CHART" && (

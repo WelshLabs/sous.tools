@@ -43,7 +43,7 @@ export const getRecipeCostTool: FunctionDeclaration = {
 
 export const ingestVendorInvoiceTool: FunctionDeclaration = {
   name: 'ingest_vendor_invoice',
-  description: 'Ingests a vendor invoice file URL into the OCR pipeline for processing.',
+  description: 'STRICTLY for vendor/supplier invoices, receipts, and order bills. DO NOT call for books, manuals, or general documentation.',
   parameters: {
     type: Type.OBJECT,
     properties: {

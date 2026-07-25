@@ -66,7 +66,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
         type: "INGESTION_COMPLETE",
         title: "Ingestion Processing Complete",
         message: `Review document "${sourceName || "Document"}" is ready for review.`,
-        link: `/home?reviewId=${reviewRecord.id}`,
+        link: `/answer?reviewId=${reviewRecord.id}`,
         is_read: false,
       });
     } catch (notifErr) {
