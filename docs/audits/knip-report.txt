@@ -309,7 +309,7 @@ OrderSupplier              interface  packages/design-system/src/components/Insi
 DocumentViewerProps        interface  packages/design-system/src/components/OmniBar/DocumentViewer.tsx:8:18             
 OmniMetric                 type       packages/design-system/src/components/OmniBar/index.ts:4:15                       
 OmniChatWindowProps        type       packages/design-system/src/components/OmniBar/index.ts:4:27                       
-OmniBarState               interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:13:18             
+OmniBarState               interface  packages/design-system/src/components/OmniBar/OmniBarContext.ts:14:18             
 OmniMetric                 type       packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:16:15            
 OmniChatWindowProps        interface  packages/design-system/src/components/OmniBar/OmniChatWindow.tsx:18:18            
 OmniInputPillProps         interface  packages/design-system/src/components/OmniBar/OmniInputPill.tsx:14:18             

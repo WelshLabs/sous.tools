@@ -16,40 +16,34 @@ cache miss, executing 50f40be00edba9ad
 $ tsc
 ::endgroup::
 [;31mweb:build[;0m
-cache miss, executing 53fb5d7023f4f98d
+cache miss, executing c531970cdb595448
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] FATAL: Missing Infisical credentials (INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). Process execution halted immediately.
 [ELIFECYCLE] Command failed with exit code 1.
 ::group::pos-simulator:build
-cache miss, executing 07e2ad5411febd0f
+cache miss, executing 99896eadebfcac87
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] FATAL: Missing Infisical credentials (INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). Process execution halted immediately.
 [ELIFECYCLE] Command failed with exit code 1.
+::endgroup::
+::group::@soustools/setup-portal:build
+cache miss, executing a6aa9c0324e75d67
+$ next build
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::api:build
+cache miss, executing 62697a572689ea16
+$ nest build
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::cli:build
 cache miss, executing 6e1e455cfb2d6c81
 $ nest build
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::api:build
-cache miss, executing b030139dafa66a61
-$ nest build
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/setup-portal:build
-cache miss, executing 79f185002a78c608
-$ next build
-⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
-[ELIFECYCLE] Command failed.
-::endgroup::
 
  Tasks:    3 successful, 8 total
 Cached:    0 cached, 8 total
-  Time:    7.561s 
+  Time:    5.438s 
 Failed:    web#build
 
