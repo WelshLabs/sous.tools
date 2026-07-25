@@ -320,7 +320,7 @@ services:
     volumes:
       - ./staging-sandbox:/home/user
     environment:
-      - OPEN_TERMINAL_API_KEY=terminal_guard_password_99!
+      - OPEN_TERMINAL_API_KEY=password
     networks:
       - traefik_public
     restart: always
