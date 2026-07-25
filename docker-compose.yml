@@ -302,7 +302,7 @@ services:
       - WEBUI_SECRET_KEY=super_secret_session_encryption_key_changeme
       - WEBUI_AUTH=true
     networks:
-      - proxy
+      - traefik_public
     restart: always
     depends_on:
       - litellm
