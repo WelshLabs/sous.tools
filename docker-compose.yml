@@ -322,7 +322,7 @@ services:
     environment:
       - OPEN_TERMINAL_API_KEY=terminal_guard_password_99!
     networks:
-      - proxy
+      - traefik_public
     restart: always
 
   # Fast MCPO bridge (Internal traffic only, no public Traefik labels required!)
@@ -335,7 +335,7 @@ services:
     command: >
       sh -c "pip install mcpo && mcpo --port 8000 --config /app/mcp-config.json"
     networks:
-      - proxy
+      - traefik_public
     restart: always
 
 volumes:
