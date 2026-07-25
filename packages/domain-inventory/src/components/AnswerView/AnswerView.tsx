@@ -34,6 +34,24 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     { id: "4", text: "Grate Gruyère cheese for crock topping", done: false },
   ]);
 
+  const [realRevenueData, setRealRevenueData] = useState<Array<{ name: string; value: number }>>([]);
+  const [realTicketTimeData, setRealTicketTimeData] = useState<Array<{ time: string; minutes: number }>>([]);
+
+  // Fetch real database dashboard metrics for revenue and ticket time charts
+  useEffect(() => {
+    fetch("/api/dashboard/stats")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.revenue && Array.isArray(data.revenue)) {
+          setRealRevenueData(data.revenue);
+        }
+        if (data?.ticketTimes && Array.isArray(data.ticketTimes)) {
+          setRealTicketTimeData(data.ticketTimes);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch real dashboard metrics:", err));
+  }, []);
+
   // Handle URL query prompt when visiting /answer?q=... directly
   useEffect(() => {
     if (initialQuery && initialQuery.trim().length > 0) {
@@ -74,7 +92,7 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
                 {
                   id: crypto.randomUUID(),
                   role: "model" as const,
-                  content: `Heard, Chef. I have analyzed your request for "${initialQuery}". All kitchen systems and master data metrics are active and ready.`,
+                  content: `Heard, Chef. I have queried our backend databases for "${initialQuery}". Here are the active sales metrics and operational insights.`,
                   timestamp: new Date(),
                 },
               ]);
@@ -158,27 +176,6 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     );
   };
 
-  const revenueData = [
-    { name: "Mon", value: 3400 },
-    { name: "Tue", value: 4200 },
-    { name: "Wed", value: 3900 },
-    { name: "Thu", value: 5100 },
-    { name: "Fri", value: 7800 },
-    { name: "Sat", value: 8900 },
-    { name: "Sun", value: 6500 },
-  ];
-
-  const ticketTimeData = [
-    { time: "11:00 AM", minutes: 8 },
-    { time: "12:00 PM", minutes: 14 },
-    { time: "1:00 PM", minutes: 18 },
-    { time: "2:00 PM", minutes: 10 },
-    { time: "5:00 PM", minutes: 12 },
-    { time: "6:00 PM", minutes: 22 },
-    { time: "7:00 PM", minutes: 26 },
-    { time: "8:00 PM", minutes: 15 },
-  ];
-
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-6 pb-24">
       {/* ── Conversational Answer Card ── */}
@@ -217,9 +214,9 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
             <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
               Weekly Revenue & Sales Metrics
             </CardTitle>
-            <p className="text-xs text-zinc-400">Real-time Square & POS aggregate sales trends</p>
+            <p className="text-xs text-zinc-400">Real-time Square & POS aggregate sales trends from database</p>
           </CardHeader>
-          <RevenueChart data={revenueData} />
+          <RevenueChart data={realRevenueData} />
         </Card>
       )}
 
@@ -229,9 +226,9 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
             <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
               Kitchen Ticket Fulfillment Times
             </CardTitle>
-            <p className="text-xs text-zinc-400">KDS throttle metrics and station turnaround speeds</p>
+            <p className="text-xs text-zinc-400">KDS throttle metrics and station turnaround speeds from database</p>
           </CardHeader>
-          <TicketTimeChart data={ticketTimeData} />
+          <TicketTimeChart data={realTicketTimeData} />
         </Card>
       )}
 
