@@ -35,14 +35,17 @@ export function OmniBarProvider({
     setInputText,
     setIsGoogleDriveConnected,
     setChatHistory,
+    setSocket,
   } = useOmnibarContext();
 
   const handleClearHistory = () => setChatHistory([]);
 
-
-
   const { socket, errorMessage, setErrorMessage } =
     useOmniSocket();
+
+  useEffect(() => {
+    setSocket(socket);
+  }, [socket, setSocket]);
 
   
   useGlobalDrag(

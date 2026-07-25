@@ -37,7 +37,7 @@ export function UniversalReviewComponent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const { chatHistory } = useOmnibarContext();
+  const { chatHistory, socket } = useOmnibarContext();
 
   // Fetch real data from NestJS backend Postgres table (ingestion_reviews)
   const fetchReview = useCallback(async () => {
@@ -67,14 +67,29 @@ export function UniversalReviewComponent({
     }
   }, [activeReviewId]);
 
+  // Real-time WebSocket listener for zero-latency event-driven updates (NO HTTP polling)
   useEffect(() => {
     fetchReview();
-    if (!isProcessing) return;
-    const interval = setInterval(() => {
-      fetchReview();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [fetchReview, isProcessing]);
+    if (!socket) return;
+
+    const handleIngestionUpdate = (data: any) => {
+      if (data?.reviewId && (data.reviewId === activeReviewId || activeReviewId === "latest" || !activeReviewId)) {
+        if (data.reviewId) setActiveReviewId(data.reviewId);
+        setIsProcessingState(false);
+        setIsLoading(false);
+        setPayload(data.parsedData);
+        setStatusMessage("Ingestion processing complete — updated via real-time WebSocket!");
+      }
+    };
+
+    socket.on("ingestion:updated", handleIngestionUpdate);
+    socket.on("ingestion:complete", handleIngestionUpdate);
+
+    return () => {
+      socket.off("ingestion:updated", handleIngestionUpdate);
+      socket.off("ingestion:complete", handleIngestionUpdate);
+    };
+  }, [socket, activeReviewId, fetchReview]);
 
   // Persist updated payload state to Postgres backend
   const persistPayloadToBackend = async (newPayload: any) => {

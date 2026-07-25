@@ -297,8 +297,8 @@ services:
     volumes:
       - open-webui_data:/app/backend/data
     environment:
-      - OPENAI_API_BASE_URL=http://litellm:4000/v1
-      - OPENAI_API_KEY=sk-litellm-secure-token-123!
+      - OPENAI_API_BASE_URL=https://ai.sous.tools/v1
+      - OPENAI_API_KEY=sk-1234
       - WEBUI_SECRET_KEY=super_secret_session_encryption_key_changeme
       - WEBUI_AUTH=true
     networks:

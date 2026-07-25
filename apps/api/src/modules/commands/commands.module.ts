@@ -31,6 +31,6 @@ import { BullModule } from '@nestjs/bullmq';
   ],
   controllers: [CommandsController],
   providers: [CommandsService, CommandsGateway],
-  exports: [CommandsService],
+  exports: [CommandsService, CommandsGateway],
 })
 export class CommandsModule {}

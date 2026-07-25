@@ -19,13 +19,16 @@ export interface UnifiedIngestionJobData {
   pagesInput?: Array<{ pageNumber: number; imageUrl?: string; rawText?: string }>;
 }
 
+import { CommandsGateway } from "../commands/commands.gateway";
+
 @Processor("unified-ingestion")
 export class UnifiedIngestionProcessor extends WorkerHost {
   private readonly logger = new Logger(UnifiedIngestionProcessor.name);
 
   constructor(
     private readonly ingestionService: UnifiedIngestionService,
-    private readonly usdaResolver: UsdaResolverService
+    private readonly usdaResolver: UsdaResolverService,
+    private readonly commandsGateway: CommandsGateway
   ) {
     super();
   }
@@ -58,7 +61,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
       parsedData: { pages: pagesData },
     });
 
-    // Real-time UI notification trigger
+    // Real-time UI notification trigger in Postgres
     try {
       await supabase.from("notifications").insert({
         organization_id: organizationId,
@@ -71,6 +74,17 @@ export class UnifiedIngestionProcessor extends WorkerHost {
       });
     } catch (notifErr) {
       this.logger.warn("Failed to create notification:", notifErr);
+    }
+
+    // Real-time WebSocket emission to frontend (0ms latency, zero polling)
+    try {
+      this.commandsGateway.emitIngestionUpdate({
+        reviewId: reviewRecord.id,
+        parsedData: { pages: pagesData },
+        status: "COMPLETED",
+      });
+    } catch (wsErr) {
+      this.logger.warn("Failed to emit WebSocket ingestion update:", wsErr);
     }
 
     return { reviewId: reviewRecord.id, pageCount: pagesData.length };

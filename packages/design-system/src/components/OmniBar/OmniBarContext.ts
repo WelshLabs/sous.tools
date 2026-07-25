@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { type OmniMessage } from '@soustools/api-types';
+import type { Socket } from 'socket.io-client';
 
 export interface StagedFile {
   id: string;
@@ -39,6 +40,9 @@ export interface OmniBarState {
   isGoogleDriveConnected: boolean;
   setIsGoogleDriveConnected: (connected: boolean) => void;
 
+  socket: Socket | null;
+  setSocket: (socket: Socket | null) => void;
+
   executeBackgroundCommand: (text: string) => void;
   setExecuteBackgroundCommand: (fn: (text: string) => void) => void;
 }
@@ -77,6 +81,9 @@ export const useOmnibarContext = create<OmniBarState>((set) => ({
 
   isGoogleDriveConnected: false,
   setIsGoogleDriveConnected: (isGoogleDriveConnected) => set({ isGoogleDriveConnected }),
+
+  socket: null,
+  setSocket: (socket) => set({ socket }),
 
   executeBackgroundCommand: () => {},
   setExecuteBackgroundCommand: (fn) => set({ executeBackgroundCommand: fn }),

@@ -1,22 +1,24 @@
 import {
   WebSocketGateway,
+  WebSocketServer,
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
 } from "@nestjs/websockets";
 import { UseGuards, Logger } from "@nestjs/common";
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { WsSupabaseAuthGuard } from "../../lib/ws-supabase-auth.guard";
 import { CommandsService } from "./commands.service";
-import { type OmnibarCommandPayload,
-  OmnibarCommandPayloadSchema, type OmniMessage,
+import {
+  type OmnibarCommandPayload,
+  OmnibarCommandPayloadSchema,
+  type OmniMessage,
 } from "@soustools/api-types";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { UseFilters } from "@nestjs/common";
 import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter";
 
 @UseFilters(new AllWsExceptionsFilter())
-
 @WebSocketGateway({
   namespace: "/commands",
   cors: {
@@ -29,9 +31,27 @@ import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter"
   },
 })
 export class CommandsGateway {
+  @WebSocketServer()
+  server!: Server;
+
   private readonly logger = new Logger(CommandsGateway.name);
 
   constructor(private readonly commandsService: CommandsService) {}
+
+  /**
+   * Broadcast real-time ingestion events to connected WebSocket clients
+   */
+  emitIngestionUpdate(payload: { reviewId: string; parsedData: any; status: string }) {
+    this.logger.log(`Emitting WebSocket ingestion:updated for review ${payload.reviewId}`);
+    if (this.server) {
+      this.server.emit("ingestion:updated", payload);
+      this.server.emit("notification:new", {
+        title: "Ingestion Processing Complete",
+        message: `Review document ${payload.reviewId.substring(0, 8)} is ready.`,
+        link: `/answer?reviewId=${payload.reviewId}`,
+      });
+    }
+  }
 
   @UseGuards(WsSupabaseAuthGuard)
   @SubscribeMessage("executeCommand")

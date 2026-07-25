@@ -6,6 +6,8 @@ import { UnifiedIngestionProcessor } from "./unified-ingestion.processor";
 import { NutritionModule } from "../nutrition/nutrition.module";
 import { Neo4jSyncModule } from "../neo4j-sync/neo4j-sync.module";
 
+import { CommandsModule } from "../commands/commands.module";
+
 @Module({
   imports: [
     BullModule.registerQueue({
@@ -13,6 +15,7 @@ import { Neo4jSyncModule } from "../neo4j-sync/neo4j-sync.module";
     }),
     NutritionModule,
     Neo4jSyncModule,
+    CommandsModule,
   ],
   controllers: [UnifiedIngestionController],
   providers: [UnifiedIngestionService, UnifiedIngestionProcessor],
