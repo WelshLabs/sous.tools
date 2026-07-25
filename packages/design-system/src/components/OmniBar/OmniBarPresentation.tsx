@@ -1,7 +1,5 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
 import { OmniInputPill } from "./OmniInputPill";
@@ -25,7 +23,7 @@ export interface OmniBarPresentationProps {
 }
 
 // Spring for smooth position morphing between /home center and /answer AppBar
-const springTransition = { type: "spring" as const, stiffness: 300, damping: 30, mass: 0.9 };
+const springTransition = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.9 };
 
 export function OmniBarPresentation({
   isOpen: _isOpen,
@@ -42,17 +40,10 @@ export function OmniBarPresentation({
   onClearHistory,
 }: OmniBarPresentationProps) {
   const { isDragging, stagedFiles } = useOmnibarContext();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  return createPortal(
+  return (
     <LayoutGroup id="omnibar-morph">
-      {/* ── BACKDROP (shown when history is expanded or during modal interactions) ── */}
+      {/* ── BACKDROP (shown when history/focus overlay is active on /home) ── */}
       <AnimatePresence>
         {isFocusPage && chatHistory.length > 0 && (
           <motion.div
@@ -61,15 +52,15 @@ export function OmniBarPresentation({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 top-[64px] bg-background/80 backdrop-blur-md pointer-events-auto z-40"
+            className="fixed inset-0 bg-background/80 backdrop-blur-md pointer-events-auto z-[9990]"
             onClick={onClearHistory}
           />
         )}
       </AnimatePresence>
 
       {/* ── OMNIBAR PILL CONTAINER ──
-          When on /home (isFocusPage = true): Centered dead middle of the viewport (Google Homepage style)
-          When on /answer or other pages (isFocusPage = false): Fixed inside top AppBar (Google Results style)
+          When on /home (isFocusPage = true): Centered dead middle of viewport (Google Homepage)
+          When on /answer or any workspace route (isFocusPage = false): Fixed inside top AppBar (Google Results)
       ── */}
       <motion.div
         key="omnibar-shared-wrapper"
@@ -78,8 +69,8 @@ export function OmniBarPresentation({
         transition={springTransition}
         className={
           isFocusPage
-            ? "fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50 max-w-lg sm:max-w-2xl mx-auto px-4"
-            : "fixed top-2.5 left-1/2 -translate-x-1/2 w-full max-w-xl px-4 z-[100] pointer-events-auto"
+            ? "fixed inset-x-0 top-1/2 -translate-y-1/2 w-full max-w-xl sm:max-w-2xl mx-auto px-4 z-[9999] pointer-events-none"
+            : "fixed top-2.5 inset-x-0 w-full max-w-xl mx-auto px-4 z-[9999] pointer-events-none"
         }
       >
         <motion.div layout className="w-full flex flex-col justify-center gap-0 pointer-events-auto">
@@ -99,7 +90,6 @@ export function OmniBarPresentation({
           />
         </motion.div>
       </motion.div>
-    </LayoutGroup>,
-    document.body
+    </LayoutGroup>
   );
 }
