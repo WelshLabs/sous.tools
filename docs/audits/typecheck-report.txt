@@ -3,21 +3,21 @@
    • Running typecheck in 19 packages
    • Remote caching disabled
 
+::group::@soustools/api-types:build
+cache hit, replaying logs e665743f21ca3a0d
+$ tsc
+::endgroup::
 ::group::@soustools/config:build
 cache hit, replaying logs 7c3d16b801abc636
 $ tsc
 ::endgroup::
-::group::@soustools/api-types:build
-cache hit, replaying logs e665743f21ca3a0d
+::group::@soustools/logger:build
+cache hit, replaying logs 7ddedbceab3a9685
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
 cache miss, executing 74e4643e23983674
 $ tsc --noEmit
-::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 7ddedbceab3a9685
-$ tsc
 ::endgroup::
 ::group::@soustools/logger:typecheck
 cache miss, executing 9ca278e48f2c1e30
@@ -43,6 +43,14 @@ $ tsc --noEmit
 cache miss, executing f8ead7e5a19a7409
 $ tsc --noEmit
 ::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 9c1866e0d603b166
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 9e9819c5163d21ed
+$ tsc --noEmit
+::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing c048a4fabd9522f3
 $ tsc --noEmit
@@ -51,16 +59,8 @@ $ tsc --noEmit
 cache miss, executing da911cb9ef3f90f8
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 9c1866e0d603b166
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/setup-portal:typecheck
 cache miss, executing 8c488b4bbd442b68
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 9e9819c5163d21ed
 $ tsc --noEmit
 ::endgroup::
 ::group::pos-simulator:typecheck
@@ -71,16 +71,16 @@ $ tsc --noEmit
 cache miss, executing cf030d8910ec2214
 $ tsc --noEmit
 ::endgroup::
-::group::web:typecheck
-cache miss, executing b42c702521a571bb
-$ tsc --noEmit
-::endgroup::
 ::group::api:typecheck
 cache miss, executing dd1e54660042db5a
 $ tsc --noEmit
 ::endgroup::
+::group::web:typecheck
+cache miss, executing b42c702521a571bb
+$ tsc --noEmit
+::endgroup::
 
  Tasks:    19 successful, 19 total
-Cached:    2 cached, 19 total
-  Time:    58.28s 
+Cached:    3 cached, 19 total
+  Time:    54.394s 
 
