@@ -5,10 +5,8 @@ import { DashboardStatsPayload } from "./dashboard.types";
 @Injectable()
 export class DashboardService {
   async getAggregatedStats(orgId?: string): Promise<DashboardStatsPayload> {
-    const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
-
-    // Single aggregated query fetching pos_orders along with line items & master item metadata
-    const { data: dbOrders } = await supabase
+    // 1. Fetch POS orders from Supabase Postgres
+    let ordersQuery = supabase
       .from("pos_orders")
       .select(`
         *,
@@ -25,13 +23,17 @@ export class DashboardService {
             category
           )
         )
-      `)
-      .eq("organization_id", targetOrgId);
+      `);
 
+    if (orgId) {
+      ordersQuery = ordersQuery.eq("organization_id", orgId);
+    }
+
+    const { data: dbOrders } = await ordersQuery;
     const orders = dbOrders || [];
 
-    // Fetch inventory on hand with item details
-    const { data: dbStock } = await supabase
+    // 2. Fetch inventory stock from Supabase Postgres
+    let stockQuery = supabase
       .from("inventory_on_hand")
       .select(`
         id,
@@ -40,14 +42,19 @@ export class DashboardService {
         items (
           name
         )
-      `)
-      .eq("organization_id", targetOrgId);
+      `);
+
+    if (orgId) {
+      stockQuery = stockQuery.eq("organization_id", orgId);
+    }
+
+    const { data: dbStock } = await stockQuery;
 
     const completedOrders = orders.filter(
       (o) => o.state === "COMPLETED" || o.state === "CLOSED"
     );
 
-    // Daily Revenue: Sum of closed/completed orders
+    // Calculate actual total revenue
     const totalRevenueVal = completedOrders.reduce(
       (sum, o) => sum + Number(o.total_money || 0),
       0
@@ -57,8 +64,8 @@ export class DashboardService {
       maximumFractionDigits: 0,
     })}`;
 
-    // Average Ticket Time: duration from created_at to closed_at in minutes
-    let averageTicketTimeStr = "N/A";
+    // Calculate actual average ticket time
+    let averageTicketTimeStr = "0m";
     let totalMinutes = 0;
     let timedOrdersCount = 0;
     completedOrders.forEach((o) => {
@@ -75,7 +82,7 @@ export class DashboardService {
       averageTicketTimeStr = `${Math.round(totalMinutes / timedOrdersCount)}m`;
     }
 
-    // Weekly Revenue Chart Data
+    // Compute weekly revenue breakdown from real orders
     const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const weeklyRevenueMap: Record<string, number> = {
       Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0
@@ -91,20 +98,7 @@ export class DashboardService {
       value: Math.round(weeklyRevenueMap[day] || 0),
     }));
 
-    const hasRevenueData = completedOrders.some((o) => Number(o.total_money) > 0);
-    const finalRevenueChart = hasRevenueData
-      ? revenueChartData
-      : [
-          { name: "Mon", value: 1200 },
-          { name: "Tue", value: 1900 },
-          { name: "Wed", value: 1500 },
-          { name: "Thu", value: 2200 },
-          { name: "Fri", value: 3100 },
-          { name: "Sat", value: 4500 },
-          { name: "Sun", value: 3800 },
-        ];
-
-    // Hourly Ticket Times Data
+    // Compute hourly ticket times from real orders
     const hoursMap: Record<string, { total: number; count: number }> = {};
     completedOrders.forEach((o) => {
       if (o.closed_at && o.created_at) {
@@ -126,23 +120,11 @@ export class DashboardService {
       }))
       .sort((a, b) => a.time.localeCompare(b.time));
 
-    const finalTicketTimesChart = hourlyTicketTimes.length > 0
-      ? hourlyTicketTimes
-      : [
-          { time: "10:00", minutes: 12 },
-          { time: "11:00", minutes: 14 },
-          { time: "12:00", minutes: 22 },
-          { time: "13:00", minutes: 28 },
-          { time: "14:00", minutes: 18 },
-          { time: "15:00", minutes: 15 },
-          { time: "16:00", minutes: 12 },
-        ];
-
-    // Inventory Alerts
+    // Real inventory low stock alerts
     const alerts = (dbStock || [])
       .filter((s: any) => s.quantity_g < 10000)
       .map((s: any) => {
-        const itemName = s.items?.[0]?.name || s.items?.name || "Unknown Item";
+        const itemName = s.items?.[0]?.name || s.items?.name || "Inventory Item";
         const quantityKg = (s.quantity_g / 1000).toFixed(1) + "kg";
         const isCritical = s.quantity_g < 3000;
         return {
@@ -152,23 +134,17 @@ export class DashboardService {
         };
       });
 
-    const finalInventoryAlerts = alerts.length > 0
-      ? alerts
-      : [
-          { item: "Sourdough Flour", status: "Low", quantity: "5.0kg" },
-          { item: "Avocados", status: "Critical", quantity: "1.2kg" },
-          { item: "Olive Oil", status: "Low", quantity: "4.0kg" },
-        ];
+    const activeTablesCount = orders.filter((o) => o.state === "OPEN").length;
 
     return {
-      revenue: finalRevenueChart,
-      ticketTimes: finalTicketTimesChart,
-      inventoryAlerts: finalInventoryAlerts.slice(0, 5),
+      revenue: revenueChartData,
+      ticketTimes: hourlyTicketTimes,
+      inventoryAlerts: alerts.slice(0, 10),
       summary: {
-        totalOrders: orders.length > 0 ? orders.length : 142,
-        averageTicketTime: averageTicketTimeStr !== "N/A" ? averageTicketTimeStr : "18m",
-        dailyRevenue: totalRevenueVal > 0 ? dailyRevenueStr : "$18,200",
-        activeTables: orders.filter((o) => o.state === "OPEN").length || 24,
+        totalOrders: orders.length,
+        averageTicketTime: averageTicketTimeStr,
+        dailyRevenue: dailyRevenueStr,
+        activeTables: activeTablesCount,
       },
     };
   }

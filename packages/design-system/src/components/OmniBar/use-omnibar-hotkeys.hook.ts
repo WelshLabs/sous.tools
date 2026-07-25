@@ -49,11 +49,9 @@ export function useOmniBarHotkeys({
     setIsProcessing(true);
     setErrorMessage(null);
 
-    if (isFocusPage) {
-      router.push(textToSubmit ? `/answer?q=${encodeURIComponent(textToSubmit)}` : "/answer");
-    } else {
-      setIsOpen(true);
-    }
+    // Always route to /answer page when submitting a query from Omnibar
+    router.push(textToSubmit ? `/answer?q=${encodeURIComponent(textToSubmit)}` : "/answer");
+    setIsOpen(true);
 
     // Build a human-readable user message that reflects what was submitted
     const attachmentSummary = hasFiles
