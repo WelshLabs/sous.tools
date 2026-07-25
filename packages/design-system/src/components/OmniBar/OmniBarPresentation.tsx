@@ -26,16 +26,7 @@ export interface OmniBarPresentationProps {
   onClearHistory: () => void;
 }
 
-const springTransition = { type: "spring" as const, stiffness: 300, damping: 30, mass: 0.9 };
-
-const glowLoopTransition = {
-  boxShadow: {
-    type: "tween" as const,
-    ease: "linear" as const,
-    repeat: Infinity,
-    duration: 2.4,
-  },
-};
+const springTransition = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.9 };
 
 export function OmniBarPresentation({
   isOpen,
@@ -63,11 +54,14 @@ export function OmniBarPresentation({
     }
   }, [chatHistory.length, isOpen]);
 
+  const isWorkspace = !isFocusPage && !isAnswerPage;
+  const isFabState = isWorkspace && !isOpen;
+
   return (
     <LayoutGroup id="omnibar-morph">
-      {/* ── Backdrop: ONLY shown on regular workspace pages when modal is expanded ── */}
+      {/* Backdrop overlay ONLY for workspace modal when open */}
       <AnimatePresence>
-        {!isFocusPage && !isAnswerPage && isOpen && (
+        {isWorkspace && isOpen && (
           <motion.div
             key="workspace-backdrop"
             initial={{ opacity: 0 }}
@@ -80,15 +74,30 @@ export function OmniBarPresentation({
         )}
       </AnimatePresence>
 
-      {/* ── MODE 1: /home — Dead Center Omnibar ── */}
-      {isFocusPage && (
-        <motion.div
-          key="home-center-omnibar"
-          layout
-          layoutId="omnibar-input-pill"
-          transition={springTransition}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center"
-        >
+      {/* SINGLE UNIFIED OMNIBAR ELEMENT — Never unmounts, never flashes */}
+      <motion.div
+        key="omnibar-unified-pill"
+        layout
+        layoutId="omnibar-input-pill"
+        transition={springTransition}
+        className={
+          isFabState
+            ? "fixed bottom-6 right-6 w-16 h-16 rounded-full ds-glass flex items-center justify-center cursor-pointer pointer-events-auto z-[9999]"
+            : isAnswerPage
+              ? "fixed top-[72px] left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[9999] pointer-events-auto flex flex-col items-center"
+              : "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center"
+        }
+        onClick={isFabState ? onToggle : undefined}
+      >
+        {isFabState ? (
+          <div className="relative w-full h-full flex items-center justify-center">
+            <OmnibarPerimeterView busy={isProcessing} />
+            <Lettermark
+              gradient
+              className={`w-8 h-8 relative z-10 ${isProcessing ? "animate-pulse" : ""}`}
+            />
+          </div>
+        ) : (
           <motion.div layout className="w-full flex flex-col justify-center gap-0 pointer-events-auto">
             <StagingArea files={stagedFiles} />
             <OmniInputPill
@@ -100,116 +109,14 @@ export function OmniBarPresentation({
               onKeyDown={onKeyDown}
               onMicClick={onMicClick}
               onSubmit={onSubmit}
-              showClose={false}
+              showClose={isWorkspace && isOpen}
+              onToggle={onToggle}
               isDragging={isDragging}
               stagedFiles={stagedFiles}
             />
           </motion.div>
-        </motion.div>
-      )}
-
-      {/* ── MODE 2: /answer — Fixed right below AppBar for continued conversation ── */}
-      {isAnswerPage && (
-        <motion.div
-          key="answer-top-omnibar"
-          layout
-          layoutId="omnibar-input-pill"
-          transition={springTransition}
-          className="fixed top-[72px] left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-start"
-        >
-          <motion.div layout className="w-full flex flex-col justify-center gap-0 pointer-events-auto shadow-2xl">
-            <StagingArea files={stagedFiles} />
-            <OmniInputPill
-              inputText={inputText}
-              isListening={isListening}
-              isProcessing={isProcessing}
-              errorMessage={errorMessage}
-              onChange={onChange}
-              onKeyDown={onKeyDown}
-              onMicClick={onMicClick}
-              onSubmit={onSubmit}
-              showClose={false}
-              isDragging={isDragging}
-              stagedFiles={stagedFiles}
-            />
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ── MODE 3: Regular Workspace Pages — Collapsed FAB button OR Expanded Modal ── */}
-      {!isFocusPage && !isAnswerPage && (
-        <>
-          {!isOpen ? (
-            /* Collapsed FAB in bottom-right corner */
-            <motion.button
-              key="fab-button"
-              layoutId="omnibar-input-pill"
-              type="button"
-              aria-label="Open sous chef"
-              initial={{ opacity: 0, scale: 0.85, borderRadius: "9999px" }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                borderRadius: "9999px",
-                boxShadow: isProcessing
-                  ? "var(--ds-glow-md)"
-                  : [
-                      "var(--ds-glow-sm)",
-                      "var(--ds-glow-accent)",
-                      "var(--ds-glow-sm)",
-                    ],
-              }}
-              exit={{ opacity: 0, scale: 0.85, borderRadius: "9999px" }}
-              transition={{
-                ...springTransition,
-                ...glowLoopTransition,
-              }}
-              whileHover={{ y: -3, scale: 1.06 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={onToggle}
-              className="fixed bottom-6 right-6 z-[9999] w-16 h-16 ds-glass flex items-center justify-center cursor-pointer pointer-events-auto"
-              style={{
-                borderColor: isProcessing
-                  ? "var(--color-primary)"
-                  : "var(--color-border)",
-              }}
-            >
-              <OmnibarPerimeterView busy={isProcessing} />
-              <Lettermark
-                gradient
-                className={`w-8 h-8 relative z-10 ${isProcessing ? "animate-pulse" : ""}`}
-              />
-            </motion.button>
-          ) : (
-            /* Expanded Modal — Dead center of screen */
-            <motion.div
-              key="workspace-modal-omnibar"
-              layout
-              layoutId="omnibar-input-pill"
-              transition={springTransition}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center"
-            >
-              <motion.div layout className="w-full flex flex-col justify-center gap-0 pointer-events-auto">
-                <StagingArea files={stagedFiles} />
-                <OmniInputPill
-                  inputText={inputText}
-                  isListening={isListening}
-                  isProcessing={isProcessing}
-                  errorMessage={errorMessage}
-                  onChange={onChange}
-                  onKeyDown={onKeyDown}
-                  onMicClick={onMicClick}
-                  onSubmit={onSubmit}
-                  showClose={true}
-                  onToggle={onToggle}
-                  isDragging={isDragging}
-                  stagedFiles={stagedFiles}
-                />
-              </motion.div>
-            </motion.div>
-          )}
-        </>
-      )}
+        )}
+      </motion.div>
     </LayoutGroup>
   );
 }

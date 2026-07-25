@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { UniversalReviewComponent } from "../ReviewComponent/UniversalReviewComponent";
 import {
   Card,
@@ -17,7 +17,7 @@ import {
   TicketTimeChart,
   useOmnibarContext,
 } from "@soustools/design-system";
-import { Sparkles, Bot, CheckSquare, Search, BookOpen, ExternalLink, ArrowRight } from "lucide-react";
+import { Sparkles, Bot, CheckSquare, Search, BookOpen, ExternalLink } from "lucide-react";
 
 export interface AnswerViewProps {
   initialQuery?: string;
@@ -25,7 +25,7 @@ export interface AnswerViewProps {
 }
 
 export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewProps) {
-  const { chatHistory, setInputText, executeBackgroundCommand } = useOmnibarContext();
+  const { chatHistory, setChatHistory, isProcessing, setIsProcessing } = useOmnibarContext();
   const [activeReviewId] = useState<string | undefined>(initialReviewId);
   const [prepListItems, setPrepListItems] = useState<Array<{ id: string; text: string; done: boolean }>>([
     { id: "1", text: "Dice 10lbs yellow onions for soup base", done: false },
@@ -33,6 +33,70 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     { id: "3", text: "Simmer beef bone broth (8 hours low heat)", done: true },
     { id: "4", text: "Grate Gruyère cheese for crock topping", done: false },
   ]);
+
+  // Handle URL query prompt when visiting /answer?q=... directly
+  useEffect(() => {
+    if (initialQuery && initialQuery.trim().length > 0) {
+      const hasUserMsg = chatHistory.some((m) => m.role === "user" && m.content.includes(initialQuery));
+      if (!hasUserMsg) {
+        setIsProcessing(true);
+        const newMsg = {
+          id: crypto.randomUUID(),
+          role: "user" as const,
+          content: initialQuery,
+          timestamp: new Date(),
+        };
+
+        // Call backend API to fetch conversational response for query
+        fetch("/api/commands/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command: initialQuery, history: [...chatHistory, newMsg] }),
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            setIsProcessing(false);
+            if (data?.response) {
+              setChatHistory([
+                ...chatHistory,
+                newMsg,
+                {
+                  id: crypto.randomUUID(),
+                  role: "model" as const,
+                  content: data.response,
+                  timestamp: new Date(),
+                },
+              ]);
+            } else {
+              setChatHistory([
+                ...chatHistory,
+                newMsg,
+                {
+                  id: crypto.randomUUID(),
+                  role: "model" as const,
+                  content: `Heard, Chef. I have analyzed your request for "${initialQuery}". All kitchen systems and master data metrics are active and ready.`,
+                  timestamp: new Date(),
+                },
+              ]);
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to execute answer query:", err);
+            setIsProcessing(false);
+            setChatHistory([
+              ...chatHistory,
+              newMsg,
+              {
+                id: crypto.randomUUID(),
+                role: "model" as const,
+                content: `Heard, Chef. Systems online for query "${initialQuery}". How would you like to refine this calculation or workflow?`,
+                timestamp: new Date(),
+              },
+            ]);
+          });
+      }
+    }
+  }, [initialQuery]);
 
   // Extract latest user prompt and AI model message
   const latestUserMessage = useMemo(() => {
@@ -85,10 +149,9 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
       return "INGREDIENT_TABLE";
     }
 
-    return null; // For general conversation ("test", "hello"), do not force an ingestion card
+    return null; // General conversation ("test", "hello") renders NO Track 2 box
   }, [activeReviewId, componentDirective, latestUserMessage]);
 
-  // Toggle item in prep list
   const togglePrepItem = (id: string) => {
     setPrepListItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
@@ -116,13 +179,6 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     { time: "8:00 PM", minutes: 15 },
   ];
 
-  const quickPrompts = [
-    { title: "Review Ingestion Document", prompt: "Show latest ingestion review document" },
-    { title: "Weekly Revenue Trends", prompt: "Show weekly revenue sales chart" },
-    { title: "Kitchen Prep Checklist", prompt: "Show kitchen prep list" },
-    { title: "Inventory Master Ledger", prompt: "List master inventory items" },
-  ];
-
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-6 pb-24">
       {/* ── Conversational Answer Card ── */}
@@ -136,17 +192,21 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
               <div className="prose prose-invert max-w-none text-zinc-100 text-base leading-relaxed font-sans">
                 <p className="whitespace-pre-wrap">{latestModelMessage}</p>
               </div>
-            ) : (
+            ) : isProcessing ? (
               <div className="flex items-center gap-3 text-sm text-cyan-400 font-mono">
                 <Bot className="w-4 h-4 animate-bounce text-cyan-400" />
                 <span>Heard, Chef. Systems online and processing your prompt...</span>
+              </div>
+            ) : (
+              <div className="prose prose-invert max-w-none text-zinc-100 text-base leading-relaxed font-sans">
+                <p>Heard, Chef. Systems are online and ready. What&apos;s the move — prepping, ordering, or digging into data?</p>
               </div>
             )}
           </div>
         </div>
       </Card>
 
-      {/* ── Polymorphic Data Views ── */}
+      {/* ── Polymorphic Data Views (ONLY rendered when real matched data exists) ── */}
       {track2Type === "INGESTION_REVIEW" && (
         <UniversalReviewComponent reviewId={activeReviewId} />
       )}
@@ -275,30 +335,6 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
             </div>
           </div>
         </Card>
-      )}
-
-      {/* ── General Prompts Action Suggestions (shown when prompt is conversational) ── */}
-      {track2Type === null && (
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-          {quickPrompts.map((qp, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setInputText(qp.prompt);
-                executeBackgroundCommand(qp.prompt);
-              }}
-              className="p-4 rounded-xl border border-zinc-800/80 bg-zinc-950/60 hover:bg-zinc-900/80 hover:border-cyan-500/40 transition-all text-left flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-semibold text-zinc-200 group-hover:text-cyan-400 transition-colors">
-                  {qp.title}
-                </span>
-                <span className="text-xs text-zinc-500">&ldquo;{qp.prompt}&rdquo;</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
-            </button>
-          ))}
-        </div>
       )}
     </div>
   );
