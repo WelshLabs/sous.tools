@@ -10,7 +10,7 @@ export default async function AnswerPage({
   const resolvedParams = await searchParams;
 
   return (
-    <div className="w-full min-h-screen pt-16 px-4 md:px-8">
+    <div className="w-full min-h-screen pt-28 px-4 md:px-8">
       <AnswerView
         initialQuery={resolvedParams?.q}
         initialReviewId={resolvedParams?.reviewId}
