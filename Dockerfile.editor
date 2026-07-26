@@ -10,18 +10,13 @@ RUN apt-get update && apt-get install -y zsh curl git psmisc tmux python3 python
 USER root
 WORKDIR /workspace
 
-# 3. Install valid packages globally as root to bypass folder permission errors
+# 3. Install valid Node packages globally as root
 RUN npm install -g pnpm pm2 @anthropic-ai/claude-code
 
-# 4. Switch to user layer for python setups
-USER abc
+# 4. Install python applications globally as root to bypass /config permission blocks
+RUN pip3 install aider-chat --break-system-packages
 
-# 5. Install Python dependencies safely within user scope by overriding PEP 668
-RUN pip3 install --user aider-chat --break-system-packages
-ENV PATH=/config/.local/bin:$PATH
-
-# 6. Apply default shell choices natively
-USER root
+# 5. Apply default shell choices natively and restore standard abc runtime execution user
 RUN usermod -s /bin/zsh abc
 
 USER abc
