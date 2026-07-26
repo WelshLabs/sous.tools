@@ -1120,6 +1120,7 @@ ecosystem.config.js
 eslint.config.mjs
 knip.jsonc
 litellm_config.yaml
+mcp_servers.env
 pnpm-workspace.yaml
 README.md
 sonar-project.properties
@@ -42152,25 +42153,6 @@ WORKDIR /workspace
 ENTRYPOINT ["tail", "-f", "/dev/null"]
 ````
 
-## File: Dockerfile.editor
-````
-FROM lscr.io/linuxserver/code-server:latest
-
-# Install Zsh, curl, and Starship
-RUN apt-get update && apt-get install -y zsh curl git psmisc tmux && \
-    curl -sS https://starship.rs/install.sh | sh -s -- -y
-
-# Install a specific Node version and pnpm (e.g., Node 22)
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g pnpm && \
-    npm install -g pm2 && \
-    npm install -g @anthropic-ai/claude-code
-
-# Set Zsh as the default shell for the 'abc' user (the default user for linuxserver images)
-RUN usermod -s /bin/zsh abc
-````
-
 ## File: knip.jsonc
 ````json
 {
@@ -51403,65 +51385,47 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 ````
 
-## File: litellm_config.yaml
-````yaml
-model_list:
-  # --- Route to your local Ollama container ---
-  - model_name: qwen2.5-coder:7b
-    litellm_params:
-      model: ollama/qwen2.5-coder:7b
-      api_base: http://ollama:11434
-  - model_name: deepseek-coder-v2
-    litellm_params:
-      model: ollama/deepseek-coder-v2
-      api_base: http://ollama:11434
+## File: Dockerfile.editor
+````
+FROM lscr.io/linuxserver/code-server:latest
 
-  # --- Route to Google Gemini (2026 Models) ---
-  - model_name: gemini-3.5-flash
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
+USER root
 
-  - model_name: gemini-3.1-pro
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
+# 1. Install critical system compilation and shell tools
+RUN apt-get update && apt-get install -y zsh curl git psmisc tmux python3 python3-pip && \
+    curl -sS https://starship.rs/install.sh | sh -s -- -y && \
+    rm -rf /var/lib/apt/lists/*
 
-  - model_name: gemini-3.1-flash-lite
-    litellm_params:
-      model: gemini/gemini-3.1-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
+# 2. Correctly register source structures and compile Node 22
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get update && apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
-  - model_name: gemini-2.5-pro
-    litellm_params:
-      model: gemini/gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
+# 3. Configure global npm paths to prevent permission blocks for the abc user
+ENV NPM_CONFIG_PREFIX=/config/.npm-global
+ENV PATH=/config/.npm-global/bin:$PATH
 
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: gemini/gemini-2.5-flash
-      api_key: os.environ/GEMINI_API_KEY
+# 4. Switch to the native linuxserver execution profile user
+USER abc
+WORKDIR /workspace
 
-  # === THE CLAUDE CLI ALIASES ===
-  # The Claude CLI hardcodes requests for these model names.
-  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
-  - model_name: claude-3-5-sonnet-20241022
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
+# 5. Install global binaries and autonomous agent frameworks safely within user scope
+RUN npm install -g pnpm pm2 @anthropic-ai/claude-code chunkhound-mcp-server
 
-  - model_name: claude-3-5-haiku-20241022
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
+# 6. Install your tree-sitter headless execution engine
+RUN pip3 install --user aider-chat
+ENV PATH=/config/.local/bin:$PATH
 
-  - model_name: claude-opus-4-8[1m]
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
+# 7. Apply default shell choices natively
+USER root
+RUN usermod -s /bin/zsh abc
 
-general_settings:
-  master_key: sk-1234
+USER abc
+````
+
+## File: mcp_servers.env
+````
+MCP_SERVERS={"github":{"type":"command","command":"npx","args":["-y","@modelcontextprotocol/server-github"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"$${GITHUB_PERSONAL_ACCESS_TOKEN}"}},"code-indexer":{"type":"command","command":"npx","args":["-y","chunkhound-mcp-server"],"env":{"PROJECT_PATH":"/workspace/dev.sous.tools"}},"infisical":{"type":"command","command":"npx","args":["-y","@infisical/mcp-server"],"env":{"INFISICAL_TOKEN":"$${INFISICAL_TOKEN}"}},"new-relic":{"type":"command","command":"npx","args":["-y","mcp-server-newrelic"],"env":{"NEW_RELIC_API_KEY":"$${NEW_RELIC_API_KEY}","NEW_RELIC_ACCOUNT_ID":"$${NEW_RELIC_ACCOUNT_ID}"}},"supabase":{"type":"http","url":"https://supabase.com"},"redis":{"type":"command","command":"npx","args":["-y","@modelcontextprotocol/server-redis"],"env":{"REDIS_URL":"redis://redis:6379"}},"neo4j":{"type":"command","command":"npx","args":["-y","@modelcontextprotocol/server-neo4j"],"env":{"NEO4J_URL":"bolt://neo4j:7687","NEO4J_USER":"neo4j","NEO4J_PASSWORD":"$${NEO4J_PASSWORD}"}},"vercel":{"type":"command","command":"npx","args":["-y","mcp-server-vercel"],"env":{"VERCEL_TOKEN":"$${VERCEL_TOKEN}"}}}
 ````
 
 ## File: apps/api/src/lib/supabase.ts
@@ -58158,6 +58122,67 @@ export default [
     },
   },
 ];
+````
+
+## File: litellm_config.yaml
+````yaml
+model_list:
+  # --- Route to your local Ollama container ---
+  - model_name: qwen2.5-coder:7b
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b
+      api_base: http://ollama:11434
+  - model_name: deepseek-coder-v2
+    litellm_params:
+      model: ollama/deepseek-coder-v2
+      api_base: http://ollama:11434
+
+  # --- Route to Google Gemini (2026 Models) ---
+  - model_name: gemini-3.5-flash
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-pro
+    litellm_params:
+      model: gemini/gemini-3.1-pro-latest
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-3.1-flash-lite
+    litellm_params:
+      model: gemini/gemini-3.1-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro-latest
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  # === THE CLAUDE CLI ALIASES ===
+  # The Claude CLI hardcodes requests for these model names.
+  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: claude-opus-4-8[1m]
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+general_settings:
+  master_key: sk-1234
 ````
 
 ## File: pnpm-workspace.yaml
@@ -65409,13 +65434,6 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
-
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    volumes:
-      - ollama_data:/root/.ollama
-    restart: unless-stopped
     networks:
       - default
       - traefik_public
@@ -65426,13 +65444,12 @@ services:
     restart: unless-stopped
     environment:
       - NEO4J_AUTH=neo4j/sousToolsPassword
-      # Strict memory limits to protect your 24GB Oracle instance
       - NEO4J_server_memory_pagecache_size=1G
       - NEO4J_server_memory_heap_initial__size=1G
       - NEO4J_server_memory_heap_max__size=2G
     ports:
-      - "7474:7474" # Neo4j Browser Web UI
-      - "7687:7687" # Bolt protocol for NestJS
+      - "7474:7474"
+      - "7687:7687"
     volumes:
       - neo4j_data:/data
     networks:
@@ -65445,33 +65462,27 @@ services:
       - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
       - "traefik.docker.network=traefik_public"
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik_public
+
   api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
     depends_on:
       - redis
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "wget",
-    #       "--no-verbose",
-    #       "--tries=1",
-    #       "--spider",
-    #       "http://localhost:3001/health",
-    #     ]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
-    #   start_period: 15s
     deploy:
       update_config:
         order: start-first
         failure_action: rollback
     environment:
-      # - VISION_PROVIDER=ollama
-      # - OLLAMA_HOST=http://ollama:11434
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
@@ -65493,28 +65504,26 @@ services:
     image: ghcr.io/berriai/litellm:main-latest
     container_name: litellm
     restart: unless-stopped
-    command:
-      - --config
-      - /app/config.yaml
-      - --detailed_debug
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - LITELLM_MASTER_KEY=sk-1234
     volumes:
       - /home/ubuntu/prod.sous.tools/litellm_config.yaml:/app/config.yaml
+      - /home/ubuntu/dev.sous.tools:/workspace/dev.sous.tools
     networks:
       - traefik_public
+    entrypoint: >
+      sh -c "apk add --no-cache nodejs npm python3 && node /workspace/dev.sous.tools/packages/config/dist/cli.js python3 /app/main.py --config /app/config.yaml --detailed_debug"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
       - "traefik.http.routers.litellm.entrypoints=websecure"
       - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
       - "traefik.http.services.litellm.loadbalancer.server.port=4000"
+    depends_on:
+      - ollama
 
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n
+    user: root
     restart: unless-stopped
     ports:
       - "5678:5678"
@@ -65523,11 +65532,22 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
       - N8N_COMMAND_ENABLE=true
-      - WEBHOOK_URL=https://n8n.sous.tools
+      - WEBHOOK_URL=https://sous.tools
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - NODES_EXCLUDE=[]
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_BLOCK_SVC_EXECUTION_FROM_COMMAND=false
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
-      # Using the named volume you declared at the bottom of the file
       - n8n_data:/home/node/.n8n
+      - /home/ubuntu/dev.sous.tools/packages/workflows:/etc/n8n/workflows
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ubuntu/dev.sous.tools:/home/ubuntu/dev.sous.tools
+    command: >
+      sh -c "apk add --no-cache docker-cli curl nodejs npm && node /home/ubuntu/dev.sous.tools/packages/config/dist/cli.js tini -- /docker-entrypoint.sh"
     networks:
       - traefik_public
     labels:
@@ -65550,10 +65570,14 @@ services:
       - TZ=America/New_York
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
-      - OPENAI_API_BASE=https://ai.sous.tools
-      - OPENAI_API_KEY=sk-1234 k-# Master key defined in litellm_config.yaml
+      - OPENAI_API_BASE=https://sous.tools
+      - OPENAI_API_KEY=sk-1234
       - DOCKER_MODS=linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-docker
       - DOCKER_GROUP=111
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
       - /home/ubuntu/dev.sous.tools:/workspace
       - /home/ubuntu/.config/code-server:/config
@@ -65563,43 +65587,32 @@ services:
     networks:
       - default
       - traefik_public
-      - supabase_network
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
     labels:
       - "traefik.enable=true"
-
-      # 1. The Code Server UI
       - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
       - "traefik.http.routers.editor.entrypoints=websecure"
       - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.editor.service=editor"
       - "traefik.http.services.editor.loadbalancer.server.port=8443"
-
-      # 2. Dev Web App
       - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
       - "traefik.http.routers.dev-web.entrypoints=websecure"
       - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-web.service=dev-web"
       - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
-
-      # 3. Dev API
       - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
       - "traefik.http.routers.dev-api.entrypoints=websecure"
       - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-api.service=dev-api"
       - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
-
-      # 4. Dev POS Simulator
       - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
       - "traefik.http.routers.dev-pos.entrypoints=websecure"
       - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-pos.service=dev-pos"
       - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
-
-      # 5. Dev Setup Portal
       - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
       - "traefik.http.routers.dev-setup.entrypoints=websecure"
       - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-setup.service=dev-setup"
       - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
 
   ollama-pull:
@@ -65615,68 +65628,37 @@ services:
       - |
         echo "Waiting for Ollama to boot..."
         sleep 10
-
-        # Add any new models to this list separated by a space
         MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
-
         for model in $$MODELS; do
           echo "Checking/Pulling $$model..."
           ollama pull $$model
         done
-
         echo "All models verified and ready!"
-
-  agent-runner:
-    build:
-      context: . # Path to the folder containing your new Dockerfile
-      dockerfile: Dockerfile.agentRunner
-      args:
-        - PUID=1001
-        - PGID=1001
-    container_name: agent-runner
-    volumes:
-      # Mount the exact same workspace as your code-server
-      - /home/ubuntu/dev.sous.tools/:/workspace
-      - agent_data:/home/agentuser
-    environment:
-      # Trick the Claude CLI into routing through LiteLLM
-      - ANTHROPIC_BASE_URL=http://litellm:4000
-      - ANTHROPIC_API_KEY=sk-1234 # Your LiteLLM Master Key
-      - GITHUB_TOKEN=${GITHUB_TOKEN} # For the GitHub MCP Server
-      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
-    networks:
-      - traefik_public
-    restart: unless-stopped
-
-  supabase-studio-bridge:
-    image: alpine/socat
-    container_name: supabase-studio-bridge
-    # Forwards Traefik traffic to the host machine's port 54323
-    command: tcp-listen:54323,fork tcp:host.docker.internal:54323
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.studio.rule=Host(`studio.sous.tools`)"
-      - "traefik.http.routers.studio.entrypoints=websecure"
-      - "traefik.http.routers.studio.tls.certresolver=letsencrypt"
-      - "traefik.http.services.studio.loadbalancer.server.port=54323"
-    networks:
-      - traefik_public
-    restart: unless-stopped
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
+    ports:
+      - "6000:8080"
+    networks:
+      - traefik_public
     volumes:
       - open-webui_data:/app/backend/data
+      - /home/ubuntu/dev.sous.tools:/workspace/dev.sous.tools
     environment:
-      - OPENAI_API_BASE_URL=https://ai.sous.tools/v1
+      - OPENAI_API_BASE_URL=https://sous.tools
       - OPENAI_API_KEY=sk-1234
       - WEBUI_SECRET_KEY=password
       - WEBUI_AUTH=true
-    networks:
-      - traefik_public
+      - ENABLE_MCP=true
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    env_file:
+      - ./mcp_servers.env
+    entrypoint: >
+      sh -c "apk add --no-cache nodejs npm && node /workspace/dev.sous.tools/packages/config/dist/cli.js /start.sh"
     restart: always
     depends_on:
       - litellm
@@ -65684,40 +65666,14 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.open-webui.rule=Host(`webui.sous.tools`)"
       - "traefik.http.routers.open-webui.entrypoints=websecure"
-      - "traefik.http.routers.open-webui.tls.certresolver=myresolver"
+      - "traefik.http.routers.open-webui.tls.certresolver=letsencrypt"
       - "traefik.http.services.open-webui.loadbalancer.server.port=8080"
-
-  # Open Terminal (Internal traffic only, no public Traefik labels required!)
-  open-terminal:
-    image: ghcr.io/open-webui/open-terminal:latest
-    container_name: open-terminal
-    volumes:
-      - ./staging-sandbox:/home/user
-    environment:
-      - OPEN_TERMINAL_API_KEY=password
-    networks:
-      - traefik_public
-    restart: always
-
-  # Fast MCPO bridge (Internal traffic only, no public Traefik labels required!)
-  mcpo-bridge:
-    image: python:3.11-slim
-    container_name: mcpo-bridge
-    volumes:
-      - ./mcp-config.json:/app/mcp-config.json
-    working_dir: /app
-    command: >
-      sh -c "pip install mcpo && mcpo --port 8000 --config /app/mcp-config.json"
-    networks:
-      - traefik_public
-    restart: always
 
 volumes:
   letsencrypt:
   redis_data:
   ollama_data:
   n8n_data:
-  agent_data:
   neo4j_data:
   open-webui_data:
 
@@ -65725,8 +65681,5 @@ networks:
   default:
   traefik_public:
     name: traefik_public
-    external: true
-  supabase_network:
-    name: supabase_network_sous.tools
     external: true
 ````

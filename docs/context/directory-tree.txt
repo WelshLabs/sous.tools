@@ -796,6 +796,7 @@
 ├── lighthouserc.json
 ├── litellm_config.yaml
 ├── mcp-config.json
+├── mcp_servers.env
 ├── package.json
 ├── packages
 │   ├── api-client
@@ -1349,4 +1350,4 @@
 │       └── Untitled query 242.sql
 └── turbo.json
 
-315 directories, 1035 files
+315 directories, 1036 files
