@@ -1,0 +1,15 @@
+http:
+  routers:
+    dev-web:
+      rule: "Host(`dev.sous.tools`) || Host(`dev.localhost`)"
+      entryPoints:
+        - web
+        - websecure
+      service: dev-web-service
+      tls: {}
+
+  services:
+    dev-web-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"

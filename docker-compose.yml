@@ -46,6 +46,7 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
       - "--log.level=INFO"
 
     ports:
@@ -53,6 +54,7 @@ services:
       - "443:443"
     volumes:
       - "letsencrypt:/letsencrypt"
+      - "./traefik_dynamic.yml:/etc/traefik/dynamic.yml:ro"
 
     restart: unless-stopped
     extra_hosts:
@@ -238,6 +240,7 @@ services:
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
+      - .:/config/workspace
       - .:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
@@ -294,7 +297,7 @@ services:
       - .:/workspace
       - ./packages/config/sanitizer.py:/app/backend/data/functions/sanitizer.py
     environment:
-      - OPENAI_API_BASE_URL=https://ai.sous.tools/v1
+      - OPENAI_API_BASE_URL=http://litellm:4000/v1
       - OPENAI_API_KEY=sk-1234
       - WEBUI_SECRET_KEY=password
       - WEBUI_AUTH=true
