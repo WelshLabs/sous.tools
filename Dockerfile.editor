@@ -16,8 +16,8 @@ RUN npm install -g pnpm pm2 @anthropic-ai/claude-code
 # 4. Switch to user layer for python setups
 USER abc
 
-# 5. Install Python dependencies safely within user scope
-RUN pip3 install --user aider-chat
+# 5. Install Python dependencies safely within user scope by overriding PEP 668
+RUN pip3 install --user aider-chat --break-system-packages
 ENV PATH=/config/.local/bin:$PATH
 
 # 6. Apply default shell choices natively
