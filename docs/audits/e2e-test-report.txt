@@ -16,15 +16,10 @@ cache miss, executing 50f40be00edba9ad
 $ tsc
 ::endgroup::
 [;31mpos-simulator:build[;0m
-cache miss, executing 848688b49135c77a
+cache miss, executing 99896eadebfcac87
 $ node ../../packages/config/dist/cli.js next build
 [@soustools/config] FATAL: Missing Infisical credentials (INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). Process execution halted immediately.
 [ELIFECYCLE] Command failed with exit code 1.
-::group::web:build
-cache miss, executing c531970cdb595448
-$ node ../../packages/config/dist/cli.js next build
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::@soustools/setup-portal:build
 cache miss, executing a53a63c43c1c27ff
 $ next build
@@ -35,6 +30,11 @@ cache miss, executing 6e1e455cfb2d6c81
 $ nest build
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::web:build
+cache miss, executing c531970cdb595448
+$ node ../../packages/config/dist/cli.js next build
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::api:build
 cache miss, executing 62697a572689ea16
 $ nest build
@@ -43,6 +43,6 @@ $ nest build
 
  Tasks:    3 successful, 8 total
 Cached:    0 cached, 8 total
-  Time:    7.052s 
+  Time:    7.129s 
 Failed:    pos-simulator#build
 

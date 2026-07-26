@@ -48842,6 +48842,143 @@ export default async function TVSignageEditorPage({ params }: PageProps) {
 }
 ````
 
+## File: apps/web/src/app/(workspace)/signage/[deckId]/tv-signage-editor-client.tsx
+````typescript
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
+import { type SignageLayoutConfig, type PosItem } from "@soustools/api-types";
+import { mapDbItemToPosItem, type RawDbPosItem } from "@/app/display/[id]/helpers";
+import { createWebSocketClient } from "@soustools/api-client";
+import { useRouter } from "next/navigation";
+
+interface SignageDeck {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  config: SignageLayoutConfig;
+}
+
+interface TVSignageEditorClientProps {
+  deckId: string;
+  initialDeck: SignageDeck | null;
+  initialItems: RawDbPosItem[];
+}
+
+export default function TVSignageEditorClient({ deckId, initialDeck, initialItems }: TVSignageEditorClientProps) {
+  const [deck, setDeck] = useState<SignageDeck | null>(initialDeck);
+  const [items, setItems] = useState<PosItem[]>(() => {
+    if (initialItems && initialItems.length > 0) {
+      return initialItems.map(mapDbItemToPosItem);
+    }
+    return MOCK_POS_ITEMS;
+  });
+  const [saving, setSaving] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setDeck(initialDeck);
+  }, [initialDeck]);
+
+  useEffect(() => {
+    if (initialItems && initialItems.length > 0) {
+      setItems(initialItems.map(mapDbItemToPosItem));
+    } else {
+      setItems(MOCK_POS_ITEMS);
+    }
+  }, [initialItems]);
+
+  useEffect(() => {
+    const socket = createWebSocketClient({
+      query: { deckId },
+    });
+
+    const handleConnect = () => {
+      socket.emit("join", { deckId });
+    };
+
+    const handleItemsUpdated = (payload: { deckId: string; items: RawDbPosItem[] }) => {
+      if (payload.deckId === deckId && payload.items) {
+        const parsedItems = payload.items.map(mapDbItemToPosItem);
+        setItems(parsedItems);
+      }
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("items_updated", handleItemsUpdated);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("items_updated", handleItemsUpdated);
+      socket.disconnect();
+    };
+  }, [deckId]);
+
+  const handleSave = async (newConfig: SignageLayoutConfig) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/signage/layouts/${deckId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config: newConfig }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setDeck(data.data);
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Save failed:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRenameDeck = async (name: string, slug: string) => {
+    try {
+      const res = await fetch(`/api/signage/layouts/${deckId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, slug }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setDeck(data.data);
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Rename failed:", err);
+    }
+  };
+
+  if (!deck) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-xl font-bold text-red-400">Deck Not Found</h2>
+        <p className="text-sm text-muted-foreground mt-2">The requested slide deck could not be loaded.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="-m-6 h-[calc(100vh-4rem)] overflow-hidden">
+      <LayoutBuilder
+        deckId={deckId}
+        deckSlug={deck.slug}
+        layoutName={deck.name}
+        initialConfig={deck.config}
+        items={items}
+        onSave={handleSave}
+        onRenameDeck={handleRenameDeck}
+        saving={saving}
+      />
+    </div>
+  );
+}
+````
+
 ## File: apps/web/src/app/(workspace)/signage/page.tsx
 ````typescript
 import { clientConfig as config } from "@soustools/config/client";
@@ -48949,6 +49086,161 @@ export default async function DisplayPage({ params }: DisplayPageProps) {
       initialErrorState={initialErrorState}
     />
   );
+}
+````
+
+## File: apps/web/src/app/display/[id]/use-display-player.ts
+````typescript
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { type SignageDisplay, type PosItem, type SignageLayoutConfig } from "@soustools/api-types";
+import { type SignageLayout } from "./types";
+import { mapDbItemToPosItem, registerDisplayDevice, type RawDbPosItem } from "./helpers";
+import { createWebSocketClient } from "@soustools/api-client";
+
+export function useDisplayPlayer(
+  displayId: string,
+  initialDisplay?: SignageDisplay | null,
+  initialLayout?: SignageLayout | null,
+  initialItems?: RawDbPosItem[],
+  initialErrorState?: string | null
+) {
+  const [display, setDisplay] = useState<SignageDisplay | null>(initialDisplay || null);
+  const [layout, setLayout] = useState<SignageLayout | null>(initialLayout || null);
+  const [items, setItems] = useState<PosItem[]>(() => {
+    if (initialItems && initialItems.length > 0) {
+      return initialItems.map(mapDbItemToPosItem);
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!initialDisplay && !initialErrorState);
+  const [errorState, setErrorState] = useState<string | null>(initialErrorState || null);
+
+  const CACHE_DISPLAY = useMemo(() => `display_${displayId}`, [displayId]);
+  const CACHE_LAYOUT = useMemo(() => `layout_${displayId}`, [displayId]);
+  const CACHE_ITEMS = useMemo(() => `items_${displayId}`, [displayId]);
+
+  const fetchDisplayAndLayout = useCallback(async () => {
+    try {
+      const displayRes = await fetch(`/api/signage/displays/${displayId}`);
+      const displayJson = await displayRes.json();
+      if (!displayJson.success || !displayJson.data) {
+        throw new Error("Display not found");
+      }
+      const displayData = displayJson.data;
+
+      const displayObj = {
+        id: displayData.id,
+        organizationId: displayData.organization_id,
+        name: displayData.name,
+        deviceId: displayData.device_id ?? null,
+        portLabel: displayData.port_label ?? null,
+        deckId: displayData.deck_id ?? null,
+        lastSeenAt: displayData.last_seen_at,
+        createdAt: displayData.created_at,
+      } as SignageDisplay;
+
+      setDisplay(displayObj);
+      localStorage.setItem(CACHE_DISPLAY, JSON.stringify(displayObj));
+
+      if (displayObj.deckId) {
+        const [layoutRes, itemsRes] = await Promise.all([
+          fetch(`/api/signage/layouts/${displayObj.deckId}`),
+          fetch(`/api/pos/items?organizationId=${displayObj.organizationId}`),
+        ]);
+        const layoutData = await layoutRes.json();
+        const itemsData = await itemsRes.json();
+
+        if (layoutData.success && layoutData.data) {
+          setLayout(layoutData.data as SignageLayout);
+          localStorage.setItem(CACHE_LAYOUT, JSON.stringify(layoutData.data));
+        }
+        if (itemsData.success && itemsData.data) {
+          const parsedItems = (itemsData.data as RawDbPosItem[]).map(mapDbItemToPosItem);
+          setItems(parsedItems);
+          localStorage.setItem(CACHE_ITEMS, JSON.stringify(parsedItems));
+        }
+      }
+      setLoading(false);
+    } catch (err) {
+      console.warn("Network fetch failed, loading from offline cache:", err);
+      const cachedDisp = localStorage.getItem(CACHE_DISPLAY);
+      const cachedLay = localStorage.getItem(CACHE_LAYOUT);
+      const cachedItms = localStorage.getItem(CACHE_ITEMS);
+
+      if (cachedDisp) {
+        setDisplay(JSON.parse(cachedDisp));
+        if (cachedLay) setLayout(JSON.parse(cachedLay));
+        if (cachedItms) setItems(JSON.parse(cachedItms));
+        setLoading(false);
+      } else {
+        setErrorState(err instanceof Error ? err.message : "Fetch failed");
+        setLoading(false);
+      }
+    }
+  }, [CACHE_DISPLAY, CACHE_LAYOUT, CACHE_ITEMS, displayId]);
+
+  useEffect(() => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(displayId)) {
+      registerDisplayDevice(displayId)
+        .then((newId) => {
+          if (newId) {
+            window.location.href = `/display/${newId}`;
+          } else {
+            setErrorState("Failed to register display device");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          setErrorState(`Registration error: ${err instanceof Error ? err.message : String(err)}`);
+          setLoading(false);
+        });
+    } else {
+      fetchDisplayAndLayout();
+    }
+  }, [displayId, fetchDisplayAndLayout]);
+
+  useEffect(() => {
+    const socket = createWebSocketClient({
+      query: { displayId, deckId: display?.deckId || "" },
+    });
+
+    const handleConnect = () => {
+      socket.emit("join", { displayId, deckId: display?.deckId });
+    };
+
+    const handleDeckUpdated = (payload: { deckId: string; config: SignageLayoutConfig }) => {
+      if (payload.deckId === display?.deckId) {
+        setLayout((prev) => (prev ? { ...prev, config: payload.config } : null));
+      }
+    };
+
+    const handleItemsUpdated = (payload: { deckId: string; items: RawDbPosItem[] }) => {
+      if (payload.deckId === display?.deckId && payload.items) {
+        const parsedItems = payload.items.map(mapDbItemToPosItem);
+        setItems(parsedItems);
+      }
+    };
+
+    const handleLayoutUpdated = () => {
+      fetchDisplayAndLayout();
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("deck_updated", handleDeckUpdated);
+    socket.on("items_updated", handleItemsUpdated);
+    socket.on("layout_updated", handleLayoutUpdated);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("deck_updated", handleDeckUpdated);
+      socket.off("items_updated", handleItemsUpdated);
+      socket.off("layout_updated", handleLayoutUpdated);
+      socket.disconnect();
+    };
+  }, [displayId, display?.deckId, fetchDisplayAndLayout]);
+
+  return { display, layout, items, loading, errorState };
 }
 ````
 
@@ -57688,143 +57980,6 @@ export function SettingsClient({
 }
 ````
 
-## File: apps/web/src/app/(workspace)/signage/[deckId]/tv-signage-editor-client.tsx
-````typescript
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
-import { type SignageLayoutConfig, type PosItem } from "@soustools/api-types";
-import { mapDbItemToPosItem, type RawDbPosItem } from "@/app/display/[id]/helpers";
-import { createWebSocketClient } from "@soustools/api-client";
-import { useRouter } from "next/navigation";
-
-interface SignageDeck {
-  id: string;
-  organization_id: string;
-  name: string;
-  slug: string;
-  config: SignageLayoutConfig;
-}
-
-interface TVSignageEditorClientProps {
-  deckId: string;
-  initialDeck: SignageDeck | null;
-  initialItems: RawDbPosItem[];
-}
-
-export default function TVSignageEditorClient({ deckId, initialDeck, initialItems }: TVSignageEditorClientProps) {
-  const [deck, setDeck] = useState<SignageDeck | null>(initialDeck);
-  const [items, setItems] = useState<PosItem[]>(() => {
-    if (initialItems && initialItems.length > 0) {
-      return initialItems.map(mapDbItemToPosItem);
-    }
-    return MOCK_POS_ITEMS;
-  });
-  const [saving, setSaving] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    setDeck(initialDeck);
-  }, [initialDeck]);
-
-  useEffect(() => {
-    if (initialItems && initialItems.length > 0) {
-      setItems(initialItems.map(mapDbItemToPosItem));
-    } else {
-      setItems(MOCK_POS_ITEMS);
-    }
-  }, [initialItems]);
-
-  useEffect(() => {
-    const socket = createWebSocketClient({
-      query: { deckId },
-    });
-
-    const handleConnect = () => {
-      socket.emit("join", { deckId });
-    };
-
-    const handleItemsUpdated = (payload: { deckId: string; items: RawDbPosItem[] }) => {
-      if (payload.deckId === deckId && payload.items) {
-        const parsedItems = payload.items.map(mapDbItemToPosItem);
-        setItems(parsedItems);
-      }
-    };
-
-    socket.on("connect", handleConnect);
-    socket.on("items_updated", handleItemsUpdated);
-
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("items_updated", handleItemsUpdated);
-      socket.disconnect();
-    };
-  }, [deckId]);
-
-  const handleSave = async (newConfig: SignageLayoutConfig) => {
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/signage/layouts/${deckId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ config: newConfig }),
-      });
-      const data = await res.json();
-      if (data.success && data.data) {
-        setDeck(data.data);
-        router.refresh();
-      }
-    } catch (err) {
-      console.error("Save failed:", err);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleRenameDeck = async (name: string, slug: string) => {
-    try {
-      const res = await fetch(`/api/signage/layouts/${deckId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, slug }),
-      });
-      const data = await res.json();
-      if (data.success && data.data) {
-        setDeck(data.data);
-        router.refresh();
-      }
-    } catch (err) {
-      console.error("Rename failed:", err);
-    }
-  };
-
-  if (!deck) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-zinc-900 dark:text-zinc-100">
-        <h2 className="text-xl font-bold text-red-400">Deck Not Found</h2>
-        <p className="text-sm text-muted-foreground mt-2">The requested slide deck could not be loaded.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="-m-6 h-[calc(100vh-4rem)] overflow-hidden">
-      <LayoutBuilder
-        deckId={deckId}
-        deckSlug={deck.slug}
-        layoutName={deck.name}
-        initialConfig={deck.config}
-        items={items}
-        onSave={handleSave}
-        onRenameDeck={handleRenameDeck}
-        saving={saving}
-      />
-    </div>
-  );
-}
-````
-
 ## File: apps/web/src/app/actions/auth.ts
 ````typescript
 "use server";
@@ -57865,161 +58020,6 @@ export async function logoutAction() {
 
   // Redirect to login regardless of API outcome.
   redirect("/login");
-}
-````
-
-## File: apps/web/src/app/display/[id]/use-display-player.ts
-````typescript
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { type SignageDisplay, type PosItem, type SignageLayoutConfig } from "@soustools/api-types";
-import { type SignageLayout } from "./types";
-import { mapDbItemToPosItem, registerDisplayDevice, type RawDbPosItem } from "./helpers";
-import { createWebSocketClient } from "@soustools/api-client";
-
-export function useDisplayPlayer(
-  displayId: string,
-  initialDisplay?: SignageDisplay | null,
-  initialLayout?: SignageLayout | null,
-  initialItems?: RawDbPosItem[],
-  initialErrorState?: string | null
-) {
-  const [display, setDisplay] = useState<SignageDisplay | null>(initialDisplay || null);
-  const [layout, setLayout] = useState<SignageLayout | null>(initialLayout || null);
-  const [items, setItems] = useState<PosItem[]>(() => {
-    if (initialItems && initialItems.length > 0) {
-      return initialItems.map(mapDbItemToPosItem);
-    }
-    return [];
-  });
-  const [loading, setLoading] = useState(!initialDisplay && !initialErrorState);
-  const [errorState, setErrorState] = useState<string | null>(initialErrorState || null);
-
-  const CACHE_DISPLAY = useMemo(() => `display_${displayId}`, [displayId]);
-  const CACHE_LAYOUT = useMemo(() => `layout_${displayId}`, [displayId]);
-  const CACHE_ITEMS = useMemo(() => `items_${displayId}`, [displayId]);
-
-  const fetchDisplayAndLayout = useCallback(async () => {
-    try {
-      const displayRes = await fetch(`/api/signage/displays/${displayId}`);
-      const displayJson = await displayRes.json();
-      if (!displayJson.success || !displayJson.data) {
-        throw new Error("Display not found");
-      }
-      const displayData = displayJson.data;
-
-      const displayObj = {
-        id: displayData.id,
-        organizationId: displayData.organization_id,
-        name: displayData.name,
-        deviceId: displayData.device_id ?? null,
-        portLabel: displayData.port_label ?? null,
-        deckId: displayData.deck_id ?? null,
-        lastSeenAt: displayData.last_seen_at,
-        createdAt: displayData.created_at,
-      } as SignageDisplay;
-
-      setDisplay(displayObj);
-      localStorage.setItem(CACHE_DISPLAY, JSON.stringify(displayObj));
-
-      if (displayObj.deckId) {
-        const [layoutRes, itemsRes] = await Promise.all([
-          fetch(`/api/signage/layouts/${displayObj.deckId}`),
-          fetch(`/api/pos/items?organizationId=${displayObj.organizationId}`),
-        ]);
-        const layoutData = await layoutRes.json();
-        const itemsData = await itemsRes.json();
-
-        if (layoutData.success && layoutData.data) {
-          setLayout(layoutData.data as SignageLayout);
-          localStorage.setItem(CACHE_LAYOUT, JSON.stringify(layoutData.data));
-        }
-        if (itemsData.success && itemsData.data) {
-          const parsedItems = (itemsData.data as RawDbPosItem[]).map(mapDbItemToPosItem);
-          setItems(parsedItems);
-          localStorage.setItem(CACHE_ITEMS, JSON.stringify(parsedItems));
-        }
-      }
-      setLoading(false);
-    } catch (err) {
-      console.warn("Network fetch failed, loading from offline cache:", err);
-      const cachedDisp = localStorage.getItem(CACHE_DISPLAY);
-      const cachedLay = localStorage.getItem(CACHE_LAYOUT);
-      const cachedItms = localStorage.getItem(CACHE_ITEMS);
-
-      if (cachedDisp) {
-        setDisplay(JSON.parse(cachedDisp));
-        if (cachedLay) setLayout(JSON.parse(cachedLay));
-        if (cachedItms) setItems(JSON.parse(cachedItms));
-        setLoading(false);
-      } else {
-        setErrorState(err instanceof Error ? err.message : "Fetch failed");
-        setLoading(false);
-      }
-    }
-  }, [CACHE_DISPLAY, CACHE_LAYOUT, CACHE_ITEMS, displayId]);
-
-  useEffect(() => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(displayId)) {
-      registerDisplayDevice(displayId)
-        .then((newId) => {
-          if (newId) {
-            window.location.href = `/display/${newId}`;
-          } else {
-            setErrorState("Failed to register display device");
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          setErrorState(`Registration error: ${err instanceof Error ? err.message : String(err)}`);
-          setLoading(false);
-        });
-    } else {
-      fetchDisplayAndLayout();
-    }
-  }, [displayId, fetchDisplayAndLayout]);
-
-  useEffect(() => {
-    const socket = createWebSocketClient({
-      query: { displayId, deckId: display?.deckId || "" },
-    });
-
-    const handleConnect = () => {
-      socket.emit("join", { displayId, deckId: display?.deckId });
-    };
-
-    const handleDeckUpdated = (payload: { deckId: string; config: SignageLayoutConfig }) => {
-      if (payload.deckId === display?.deckId) {
-        setLayout((prev) => (prev ? { ...prev, config: payload.config } : null));
-      }
-    };
-
-    const handleItemsUpdated = (payload: { deckId: string; items: RawDbPosItem[] }) => {
-      if (payload.deckId === display?.deckId && payload.items) {
-        const parsedItems = payload.items.map(mapDbItemToPosItem);
-        setItems(parsedItems);
-      }
-    };
-
-    const handleLayoutUpdated = () => {
-      fetchDisplayAndLayout();
-    };
-
-    socket.on("connect", handleConnect);
-    socket.on("deck_updated", handleDeckUpdated);
-    socket.on("items_updated", handleItemsUpdated);
-    socket.on("layout_updated", handleLayoutUpdated);
-
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("deck_updated", handleDeckUpdated);
-      socket.off("items_updated", handleItemsUpdated);
-      socket.off("layout_updated", handleLayoutUpdated);
-      socket.disconnect();
-    };
-  }, [displayId, display?.deckId, fetchDisplayAndLayout]);
-
-  return { display, layout, items, loading, errorState };
 }
 ````
 
@@ -59494,6 +59494,176 @@ export function useOmniFileUpload() {
   };
 
   return { onFileSelect, handleDrop, handleFileUpload };
+}
+````
+
+## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
+````typescript
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { type Socket } from "socket.io-client";
+import { type OmniMessage } from "@soustools/api-types";
+import { useOmnibarContext } from "./OmniBarContext";
+import { usePathname } from "next/navigation";
+import { createWebSocketClient } from "@soustools/api-client";
+
+export function useOmniSocket(): {
+  socket: Socket | null;
+  errorMessage: string | null;
+  setErrorMessage: Dispatch<SetStateAction<string | null>>;
+  isListening: boolean;
+  setIsListening: Dispatch<SetStateAction<boolean>>;
+} {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const pathname = usePathname();
+  const lastPayloadRef = useRef<Record<string, unknown> | null>(null);
+
+  const {
+    contextPayload,
+    chatHistory,
+    addMessage,
+    setIsProcessing,
+    markLoadingComplete,
+    setExecuteBackgroundCommand,
+    setChatHistory,
+  } = useOmnibarContext();
+
+  // Initialize WebSocket connection & manage listeners cleanly
+  useEffect(() => {
+    const wsSocket = createWebSocketClient({
+      namespace: "/commands",
+    });
+
+    const handleChatMessage = (message: OmniMessage) => {
+      addMessage(message);
+      if (message.role === "model") {
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleCommandStatus = (data: { state: string; message: string }) => {
+      if (data.state === "error") {
+        setErrorMessage(data.message);
+        setIsProcessing(false);
+        setIsListening(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleException = (error: { message?: string }) => {
+      console.error("[OmniBar] WebSocket exception:", error);
+      if (
+        error.message?.includes("Unauthorized") ||
+        error.message?.includes("expired")
+      ) {
+        setErrorMessage(error.message || "Session error occurred.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleError = (error: unknown) => {
+      console.error("[OmniBar] Socket error:", error);
+      setErrorMessage("A network error occurred.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleConnectError = (error: unknown) => {
+      console.error("[OmniBar] Socket connect error:", error);
+      setErrorMessage("Failed to connect to the server.");
+      setIsProcessing(false);
+      markLoadingComplete();
+    };
+
+    const handleDisconnect = (reason: string) => {
+      console.warn("[OmniBar] Socket disconnected:", reason);
+      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
+        setErrorMessage("Lost connection to the server.");
+        setIsProcessing(false);
+        markLoadingComplete();
+      }
+    };
+
+    const handleReauthenticated = () => {
+      if (lastPayloadRef.current && wsSocket.connected) {
+        console.log("[OmniBar] Resending pending command after re-authentication.");
+        wsSocket.emit("executeCommand", lastPayloadRef.current);
+      }
+    };
+
+    wsSocket.on("chat_message", handleChatMessage);
+    wsSocket.on("command_status", handleCommandStatus);
+    wsSocket.on("exception", handleException);
+    wsSocket.on("error", handleError);
+    wsSocket.on("connect_error", handleConnectError);
+    wsSocket.on("disconnect", handleDisconnect);
+    wsSocket.on("reauthenticated", handleReauthenticated);
+
+    setSocket(wsSocket);
+
+    // Guaranteed teardown: remove every registered event listener & disconnect socket
+    return () => {
+      wsSocket.off("chat_message", handleChatMessage);
+      wsSocket.off("command_status", handleCommandStatus);
+      wsSocket.off("exception", handleException);
+      wsSocket.off("error", handleError);
+      wsSocket.off("connect_error", handleConnectError);
+      wsSocket.off("disconnect", handleDisconnect);
+      wsSocket.off("reauthenticated", handleReauthenticated);
+      wsSocket.disconnect();
+    };
+  }, [addMessage, setIsProcessing, markLoadingComplete]);
+
+  // Execute Background Command handler
+  useEffect(() => {
+    const executeBackgroundCommand = (text: string) => {
+      if (!text.trim()) return;
+      setIsProcessing(true);
+      const newUserMessage: OmniMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: text,
+        timestamp: new Date(),
+      };
+      const updatedHistory = [...chatHistory, newUserMessage];
+      setChatHistory(updatedHistory);
+
+      const payload = {
+        chatHistory: updatedHistory,
+        source: "omnibar",
+        path: pathname,
+        context: contextPayload,
+      };
+      lastPayloadRef.current = payload;
+
+      try {
+        if (!socket || !socket.connected) {
+          socket?.connect();
+        }
+        socket?.emit("executeCommand", payload);
+      } catch (error: unknown) {
+        console.error("[OmniBar] Failed to emit command:", error);
+        setIsProcessing(false);
+      }
+    };
+    setExecuteBackgroundCommand(executeBackgroundCommand);
+  }, [
+    socket,
+    chatHistory,
+    pathname,
+    contextPayload,
+    setExecuteBackgroundCommand,
+    setChatHistory,
+    setIsProcessing,
+  ]);
+
+  return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
 }
 ````
 
@@ -61721,176 +61891,6 @@ export function OmniBarProvider({
       />
     </>
   );
-}
-````
-
-## File: packages/design-system/src/components/OmniBar/use-omni-socket.hook.ts
-````typescript
-"use client";
-
-import { useState, useEffect, useRef } from "react";
-import type { Dispatch, SetStateAction } from "react";
-import { type Socket } from "socket.io-client";
-import { type OmniMessage } from "@soustools/api-types";
-import { useOmnibarContext } from "./OmniBarContext";
-import { usePathname } from "next/navigation";
-import { createWebSocketClient } from "@soustools/api-client";
-
-export function useOmniSocket(): {
-  socket: Socket | null;
-  errorMessage: string | null;
-  setErrorMessage: Dispatch<SetStateAction<string | null>>;
-  isListening: boolean;
-  setIsListening: Dispatch<SetStateAction<boolean>>;
-} {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const pathname = usePathname();
-  const lastPayloadRef = useRef<Record<string, unknown> | null>(null);
-
-  const {
-    contextPayload,
-    chatHistory,
-    addMessage,
-    setIsProcessing,
-    markLoadingComplete,
-    setExecuteBackgroundCommand,
-    setChatHistory,
-  } = useOmnibarContext();
-
-  // Initialize WebSocket connection & manage listeners cleanly
-  useEffect(() => {
-    const wsSocket = createWebSocketClient({
-      namespace: "/commands",
-    });
-
-    const handleChatMessage = (message: OmniMessage) => {
-      addMessage(message);
-      if (message.role === "model") {
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleCommandStatus = (data: { state: string; message: string }) => {
-      if (data.state === "error") {
-        setErrorMessage(data.message);
-        setIsProcessing(false);
-        setIsListening(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleException = (error: { message?: string }) => {
-      console.error("[OmniBar] WebSocket exception:", error);
-      if (
-        error.message?.includes("Unauthorized") ||
-        error.message?.includes("expired")
-      ) {
-        setErrorMessage(error.message || "Session error occurred.");
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleError = (error: unknown) => {
-      console.error("[OmniBar] Socket error:", error);
-      setErrorMessage("A network error occurred.");
-      setIsProcessing(false);
-      markLoadingComplete();
-    };
-
-    const handleConnectError = (error: unknown) => {
-      console.error("[OmniBar] Socket connect error:", error);
-      setErrorMessage("Failed to connect to the server.");
-      setIsProcessing(false);
-      markLoadingComplete();
-    };
-
-    const handleDisconnect = (reason: string) => {
-      console.warn("[OmniBar] Socket disconnected:", reason);
-      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
-        setErrorMessage("Lost connection to the server.");
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
-    };
-
-    const handleReauthenticated = () => {
-      if (lastPayloadRef.current && wsSocket.connected) {
-        console.log("[OmniBar] Resending pending command after re-authentication.");
-        wsSocket.emit("executeCommand", lastPayloadRef.current);
-      }
-    };
-
-    wsSocket.on("chat_message", handleChatMessage);
-    wsSocket.on("command_status", handleCommandStatus);
-    wsSocket.on("exception", handleException);
-    wsSocket.on("error", handleError);
-    wsSocket.on("connect_error", handleConnectError);
-    wsSocket.on("disconnect", handleDisconnect);
-    wsSocket.on("reauthenticated", handleReauthenticated);
-
-    setSocket(wsSocket);
-
-    // Guaranteed teardown: remove every registered event listener & disconnect socket
-    return () => {
-      wsSocket.off("chat_message", handleChatMessage);
-      wsSocket.off("command_status", handleCommandStatus);
-      wsSocket.off("exception", handleException);
-      wsSocket.off("error", handleError);
-      wsSocket.off("connect_error", handleConnectError);
-      wsSocket.off("disconnect", handleDisconnect);
-      wsSocket.off("reauthenticated", handleReauthenticated);
-      wsSocket.disconnect();
-    };
-  }, [addMessage, setIsProcessing, markLoadingComplete]);
-
-  // Execute Background Command handler
-  useEffect(() => {
-    const executeBackgroundCommand = (text: string) => {
-      if (!text.trim()) return;
-      setIsProcessing(true);
-      const newUserMessage: OmniMessage = {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: text,
-        timestamp: new Date(),
-      };
-      const updatedHistory = [...chatHistory, newUserMessage];
-      setChatHistory(updatedHistory);
-
-      const payload = {
-        chatHistory: updatedHistory,
-        source: "omnibar",
-        path: pathname,
-        context: contextPayload,
-      };
-      lastPayloadRef.current = payload;
-
-      try {
-        if (!socket || !socket.connected) {
-          socket?.connect();
-        }
-        socket?.emit("executeCommand", payload);
-      } catch (error: unknown) {
-        console.error("[OmniBar] Failed to emit command:", error);
-        setIsProcessing(false);
-      }
-    };
-    setExecuteBackgroundCommand(executeBackgroundCommand);
-  }, [
-    socket,
-    chatHistory,
-    pathname,
-    contextPayload,
-    setExecuteBackgroundCommand,
-    setChatHistory,
-    setIsProcessing,
-  ]);
-
-  return { socket, errorMessage, setErrorMessage, isListening, setIsListening };
 }
 ````
 
@@ -65170,30 +65170,25 @@ FROM lscr.io/linuxserver/code-server:latest
 
 USER root
 
-# 1. Install critical system tools
-RUN apt-get update && apt-get install -y zsh curl git psmisc tmux python3 python3-pip && \
+# 1. Install critical system tools and native Node.js/npm directly from Ubuntu repos
+RUN apt-get update && apt-get install -y zsh curl git psmisc tmux python3 python3-pip nodejs npm && \
     rm -rf /var/lib/apt/lists/*
 
-# 2. Correctly download and execute the actual NodeSource script for Node 22
-RUN curl -fsSL https://nodesource.com | bash - && \
-    apt-get update && apt-get install -y nodejs && \
-    rm -rf /var/lib/apt/lists/*
-
-# 3. Force root user layer context workspace rules
+# 2. Force root user layer context workspace rules
 USER root
 WORKDIR /workspace
 
-# 4. Install packages globally as root to bypass folder permission errors
+# 3. Install packages globally as root to bypass folder permission errors
 RUN npm install -g pnpm pm2 @anthropic-ai/claude-code chunkhound-mcp-server
 
-# 5. Switch to user layer for python setups
+# 4. Switch to user layer for python setups
 USER abc
 
-# 6. Install Python dependencies safely within user scope
+# 5. Install Python dependencies safely within user scope
 RUN pip3 install --user aider-chat
 ENV PATH=/config/.local/bin:$PATH
 
-# 7. Apply default shell choices natively
+# 6. Apply default shell choices natively
 USER root
 RUN usermod -s /bin/zsh abc
 
@@ -65407,6 +65402,8 @@ export function OmniBarPresentation({
 
 ## File: docker-compose.yml
 ````yaml
+version: "3.8"
+
 services:
   traefik:
     image: traefik:latest
@@ -65668,7 +65665,7 @@ services:
     env_file:
       - ./mcp_servers.env
     entrypoint: >
-      sh -c "apk add --no-cache nodejs npm tini && node /workspace/dev.sous.tools/packages/config/dist/cli.js tini -- /start.sh"
+      sh -c "apk add --no-cache nodejs npm && node /workspace/dev.sous.tools/packages/config/dist/cli.js /start.sh"
     restart: always
     depends_on:
       - litellm
