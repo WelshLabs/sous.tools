@@ -31,7 +31,7 @@ RUN npm install -g pnpm pm2 @anthropic-ai/claude-code @modelcontextprotocol/serv
 # 4. Install python AI applications globally as root
 RUN pip3 install aider-chat --break-system-packages
 
-# 5. Restore default execution user
-RUN usermod -s /bin/zsh abc
+# 5. Restore default execution user & configure permissions for /config and /workspace
+RUN mkdir -p /config && chown -R abc:abc /config /workspace && usermod -s /bin/zsh abc
 
 USER abc
