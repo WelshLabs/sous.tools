@@ -259,7 +259,7 @@ services:
     env_file:
       - ./mcp_servers.env
     entrypoint: >
-      sh -c "apk add --no-cache nodejs npm && node /workspace/dev.sous.tools/packages/config/dist/cli.js /start.sh"
+      sh -c "apk add --no-cache nodejs npm tini && node /workspace/dev.sous.tools/packages/config/dist/cli.js tini -- /start.sh"
     restart: always
     depends_on:
       - litellm
