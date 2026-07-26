@@ -3,16 +3,16 @@
    • Running typecheck in 19 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:build
-cache hit, replaying logs 8e41140a999893fc
-$ tsc
-::endgroup::
 ::group::@soustools/config:build
 cache hit, replaying logs 2660cef6e9ef6238
 $ tsc
 ::endgroup::
 ::group::@soustools/logger:build
 cache hit, replaying logs 56fe118726b56dfb
+$ tsc
+::endgroup::
+::group::@soustools/api-types:build
+cache hit, replaying logs 8e41140a999893fc
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
@@ -43,28 +43,16 @@ $ tsc --noEmit
 cache miss, executing 5bf898c20e7295db
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing e8edfb46e1003686
-$ tsc --noEmit
-::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 20535914e7f96636
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 517bed8d07e044f0
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/setup-portal:typecheck
 cache miss, executing 4b67c602f90951fb
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 42a03becc6835b05
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing e8edfb46e1003686
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 856ef17fac090f97
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 42a03becc6835b05
 $ tsc --noEmit
 ::endgroup::
 [;31m@soustools/domain-pos:typecheck[;0m
@@ -77,14 +65,29 @@ cache miss, executing 41cf6ed8679711ef
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 856ef17fac090f97
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing 20535914e7f96636
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 517bed8d07e044f0
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::api:typecheck
 cache miss, executing 6f53940423d706c0
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    16 successful, 19 total
+ Tasks:    13 successful, 19 total
 Cached:    3 cached, 19 total
-  Time:    39.631s 
+  Time:    48.326s 
 Failed:    @soustools/domain-pos#typecheck
 
