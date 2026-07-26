@@ -3,90 +3,94 @@
    • Running typecheck in 19 packages
    • Remote caching disabled
 
-::group::@soustools/config:build
-cache hit, replaying logs 2660cef6e9ef6238
-$ tsc
-::endgroup::
 ::group::@soustools/api-types:build
-cache hit, replaying logs 8e41140a999893fc
+cache hit, replaying logs 900a34f793974bac
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache hit, replaying logs 56fe118726b56dfb
+::group::@soustools/config:build
+cache hit, replaying logs f9e22e7aa511ff38
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
-cache miss, executing d07129c10a9a1016
+cache miss, executing ce164133868bd78f
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/logger:typecheck
-cache miss, executing e6bb7e6c0c74c87d
+cache miss, executing b7ebc485b1f19416
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 3c947f461c5b483e
+$ tsc
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing 95d6964e6af9bebf
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-client:typecheck
-cache miss, executing 1b2cde900c34f36a
-$ tsc --noEmit
-::endgroup::
-::group::cli:typecheck
-cache miss, executing 8f5103776128abbc
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/api-types:typecheck
-cache miss, executing 14d73f1ccf458f00
+cache miss, executing 6687a425759ba03b
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
-cache miss, executing 7f8302a441c9eaec
+cache miss, executing 687d1cfec36fd856
 $ tsc --noEmit
 ::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 20535914e7f96636
+::group::cli:typecheck
+cache miss, executing b70ab4b96c212683
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/design-system:typecheck
-cache miss, executing 5bf898c20e7295db
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing e8edfb46e1003686
+cache miss, executing 3c5fcca78c048c42
 $ tsc --noEmit
 ::endgroup::
 [;31m@soustools/domain-pos:typecheck[;0m
-cache miss, executing e5e2261daa974066
+cache miss, executing bb8f9ab80a16efd6
 $ tsc --noEmit
 src/components/POSRegister/components/pos-catalog.tsx(3,8): error TS6133: 'React' is declared but its value is never read.
 [ELIFECYCLE] Command failed with exit code 2.
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 42a03becc6835b05
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 4b67c602f90951fb
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 856ef17fac090f97
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::web:typecheck
-cache miss, executing 41cf6ed8679711ef
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 517bed8d07e044f0
+cache miss, executing 53736ff9e7e0e2b0
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::api:typecheck
-cache miss, executing 6f53940423d706c0
+cache miss, executing ec854191f19a61d9
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing a01cbcdbe1413f81
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing 384a6e1e2e2a0451
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing c9fafef3b07a210e
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing e8bac9f2118f2819
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 95397ae33cee841c
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 6c2182c17b7559e5
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    12 successful, 19 total
-Cached:    3 cached, 19 total
-  Time:    48.538s 
+ Tasks:    10 successful, 19 total
+Cached:    2 cached, 19 total
+  Time:    39.858s 
 Failed:    @soustools/domain-pos#typecheck
 

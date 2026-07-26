@@ -4,121 +4,107 @@
    • Remote caching disabled
 
 ::group::@soustools/eslint-config:lint
-cache miss, executing b3b1176faca0b01d
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/config:lint
-cache miss, executing cab2fbc439d07ffe
+cache miss, executing da4697ede24f5c45
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/mcp-server:lint
-cache miss, executing fc6e281bea93a040
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing c169789ad0fd26dd
+cache miss, executing e987e6e5f744219a
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing 8e41140a999893fc
+cache miss, executing 900a34f793974bac
 $ tsc
 ::endgroup::
-::group::@soustools/config:build
-cache miss, executing 2660cef6e9ef6238
-$ tsc
-::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 651893f17d5d7654
+::group::@soustools/config:lint
+cache miss, executing f2fe5314654bd7d8
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 56fe118726b56dfb
+::group::@soustools/api-types:lint
+cache miss, executing 1f2fc1353f4900a0
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing f9e22e7aa511ff38
 $ tsc
 ::endgroup::
 ::group::@soustools/api-client:lint
-cache miss, executing 19e277b1371246e2
+cache miss, executing 37f67303a40fa012
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-settings:lint
-cache miss, executing d2e5ef8cd395fdde
+cache miss, executing 607aead2f2884c5b
 $ eslint . --max-warnings 0
 ::endgroup::
-[;31m@soustools/domain-inventory:lint[;0m
-cache miss, executing aeace4df7b2da100
+[;31m@soustools/domain-pos:lint[;0m
+cache miss, executing c8aa27f433cd8bef
 $ eslint . --max-warnings 0
 
-/home/runner/work/sous.tools/sous.tools/packages/domain-inventory/src/components/AnswerView/AnswerView.tsx
-  125:6   warning  React Hook useEffect has missing dependencies: 'chatHistory', 'setChatHistory', and 'setIsProcessing'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
-  140:81  warning  Unexpected any. Specify a different type                                                                                                                   @typescript-eslint/no-explicit-any
-  224:1   error    File has too many lines (319). Maximum allowed is 200                                                                                                      max-lines
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds-settings-modal.tsx
+  16:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
-/home/runner/work/sous.tools/sous.tools/packages/domain-inventory/src/components/ReviewComponent/UniversalReviewComponent.tsx
-   22:20  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-   33:42  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-   75:42  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-   95:54  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  111:60  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  121:25  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  123:50  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  127:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  131:56  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  141:53  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  158:25  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  160:50  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  164:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  169:87  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  183:81  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  203:6   warning  React Hook useEffect has a missing dependency: 'persistPayloadToBackend'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  207:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  209:62  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  210:23  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  212:45  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  216:41  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  220:1   error    File has too many lines (373). Maximum allowed is 200                                                                       max-lines
-  237:19  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
-  352:48  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.container.tsx
+   12:44  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   27:58  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   55:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   56:67  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   68:40  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   78:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   81:31  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   82:92  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  126:64  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  132:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  152:70  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  158:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  167:52  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  172:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  223:1   error    File has too many lines (209). Maximum allowed is 200  max-lines
 
-✖ 27 problems (2 errors, 25 warnings)
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.container.tsx
+   46:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   53:37  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   59:68  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   65:63  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   73:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   81:77  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  150:39  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  225:1   error    File has too many lines (206). Maximum allowed is 200  max-lines
+
+✖ 24 problems (2 errors, 22 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
-::group::pos-simulator:lint
-cache miss, executing d56180910bf0cffc
-::endgroup::
-::group::cli:lint
-cache miss, executing 1c00bf5edfa2085c
-::endgroup::
-::group::api:lint
-cache miss, executing e1e013c0698f2210
-::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing 603065e0bd89e5c2
-::endgroup::
-::group::web:lint
-cache miss, executing 1656aa3bd294a23b
-::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing 264b1a06549bb442
+::group::@soustools/logger:lint
+cache miss, executing 68711c52da00a245
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing 4fb7f04e2aef13fc
+::group::@soustools/logger:build
+cache miss, executing 3c947f461c5b483e
+$ tsc
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing 713e0b584ba24533
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 68db8c8de5002b89
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing 3c45fad6142d3a57
+cache miss, executing da2e412bdf13a18f
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing 8c41fb69f4decdcf
+::group::@soustools/design-system:lint
+cache miss, executing 42f480b34dc6ff5c
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    10 successful, 20 total
-Cached:    0 cached, 20 total
-  Time:    17.39s 
-Failed:    @soustools/domain-inventory#lint
+ Tasks:    8 successful, 15 total
+Cached:    0 cached, 15 total
+  Time:    15.854s 
+Failed:    @soustools/domain-pos#lint
 
