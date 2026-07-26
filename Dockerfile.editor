@@ -2,11 +2,9 @@ FROM lscr.io/linuxserver/code-server:latest
 
 USER root
 
-# 1. Install critical system tools and download pre-compiled Starship directly
+# 1. Install critical system tools and Starship cleanly using the verified utility pipeline
 RUN apt-get update && apt-get install -y zsh curl git psmisc tmux python3 python3-pip && \
-    curl -sSLo /tmp/starship.tar.gz https://github.com && \
-    tar -xzf /tmp/starship.tar.gz -C /usr/local/bin && \
-    rm /tmp/starship.tar.gz && \
+    curl -sS https://starship.rs | sh -s -- --yes && \
     rm -rf /var/lib/apt/lists/*
 
 # 2. Correctly register source structures and compile Node 22
