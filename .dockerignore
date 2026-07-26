@@ -1,4 +1,7 @@
 .git
 node_modules
-deploy/pi/
-**/*.local
+dist
+.turbo
+apps/api/.turbo
+apps/api/dist
+deploy/
