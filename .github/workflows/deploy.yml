@@ -60,5 +60,5 @@ jobs:
               cd /home/ubuntu/dev.sous.tools
               git pull origin main || true
               pnpm install --frozen-lockfile || true
-              docker exec code-server pm2 reload ecosystem.config.js || true
+              docker exec code-server pm2 reload ecosystem.config.cjs || true
             fi

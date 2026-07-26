@@ -31,7 +31,7 @@ alias docker-nuke='docker stop $(docker ps -aq) 2>/dev/null; docker system prune
 
 # Process Management (PM2 Staging Apps)
 alias pm2-status='docker exec code-server pm2 status'
-alias pm2-reload='docker exec code-server pm2 reload ecosystem.config.js'
+alias pm2-reload='docker exec code-server pm2 reload ecosystem.config.cjs'
 alias pm2-logs='docker exec code-server pm2 logs'
 
 # Hosted Supabase Shortcuts (Migration & Type Generation)
@@ -39,7 +39,7 @@ alias db-push='npx supabase db push'
 alias db-types='npx supabase gen types typescript --project-id ${SUPABASE_PROJECT_ID} > packages/supabase/src/database.types.ts'
 
 # SSH Shortcuts
-alias oracle-ssh='ssh -i ~/.ssh/ssh-key.key ubuntu@129.158.244.62'
+alias prod='ssh -i ssh-key.key ubuntu@129.158.244.62'
 
 # LLM Gateway Endpoint Export
 export OPENAI_API_BASE="https://ai.sous.tools/v1"
@@ -56,7 +56,6 @@ gpush() {
   git add .
   git commit -m "$1"
   git pull origin main --rebase
-  git push origin main
 }
 
 # Cross-Environment AI Auto-Commit Function

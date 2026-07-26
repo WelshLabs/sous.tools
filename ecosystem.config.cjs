@@ -30,6 +30,7 @@ module.exports = {
       name: 'api',
       script: 'pnpm',
       args: '--filter api dev',
+      interpreter: 'none',
       cwd: __dirname,
       env: {
         PORT: 3001,
@@ -41,6 +42,7 @@ module.exports = {
       name: 'web',
       script: 'pnpm',
       args: '--filter web dev',
+      interpreter: 'none',
       cwd: __dirname,
       env: {
         PORT: 3000,
@@ -52,6 +54,7 @@ module.exports = {
       name: 'pos',
       script: 'pnpm',
       args: '--filter pos-simulator dev',
+      interpreter: 'none',
       cwd: __dirname,
       env: {
         PORT: 3003,
@@ -63,6 +66,7 @@ module.exports = {
       name: 'setup',
       script: 'pnpm',
       args: '--filter setup-portal dev',
+      interpreter: 'none',
       cwd: __dirname,
       env: {
         PORT: 3002,
