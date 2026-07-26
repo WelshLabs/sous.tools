@@ -3,14 +3,6 @@
    • Running lint in 19 packages
    • Remote caching disabled
 
-::group::@soustools/config:lint
-cache miss, executing cab2fbc439d07ffe
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/mcp-server:lint
-cache miss, executing fc6e281bea93a040
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/eslint-config:lint
 cache miss, executing b3b1176faca0b01d
 $ eslint . --max-warnings 0
@@ -18,6 +10,14 @@ $ eslint . --max-warnings 0
 ::group::@soustools/api-types:build
 cache miss, executing 8e41140a999893fc
 $ tsc
+::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing fc6e281bea93a040
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:lint
+cache miss, executing cab2fbc439d07ffe
+$ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:lint
 cache miss, executing c169789ad0fd26dd
@@ -27,17 +27,17 @@ $ eslint . --max-warnings 0
 cache miss, executing 2660cef6e9ef6238
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 56fe118726b56dfb
-$ tsc
+::group::@soustools/logger:lint
+cache miss, executing 651893f17d5d7654
+$ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-client:lint
 cache miss, executing 19e277b1371246e2
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 651893f17d5d7654
-$ eslint . --max-warnings 0
+::group::@soustools/logger:build
+cache miss, executing 56fe118726b56dfb
+$ tsc
 ::endgroup::
 ::group::@soustools/domain-settings:lint
 cache miss, executing d2e5ef8cd395fdde
@@ -82,34 +82,57 @@ $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed with exit code 1.
 ::group::@soustools/setup-portal:lint
 cache miss, executing 603065e0bd89e5c2
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing d56180910bf0cffc
-::endgroup::
-::group::api:lint
-cache miss, executing e1e013c0698f2210
 ::endgroup::
 ::group::web:lint
 cache miss, executing 1656aa3bd294a23b
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing 4fb7f04e2aef13fc
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::cli:lint
 cache miss, executing 1c00bf5edfa2085c
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-inventory:lint
 cache miss, executing aeace4df7b2da100
 $ eslint . --max-warnings 0
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-inventory/src/components/AnswerView/AnswerView.tsx
+  125:6   warning  React Hook useEffect has missing dependencies: 'chatHistory', 'setChatHistory', and 'setIsProcessing'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  140:81  warning  Unexpected any. Specify a different type                                                                                                                   @typescript-eslint/no-explicit-any
+  224:1   error    File has too many lines (319). Maximum allowed is 200                                                                                                      max-lines
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-inventory/src/components/ReviewComponent/UniversalReviewComponent.tsx
+   22:20  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   33:42  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   75:42  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   95:54  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  111:60  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  121:25  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  123:50  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  127:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  131:56  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  141:53  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  158:25  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  160:50  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  164:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  169:87  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  183:81  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  203:6   warning  React Hook useEffect has a missing dependency: 'persistPayloadToBackend'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  207:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  209:62  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  210:23  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  212:45  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  216:41  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  220:1   error    File has too many lines (373). Maximum allowed is 200                                                                       max-lines
+  237:19  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  352:48  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+
+✖ 27 problems (2 errors, 25 warnings)
+
 [ELIFECYCLE] Command failed.
+::endgroup::
+::group::api:lint
+cache miss, executing e1e013c0698f2210
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing d56180910bf0cffc
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
 cache miss, executing 3c45fad6142d3a57
@@ -121,9 +144,14 @@ cache miss, executing 264b1a06549bb442
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing 4fb7f04e2aef13fc
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 
  Tasks:    10 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    18.21s 
+  Time:    18.014s 
 Failed:    @soustools/domain-pos#lint
 
