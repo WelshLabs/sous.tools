@@ -7,77 +7,39 @@
 cache miss, executing 994f22c6d3def7a3
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/config:lint
-cache miss, executing f732a74d3e62225e
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/config:build
-cache miss, executing 9a6a69ab8e561da5
-$ tsc
-::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing d6966317d5950313
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/mcp-server:lint
 cache miss, executing 0b76987d323ab33f
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:lint
+cache miss, executing f732a74d3e62225e
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing 235a43a545b4ef4c
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 445951e753979581
+::group::@soustools/api-types:lint
+cache miss, executing d6966317d5950313
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing 9a6a69ab8e561da5
 $ tsc
 ::endgroup::
 ::group::@soustools/api-client:lint
 cache miss, executing 7cf52ff882ba2330
 $ eslint . --max-warnings 0
 ::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 445951e753979581
+$ tsc
+::endgroup::
 ::group::@soustools/domain-settings:lint
 cache miss, executing fdd31a9f589394a6
 $ eslint . --max-warnings 0
 ::endgroup::
-[;31m@soustools/logger:lint[;0m
-cache miss, executing 7cbfefdf105b6162
-$ eslint . --max-warnings 0
-
-Oops! Something went wrong! :(
-
-ESLint: 8.57.1
-
-TypeError: Error while loading rule '@typescript-eslint/no-unused-expressions': Cannot read properties of undefined (reading 'allowShortCircuit')
-Occurred while linting /home/runner/work/sous.tools/sous.tools/packages/logger/src/browser.ts
-    at Object.create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@9.39.5_jiti@2.7.0/node_modules/eslint/lib/rules/no-unused-expressions.js:85:5)
-    at create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/@typescript-eslint+eslint-plugin@8.63.0_@typescript-eslint+parser@8.63.0_eslint@9.39.5__5cd9fc51f995fe0473b484f014c6962e/node_modules/@typescript-eslint/eslint-plugin/dist/rules/no-unused-expressions.js:30:32)
-    at Object.create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/@typescript-eslint+utils@8.63.0_eslint@9.39.5_jiti@2.7.0__typescript@5.9.3/node_modules/@typescript-eslint/utils/dist/eslint-utils/RuleCreator.js:39:20)
-    at createRuleListeners (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:895:21)
-    at /home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1066:110
-    at Array.forEach (<anonymous>)
-    at runRules (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1003:34)
-    at Linter._verifyWithFlatConfigArrayAndWithoutProcessors (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1730:31)
-    at Linter._verifyWithFlatConfigArray (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1861:21)
-    at Linter.verify (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1433:65)
-[ELIFECYCLE] Command failed with exit code 2.
-::group::web:lint
-cache miss, executing 38f647d4ce476bce
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing cd5ab01f40aa1aa4
-::endgroup::
-::group::api:lint
-cache miss, executing a1a62fd203f62bf8
-::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing 81abb23ff3b596a2
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::cli:lint
-cache miss, executing d8c6013a377a0d93
-::endgroup::
-::group::@soustools/domain-pos:lint
+[;31m@soustools/domain-pos:lint[;0m
 cache miss, executing 8f7e33b5c7c6c44a
 $ eslint . --max-warnings 0
 
@@ -113,13 +75,46 @@ $ eslint . --max-warnings 0
 
 ✖ 24 problems (2 errors, 22 warnings)
 
-[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed with exit code 1.
+::group::cli:lint
+cache miss, executing d8c6013a377a0d93
 ::endgroup::
 ::group::@soustools/setup-portal:lint
 cache miss, executing 89efa2db1a247174
 ::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing ad30160beb006d5d
+::group::pos-simulator:lint
+cache miss, executing cd5ab01f40aa1aa4
+::endgroup::
+::group::api:lint
+cache miss, executing a1a62fd203f62bf8
+::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing 7cbfefdf105b6162
+$ eslint . --max-warnings 0
+
+Oops! Something went wrong! :(
+
+ESLint: 8.57.1
+
+TypeError: Error while loading rule '@typescript-eslint/no-unused-expressions': Cannot read properties of undefined (reading 'allowShortCircuit')
+Occurred while linting /home/runner/work/sous.tools/sous.tools/packages/logger/src/browser.ts
+    at Object.create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@9.39.5_jiti@2.7.0/node_modules/eslint/lib/rules/no-unused-expressions.js:85:5)
+    at create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/@typescript-eslint+eslint-plugin@8.63.0_@typescript-eslint+parser@8.63.0_eslint@9.39.5__5cd9fc51f995fe0473b484f014c6962e/node_modules/@typescript-eslint/eslint-plugin/dist/rules/no-unused-expressions.js:30:32)
+    at Object.create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/@typescript-eslint+utils@8.63.0_eslint@9.39.5_jiti@2.7.0__typescript@5.9.3/node_modules/@typescript-eslint/utils/dist/eslint-utils/RuleCreator.js:39:20)
+    at createRuleListeners (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:895:21)
+    at /home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1066:110
+    at Array.forEach (<anonymous>)
+    at runRules (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1003:34)
+    at Linter._verifyWithFlatConfigArrayAndWithoutProcessors (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1730:31)
+    at Linter._verifyWithFlatConfigArray (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1861:21)
+    at Linter.verify (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1433:65)
+[ELIFECYCLE] Command failed with exit code 2.
+::endgroup::
+::group::web:lint
+cache miss, executing 38f647d4ce476bce
+::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing 82c9b28b247fedf1
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -128,14 +123,19 @@ cache miss, executing d8e279ea5310efc9
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing 82c9b28b247fedf1
+::group::@soustools/domain-recipes:lint
+cache miss, executing ad30160beb006d5d
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing 81abb23ff3b596a2
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    9 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    17.506s 
-Failed:    @soustools/logger#lint
+  Time:    18.527s 
+Failed:    @soustools/domain-pos#lint
 
