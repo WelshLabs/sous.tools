@@ -74,5 +74,17 @@ module.exports = {
         ...rootEnv,
       },
     },
+    {
+      name: 'storybook',
+      script: 'pnpm',
+      args: '--filter storybook dev',
+      interpreter: 'none',
+      cwd: __dirname,
+      env: {
+        PORT: 3004,
+        NODE_ENV: 'staging',
+        ...rootEnv,
+      },
+    },
   ],
 };

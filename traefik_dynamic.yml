@@ -8,8 +8,36 @@ http:
       service: dev-web-service
       tls: {}
 
+    storybook:
+      rule: "Host(`storybook.sous.tools`) || Host(`storybook.localhost`)"
+      entryPoints:
+        - web
+        - websecure
+      service: storybook-service
+      tls: {}
+
   services:
     dev-web-service:
       loadBalancer:
         servers:
           - url: "http://host.docker.internal:3000"
+
+    storybook-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3004"
+
+tcp:
+  routers:
+    neo4j-bolt:
+      rule: "HostSNI(`graph.sous.tools`) || HostSNI(`graph.localhost`)"
+      entryPoints:
+        - bolt
+      service: neo4j-bolt-service
+      tls: {}
+
+  services:
+    neo4j-bolt-service:
+      loadBalancer:
+        servers:
+          - address: "neo4j:7687"

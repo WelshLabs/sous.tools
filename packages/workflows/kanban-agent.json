@@ -14,10 +14,19 @@
     },
     {
       "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst action = body.action || 'updated';\nconst columnName = body.projects_v2_item?.column_name || body.column_name || body.issue?.state || 'In Progress';\nconst issueTitle = body.issue?.title || body.projects_v2_item?.content_title || 'Automated Kanban Task';\nconst issueBody = body.issue?.body || body.projects_v2_item?.content_body || 'Perform task execution and run gauntlet.';\nconst issueNumber = body.issue?.number || body.projects_v2_item?.content_number || 1;\n\nreturn [{\n  json: {\n    action,\n    columnName,\n    issueTitle,\n    issueBody,\n    issueNumber,\n    taskPrompt: `${issueTitle}: ${issueBody}`\n  }\n}];"
+      },
+      "name": "Parse GitHub Event Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
         "conditions": {
           "string": [
             {
-              "value1": "={{ $json.body.projects_v2_item.column_name || $json.body.column_name }}",
+              "value1": "={{ $json.columnName }}",
               "value2": "In Progress"
             }
           ]
@@ -26,20 +35,40 @@
       "name": "Is In Progress?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [500, 300]
+      "position": [700, 300]
     },
     {
       "parameters": {
-        "command": "docker exec -i code-server bash -c 'cd /workspace && pnpm typecheck && pnpm lint && pnpm test'"
+        "command": "docker exec -i code-server bash -c 'cd /config/workspace && aider --yes --message \"{{ $json.taskPrompt.replace(/\"/g, \"\\\\\"\") }}\" && pnpm typecheck && pnpm lint && pnpm test'"
       },
-      "name": "Execute Agent Self-Repair Gauntlet",
+      "name": "Execute Non-Interactive Aider Agent & Gauntlet",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [750, 300]
+      "position": [930, 200]
+    },
+    {
+      "parameters": {
+        "command": "echo 'Issue moved to status {{ $json.columnName }}'"
+      },
+      "name": "Log Non-Progress Status",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [930, 420]
     }
   ],
   "connections": {
     "GitHub Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse GitHub Event Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse GitHub Event Data": {
       "main": [
         [
           {
@@ -54,7 +83,14 @@
       "main": [
         [
           {
-            "node": "Execute Agent Self-Repair Gauntlet",
+            "node": "Execute Non-Interactive Aider Agent & Gauntlet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Non-Progress Status",
             "type": "main",
             "index": 0
           }

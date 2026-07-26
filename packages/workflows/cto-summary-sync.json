@@ -14,26 +14,101 @@
     },
     {
       "parameters": {
-        "url": "http://open-webui:8080/api/v1/knowledge",
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "name": "Hourly Schedule Sync Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 480]
+    },
+    {
+      "parameters": {
+        "command": "cat /workspace/docs/context/cto_summary.md 2>/dev/null || cat /etc/n8n/workflows/cto_summary.md 2>/dev/null || echo '# CTO Summary\\nNo report found.'"
+      },
+      "name": "Read CTO Summary File",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [480, 390]
+    },
+    {
+      "parameters": {
+        "jsCode": "const summaryText = $input.first().json.stdout || '';\nconst lines = summaryText.split('\\n');\nconst title = lines.find(l => l.startsWith('# ')) || '# CTO Summary Report';\n\nreturn [\n  {\n    json: {\n      name: 'CTO Summary Knowledge Base',\n      description: 'Unified technical architecture, audits, and CTO summaries',\n      data: {\n        name: 'CTO Summary',\n        content: summaryText,\n        timestamp: new Date().toISOString()\n      }\n    }\n  }\n];"
+      },
+      "name": "Parse Knowledge Base Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 390]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://open-webui:8080/api/v1/knowledge/create",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer {{ $env.OPENWEBUI_API_KEY }}"
+              "value": "Bearer sk-1234"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
             }
           ]
         },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
         "options": {}
       },
       "name": "Sync to Open WebUI Knowledge Base",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [500, 300]
+      "typeVersion": 4.2,
+      "position": [920, 390]
     }
   ],
   "connections": {
     "GitHub Actions Webhook": {
+      "main": [
+        [
+          {
+            "node": "Read CTO Summary File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hourly Schedule Sync Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read CTO Summary File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CTO Summary File": {
+      "main": [
+        [
+          {
+            "node": "Parse Knowledge Base Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Knowledge Base Payload": {
       "main": [
         [
           {
