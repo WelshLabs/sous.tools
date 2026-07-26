@@ -4,107 +4,90 @@
    • Remote caching disabled
 
 ::group::@soustools/eslint-config:lint
-cache miss, executing da4697ede24f5c45
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/mcp-server:lint
-cache miss, executing e987e6e5f744219a
+cache miss, executing 994f22c6d3def7a3
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing 900a34f793974bac
+cache miss, executing 235a43a545b4ef4c
 $ tsc
 ::endgroup::
 ::group::@soustools/config:lint
-cache miss, executing f2fe5314654bd7d8
+cache miss, executing f732a74d3e62225e
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:lint
-cache miss, executing 1f2fc1353f4900a0
+cache miss, executing d6966317d5950313
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing 0b76987d323ab33f
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing f9e22e7aa511ff38
+cache miss, executing 9a6a69ab8e561da5
 $ tsc
 ::endgroup::
 ::group::@soustools/api-client:lint
-cache miss, executing 37f67303a40fa012
+cache miss, executing 7cf52ff882ba2330
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-settings:lint
-cache miss, executing 607aead2f2884c5b
+cache miss, executing fdd31a9f589394a6
 $ eslint . --max-warnings 0
 ::endgroup::
-[;31m@soustools/domain-pos:lint[;0m
-cache miss, executing c8aa27f433cd8bef
+[;31m@soustools/logger:lint[;0m
+cache miss, executing 7cbfefdf105b6162
 $ eslint . --max-warnings 0
 
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds-settings-modal.tsx
-  16:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Oops! Something went wrong! :(
 
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.container.tsx
-   12:44  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   27:58  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   55:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   56:67  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   68:40  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   78:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   81:31  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   82:92  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  126:64  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  132:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  152:70  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  158:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  167:52  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  172:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  223:1   error    File has too many lines (209). Maximum allowed is 200  max-lines
+ESLint: 8.57.1
 
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.container.tsx
-   46:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   53:37  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   59:68  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   65:63  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   73:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   81:77  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  150:39  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  225:1   error    File has too many lines (206). Maximum allowed is 200  max-lines
-
-✖ 24 problems (2 errors, 22 warnings)
-
-[ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/logger:lint
-cache miss, executing 68711c52da00a245
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
+TypeError: Error while loading rule '@typescript-eslint/no-unused-expressions': Cannot read properties of undefined (reading 'allowShortCircuit')
+Occurred while linting /home/runner/work/sous.tools/sous.tools/packages/logger/src/browser.ts
+    at Object.create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@9.39.5_jiti@2.7.0/node_modules/eslint/lib/rules/no-unused-expressions.js:85:5)
+    at create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/@typescript-eslint+eslint-plugin@8.63.0_@typescript-eslint+parser@8.63.0_eslint@9.39.5__5cd9fc51f995fe0473b484f014c6962e/node_modules/@typescript-eslint/eslint-plugin/dist/rules/no-unused-expressions.js:30:32)
+    at Object.create (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/@typescript-eslint+utils@8.63.0_eslint@9.39.5_jiti@2.7.0__typescript@5.9.3/node_modules/@typescript-eslint/utils/dist/eslint-utils/RuleCreator.js:39:20)
+    at createRuleListeners (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:895:21)
+    at /home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1066:110
+    at Array.forEach (<anonymous>)
+    at runRules (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1003:34)
+    at Linter._verifyWithFlatConfigArrayAndWithoutProcessors (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1730:31)
+    at Linter._verifyWithFlatConfigArray (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1861:21)
+    at Linter.verify (/home/runner/work/sous.tools/sous.tools/node_modules/.pnpm/eslint@8.57.1/node_modules/eslint/lib/linter/linter.js:1433:65)
+[ELIFECYCLE] Command failed with exit code 2.
 ::group::@soustools/logger:build
-cache miss, executing 3c947f461c5b483e
+cache miss, executing 445951e753979581
 $ tsc
-[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing 713e0b584ba24533
+::group::@soustools/domain-pos:lint
+cache miss, executing 8f7e33b5c7c6c44a
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-inventory:lint
-cache miss, executing 68db8c8de5002b89
+cache miss, executing d8e279ea5310efc9
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing da2e412bdf13a18f
+cache miss, executing ad30160beb006d5d
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/design-system:lint
-cache miss, executing 42f480b34dc6ff5c
+cache miss, executing 82c9b28b247fedf1
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing 81abb23ff3b596a2
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    8 successful, 15 total
 Cached:    0 cached, 15 total
-  Time:    15.854s 
-Failed:    @soustools/domain-pos#lint
+  Time:    17.033s 
+Failed:    @soustools/logger#lint
 
