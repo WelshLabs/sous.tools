@@ -51,8 +51,8 @@ jobs:
             if [ -d "/home/ubuntu/prod.sous.tools" ]; then
               cd /home/ubuntu/prod.sous.tools
               git pull origin main || true
-              chmod +x deploy.sh || true
-              ./deploy.sh || true
+              chmod +x scripts/deploy.sh || true
+              ./scripts/deploy.sh || true
             fi
 
             # 2. Update Staging Environment (Hot-Reload PM2 Apps)

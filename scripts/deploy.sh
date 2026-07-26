@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # 1. IaC Network Check: Create the shared bridge if it doesn't exist
 docker network inspect traefik_public >/dev/null 2>&1 || docker network create traefik_public

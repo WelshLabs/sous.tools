@@ -92,6 +92,24 @@ jobs:
           git commit -m "chore(ai): auto-update tech debt, architecture, rules, and kanban states [skip ci]" || echo "No changes to commit"
           git push || true
 
+      - name: Sync docs/wiki to GitHub Wiki Repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.SIGNAGE_GITHUB_PAT }}
+        run: |
+          if [ -d "docs/wiki" ] && [ -n "${{ env.GITHUB_TOKEN }}" ]; then
+            echo "Syncing docs/wiki to GitHub Wiki repo..."
+            git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git /tmp/wiki || true
+            if [ -d "/tmp/wiki" ]; then
+              cp -R docs/wiki/* /tmp/wiki/ || true
+              cd /tmp/wiki
+              git config --global user.name "github-actions[bot]"
+              git config --global user.email "github-actions[bot]@users.noreply.github.com"
+              git add .
+              git commit -m "chore(docs): sync wiki from main repo [skip ci]" || echo "No changes to commit"
+              git push origin HEAD:master || git push origin HEAD:main || true
+            fi
+          fi
+
       - name: Trigger n8n CTO Summary Sync to Open WebUI
         run: |
           curl -s -X POST https://n8n.sous.tools/webhook/cto-summary \
