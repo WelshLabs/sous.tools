@@ -16,6 +16,10 @@ dist
 .next
 **/.next
 deploy/
+n8n_data/
+*_data/
+staging-sandbox/
+*sandbox*/
 chat.txt
 *.log
 *.key

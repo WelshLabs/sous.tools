@@ -8,7 +8,7 @@ services:
     image: traefik:v3.1
     container_name: traefik
     environment:
-      - DOCKER_API_VERSION=1.44
+      - DOCKER_API_VERSION=1.45
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
@@ -67,7 +67,7 @@ services:
       - traefik_public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.neo4j.rule=Host(`graph.sous.tools`)"
+      - "traefik.http.routers.neo4j.rule=Host(`graph.sous.tools`) || Host(`graph.localhost`)"
       - "traefik.http.routers.neo4j.entrypoints=websecure"
       - "traefik.http.routers.neo4j.tls=true"
       - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
@@ -133,7 +133,7 @@ services:
       - ollama
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
+      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`) || Host(`ai.localhost`)"
       - "traefik.http.routers.litellm.entrypoints=websecure"
       - "traefik.http.routers.litellm.tls=true"
       - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
@@ -174,7 +174,7 @@ services:
       - traefik_public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`) || Host(`n8n.localhost`)"
       - "traefik.http.routers.n8n.entrypoints=websecure"
       - "traefik.http.routers.n8n.tls=true"
       - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
@@ -210,28 +210,28 @@ services:
       - traefik_public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
+      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`) || Host(`editor.localhost`)"
       - "traefik.http.routers.editor.entrypoints=websecure"
       - "traefik.http.routers.editor.tls=true"
       - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
       - "traefik.http.services.editor.loadbalancer.server.port=8443"
       # Staging Preview Domain Routes exposed by code-server PM2
-      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
+      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`) || Host(`dev.localhost`)"
       - "traefik.http.routers.dev-web.entrypoints=websecure"
       - "traefik.http.routers.dev-web.tls=true"
       - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
       - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
-      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
+      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`) || Host(`dev-api.localhost`)"
       - "traefik.http.routers.dev-api.entrypoints=websecure"
       - "traefik.http.routers.dev-api.tls=true"
       - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
-      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
+      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`) || Host(`dev-pos.localhost`)"
       - "traefik.http.routers.dev-pos.entrypoints=websecure"
       - "traefik.http.routers.dev-pos.tls=true"
       - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
       - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
-      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
+      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`) || Host(`dev-setup.localhost`)"
       - "traefik.http.routers.dev-setup.entrypoints=websecure"
       - "traefik.http.routers.dev-setup.tls=true"
       - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
@@ -269,7 +269,7 @@ services:
       - litellm
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.open-webui.rule=Host(`webui.sous.tools`)"
+      - "traefik.http.routers.open-webui.rule=Host(`webui.sous.tools`) || Host(`webui.localhost`)"
       - "traefik.http.routers.open-webui.entrypoints=websecure"
       - "traefik.http.routers.open-webui.tls=true"
       - "traefik.http.routers.open-webui.tls.certresolver=letsencrypt"
@@ -298,7 +298,7 @@ services:
       - INFISICAL_ENV=${INFISICAL_ENV}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
+      - "traefik.http.routers.api.rule=Host(`api.sous.tools`) || Host(`api.localhost`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls=true"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
@@ -323,4 +323,3 @@ networks:
   traefik_public:
     name: traefik_public
     external: true
-

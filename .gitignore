@@ -42,6 +42,12 @@ ssh-key.key
 ssh-key.pub
 signage_deploy_key*
 
+# Docker Volume & Runtime Data Directories
+n8n_data/
+*_data/
+staging-sandbox/
+*sandbox*/
+
 # Transient Debug Files & Logs
 chat.txt
 npm-debug.log*

@@ -17,6 +17,10 @@
     "./browser": {
       "types": "./dist/browser.d.ts",
       "default": "./dist/browser.js"
+    },
+    "./langfuse": {
+      "types": "./dist/langfuse.d.ts",
+      "default": "./dist/langfuse.js"
     }
   },
   "scripts": {
@@ -26,15 +30,16 @@
   },
   "dependencies": {
     "@soustools/config": "workspace:*",
+    "langfuse": "^3.35.2",
     "pino": "^9.0.0"
   },
   "devDependencies": {
+    "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "@types/node": "^20.11.0",
+    "eslint": "^8.57.0",
     "pino-pretty": "^11.0.0",
     "typescript": "^5.3.3",
-    "@soustools/eslint-config": "workspace:*",
-    "eslint": "^9",
     "typescript-eslint": "^8"
   }
 }
