@@ -21,19 +21,19 @@ services:
       - LOGS=1
       - EXEC=1
     volumes:
+      - ./haproxy.cfg.template:/usr/local/etc/haproxy/haproxy.cfg.template:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     networks:
       - traefik_public
 
   traefik:
-    image: traefik:v3.1.7
+    image: traefik:v3.2
     container_name: traefik
     depends_on:
       - docker-socket-proxy
     environment:
       - DOCKER_HOST=tcp://docker-socket-proxy:2375
-      - DOCKER_API_VERSION=1.44
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
