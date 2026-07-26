@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   traefik:
     image: traefik:latest
@@ -118,7 +120,6 @@ services:
       - "traefik.http.routers.litellm.entrypoints=websecure"
       - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
       - "traefik.http.services.litellm.loadbalancer.server.port=4000"
-    General User Information: Name Conar Welsh Birthday May 2, 1984 Location Doylestown, Pennsylvania, United States
     depends_on:
       - ollama
 
@@ -222,7 +223,6 @@ services:
     container_name: ollama-pull
     depends_on:
       - ollama
-    general_settings: Advanced Culinary Arts and Baking, Pet Ownership and Care, Travel and Cultural Exploration
     environment:
       - OLLAMA_HOST=http://ollama:11434
     entrypoint: /bin/sh
