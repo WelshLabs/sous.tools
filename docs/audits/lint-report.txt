@@ -7,20 +7,20 @@
 cache miss, executing b3b1176faca0b01d
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/mcp-server:lint
-cache miss, executing fc6e281bea93a040
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing 8e41140a999893fc
 $ tsc
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing c169789ad0fd26dd
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/config:lint
 cache miss, executing cab2fbc439d07ffe
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing fc6e281bea93a040
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing c169789ad0fd26dd
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
@@ -31,56 +31,15 @@ $ tsc
 cache miss, executing 651893f17d5d7654
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing 19e277b1371246e2
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/logger:build
 cache miss, executing 56fe118726b56dfb
 $ tsc
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing d2e5ef8cd395fdde
+::group::@soustools/api-client:lint
+cache miss, executing 19e277b1371246e2
 $ eslint . --max-warnings 0
 ::endgroup::
-[;31m@soustools/domain-pos:lint[;0m
-cache miss, executing 8c41fb69f4decdcf
-$ eslint . --max-warnings 0
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds-settings-modal.tsx
-  16:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.container.tsx
-   12:44  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   27:58  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   55:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   56:67  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   68:40  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   78:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   81:31  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   82:92  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  126:64  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  132:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  152:70  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  158:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  167:52  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  172:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  223:1   error    File has too many lines (209). Maximum allowed is 200  max-lines
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.container.tsx
-   46:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   53:37  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   59:68  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   65:63  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   73:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   81:77  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  150:39  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  225:1   error    File has too many lines (206). Maximum allowed is 200  max-lines
-
-✖ 24 problems (2 errors, 22 warnings)
-
-[ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/domain-inventory:lint
+[;31m@soustools/domain-inventory:lint[;0m
 cache miss, executing aeace4df7b2da100
 $ eslint . --max-warnings 0
 
@@ -118,48 +77,81 @@ $ eslint . --max-warnings 0
 ✖ 27 problems (2 errors, 25 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
-::endgroup::
 ::group::cli:lint
 cache miss, executing 1c00bf5edfa2085c
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::pos-simulator:lint
 cache miss, executing d56180910bf0cffc
 ::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing 3c45fad6142d3a57
+::group::@soustools/setup-portal:lint
+cache miss, executing 603065e0bd89e5c2
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing d2e5ef8cd395fdde
 $ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::web:lint
+cache miss, executing 1656aa3bd294a23b
+::endgroup::
+::group::api:lint
+cache miss, executing e1e013c0698f2210
 ::endgroup::
 ::group::@soustools/domain-signage:lint
 cache miss, executing 264b1a06549bb442
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing 603065e0bd89e5c2
+::group::@soustools/domain-pos:lint
+cache miss, executing 8c41fb69f4decdcf
 $ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::web:lint
-cache miss, executing 1656aa3bd294a23b
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::api:lint
-cache miss, executing e1e013c0698f2210
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds-settings-modal.tsx
+  16:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.container.tsx
+   12:44  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   27:58  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   55:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   56:67  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   68:40  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   78:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   81:31  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   82:92  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  126:64  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  132:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  152:70  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  158:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  167:52  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  172:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  223:1   error    File has too many lines (209). Maximum allowed is 200  max-lines
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.container.tsx
+   46:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   53:37  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   59:68  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   65:63  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   73:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   81:77  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  150:39  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  225:1   error    File has too many lines (206). Maximum allowed is 200  max-lines
+
+✖ 24 problems (2 errors, 22 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.
 ::endgroup::
 ::group::@soustools/design-system:lint
 cache miss, executing 4fb7f04e2aef13fc
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::@soustools/domain-recipes:lint
+cache miss, executing 3c45fad6142d3a57
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 
- Tasks:    10 successful, 20 total
+ Tasks:    9 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    19.203s 
-Failed:    @soustools/domain-pos#lint
+  Time:    13.315s 
+Failed:    @soustools/domain-inventory#lint
 
