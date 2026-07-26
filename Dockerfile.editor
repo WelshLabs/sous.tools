@@ -1,15 +1,34 @@
 FROM lscr.io/linuxserver/code-server:latest
 
-# Install Zsh, curl, and Starship
-RUN apt-get update && apt-get install -y zsh curl git psmisc tmux && \
-    curl -sS https://starship.rs/install.sh | sh -s -- -y
+USER root
 
-# Install a specific Node version and pnpm (e.g., Node 22)
+# 1. Install critical system compilation and shell tools
+RUN apt-get update && apt-get install -y zsh curl git psmisc tmux python3 python3-pip && \
+    curl -sS https://starship.rs/install.sh | sh -s -- -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# 2. Correctly register source structures and compile Node 22
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g pnpm && \
-    npm install -g pm2 && \
-    npm install -g @anthropic-ai/claude-code
+    apt-get update && apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set Zsh as the default shell for the 'abc' user (the default user for linuxserver images)
+# 3. Configure global npm paths to prevent permission blocks for the abc user
+ENV NPM_CONFIG_PREFIX=/config/.npm-global
+ENV PATH=/config/.npm-global/bin:$PATH
+
+# 4. Switch to the native linuxserver execution profile user
+USER abc
+WORKDIR /workspace
+
+# 5. Install global binaries and autonomous agent frameworks safely within user scope
+RUN npm install -g pnpm pm2 @anthropic-ai/claude-code chunkhound-mcp-server
+
+# 6. Install your tree-sitter headless execution engine
+RUN pip3 install --user aider-chat
+ENV PATH=/config/.local/bin:$PATH
+
+# 7. Apply default shell choices natively
+USER root
 RUN usermod -s /bin/zsh abc
+
+USER abc
