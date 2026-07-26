@@ -3,17 +3,9 @@
    • Running lint in 19 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:build
-cache miss, executing 235a43a545b4ef4c
-$ tsc
-::endgroup::
 ::group::@soustools/eslint-config:lint
 cache miss, executing 994f22c6d3def7a3
 $ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/config:build
-cache miss, executing 9a6a69ab8e561da5
-$ tsc
 ::endgroup::
 ::group::@soustools/config:lint
 cache miss, executing f732a74d3e62225e
@@ -23,9 +15,17 @@ $ eslint . --max-warnings 0
 cache miss, executing 0b76987d323ab33f
 $ eslint . --max-warnings 0
 ::endgroup::
+::group::@soustools/api-types:build
+cache miss, executing 235a43a545b4ef4c
+$ tsc
+::endgroup::
 ::group::@soustools/api-types:lint
 cache miss, executing d6966317d5950313
 $ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:build
+cache miss, executing 9a6a69ab8e561da5
+$ tsc
 ::endgroup::
 ::group::@soustools/api-client:lint
 cache miss, executing 7cf52ff882ba2330
@@ -76,33 +76,28 @@ $ eslint . --max-warnings 0
 ✖ 24 problems (2 errors, 22 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
+::group::@soustools/setup-portal:lint
+cache miss, executing 89efa2db1a247174
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing d8e279ea5310efc9
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::web:lint
 cache miss, executing 38f647d4ce476bce
 ::endgroup::
 ::group::api:lint
 cache miss, executing a1a62fd203f62bf8
 ::endgroup::
-::group::pos-simulator:lint
-cache miss, executing cd5ab01f40aa1aa4
-::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing 89efa2db1a247174
-::endgroup::
 ::group::cli:lint
 cache miss, executing d8c6013a377a0d93
 ::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing ad30160beb006d5d
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
+::group::pos-simulator:lint
+cache miss, executing cd5ab01f40aa1aa4
 ::endgroup::
 ::group::@soustools/design-system:lint
 cache miss, executing 82c9b28b247fedf1
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 7cbfefdf105b6162
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -111,14 +106,19 @@ cache miss, executing 81abb23ff3b596a2
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing d8e279ea5310efc9
+::group::@soustools/domain-recipes:lint
+cache miss, executing ad30160beb006d5d
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing 7cbfefdf105b6162
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    9 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    13.165s 
+  Time:    17.854s 
 Failed:    @soustools/domain-pos#lint
 
