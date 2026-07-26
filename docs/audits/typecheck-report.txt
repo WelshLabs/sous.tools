@@ -23,16 +23,16 @@ $ tsc --noEmit
 cache miss, executing e6bb7e6c0c74c87d
 $ tsc --noEmit
 ::endgroup::
-::group::cli:typecheck
-cache miss, executing 8f5103776128abbc
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/api-types:typecheck
 cache miss, executing 14d73f1ccf458f00
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-client:typecheck
 cache miss, executing 1b2cde900c34f36a
+$ tsc --noEmit
+::endgroup::
+::group::cli:typecheck
+cache miss, executing 8f5103776128abbc
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
@@ -43,20 +43,28 @@ $ tsc --noEmit
 cache miss, executing 5bf898c20e7295db
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 4b67c602f90951fb
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing e8edfb46e1003686
+$ tsc --noEmit
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing 20535914e7f96636
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 517bed8d07e044f0
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 4b67c602f90951fb
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-settings:typecheck
 cache miss, executing 42a03becc6835b05
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 517bed8d07e044f0
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 856ef17fac090f97
 $ tsc --noEmit
 ::endgroup::
 [;31m@soustools/domain-pos:typecheck[;0m
@@ -64,17 +72,8 @@ cache miss, executing e5e2261daa974066
 $ tsc --noEmit
 src/components/POSRegister/components/pos-catalog.tsx(3,8): error TS6133: 'React' is declared but its value is never read.
 [ELIFECYCLE] Command failed with exit code 2.
-::group::pos-simulator:typecheck
-cache miss, executing 20535914e7f96636
-$ tsc --noEmit
-::endgroup::
 ::group::web:typecheck
 cache miss, executing 41cf6ed8679711ef
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 856ef17fac090f97
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -84,8 +83,8 @@ $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    14 successful, 19 total
+ Tasks:    16 successful, 19 total
 Cached:    3 cached, 19 total
-  Time:    45.756s 
+  Time:    39.631s 
 Failed:    @soustools/domain-pos#typecheck
 
