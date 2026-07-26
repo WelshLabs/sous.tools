@@ -1,0 +1,51 @@
+{
+  "name": "CTO Summary & Open WebUI Knowledge Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cto-summary",
+        "options": {}
+      },
+      "name": "GitHub Actions Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://open-webui:8080/api/v1/knowledge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.OPENWEBUI_API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Sync to Open WebUI Knowledge Base",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "GitHub Actions Webhook": {
+      "main": [
+        [
+          {
+            "node": "Sync to Open WebUI Knowledge Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

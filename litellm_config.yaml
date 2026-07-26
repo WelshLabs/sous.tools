@@ -1,5 +1,5 @@
 model_list:
-  # --- Route to your local Ollama container ---
+  # --- Local Ollama Models ---
   - model_name: qwen2.5-coder:7b
     litellm_params:
       model: ollama/qwen2.5-coder:7b
@@ -8,50 +8,114 @@ model_list:
     litellm_params:
       model: ollama/deepseek-coder-v2
       api_base: http://ollama:11434
+  - model_name: yi-coder:9b
+    litellm_params:
+      model: ollama/yi-coder:9b
+      api_base: http://ollama:11434
+  - model_name: nomic-embed-text
+    litellm_params:
+      model: ollama/nomic-embed-text
+      api_base: http://ollama:11434
+  - model_name: llama3.2-vision
+    litellm_params:
+      model: ollama/llama3.2-vision
+      api_base: http://ollama:11434
 
-  # --- Route to Google Gemini (2026 Models) ---
+  # --- Google Gemini Tier 1 Rate-Limited Models ---
+  - model_name: gemini-3.6-flash
+    litellm_params:
+      model: gemini/gemini-3.6-flash
+      api_key: os.environ/GEMINI_API_KEY
   - model_name: gemini-3.5-flash
     litellm_params:
       model: gemini/gemini-3.5-flash
       api_key: os.environ/GEMINI_API_KEY
-
+  - model_name: gemini-3.5-flash-lite
+    litellm_params:
+      model: gemini/gemini-3.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
   - model_name: gemini-3.1-pro
     litellm_params:
-      model: gemini/gemini-3.1-pro-latest
+      model: gemini/gemini-3.1-pro
       api_key: os.environ/GEMINI_API_KEY
-
   - model_name: gemini-3.1-flash-lite
     litellm_params:
       model: gemini/gemini-3.1-flash-lite
       api_key: os.environ/GEMINI_API_KEY
-
+  - model_name: gemini-3-flash
+    litellm_params:
+      model: gemini/gemini-3-flash
+      api_key: os.environ/GEMINI_API_KEY
   - model_name: gemini-2.5-pro
     litellm_params:
-      model: gemini/gemini-2.5-pro-latest
+      model: gemini/gemini-2.5-pro
       api_key: os.environ/GEMINI_API_KEY
-
   - model_name: gemini-2.5-flash
     litellm_params:
       model: gemini/gemini-2.5-flash
       api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemini-2.5-flash-lite
+    litellm_params:
+      model: gemini/gemini-2.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemini-2.0-flash
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemini-2.0-flash-lite
+    litellm_params:
+      model: gemini/gemini-2.0-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemma-4-26b
+    litellm_params:
+      model: gemini/gemma-4-26b
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemma-4-31b
+    litellm_params:
+      model: gemini/gemma-4-31b
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: text-embedding-004
+    litellm_params:
+      model: gemini/text-embedding-004
+      api_key: os.environ/GEMINI_API_KEY
 
-  # === THE CLAUDE CLI ALIASES ===
-  # The Claude CLI hardcodes requests for these model names.
-  # This forces LiteLLM to serve Gemini 3.1 Pro instead whenever the CLI runs.
+  # --- Anthropic Claude Official Models ---
+  - model_name: claude-3-7-sonnet-20250219
+    litellm_params:
+      model: anthropic/claude-3-7-sonnet-20250219
+      api_key: os.environ/ANTHROPIC_API_KEY
   - model_name: claude-3-5-sonnet-20241022
     litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
   - model_name: claude-3-5-haiku-20241022
     litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
+      model: anthropic/claude-3-5-haiku-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
 
-  - model_name: claude-opus-4-8[1m]
+  # --- OpenAI & DeepSeek Models ---
+  - model_name: gpt-4o
     litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: o3-mini
+    litellm_params:
+      model: openai/o3-mini
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: deepseek-chat
+    litellm_params:
+      model: deepseek/deepseek-chat
+      api_key: os.environ/DEEPSEEK_API_KEY
+  - model_name: deepseek-reasoner
+    litellm_params:
+      model: deepseek/deepseek-reasoner
+      api_key: os.environ/DEEPSEEK_API_KEY
 
 general_settings:
   master_key: sk-1234
+  success_callback: ["langfuse"]
+  failure_callback: ["langfuse"]

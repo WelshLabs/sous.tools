@@ -1,12 +1,16 @@
 version: "3.8"
 
 services:
+  # =========================================================================
+  # 1. EDGE PROXY & INFRASTRUCTURE TIER
+  # =========================================================================
   traefik:
-    image: traefik:latest
+    image: traefik:v3.1
+    container_name: traefik
     environment:
       - DOCKER_API_VERSION=1.44
     command:
-      - "--api.insecure=true"
+      - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -16,30 +20,37 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--log.level=DEBUG"
-      - "--api.insecure=false"
-      - "--providers.docker=true"
+      - "--log.level=INFO"
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "letsencrypt:/letsencrypt"
     restart: unless-stopped
     networks:
-      - default
       - traefik_public
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
+  # =========================================================================
+  # 2. DATA STORAGE & QUEUE TIER
+  # =========================================================================
   redis:
     image: redis:alpine
-    command: redis-server --appendonly yes
+    container_name: redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     restart: unless-stopped
     networks:
-      - default
       - traefik_public
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
   neo4j:
     image: neo4j:5-community
@@ -50,9 +61,6 @@ services:
       - NEO4J_server_memory_pagecache_size=1G
       - NEO4J_server_memory_heap_initial__size=1G
       - NEO4J_server_memory_heap_max__size=2G
-    ports:
-      - "7474:7474"
-      - "7687:7687"
     volumes:
       - neo4j_data:/data
     networks:
@@ -61,10 +69,18 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.neo4j.rule=Host(`graph.sous.tools`)"
       - "traefik.http.routers.neo4j.entrypoints=websecure"
+      - "traefik.http.routers.neo4j.tls=true"
       - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
       - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
       - "traefik.docker.network=traefik_public"
+    deploy:
+      resources:
+        limits:
+          memory: 3g
 
+  # =========================================================================
+  # 3. LLM GATEWAY & LOCAL MODEL TIER
+  # =========================================================================
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
@@ -72,151 +88,11 @@ services:
       - ollama_data:/root/.ollama
     restart: unless-stopped
     networks:
-      - default
-      - traefik_public
-
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    depends_on:
-      - redis
-    deploy:
-      update_config:
-        order: start-first
-        failure_action: rollback
-    environment:
-      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
-      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
-      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
-      - INFISICAL_ENV=${INFISICAL_ENV}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.api.service=api"
-      - "traefik.http.services.api.loadbalancer.server.port=3001"
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik_public
-
-  litellm:
-    image: ghcr.io/berriai/litellm:main-latest
-    container_name: litellm
-    restart: unless-stopped
-    volumes:
-      - /home/ubuntu/prod.sous.tools/litellm_config.yaml:/app/config.yaml
-      - /home/ubuntu/dev.sous.tools:/workspace/dev.sous.tools
-    networks:
-      - traefik_public
-    entrypoint: >
-      sh -c "apk add --no-cache nodejs npm python3 && node /workspace/dev.sous.tools/packages/config/dist/cli.js python3 /app/main.py --config /app/config.yaml --detailed_debug"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
-      - "traefik.http.routers.litellm.entrypoints=websecure"
-      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
-      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
-    depends_on:
-      - ollama
-
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: n8n
-    user: root
-    restart: unless-stopped
-    ports:
-      - "5678:5678"
-    environment:
-      - N8N_HOST=n8n.sous.tools
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=https
-      - N8N_COMMAND_ENABLE=true
-      - WEBHOOK_URL=https://sous.tools
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
-      - NODES_EXCLUDE=[]
-      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
-      - N8N_BLOCK_SVC_EXECUTION_FROM_COMMAND=false
-      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
-      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
-      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
-      - INFISICAL_ENV=${INFISICAL_ENV}
-    volumes:
-      - n8n_data:/home/node/.n8n
-      - /home/ubuntu/dev.sous.tools/packages/workflows:/etc/n8n/workflows
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/ubuntu/dev.sous.tools:/home/ubuntu/dev.sous.tools
-    command: >
-      sh -c "apk add --no-cache docker-cli curl nodejs npm && node /home/ubuntu/dev.sous.tools/packages/config/dist/cli.js tini -- /docker-entrypoint.sh"
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
-      - "traefik.http.routers.n8n.entrypoints=websecure"
-      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
-
-  editor:
-    build:
-      context: .
-      dockerfile: Dockerfile.editor
-    container_name: code-server
-    group_add:
-      - "111"
-    environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=America/New_York
-      - PASSWORD=sousToolsPassword
-      - SUDO_PASSWORD=sousToolsPassword
-      - OPENAI_API_BASE=https://sous.tools
-      - OPENAI_API_KEY=sk-1234
-      - DOCKER_MODS=linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-docker
-      - DOCKER_GROUP=111
-      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
-      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
-      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
-      - INFISICAL_ENV=${INFISICAL_ENV}
-    volumes:
-      - /home/ubuntu/dev.sous.tools:/workspace
-      - /home/ubuntu/.config/code-server:/config
-      - /home/ubuntu/.ssh:/config/.ssh:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
-    networks:
-      - default
       - traefik_public
     deploy:
       resources:
         limits:
-          memory: 4g
-          cpus: "2.0"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
-      - "traefik.http.routers.editor.entrypoints=websecure"
-      - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
-      - "traefik.http.services.editor.loadbalancer.server.port=8443"
-      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
-      - "traefik.http.routers.dev-web.entrypoints=websecure"
-      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
-      - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
-      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
-      - "traefik.http.routers.dev-api.entrypoints=websecure"
-      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
-      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
-      - "traefik.http.routers.dev-pos.entrypoints=websecure"
-      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
-      - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
-      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
-      - "traefik.http.routers.dev-setup.entrypoints=websecure"
-      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
-      - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
+          memory: 8g
 
   ollama-pull:
     image: ollama/ollama:latest
@@ -229,27 +105,156 @@ services:
     command:
       - "-c"
       - |
-        echo "Waiting for Ollama to boot..."
+        echo "Waiting for Ollama service to respond..."
         sleep 10
         MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
         for model in $$MODELS; do
-          echo "Checking/Pulling $$model..."
+          echo "Verifying/Pulling model $$model..."
           ollama pull $$model
         done
-        echo "All models verified and ready!"
+        echo "Ollama model synchronization complete!"
+    networks:
+      - traefik_public
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    restart: unless-stopped
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml
+    environment:
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    networks:
+      - traefik_public
+    depends_on:
+      - ollama
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`)"
+      - "traefik.http.routers.litellm.entrypoints=websecure"
+      - "traefik.http.routers.litellm.tls=true"
+      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
+      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
+      - "traefik.docker.network=traefik_public"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  # =========================================================================
+  # 4. AGENTIC ORCHESTRATION & IDE TIER
+  # =========================================================================
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    user: root
+    restart: unless-stopped
+    environment:
+      - N8N_HOST=n8n.sous.tools
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_COMMAND_ENABLE=true
+      - WEBHOOK_URL=https://n8n.sous.tools/
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - NODES_EXCLUDE=[]
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_BLOCK_SVC_EXECUTION_FROM_COMMAND=false
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./packages/workflows:/etc/n8n/workflows
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls=true"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+      - "traefik.docker.network=traefik_public"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  editor:
+    build:
+      context: .
+      dockerfile: Dockerfile.editor
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - PASSWORD=sousToolsPassword
+      - SUDO_PASSWORD=sousToolsPassword
+      - OPENAI_API_BASE=https://ai.sous.tools/v1
+      - OPENAI_API_KEY=sk-1234
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`)"
+      - "traefik.http.routers.editor.entrypoints=websecure"
+      - "traefik.http.routers.editor.tls=true"
+      - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
+      - "traefik.http.services.editor.loadbalancer.server.port=8443"
+      # Staging Preview Domain Routes exposed by code-server PM2
+      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`)"
+      - "traefik.http.routers.dev-web.entrypoints=websecure"
+      - "traefik.http.routers.dev-web.tls=true"
+      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-web.loadbalancer.server.port=3000"
+      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`)"
+      - "traefik.http.routers.dev-api.entrypoints=websecure"
+      - "traefik.http.routers.dev-api.tls=true"
+      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-api.loadbalancer.server.port=3001"
+      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`)"
+      - "traefik.http.routers.dev-pos.entrypoints=websecure"
+      - "traefik.http.routers.dev-pos.tls=true"
+      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-pos.loadbalancer.server.port=3003"
+      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`)"
+      - "traefik.http.routers.dev-setup.entrypoints=websecure"
+      - "traefik.http.routers.dev-setup.tls=true"
+      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-setup.loadbalancer.server.port=3002"
+      - "traefik.docker.network=traefik_public"
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
-    ports:
-      - "6000:8080"
+    restart: unless-stopped
     networks:
       - traefik_public
     volumes:
       - open-webui_data:/app/backend/data
-      - /home/ubuntu/dev.sous.tools:/workspace/dev.sous.tools
+      - .:/workspace
+      - ./packages/config/sanitizer.py:/app/backend/data/functions/sanitizer.py
     environment:
-      - OPENAI_API_BASE_URL=https://sous.tools
+      - OPENAI_API_BASE_URL=https://ai.sous.tools/v1
       - OPENAI_API_KEY=sk-1234
       - WEBUI_SECRET_KEY=password
       - WEBUI_AUTH=true
@@ -260,18 +265,51 @@ services:
       - INFISICAL_ENV=${INFISICAL_ENV}
     env_file:
       - ./mcp_servers.env
-    entrypoint: >
-      sh -c "apk add --no-cache nodejs npm && node /workspace/dev.sous.tools/packages/config/dist/cli.js /start.sh"
-    restart: always
     depends_on:
       - litellm
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.open-webui.rule=Host(`webui.sous.tools`)"
       - "traefik.http.routers.open-webui.entrypoints=websecure"
+      - "traefik.http.routers.open-webui.tls=true"
       - "traefik.http.routers.open-webui.tls.certresolver=letsencrypt"
       - "traefik.http.services.open-webui.loadbalancer.server.port=8080"
       - "traefik.docker.network=traefik_public"
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+
+  # =========================================================================
+  # 5. PRODUCTION APPLICATION STACK TIER
+  # =========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: api
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.sous.tools`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api.loadbalancer.server.port=3001"
+      - "traefik.docker.network=traefik_public"
+    networks:
+      - traefik_public
+    deploy:
+      resources:
+        limits:
+          memory: 1g
 
 volumes:
   letsencrypt:
@@ -282,7 +320,7 @@ volumes:
   open-webui_data:
 
 networks:
-  default:
   traefik_public:
     name: traefik_public
     external: true
+

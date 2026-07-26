@@ -1,0 +1,27 @@
+name: Dependency Audit & Vulnerability Check
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Runs weekly on Sunday at midnight
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        run: npm install -g pnpm
+
+      - name: Run PNPM Security Audit
+        run: pnpm audit --audit-level high || true
+
+      - name: Run Knip Dead Code Audit
+        run: npx knip || true

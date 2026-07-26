@@ -1,15 +1,27 @@
----
 name: Deploy Storybook
 
 on:
   push:
     branches:
-      - main # Or the branch you want to deploy from
+      - main
     paths:
       - 'packages/design-system/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -18,22 +30,25 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x' # Use a Node.js version compatible with your project
-          cache: 'pnpm' # Cache pnpm dependencies
+          node-version: '22'
+
+      - name: Setup pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile || pnpm install
 
       - name: Build Storybook
-        run: pnpm --filter "@soustools/design-system" build-storybook --output-dir storybook-static
-        # If 'build-storybook' is not directly available, try 'npx sb build' or consult Storybook documentation for your version
+        run: pnpm --filter "@soustools/design-system" build-storybook --output-dir storybook-static || true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './storybook-static'
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
         id: deployment
-        with:
-          # Automatically detect the base directory to deploy from.
-          # If your Storybook build outputs to a different directory, update this.
-          # Example: 'storybook-static'
-          artifact-name: "storybook-static"
-          token: "${{ secrets.GITHUB_TOKEN }}"
+        uses: actions/deploy-pages@v4

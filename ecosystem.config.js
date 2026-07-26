@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-// Load environment variables from .env file at the project root if it exists
+// Load environment variables from .env file at the project root if present
 const rootEnv = {};
 const envPath = path.join(__dirname, '.env');
 if (fs.existsSync(envPath)) {
@@ -19,7 +19,7 @@ if (fs.existsSync(envPath)) {
         val = val.substring(1, val.length - 1);
       }
       rootEnv[key] = val;
-      process.env[key] = val; // Set on current process so any spawned scripts can inherit it
+      process.env[key] = val;
     }
   });
 }
@@ -28,18 +28,20 @@ module.exports = {
   apps: [
     {
       name: 'api',
-      script: './packages/config/dist/cli.js',
-      args: 'pnpm --filter api run dev', // Strictly executes our custom wrapper with pnpm command
+      script: 'pnpm',
+      args: '--filter api dev',
+      cwd: __dirname,
       env: {
         PORT: 3001,
         NODE_ENV: 'staging',
-        ...rootEnv, // Merge all .env variables including INFISICAL_* credentials
+        ...rootEnv,
       },
     },
     {
       name: 'web',
       script: 'pnpm',
-      args: '--filter web run dev', // Targets your main Next.js app
+      args: '--filter web dev',
+      cwd: __dirname,
       env: {
         PORT: 3000,
         NODE_ENV: 'staging',
@@ -49,7 +51,8 @@ module.exports = {
     {
       name: 'pos',
       script: 'pnpm',
-      args: '--filter pos-simulator run dev', // Targets your dev-pos simulator app
+      args: '--filter pos-simulator dev',
+      cwd: __dirname,
       env: {
         PORT: 3003,
         NODE_ENV: 'staging',
@@ -59,7 +62,8 @@ module.exports = {
     {
       name: 'setup',
       script: 'pnpm',
-      args: '--filter setup-portal run dev', // Targets your dev-setup portal app
+      args: '--filter setup-portal dev',
+      cwd: __dirname,
       env: {
         PORT: 3002,
         NODE_ENV: 'staging',

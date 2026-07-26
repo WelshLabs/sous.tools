@@ -1,0 +1,69 @@
+{
+  "name": "GitHub Kanban Autonomous Agent Dispatcher",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kanban-agent",
+        "options": {}
+      },
+      "name": "GitHub Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.projects_v2_item.column_name || $json.body.column_name }}",
+              "value2": "In Progress"
+            }
+          ]
+        }
+      },
+      "name": "Is In Progress?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "command": "docker exec -i code-server bash -c 'cd /workspace && pnpm typecheck && pnpm lint && pnpm test'"
+      },
+      "name": "Execute Agent Self-Repair Gauntlet",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "GitHub Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is In Progress?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is In Progress?": {
+      "main": [
+        [
+          {
+            "node": "Execute Agent Self-Repair Gauntlet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "maxConcurrency": 1
+  }
+}

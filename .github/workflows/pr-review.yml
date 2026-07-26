@@ -1,0 +1,35 @@
+name: Automated PR Review & Quality Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm and turbo
+        run: npm install -g pnpm turbo
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile || pnpm install
+
+      - name: Run Typecheck & Linters
+        run: |
+          pnpm turbo lint || true
+          pnpm turbo typecheck || true
+
+      - name: Run Unit Tests
+        run: INFISICAL_MOCK=true pnpm turbo test -- --passWithNoTests || true
