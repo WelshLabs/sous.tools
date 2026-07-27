@@ -99,3 +99,4 @@ packages/.secrets.cache.json
 supabase/seed.sql
 mcp_servers.local.env
 .data/
+.cptr
