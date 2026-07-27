@@ -277,8 +277,8 @@ services:
       dockerfile: Dockerfile.editor
     container_name: code-server
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=America/New_York
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
@@ -393,10 +393,9 @@ services:
   cptr:
     image: ghcr.io/open-webui/computer:latest
     container_name: cptr
-    user: "1000:1000"
+    user: "1001:1001"
     volumes:
       - cptr-data:/data
-      - cptr_projects:/projects
       - /home/ubuntu/dev.sous.tools:/workspace
     environment:
       - PYTHONUNBUFFERED=1
@@ -461,7 +460,6 @@ services:
 volumes:
   letsencrypt:
   cptr-data:
-  cptr_projects:
 
 networks:
   traefik_public:
