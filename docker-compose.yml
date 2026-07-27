@@ -311,6 +311,23 @@ services:
           memory: 4g
           cpus: "2.0"
 
+  mcpo:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcpo
+    container_name: mcpo
+    restart: unless-stopped
+    volumes:
+      - ./mcp_config.json:/app/mcp_config.json
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/workspace
+    networks:
+      - traefik_public
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
@@ -332,10 +349,9 @@ services:
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
-    env_file:
-      - ./mcp_servers.local.env
     depends_on:
       - litellm
+      - mcpo
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.open-webui-secure.rule=Host(`webui.sous.tools`) || Host(`webui.localhost`)"
@@ -360,8 +376,9 @@ services:
       open-webui:
         condition: service_started
     volumes:
-      - ./deploy/scripts/seed_openwebui.py:/app/seed_openwebui.py
+      - ./scripts/seed_openwebui.py:/app/seed_openwebui.py
       - ./.data/open-webui:/app/backend/data
+      - .:/workspace
     command: >
       bash -c "pip install requests && python /app/seed_openwebui.py"
     networks:
