@@ -1,22 +1,22 @@
-services:
-  # =========================================================================
-  # SHARED CONFIGURATIONS (YAML ANCHORS)
-  # =========================================================================
-  x-mcp-config: &mcp-shared-env
-    MCP_SERVERS: >-
-      {
-        "docker": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-docker"]},
-        "github": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"]},
-        "qdrant_adr": {
-          "command": "uvx",
-          "args": ["mcp-server-qdrant"],
-          "env": {
-            "QDRANT_URL": "http://qdrant:6333",
-            "COLLECTION_NAME": "adr_knowledgebase"
-          }
+# =========================================================================
+# SHARED CONFIGURATIONS (YAML ANCHORS)
+# =========================================================================
+x-mcp-config: &mcp-shared-env
+  MCP_SERVERS: >-
+    {
+      "docker": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-docker"]},
+      "github": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"]},
+      "qdrant_adr": {
+        "command": "uvx",
+        "args": ["mcp-server-qdrant"],
+        "env": {
+          "QDRANT_URL": "http://qdrant:6333",
+          "COLLECTION_NAME": "adr_knowledgebase"
         }
       }
+    }
 
+services:
   # =========================================================================
   # 1. EDGE PROXY TIER
   # =========================================================================
