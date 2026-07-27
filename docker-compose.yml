@@ -31,8 +31,7 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
@@ -376,7 +375,9 @@ services:
       - traefik_public
 
   cptr:
-    image: ghcr.io/open-webui/computer:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.cptr
     container_name: cptr
     user: "1001:1001"
     volumes:
@@ -390,18 +391,6 @@ services:
       LOG_LEVEL: DEBUG
       OPENAI_API_BASE: http://litellm:4000/v1
       OPENAI_API_KEY: sk-1234
-    command: >
-      bash -c "
-      sudo apt-get update && sudo apt-get install -y curl zsh python3-pip pipx &&
-      curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - &&
-      sudo apt-get install -y nodejs &&
-      sudo npm install -g pnpm pm2 &&
-      pipx install uv &&
-      curl -sS https://starship.rs/install.sh | sudo sh -s -- -y &&
-      echo 'source /workspace/.config/terminal/.zsh_aliases' >> ~/.zshrc &&
-      echo 'eval \"$$(starship init zsh)\"' >> ~/.zshrc &&
-      exec ./start.sh
-      "
     restart: unless-stopped
     networks:
       - traefik_public

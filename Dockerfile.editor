@@ -32,11 +32,10 @@ RUN npm install -g pnpm pm2 @anthropic-ai/claude-code @modelcontextprotocol/serv
 # 4. Install python AI applications globally as root
 RUN pip3 install aider-chat --break-system-packages
 
-# 5. Restore default execution user & configure permissions for /config and /workspace
-RUN mkdir -p /config && chown -R abc:abc /config /workspace && usermod -s /bin/zsh abc
-
-USER abc
-
-# 6. Initialize terminal environment (.zshrc, starship, aliases)
-RUN echo 'eval "$(starship init zsh)"' >> /config/.zshrc \
+# 5. Initialize terminal environment (.zshrc, starship, aliases) FIRST
+RUN mkdir -p /config \
+    && echo 'eval "$(starship init zsh)"' >> /config/.zshrc \
     && echo 'if [ -f /workspace/.config/terminal/.zsh_aliases ]; then source /workspace/.config/terminal/.zsh_aliases; fi' >> /config/.zshrc
+
+# 6. Configure permissions and shell (Letting the container stay root so s6-overlay can process PUID)
+RUN chown -R abc:abc /config && usermod -s /bin/zsh abc

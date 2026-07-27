@@ -1,0 +1,22 @@
+FROM ghcr.io/open-webui/computer:latest
+
+# Switch to root to install system-level packages
+USER root
+
+RUN apt-get update && apt-get install -y curl zsh && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g pnpm pm2 && \
+    curl -sS https://starship.rs/install.sh | sh -s -- -y && \
+    apt-get clean
+
+# Switch back to the safe, default unprivileged user
+USER 1001:1001
+
+# Install uv strictly for this user (needed for Qdrant MCP)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Ensure uv is in the path and wire up your aliases
+ENV PATH="/home/computeruse/.local/bin:${PATH}"
+RUN echo 'source /workspace/.config/terminal/.zsh_aliases' >> ~/.zshrc && \
+    echo 'eval "$(starship init zsh)"' >> ~/.zshrc
