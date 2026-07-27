@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
     && apt-get update && apt-get install -y gh \
+    && curl -sS https://starship.rs/install.sh | sh -s -- -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Force root user layer context workspace rules
@@ -35,3 +36,7 @@ RUN pip3 install aider-chat --break-system-packages
 RUN mkdir -p /config && chown -R abc:abc /config /workspace && usermod -s /bin/zsh abc
 
 USER abc
+
+# 6. Initialize terminal environment (.zshrc, starship, aliases)
+RUN echo 'eval "$(starship init zsh)"' >> /config/.zshrc \
+    && echo 'if [ -f /workspace/.config/terminal/.zsh_aliases ]; then source /workspace/.config/terminal/.zsh_aliases; fi' >> /config/.zshrc

@@ -2,7 +2,6 @@
 import js from "@eslint/js";
 // import projectStructure from "eslint-plugin-project-structure";
 import boundaries from "eslint-plugin-boundaries";
-import tailwindcss from "eslint-plugin-tailwindcss";
 import tseslint from "typescript-eslint";
 
 export default [
@@ -20,6 +19,7 @@ export default [
       ".agents/**",
       ".context/**",
       "scripts/**",
+      ".data/**",
     ],
   },
 
@@ -30,9 +30,7 @@ export default [
       parser: tseslint.parser,
     },
     plugins: {
-      // "project-structure": projectStructure,
       boundaries: boundaries,
-      tailwindcss: tailwindcss,
       "@typescript-eslint": tseslint.plugin,
     },
     settings: {
@@ -64,15 +62,15 @@ export default [
       "max-lines": ["error", 200],
 
       // 3. The Supabase & Domain Firewall (DDD Boundaries)
-      "boundaries/element-types": [
+      "boundaries/dependencies": [
         "error",
         {
           default: "disallow",
-          rules: [
+          policies: [
             // UI apps can only talk to domain, config, and ui. NEVER infrastructure/DB.
-            { from: ["apps"], allow: ["domain", "config", "ui"] },
+            { from: "apps", allow: ["domain", "config", "ui"] },
             // Domain logic cannot import from infrastructure or Supabase directly.
-            { from: ["domain"], allow: ["domain", "config"] },
+            { from: "domain", allow: ["domain", "config"] },
           ],
         },
       ],
@@ -88,15 +86,6 @@ export default [
                 "Direct process.env access is banned. Import from @soustools/config instead.",
             },
           ],
-        },
-      ],
-
-      // 5. Ban Hardcoded Tailwind (e.g., w-[32px] or bg-[#123])
-      "tailwindcss/no-custom-classname": [
-        "error",
-        {
-          whitelist: ["classnames"],
-          // config: "tailwind.config.js", // Ensure this points to your shared tailwind config
         },
       ],
     },

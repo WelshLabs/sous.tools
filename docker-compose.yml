@@ -75,7 +75,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - ./.data/redis:/data
     restart: unless-stopped
     networks:
       - traefik_public
@@ -96,22 +96,54 @@ services:
       - NEO4J_server_memory_heap_initial__size=1G
       - NEO4J_server_memory_heap_max__size=2G
     volumes:
-      - neo4j_data:/data
+      - ./.data/neo4j:/data
     networks:
       - traefik_public
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.neo4j.rule=Host(`graph.sous.tools`) || Host(`graph.localhost`)"
-      - "traefik.http.routers.neo4j.entrypoints=websecure"
-      - "traefik.http.routers.neo4j.tls=true"
-      - "traefik.http.routers.neo4j.tls.certresolver=letsencrypt"
-      - "traefik.http.services.neo4j.loadbalancer.server.port=7474"
+      - "traefik.http.routers.neo4j-secure.rule=Host(`graph.sous.tools`) || Host(`graph.localhost`)"
+      - "traefik.http.routers.neo4j-secure.entrypoints=websecure"
+      - "traefik.http.routers.neo4j-secure.tls=true"
+      - "traefik.http.routers.neo4j-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.neo4j-secure.service=neo4j-service"
+      - "traefik.http.routers.neo4j.rule=Host(`graph.localhost`)"
+      - "traefik.http.routers.neo4j.entrypoints=web"
+      - "traefik.http.routers.neo4j.service=neo4j-service"
+      - "traefik.http.services.neo4j-service.loadbalancer.server.port=7474"
       - "traefik.docker.network=traefik_public"
     deploy:
       resources:
         limits:
           memory: 3g
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./.data/qdrant:/qdrant/storage
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qdrant-secure.rule=Host(`qdrant.sous.tools`) || Host(`qdrant.localhost`)"
+      - "traefik.http.routers.qdrant-secure.entrypoints=websecure"
+      - "traefik.http.routers.qdrant-secure.tls=true"
+      - "traefik.http.routers.qdrant-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.qdrant-secure.service=qdrant-service"
+      - "traefik.http.routers.qdrant.rule=Host(`qdrant.localhost`)"
+      - "traefik.http.routers.qdrant.entrypoints=web"
+      - "traefik.http.routers.qdrant.service=qdrant-service"
+      - "traefik.http.services.qdrant-service.loadbalancer.server.port=6333"
+      - "traefik.docker.network=traefik_public"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
   # =========================================================================
   # 3. LLM GATEWAY & LOCAL MODEL TIER
@@ -120,7 +152,7 @@ services:
     image: ollama/ollama:latest
     container_name: ollama
     volumes:
-      - ollama_data:/root/.ollama
+      - ./.data/ollama:/root/.ollama
     restart: unless-stopped
     networks:
       - traefik_public
@@ -174,11 +206,15 @@ services:
       - ollama
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.litellm.rule=Host(`ai.sous.tools`) || Host(`ai.localhost`)"
-      - "traefik.http.routers.litellm.entrypoints=websecure"
-      - "traefik.http.routers.litellm.tls=true"
-      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
-      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
+      - "traefik.http.routers.litellm-secure.rule=Host(`ai.sous.tools`) || Host(`ai.localhost`)"
+      - "traefik.http.routers.litellm-secure.entrypoints=websecure"
+      - "traefik.http.routers.litellm-secure.tls=true"
+      - "traefik.http.routers.litellm-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.litellm-secure.service=litellm-service"
+      - "traefik.http.routers.litellm.rule=Host(`ai.localhost`)"
+      - "traefik.http.routers.litellm.entrypoints=web"
+      - "traefik.http.routers.litellm.service=litellm-service"
+      - "traefik.http.services.litellm-service.loadbalancer.server.port=4000"
       - "traefik.docker.network=traefik_public"
     deploy:
       resources:
@@ -203,23 +239,29 @@ services:
       - NODES_EXCLUDE=[]
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - N8N_BLOCK_SVC_EXECUTION_FROM_COMMAND=false
+      - N8N_SECURE_COOKIE=false
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
-      - n8n_data:/home/node/.n8n
+      - ./.data/n8n:/root/.n8n
+      - ./.data/n8n:/home/node/.n8n
       - ./packages/workflows:/etc/n8n/workflows
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - traefik_public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(`n8n.sous.tools`) || Host(`n8n.localhost`)"
-      - "traefik.http.routers.n8n.entrypoints=websecure"
-      - "traefik.http.routers.n8n.tls=true"
-      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+      - "traefik.http.routers.n8n-secure.rule=Host(`n8n.sous.tools`) || Host(`n8n.localhost`)"
+      - "traefik.http.routers.n8n-secure.entrypoints=websecure"
+      - "traefik.http.routers.n8n-secure.tls=true"
+      - "traefik.http.routers.n8n-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.n8n-secure.service=n8n-service"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.localhost`)"
+      - "traefik.http.routers.n8n.entrypoints=web"
+      - "traefik.http.routers.n8n.service=n8n-service"
+      - "traefik.http.services.n8n-service.loadbalancer.server.port=5678"
       - "traefik.docker.network=traefik_public"
     deploy:
       resources:
@@ -253,37 +295,15 @@ services:
       - traefik_public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.editor.rule=Host(`editor.sous.tools`) || Host(`editor.localhost`)"
-      - "traefik.http.routers.editor.entrypoints=websecure"
-      - "traefik.http.routers.editor.tls=true"
-      - "traefik.http.routers.editor.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.editor.service=editor"
-      - "traefik.http.services.editor.loadbalancer.server.port=8443"
-      # Staging Preview Domain Routes exposed by code-server PM2
-      - "traefik.http.routers.dev-web.rule=Host(`dev.sous.tools`) || Host(`dev.localhost`)"
-      - "traefik.http.routers.dev-web.entrypoints=websecure"
-      - "traefik.http.routers.dev-web.tls=true"
-      - "traefik.http.routers.dev-web.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-web.service=dev-web"
-      - "traefik.http.services.dev-web.loadbalancer.server.url=http://host.docker.internal:3000"
-      - "traefik.http.routers.dev-api.rule=Host(`dev-api.sous.tools`) || Host(`dev-api.localhost`)"
-      - "traefik.http.routers.dev-api.entrypoints=websecure"
-      - "traefik.http.routers.dev-api.tls=true"
-      - "traefik.http.routers.dev-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-api.service=dev-api"
-      - "traefik.http.services.dev-api.loadbalancer.server.url=http://host.docker.internal:3001"
-      - "traefik.http.routers.dev-pos.rule=Host(`dev-pos.sous.tools`) || Host(`dev-pos.localhost`)"
-      - "traefik.http.routers.dev-pos.entrypoints=websecure"
-      - "traefik.http.routers.dev-pos.tls=true"
-      - "traefik.http.routers.dev-pos.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-pos.service=dev-pos"
-      - "traefik.http.services.dev-pos.loadbalancer.server.url=http://host.docker.internal:3003"
-      - "traefik.http.routers.dev-setup.rule=Host(`dev-setup.sous.tools`) || Host(`dev-setup.localhost`)"
-      - "traefik.http.routers.dev-setup.entrypoints=websecure"
-      - "traefik.http.routers.dev-setup.tls=true"
-      - "traefik.http.routers.dev-setup.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dev-setup.service=dev-setup"
-      - "traefik.http.services.dev-setup.loadbalancer.server.url=http://host.docker.internal:3002"
+      - "traefik.http.routers.editor-secure.rule=Host(`code.sous.tools`) || Host(`editor.sous.tools`) || Host(`editor.localhost`)"
+      - "traefik.http.routers.editor-secure.entrypoints=websecure"
+      - "traefik.http.routers.editor-secure.tls=true"
+      - "traefik.http.routers.editor-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.editor-secure.service=editor-service"
+      - "traefik.http.routers.editor.rule=Host(`editor.localhost`)"
+      - "traefik.http.routers.editor.entrypoints=web"
+      - "traefik.http.routers.editor.service=editor-service"
+      - "traefik.http.services.editor-service.loadbalancer.server.port=8443"
       - "traefik.docker.network=traefik_public"
     deploy:
       resources:
@@ -298,7 +318,7 @@ services:
     networks:
       - traefik_public
     volumes:
-      - open-webui_data:/app/backend/data
+      - ./.data/open-webui:/app/backend/data
       - .:/workspace
       - ./packages/config/sanitizer.py:/app/backend/data/functions/sanitizer.py
     environment:
@@ -307,26 +327,45 @@ services:
       - WEBUI_SECRET_KEY=password
       - WEBUI_AUTH=true
       - ENABLE_MCP=true
+      - DEFAULT_MODELS=alias/planning
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
     env_file:
-      - ./mcp_servers.env
+      - ./mcp_servers.local.env
     depends_on:
       - litellm
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.open-webui.rule=Host(`webui.sous.tools`) || Host(`webui.localhost`)"
-      - "traefik.http.routers.open-webui.entrypoints=websecure"
-      - "traefik.http.routers.open-webui.tls=true"
-      - "traefik.http.routers.open-webui.tls.certresolver=letsencrypt"
-      - "traefik.http.services.open-webui.loadbalancer.server.port=8080"
+      - "traefik.http.routers.open-webui-secure.rule=Host(`webui.sous.tools`) || Host(`webui.localhost`)"
+      - "traefik.http.routers.open-webui-secure.entrypoints=websecure"
+      - "traefik.http.routers.open-webui-secure.tls=true"
+      - "traefik.http.routers.open-webui-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.open-webui-secure.service=open-webui-service"
+      - "traefik.http.routers.open-webui.rule=Host(`webui.localhost`)"
+      - "traefik.http.routers.open-webui.entrypoints=web"
+      - "traefik.http.routers.open-webui.service=open-webui-service"
+      - "traefik.http.services.open-webui-service.loadbalancer.server.port=8080"
       - "traefik.docker.network=traefik_public"
     deploy:
       resources:
         limits:
           memory: 3g
+
+  openwebui-seeder:
+    image: python:3.11-slim
+    container_name: openwebui-seeder
+    depends_on:
+      open-webui:
+        condition: service_started
+    volumes:
+      - ./deploy/scripts/seed_openwebui.py:/app/seed_openwebui.py
+      - ./.data/open-webui:/app/backend/data
+    command: >
+      bash -c "pip install requests && python /app/seed_openwebui.py"
+    networks:
+      - traefik_public
 
   # =========================================================================
   # 5. PRODUCTION APPLICATION STACK TIER
@@ -346,11 +385,15 @@ services:
       - INFISICAL_ENV=${INFISICAL_ENV}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.sous.tools`) || Host(`api.localhost`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.api.loadbalancer.server.port=3001"
+      - "traefik.http.routers.api-secure.rule=Host(`api.sous.tools`) || Host(`api.localhost`)"
+      - "traefik.http.routers.api-secure.entrypoints=websecure"
+      - "traefik.http.routers.api-secure.tls=true"
+      - "traefik.http.routers.api-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api-secure.service=api-service"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.routers.api.service=api-service"
+      - "traefik.http.services.api-service.loadbalancer.server.port=3001"
       - "traefik.docker.network=traefik_public"
     networks:
       - traefik_public
@@ -361,11 +404,6 @@ services:
 
 volumes:
   letsencrypt:
-  redis_data:
-  ollama_data:
-  n8n_data:
-  neo4j_data:
-  open-webui_data:
 
 networks:
   traefik_public:

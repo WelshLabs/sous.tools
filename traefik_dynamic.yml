@@ -6,7 +6,27 @@ http:
         - web
         - websecure
       service: dev-web-service
-      tls: {}
+
+    dev-api:
+      rule: "Host(`dev-api.sous.tools`) || Host(`dev-api.localhost`)"
+      entryPoints:
+        - web
+        - websecure
+      service: dev-api-service
+
+    dev-pos:
+      rule: "Host(`dev-pos.sous.tools`) || Host(`dev-pos.localhost`)"
+      entryPoints:
+        - web
+        - websecure
+      service: dev-pos-service
+
+    dev-setup:
+      rule: "Host(`dev-setup.sous.tools`) || Host(`dev-setup.localhost`)"
+      entryPoints:
+        - web
+        - websecure
+      service: dev-setup-service
 
     storybook:
       rule: "Host(`storybook.sous.tools`) || Host(`storybook.localhost`)"
@@ -14,7 +34,13 @@ http:
         - web
         - websecure
       service: storybook-service
-      tls: {}
+
+    qdrant:
+      rule: "Host(`qdrant.sous.tools`) || Host(`qdrant.localhost`)"
+      entryPoints:
+        - web
+        - websecure
+      service: qdrant-service
 
   services:
     dev-web-service:
@@ -22,22 +48,27 @@ http:
         servers:
           - url: "http://host.docker.internal:3000"
 
+    dev-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3001"
+
+    dev-pos-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3003"
+
+    dev-setup-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3002"
+
     storybook-service:
       loadBalancer:
         servers:
           - url: "http://host.docker.internal:3004"
 
-tcp:
-  routers:
-    neo4j-bolt:
-      rule: "HostSNI(`graph.sous.tools`) || HostSNI(`graph.localhost`)"
-      entryPoints:
-        - bolt
-      service: neo4j-bolt-service
-      tls: {}
-
-  services:
-    neo4j-bolt-service:
+    qdrant-service:
       loadBalancer:
         servers:
-          - address: "neo4j:7687"
+          - url: "http://qdrant:6333"

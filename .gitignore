@@ -97,3 +97,5 @@ packages/.secrets.cache.json
 .continue/
 .claude
 supabase/seed.sql
+mcp_servers.local.env
+.data/

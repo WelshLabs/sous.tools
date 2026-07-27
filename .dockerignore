@@ -31,3 +31,4 @@ signage_deploy_key*
 !.env.example
 tmp
 temp
+.data/

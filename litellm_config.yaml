@@ -115,6 +115,23 @@ model_list:
       model: deepseek/deepseek-reasoner
       api_key: os.environ/DEEPSEEK_API_KEY
 
+  # --- Dual-Mode Virtual Fallback Aliases ---
+  - model_name: alias/planning
+    litellm_params:
+      model: gemini/gemini-3.1-pro
+      api_key: os.environ/GEMINI_API_KEY
+      fallbacks: ["claude-3-7-sonnet-20250219", "qwen2.5-coder:7b"]
+  - model_name: alias/coding
+    litellm_params:
+      model: gemini/gemini-3.6-flash
+      api_key: os.environ/GEMINI_API_KEY
+      fallbacks: ["deepseek-coder-v2", "qwen2.5-coder:7b"]
+  - model_name: alias/triage
+    litellm_params:
+      model: gemini/gemini-3.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+      fallbacks: ["yi-coder:9b"]
+
 general_settings:
   master_key: sk-1234
   success_callback: ["langfuse"]

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "storybook dev -p 3004 --no-open",
+    "dev": "storybook dev -p 3004 --host 0.0.0.0 --no-open",
     "build-storybook": "storybook build"
   },
   "dependencies": {

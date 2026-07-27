@@ -1,3 +1,0 @@
-# DEPRECATED: docker-compose.dev.yml has been consolidated into docker-compose.yml.
-# All environments now use docker-compose.yml for complete parity.
-# Run: docker compose up -d
