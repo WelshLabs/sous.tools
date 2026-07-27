@@ -41,11 +41,13 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
-      - "--log.level=INFO"
+      # - "--log.level=INFO"
+      - "--log.level=DEBUG"
 
     ports:
       - "80:80"
@@ -332,7 +334,7 @@ services:
           memory: 2g
 
   open-webui:
-    image: ghcr.io/open-webui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:v0.11.0
     container_name: open-webui
     restart: unless-stopped
     networks:
@@ -352,7 +354,7 @@ services:
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
-      - TOOL_SERVER_CONNECTIONS=http://mcp-filesystem:8000/api?key=your-mcp-internal-key
+      # - TOOL_SERVER_CONNECTIONS=http://mcp-filesystem:8000/api?key=your-mcp-internal-key
     depends_on:
       - litellm
       - mcpo
@@ -387,6 +389,39 @@ services:
       bash -c "pip install requests && python /app/seed_openwebui.py"
     networks:
       - traefik_public
+
+  cptr:
+    image: ghcr.io/open-webui/computer:latest
+    container_name: cptr
+    user: "1000:1000"
+    volumes:
+      - cptr-data:/data
+      - cptr_projects:/projects
+      - /home/ubuntu/dev.sous.tools:/workspace
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=DEBUG
+    restart: unless-stopped
+    networks:
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      # Production Secure Router (Handles Let's Encrypt for public domain only)
+      - "traefik.http.routers.cptr-secure.rule=Host(`cptr.sous.tools`)"
+      - "traefik.http.routers.cptr-secure.entrypoints=websecure"
+      - "traefik.http.routers.cptr-secure.tls=true"
+      - "traefik.http.routers.cptr-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.cptr-secure.service=cptr-service"
+      
+      # Local Development Router (Plain HTTP for .localhost, bypassing ACME completely)
+      - "traefik.http.routers.cptr-local.rule=Host(`cptr.localhost`)"
+      - "traefik.http.routers.cptr-local.entrypoints=web"
+      - "traefik.http.routers.cptr-local.service=cptr-service"
+
+      # Shared Backend Service Definition
+      - "traefik.http.services.cptr-service.loadbalancer.server.port=8000"
+      - "traefik.http.services.cptr-service.loadbalancer.server.scheme=http"
+      - "traefik.docker.network=traefik_public"
 
   # =========================================================================
   # 5. PRODUCTION APPLICATION STACK TIER
@@ -425,6 +460,8 @@ services:
 
 volumes:
   letsencrypt:
+  cptr-data:
+  cptr_projects:
 
 networks:
   traefik_public:
