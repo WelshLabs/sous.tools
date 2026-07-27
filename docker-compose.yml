@@ -1,10 +1,30 @@
 services:
   # =========================================================================
+  # SHARED CONFIGURATIONS (YAML ANCHORS)
+  # =========================================================================
+  x-mcp-config: &mcp-shared-env
+    MCP_SERVERS: >-
+      {
+        "docker": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-docker"]},
+        "github": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"]},
+        "qdrant_adr": {
+          "command": "uvx",
+          "args": ["mcp-server-qdrant"],
+          "env": {
+            "QDRANT_URL": "http://qdrant:6333",
+            "COLLECTION_NAME": "adr_knowledgebase"
+          }
+        }
+      }
+
+  # =========================================================================
   # 1. EDGE PROXY TIER
   # =========================================================================
   traefik:
-    image: traefik:v3.2
+    image: traefik:v3.6
     container_name: traefik
+    environment:
+      - DOCKER_API_VERSION=1.44
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
@@ -16,7 +36,7 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
     ports:
       - "80:80"
       - "443:443"
@@ -310,17 +330,17 @@ services:
       - .:/workspace
       - ./packages/config/sanitizer.py:/app/backend/data/functions/sanitizer.py
     environment:
-      - OPENAI_API_BASE_URL=http://litellm:4000/v1
-      - OPENAI_API_KEY=sk-1234
-      - WEBUI_SECRET_KEY=password
-      - WEBUI_AUTH=true
-      - ENABLE_MCP=true
-      - DEFAULT_MODELS=alias/planning
-      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
-      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
-      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
-      - INFISICAL_ENV=${INFISICAL_ENV}
-      - MCP_SERVERS={"docker":{"command":"npx","args":["-y","@modelcontextprotocol/server-docker"]},"github":{"command":"npx","args":["-y","@modelcontextprotocol/server-github"]}}
+      <<: *mcp-shared-env
+      OPENAI_API_BASE_URL: http://litellm:4000/v1
+      OPENAI_API_KEY: sk-1234
+      WEBUI_SECRET_KEY: password
+      WEBUI_AUTH: true
+      ENABLE_MCP: true
+      DEFAULT_MODELS: alias/planning
+      INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID}
+      INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
+      INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
+      INFISICAL_ENV: ${INFISICAL_ENV}
     depends_on:
       - litellm
       - mcpo
@@ -365,17 +385,18 @@ services:
       - .:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - PYTHONUNBUFFERED=1
-      - LOG_LEVEL=DEBUG
-      - OPENAI_API_BASE=http://litellm:4000/v1
-      - OPENAI_API_KEY=sk-1234
-      - MCP_SERVERS={"docker":{"command":"npx","args":["-y","@modelcontextprotocol/server-docker"]},"github":{"command":"npx","args":["-y","@modelcontextprotocol/server-github"]}}
+      <<: *mcp-shared-env
+      PYTHONUNBUFFERED: 1
+      LOG_LEVEL: DEBUG
+      OPENAI_API_BASE: http://litellm:4000/v1
+      OPENAI_API_KEY: sk-1234
     command: >
       bash -c "
-      sudo apt-get update && sudo apt-get install -y curl zsh &&
+      sudo apt-get update && sudo apt-get install -y curl zsh python3-pip pipx &&
       curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - &&
       sudo apt-get install -y nodejs &&
       sudo npm install -g pnpm pm2 &&
+      pipx install uv &&
       curl -sS https://starship.rs/install.sh | sudo sh -s -- -y &&
       echo 'source /workspace/.config/terminal/.zsh_aliases' >> ~/.zshrc &&
       echo 'eval \"$$(starship init zsh)\"' >> ~/.zshrc &&
