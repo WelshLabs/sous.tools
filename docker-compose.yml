@@ -187,7 +187,8 @@ services:
     image: ghcr.io/berriai/litellm:main-latest
     container_name: litellm
     restart: unless-stopped
-    command: ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
+    command:
+      ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
     volumes:
       - ./litellm_config.yaml:/app/config.yaml
     environment:
@@ -323,6 +324,8 @@ services:
       - .:/workspace
     networks:
       - traefik_public
+    environment:
+      - API_KEY=your-mcp-internal-key
     deploy:
       resources:
         limits:
@@ -349,6 +352,7 @@ services:
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
+      - TOOL_SERVER_CONNECTIONS=http://mcp-filesystem:8000/api?key=your-mcp-internal-key
     depends_on:
       - litellm
       - mcpo
