@@ -390,6 +390,10 @@ services:
       LOG_LEVEL: DEBUG
       OPENAI_API_BASE: http://litellm:4000/v1
       OPENAI_API_KEY: sk-1234
+      ENABLE_MCP: "true"                  # Forces CPTR to load your *mcp-shared-env anchor
+      SHELL: "/bin/zsh"                   # Enforces the Starship/Zsh terminal environment
+      DEFAULT_MODELS: "01-planner"
+      ENV=/home/cptruser/.zshrc
     restart: unless-stopped
     networks:
       - traefik_public
