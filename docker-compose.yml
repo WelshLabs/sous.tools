@@ -319,6 +319,12 @@ services:
       SHELL: "/bin/zsh"                   # Enforces the Starship/Zsh terminal environment
       DEFAULT_MODELS: "01-planner"
       ENV: /home/cptruser/.zshrc
+      INFISICAL_UNIVERSAL_AUTH_CLIENT_ID: ${INFISICAL_CLIENT_ID}
+      INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
+      INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID}
+      INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
+      INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
+      INFISICAL_ENV: ${INFISICAL_ENV}
     restart: unless-stopped
     networks:
       - traefik_public

@@ -47,7 +47,7 @@ RUN pip install --no-cache-dir "cptr[all]"
 
 WORKDIR /workspace
 EXPOSE 8000
-ENTRYPOINT ["cptr", "run", "--host", "0.0.0.0"]
+ENTRYPOINT ["infisical", "run", "--projectId=${INFISICAL_PROJECT_ID}", "--env=${INFISICAL_ENV}", "--", "cptr", "run", "--host", "0.0.0.0"]
 
 # 7. Connecting Your Local Dev Machine via Tailscale
 # To connect your local machine securely to CPTR without exposing public ports:
