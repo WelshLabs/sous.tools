@@ -393,7 +393,7 @@ services:
       ENABLE_MCP: "true"                  # Forces CPTR to load your *mcp-shared-env anchor
       SHELL: "/bin/zsh"                   # Enforces the Starship/Zsh terminal environment
       DEFAULT_MODELS: "01-planner"
-      ENV=/home/cptruser/.zshrc
+      ENV: /home/cptruser/.zshrc
     restart: unless-stopped
     networks:
       - traefik_public
