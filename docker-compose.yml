@@ -449,6 +449,7 @@ volumes:
   n8n_data:
   cptr_data:
   cptr_projects:
+  cptr_home_data:
 
 networks:
   traefik_public:
