@@ -379,6 +379,7 @@ services:
     container_name: cptr
     user: "1001:1001"
     volumes:
+      - cptr_home_data:/home/cptruser
       - cptr_data:/data
       - cptr_projects:/projects
       - /home/ubuntu/dev.sous.tools:/workspace
