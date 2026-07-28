@@ -138,6 +138,8 @@ services:
     restart: unless-stopped
     command:
       ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
+    ports:
+      - "4000:4000"
     volumes:
       - ./litellm_config.yaml:/app/config.yaml
     environment:
