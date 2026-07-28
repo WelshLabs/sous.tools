@@ -47,18 +47,5 @@ RUN pip install --no-cache-dir "cptr[all]"
 
 WORKDIR /workspace
 EXPOSE 8000
-ENTRYPOINT ["infisical", "run", "--projectId=${INFISICAL_PROJECT_ID}", "--env=${INFISICAL_ENV}", "--", "cptr", "run", "--host", "0.0.0.0"]
-
-# 7. Connecting Your Local Dev Machine via Tailscale
-# To connect your local machine securely to CPTR without exposing public ports:
-
-# On your Oracle Cloud host / CPTR container:
-
-# Bash
-# docker exec -it code-server tailscale up --authkey=YOUR_TAILSCALE_AUTH_KEY
-# On your local development machine:
-# Install Tailscale, sign into the same tailnet, and run:
-
-# Bash
-# tailscale up
-# You can now access CPTR, Open WebUI, and your entire OCI container stack locally using the private Tailscale IP (e.g., [http://100.](http://100.)x.y.z:8000).
+# Simplified ENTRYPOINT relies on environment variables from docker-compose
+ENTRYPOINT ["infisical", "run", "--", "cptr", "run", "--host", "0.0.0.0"]

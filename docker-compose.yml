@@ -1,27 +1,10 @@
-# =========================================================================
-# SHARED CONFIGURATIONS (YAML ANCHORS)
-# =========================================================================
-x-mcp-config: &mcp-shared-env
-  MCP_SERVERS: >-
-    {
-      "docker": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-docker"]},
-      "github": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"]},
-      "qdrant_adr": {
-        "command": "uvx",
-        "args": ["mcp-server-qdrant"],
-        "env": {
-          "QDRANT_URL": "http://qdrant:6333",
-          "COLLECTION_NAME": "adr_knowledgebase"
-        }
-      }
-    }
-
 services:
   # =========================================================================
-  # 1. EDGE PROXY TIER
+  # 1. EDGE PROXY TIER (PROD)
   # =========================================================================
   traefik:
     image: traefik:v3.6
+    profiles: ["prod"]
     container_name: traefik
     environment:
       - DOCKER_API_VERSION=1.44
@@ -30,7 +13,6 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      # Built-in global redirect (automatically safely bypasses ACME challenges)
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
@@ -54,17 +36,17 @@ services:
       - traefik_public
     labels:
       - "traefik.enable=true"
-      # (The manual http-catchall labels have been completely removed)
     deploy:
       resources:
         limits:
           memory: 512m
 
   # =========================================================================
-  # 2. DATA STORAGE & QUEUE TIER
+  # 2. DATA STORAGE TIER (PROD & DEV)
   # =========================================================================
   redis:
     image: redis:alpine
+    profiles: ["dev", "prod"]
     container_name: redis
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
     ports:
@@ -74,13 +56,10 @@ services:
     restart: unless-stopped
     networks:
       - traefik_public
-    deploy:
-      resources:
-        limits:
-          memory: 512m
 
   neo4j:
     image: neo4j:5-community
+    profiles: ["dev", "prod"]
     container_name: neo4j
     restart: unless-stopped
     ports:
@@ -94,24 +73,10 @@ services:
       - neo4j_data:/data
     networks:
       - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.neo4j-secure.rule=Host(`graph.sous.tools`)"
-      - "traefik.http.routers.neo4j-secure.entrypoints=websecure"
-      - "traefik.http.routers.neo4j-secure.tls=true"
-      - "traefik.http.routers.neo4j-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.neo4j-secure.service=neo4j-service"
-      - "traefik.http.routers.neo4j.rule=Host(`graph.localhost`)"
-      - "traefik.http.routers.neo4j.entrypoints=web"
-      - "traefik.http.routers.neo4j.service=neo4j-service"
-      - "traefik.http.services.neo4j-service.loadbalancer.server.port=7474"
-    deploy:
-      resources:
-        limits:
-          memory: 3g
 
   qdrant:
     image: qdrant/qdrant:latest
+    profiles: ["prod"]
     container_name: qdrant
     restart: unless-stopped
     ports:
@@ -121,27 +86,17 @@ services:
       - qdrant_data:/qdrant/storage
     networks:
       - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.qdrant-secure.rule=Host(`qdrant.sous.tools`)"
-      - "traefik.http.routers.qdrant-secure.entrypoints=websecure"
-      - "traefik.http.routers.qdrant-secure.tls=true"
-      - "traefik.http.routers.qdrant-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.qdrant-secure.service=qdrant-service"
-      - "traefik.http.routers.qdrant.rule=Host(`qdrant.localhost`)"
-      - "traefik.http.routers.qdrant.entrypoints=web"
-      - "traefik.http.routers.qdrant.service=qdrant-service"
-      - "traefik.http.services.qdrant-service.loadbalancer.server.port=6333"
     deploy:
       resources:
         limits:
           memory: 2g
 
   # =========================================================================
-  # 3. LLM GATEWAY & LOCAL MODEL TIER
+  # 3. LLM GATEWAY TIER (PROD)
   # =========================================================================
   ollama:
     image: ollama/ollama:latest
+    profiles: ["prod"]
     container_name: ollama
     volumes:
       - ollama_data:/root/.ollama
@@ -155,6 +110,7 @@ services:
 
   ollama-pull:
     image: ollama/ollama:latest
+    profiles: ["prod"]
     container_name: ollama-pull
     depends_on:
       - ollama
@@ -177,6 +133,7 @@ services:
 
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
+    profiles: ["prod"]
     container_name: litellm
     restart: unless-stopped
     command:
@@ -197,27 +154,17 @@ services:
       - traefik_public
     depends_on:
       - ollama
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.litellm-secure.rule=Host(`ai.sous.tools`)"
-      - "traefik.http.routers.litellm-secure.entrypoints=websecure"
-      - "traefik.http.routers.litellm-secure.tls=true"
-      - "traefik.http.routers.litellm-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.litellm-secure.service=litellm-service"
-      - "traefik.http.routers.litellm.rule=Host(`ai.localhost`)"
-      - "traefik.http.routers.litellm.entrypoints=web"
-      - "traefik.http.routers.litellm.service=litellm-service"
-      - "traefik.http.services.litellm-service.loadbalancer.server.port=4000"
     deploy:
       resources:
         limits:
           memory: 2g
 
   # =========================================================================
-  # 4. AGENTIC ORCHESTRATION & IDE TIER
+  # 4. ORCHESTRATION & APP TIER (PROD)
   # =========================================================================
   n8n:
     image: n8nio/n8n:latest
+    profiles: ["prod"]
     container_name: n8n
     restart: unless-stopped
     environment:
@@ -247,106 +194,17 @@ services:
       - "traefik.http.routers.n8n-secure.entrypoints=websecure"
       - "traefik.http.routers.n8n-secure.tls=true"
       - "traefik.http.routers.n8n-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.n8n-secure.service=n8n-service"
-      - "traefik.http.routers.n8n.rule=Host(`n8n.localhost`)"
-      - "traefik.http.routers.n8n.entrypoints=web"
-      - "traefik.http.routers.n8n.service=n8n-service"
       - "traefik.http.services.n8n-service.loadbalancer.server.port=5678"
     deploy:
       resources:
         limits:
           memory: 2g
 
-  editor:
-    build:
-      context: .
-      dockerfile: Dockerfile.editor
-    container_name: code-server
-    environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=America/New_York
-      - PASSWORD=sousToolsPassword
-      - SUDO_PASSWORD=sousToolsPassword
-      - PROXY_DOMAIN=*
-      - OPENAI_API_BASE=https://ai.sous.tools/v1
-      - OPENAI_API_KEY=sk-1234
-      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
-      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
-      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
-      - INFISICAL_ENV=${INFISICAL_ENV}
-    volumes:
-      - /home/ubuntu/dev.sous.tools:/config/workspace
-      - /home/ubuntu/dev.sous.tools:/workspace
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.editor-secure.rule=Host(`editor.sous.tools`)"
-      - "traefik.http.routers.editor-secure.entrypoints=websecure"
-      - "traefik.http.routers.editor-secure.tls=true"
-      - "traefik.http.routers.editor-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.editor-secure.service=editor-service"
-      - "traefik.http.services.editor-service.loadbalancer.server.port=8443"
-      - "traefik.docker.network=traefik_public"
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-          cpus: "2.0"
-
-  cptr:
-    build:
-      context: .
-      dockerfile: Dockerfile.cptr
-    container_name: cptr
-    user: "1001:1001"
-    volumes:
-      - cptr_home_data:/home/cptruser
-      - cptr_data:/data
-      - cptr_projects:/projects
-      - /home/ubuntu/dev.sous.tools:/workspace
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      <<: *mcp-shared-env
-      PYTHONUNBUFFERED: 1
-      LOG_LEVEL: DEBUG
-      OPENAI_API_BASE: http://litellm:4000/v1
-      OPENAI_API_KEY: sk-1234
-      ENABLE_MCP: "true"                  # Forces CPTR to load your *mcp-shared-env anchor
-      SHELL: "/bin/zsh"                   # Enforces the Starship/Zsh terminal environment
-      DEFAULT_MODELS: "01-planner"
-      ENV: /home/cptruser/.zshrc
-      INFISICAL_UNIVERSAL_AUTH_CLIENT_ID: ${INFISICAL_CLIENT_ID}
-      INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
-      INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID}
-      INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
-      INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
-      INFISICAL_ENV: ${INFISICAL_ENV}
-    restart: unless-stopped
-    networks:
-      - traefik_public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.cptr-secure.rule=Host(`cptr.sous.tools`)"
-      - "traefik.http.routers.cptr-secure.entrypoints=websecure"
-      - "traefik.http.routers.cptr-secure.tls=true"
-      - "traefik.http.routers.cptr-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.cptr-secure.service=cptr-service"
-      - "traefik.http.routers.cptr-local.rule=Host(`cptr.localhost`)"
-      - "traefik.http.routers.cptr-local.entrypoints=web"
-      - "traefik.http.routers.cptr-local.service=cptr-service"
-      - "traefik.http.services.cptr-service.loadbalancer.server.port=8000"
-
-  # =========================================================================
-  # 5. PRODUCTION APPLICATION TIER
-  # =========================================================================
   api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    profiles: ["prod"]
     container_name: api
     restart: unless-stopped
     depends_on:
@@ -362,10 +220,6 @@ services:
       - "traefik.http.routers.api-secure.entrypoints=websecure"
       - "traefik.http.routers.api-secure.tls=true"
       - "traefik.http.routers.api-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.api-secure.service=api-service"
-      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
-      - "traefik.http.routers.api.entrypoints=web"
-      - "traefik.http.routers.api.service=api-service"
       - "traefik.http.services.api-service.loadbalancer.server.port=3001"
     networks:
       - traefik_public
@@ -374,10 +228,78 @@ services:
         limits:
           memory: 1g
 
+  # =========================================================================
+  # 5. DEV AGENT & IDE TIER (DEV)
+  # =========================================================================
+  cptr:
+    build:
+      context: .
+      dockerfile: Dockerfile.cptr
+    profiles: ["dev"]
+    container_name: cptr
+    user: "1001:1001"
+    volumes:
+      - cptr_home_data:/home/cptruser
+      - cptr_data:/data
+      - /home/conar/projects:/wsl_projects
+      - /mnt/c/Users/conar/projects:/win_projects
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/conar/code/sous.tools:/sous.tools
+      # readonly
+      - /home/conar:/wsl_root:ro
+      - /mnt/c/Users/conar:/win_root:ro
+    environment:
+      PYTHONUNBUFFERED: 1
+      LOG_LEVEL: DEBUG
+      OPENAI_API_BASE: "http://ORACLE_TAILSCALE_IP:4000/v1"
+      OPENAI_API_KEY: sk-1234
+      ENABLE_MCP: "true"
+      SHELL: "/bin/zsh"
+      DEFAULT_MODELS: "01-planner"
+      ENV: /home/cptruser/.zshrc
+      INFISICAL_TOKEN: ${INFISICAL_TOKEN}
+      INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
+      INFISICAL_ENV: ${INFISICAL_ENV}
+    restart: unless-stopped
+    networks:
+      - traefik_public
+    ports:
+      - "8000:8000"
+
+  editor:
+    build:
+      context: .
+      dockerfile: Dockerfile.editor
+    profiles: ["dev"]
+    container_name: code-server
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=America/New_York
+      - PASSWORD=sousToolsPassword
+      - SUDO_PASSWORD=sousToolsPassword
+      - PROXY_DOMAIN=*
+      - OPENAI_API_BASE=http://ORACLE_TAILSCALE_IP:4000/v1
+      - OPENAI_API_KEY=sk-1234
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+    volumes:
+      - /home/username/projects:/workspace/wsl_projects
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - traefik_public
+    ports:
+      - "8443:8443"
+
 volumes:
   letsencrypt:
   redis_data:
+  redis_dev_data:
   neo4j_data:
+  neo4j_dev_data:
   qdrant_data:
   ollama_data:
   n8n_data:
