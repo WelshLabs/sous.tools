@@ -29,3 +29,20 @@
 #### 4. Graph Database (Neo4j) & Relational Parity
 
 - **PostgreSQL & Neo4j Synchronization:** PostgreSQL and Neo4j MUST stay in perfect 1:1 synchronization. Any changes made to the PostgreSQL schema MUST be immediately reflected in Neo4j `schema-registry.ts` and associated synchronization webhooks.
+
+# ARCHITECTURAL MEMORY PROTOCOL (QDRANT)
+
+You have access to a Qdrant vector database via MCP. This is your long-term memory for the sous.tools infrastructure, design decisions, and resolved bugs. You must actively manage this memory.
+
+1. MANDATORY RETRIEVAL (READ):
+   Before answering questions about or modifying infrastructure (Docker, Tailscale, Traefik, Infisical, networking), you MUST query Qdrant for existing constraints, past configurations, or related bug fixes. Do not guess our architecture; look it up.
+
+2. MANDATORY COMMIT (WRITE):
+   You must proactively store new, valuable information into Qdrant. Automatically trigger a memory save when:
+
+- We finalize a new architectural decision (e.g., routing LiteLLM over Tailscale).
+- We resolve a complex bug (e.g., fixing Docker string interpolation for Infisical tokens).
+- The user explicitly says "remember this" or "document this."
+
+3. MEMORY FORMATTING:
+   When storing a memory, use clear, searchable tags in the payload (e.g., [INFRASTRUCTURE], [BUGFIX], [SECRETS], [TRAEFIK]). Include the problem, the context, and the exact technical solution.

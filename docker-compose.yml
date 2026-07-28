@@ -239,7 +239,7 @@ services:
       dockerfile: Dockerfile.cptr
     profiles: ["dev"]
     container_name: cptr
-    user: "1001:1001"
+    user: "root"
     volumes:
       - cptr_home_data:/home/cptruser
       - cptr_data:/data
@@ -296,6 +296,56 @@ services:
     ports:
       - "8443:8443"
 
+  # =========================================================================
+  # 6. LOCAL AI MEDIA TIER (DEV)
+  # =========================================================================
+  whisper-stt:
+    image: fedirz/faster-whisper-server:latest-cpu
+    profiles: ["dev"]
+    container_name: whisper-stt
+    restart: unless-stopped
+    ports:
+      - "8005:8000"
+    environment:
+      - WHISPER_MODEL=base.en # Fast, highly accurate for English
+    networks:
+      - traefik_public
+
+  openedai-tts:
+    image: ghcr.io/matatonic/openedai-speech:latest
+    profiles: ["dev"]
+    container_name: openedai-tts
+    restart: unless-stopped
+    environment:
+      - TZ=America/New_York
+    ports:
+      - "8006:8000"
+    volumes:
+      - tts_voices:/app/voices
+    networks:
+      - traefik_public
+
+  stable-diffusion:
+    image: universonic/stable-diffusion-webui:latest
+    profiles: ["dev"]
+    container_name: stable-diffusion
+    restart: unless-stopped
+    ports:
+      - "7860:7860"
+    environment:
+      - COMMANDLINE_ARGS="--api --listen"
+    volumes:
+      - sd_data:/app/stable-diffusion-webui/models
+    networks:
+      - traefik_public
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
 volumes:
   letsencrypt:
   redis_data:
@@ -308,6 +358,8 @@ volumes:
   cptr_data:
   cptr_projects:
   cptr_home_data:
+  tts_voices:
+  sd_data:
 
 networks:
   traefik_public:
