@@ -297,81 +297,6 @@ services:
           memory: 4g
           cpus: "2.0"
 
-  mcpo:
-    build:
-      context: .
-      dockerfile: Dockerfile.mcpo
-    container_name: mcpo
-    restart: unless-stopped
-    volumes:
-      - ./mcp_config.json:/app/mcp_config.json
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/ubuntu/dev.sous.tools:/workspace
-    networks:
-      - traefik_public
-    environment:
-      - API_KEY=your-mcp-internal-key
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:v0.11.0
-    container_name: open-webui
-    restart: unless-stopped
-    networks:
-      - traefik_public
-    volumes:
-      - open_webui_data:/app/backend/data
-      - /home/ubuntu/dev.sous.tools:/workspace
-      - ./packages/config/sanitizer.py:/app/backend/data/functions/sanitizer.py
-    environment:
-      <<: *mcp-shared-env
-      OPENAI_API_BASE_URL: http://litellm:4000/v1
-      OPENAI_API_KEY: sk-1234
-      WEBUI_SECRET_KEY: password
-      WEBUI_AUTH: true
-      ENABLE_MCP: true
-      DEFAULT_MODELS: alias/planning
-      INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID}
-      INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
-      INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
-      INFISICAL_ENV: ${INFISICAL_ENV}
-    depends_on:
-      - litellm
-      - mcpo
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.open-webui-secure.rule=Host(`webui.sous.tools`)"
-      - "traefik.http.routers.open-webui-secure.entrypoints=websecure"
-      - "traefik.http.routers.open-webui-secure.tls=true"
-      - "traefik.http.routers.open-webui-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.open-webui-secure.service=open-webui-service"
-      - "traefik.http.routers.open-webui.rule=Host(`webui.localhost`)"
-      - "traefik.http.routers.open-webui.entrypoints=web"
-      - "traefik.http.routers.open-webui.service=open-webui-service"
-      - "traefik.http.services.open-webui-service.loadbalancer.server.port=8080"
-    deploy:
-      resources:
-        limits:
-          memory: 3g
-
-  openwebui-seeder:
-    image: python:3.11-slim
-    container_name: openwebui-seeder
-    depends_on:
-      open-webui:
-        condition: service_started
-    volumes:
-      - ./scripts/seed_openwebui.py:/app/seed_openwebui.py
-      - open_webui_data:/app/backend/data
-      - /home/ubuntu/dev.sous.tools:/workspace
-    command: >
-      bash -c "pip install requests && python /app/seed_openwebui.py"
-    networks:
-      - traefik_public
-
   cptr:
     build:
       context: .
@@ -449,7 +374,6 @@ volumes:
   neo4j_data:
   qdrant_data:
   ollama_data:
-  open_webui_data:
   n8n_data:
   cptr_data:
   cptr_projects:

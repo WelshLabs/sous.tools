@@ -1,4 +1,49 @@
 model_list:
+  # =========================================================================
+  # VIRTUAL AGENT ALIASES
+  # =========================================================================
+  - model_name: planner
+    litellm_params:
+      model: gemini/gemini-3.1-pro-preview
+      api_key: os.environ/GEMINI_API_KEY
+      drop_params: true
+      fallbacks: ["claude-3-7-sonnet", "gemini-3.6-flash"]
+      # system_prompt: >
+      #   You are the Lead Architect for sous.tools. 
+      #   CRITICAL: Never output direct file changes.
+      #   1. Query Qdrant for past ADRs and context before answering.
+      #   2. Format new decisions as ADRs and store them via Qdrant MCP.
+      #   3. Create atomic tasks in GitHub Projects (Ready column).
+
+  - model_name: coder
+    litellm_params:
+      model: anthropic/claude-3-7-sonnet-20250219
+      api_key: os.environ/ANTHROPIC_API_KEY
+      fallbacks: ["gemini-3.1-pro", "qwen2.5-coder:7b"]
+      # system_prompt: >
+      #   You are an Autonomous Software Engineer.
+      #   Given a GitHub issue, implement code changes cleanly, run type checks/tests, and create a PR.
+      #   If blocked, comment on the GitHub issue with '[NEEDS_INPUT]' and stop execution.
+
+  - model_name: devops
+    litellm_params:
+      model: gemini/gemini-3.6-flash
+      api_key: os.environ/GEMINI_API_KEY
+      drop_params: true
+      fallbacks: ["qwen2.5-coder:7b"]
+      # system_prompt: >
+      #   You manage Infisical secrets, Docker/OCI stacks, Vercel deployments, and system maintenance via CLI tools.
+      #   Always verify logs before proposing infrastructure changes.
+
+  - model_name: triage
+    litellm_params:
+      model: gemini/gemini-3.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+      drop_params: true
+      fallbacks: ["gemini-3.6-flash", "qwen2.5-coder:7b"]
+      # system_prompt: >
+      #   You are a fast triage agent. Analyze logs, classify inbound issues, and generate concise progress summaries.
+
   # --- Local Ollama Models ---
   - model_name: qwen2.5-coder:7b
     litellm_params:
@@ -28,51 +73,6 @@ model_list:
     litellm_params:
       model: anthropic/claude-3-7-sonnet-20250219
       api_key: os.environ/ANTHROPIC_API_KEY
-
-  # =========================================================================
-  # VIRTUAL AGENT ALIASES
-  # =========================================================================
-  - model_name: 01-planner
-    litellm_params:
-      model: gemini/gemini-3.1-pro-preview
-      api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
-      fallbacks: ["claude-3-7-sonnet", "gemini-3.6-flash"]
-      system_prompt: >
-        You are the Lead Architect for sous.tools. 
-        CRITICAL: Never output direct file changes.
-        1. Query Qdrant for past ADRs and context before answering.
-        2. Format new decisions as ADRs and store them via Qdrant MCP.
-        3. Create atomic tasks in GitHub Projects (Ready column).
-
-  - model_name: 02-coder
-    litellm_params:
-      model: anthropic/claude-3-7-sonnet-20250219
-      api_key: os.environ/ANTHROPIC_API_KEY
-      fallbacks: ["gemini-3.1-pro", "qwen2.5-coder:7b"]
-      system_prompt: >
-        You are an Autonomous Software Engineer.
-        Given a GitHub issue, implement code changes cleanly, run type checks/tests, and create a PR.
-        If blocked, comment on the GitHub issue with '[NEEDS_INPUT]' and stop execution.
-
-  - model_name: 03-devops
-    litellm_params:
-      model: gemini/gemini-3.6-flash
-      api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
-      fallbacks: ["qwen2.5-coder:7b"]
-      system_prompt: >
-        You manage Infisical secrets, Docker/OCI stacks, Vercel deployments, and system maintenance via CLI tools.
-        Always verify logs before proposing infrastructure changes.
-
-  - model_name: 04-triage
-    litellm_params:
-      model: gemini/gemini-3.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
-      fallbacks: ["gemini-3.6-flash", "qwen2.5-coder:7b"]
-      system_prompt: >
-        You are a fast triage agent. Analyze logs, classify inbound issues, and generate concise progress summaries.
 
 general_settings:
   master_key: sk-1234

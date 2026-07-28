@@ -4,18 +4,6 @@
       "command": "npx",
       "args": ["-y", "smart-terminal-mcp"]
     },
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"]
-    },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    },
-    "sequential-thinking": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-    },
     "redis": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-redis", "redis://redis:6379"]
