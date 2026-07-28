@@ -1,22 +1,64 @@
-FROM ghcr.io/open-webui/computer:latest
+FROM python:3.11-slim
 
-# Switch to root to install system-level packages
-USER root
+# 1. Install System, Node.js, Tailscale, and Terminal Utilities
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    zsh \
+    sudo \
+    jq \
+    nano \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && curl -fsSL https://tailscale.com/install.sh | sh \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y curl zsh && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g pnpm pm2 && \
-    curl -sS https://starship.rs/install.sh | sh -s -- -y && \
-    apt-get clean
+# 2. Install Global CLI Tools (Claude & Antigravity)
+RUN npm install -g @anthropic-ai/claude-cli antigravity-cli
 
-# Switch back to the safe, default unprivileged user
-USER 1001:1001
+# Add CLI tools to Dockerfile.cptr
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/infisical/helm-charts/setup.deb.sh' | bash \
+    && apt-get install -y infisical \
+    && npm install -g vercel newrelic-cli
 
-# Install uv strictly for this user (needed for Qdrant MCP)
+# 3. Setup the 1001 User and Group for Permissions
+RUN groupadd -g 1001 cptrgroup && \
+    useradd -u 1001 -g 1001 -m -s /bin/zsh cptruser && \
+    echo "cptruser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# 4. Install Starship for a Clean Terminal Prompt
+RUN curl -sS https://starship.rs/install.sh | sh -s -- -y
+
+# 5. Switch to the new user context
+USER 1001
+ENV HOME=/home/cptruser
+ENV PATH="$HOME/.local/bin:$PATH"
+
+# 6. Install uv (for the Qdrant MCP Server)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Ensure uv is in the path and wire up your aliases
-ENV PATH="/home/computeruse/.local/bin:${PATH}"
-RUN echo 'source /workspace/.config/terminal/.zsh_aliases' >> ~/.zshrc && \
-    echo 'eval "$(starship init zsh)"' >> ~/.zshrc
+# 7. Configure Zsh and Starship Initialization
+RUN echo 'eval "$(starship init zsh)"' >> ~/.zshrc && \
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && \
+    echo 'export SHELL=/bin/zsh' >> ~/.zshrc
+
+# 8. Install Open WebUI Computer (cptr)
+RUN pip install --no-cache-dir "cptr[all]"
+
+WORKDIR /workspace
+EXPOSE 8000
+ENTRYPOINT ["cptr", "run", "--host", "0.0.0.0"]
+
+# 7. Connecting Your Local Dev Machine via Tailscale
+# To connect your local machine securely to CPTR without exposing public ports:
+
+# On your Oracle Cloud host / CPTR container:
+
+# Bash
+# docker exec -it code-server tailscale up --authkey=YOUR_TAILSCALE_AUTH_KEY
+# On your local development machine:
+# Install Tailscale, sign into the same tailnet, and run:
+
+# Bash
+# tailscale up
+# You can now access CPTR, Open WebUI, and your entire OCI container stack locally using the private Tailscale IP (e.g., [http://100.](http://100.)x.y.z:8000).

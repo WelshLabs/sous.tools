@@ -4,14 +4,6 @@ model_list:
     litellm_params:
       model: ollama/qwen2.5-coder:7b
       api_base: http://ollama:11434
-  - model_name: deepseek-coder-v2
-    litellm_params:
-      model: ollama/deepseek-coder-v2
-      api_base: http://ollama:11434
-  - model_name: yi-coder:9b
-    litellm_params:
-      model: ollama/yi-coder:9b
-      api_base: http://ollama:11434
   - model_name: nomic-embed-text
     litellm_params:
       model: ollama/nomic-embed-text
@@ -21,118 +13,68 @@ model_list:
       model: ollama/llama3.2-vision
       api_base: http://ollama:11434
 
-  # --- Google Gemini Tier 1 Rate-Limited Models ---
+  # --- Base API Models ---
+  - model_name: gemini-3.1-pro
+    litellm_params:
+      model: gemini/gemini-3.1-pro-preview
+      api_key: os.environ/GEMINI_API_KEY
+      drop_params: true
   - model_name: gemini-3.6-flash
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-3.5-flash
-    litellm_params:
-      model: gemini/gemini-3.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-3.5-flash-lite
-    litellm_params:
-      model: gemini/gemini-3.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-3.1-pro
-    litellm_params:
-      model: gemini/gemini-3.1-pro
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-3.1-flash-lite
-    litellm_params:
-      model: gemini/gemini-3.1-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-3-flash
-    litellm_params:
-      model: gemini/gemini-3-flash
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.5-pro
-    litellm_params:
-      model: gemini/gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: gemini/gemini-2.5-flash
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.5-flash-lite
-    litellm_params:
-      model: gemini/gemini-2.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.0-flash
-    litellm_params:
-      model: gemini/gemini-2.0-flash
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemini-2.0-flash-lite
-    litellm_params:
-      model: gemini/gemini-2.0-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemma-4-26b
-    litellm_params:
-      model: gemini/gemma-4-26b
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: gemma-4-31b
-    litellm_params:
-      model: gemini/gemma-4-31b
-      api_key: os.environ/GEMINI_API_KEY
-  - model_name: text-embedding-004
-    litellm_params:
-      model: gemini/text-embedding-004
-      api_key: os.environ/GEMINI_API_KEY
-
-  # --- Anthropic Claude Official Models ---
-  - model_name: claude-3-7-sonnet-20250219
+      drop_params: true
+  - model_name: claude-3-7-sonnet
     litellm_params:
       model: anthropic/claude-3-7-sonnet-20250219
       api_key: os.environ/ANTHROPIC_API_KEY
-  - model_name: claude-3-5-sonnet-20241022
-    litellm_params:
-      model: anthropic/claude-3-5-sonnet-20241022
-      api_key: os.environ/ANTHROPIC_API_KEY
-  - model_name: claude-3-5-haiku-20241022
-    litellm_params:
-      model: anthropic/claude-3-5-haiku-20241022
-      api_key: os.environ/ANTHROPIC_API_KEY
 
-  # --- OpenAI & DeepSeek Models ---
-  - model_name: gpt-4o
+  # =========================================================================
+  # VIRTUAL AGENT ALIASES
+  # =========================================================================
+  - model_name: 01-planner
     litellm_params:
-      model: openai/gpt-4o
-      api_key: os.environ/OPENAI_API_KEY
-  - model_name: gpt-4o-mini
-    litellm_params:
-      model: openai/gpt-4o-mini
-      api_key: os.environ/OPENAI_API_KEY
-  - model_name: o3-mini
-    litellm_params:
-      model: openai/o3-mini
-      api_key: os.environ/OPENAI_API_KEY
-  - model_name: deepseek-chat
-    litellm_params:
-      model: deepseek/deepseek-chat
-      api_key: os.environ/DEEPSEEK_API_KEY
-  - model_name: deepseek-reasoner
-    litellm_params:
-      model: deepseek/deepseek-reasoner
-      api_key: os.environ/DEEPSEEK_API_KEY
-
-  # --- Dual-Mode Virtual Fallback Aliases ---
-  - model_name: alias/planning
-    litellm_params:
-      model: gemini/gemini-3.1-pro
+      model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks: ["claude-3-7-sonnet-20250219", "qwen2.5-coder:7b"]
-  - model_name: alias/coding
+      drop_params: true
+      fallbacks: ["claude-3-7-sonnet", "gemini-3.6-flash"]
+      system_prompt: >
+        You are the Lead Architect for sous.tools. 
+        CRITICAL: Never output direct file changes.
+        1. Query Qdrant for past ADRs and context before answering.
+        2. Format new decisions as ADRs and store them via Qdrant MCP.
+        3. Create atomic tasks in GitHub Projects (Ready column).
+
+  - model_name: 02-coder
+    litellm_params:
+      model: anthropic/claude-3-7-sonnet-20250219
+      api_key: os.environ/ANTHROPIC_API_KEY
+      fallbacks: ["gemini-3.1-pro", "qwen2.5-coder:7b"]
+      system_prompt: >
+        You are an Autonomous Software Engineer.
+        Given a GitHub issue, implement code changes cleanly, run type checks/tests, and create a PR.
+        If blocked, comment on the GitHub issue with '[NEEDS_INPUT]' and stop execution.
+
+  - model_name: 03-devops
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks: ["deepseek-coder-v2", "qwen2.5-coder:7b"]
-  - model_name: alias/triage
+      drop_params: true
+      fallbacks: ["qwen2.5-coder:7b"]
+      system_prompt: >
+        You manage Infisical secrets, Docker/OCI stacks, Vercel deployments, and system maintenance via CLI tools.
+        Always verify logs before proposing infrastructure changes.
+
+  - model_name: 04-triage
     litellm_params:
       model: gemini/gemini-3.5-flash-lite
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks: ["yi-coder:9b"]
+      drop_params: true
+      fallbacks: ["gemini-3.6-flash", "qwen2.5-coder:7b"]
+      system_prompt: >
+        You are a fast triage agent. Analyze logs, classify inbound issues, and generate concise progress summaries.
 
 general_settings:
   master_key: sk-1234
-  success_callback: ["langfuse"]
-  failure_callback: ["langfuse"]
+  drop_params: true
+  force_timeout: 600

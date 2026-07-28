@@ -30,8 +30,12 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      # Built-in global redirect (automatically safely bypasses ACME challenges)
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
@@ -50,11 +54,7 @@ services:
       - traefik_public
     labels:
       - "traefik.enable=true"
-      # GLOBAL HTTP-TO-HTTPS REDIRECT (Only applies to *.sous.tools, ignores localhost)
-      - "traefik.http.routers.http-catchall.rule=HostRegexp(`^[a-z0-9-]+\\.sous\\.tools$$`)"
-      - "traefik.http.routers.http-catchall.entrypoints=web"
-      - "traefik.http.routers.http-catchall.middlewares=redirect-https"
-      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+      # (The manual http-catchall labels have been completely removed)
     deploy:
       resources:
         limits:
@@ -166,7 +166,7 @@ services:
       - |
         echo "Waiting for Ollama service to respond..."
         sleep 10
-        MODELS="qwen2.5-coder:7b deepseek-coder-v2 yi-coder:9b nomic-embed-text llama3.2-vision"
+        MODELS="qwen2.5-coder:7b nomic-embed-text llama3.2-vision"
         for model in $$MODELS; do
           echo "Verifying/Pulling model $$model..."
           ollama pull $$model
@@ -276,8 +276,8 @@ services:
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
-      - .:/config/workspace
-      - .:/workspace
+      - /home/ubuntu/dev.sous.tools:/config/workspace
+      - /home/ubuntu/dev.sous.tools:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     networks:
@@ -289,10 +289,8 @@ services:
       - "traefik.http.routers.editor-secure.tls=true"
       - "traefik.http.routers.editor-secure.tls.certresolver=letsencrypt"
       - "traefik.http.routers.editor-secure.service=editor-service"
-      - "traefik.http.routers.editor.rule=Host(`editor.localhost`)"
-      - "traefik.http.routers.editor.entrypoints=web"
-      - "traefik.http.routers.editor.service=editor-service"
       - "traefik.http.services.editor-service.loadbalancer.server.port=8443"
+      - "traefik.docker.network=traefik_public"
     deploy:
       resources:
         limits:
@@ -308,7 +306,7 @@ services:
     volumes:
       - ./mcp_config.json:/app/mcp_config.json
       - /var/run/docker.sock:/var/run/docker.sock
-      - .:/workspace
+      - /home/ubuntu/dev.sous.tools:/workspace
     networks:
       - traefik_public
     environment:
@@ -326,7 +324,7 @@ services:
       - traefik_public
     volumes:
       - open_webui_data:/app/backend/data
-      - .:/workspace
+      - /home/ubuntu/dev.sous.tools:/workspace
       - ./packages/config/sanitizer.py:/app/backend/data/functions/sanitizer.py
     environment:
       <<: *mcp-shared-env
@@ -368,7 +366,7 @@ services:
     volumes:
       - ./scripts/seed_openwebui.py:/app/seed_openwebui.py
       - open_webui_data:/app/backend/data
-      - .:/workspace
+      - /home/ubuntu/dev.sous.tools:/workspace
     command: >
       bash -c "pip install requests && python /app/seed_openwebui.py"
     networks:
@@ -383,7 +381,7 @@ services:
     volumes:
       - cptr_data:/data
       - cptr_projects:/projects
-      - .:/workspace
+      - /home/ubuntu/dev.sous.tools:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       <<: *mcp-shared-env
