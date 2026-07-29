@@ -52,15 +52,15 @@ model_list:
   # --- Local Ollama Models ---
   - model_name: qwen2.5-coder:7b
     litellm_params:
-      model: ollama/qwen2.5-coder:7b
+      model: ollama_chat/qwen2.5-coder:7b
       api_base: http://ollama:11434
   - model_name: nomic-embed-text
     litellm_params:
-      model: ollama/nomic-embed-text
+      model: ollama_chat/nomic-embed-text
       api_base: http://ollama:11434
   - model_name: llama3.2-vision
     litellm_params:
-      model: ollama/llama3.2-vision
+      model: ollama_chat/llama3.2-vision
       api_base: http://ollama:11434
 
   # --- Base API Models ---
