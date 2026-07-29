@@ -4,15 +4,10 @@ model_list:
   # =========================================================================
   - model_name: planner
     litellm_params:
-      model: gemini/gemini-3.6-flash
+      model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
       drop_params: true
-  # - model_name: planner
-  #   litellm_params:
-  #     model: gemini/gemini-3.1-pro-preview
-  #     api_key: os.environ/GEMINI_API_KEY
-  #     drop_params: true
-  #     fallbacks: ["claude-3-7-sonnet", "gemini/gemini-3.6-flash"]
+      fallbacks: ["claude-3-7-sonnet", "gemini/gemini-3.6-flash"]
   # system_prompt: >
   #   You are the Lead Architect for sous.tools.
   #   CRITICAL: Never output direct file changes.
