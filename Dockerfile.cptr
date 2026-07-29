@@ -43,7 +43,7 @@ RUN echo 'eval "$(starship init zsh)"' >> ~/.zshrc && \
     echo 'export SHELL=/bin/zsh' >> ~/.zshrc
 
 # 8. Install Open WebUI Computer (cptr) pinned to v0.11.0
-RUN pip install --no-cache-dir "cptr[all]==0.11.0"
+RUN pip install --no-cache-dir --upgrade "cptr[all]"
 
 WORKDIR /workspace
 EXPOSE 8000
