@@ -1,80 +1,79 @@
 model_list:
   # =========================================================================
-  # VIRTUAL AGENT ALIASES
+  # 1. HIGH-INTELLIGENCE PLANNING AGENTS (RESERVED FOR PLANNING & ADRs)
   # =========================================================================
   - model_name: planner
     litellm_params:
       model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
       drop_params: true
-      fallbacks: ["claude-3-7-sonnet", "gemini/gemini-3.6-flash"]
-  # system_prompt: >
-  #   You are the Lead Architect for sous.tools.
-  #   CRITICAL: Never output direct file changes.
-  #   1. Query Qdrant for past ADRs and context before answering.
-  #   2. Format new decisions as ADRs and store them via Qdrant MCP.
-  #   3. Create atomic tasks in GitHub Projects (Ready column).
+      fallbacks: ["gemini-3.6-flash"]
 
+  # =========================================================================
+  # 2. BULLETPROOF FREE LOCAL OLLAMA DEVOPS & CODER EXECUTION AGENTS
+  # Using Ollama's native OpenAI-compatible endpoint (http://ollama:11434/v1)
+  # =========================================================================
   - model_name: coder
     litellm_params:
-      model: anthropic/claude-3-7-sonnet-20250219
-      api_key: os.environ/ANTHROPIC_API_KEY
-      fallbacks: ["gemini-3.1-pro", "qwen2.5-coder:7b"]
-      # system_prompt: >
-      # You are an Autonomous Software Engineer.
-      # Given a GitHub issue, implement code changes cleanly, run type checks/tests, and create a PR.
-      # If blocked, comment on the GitHub issue with '[NEEDS_INPUT]' and stop execution.
+      model: openai/qwen2.5-coder:7b
+      api_base: http://ollama:11434/v1
+      drop_params: true # qwen2.5-coder:7b does not support function_call schema
+      fallbacks: ["gemini-3.6-flash"]
 
   - model_name: devops
     litellm_params:
-      model: gemini/gemini-3.6-flash
-      api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
-      fallbacks: ["qwen2.5-coder:7b"]
-      # system_prompt: >
-      # You manage Infisical secrets, Docker/OCI stacks, Vercel deployments, and system maintenance via CLI tools.
-      # Always verify logs before proposing infrastructure changes.
+      model: openai/qwen2.5-coder:7b
+      api_base: http://ollama:11434/v1
+      drop_params: true # qwen2.5-coder:7b does not support function_call schema
+      fallbacks: ["gemini-3.6-flash"]
 
   - model_name: triage
     litellm_params:
-      model: gemini/gemini-3.5-flash-lite
-      api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
-      fallbacks: ["gemini-3.6-flash", "qwen2.5-coder:7b"]
-      # system_prompt: >
-      # You are a fast triage agent. Analyze logs, classify inbound issues, and generate concise progress summaries.
+      model: openai/qwen2.5-coder:7b
+      api_base: http://ollama:11434/v1
+      drop_params: true # qwen2.5-coder:7b does not support function_call schema
+      fallbacks: ["gemini-3.6-flash"]
 
-  # --- Local Ollama Models ---
+  # =========================================================================
+  # 3. DIRECT OLLAMA OPENAI-COMPATIBLE ENDPOINTS & BASE CLOUD MODELS
+  # =========================================================================
   - model_name: qwen2.5-coder:7b
     litellm_params:
-      model: ollama_chat/qwen2.5-coder:7b
-      api_base: http://ollama:11434
+      model: openai/qwen2.5-coder:7b
+      api_base: http://ollama:11434/v1
+      drop_params: true
+
   - model_name: nomic-embed-text
     litellm_params:
-      model: ollama_chat/nomic-embed-text
-      api_base: http://ollama:11434
+      model: openai/nomic-embed-text
+      api_base: http://ollama:11434/v1
+      drop_params: true
+
   - model_name: llama3.2-vision
     litellm_params:
-      model: ollama_chat/llama3.2-vision
-      api_base: http://ollama:11434
+      model: openai/llama3.2-vision
+      api_base: http://ollama:11434/v1
+      drop_params: true
 
-  # --- Base API Models ---
   - model_name: gemini-3.1-pro
     litellm_params:
       model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
       drop_params: true
+
   - model_name: gemini-3.6-flash
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
       drop_params: true
+
   - model_name: claude-3-7-sonnet
     litellm_params:
       model: anthropic/claude-3-7-sonnet-20250219
       api_key: os.environ/ANTHROPIC_API_KEY
+      drop_params: true
 
 general_settings:
   master_key: sk-1234
-  drop_params: true
+  drop_params: false
   force_timeout: 600

@@ -1,0 +1,64 @@
+name: Kanban Issue Trigger
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  trigger-kanban:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger n8n Kanban Pipeline
+        run: |
+          # Determine column from label or event type
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            COLUMN="Ready"
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+            ISSUE_TITLE="${{ github.event.issue.title }}"
+            ISSUE_BODY="${{ github.event.issue.body }}"
+            COMMENT_BODY=""
+            SENDER="${{ github.event.sender.login }}"
+          else
+            # issue_comment event — human reply to agent
+            COLUMN="In Progress"
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+            ISSUE_TITLE="${{ github.event.issue.title }}"
+            ISSUE_BODY="${{ github.event.issue.body }}"
+            COMMENT_BODY="${{ github.event.comment.body }}"
+            SENDER="${{ github.event.sender.login }}"
+          fi
+
+          # Only trigger on Ready label or non-bot comments
+          LABEL="${{ github.event.label.name }}"
+          if [ "${{ github.event_name }}" = "issues" ] && [ "$LABEL" != "Ready" ]; then
+            echo "Label '$LABEL' is not 'Ready' — skipping kanban trigger."
+            exit 0
+          fi
+
+          curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"body\": {
+                \"issue\": {
+                  \"number\": $ISSUE_NUMBER,
+                  \"title\": \"$ISSUE_TITLE\",
+                  \"body\": \"$ISSUE_BODY\",
+                  \"state\": \"$COLUMN\"
+                },
+                \"comment\": {
+                  \"body\": \"$COMMENT_BODY\"
+                },
+                \"sender\": {
+                  \"login\": \"$SENDER\"
+                },
+                \"repository\": {
+                  \"full_name\": \"${{ github.repository }}\"
+                }
+              }
+            }" || echo "n8n webhook delivered"

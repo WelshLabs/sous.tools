@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y \
     tmux \
     python3 \
     python3-pip \
-    nodejs \
-    npm \
     jq \
     ripgrep \
     build-essential \
@@ -23,19 +21,36 @@ RUN apt-get update && apt-get install -y \
     && curl -sS https://starship.rs/install.sh | sh -s -- -y \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Force root user layer context workspace rules
+# 2. Install Node.js 22 (replace distro nodejs with current LTS)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Force root user layer context workspace rules
 WORKDIR /workspace
 
-# 3. Install global node packages for agent execution & process management
-RUN npm install -g pnpm pm2 @anthropic-ai/claude-code @modelcontextprotocol/server-github @infisical/cli
+# 4. Install global node packages — identical to cptr
+RUN npm install -g pnpm pm2 @anthropic-ai/claude-code @modelcontextprotocol/server-github @infisical/cli vercel
 
-# 4. Install python AI applications globally as root
-RUN pip3 install aider-chat --break-system-packages
+# 5. Install Antigravity CLI — matches cptr
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
 
-# 5. Initialize terminal environment (.zshrc, starship, aliases) FIRST
-RUN mkdir -p /config \
-    && echo 'eval "$(starship init zsh)"' >> /config/.zshrc \
-    && echo 'if [ -f /workspace/.config/terminal/.zsh_aliases ]; then source /workspace/.config/terminal/.zsh_aliases; fi' >> /config/.zshrc
+# 6. Install python AI applications globally — includes cptr and aider-chat
+RUN pip3 install aider-chat "cptr[all]" --break-system-packages
 
-# 6. Configure permissions and shell (Letting the container stay root so s6-overlay can process PUID)
+# 7. Install uv (for uvx mcp-server-qdrant, uvx mcp-neo4j-cypher) — matches cptr
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 8. Initialize terminal environment — identical config to cptr
+RUN mkdir -p /config && \
+    echo 'export STARSHIP_CONFIG=/workspace/.config/terminal/starship.toml' >> /config/.zshrc && \
+    echo 'eval "$(starship init zsh)"' >> /config/.zshrc && \
+    echo 'if [ -f /workspace/.config/terminal/.zsh_aliases ]; then source /workspace/.config/terminal/.zsh_aliases; fi' >> /config/.zshrc && \
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> /config/.zshrc
+
+# 9. Symlink AGY MCP config to repo SSOT (auto-sync on every container start)
+RUN mkdir -p /config/.gemini/config && \
+    ln -sf /workspace/mcp_config.json /config/.gemini/config/mcp_config.json
+
+# 10. Configure permissions and shell (linuxserver s6-overlay processes PUID at runtime)
 RUN chown -R abc:abc /config && usermod -s /bin/zsh abc

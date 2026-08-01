@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# 1. Install System, Node.js, Tailscale, and Terminal Utilities
+# 1. Base Utilities, Docker CLI, System Tools, ripgrep, gh, tmux, build-essential
 RUN apt-get update && apt-get install -y \
     curl \
     git \
@@ -8,44 +8,67 @@ RUN apt-get update && apt-get install -y \
     sudo \
     jq \
     nano \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && curl -fsSL https://tailscale.com/install.sh | sh \
+    tmux \
+    ripgrep \
+    psmisc \
+    build-essential \
+    docker.io \
+    docker-compose \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Install Global CLI Tools (Claude & Antigravity)
-RUN npm install -g @anthropic-ai/claude-code && \
-    curl -fsSL https://antigravity.google/cli/install.sh | bash
-    
-# Add CLI tools to Dockerfile.cptr
-RUN npm install -g @infisical/cli vercel && \
-    curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash
+# 2. Node.js 22 Setup
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
-# 3. Setup the 1001 User and Group for Permissions
-RUN groupadd -g 1001 cptrgroup && \
-    useradd -u 1001 -g 1001 -m -s /bin/zsh cptruser && \
-    echo "cptruser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+# 3. Tailscale Installation
+RUN curl -fsSL https://tailscale.com/install.sh | sh
 
-# 4. Install Starship for a Clean Terminal Prompt
+# 4. Install Global CLI Tools (as root so they land in /usr/local/bin)
+RUN npm install -g pnpm pm2 @anthropic-ai/claude-code @modelcontextprotocol/server-github @infisical/cli vercel && \
+    curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
+
+# 5. Additional Python AI applications & cptr as root
+RUN pip install --no-cache-dir --upgrade "cptr[all]" aider-chat
+
+# 6. Fix cptr port scanner bug for process names with spaces (e.g. Next.js 15)
+RUN sed -i 's/return int(f.read().split()\[3\])/data = f.read(); return int(data.rsplit(")", 1)[1].split()[1])/' \
+    /usr/local/lib/python3.11/dist-packages/cptr/routers/events.py 2>/dev/null || \
+    sed -i 's/return int(f.read().split()\[3\])/data = f.read(); return int(data.rsplit(")", 1)[1].split()[1])/' \
+    /usr/local/lib/python3.11/site-packages/cptr/routers/events.py 2>/dev/null || true
+
+# 7. Install Starship for a Clean Terminal Prompt
 RUN curl -sS https://starship.rs/install.sh | sh -s -- -y
 
-# 5. Switch to the new user context
-USER 1001
+# 8. Setup the 1000 User and Group for Permissions
+RUN groupadd -g 1000 cptrgroup && \
+    useradd -u 1000 -g 1000 -m -s /bin/zsh cptruser && \
+    echo "cptruser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# 9. Switch to the new user context
+USER 1000
 ENV HOME=/home/cptruser
 ENV PATH="$HOME/.local/bin:$PATH"
 
-# 6. Install uv (for the Qdrant MCP Server)
+# 10. Install uv as user (for the Qdrant MCP Server and uvx tools)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 7. Configure Zsh and Starship Initialization
-RUN echo 'eval "$(starship init zsh)"' >> ~/.zshrc && \
+# 11. Configure Zsh with Starship + shared aliases + shared starship config + AGY MCP symlink
+RUN mkdir -p ~/.gemini/config && \
+    ln -sf /sous.tools/mcp_config.json ~/.gemini/config/mcp_config.json && \
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && \
-    echo 'export SHELL=/bin/zsh' >> ~/.zshrc
-
-# 8. Install Open WebUI Computer (cptr) pinned to v0.11.0
-RUN pip install --no-cache-dir --upgrade "cptr[all]"
+    echo 'export SHELL=/bin/zsh' >> ~/.zshrc && \
+    echo 'export STARSHIP_CONFIG=/sous.tools/.config/terminal/starship.toml' >> ~/.zshrc && \
+    echo 'eval "$(starship init zsh)"' >> ~/.zshrc && \
+    echo 'if [ -f /sous.tools/.config/terminal/.zsh_aliases ]; then source /sous.tools/.config/terminal/.zsh_aliases; fi' >> ~/.zshrc
 
 WORKDIR /workspace
 EXPOSE 8000
-# Simplified ENTRYPOINT relies on environment variables from docker-compose
-ENTRYPOINT ["infisical", "run", "--", "cptr", "run", "--host", "0.0.0.0"]
+
+# Startup: sync MCP config from repo SSOT, then start cptr
+COPY scripts/mcp-to-cptr.py /usr/local/bin/mcp-to-cptr.py
+ENTRYPOINT ["sh", "-c", "export INFISICAL_TOKEN=$(infisical login --method=universal-auth --client-id=${INFISICAL_CLIENT_ID} --client-secret=${INFISICAL_CLIENT_SECRET} --silent --plain) && infisical run --log-level info --projectId ${INFISICAL_PROJECT_ID} --env ${INFISICAL_ENV:-dev} -- sh -c 'python3 /usr/local/bin/mcp-to-cptr.py; exec cptr run --host 0.0.0.0'"]

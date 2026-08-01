@@ -62,3 +62,8 @@ jobs:
               pnpm install --frozen-lockfile || true
               docker exec code-server pm2 reload ecosystem.config.cjs || true
             fi
+
+            # 3. Sync n8n IaC workflows from repo
+            cd /home/ubuntu/prod.sous.tools 2>/dev/null || cd /home/ubuntu/dev.sous.tools || true
+            docker exec n8n n8n import:workflow --separate --input=/etc/n8n/workflows/ || true
+            echo "n8n workflows synced"

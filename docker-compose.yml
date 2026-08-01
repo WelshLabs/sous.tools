@@ -4,10 +4,12 @@ services:
   # =========================================================================
   traefik:
     image: traefik:v3.6
-    profiles: ["prod"]
+    profiles: ["dev", "prod"]
     container_name: traefik
     environment:
       - DOCKER_API_VERSION=1.44
+      - VERCEL_API_TOKEN=${VERCEL_API_KEY}
+      - VERCEL_TEAM_ID=team_NvBUmojEgCcSa4kGsKZtULd1
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
@@ -16,8 +18,8 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=vercel"
       - "--certificatesresolvers.letsencrypt.acme.email=conar@sous.tools"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
@@ -86,13 +88,41 @@ services:
       - qdrant_data:/qdrant/storage
     networks:
       - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qdrant-secure.rule=Host(`qdrant.sous.tools`)"
+      - "traefik.http.routers.qdrant-secure.entrypoints=web,websecure"
+      - "traefik.http.routers.qdrant-secure.tls=true"
+      - "traefik.http.routers.qdrant-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.qdrant-service.loadbalancer.server.port=6333"
     deploy:
       resources:
         limits:
           memory: 2g
 
+  qdrant-sync:
+    image: python:3.11-slim
+    profiles: ["prod"]
+    container_name: qdrant-sync
+    depends_on:
+      - qdrant
+    volumes:
+      - ./scripts/populate_qdrant.py:/app/populate_qdrant.py
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - |
+        pip install --no-cache-dir qdrant-client
+        echo "Waiting for Qdrant database service to initialize..."
+        sleep 5
+        python3 /app/populate_qdrant.py
+        echo "Qdrant initial synchronization complete!"
+    networks:
+      - traefik_public
+
   # =========================================================================
-  # 3. LLM GATEWAY TIER (PROD)
+  # 3. LLM GATEWAY TIER (PROD ONLY — runs on Oracle Cloud)
+  #    Dev environments connect to ai.sous.tools externally via Tailscale/DNS
   # =========================================================================
   ollama:
     image: ollama/ollama:latest
@@ -156,6 +186,13 @@ services:
       - traefik_public
     depends_on:
       - ollama
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.litellm-secure.rule=Host(`ai.sous.tools`)"
+      - "traefik.http.routers.litellm-secure.entrypoints=websecure"
+      - "traefik.http.routers.litellm-secure.tls=true"
+      - "traefik.http.routers.litellm-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.litellm-service.loadbalancer.server.port=4000"
     deploy:
       resources:
         limits:
@@ -169,6 +206,12 @@ services:
     profiles: ["prod"]
     container_name: n8n
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5678/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - N8N_HOST=n8n.sous.tools
       - N8N_PORT=5678
@@ -201,6 +244,37 @@ services:
       resources:
         limits:
           memory: 2g
+
+  kanban-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.cptr
+    profiles: ["prod"]
+    container_name: kanban-runner
+    restart: unless-stopped
+    command: ["sleep", "infinity"]
+    volumes:
+      - .:/workspace
+    networks:
+      - traefik_public
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  n8n-sync:
+    image: docker:cli
+    profiles: ["prod"]
+    container_name: n8n-sync
+    restart: "no"
+    depends_on:
+      n8n:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: sh -c "docker exec n8n n8n import:workflow --separate --input=/etc/n8n/workflows/ && echo 'n8n workflows synced'"
+    networks:
+      - traefik_public
 
   api:
     build:
@@ -239,34 +313,47 @@ services:
       dockerfile: Dockerfile.cptr
     profiles: ["dev"]
     container_name: cptr
-    user: "root"
+    user: "1000:1000"
     volumes:
-      - cptr_home_data:/home/cptruser
+      - ./.cptr:/home/cptruser/.cptr
       - cptr_data:/data
       - /home/conar/projects:/wsl_projects
       - /mnt/c/Users/conar/projects:/win_projects
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/conar/code/sous.tools:/sous.tools
+      # Shared pnpm store — all three envs (WSL/cptr/editor) use UID 1000, no permission conflicts
+      - /home/conar/.local/share/pnpm:/home/cptruser/.local/share/pnpm
       # readonly
       - /home/conar:/wsl_root:ro
       - /mnt/c/Users/conar:/win_root:ro
     environment:
       PYTHONUNBUFFERED: 1
-      LOG_LEVEL: DEBUG
-      OPENAI_API_BASE: "http://ORACLE_TAILSCALE_IP:4000/v1"
+      LOG_LEVEL: INFO
+      OPENAI_API_BASE: "https://ai.sous.tools/v1"
       OPENAI_API_KEY: sk-1234
       ENABLE_MCP: "true"
       SHELL: "/bin/zsh"
-      DEFAULT_MODELS: "01-planner"
+      DEFAULT_MODELS: "planner"
       ENV: /home/cptruser/.zshrc
-      INFISICAL_TOKEN: ${INFISICAL_TOKEN}
+      SOUS_TOOLS_ROOT: "/sous.tools"
+      INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID}
+      INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
+      INFISICAL_UNIVERSAL_AUTH_CLIENT_ID: ${INFISICAL_CLIENT_ID}
+      INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
       INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
       INFISICAL_ENV: ${INFISICAL_ENV}
     restart: unless-stopped
     networks:
       - traefik_public
     ports:
-      - "8000:8000"
+      - "4002:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cptr-secure.rule=Host(`cptr.sous.tools`)"
+      - "traefik.http.routers.cptr-secure.entrypoints=websecure"
+      - "traefik.http.routers.cptr-secure.tls=true"
+      - "traefik.http.routers.cptr-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.cptr-service.loadbalancer.server.port=8000"
 
   editor:
     build:
@@ -275,26 +362,39 @@ services:
     profiles: ["dev"]
     container_name: code-server
     environment:
-      - PUID=1001
-      - PGID=1001
+      - PUID=1000
+      - PGID=1000
       - TZ=America/New_York
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
       - PROXY_DOMAIN=*
-      - OPENAI_API_BASE=http://ORACLE_TAILSCALE_IP:4000/v1
+      - DEFAULT_WORKSPACE=/workspace
+      - OPENAI_API_BASE=https://ai.sous.tools/v1
       - OPENAI_API_KEY=sk-1234
+      - SOUS_TOOLS_ROOT=/workspace
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
-      - /home/username/projects:/workspace/wsl_projects
+      - /home/conar/code/sous.tools:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
+      # Shared pnpm store — same UID 1000 across all envs
+      - /home/conar/.local/share/pnpm:/config/.local/share/pnpm
     restart: unless-stopped
     networks:
       - traefik_public
     ports:
-      - "8443:8443"
+      - "4001:8443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.editor-secure.rule=Host(`code.sous.tools`)"
+      - "traefik.http.routers.editor-secure.entrypoints=websecure"
+      - "traefik.http.routers.editor-secure.tls=true"
+      - "traefik.http.routers.editor-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.editor-service.loadbalancer.server.port=8443"
 
   # =========================================================================
   # 6. LOCAL AI MEDIA TIER (DEV)
@@ -325,26 +425,23 @@ services:
     networks:
       - traefik_public
 
-  stable-diffusion:
-    image: universonic/stable-diffusion-webui:latest
-    profiles: ["dev"]
-    container_name: stable-diffusion
-    restart: unless-stopped
-    ports:
-      - "7860:7860"
-    environment:
-      - COMMANDLINE_ARGS="--api --listen"
-    volumes:
-      - sd_data:/app/stable-diffusion-webui/models
-    networks:
-      - traefik_public
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+  #comfyui:
+  #  image: rocm/comfyui:latest
+  #  profiles: ["dev"]
+  #  container_name: comfyui
+  # restart: unless-stopped
+  # ports:
+  #  - "8188:8188"
+  # volumes:
+  #  - sd_data:/app/ComfyUI/models
+  #networks:
+  #  - traefik_public
+  # devices:
+  #  - "/dev/kfd:/dev/kfd"
+  #  - "/dev/dri:/dev/dri"
+  #group_add:
+  #  - video
+  # ipc: host
 
 volumes:
   letsencrypt:

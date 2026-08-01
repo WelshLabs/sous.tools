@@ -1,134 +1,167 @@
 import { z } from "zod";
 
 export const serverSchema = z.object({
-  NODE_ENV: z.string().default("development"),
-  IS_PRODUCTION: z.boolean().default(false),
-  IS_MOCK_ENV: z.boolean().default(false),
-  IS_SECURE_ENV: z.boolean().default(false),
+  NODE_ENV: z.string(),
+  IS_PRODUCTION: z.boolean(),
+  IS_MOCK_ENV: z.boolean(),
+  IS_SECURE_ENV: z.boolean(),
 
-  PORT: z.coerce.number().default(3001),
-  REDIS_HOST: z.string().default("127.0.0.1"),
-  REDIS_PORT: z.coerce.number().default(6379),
+  PORT: z.coerce.number(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.coerce.number(),
 
-  NEXT_PUBLIC_API_URL: z.string().default("http://localhost:3001"),
-  NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
-  NEXT_PUBLIC_SUPABASE_URL: z
-    .string()
-    .default("https://placeholder-project.supabase.co"),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z
-    .string()
-    .default("https://placeholder-project.supabase.co"),
-  NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY: z.string().optional().default(""),
+  NEXT_PUBLIC_API_URL: z.string(),
+  NEXT_PUBLIC_APP_URL: z.string(),
+  NEXT_PUBLIC_SUPABASE_URL: z.string(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+  NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY: z.string(),
 
-  SUPABASE_ACCESS_TOKEN: z
-    .string()
-    .default("placeholder-service-role-key-from-mock-sync"),
-  SUPABASE_PROJECT_TOKEN: z
-    .string()
-    .default("placeholder-service-role-key-from-mock-sync"),
-  SUPABASE_SERVICE_ROLE_KEY: z
-    .string()
-    .default("placeholder-service-role-key-from-mock-sync"),
-  SUPABASE_URL: z.string().default("https://placeholder-project.supabase.co"),
-  SUPABASE_DIRECT_URL: z
-    .string()
-    .default("https://placeholder-project.supabase.co"),
-  SUPABASE_WEBHOOK_SECRET: z
-    .string()
-    .default("sous-tools-neo4j-sync-secret-key"),
+  SUPABASE_ACCESS_TOKEN: z.string(),
+  SUPABASE_PROJECT_TOKEN: z.string(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string(),
+  SUPABASE_URL: z.string(),
+  SUPABASE_DIRECT_URL: z.string(),
+  SUPABASE_WEBHOOK_SECRET: z.string(),
 
-  GITHUB_ID: z.string().optional().default(""),
-  GITHUB_SECRET: z.string().optional().default(""),
-  AUTH_SECRET: z.string().optional().default(""),
+  GITHUB_ID: z.string(),
+  GITHUB_SECRET: z.string(),
+  AUTH_SECRET: z.string(),
 
-  NEW_RELIC_LICENSE_KEY: z.string().optional().default(""),
-  NEW_RELIC_APP_NAME: z.string().optional().default(""),
-  NEW_RELIC_ENABLED: z.boolean().default(false),
+  NEW_RELIC_LICENSE_KEY: z.string(),
+  NEW_RELIC_APP_NAME: z.string(),
+  NEW_RELIC_ENABLED: z.boolean(),
 
-  GEMINI_API_KEY: z.string().optional().default(""),
-  GOOGLE_CLIENT_ID: z.string().optional().default(""),
-  GOOGLE_CLIENT_SECRET: z.string().optional().default(""),
+  GEMINI_API_KEY: z.string(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
 
-  SQUARE_CLIENT_ID: z.string().optional().default(""),
-  SQUARE_CLIENT_SECRET: z.string().optional().default(""),
-  SQUARE_ENVIRONMENT: z.string().default("sandbox"),
-  SQUARE_ACCESS_TOKEN: z.string().optional().default(""),
-  SQUARE_WEBHOOK_SIGNATURE_KEY: z.string().optional().default(""),
+  SQUARE_CLIENT_ID: z.string(),
+  SQUARE_CLIENT_SECRET: z.string(),
+  SQUARE_ENVIRONMENT: z.string(),
+  SQUARE_ACCESS_TOKEN: z.string(),
+  SQUARE_WEBHOOK_SIGNATURE_KEY: z.string(),
 
-  USDA_FDC_API_KEY: z.string().optional().default("DEMO_KEY"),
-  OLLAMA_HOST: z.string().default("http://127.0.0.1:11434"),
-  OLLAMA_MODEL: z.string().default("llava"),
-  VISION_PROVIDER: z.string().default("openai"),
+  USDA_FDC_API_KEY: z.string(),
+  TAVILY_API_KEY: z.string(),
+  OLLAMA_HOST: z.string(),
+  OLLAMA_MODEL: z.string(),
+  VISION_PROVIDER: z.string(),
 
-  APP_VERSION: z.string().default("dev-local"),
-  SOUS_KIOSK_MODE_FILE: z.string().default("/etc/sous/kiosk-mode"),
-  SOUS_DEVICE_CONFIG: z.string().default("/etc/sous/device-config.json"),
-  SOUS_BOOTSTRAP_LOG: z.string().default("/var/log/sous-bootstrap.log"),
+  APP_VERSION: z.string(),
+  SOUS_KIOSK_MODE_FILE: z.string(),
+  SOUS_DEVICE_CONFIG: z.string(),
+  SOUS_BOOTSTRAP_LOG: z.string(),
 
-  NEO4J_URI: z.string().default("bolt://localhost:7687"),
-  NEO4J_USERNAME: z.string().default("neo4j"),
-  NEO4J_PASSWORD: z.string().default("sousToolsPassword"),
+  NEO4J_URI: z.string(),
+  NEO4J_USERNAME: z.string(),
+  NEO4J_PASSWORD: z.string(),
 });
 
 export type ServerConfig = z.infer<typeof serverSchema>;
 
 const isProd = process.env.NODE_ENV === "production";
-const isMock = process.env.IS_MOCK_ENV === "true";
+const isMock =
+  process.env.IS_MOCK_ENV === "true" || process.env.INFISICAL_MOCK === "true";
 const isSecure = isProd || process.env.ENVIRONMENT === "staging";
 
-export const serverConfig: ServerConfig = serverSchema.parse({
-  NODE_ENV: process.env.NODE_ENV || "development",
-  IS_PRODUCTION: isProd,
-  IS_MOCK_ENV: isMock,
-  IS_SECURE_ENV: isSecure,
+let parsedConfig: ServerConfig;
 
-  PORT: process.env.PORT,
-  REDIS_HOST: process.env.REDIS_HOST,
-  REDIS_PORT: process.env.REDIS_PORT,
+try {
+  const isMockRun = process.env.INFISICAL_MOCK === "true";
+  parsedConfig = serverSchema.parse({
+    NODE_ENV: process.env.NODE_ENV || (isMockRun ? "test" : undefined),
+    IS_PRODUCTION: isProd,
+    IS_MOCK_ENV: isMock,
+    IS_SECURE_ENV: isSecure,
 
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY:
-    process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY,
+    PORT: process.env.PORT || (isMockRun ? 3000 : undefined),
+    REDIS_HOST: process.env.REDIS_HOST || (isMockRun ? "mock" : undefined),
+    REDIS_PORT: process.env.REDIS_PORT || (isMockRun ? 6379 : undefined),
 
-  SUPABASE_ACCESS_TOKEN: process.env.SUPABASE_ACCESS_TOKEN,
-  SUPABASE_PROJECT_TOKEN: process.env.SUPABASE_PROJECT_TOKEN,
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL: process.env.SUPABASE_URL,
-  SUPABASE_DIRECT_URL: process.env.SUPABASE_DIRECT_URL,
-  SUPABASE_WEBHOOK_SECRET: process.env.SUPABASE_WEBHOOK_SECRET,
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || (isMockRun ? "mock" : undefined),
+    NEXT_PUBLIC_APP_URL:
+      process.env.NEXT_PUBLIC_APP_URL || (isMockRun ? "mock" : undefined),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      (isMockRun ? "mock" : undefined),
+    NEXT_PUBLIC_SUPABASE_URL:
+      process.env.NEXT_PUBLIC_SUPABASE_URL || (isMockRun ? "mock" : undefined),
+    NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY:
+      process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ||
+      (isMockRun ? "mock" : undefined),
 
-  GITHUB_ID: process.env.GITHUB_ID,
-  GITHUB_SECRET: process.env.GITHUB_SECRET,
-  AUTH_SECRET: process.env.AUTH_SECRET,
+    SUPABASE_ACCESS_TOKEN:
+      process.env.SUPABASE_ACCESS_TOKEN || (isMockRun ? "mock" : undefined),
+    SUPABASE_PROJECT_TOKEN:
+      process.env.SUPABASE_PROJECT_TOKEN || (isMockRun ? "mock" : undefined),
+    SUPABASE_SERVICE_ROLE_KEY:
+      process.env.SUPABASE_SERVICE_ROLE_KEY || (isMockRun ? "mock" : undefined),
+    SUPABASE_URL: process.env.SUPABASE_URL || (isMockRun ? "mock" : undefined),
+    SUPABASE_DIRECT_URL:
+      process.env.SUPABASE_DIRECT_URL || (isMockRun ? "mock" : undefined),
+    SUPABASE_WEBHOOK_SECRET:
+      process.env.SUPABASE_WEBHOOK_SECRET || (isMockRun ? "mock" : undefined),
 
-  NEW_RELIC_LICENSE_KEY: process.env.NEW_RELIC_LICENSE_KEY,
-  NEW_RELIC_APP_NAME: process.env.NEW_RELIC_APP_NAME,
-  NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === "true",
+    GITHUB_ID: process.env.GITHUB_ID || (isMockRun ? "mock" : undefined),
+    GITHUB_SECRET:
+      process.env.GITHUB_SECRET || (isMockRun ? "mock" : undefined),
+    AUTH_SECRET: process.env.AUTH_SECRET || (isMockRun ? "mock" : undefined),
 
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    NEW_RELIC_LICENSE_KEY:
+      process.env.NEW_RELIC_LICENSE_KEY || (isMockRun ? "mock" : undefined),
+    NEW_RELIC_APP_NAME:
+      process.env.NEW_RELIC_APP_NAME || (isMockRun ? "mock" : undefined),
+    NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === "true",
 
-  SQUARE_CLIENT_ID: process.env.SQUARE_CLIENT_ID,
-  SQUARE_CLIENT_SECRET: process.env.SQUARE_CLIENT_SECRET,
-  SQUARE_ENVIRONMENT: process.env.SQUARE_ENVIRONMENT,
-  SQUARE_ACCESS_TOKEN: process.env.SQUARE_ACCESS_TOKEN,
-  SQUARE_WEBHOOK_SIGNATURE_KEY: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY,
+    GEMINI_API_KEY:
+      process.env.GEMINI_API_KEY || (isMockRun ? "mock" : undefined),
+    GOOGLE_CLIENT_ID:
+      process.env.GOOGLE_CLIENT_ID || (isMockRun ? "mock" : undefined),
+    GOOGLE_CLIENT_SECRET:
+      process.env.GOOGLE_CLIENT_SECRET || (isMockRun ? "mock" : undefined),
 
-  USDA_FDC_API_KEY: process.env.USDA_FDC_API_KEY,
-  OLLAMA_HOST: process.env.OLLAMA_HOST,
-  OLLAMA_MODEL: process.env.OLLAMA_MODEL,
-  VISION_PROVIDER: process.env.VISION_PROVIDER,
+    SQUARE_CLIENT_ID:
+      process.env.SQUARE_CLIENT_ID || (isMockRun ? "mock" : undefined),
+    SQUARE_CLIENT_SECRET:
+      process.env.SQUARE_CLIENT_SECRET || (isMockRun ? "mock" : undefined),
+    SQUARE_ENVIRONMENT:
+      process.env.SQUARE_ENVIRONMENT || (isMockRun ? "mock" : undefined),
+    SQUARE_ACCESS_TOKEN:
+      process.env.SQUARE_ACCESS_TOKEN || (isMockRun ? "mock" : undefined),
+    SQUARE_WEBHOOK_SIGNATURE_KEY:
+      process.env.SQUARE_WEBHOOK_SIGNATURE_KEY ||
+      (isMockRun ? "mock" : undefined),
 
-  APP_VERSION: process.env.APP_VERSION,
-  SOUS_KIOSK_MODE_FILE: process.env.SOUS_KIOSK_MODE_FILE,
-  SOUS_DEVICE_CONFIG: process.env.SOUS_DEVICE_CONFIG,
-  SOUS_BOOTSTRAP_LOG: process.env.SOUS_BOOTSTRAP_LOG,
+    USDA_FDC_API_KEY:
+      process.env.USDA_FDC_API_KEY || (isMockRun ? "mock" : undefined),
+    TAVILY_API_KEY:
+      process.env.TAVILY_API_KEY || (isMockRun ? "mock" : undefined),
+    OLLAMA_HOST: process.env.OLLAMA_HOST || (isMockRun ? "mock" : undefined),
+    OLLAMA_MODEL: process.env.OLLAMA_MODEL || (isMockRun ? "mock" : undefined),
+    VISION_PROVIDER:
+      process.env.VISION_PROVIDER || (isMockRun ? "mock" : undefined),
 
-  NEO4J_URI: process.env.NEO4J_URI,
-  NEO4J_USERNAME: process.env.NEO4J_USERNAME,
-  NEO4J_PASSWORD: process.env.NEO4J_PASSWORD,
-});
+    APP_VERSION: process.env.APP_VERSION || (isMockRun ? "mock" : undefined),
+    SOUS_KIOSK_MODE_FILE:
+      process.env.SOUS_KIOSK_MODE_FILE || (isMockRun ? "mock" : undefined),
+    SOUS_DEVICE_CONFIG:
+      process.env.SOUS_DEVICE_CONFIG || (isMockRun ? "mock" : undefined),
+    SOUS_BOOTSTRAP_LOG:
+      process.env.SOUS_BOOTSTRAP_LOG || (isMockRun ? "mock" : undefined),
+
+    NEO4J_URI: process.env.NEO4J_URI || (isMockRun ? "mock" : undefined),
+    NEO4J_USERNAME:
+      process.env.NEO4J_USERNAME || (isMockRun ? "mock" : undefined),
+    NEO4J_PASSWORD:
+      process.env.NEO4J_PASSWORD || (isMockRun ? "mock" : undefined),
+  });
+} catch (error) {
+  console.error(
+    "[@soustools/config] FATAL: Missing or invalid environment variables from Infisical.",
+    error,
+  );
+  process.exit(1);
+}
+
+export const serverConfig = parsedConfig;

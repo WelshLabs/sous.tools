@@ -1,0 +1,45 @@
+# =============================================================================
+# SOUS.TOOLS STARSHIP PROMPT — Shared across WSL, cptr, and code-server
+# =============================================================================
+add_newline = true
+
+[character]
+success_symbol = "[❯](bold #f72585)[❯](bold #4cc9f0)"
+error_symbol = "[✖](bold red)"
+
+[directory]
+style = "bold #4cc9f0"
+format = "in [$path]($style) "
+truncation_length = 4
+truncate_to_repo = true
+
+[git_branch]
+symbol = " "
+style = "bold #f72585"
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold #4cc9f0"
+
+[nodejs]
+symbol = "󰎙 "
+style = "bold #4361ee"
+disabled = false
+
+[python]
+symbol = "🐍 "
+style = "bold #f72585"
+disabled = false
+
+[docker_context]
+symbol = "🐳 "
+style = "bold #4cc9f0"
+disabled = false
+
+[time]
+disabled = true
+
+[cmd_duration]
+min_time = 2_000
+format = "took [$duration](bold #f72585) "

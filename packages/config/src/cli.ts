@@ -27,8 +27,8 @@ async function fetchSecretsStrict(): Promise<Record<string, string>> {
   if (!clientId || !clientSecret || !projectId) {
     console.error(
       "[@soustools/config] FATAL: Missing Infisical credentials " +
-      "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
-      "Process execution halted immediately."
+        "(INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET / INFISICAL_PROJECT_ID). " +
+        "Process execution halted immediately.",
     );
     process.exit(1);
   }
@@ -43,7 +43,11 @@ async function fetchSecretsStrict(): Promise<Record<string, string>> {
     });
 
     const secretsArray =
-      (secretsResponse as { secrets?: Array<{ secretKey: string; secretValue: string }> }).secrets || [];
+      (
+        secretsResponse as {
+          secrets?: Array<{ secretKey: string; secretValue: string }>;
+        }
+      ).secrets || [];
 
     const fetchedSecrets: Record<string, string> = {};
     for (const secret of secretsArray) {
@@ -56,7 +60,7 @@ async function fetchSecretsStrict(): Promise<Record<string, string>> {
   } catch (error) {
     console.error(
       "[@soustools/config] FATAL: Infisical secret fetch failed:",
-      (error as Error).message
+      (error as Error).message,
     );
     process.exit(1);
   }
@@ -83,23 +87,34 @@ async function run() {
   if (!childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY && childEnv.SUPABASE_ANON_KEY) {
     childEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = childEnv.SUPABASE_ANON_KEY;
   }
-  if (!childEnv.NEXT_PUBLIC_API_URL) {
-    childEnv.NEXT_PUBLIC_API_URL = childEnv.API_BASE_URL || childEnv.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  if (
+    !childEnv.NEXT_PUBLIC_API_URL &&
+    (childEnv.API_BASE_URL || childEnv.NEXT_PUBLIC_API_BASE_URL)
+  ) {
+    childEnv.NEXT_PUBLIC_API_URL =
+      childEnv.API_BASE_URL || childEnv.NEXT_PUBLIC_API_BASE_URL || "";
   }
-  if (!childEnv.NEXT_PUBLIC_APP_URL) {
-    childEnv.NEXT_PUBLIC_APP_URL = childEnv.APP_BASE_URL || childEnv.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:3000";
+  if (
+    !childEnv.NEXT_PUBLIC_APP_URL &&
+    (childEnv.APP_BASE_URL || childEnv.NEXT_PUBLIC_APP_BASE_URL)
+  ) {
+    childEnv.NEXT_PUBLIC_APP_URL =
+      childEnv.APP_BASE_URL || childEnv.NEXT_PUBLIC_APP_BASE_URL || "";
   }
 
   const [cmd, ...cmdArgs] = args;
 
-  if (cmd === "next" && (cmdArgs.includes("build") || cmdArgs.includes("start"))) {
+  if (
+    cmd === "next" &&
+    (cmdArgs.includes("build") || cmdArgs.includes("start"))
+  ) {
     childEnv.NODE_ENV = "production";
   } else if (!childEnv.NODE_ENV) {
     childEnv.NODE_ENV = "development";
   }
 
   console.log(
-    `[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}"`
+    `[@soustools/config] Spawning command "${cmd} ${cmdArgs.join(" ")}" with NODE_ENV="${childEnv.NODE_ENV}"`,
   );
 
   const child = spawn(cmd, cmdArgs, {
@@ -110,7 +125,9 @@ async function run() {
 
   child.on("close", (code, signal) => {
     if (signal) {
-      console.error(`\n[FATAL CRASH] Child process killed by signal: ${signal}`);
+      console.error(
+        `\n[FATAL CRASH] Child process killed by signal: ${signal}`,
+      );
     }
     process.exit(code !== null ? code : 1);
   });
