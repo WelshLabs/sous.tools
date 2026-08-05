@@ -101,13 +101,21 @@ async function run() {
     childEnv.NEXT_PUBLIC_APP_URL =
       childEnv.APP_BASE_URL || childEnv.NEXT_PUBLIC_APP_BASE_URL || "";
   }
+  if (
+    !childEnv.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY &&
+    (childEnv.NEW_RELIC_LICENSE_KEY ||
+      childEnv.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY)
+  ) {
+    childEnv.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY =
+      childEnv.NEW_RELIC_LICENSE_KEY ||
+      childEnv.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ||
+      "";
+  }
 
   const [cmd, ...cmdArgs] = args;
 
-  if (
-    cmd === "next" &&
-    (cmdArgs.includes("build") || cmdArgs.includes("start"))
-  ) {
+  const isBuildOrStart = args.includes("build") || args.includes("start");
+  if (isBuildOrStart) {
     childEnv.NODE_ENV = "production";
   } else if (!childEnv.NODE_ENV) {
     childEnv.NODE_ENV = "development";

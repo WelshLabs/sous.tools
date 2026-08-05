@@ -2,6 +2,7 @@
   "name": "pos-simulator",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "node ../../packages/config/dist/cli.js next dev -H 0.0.0.0 -p 3003",
     "build": "node ../../packages/config/dist/cli.js next build",
@@ -39,4 +40,3 @@
     "node": ">=22.22.0"
   }
 }
-

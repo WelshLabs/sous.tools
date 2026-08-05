@@ -45,14 +45,16 @@ const nextConfig = {
     remotePatterns,
   },
   transpilePackages: [
-    "@soustools/ui", 
-    "@soustools/design-system", 
-    "@soustools/domain-recipes", 
-    "@soustools/domain-signage",
+    "@soustools/design-system",
     "@soustools/domain-inventory",
+    "@soustools/domain-pos",
+    "@soustools/domain-recipes",
     "@soustools/domain-settings",
-    '@soustools/config',
-    '@soustools/api-client'
+    "@soustools/domain-signage",
+    "@soustools/config",
+    "@soustools/api-client",
+    "@soustools/api-types",
+    "@soustools/logger"
   ],
   experimental: {
     optimizePackageImports: ["lucide-react"],

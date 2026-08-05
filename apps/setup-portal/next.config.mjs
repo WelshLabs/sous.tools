@@ -40,14 +40,16 @@ const nextConfig = {
     // 'export' (the previous value) would disable all API routes.
     output: "standalone",
     transpilePackages: [
-        "@soustools/ui", 
         "@soustools/design-system", 
-        "@soustools/domain-recipes", 
-        "@soustools/domain-signage",
         "@soustools/domain-inventory",
+        "@soustools/domain-pos",
+        "@soustools/domain-recipes", 
         "@soustools/domain-settings",
-        '@soustools/config',
-        '@soustools/api-client'
+        "@soustools/domain-signage",
+        "@soustools/config",
+        "@soustools/api-client",
+        "@soustools/api-types",
+        "@soustools/logger"
     ],
     experimental: {
     },
