@@ -91,7 +91,9 @@ export class CommandsService {
             this.logger.warn(
               "Gemini 429 Quota Exceeded. Setting lockout and falling back to Ollama.",
             );
-            await this.cacheManager.set("gemini_quota_lockout", true, 3600000); // 3600 seconds in ms
+            // cache-manager-ioredis expects TTL in SECONDS, not milliseconds.
+            // 3600000 seconds was setting a 41.6 day lockout in Redis.
+            await this.cacheManager.set("gemini_quota_lockout", true, 3600); // 3600 seconds (1 hour)
             if (emitMessage) {
               emitMessage({
                 id: randomUUID(),
