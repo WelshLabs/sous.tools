@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# 1. Base Utilities, Docker CLI, System Tools, ripgrep, gh, tmux, build-essential
+# 1. Base Utilities, Docker CLI, System Tools, ripgrep, gh, tmux, build-essential, Chromium
 RUN apt-get update && apt-get install -y \
     curl \
     git \
@@ -14,11 +14,28 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     docker.io \
     docker-compose \
+    chromium \
+    chromium-driver \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
     && apt-get update && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
+
+# Add chromium wrapper to run headless and no-sandbox in docker
+RUN mv /usr/bin/chromium /usr/bin/chromium-real && \
+    echo '#!/bin/bash\nARGS=()\nfor arg in "$@"; do\n  if [[ "$arg" == "--enable-gpu-rasterization" || "$arg" == "--use-angle=swiftshader-webgl" ]]; then\n    continue\n  fi\n  ARGS+=("$arg")\ndone\nexec /usr/bin/chromium-real --no-sandbox --headless --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage --mute-audio --hide-scrollbars "${ARGS[@]}"' > /usr/bin/chromium && \
+    chmod +x /usr/bin/chromium
 
 # 2. Node.js 22 Setup
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
@@ -53,6 +70,8 @@ RUN groupadd -g 1000 cptrgroup && \
 USER 1000
 ENV HOME=/home/cptruser
 ENV PATH="$HOME/.local/bin:$PATH"
+ENV CHROME_PATH=/usr/bin/chromium
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 
 # 10. Install uv as user (for the Qdrant MCP Server and uvx tools)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh

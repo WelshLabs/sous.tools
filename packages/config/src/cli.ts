@@ -75,9 +75,12 @@ async function run() {
 
   const secrets = await fetchSecretsStrict();
 
+  const envSlug = process.env.INFISICAL_ENV || "dev";
+  console.log(`[@soustools/config] Fetching Infisical secrets for environment: "${envSlug}"`);
+
   const childEnv: Record<string, string> = {
-    ...secrets,
     ...(process.env as Record<string, string>),
+    ...secrets,
   };
 
   // Explicit URL & Supabase key mapping for client environment
@@ -114,8 +117,11 @@ async function run() {
 
   const [cmd, ...cmdArgs] = args;
 
+  const isDev = args.includes("dev");
   const isBuildOrStart = args.includes("build") || args.includes("start");
-  if (isBuildOrStart) {
+  if (isDev) {
+    childEnv.NODE_ENV = "development";
+  } else if (isBuildOrStart) {
     childEnv.NODE_ENV = "production";
   } else if (!childEnv.NODE_ENV) {
     childEnv.NODE_ENV = "development";

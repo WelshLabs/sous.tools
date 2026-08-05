@@ -317,6 +317,7 @@ services:
     volumes:
       - ./.cptr:/home/cptruser/.cptr
       - cptr_data:/data
+      - cptr_gemini_data:/home/cptruser/.gemini
       - /home/conar/projects:/wsl_projects
       - /mnt/c/Users/conar/projects:/win_projects
       - /var/run/docker.sock:/var/run/docker.sock
@@ -351,6 +352,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.cptr-secure.rule=Host(`cptr.sous.tools`)"
       - "traefik.http.routers.cptr-secure.entrypoints=websecure"
+      - "traefik.http.routers.cptr-secure.priority=10"
       - "traefik.http.routers.cptr-secure.tls=true"
       - "traefik.http.routers.cptr-secure.tls.certresolver=letsencrypt"
       - "traefik.http.services.cptr-service.loadbalancer.server.port=8000"
@@ -455,6 +457,7 @@ volumes:
   cptr_data:
   cptr_projects:
   cptr_home_data:
+  cptr_gemini_data:
   tts_voices:
   sd_data:
 

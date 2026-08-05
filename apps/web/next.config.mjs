@@ -1,10 +1,17 @@
 import withSerwistInit from "@serwist/next";
 
-const withSerwist = withSerwistInit({
-  swSrc: "src/sw.ts",
-  swDest: "public/sw.js",
-  disable: process.env.NODE_ENV === "development" || process.env.NODE_ENV === "staging",
-});
+const isProductionPwa =
+  process.env.NODE_ENV === "production" &&
+  process.env.DISABLE_PWA !== "true" &&
+  process.env.INFISICAL_ENV !== "dev";
+
+const withSerwist = isProductionPwa
+  ? withSerwistInit({
+      swSrc: "src/sw.ts",
+      swDest: "public/sw.js",
+      disable: false,
+    })
+  : (config) => config;
 
 const remotePatterns = [];
 
@@ -40,7 +47,15 @@ if (apiUrl) {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ["dev.sous.tools", "localhost"],
+  assetPrefix: process.env.NODE_ENV === "development" ? "" : (process.env.ASSET_PREFIX || ""),
+  allowedDevOrigins: [
+    "cptr.sous.tools",
+    "dev.sous.tools",
+    "*.sous.tools",
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0"
+  ],
   images: {
     remotePatterns,
   },

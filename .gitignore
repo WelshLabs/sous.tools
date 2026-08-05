@@ -100,3 +100,6 @@ supabase/seed.sql
 mcp_servers.local.env
 .data/
 .cptr
+apps/web/public/sw.js
+apps/web/public/sw.js.map
+

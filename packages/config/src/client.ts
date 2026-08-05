@@ -56,9 +56,11 @@ try {
   }
 }
 
-/**
- * Validates and exports client-side configuration.
- * Explicitly maps process.env.NEXT_PUBLIC_... properties so the Next.js
- * static compiler can inject them at build time.
- */
-export const clientConfig = parsedConfig;
+export const clientConfig = new Proxy(parsedConfig, {
+  get(target, prop: keyof ClientConfig) {
+    if (prop === "NEXT_PUBLIC_APP_URL" && typeof window !== "undefined" && window.location?.origin) {
+      return window.location.origin;
+    }
+    return target[prop];
+  },
+});
