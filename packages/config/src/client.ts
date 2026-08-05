@@ -16,16 +16,16 @@ let parsedConfig: ClientConfig;
 try {
   const isMockRun = process.env.INFISICAL_MOCK === "true";
   parsedConfig = clientSchema.parse({
-    NODE_ENV: process.env.NODE_ENV || (isMockRun ? "test" : undefined),
+    NODE_ENV: process.env.NODE_ENV ?? (isMockRun ? "test" : undefined),
     IS_MOCK_ENV: process.env.IS_MOCK_ENV === "true" || isMockRun,
     NEXT_PUBLIC_API_URL:
-      process.env.NEXT_PUBLIC_API_URL || (isMockRun ? "mock" : undefined),
+      process.env.NEXT_PUBLIC_API_URL ?? (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_APP_URL:
-      process.env.NEXT_PUBLIC_APP_URL || (isMockRun ? "mock" : undefined),
+      process.env.NEXT_PUBLIC_APP_URL ?? (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_SUPABASE_URL:
-      process.env.NEXT_PUBLIC_SUPABASE_URL || (isMockRun ? "mock" : undefined),
+      process.env.NEXT_PUBLIC_SUPABASE_URL ?? (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY:
-      process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ||
+      process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ??
       (isMockRun ? "mock" : undefined),
   });
 } catch (error) {
@@ -33,7 +33,11 @@ try {
     "[@soustools/config] FATAL: Missing or invalid environment variables from Infisical.",
     error,
   );
-  process.exit(1);
+  if (typeof process !== "undefined" && process.exit) {
+    process.exit(1);
+  } else {
+    throw error;
+  }
 }
 
 /**

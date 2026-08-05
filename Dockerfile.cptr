@@ -33,7 +33,7 @@ RUN npm install -g pnpm pm2 @anthropic-ai/claude-code @modelcontextprotocol/serv
     curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
 
 # 5. Additional Python AI applications & cptr as root
-RUN pip install --no-cache-dir --upgrade "cptr[all]" aider-chat
+RUN pip install --no-cache-dir --upgrade "cptr[all]==0.9.21" aider-chat
 
 # 6. Fix cptr port scanner bug for process names with spaces (e.g. Next.js 15)
 RUN sed -i 's/return int(f.read().split()\[3\])/data = f.read(); return int(data.rsplit(")", 1)[1].split()[1])/' \

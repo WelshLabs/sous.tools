@@ -17,15 +17,10 @@ export const serverSchema = z.object({
   NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY: z.string(),
 
   SUPABASE_ACCESS_TOKEN: z.string(),
-  SUPABASE_PROJECT_TOKEN: z.string(),
   SUPABASE_SERVICE_ROLE_KEY: z.string(),
   SUPABASE_URL: z.string(),
   SUPABASE_DIRECT_URL: z.string(),
   SUPABASE_WEBHOOK_SECRET: z.string(),
-
-  GITHUB_ID: z.string(),
-  GITHUB_SECRET: z.string(),
-  AUTH_SECRET: z.string(),
 
   NEW_RELIC_LICENSE_KEY: z.string(),
   NEW_RELIC_APP_NAME: z.string(),
@@ -69,92 +64,85 @@ let parsedConfig: ServerConfig;
 try {
   const isMockRun = process.env.INFISICAL_MOCK === "true";
   parsedConfig = serverSchema.parse({
-    NODE_ENV: process.env.NODE_ENV || (isMockRun ? "test" : undefined),
+    NODE_ENV: process.env.NODE_ENV ?? (isMockRun ? "test" : undefined),
     IS_PRODUCTION: isProd,
     IS_MOCK_ENV: isMock,
     IS_SECURE_ENV: isSecure,
 
-    PORT: process.env.PORT || (isMockRun ? 3000 : undefined),
-    REDIS_HOST: process.env.REDIS_HOST || (isMockRun ? "mock" : undefined),
-    REDIS_PORT: process.env.REDIS_PORT || (isMockRun ? 6379 : undefined),
+    PORT: process.env.PORT ?? (isMockRun ? 3000 : undefined),
+    REDIS_HOST: process.env.REDIS_HOST ?? (isMockRun ? "mock" : undefined),
+    REDIS_PORT: process.env.REDIS_PORT ?? (isMockRun ? 6379 : undefined),
 
     NEXT_PUBLIC_API_URL:
-      process.env.NEXT_PUBLIC_API_URL || (isMockRun ? "mock" : undefined),
+      process.env.NEXT_PUBLIC_API_URL ?? (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_APP_URL:
-      process.env.NEXT_PUBLIC_APP_URL || (isMockRun ? "mock" : undefined),
+      process.env.NEXT_PUBLIC_APP_URL ?? (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_SUPABASE_ANON_KEY:
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
       (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_SUPABASE_URL:
-      process.env.NEXT_PUBLIC_SUPABASE_URL || (isMockRun ? "mock" : undefined),
+      process.env.NEXT_PUBLIC_SUPABASE_URL ?? (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY:
-      process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ||
+      process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ??
       (isMockRun ? "mock" : undefined),
 
     SUPABASE_ACCESS_TOKEN:
-      process.env.SUPABASE_ACCESS_TOKEN || (isMockRun ? "mock" : undefined),
-    SUPABASE_PROJECT_TOKEN:
-      process.env.SUPABASE_PROJECT_TOKEN || (isMockRun ? "mock" : undefined),
+      process.env.SUPABASE_ACCESS_TOKEN ?? (isMockRun ? "mock" : undefined),
     SUPABASE_SERVICE_ROLE_KEY:
-      process.env.SUPABASE_SERVICE_ROLE_KEY || (isMockRun ? "mock" : undefined),
-    SUPABASE_URL: process.env.SUPABASE_URL || (isMockRun ? "mock" : undefined),
+      process.env.SUPABASE_SERVICE_ROLE_KEY ?? (isMockRun ? "mock" : undefined),
+    SUPABASE_URL: process.env.SUPABASE_URL ?? (isMockRun ? "mock" : undefined),
     SUPABASE_DIRECT_URL:
-      process.env.SUPABASE_DIRECT_URL || (isMockRun ? "mock" : undefined),
+      process.env.SUPABASE_DIRECT_URL ?? (isMockRun ? "mock" : undefined),
     SUPABASE_WEBHOOK_SECRET:
-      process.env.SUPABASE_WEBHOOK_SECRET || (isMockRun ? "mock" : undefined),
-
-    GITHUB_ID: process.env.GITHUB_ID || (isMockRun ? "mock" : undefined),
-    GITHUB_SECRET:
-      process.env.GITHUB_SECRET || (isMockRun ? "mock" : undefined),
-    AUTH_SECRET: process.env.AUTH_SECRET || (isMockRun ? "mock" : undefined),
+      process.env.SUPABASE_WEBHOOK_SECRET ?? (isMockRun ? "mock" : undefined),
 
     NEW_RELIC_LICENSE_KEY:
-      process.env.NEW_RELIC_LICENSE_KEY || (isMockRun ? "mock" : undefined),
+      process.env.NEW_RELIC_LICENSE_KEY ?? (isMockRun ? "mock" : undefined),
     NEW_RELIC_APP_NAME:
-      process.env.NEW_RELIC_APP_NAME || (isMockRun ? "mock" : undefined),
+      process.env.NEW_RELIC_APP_NAME ?? (isMockRun ? "mock" : undefined),
     NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === "true",
 
     GEMINI_API_KEY:
-      process.env.GEMINI_API_KEY || (isMockRun ? "mock" : undefined),
+      process.env.GEMINI_API_KEY ?? (isMockRun ? "mock" : undefined),
     GOOGLE_CLIENT_ID:
-      process.env.GOOGLE_CLIENT_ID || (isMockRun ? "mock" : undefined),
+      process.env.GOOGLE_CLIENT_ID ?? (isMockRun ? "mock" : undefined),
     GOOGLE_CLIENT_SECRET:
-      process.env.GOOGLE_CLIENT_SECRET || (isMockRun ? "mock" : undefined),
+      process.env.GOOGLE_CLIENT_SECRET ?? (isMockRun ? "mock" : undefined),
 
     SQUARE_CLIENT_ID:
-      process.env.SQUARE_CLIENT_ID || (isMockRun ? "mock" : undefined),
+      process.env.SQUARE_CLIENT_ID ?? (isMockRun ? "mock" : undefined),
     SQUARE_CLIENT_SECRET:
-      process.env.SQUARE_CLIENT_SECRET || (isMockRun ? "mock" : undefined),
+      process.env.SQUARE_CLIENT_SECRET ?? (isMockRun ? "mock" : undefined),
     SQUARE_ENVIRONMENT:
-      process.env.SQUARE_ENVIRONMENT || (isMockRun ? "mock" : undefined),
+      process.env.SQUARE_ENVIRONMENT ?? (isMockRun ? "mock" : undefined),
     SQUARE_ACCESS_TOKEN:
-      process.env.SQUARE_ACCESS_TOKEN || (isMockRun ? "mock" : undefined),
+      process.env.SQUARE_ACCESS_TOKEN ?? (isMockRun ? "mock" : undefined),
     SQUARE_WEBHOOK_SIGNATURE_KEY:
-      process.env.SQUARE_WEBHOOK_SIGNATURE_KEY ||
+      process.env.SQUARE_WEBHOOK_SIGNATURE_KEY ??
       (isMockRun ? "mock" : undefined),
 
     USDA_FDC_API_KEY:
-      process.env.USDA_FDC_API_KEY || (isMockRun ? "mock" : undefined),
+      process.env.USDA_FDC_API_KEY ?? (isMockRun ? "mock" : undefined),
     TAVILY_API_KEY:
-      process.env.TAVILY_API_KEY || (isMockRun ? "mock" : undefined),
-    OLLAMA_HOST: process.env.OLLAMA_HOST || (isMockRun ? "mock" : undefined),
-    OLLAMA_MODEL: process.env.OLLAMA_MODEL || (isMockRun ? "mock" : undefined),
+      process.env.TAVILY_API_KEY ?? (isMockRun ? "mock" : undefined),
+    OLLAMA_HOST: process.env.OLLAMA_HOST ?? (isMockRun ? "mock" : undefined),
+    OLLAMA_MODEL: process.env.OLLAMA_MODEL ?? (isMockRun ? "mock" : undefined),
     VISION_PROVIDER:
-      process.env.VISION_PROVIDER || (isMockRun ? "mock" : undefined),
+      process.env.VISION_PROVIDER ?? (isMockRun ? "mock" : undefined),
 
-    APP_VERSION: process.env.APP_VERSION || (isMockRun ? "mock" : undefined),
+    APP_VERSION: process.env.APP_VERSION ?? (isMockRun ? "mock" : undefined),
     SOUS_KIOSK_MODE_FILE:
-      process.env.SOUS_KIOSK_MODE_FILE || (isMockRun ? "mock" : undefined),
+      process.env.SOUS_KIOSK_MODE_FILE ?? (isMockRun ? "mock" : undefined),
     SOUS_DEVICE_CONFIG:
-      process.env.SOUS_DEVICE_CONFIG || (isMockRun ? "mock" : undefined),
+      process.env.SOUS_DEVICE_CONFIG ?? (isMockRun ? "mock" : undefined),
     SOUS_BOOTSTRAP_LOG:
-      process.env.SOUS_BOOTSTRAP_LOG || (isMockRun ? "mock" : undefined),
+      process.env.SOUS_BOOTSTRAP_LOG ?? (isMockRun ? "mock" : undefined),
 
-    NEO4J_URI: process.env.NEO4J_URI || (isMockRun ? "mock" : undefined),
+    NEO4J_URI: process.env.NEO4J_URI ?? (isMockRun ? "mock" : undefined),
     NEO4J_USERNAME:
-      process.env.NEO4J_USERNAME || (isMockRun ? "mock" : undefined),
+      process.env.NEO4J_USERNAME ?? (isMockRun ? "mock" : undefined),
     NEO4J_PASSWORD:
-      process.env.NEO4J_PASSWORD || (isMockRun ? "mock" : undefined),
+      process.env.NEO4J_PASSWORD ?? (isMockRun ? "mock" : undefined),
   });
 } catch (error) {
   console.error(

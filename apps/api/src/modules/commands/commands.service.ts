@@ -516,7 +516,7 @@ export class CommandsService {
     maxResults: number = 5,
   ): Promise<Array<{ title: string; snippet: string; url: string }>> {
     try {
-      const tavilyKey = process.env.TAVILY_API_KEY;
+      const tavilyKey = config.TAVILY_API_KEY;
       if (tavilyKey) {
         const res = await fetch("https://api.tavily.com/search", {
           method: "POST",
