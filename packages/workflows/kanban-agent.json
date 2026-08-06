@@ -7,6 +7,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "kanban-agent",
+        "responseMode": "onReceived",
         "options": {}
       },
       "id": "webhook-trigger",
@@ -171,6 +172,7 @@
     },
     {
       "parameters": {
+        "method": "POST",
         "url": "=https://api.github.com/repos/{{ $('Parse GitHub Payload').item.json.repo }}/issues/{{ $('Parse GitHub Payload').item.json.issueNumber }}/comments",
         "sendHeaders": true,
         "headerParameters": {
