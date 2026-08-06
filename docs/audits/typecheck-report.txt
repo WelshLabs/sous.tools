@@ -3,84 +3,84 @@
    • Running typecheck in 19 packages
    • Remote caching disabled
 
-::group::@soustools/config:build
-cache hit, replaying logs c95c7a517d64598b
+::group::@soustools/api-types:build
+cache hit, replaying logs ef8d53a291d1503d
 $ tsc
 ::endgroup::
-::group::@soustools/api-types:build
-cache hit, replaying logs 75b0cf7444082bd8
+::group::@soustools/config:build
+cache hit, replaying logs bed26800710b55d1
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
-cache miss, executing 0cc1dded79c601c3
+cache miss, executing d5efc9fba16db0bd
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 75a5a537bd013ed3
+cache miss, executing b1b04e8bd6d9bb13
 $ tsc
 ::endgroup::
-::group::@soustools/api-types:typecheck
-cache miss, executing 063c727f83faeecc
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/logger:typecheck
-cache miss, executing 5d7a0cfc0dda6854
+cache miss, executing 1781c04f98425f78
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-client:typecheck
-cache miss, executing d52e91d3331846a7
+cache miss, executing 0d42e1970d83932e
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing fe1890647abb6c06
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
-cache miss, executing d983822f7e0aba47
+cache miss, executing e44c77df7e7f80be
 $ tsc --noEmit
 ::endgroup::
 ::group::cli:typecheck
-cache miss, executing bc48683b8e24870c
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing b7898a2e07820d20
+cache miss, executing 11cc125406521327
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/design-system:typecheck
-cache miss, executing e98b72bd422a4d21
+cache miss, executing ad02620ebac409ca
 $ tsc --noEmit
 ::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 1861c2b737a17936
+::group::@soustools/domain-settings:typecheck
+cache miss, executing debcd840d12760c1
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-pos:typecheck
-cache miss, executing a9c59819e5f139f7
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 83f7ed66d9860e03
+cache miss, executing 9b384c7192537cfd
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-recipes:typecheck
-cache miss, executing 9297e30b05b0ea78
+cache miss, executing 149779759a3e5a26
+$ tsc --noEmit
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing 242bb25241e3e8c2
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing e0e0dd610e5754ba
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-inventory:typecheck
-cache miss, executing ced13a351c85e092
+cache miss, executing c79989fe96614d9c
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
-cache miss, executing 586f0f5fa2bf979d
-$ tsc --noEmit
-::endgroup::
-::group::web:typecheck
-cache miss, executing 7a3dd4632e27ef42
+cache miss, executing 74f679bfcc817768
 $ tsc --noEmit
 ::endgroup::
 ::group::api:typecheck
-cache miss, executing 0f988c89dc4a56d9
+cache miss, executing 4928e7cd7ec845e4
+$ tsc --noEmit
+::endgroup::
+::group::web:typecheck
+cache miss, executing c68fe501d9bca501
 $ tsc --noEmit
 ::endgroup::
 
  Tasks:    19 successful, 19 total
 Cached:    2 cached, 19 total
-  Time:    54.975s 
+  Time:    34.641s 
 
