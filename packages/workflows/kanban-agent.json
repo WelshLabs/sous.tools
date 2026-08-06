@@ -198,26 +198,32 @@
     },
     {
       "parameters": {
-        "webhookUrl": "https://discord.com/api/webhooks/1531662704740274312/eJSjGN0LlqYhjI-rrlzLJBTTeOaPec-RnDrz7Pjokl49qhkmY8-0hXdppH03J1Mpftu7",
-        "text": "=🔍 **PR Ready for Human Review**\n\nIssue #{{ $('Parse GitHub Payload').item.json.issueNumber }}: **{{ $('Parse GitHub Payload').item.json.issueTitle }}**\n\n✅ Typecheck, lint, and tests passed.\n📋 Please review the PR, verify the changes, and move the Kanban card to **Done** to auto-merge.",
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1531662704740274312/eJSjGN0LlqYhjI-rrlzLJBTTeOaPec-RnDrz7Pjokl49qhkmY8-0hXdppH03J1Mpftu7",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🔍 **PR Ready for Human Review**\\n\\nIssue #{{ $('Parse GitHub Payload').item.json.issueNumber }}: **{{ $('Parse GitHub Payload').item.json.issueTitle }}**\\n\\n✅ Typecheck, lint, and tests passed.\\n📋 Please review the PR, verify the changes, and move the Kanban card to **Done** to auto-merge.\"\n}",
         "options": {}
       },
       "id": "notify-discord-review",
       "name": "Notify Discord (Review Gate)",
-      "type": "n8n-nodes-base.discord",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [1560, 460]
     },
     {
       "parameters": {
-        "webhookUrl": "https://discord.com/api/webhooks/1531662704740274312/eJSjGN0LlqYhjI-rrlzLJBTTeOaPec-RnDrz7Pjokl49qhkmY8-0hXdppH03J1Mpftu7",
-        "text": "=🔔 **Agent Blocked — Human Input Required**\n\nIssue #{{ $('Parse GitHub Payload').item.json.issueNumber }}: **{{ $('Parse GitHub Payload').item.json.issueTitle }}**\n\n❓ {{ $json.agentQuestion }}\n\nA comment has been posted on the GitHub issue. Reply there to unblock the agent.",
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1531662704740274312/eJSjGN0LlqYhjI-rrlzLJBTTeOaPec-RnDrz7Pjokl49qhkmY8-0hXdppH03J1Mpftu7",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🔔 **Agent Blocked — Human Input Required**\\n\\nIssue #{{ $('Parse GitHub Payload').item.json.issueNumber }}: **{{ $('Parse GitHub Payload').item.json.issueTitle }}**\\n\\n❓ {{ $json.agentQuestion }}\\n\\nA comment has been posted on the GitHub issue. Reply there to unblock the agent.\"\n}",
         "options": {}
       },
       "id": "notify-discord-blocked",
       "name": "Notify Discord (Agent Blocked)",
-      "type": "n8n-nodes-base.discord",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [1780, 250]
     },
     {

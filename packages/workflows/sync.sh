@@ -27,8 +27,9 @@ echo "🔄 Importing workflows into n8n container..."
 
 # Use the n8n container CLI (no API auth complexity)
 docker exec n8n n8n import:workflow --separate --input=/etc/n8n/workflows/ \
-  && echo "✅ All n8n workflows synced from packages/workflows/" \
-  || { echo "⚠️  Sync completed with warnings (workflows may already be active)"; }
+  && docker exec n8n n8n update:workflow --all --active=true \
+  && echo "✅ All n8n workflows synced and activated from packages/workflows/" \
+  || { echo "⚠️  Sync completed with warnings"; }
 
 echo ""
 echo "🌐 Verify at: https://n8n.sous.tools/workflow"
