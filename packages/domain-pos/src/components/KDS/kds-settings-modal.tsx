@@ -13,7 +13,7 @@ interface KDSSettingsModalProps {
   onChangeTextSize: (sz: "sm" | "md" | "lg") => void;
   density: "compact" | "standard" | "spacious";
   onChangeDensity: (den: "compact" | "standard" | "spacious") => void;
-  posItems: any[];
+  posItems: Record<string, unknown>[];
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onToggleSoldOut: (itemId: string, currentStatus: boolean) => void;

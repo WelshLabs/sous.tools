@@ -41,6 +41,11 @@
     },
     "supabase": {
       "serverUrl": "https://mcp.supabase.com/mcp?project_ref=rdzjkbfwhgnboqtuqhgv&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
+    },
+    "qdrant": {
+      "command": "uvx",
+      "args": ["mcp-server-qdrant", "--qdrant-url", "https://qdrant.sous.tools"]
     }
   }
 }
+

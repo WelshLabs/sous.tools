@@ -108,3 +108,46 @@ export function buildCartWithAddedItem(prevCart: CartItem[], item: CatalogItem, 
   ];
 }
 
+export function parseCatalogPayload(data: unknown) {
+  const payload = (data as Record<string, unknown>)?.data || data;
+  const rawCategories = ((payload as Record<string, unknown>)?.categories as Record<string, unknown>[]) || [];
+  const rawItems = ((payload as Record<string, unknown>)?.items as Record<string, unknown>[]) || [];
+  const rawGroups = ((payload as Record<string, unknown>)?.modifierGroups as Record<string, unknown>[]) || [];
+
+  const categoryMap = new Map<string, string>();
+  const catNames: string[] = [];
+  rawCategories.forEach((c) => {
+    const cid = String(c.id || "");
+    const cname = String(c.name || "");
+    categoryMap.set(cid, cname);
+    catNames.push(cname);
+  });
+
+  const mappedGroups: ModifierGroup[] = rawGroups.map((mg) => ({
+    id: String(mg.id || ""),
+    name: String(mg.name || ""),
+    required: (Number(mg.min_selected_modifiers) || 0) > 0,
+    minSelections: Number(mg.min_selected_modifiers) || 0,
+    maxSelections: Number(mg.max_selected_modifiers) || 10,
+    options: ((mg.pos_modifier_options as Record<string, unknown>[]) || []).map((mo) => ({
+      id: String(mo.id || ""),
+      name: String(mo.name || ""),
+      price: Number(mo.price || 0),
+    })),
+  }));
+
+  const mappedItems: CatalogItem[] = rawItems.map((item) => ({
+    id: String(item.id || ""),
+    name: String(item.name || ""),
+    price: Number(item.price || 0),
+    category: item.category_id ? categoryMap.get(String(item.category_id)) || "Other" : "Other",
+    image: item.image_url ? String(item.image_url) : undefined,
+    isSoldOut: Boolean(item.is_sold_out || false),
+    description: item.description ? String(item.description) : undefined,
+    modifierGroupIds: ((item.pos_item_modifier_groups as Record<string, unknown>[]) || []).map((g) => String(g.modifier_group_id)),
+  }));
+
+  return { categories: catNames, modifierGroups: mappedGroups, items: mappedItems };
+}
+
+

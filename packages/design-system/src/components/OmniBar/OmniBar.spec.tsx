@@ -4,6 +4,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { OmniBarPresentation } from './OmniBarPresentation';
 import { OmniBarProvider } from './OmniBarProvider';
 
+vi.mock('next/navigation', () => ({
+  usePathname: () => "/",
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+  }),
+}));
+
 // Mock global fetch to prevent invalid URL or request failures
 beforeEach(() => {
   global.fetch = vi.fn().mockImplementation((url: string) => {

@@ -124,6 +124,8 @@ export const baseConfig = [
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/no-unused-expressions": "off",
+      "no-unused-expressions": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/consistent-type-imports": [
         "error",
@@ -145,9 +147,9 @@ export const baseConfig = [
       "boundaries/element-types": "off",
     },
   },
-  // ── Config file overrides ──────────────────────────────────────────────
+  // ── Config & Foundational Utilities process.env Exemption ─────────────
   {
-    files: ["**/*.config.js", "**/*.config.mjs", "**/*.config.ts"],
+    files: ["**/*.config.js", "**/*.config.mjs", "**/*.config.ts", "packages/logger/**/*.ts"],
     languageOptions: {
       globals: {
         process: "readonly",

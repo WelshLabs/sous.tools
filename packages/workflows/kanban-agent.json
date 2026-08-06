@@ -171,13 +171,12 @@
     {
       "parameters": {
         "url": "=https://api.github.com/repos/{{ $('Parse GitHub Payload').item.json.repo }}/issues/{{ $('Parse GitHub Payload').item.json.issueNumber }}/comments",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             { "name": "Accept", "value": "application/vnd.github+json" },
-            { "name": "X-GitHub-Api-Version", "value": "2022-11-28" }
+            { "name": "X-GitHub-Api-Version", "value": "2022-11-28" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.GITHUB_TOKEN || $env.GITHUB_PERSONAL_ACCESS_TOKEN }}" }
           ]
         },
         "sendBody": true,

@@ -58,8 +58,13 @@ try {
 
 export const clientConfig = new Proxy(parsedConfig, {
   get(target, prop: keyof ClientConfig) {
-    if (prop === "NEXT_PUBLIC_APP_URL" && typeof window !== "undefined" && window.location?.origin) {
-      return window.location.origin;
+    if (typeof window !== "undefined" && window.location?.origin) {
+      if (prop === "NEXT_PUBLIC_APP_URL") {
+        return window.location.origin;
+      }
+      if (prop === "NEXT_PUBLIC_API_URL" && window.location.hostname.includes("dev.sous.tools")) {
+        return "https://dev-api.sous.tools";
+      }
     }
     return target[prop];
   },

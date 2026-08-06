@@ -1,0 +1,27 @@
+name: Epic / Feature Master
+description: Large multi-part feature epic to be broken down into atomic agent tasks
+title: "Epic: "
+labels: ["epic", "backlog"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: High-Level Goal & Architectural Vision
+      description: Detailed summary of the epic, architectural boundaries, and intended feature set.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Child Tasks & Execution Breakdown
+      description: Checklist of sub-tasks to be assigned as individual Ready issue cards.
+      placeholder: "- [ ] Task 1: Setup schema and types\n- [ ] Task 2: Implement domain components\n- [ ] Task 3: Add API routes"
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Acceptance & Verification Criteria
+      description: Commands and test cases to verify complete epic success.
+    validations:
+      required: true

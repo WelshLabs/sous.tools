@@ -78,7 +78,7 @@ services:
 
   qdrant:
     image: qdrant/qdrant:latest
-    profiles: ["prod"]
+    profiles: ["dev", "prod"]
     container_name: qdrant
     restart: unless-stopped
     ports:
@@ -255,6 +255,8 @@ services:
     command: ["sleep", "infinity"]
     volumes:
       - .:/workspace
+      - /home/conar/.gemini:/home/cptruser/.gemini
+      - /home/conar/.config:/home/cptruser/.config
     networks:
       - traefik_public
     deploy:
@@ -317,7 +319,8 @@ services:
     volumes:
       - ./.cptr:/home/cptruser/.cptr
       - cptr_data:/data
-      - cptr_gemini_data:/home/cptruser/.gemini
+      - /home/conar/.gemini:/home/cptruser/.gemini
+      - /home/conar/.config:/home/cptruser/.config
       - /home/conar/projects:/wsl_projects
       - /mnt/c/Users/conar/projects:/win_projects
       - /var/run/docker.sock:/var/run/docker.sock
@@ -383,6 +386,8 @@ services:
     volumes:
       - /home/conar/code/sous.tools:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
+      - /home/conar/.gemini:/config/.gemini
+      - /home/conar/.config:/config/.config
       # Shared pnpm store — same UID 1000 across all envs
       - /home/conar/.local/share/pnpm:/config/.local/share/pnpm
     restart: unless-stopped

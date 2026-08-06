@@ -12,7 +12,7 @@ import { POSTicket } from "./components/pos-ticket";
 import { POSModifiersModal, type ModifierGroup, type ModifierOption } from "./components/pos-modifiers-modal";
 import { POSTenderModal } from "./components/pos-tender-modal";
 import { type CatalogItem, type CartItem } from "./pos.types";
-import { getFilteredItems, calculateTotals, buildCartWithAddedItem } from "./pos.helpers";
+import { getFilteredItems, calculateTotals, buildCartWithAddedItem, parseCatalogPayload } from "./pos.helpers";
 
 export function POSRegisterContainer() {
   const [items, setItems] = useState<CatalogItem[]>([]);
@@ -43,44 +43,10 @@ export function POSRegisterContainer() {
           throw new Error(typeof error === "string" ? error : JSON.stringify(error));
         }
         if (data) {
-          const payload = (data as any).data || data;
-          const rawCategories = payload.categories || [];
-          const rawItems = payload.items || [];
-          const rawGroups = payload.modifierGroups || [];
-
-          const categoryMap = new Map<string, string>();
-          const catNames: string[] = [];
-          rawCategories.forEach((c: any) => {
-            categoryMap.set(c.id, c.name);
-            catNames.push(c.name);
-          });
-          setCategories(catNames);
-
-          const mappedGroups: ModifierGroup[] = rawGroups.map((mg: any) => ({
-            id: mg.id,
-            name: mg.name,
-            required: (mg.min_selected_modifiers || 0) > 0,
-            minSelections: mg.min_selected_modifiers || 0,
-            maxSelections: mg.max_selected_modifiers || 10,
-            options: (mg.pos_modifier_options || []).map((mo: any) => ({
-              id: mo.id,
-              name: mo.name,
-              price: Number(mo.price || 0),
-            })),
-          }));
-          setModifierGroups(mappedGroups);
-
-          const mappedItems: CatalogItem[] = rawItems.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            price: Number(item.price || 0),
-            category: item.category_id ? categoryMap.get(item.category_id) || "Other" : "Other",
-            image: item.image_url || undefined,
-            isSoldOut: item.is_sold_out || false,
-            description: item.description || undefined,
-            modifierGroupIds: (item.pos_item_modifier_groups || []).map((g: any) => g.modifier_group_id),
-          }));
-          setItems(mappedItems);
+          const parsed = parseCatalogPayload(data);
+          setCategories(parsed.categories);
+          setModifierGroups(parsed.modifierGroups);
+          setItems(parsed.items);
         }
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : String(e);

@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@soustools/api-client";
-import { type KDSTicket, type KDSTicketItem } from "./kds.types";
+import { type KDSTicket } from "./kds.types";
 import { KDSView } from "./kds.view";
 import { KDSSettingsModal } from "./kds-settings-modal";
+import { playChime as triggerChime, mapOrderToKDSTicket } from "./kds.helpers";
 
 export function KDSContainer() {
   const [tickets, setTickets] = useState<KDSTicket[]>([]);
-  const [posItems, setPosItems] = useState<any[]>([]);
+  const [_posItems, setPosItems] = useState<any[]>([]);
   const [orgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
   const [loading, setLoading] = useState(true);
   const [viewFilter, setViewFilter] = useState<"OPEN" | "CLOSED">("OPEN");
@@ -21,34 +22,7 @@ export function KDSContainer() {
   const [soundVolume, setSoundVolume] = useState(0.5);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const playChime = (type: "new" | "complete") => {
-    if (typeof window === "undefined" || !soundsEnabled) return;
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(soundVolume, ctx.currentTime);
-
-      if (type === "new") {
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12);
-        osc.type = "triangle";
-        osc.start();
-        osc.stop(ctx.currentTime + 0.3);
-      } else {
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
-        osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16);
-        osc.type = "sine";
-        osc.start();
-        osc.stop(ctx.currentTime + 0.4);
-      }
-    } catch {
-      // Audio Context fallback
-    }
-  };
+  const playChime = (type: "new" | "complete") => triggerChime(type, soundsEnabled, soundVolume);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -77,28 +51,7 @@ export function KDSContainer() {
         if (!error && data) {
           const payload = (data as any).data || data;
           if (Array.isArray(payload)) {
-            setTickets(
-              payload.map((o: any) => {
-                const lineItems: KDSTicketItem[] = (o.pos_order_line_items || []).map((li: any) => ({
-                  id: li.id,
-                  name: li.name || "Item",
-                  qty: Number(li.quantity || 1),
-                  notes: li.base_price_money ? `$${Number(li.base_price_money).toFixed(2)}` : undefined,
-                  status: li.status === "COMPLETED" ? "COMPLETED" : "OPEN",
-                }));
-
-                const extId = o.external_id || o.id;
-                return {
-                  id: o.id,
-                  ticketNumber: extId.length >= 4 ? extId.substring(extId.length - 4) : extId,
-                  tableNumber: o.location_id || "Main Dining",
-                  createdAt: o.created_at,
-                  isRush: false,
-                  status: o.state === "COMPLETED" ? "CLOSED" : "OPEN",
-                  items: lineItems.length > 0 ? lineItems : [{ id: `fallback-${o.id}`, name: "Order Total", qty: 1, notes: `$${o.total_money}`, status: "OPEN" }],
-                };
-              })
-            );
+            setTickets(payload.map(mapOrderToKDSTicket));
           }
         }
       } catch (err) {

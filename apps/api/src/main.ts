@@ -55,6 +55,10 @@ async function bootstrap(): Promise<void> {
         'https://tv.sous.tools',
         'https://setup.sous.tools',
         'https://editor.sous.tools',
+        'https://dev.sous.tools',
+        'https://dev-api.sous.tools',
+        'https://dev-pos.sous.tools',
+        'https://dev-setup.sous.tools',
         'android-app://com.sous.wearos',
         'app://com.sous.wearos'
       ]
