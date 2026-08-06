@@ -1,6 +1,7 @@
 {
   "id": "kanban-autonomous-pipeline",
   "name": "GitHub Kanban Pipeline (Aider → Qdrant Sync → Human Review Gate)",
+  "active": true,
   "nodes": [
     {
       "parameters": {

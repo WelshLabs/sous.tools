@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@soustools/api-client";
-import { type KDSTicket } from "./kds.types";
+import { type KDSTicket, type KDSTicketItem } from "./kds.types";
 import { KDSView } from "./kds.view";
-import { KDSSettingsModal } from "./kds-settings-modal";
+import { KDSSettingsModal, type POSItem } from "./kds-settings-modal";
 import { playChime as triggerChime, mapOrderToKDSTicket } from "./kds.helpers";
 
 export function KDSContainer() {
   const [tickets, setTickets] = useState<KDSTicket[]>([]);
-  const [_posItems, setPosItems] = useState<any[]>([]);
+  const [posItems, setPosItems] = useState<POSItem[]>([]);
   const [orgId] = useState<string>("d0000000-0000-0000-0000-000000000000");
   const [loading, setLoading] = useState(true);
   const [viewFilter, setViewFilter] = useState<"OPEN" | "CLOSED">("OPEN");

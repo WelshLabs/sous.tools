@@ -274,7 +274,7 @@ services:
         condition: service_healthy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: sh -c "docker exec n8n n8n import:workflow --separate --input=/etc/n8n/workflows/ && echo 'n8n workflows synced'"
+    command: sh -c "docker exec n8n n8n import:workflow --separate --input=/etc/n8n/workflows/ && docker exec n8n n8n update:workflow --all --active=true && echo 'n8n workflows synced and activated'"
     networks:
       - traefik_public
 

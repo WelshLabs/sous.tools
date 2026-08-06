@@ -2,6 +2,13 @@
 
 import { Settings, Volume2, VolumeX, Search, PackageX, Eye, EyeOff } from "lucide-react";
 
+export interface POSItem {
+  id: string;
+  name: string;
+  is_sold_out?: boolean;
+  [key: string]: unknown;
+}
+
 interface KDSSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,7 +20,7 @@ interface KDSSettingsModalProps {
   onChangeTextSize: (sz: "sm" | "md" | "lg") => void;
   density: "compact" | "standard" | "spacious";
   onChangeDensity: (den: "compact" | "standard" | "spacious") => void;
-  posItems: Record<string, unknown>[];
+  posItems: POSItem[];
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onToggleSoldOut: (itemId: string, currentStatus: boolean) => void;
@@ -170,7 +177,7 @@ export function KDSSettingsModal({
                       {item.name}
                     </span>
                     <button
-                      onClick={() => onToggleSoldOut(item.id, item.is_sold_out)}
+                      onClick={() => onToggleSoldOut(item.id, item.is_sold_out ?? false)}
                       className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all flex items-center gap-1 cursor-pointer ${
                         item.is_sold_out
                           ? "bg-red-500/10 text-red-400 border-red-500/20"
