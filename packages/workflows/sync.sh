@@ -28,7 +28,8 @@ echo "🔄 Importing workflows into n8n container..."
 # Use the n8n container CLI (no API auth complexity)
 docker exec n8n n8n import:workflow --separate --input=/etc/n8n/workflows/ \
   && docker exec n8n n8n update:workflow --all --active=true \
-  && echo "✅ All n8n workflows synced and activated from packages/workflows/" \
+  && docker restart n8n \
+  && echo "✅ All n8n workflows synced, activated, and n8n reloaded!" \
   || { echo "⚠️  Sync completed with warnings"; }
 
 echo ""
