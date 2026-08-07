@@ -8,7 +8,9 @@
         "httpMethod": "POST",
         "path": "kanban-agent",
         "responseMode": "onReceived",
-        "options": {}
+        "options": {
+          "isFullPath": true
+        }
       },
       "id": "webhook-trigger",
       "name": "GitHub Webhook Trigger",
@@ -59,7 +61,10 @@
           "parameters": [
             { "name": "Accept", "value": "application/vnd.github+json" },
             { "name": "User-Agent", "value": "sous-tools-n8n-agent" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.GITHUB_TOKEN || $env.GITHUB_PERSONAL_ACCESS_TOKEN }}" }
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.GITHUB_TOKEN || $env.GITHUB_PERSONAL_ACCESS_TOKEN }}"
+            }
           ]
         },
         "options": {}
@@ -68,11 +73,12 @@
       "name": "Fetch Issue Comments",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
+      "alwaysOutputData": true,
       "position": [840, 300]
     },
     {
       "parameters": {
-        "jsCode": "const payload = $('Parse GitHub Payload').item.json;\nconst rawComments = $input.first().json || [];\n\n// Take last 2 comments to avoid suffocating Ollama context\nconst commentsArray = Array.isArray(rawComments) ? rawComments : [];\nconst last2 = commentsArray.slice(-2);\n\nlet formattedComments = '';\nif (last2.length > 0) {\n  formattedComments = last2.map(c => `User @${c.user?.login || 'unknown'}: ${c.body}`).join('\\n\\n');\n}\n\nreturn [{\n  json: {\n    ...payload,\n    last2Comments: formattedComments\n  }\n}];"
+        "jsCode": "const payload = $('Parse GitHub Payload').item.json;\nconst items = $input.all();\n\nlet commentsArray = [];\nif (items.length > 0 && items[0].json) {\n  const firstJson = items[0].json;\n  if (Array.isArray(firstJson)) {\n    commentsArray = firstJson;\n  } else if (firstJson.body) {\n    commentsArray = items.map(i => i.json);\n  }\n}\n\nconst last2 = commentsArray.slice(-2);\nlet formattedComments = '';\nif (last2.length > 0) {\n  formattedComments = last2.map(c => `User @${c.user?.login || 'unknown'}: ${c.body || ''}`).join('\\n\\n');\n}\n\nreturn [{\n  json: {\n    ...payload,\n    last2Comments: formattedComments\n  }\n}];"
       },
       "id": "format-last-2-comments",
       "name": "Format Last 2 Comments",
@@ -135,7 +141,7 @@
     },
     {
       "parameters": {
-        "command": "docker exec -i kanban-runner bash -c '\nset -e\ncd /workspace\n\n# Auto-swap label to agent:in-progress\ngh issue edit {{ $json.issueNumber }} --remove-label \"Ready,agent:ready\" --add-label \"agent:in-progress\" 2>/dev/null || true\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\n\ngit fetch origin 2>/dev/null || true\ngit checkout issue-{{ $json.issueNumber }} 2>/dev/null || git checkout -b issue-{{ $json.issueNumber }}\n\naider \\\n  --model openai/coder \\\n  --openai-api-base https://ai.sous.tools/v1 \\\n  --openai-api-key sk-1234 \\\n  --edit-format diff \\\n  --no-auto-commits \\\n  --yes \\\n  --message \"[TASK]: {{ $json.issueTitle }}.\n[DETAILS]: {{ $json.issueBody }}\n[RECENT CONVERSATION]: {{ $json.last2Comments }}\n\nRules:\n1. Read AGENTS.md for architectural constraints.\n2. Query Qdrant MCP FIRST.\n3. Keep changes minimal and focused.\n4. If blocked, output EXACTLY: NEEDS_INPUT: <question> and stop immediately.\"\n\nTEST_OUTPUT=$(pnpm turbo typecheck 2>&1 && pnpm turbo lint 2>&1 && INFISICAL_MOCK=true pnpm turbo test 2>&1)\n\ngit add .\ngit commit -m \"feat(issue-{{ $json.issueNumber }}): {{ $json.issueTitle }}\"\ngit push origin issue-{{ $json.issueNumber }}\n\nPR_URL=$(gh pr create \\\n  --base main \\\n  --head issue-{{ $json.issueNumber }} \\\n  --title \"feat(#{{ $json.issueNumber }}): {{ $json.issueTitle }}\" \\\n  --body \"Resolves #{{ $json.issueNumber }}\n\n## Test Results\n\\`\\`\\`\n${TEST_OUTPUT}\n\\`\\`\\`\" 2>/dev/null || gh pr view issue-{{ $json.issueNumber }} --json url -q .url)\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\necho \"PR: $PR_URL\"\n'"
+        "command": "docker exec -i kanban-runner bash -c '\nset -e\ngit config --global --add safe.directory '*'\ncd /workspace\n\n# Auto-swap label to agent:in-progress\ngh issue edit {{ $json.issueNumber }} --remove-label \"Ready,agent:ready\" --add-label \"agent:in-progress\" 2>/dev/null || true\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\n\ngit fetch origin 2>/dev/null || true\ngit checkout issue-{{ $json.issueNumber }} 2>/dev/null || git checkout -b issue-{{ $json.issueNumber }}\n\naider \\\n  --model openai/coder \\\n  --openai-api-base https://ai.sous.tools/v1 \\\n  --openai-api-key sk-1234 \\\n  --edit-format diff \\\n  --no-auto-commits \\\n  --yes \\\n  --message \"[TASK]: {{ $json.issueTitle }}.\n[DETAILS]: {{ $json.issueBody }}\n[RECENT CONVERSATION]: {{ $json.last2Comments }}\n\nRules:\n1. Read AGENTS.md for architectural constraints.\n2. Query Qdrant MCP FIRST.\n3. Keep changes minimal and focused.\n4. If blocked, output EXACTLY: NEEDS_INPUT: <question> and stop immediately.\"\n\nTEST_OUTPUT=$(pnpm turbo typecheck 2>&1 && pnpm turbo lint 2>&1 && INFISICAL_MOCK=true pnpm turbo test 2>&1)\n\ngit add .\ngit commit -m \"feat(issue-{{ $json.issueNumber }}): {{ $json.issueTitle }}\"\ngit push origin issue-{{ $json.issueNumber }}\n\nPR_URL=$(gh pr create \\\n  --base main \\\n  --head issue-{{ $json.issueNumber }} \\\n  --title \"feat(#{{ $json.issueNumber }}): {{ $json.issueTitle }}\" \\\n  --body \"Resolves #{{ $json.issueNumber }}\n\n## Test Results\n\\`\\`\\`\n${TEST_OUTPUT}\n\\`\\`\\`\" 2>/dev/null || gh pr view issue-{{ $json.issueNumber }} --json url -q .url)\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\necho \"PR: $PR_URL\"\n'"
       },
       "id": "exec-coder-ready",
       "name": "Execute Coder Agent (Ready)",
@@ -145,7 +151,7 @@
     },
     {
       "parameters": {
-        "command": "docker exec -i kanban-runner bash -c '\nset -e\ncd /workspace\n\ngh issue edit {{ $json.issueNumber }} --remove-label \"agent:needs-input\" --add-label \"agent:in-progress\" 2>/dev/null || true\n\ngit fetch origin 2>/dev/null || true\ngit checkout issue-{{ $json.issueNumber }} 2>/dev/null || git checkout -b issue-{{ $json.issueNumber }}\n\naider \\\n  --model openai/coder \\\n  --openai-api-base https://ai.sous.tools/v1 \\\n  --openai-api-key sk-1234 \\\n  --edit-format diff \\\n  --no-auto-commits \\\n  --yes \\\n  --message \"[HUMAN FEEDBACK]: {{ $json.commentBody }}\n[RECENT CONVERSATION]: {{ $json.last2Comments }}\n\nComplete task: {{ $json.issueTitle }}\"\n\nTEST_OUTPUT=$(pnpm turbo typecheck 2>&1 && pnpm turbo lint 2>&1 && INFISICAL_MOCK=true pnpm turbo test 2>&1)\n\ngit add . && git commit -m \"fix(issue-{{ $json.issueNumber }}): apply human feedback\"\ngit push origin issue-{{ $json.issueNumber }}\n\nPR_URL=$(gh pr view issue-{{ $json.issueNumber }} --json url -q .url 2>/dev/null || gh pr create --base main --head issue-{{ $json.issueNumber }} --title \"fix(#{{ $json.issueNumber }}): {{ $json.issueTitle }}\" --body \"Resolves #{{ $json.issueNumber }}\n\n## Test Results\n\\`\\`\\`\n${TEST_OUTPUT}\n\\`\\`\\`\")\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\necho \"PR: $PR_URL\"\n'"
+        "command": "docker exec -i kanban-runner bash -c '\nset -e\ngit config --global --add safe.directory '*'\ncd /workspace\n\ngh issue edit {{ $json.issueNumber }} --remove-label \"agent:needs-input\" --add-label \"agent:in-progress\" 2>/dev/null || true\n\ngit fetch origin 2>/dev/null || true\ngit checkout issue-{{ $json.issueNumber }} 2>/dev/null || git checkout -b issue-{{ $json.issueNumber }}\n\naider \\\n  --model openai/coder \\\n  --openai-api-base https://ai.sous.tools/v1 \\\n  --openai-api-key sk-1234 \\\n  --edit-format diff \\\n  --no-auto-commits \\\n  --yes \\\n  --message \"[HUMAN FEEDBACK]: {{ $json.commentBody }}\n[RECENT CONVERSATION]: {{ $json.last2Comments }}\n\nComplete task: {{ $json.issueTitle }}\"\n\nTEST_OUTPUT=$(pnpm turbo typecheck 2>&1 && pnpm turbo lint 2>&1 && INFISICAL_MOCK=true pnpm turbo test 2>&1)\n\ngit add . && git commit -m \"fix(issue-{{ $json.issueNumber }}): apply human feedback\"\ngit push origin issue-{{ $json.issueNumber }}\n\nPR_URL=$(gh pr view issue-{{ $json.issueNumber }} --json url -q .url 2>/dev/null || gh pr create --base main --head issue-{{ $json.issueNumber }} --title \"fix(#{{ $json.issueNumber }}): {{ $json.issueTitle }}\" --body \"Resolves #{{ $json.issueNumber }}\n\n## Test Results\n\\`\\`\\`\n${TEST_OUTPUT}\n\\`\\`\\`\")\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\necho \"PR: $PR_URL\"\n'"
       },
       "id": "exec-coder-resume",
       "name": "Resume Coder Agent (Human Reply)",
@@ -196,7 +202,10 @@
           "parameters": [
             { "name": "Accept", "value": "application/vnd.github+json" },
             { "name": "User-Agent", "value": "sous-tools-n8n-agent" },
-            { "name": "Authorization", "value": "=Bearer {{ $env.GITHUB_TOKEN || $env.GITHUB_PERSONAL_ACCESS_TOKEN }}" }
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.GITHUB_TOKEN || $env.GITHUB_PERSONAL_ACCESS_TOKEN }}"
+            }
           ]
         },
         "sendBody": true,
@@ -247,7 +256,7 @@
     },
     {
       "parameters": {
-        "command": "docker exec -i kanban-runner bash -c '\nset -e\ncd /workspace\ngit checkout main\ngit pull origin main\n\ngh pr merge issue-{{ $json.issueNumber }} --merge --delete-branch 2>/dev/null || true\ngh issue edit {{ $json.issueNumber }} --remove-label \"agent:in-progress,agent:review,In Review,Ready\" --add-label \"Done\" 2>/dev/null || true\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\necho \"✅ Merged #{{ $json.issueNumber }}\"\n'"
+        "command": "docker exec -i kanban-runner bash -c '\nset -e\ngit config --global --add safe.directory '*'\ncd /workspace\ngit checkout main\ngit pull origin main\n\ngh pr merge issue-{{ $json.issueNumber }} --merge --delete-branch 2>/dev/null || true\ngh issue edit {{ $json.issueNumber }} --remove-label \"agent:in-progress,agent:review,In Review,Ready\" --add-label \"Done\" 2>/dev/null || true\n\npython3 scripts/populate_qdrant.py 2>/dev/null || true\necho \"✅ Merged #{{ $json.issueNumber }}\"\n'"
       },
       "id": "auto-merge-done",
       "name": "Auto-Merge PR & Sync Qdrant (Done)",
@@ -261,15 +270,17 @@
       "main": [[{ "node": "Parse GitHub Payload", "type": "main", "index": 0 }]]
     },
     "Parse GitHub Payload": {
-      "main": [[{ "node": "Should Process Event?", "type": "main", "index": 0 }]]
-    },
-    "Should Process Event?": {
       "main": [
-        [{ "node": "Fetch Issue Comments", "type": "main", "index": 0 }]
+        [{ "node": "Should Process Event?", "type": "main", "index": 0 }]
       ]
     },
+    "Should Process Event?": {
+      "main": [[{ "node": "Fetch Issue Comments", "type": "main", "index": 0 }]]
+    },
     "Fetch Issue Comments": {
-      "main": [[{ "node": "Format Last 2 Comments", "type": "main", "index": 0 }]]
+      "main": [
+        [{ "node": "Format Last 2 Comments", "type": "main", "index": 0 }]
+      ]
     },
     "Format Last 2 Comments": {
       "main": [[{ "node": "Route by Stage", "type": "main", "index": 0 }]]
@@ -277,15 +288,31 @@
     "Route by Stage": {
       "main": [
         [{ "node": "Execute Coder Agent (Ready)", "type": "main", "index": 0 }],
-        [{ "node": "Resume Coder Agent (Human Reply)", "type": "main", "index": 0 }],
-        [{ "node": "Auto-Merge PR & Sync Qdrant (Done)", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Resume Coder Agent (Human Reply)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Auto-Merge PR & Sync Qdrant (Done)",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Execute Coder Agent (Ready)": {
-      "main": [[{ "node": "Check NEEDS_INPUT Signal", "type": "main", "index": 0 }]]
+      "main": [
+        [{ "node": "Check NEEDS_INPUT Signal", "type": "main", "index": 0 }]
+      ]
     },
     "Resume Coder Agent (Human Reply)": {
-      "main": [[{ "node": "Check NEEDS_INPUT Signal", "type": "main", "index": 0 }]]
+      "main": [
+        [{ "node": "Check NEEDS_INPUT Signal", "type": "main", "index": 0 }]
+      ]
     },
     "Check NEEDS_INPUT Signal": {
       "main": [[{ "node": "Is Agent Blocked?", "type": "main", "index": 0 }]]
@@ -297,7 +324,15 @@
       ]
     },
     "Post NEEDS_INPUT to GitHub": {
-      "main": [[{ "node": "Notify Discord (Agent Blocked)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Notify Discord (Agent Blocked)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
