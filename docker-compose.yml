@@ -223,13 +223,14 @@ services:
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - N8N_BLOCK_SVC_EXECUTION_FROM_COMMAND=false
       - N8N_SECURE_COOKIE=false
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_PERSONAL_ACCESS_TOKEN}
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
       - n8n_data:/home/node/.n8n
-      - ./packages/workflows:/etc/n8n/workflows
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - traefik_public
@@ -257,26 +258,14 @@ services:
       - .:/workspace
       - /home/conar/.gemini:/home/cptruser/.gemini
       - /home/conar/.config:/home/cptruser/.config
+      - /home/conar/.ssh:/home/cptruser/.ssh
+      - /home/conar/.gitconfig:/home/cptruser/.gitconfig
     networks:
       - traefik_public
     deploy:
       resources:
         limits:
           memory: 2g
-
-  n8n-sync:
-    image: docker:cli
-    profiles: ["prod"]
-    container_name: n8n-sync
-    restart: "no"
-    depends_on:
-      n8n:
-        condition: service_healthy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: sh -c "docker exec n8n n8n import:workflow --separate --input=/etc/n8n/workflows/ && docker exec n8n node -e \"const sqlite3=require('sqlite3'); const db=new sqlite3.Database('/home/node/.n8n/database.sqlite'); db.run('UPDATE workflow_entity SET active = 1;');\" 2>/dev/null || true && docker restart n8n && echo 'n8n workflows synced, activated, and reloaded'"
-    networks:
-      - traefik_public
 
   api:
     build:
@@ -321,6 +310,8 @@ services:
       - cptr_data:/data
       - /home/conar/.gemini:/home/cptruser/.gemini
       - /home/conar/.config:/home/cptruser/.config
+      - /home/conar/.ssh:/home/cptruser/.ssh
+      - /home/conar/.gitconfig:/home/cptruser/.gitconfig
       - /home/conar/projects:/wsl_projects
       - /mnt/c/Users/conar/projects:/win_projects
       - /var/run/docker.sock:/var/run/docker.sock
@@ -388,6 +379,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/conar/.gemini:/config/.gemini
       - /home/conar/.config:/config/.config
+      - /home/conar/.ssh:/config/.ssh
+      - /home/conar/.gitconfig:/config/.gitconfig
       # Shared pnpm store — same UID 1000 across all envs
       - /home/conar/.local/share/pnpm:/config/.local/share/pnpm
     restart: unless-stopped

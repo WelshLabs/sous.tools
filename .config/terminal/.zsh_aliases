@@ -40,10 +40,12 @@ alias cptr-logs='docker compose logs -f cptr'
 alias editor-logs='docker compose logs -f code-server'
 alias docker-nuke='docker stop $(docker ps -aq) 2>/dev/null; docker system prune -af --volumes'
 
-# Process Management (PM2 Staging Apps)
-alias pm2-status='docker exec code-server pm2 status'
-alias pm2-reload='docker exec code-server pm2 reload ecosystem.config.cjs'
-alias pm2-logs='docker exec code-server pm2 logs'
+# Process Management (PM2 Dev Apps)
+alias pm2-dev='pm2 start $SOUS_ROOT/ecosystem.config.cjs'
+alias pm2-status='pm2 status'
+alias pm2-restart='pm2 restart all'
+alias pm2-stop='pm2 stop all'
+alias pm2-logs='pm2 logs'
 
 # Hosted Supabase Shortcuts (Migration & Type Generation)
 alias db-push='npx supabase db push'

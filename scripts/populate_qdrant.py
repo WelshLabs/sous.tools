@@ -96,7 +96,7 @@ def main():
             "id": 3,
             "tag": "[INFRASTRUCTURE]",
             "title": "Docker Compose Profiles & Service Map (ENFORCED)",
-            "description": "Docker Compose profile 'prod' (Oracle Cloud only): traefik, redis, neo4j, qdrant, qdrant-sync, litellm, ollama, ollama-pull, n8n, n8n-sync, api. Profile 'dev' (local dev machines): traefik, redis, neo4j, cptr, editor, whisper-stt, openedai-tts. AI inference (litellm, ollama, qdrant) is STRICTLY prod-only. Dev environments connect via public URLs: ai.sous.tools (LiteLLM) and qdrant.sous.tools (Qdrant). Never add AI infra containers to the dev profile."
+            "description": "Docker Compose profile 'prod' (Oracle Cloud only): traefik, redis, neo4j, qdrant, qdrant-sync, litellm, ollama, ollama-pull, n8n, api. Profile 'dev' (local dev machines): traefik, redis, neo4j, cptr, editor, whisper-stt, openedai-tts. AI inference (litellm, ollama, qdrant) is STRICTLY prod-only. Dev environments connect via public URLs: ai.sous.tools (LiteLLM) and qdrant.sous.tools (Qdrant). Never add AI infra containers to the dev profile."
         },
         {
             "id": 4,

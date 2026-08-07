@@ -203,7 +203,6 @@ profiles:
       ollama,
       ollama-pull,
       n8n,
-      n8n-sync,
       api,
     ]
 ```
