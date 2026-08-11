@@ -63,7 +63,8 @@ export class PosWebhookController {
     const normalized = driver.normalizeWebhookEvent(rawPayload);
 
     if (!normalized.eventId) {
-      throw new UnauthorizedException("Missing event_id in webhook payload");
+      this.logger.warn(`Missing event_id in webhook payload. Returning 200 to satisfy provider verification.`);
+      return { status: "ignored" };
     }
 
     // 1. Idempotency Check

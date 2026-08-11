@@ -65,15 +65,20 @@ export function RevenueChart({ data }: RevenueChartProps) {
               color: "#f4f4f5"
             }}
           />
-          {chartData.length > 0 && chartData[0].sales !== undefined ? (
-            <>
-              <Bar dataKey="sales" name="Sales" stackId="a" fill="#22d3ee" />
-              <Bar dataKey="tax" name="Tax" stackId="a" fill="#3b82f6" />
-              <Bar dataKey="tips" name="Tips" stackId="a" fill="#818cf8" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="processingFee" name="Processing Fees" stackId="a" fill="#ef4444" radius={[0, 0, 6, 6]} />
-            </>
-          ) : (
+          {chartData.length > 0 && chartData[0].sales !== undefined ? null : (
             <Bar dataKey="value" name="Revenue" fill="#22d3ee" radius={[6, 6, 0, 0]} />
+          )}
+          {chartData.length > 0 && chartData[0].sales !== undefined && (
+            <Bar dataKey="sales" name="Sales" stackId="a" fill="#22d3ee" />
+          )}
+          {chartData.length > 0 && chartData[0].sales !== undefined && (
+            <Bar dataKey="tax" name="Tax" stackId="a" fill="#3b82f6" />
+          )}
+          {chartData.length > 0 && chartData[0].sales !== undefined && (
+            <Bar dataKey="tips" name="Tips" stackId="a" fill="#818cf8" radius={[6, 6, 0, 0]} />
+          )}
+          {chartData.length > 0 && chartData[0].sales !== undefined && (
+            <Bar dataKey="processingFee" name="Processing Fees" stackId="a" fill="#ef4444" radius={[0, 0, 6, 6]} />
           )}
         </BarChart>
       </ResponsiveContainer>
