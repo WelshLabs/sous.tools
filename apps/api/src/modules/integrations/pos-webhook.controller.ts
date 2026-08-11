@@ -23,7 +23,7 @@ export class PosWebhookController {
 
   constructor(
     @InjectQueue("pos-sync") private readonly posSyncQueue: Queue,
-    private readonly squareDriver: SquareDriver
+    private readonly squareDriver: SquareDriver,
   ) {}
 
   private getDriver(provider: string): IPosDriver {
@@ -40,7 +40,7 @@ export class PosWebhookController {
     @Param("provider") provider: string,
     @Headers("x-square-hmacsha256-signature") squareSignature: string,
     @Headers("x-square-signature") squareAltSignature: string,
-    @Req() req: Request
+    @Req() req: Request,
   ): Promise<{ status: string }> {
     const driver = this.getDriver(provider);
     const signature = squareSignature || squareAltSignature;
@@ -63,7 +63,9 @@ export class PosWebhookController {
     const normalized = driver.normalizeWebhookEvent(rawPayload);
 
     if (!normalized.eventId) {
-      this.logger.warn(`Missing event_id in webhook payload. Returning 200 to satisfy provider verification.`);
+      this.logger.warn(
+        `Missing event_id in webhook payload. Returning 200 to satisfy provider verification.`,
+      );
       return { status: "ignored" };
     }
 
@@ -76,13 +78,15 @@ export class PosWebhookController {
 
     if (existingEvent) {
       this.logger.log(
-        `Duplicate event detected. Event ID: ${normalized.eventId}. Returning 200 early.`
+        `Duplicate event detected. Event ID: ${normalized.eventId}. Returning 200 early.`,
       );
       return { status: "duplicate_ignored" };
     }
 
     if (!normalized.merchantId) {
-      this.logger.warn(`Invalid ${provider} webhook payload: missing merchant_id. Returning 200 to satisfy provider verification.`);
+      this.logger.warn(
+        `Invalid ${provider} webhook payload: missing merchant_id. Returning 200 to satisfy provider verification.`,
+      );
       return { status: "ignored" };
     }
 
@@ -90,14 +94,14 @@ export class PosWebhookController {
     const providerKey = provider.toUpperCase();
     const { data: integration, error } = await supabase
       .from("integrations")
-      .select("organization_id, settings")
+      .select("organization_id, settings, metadata")
       .eq("provider", providerKey)
-      .eq("settings->>merchant_id", normalized.merchantId)
+      .eq("metadata->>merchantId", normalized.merchantId)
       .maybeSingle();
 
     if (error || !integration) {
       this.logger.warn(
-        `No integration found for ${provider} merchant ID ${normalized.merchantId}. Returning 200 to satisfy provider verification.`
+        `No integration found for ${provider} merchant ID ${normalized.merchantId}. Returning 200 to satisfy provider verification.`,
       );
       return { status: "ignored" };
     }
@@ -110,7 +114,7 @@ export class PosWebhookController {
     const isValidSignature = driver.verifyWebhookSignature(
       signature,
       rawBody,
-      signatureKey
+      signatureKey,
     );
 
     if (!isValidSignature) {
