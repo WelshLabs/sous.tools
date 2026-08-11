@@ -3,10 +3,14 @@ import { supabase } from '../../lib/supabase';
 import { runControllerAction } from '../signage/response.helper';
 import { ApiResponse } from '@soustools/api-types';
 import { PosTransactionsService } from './pos-transactions.service';
+import { PosGateway } from './pos.gateway';
 
 @Controller('pos')
 export class PosController {
-  constructor(private readonly transactionsService: PosTransactionsService) {}
+  constructor(
+    private readonly transactionsService: PosTransactionsService,
+    private readonly posGateway: PosGateway,
+  ) {}
 
   @Get('catalog')
   async getCatalog(@Query('orgId') orgId?: string): Promise<ApiResponse<any>> {
@@ -91,8 +95,10 @@ export class PosController {
           .eq('id', id)
           .select();
         if (error) throw new Error(error.message);
+        this.posGateway.broadcastOrdersUpdate(orgId);
         return data;
       }
+      this.posGateway.broadcastOrdersUpdate(orgId);
       return { success: true };
     });
   }
@@ -100,10 +106,12 @@ export class PosController {
   @Patch('order-line-items/:id/status')
   async updateLineItemStatus(
     @Param('id') id: string,
-    @Body() body: { status: string },
+    @Body() body: { status: string; orgId?: string },
   ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
+      const orgId = body.orgId || 'd0000000-0000-0000-0000-000000000000';
       await this.transactionsService.updateLineItemStatus(id, body.status);
+      this.posGateway.broadcastOrdersUpdate(orgId);
       return { success: true };
     });
   }

@@ -103,7 +103,7 @@ export function KDSView({
                 return (
                   <div
                     key={ticket.id}
-                    className={`glass-panel flex flex-col justify-between rounded-xl p-4 transition-all duration-300 max-h-[360px] overflow-hidden ${
+                    className={`glass-panel flex flex-col justify-between rounded-xl p-4 transition-all duration-300 max-h-[360px] overflow-hidden animate-in fade-in slide-in-from-bottom-4 zoom-in-95 ${
                       ticket.isRush
                         ? "border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.15)] bg-amber-500/5"
                         : "shadow-lg hover:border-black/20 dark:hover:border-white/20"

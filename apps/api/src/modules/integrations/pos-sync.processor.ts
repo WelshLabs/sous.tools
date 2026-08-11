@@ -2,6 +2,7 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { IntegrationsService } from "./integrations.service";
+import { PosGateway } from "../pos/pos.gateway";
 
 /**
  * BullMQ processor for handling POS catalog and inventory synchronization tasks.
@@ -11,7 +12,10 @@ import { IntegrationsService } from "./integrations.service";
 export class PosSyncProcessor extends WorkerHost {
   private readonly logger = new Logger(PosSyncProcessor.name);
 
-  constructor(private readonly service: IntegrationsService) {
+  constructor(
+    private readonly service: IntegrationsService,
+    private readonly posGateway: PosGateway,
+  ) {
     super();
   }
 
@@ -29,9 +33,13 @@ export class PosSyncProcessor extends WorkerHost {
 
     if (type === "sync-catalog") {
       await this.service.syncSquareCatalog(orgId);
+      this.posGateway.broadcastCatalogUpdate(orgId);
+      this.posGateway.broadcastOrdersUpdate(orgId);
     } else if (type === "webhook-inventory") {
       // Instantly run catalog and inventory sync when webhook signals inventory change
       await this.service.syncSquareCatalog(orgId);
+      this.posGateway.broadcastCatalogUpdate(orgId);
+      this.posGateway.broadcastOrdersUpdate(orgId);
     }
   }
 }

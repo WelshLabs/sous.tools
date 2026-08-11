@@ -6,12 +6,14 @@ import { PosWebhookController } from "./pos-webhook.controller";
 import { PosSyncProcessor } from "./pos-sync.processor";
 import { GoogleDriveService } from "./drivers/google-drive/google-drive.service";
 import { SquareDriver } from "./drivers/square/square.driver";
+import { PosModule } from "../pos/pos.module";
 
 /**
  * Module responsible for third-party integrations and POS synchronization.
  */
 @Module({
   imports: [
+    PosModule,
     BullModule.registerQueue({
       name: "pos-sync",
       defaultJobOptions: {

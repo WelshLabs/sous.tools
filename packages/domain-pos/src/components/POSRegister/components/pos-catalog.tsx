@@ -96,7 +96,7 @@ export function POSCatalog({
               key={compositeKey}
               disabled={isSoldOut}
               onClick={() => onItemClick(item)}
-              className="group text-left transition-transform duration-100 hover:scale-[1.01] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+              className="group text-left transition-transform duration-100 hover:scale-[1.01] active:scale-95 disabled:pointer-events-none disabled:opacity-50 animate-in fade-in zoom-in-95"
             >
               <Card className="relative flex h-full flex-col overflow-hidden border border-border bg-card p-4 transition-colors group-hover:border-primary/50">
                 {item.image && (

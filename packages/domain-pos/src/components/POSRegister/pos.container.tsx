@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@soustools/api-client";
+import { api, createWebSocketClient } from "@soustools/api-client";
 import { OmniBar } from "@soustools/design-system";
 import { POSRegisterView } from "./pos.view";
 import { POSCatalog } from "./components/pos-catalog";
@@ -56,6 +56,20 @@ export function POSRegisterContainer() {
       }
     };
     loadCatalog();
+
+    const targetOrgId = "d0000000-0000-0000-0000-000000000000";
+    const socket = createWebSocketClient({
+      namespace: "/pos",
+      query: { orgId: targetOrgId }
+    });
+
+    socket.on("catalog_updated", () => {
+      loadCatalog();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const filteredItems = getFilteredItems(items, searchQuery, selectedCategory);

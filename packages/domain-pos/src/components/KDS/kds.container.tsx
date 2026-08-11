@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { api } from "@soustools/api-client";
+import { api, createWebSocketClient } from "@soustools/api-client";
 import { type KDSTicket, type KDSTicketItem } from "./kds.types";
 import { KDSView } from "./kds.view";
 import { KDSSettingsModal, type POSItem } from "./kds-settings-modal";
@@ -61,9 +61,22 @@ export function KDSContainer() {
 
     Promise.all([fetchItems(), fetchOrders()]).then(() => setLoading(false));
 
-    // Live update interval
-    const interval = setInterval(fetchOrders, 10000);
-    return () => clearInterval(interval);
+    const socket = createWebSocketClient({
+      namespace: "/pos",
+      query: { orgId }
+    });
+
+    socket.on("orders_updated", () => {
+      fetchOrders();
+    });
+
+    socket.on("catalog_updated", () => {
+      fetchItems();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [orgId]);
 
   const handleToggleLineItem = async (ticketId: string, item: KDSTicketItem) => {
