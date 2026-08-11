@@ -7,6 +7,18 @@ export class RevenueChartItem {
 
   @Field(() => Int)
   value!: number;
+
+  @Field(() => Number, { nullable: true })
+  sales?: number;
+
+  @Field(() => Number, { nullable: true })
+  tax?: number;
+
+  @Field(() => Number, { nullable: true })
+  tips?: number;
+
+  @Field(() => Number, { nullable: true })
+  processingFee?: number;
 }
 
 @ObjectType()

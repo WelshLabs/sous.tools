@@ -205,6 +205,7 @@ services:
     image: n8nio/n8n:latest
     profiles: ["prod"]
     container_name: n8n
+    user: "root"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:5678/healthz"]
@@ -213,12 +214,16 @@ services:
       retries: 5
       start_period: 30s
     environment:
-      - N8N_HOST=n8n.sous.tools
+      - N8N_USER_FOLDER=/home/node/.n8n
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
+      - N8N_EDITOR_BASE_URL=https://n8n.sous.tools
+      - N8N_WEBHOOK_URL=https://n8n.sous.tools
+      - WEBHOOK_URL=https://n8n.sous.tools
       - N8N_COMMAND_ENABLE=true
-      - WEBHOOK_URL=https://n8n.sous.tools/
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - N8N_TRUST_PROXY=true
+      - N8N_PROXY_HOPS=1
       - NODES_EXCLUDE=[]
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - N8N_BLOCK_SVC_EXECUTION_FROM_COMMAND=false
@@ -232,6 +237,7 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
       - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
     networks:
       - traefik_public
     labels:
@@ -253,13 +259,31 @@ services:
     profiles: ["prod"]
     container_name: kanban-runner
     restart: unless-stopped
-    command: ["sleep", "infinity"]
+    environment:
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
+      - INFISICAL_ENV=${INFISICAL_ENV}
+      - GIT_AUTHOR_NAME=n8n Bot
+      - GIT_AUTHOR_EMAIL=n8n-bot@sous.tools
+      - GIT_COMMITTER_NAME=n8n Bot
+      - GIT_COMMITTER_EMAIL=n8n-bot@sous.tools
+      - GIT_CONFIG_COUNT=1
+      - GIT_CONFIG_KEY_0=safe.directory
+      - GIT_CONFIG_VALUE_0=*
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - |
+        sudo chown -R 1000:1000 /workspace/.git 2>/dev/null || true
+        export INFISICAL_TOKEN=$$(infisical login --method=universal-auth --client-id=$${INFISICAL_CLIENT_ID} --client-secret=$${INFISICAL_CLIENT_SECRET} --silent --plain)
+        exec infisical run --log-level info --projectId $${INFISICAL_PROJECT_ID} --env $${INFISICAL_ENV:-dev} -- sh -c 'sleep infinity'
     volumes:
       - .:/workspace
-      - /home/conar/.gemini:/home/cptruser/.gemini
-      - /home/conar/.config:/home/cptruser/.config
-      - /home/conar/.ssh:/home/cptruser/.ssh
-      - /home/conar/.gitconfig:/home/cptruser/.gitconfig
+      - ${HOME}/.gemini:/home/cptruser/.gemini
+      - ${HOME}/.config:/home/cptruser/.config
+      - ${HOME}/.ssh:/home/cptruser/.ssh
+      - ${HOME}/.gitconfig:/home/cptruser/.gitconfig
     networks:
       - traefik_public
     deploy:

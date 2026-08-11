@@ -60,6 +60,10 @@ export function KDSContainer() {
     };
 
     Promise.all([fetchItems(), fetchOrders()]).then(() => setLoading(false));
+
+    // Live update interval
+    const interval = setInterval(fetchOrders, 10000);
+    return () => clearInterval(interval);
   }, [orgId]);
 
   const handleToggleLineItem = async (ticketId: string, item: KDSTicketItem) => {

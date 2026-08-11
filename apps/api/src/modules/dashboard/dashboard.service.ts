@@ -8,22 +8,7 @@ export class DashboardService {
     // 1. Fetch POS orders from Supabase Postgres
     let ordersQuery = supabase
       .from("pos_orders")
-      .select(`
-        *,
-        pos_order_line_items (
-          id,
-          name,
-          quantity,
-          total_money,
-          master_item_id,
-          master_items (
-            id,
-            name,
-            sku,
-            category
-          )
-        )
-      `);
+      .select("*");
 
     if (orgId) {
       ordersQuery = ordersQuery.eq("organization_id", orgId);
@@ -54,8 +39,14 @@ export class DashboardService {
       (o) => o.state === "COMPLETED" || o.state === "CLOSED"
     );
 
-    // Calculate actual total revenue
-    const totalRevenueVal = completedOrders.reduce(
+    // Filter for today's completed orders for daily metrics
+    const todayStr = new Date().toDateString();
+    const todaysCompletedOrders = completedOrders.filter(
+      (o) => o.created_at && new Date(o.created_at).toDateString() === todayStr
+    );
+
+    // Calculate actual total daily revenue
+    const totalRevenueVal = todaysCompletedOrders.reduce(
       (sum, o) => sum + Number(o.total_money || 0),
       0
     );
@@ -64,11 +55,11 @@ export class DashboardService {
       maximumFractionDigits: 0,
     })}`;
 
-    // Calculate actual average ticket time
+    // Calculate actual average ticket time for today
     let averageTicketTimeStr = "0m";
     let totalMinutes = 0;
     let timedOrdersCount = 0;
-    completedOrders.forEach((o) => {
+    todaysCompletedOrders.forEach((o) => {
       if (o.closed_at && o.created_at) {
         const diffMs = new Date(o.closed_at).getTime() - new Date(o.created_at).getTime();
         const diffMin = diffMs / (60 * 1000);
@@ -82,25 +73,53 @@ export class DashboardService {
       averageTicketTimeStr = `${Math.round(totalMinutes / timedOrdersCount)}m`;
     }
 
-    // Compute weekly revenue breakdown from real orders
-    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const weeklyRevenueMap: Record<string, number> = {
-      Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0
-    };
+    // Compute weekly revenue breakdown for the past 7 days (ending today)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setHours(0, 0, 0, 0); // Start of today
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // Go back 6 days to get a 7-day window
+
+    // Initialize array of last 7 days in chronological order
+    const daysOfWeekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const dailyBuckets: { dateStr: string; label: string; value: number; sales: number; tax: number; tips: number; processingFee: number; }[] = [];
+    
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sevenDaysAgo);
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toDateString(); // e.g. "Tue Aug 11 2026"
+      const label = `${daysOfWeekNames[d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
+      dailyBuckets.push({ dateStr, label, value: 0, sales: 0, tax: 0, tips: 0, processingFee: 0 });
+    }
+
     completedOrders.forEach((o) => {
-      const day = daysOfWeek[new Date(o.created_at).getDay()];
-      weeklyRevenueMap[day] = (weeklyRevenueMap[day] || 0) + Number(o.total_money || 0);
+      const orderDateStr = new Date(o.created_at).toDateString();
+      const bucket = dailyBuckets.find(b => b.dateStr === orderDateStr);
+      if (bucket) {
+        bucket.value += Number(o.total_money || 0) + Number((o as any).total_tip_money || 0);
+        bucket.tax += Number(o.total_tax_money || 0);
+        bucket.tips += Number((o as any).total_tip_money || 0);
+        bucket.processingFee += Number((o as any).total_processing_fee_money || 0);
+        bucket.sales += Number(o.total_money || 0) - Number(o.total_tax_money || 0);
+      }
     });
 
-    const orderedDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const revenueChartData = orderedDays.map((day) => ({
-      name: day,
-      value: Math.round(weeklyRevenueMap[day] || 0),
+    const revenueChartData = dailyBuckets.map((b) => ({
+      name: b.label,
+      value: Math.round(b.value),
+      sales: Math.round(b.sales),
+      tax: Math.round(b.tax),
+      tips: Math.round(b.tips),
+      processingFee: -Math.round(b.processingFee), // Negative value for the chart
     }));
 
-    // Compute hourly ticket times from real orders
+    // Compute hourly ticket times from TODAY'S real orders
     const hoursMap: Record<string, { total: number; count: number }> = {};
-    completedOrders.forEach((o) => {
+    // Pre-populate hours to ensure chart renders a line/axis
+    for (let i = 8; i <= 22; i++) {
+      const h = `${String(i).padStart(2, "0")}:00`;
+      hoursMap[h] = { total: 0, count: 0 };
+    }
+
+    todaysCompletedOrders.forEach((o) => {
       if (o.closed_at && o.created_at) {
         const hour = `${String(new Date(o.created_at).getHours()).padStart(2, "0")}:00`;
         const diffMs = new Date(o.closed_at).getTime() - new Date(o.created_at).getTime();
@@ -116,7 +135,7 @@ export class DashboardService {
     const hourlyTicketTimes = Object.keys(hoursMap)
       .map((hour) => ({
         time: hour,
-        minutes: Math.round(hoursMap[hour].total / hoursMap[hour].count),
+        minutes: hoursMap[hour].count > 0 ? Math.round(hoursMap[hour].total / hoursMap[hour].count) : 0,
       }))
       .sort((a, b) => a.time.localeCompare(b.time));
 
@@ -141,7 +160,7 @@ export class DashboardService {
       ticketTimes: hourlyTicketTimes,
       inventoryAlerts: alerts.slice(0, 10),
       summary: {
-        totalOrders: orders.length,
+        totalOrders: todaysCompletedOrders.length,
         averageTicketTime: averageTicketTimeStr,
         dailyRevenue: dailyRevenueStr,
         activeTables: activeTablesCount,

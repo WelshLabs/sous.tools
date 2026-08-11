@@ -58,6 +58,19 @@ export interface SquareOrder {
   total_tax_money?: {
     amount: number;
   };
+  total_tip_money?: {
+    amount: number;
+  };
+  tenders?: Array<{
+    processing_fee_money?: {
+      amount: number;
+    };
+  }>;
+  fulfillments?: Array<{
+    state?: string;
+    completed_at?: string;
+    picked_up_at?: string;
+  }>;
   line_items?: Array<{
     catalog_object_id?: string;
     name?: string;
@@ -115,6 +128,8 @@ export interface POSOrderUpsert {
   total_money: number;
   total_discount_money: number;
   total_tax_money: number;
+  total_tip_money: number;
+  total_processing_fee_money: number;
   closed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -209,7 +224,8 @@ export function mapSquareDiscounts(
 
 export function mapSquareOrders(
   orders: SquareOrder[],
-  orgId: string
+  orgId: string,
+  feeMap?: Map<string, number>
 ): POSOrderUpsert[] {
   return orders.map((order) => ({
     organization_id: orgId,
@@ -220,7 +236,23 @@ export function mapSquareOrders(
     total_money: (order.total_money?.amount || 0) / 100,
     total_discount_money: (order.total_discount_money?.amount || 0) / 100,
     total_tax_money: (order.total_tax_money?.amount || 0) / 100,
-    closed_at: order.closed_at || null,
+    total_tip_money: (order.total_tip_money?.amount || 0) / 100,
+    total_processing_fee_money: (() => {
+      if (feeMap && feeMap.has(order.id)) {
+        return (feeMap.get(order.id) || 0) / 100;
+      }
+      return 0;
+    })(),
+    closed_at: (() => {
+      // If a fulfillment exists and was completed, use its timestamp
+      if (order.fulfillments && order.fulfillments.length > 0) {
+        const completedFulfillment = order.fulfillments.find(f => f.state === "COMPLETED");
+        if (completedFulfillment && (completedFulfillment.completed_at || completedFulfillment.picked_up_at)) {
+          return completedFulfillment.completed_at || completedFulfillment.picked_up_at;
+        }
+      }
+      return order.closed_at || null;
+    })(),
     created_at: order.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }));

@@ -1,0 +1,1 @@
+ALTER TABLE pos_orders ADD COLUMN IF NOT EXISTS total_processing_fee_money NUMERIC NOT NULL DEFAULT 0;

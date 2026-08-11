@@ -81,9 +81,8 @@ export class PosWebhookController {
     }
 
     if (!normalized.merchantId) {
-      throw new UnauthorizedException(
-        `Invalid ${provider} webhook payload: missing merchant_id`
-      );
+      this.logger.warn(`Invalid ${provider} webhook payload: missing merchant_id. Returning 200 to satisfy provider verification.`);
+      return { status: "ignored" };
     }
 
     // Resolve organization associated with this Provider Merchant
@@ -97,11 +96,9 @@ export class PosWebhookController {
 
     if (error || !integration) {
       this.logger.warn(
-        `No integration found for ${provider} merchant ID ${normalized.merchantId}`
+        `No integration found for ${provider} merchant ID ${normalized.merchantId}. Returning 200 to satisfy provider verification.`
       );
-      throw new NotFoundException(
-        `No integration found for merchant: ${normalized.merchantId}`
-      );
+      return { status: "ignored" };
     }
 
     const orgId = integration.organization_id;

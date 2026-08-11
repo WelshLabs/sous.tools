@@ -14,7 +14,11 @@ import {
 
 export interface RevenueData {
   name: string;
-  value: number;
+  value: number; // Keep this for backwards compatibility
+  sales?: number;
+  tax?: number;
+  tips?: number;
+  processingFee?: number;
 }
 
 export interface TicketTimeData {
@@ -60,9 +64,17 @@ export function RevenueChart({ data }: RevenueChartProps) {
               borderRadius: "12px",
               color: "#f4f4f5"
             }}
-            itemStyle={{ color: "#22d3ee" }}
           />
-          <Bar dataKey="value" fill="#22d3ee" radius={[6, 6, 0, 0]} />
+          {chartData.length > 0 && chartData[0].sales !== undefined ? (
+            <>
+              <Bar dataKey="sales" name="Sales" stackId="a" fill="#22d3ee" />
+              <Bar dataKey="tax" name="Tax" stackId="a" fill="#3b82f6" />
+              <Bar dataKey="tips" name="Tips" stackId="a" fill="#818cf8" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="processingFee" name="Processing Fees" stackId="a" fill="#ef4444" radius={[0, 0, 6, 6]} />
+            </>
+          ) : (
+            <Bar dataKey="value" name="Revenue" fill="#22d3ee" radius={[6, 6, 0, 0]} />
+          )}
         </BarChart>
       </ResponsiveContainer>
     </div>

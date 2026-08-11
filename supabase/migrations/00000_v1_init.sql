@@ -904,7 +904,7 @@ CREATE TABLE IF NOT EXISTS public.pos_orders (
   closed_at            TIMESTAMPTZ,
   created_at           TIMESTAMPTZ DEFAULT now(),
   updated_at           TIMESTAMPTZ DEFAULT now(),
-  UNIQUE (organization_id, pos_provider, external_id)
+  CONSTRAINT unique_pos_order UNIQUE (organization_id, pos_provider, external_id)
 );
 
 DROP POLICY IF EXISTS "org_members_full_crud_pos_orders" ON public.pos_orders;
@@ -929,7 +929,7 @@ CREATE TABLE IF NOT EXISTS public.pos_order_line_items (
   status               TEXT NOT NULL DEFAULT 'OPEN',
   created_at           TIMESTAMPTZ DEFAULT now(),
   updated_at           TIMESTAMPTZ DEFAULT now(),
-  UNIQUE (pos_order_id, external_id)
+  CONSTRAINT unique_pos_order_line_item UNIQUE (pos_order_id, external_id)
 );
 
 DROP POLICY IF EXISTS "org_members_full_crud_pos_order_line_items" ON public.pos_order_line_items;

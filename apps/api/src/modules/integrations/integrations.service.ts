@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject } from "@nestjs/common";
+import { Injectable, NotFoundException, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { serverConfig as config } from "@soustools/config/server";
 import { IntegrationStatus } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
@@ -6,10 +6,17 @@ import { syncSquareCatalog } from "./drivers/square/square-sync.helper";
 import { SquareDriver } from "./drivers/square/square.driver";
 
 @Injectable()
-export class IntegrationsService {
+export class IntegrationsService implements OnModuleInit {
+  private readonly logger = new Logger(IntegrationsService.name);
+
   constructor(
     @Inject(SquareDriver) private readonly squareDriver: SquareDriver,
   ) {}
+
+  onModuleInit() {
+    // Polling removed in favor of Square Webhooks (via Redis queue)
+    this.logger.log("IntegrationsService initialized. Webhooks will handle syncs.");
+  }
 
   async checkout(orgId: string, orderData: any): Promise<any> {
     // Route order creation through the driver
@@ -21,10 +28,14 @@ export class IntegrationsService {
         ? "d0000000-0000-0000-0000-000000000000"
         : orgId;
     if (provider === "square") {
-      const baseUrl = "https://connect.squareup.com";
+      const isProd = config.SQUARE_ENVIRONMENT === "production";
+      const baseUrl = isProd
+        ? "https://connect.squareup.com"
+        : "https://connect.squareupsandbox.com";
       const scope =
         "MERCHANT_PROFILE_READ+ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE+ORDERS_READ+ORDERS_WRITE+PAYMENTS_READ";
-      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${config.NEXT_PUBLIC_API_URL}/integrations/callback/square&session=false`;
+      const squareRedirectUri = encodeURIComponent(`${config.NEXT_PUBLIC_API_URL}/integrations/callback/square`);
+      return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${squareRedirectUri}&session=false`;
     } else if (provider === "google") {
       const scope = encodeURIComponent(
         "openid email profile https://www.googleapis.com/auth/drive.readonly",
@@ -110,8 +121,11 @@ export class IntegrationsService {
       }),
     });
 
-    if (!res.ok)
-      throw new Error(`Square token exchange failed: ${await res.text()}`);
+    if (!res.ok) {
+      const errBody = await res.text();
+      this.logger.error(`Square token exchange failed [${res.status}]: ${errBody}`);
+      throw new Error(`Square token exchange failed: ${errBody}`);
+    }
 
     const tokenData = (await res.json()) as {
       access_token: string;

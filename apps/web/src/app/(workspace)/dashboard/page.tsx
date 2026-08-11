@@ -11,6 +11,7 @@ import {
 } from "@soustools/design-system";
 import type { RevenueData, TicketTimeData } from "@soustools/design-system";
 import { Activity, CircleDollarSign, Clock, Users } from "lucide-react";
+import { LiveRefresher } from "./live-refresher";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,10 @@ const DASHBOARD_GRAPHQL_QUERY = `
       revenue {
         name
         value
+        sales
+        tax
+        tips
+        processingFee
       }
       ticketTimes {
         time
@@ -96,6 +101,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 md:p-8 space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto w-full">
+      <LiveRefresher />
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight">Kitchen Dashboard</h1>
         <p className="text-muted-foreground text-sm">

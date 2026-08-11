@@ -305,7 +305,7 @@ async function syncSquareTransactions(
       query: {
         filter: {
           date_time_filter: { created_at: { start_at: beginTime } },
-          state_filter: { states: ["COMPLETED"] },
+          state_filter: { states: ["OPEN", "COMPLETED"] },
         },
         sort: { sort_field: "CREATED_AT", sort_order: "DESC" },
       },
@@ -336,7 +336,32 @@ async function syncSquareTransactions(
     orderCursor = ordersData.cursor;
   } while (orderCursor);
 
-  const ordersToUpsert = mapSquareOrders(allOrders, orgId);
+  let paymentCursor: string | undefined = undefined;
+  const allPayments: any[] = [];
+  const headers = { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" };
+  do {
+    // Only one locationId is used in Square Sync currently, wait, locationIds is an array
+    let paymentUrl = `${baseUrl}/v2/payments?location_id=${locationIds[0]}&begin_time=${beginTime}`;
+    if (paymentCursor) paymentUrl += `&cursor=${paymentCursor}`;
+    const paymentsRes = await fetch(paymentUrl, { headers });
+    if (paymentsRes.ok) {
+      const pData = (await paymentsRes.json()) as any;
+      if (pData.payments) allPayments.push(...pData.payments);
+      paymentCursor = pData.cursor;
+    } else {
+      break;
+    }
+  } while (paymentCursor);
+
+  const feeMap = new Map<string, number>();
+  for (const p of allPayments) {
+    if (p.processing_fee && p.processing_fee.length > 0) {
+      const totalFee = p.processing_fee.reduce((sum: number, f: any) => sum + (f.amount_money?.amount || 0), 0);
+      feeMap.set(p.order_id, (feeMap.get(p.order_id) || 0) + totalFee);
+    }
+  }
+
+  const ordersToUpsert = mapSquareOrders(allOrders, orgId, feeMap);
   if (ordersToUpsert.length > 0) {
     await bulkUpsert(
       supabaseClient,

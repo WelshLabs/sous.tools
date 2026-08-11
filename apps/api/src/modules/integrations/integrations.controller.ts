@@ -52,6 +52,9 @@ export class IntegrationsController {
         await this.service.handleGoogleCallback(code, orgId);
       } else if (provider === "square") {
         await this.service.handleSquareCallback(code, orgId);
+        // Kick off catalog + orders sync in the background — don't await so the
+        // OAuth redirect completes immediately while data populates asynchronously.
+        this.service.syncSquareCatalog(orgId).catch(() => {});
       } else {
         throw new Error(`Unsupported provider: ${provider}`);
       }
