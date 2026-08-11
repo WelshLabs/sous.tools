@@ -60,14 +60,14 @@ export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({
   })();
 
   return (
-    <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl p-4 w-72">
+    <div className="bg-card border border-border rounded-2xl shadow-2xl p-4 w-72">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
           {ATOM_LABELS[atom]}
         </span>
         <button
           onClick={onClose}
-          className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 transition-colors p-0.5 cursor-pointer"
+          className="text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer"
           aria-label="Close"
         >
           <X className="w-4 h-4" />

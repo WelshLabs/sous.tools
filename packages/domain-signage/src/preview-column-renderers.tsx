@@ -36,7 +36,7 @@ export const ColumnMenuPreview: React.FC<ColumnPreviewProps> = ({
 
   if (activeItems.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-zinc-500 text-[9px] italic">
+      <div className="flex items-center justify-center h-full text-muted-foreground text-[9px] italic">
         No menu items selected
       </div>
     );
@@ -87,11 +87,11 @@ export const ColumnMenuPreview: React.FC<ColumnPreviewProps> = ({
 };
 
 export const ColumnImagePreview: React.FC<{ imageUrl?: string }> = ({ imageUrl }) => (
-  <div className="w-full h-full relative flex items-center justify-center bg-zinc-950 rounded overflow-hidden">
+  <div className="w-full h-full relative flex items-center justify-center bg-background rounded overflow-hidden">
     {imageUrl ? (
       <img src={imageUrl} alt="Promo" className="w-full h-full object-cover" />
     ) : (
-      <div className="text-[10px] text-zinc-500 flex flex-col items-center gap-1">
+      <div className="text-[10px] text-muted-foreground flex flex-col items-center gap-1">
         <ImageIcon className="w-5 h-5 text-zinc-600 animate-pulse" />
         <span>No Image URL</span>
       </div>
@@ -105,18 +105,18 @@ export const ColumnTextPreview: React.FC<{
   marketingText?: string;
 }> = ({ title, content, marketingText }) => (
   <div
-    className="w-full h-full p-3 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded flex flex-col justify-center text-center space-y-1 overflow-hidden"
+    className="w-full h-full p-3 bg-muted/50 border border-border rounded flex flex-col justify-center text-center space-y-1 overflow-hidden"
     style={marketingText ? { fontFamily: marketingText } : undefined}
   >
     {title ? (
-      <h4 className="text-xs font-bold text-white leading-tight">{title}</h4>
+      <h4 className="text-xs font-bold text-foreground leading-tight">{title}</h4>
     ) : (
-      <h4 className="text-xs font-bold text-zinc-500 italic">No Title</h4>
+      <h4 className="text-xs font-bold text-muted-foreground italic">No Title</h4>
     )}
     {content ? (
-      <p className="text-[9px] text-zinc-300 leading-normal line-clamp-4">{content}</p>
+      <p className="text-[9px] text-muted-foreground leading-normal line-clamp-4">{content}</p>
     ) : (
-      <p className="text-[8px] text-zinc-500 italic">No content text entered</p>
+      <p className="text-[8px] text-muted-foreground italic">No content text entered</p>
     )}
   </div>
 );

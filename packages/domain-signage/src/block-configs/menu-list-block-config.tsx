@@ -22,13 +22,13 @@ export function MenuListBlockConfig({ selectedBlock, selectedBlockId, onUpdateBl
                             hideDescriptions: e.target.checked,
                           } as any)
                         }
-                        className="w-4 h-4 rounded border-black/10 dark:border-white/10 bg-white dark:bg-black text-cyan-500 focus:ring-cyan-500"
+                        className="w-4 h-4 rounded border-border bg-background dark:bg-background text-cyan-500 focus:ring-cyan-500"
                       />
-                      <span className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                         Hide Item Descriptions
                       </span>
                     </label>
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-3">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-3">
                       Data Source (POS Items)
                     </label>
                     <PosItemMultiPicker

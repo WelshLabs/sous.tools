@@ -164,9 +164,9 @@ export const DisplayCardView: React.FC<DisplayCardViewProps> = ({
     <div className="p-4 rounded-xl bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] flex flex-col justify-between gap-3">
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-sm font-bold text-zinc-200">{display.name}</h3>
+          <h3 className="text-sm font-bold text-foreground">{display.name}</h3>
           {display.portLabel ? (
-            <span className="text-[10px] text-zinc-500 font-mono">
+            <span className="text-[10px] text-muted-foreground font-mono">
               HDMI output: {display.portLabel}
             </span>
           ) : (
@@ -180,7 +180,7 @@ export const DisplayCardView: React.FC<DisplayCardViewProps> = ({
                 <Wifi className="w-3.5 h-3.5" /> Live
               </span>
             ) : (
-              <span className="text-zinc-500 flex items-center gap-0.5">
+              <span className="text-muted-foreground flex items-center gap-0.5">
                 <WifiOff className="w-3.5 h-3.5" /> Offline
               </span>
             )}
@@ -190,7 +190,7 @@ export const DisplayCardView: React.FC<DisplayCardViewProps> = ({
           {display.deviceId && onDeviceSettingsClick && (
             <button
               onClick={() => onDeviceSettingsClick(display.deviceId!)}
-              className="p-1 text-zinc-400 hover:text-zinc-200 rounded hover:bg-black/5 dark:bg-white/5 cursor-pointer transition-colors flex items-center justify-center border-0 bg-transparent"
+              className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted/50 cursor-pointer transition-colors flex items-center justify-center border-0 bg-transparent"
               title="Device Settings"
             >
               <Settings className="w-3.5 h-3.5" />
@@ -200,14 +200,14 @@ export const DisplayCardView: React.FC<DisplayCardViewProps> = ({
             href={`/display/${display.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1 text-zinc-400 hover:text-zinc-200 rounded hover:bg-black/5 dark:bg-white/5 cursor-pointer transition-colors flex items-center justify-center"
+            className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted/50 cursor-pointer transition-colors flex items-center justify-center"
             title="View Display Content"
           >
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
           <button
             onClick={() => onDelete(display.id)}
-            className="p-1 text-zinc-500 hover:text-red-400 rounded hover:bg-red-500/10 cursor-pointer transition-colors flex items-center justify-center border-0 bg-transparent"
+            className="p-1 text-muted-foreground hover:text-red-400 rounded hover:bg-red-500/10 cursor-pointer transition-colors flex items-center justify-center border-0 bg-transparent"
             title="Delete Display"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -215,14 +215,14 @@ export const DisplayCardView: React.FC<DisplayCardViewProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-t border-black/5 dark:border-white/5 pt-2">
-        <span className="text-[10px] text-zinc-400 font-semibold whitespace-nowrap">
+      <div className="flex items-center gap-2 border-t border-border pt-2">
+        <span className="text-[10px] text-muted-foreground font-semibold whitespace-nowrap">
           Show Deck:
         </span>
         <select
           value={display.deckId || ""}
           onChange={(e) => onDeckAssign(display.id, e.target.value || null)}
-          className="w-full text-xs bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1 text-zinc-200 focus:outline-none focus:border-primary font-sans cursor-pointer"
+          className="w-full text-xs bg-card border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:border-primary font-sans cursor-pointer"
         >
           <option value="">-- Unassigned --</option>
           {decks.map((deck) => (
@@ -273,7 +273,7 @@ export const DeckCardView: React.FC<DeckCardViewProps> = ({
   onEditClick
 }) => {
   return (
-    <div className="flex flex-col bg-card/60 backdrop-blur border border-black/10 dark:border-white/10 rounded-xl p-5 hover:border-white/20 transition-all duration-300">
+    <div className="flex flex-col bg-card/60 backdrop-blur border border-border rounded-xl p-5 hover:border-white/20 transition-all duration-300">
       <div className="flex-1 min-w-0">
         {isEditing ? (
           <div className="space-y-2 mb-3">
@@ -283,19 +283,19 @@ export const DeckCardView: React.FC<DeckCardViewProps> = ({
               onChange={(e) => setName(e.target.value)}
               onBlur={handleSaveRename}
               onKeyDown={(e) => e.key === "Enter" && handleSaveRename()}
-              className="w-full px-2 py-1 text-sm bg-zinc-50 dark:bg-zinc-950 border border-white/15 rounded text-white focus:outline-none focus:border-primary"
+              className="w-full px-2 py-1 text-sm bg-background border border-white/15 rounded text-foreground focus:outline-none focus:border-primary"
               placeholder="Deck Name"
               autoFocus
             />
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-zinc-500 font-mono">/s/</span>
+              <span className="text-[10px] text-muted-foreground font-mono">/s/</span>
               <input
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 onBlur={handleSaveRename}
                 onKeyDown={(e) => e.key === "Enter" && handleSaveRename()}
-                className="flex-1 px-2 py-0.5 text-xs bg-zinc-50 dark:bg-zinc-950 border border-white/15 rounded text-zinc-300 font-mono focus:outline-none focus:border-primary"
+                className="flex-1 px-2 py-0.5 text-xs bg-background border border-white/15 rounded text-muted-foreground font-mono focus:outline-none focus:border-primary"
                 placeholder="slug"
               />
             </div>
@@ -303,39 +303,39 @@ export const DeckCardView: React.FC<DeckCardViewProps> = ({
         ) : (
           <div className="mb-3">
             <div className="flex items-center gap-2 group">
-              <h3 className="text-base font-bold text-white truncate max-w-[200px]">
+              <h3 className="text-base font-bold text-foreground truncate max-w-[200px]">
                 {deck.name}
               </h3>
               <button
                 onClick={() => setIsEditing(true)}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-black/10 dark:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-background/10 dark:bg-background/10 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
               >
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
             </div>
-            <p className="text-xs text-zinc-400 font-mono truncate mt-1">
+            <p className="text-xs text-muted-foreground font-mono truncate mt-1">
               /s/{deck.slug}
             </p>
           </div>
         )}
 
         <div className="flex items-center gap-2 mb-4">
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-zinc-800 text-zinc-300 font-medium">
+          <span className="px-2 py-0.5 rounded-full text-[10px] bg-secondary text-muted-foreground font-medium">
             {slideCount} {slideCount === 1 ? "slide" : "slides"}
           </span>
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t border-black/5 dark:border-white/5 pt-4">
+      <div className="flex items-center justify-between gap-2 border-t border-border pt-4">
         <button
           onClick={onEditClick}
-          className="flex-1 px-3 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors cursor-pointer text-center"
+          className="flex-1 px-3 py-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-foreground rounded-lg transition-colors cursor-pointer text-center"
         >
           Edit
         </button>
         <Link
           href={`/signage/${deck.id}/preview`}
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-primary/40 hover:bg-primary/10 text-zinc-400 hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          className="p-2 border border-border hover:border-primary/40 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all cursor-pointer flex items-center justify-center"
           title="Preview Deck"
         >
           <Eye className="w-4 h-4" />
@@ -344,14 +344,14 @@ export const DeckCardView: React.FC<DeckCardViewProps> = ({
           href={getLiveUrl(deck.slug)}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center justify-center"
+          className="p-2 border border-border hover:border-white/25 hover:bg-muted/50 text-muted-foreground hover:text-foreground rounded-lg transition-all cursor-pointer flex items-center justify-center"
           title="Open Live View in New Tab"
         >
           <ExternalLink className="w-4 h-4" />
         </a>
         <button
           onClick={handleCopyUrl}
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-white/25 hover:bg-black/5 dark:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all cursor-pointer"
+          className="p-2 border border-border hover:border-white/25 hover:bg-muted/50 text-muted-foreground hover:text-foreground rounded-lg transition-all cursor-pointer"
           title="Copy Deck URL"
         >
           {copied ? (
@@ -362,7 +362,7 @@ export const DeckCardView: React.FC<DeckCardViewProps> = ({
         </button>
         <button
           onClick={() => onDelete(deck.id)}
-          className="p-2 border border-black/10 dark:border-white/10 hover:border-red-500/30 hover:bg-red-500/10 text-zinc-400 hover:text-red-400 rounded-lg transition-all cursor-pointer"
+          className="p-2 border border-border hover:border-red-500/30 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 rounded-lg transition-all cursor-pointer"
           title="Delete Deck"
         >
           <Trash2 className="w-4 h-4" />

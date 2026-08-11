@@ -67,12 +67,12 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
   }) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
           {label}
         </label>
         <button
           onClick={onLinkToggle}
-          className="text-zinc-400 dark:text-zinc-500 hover:text-cyan-400"
+          className="text-muted-foreground hover:text-cyan-400"
         >
           {linked ? (
             <Link2 className="w-3 h-3" />
@@ -87,7 +87,7 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
           placeholder="e.g. 10px or 1rem"
           value={values[0]}
           onChange={(e) => onChange(0, e.target.value, true)}
-          className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500"
+          className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500"
         />
       ) : (
         <div className="grid grid-cols-4 gap-1">
@@ -100,7 +100,7 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
                 type="text"
                 value={values[i]}
                 onChange={(e) => onChange(i, e.target.value, false)}
-                className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded pl-4 pr-1 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-cyan-500"
+                className="w-full bg-card border border-border rounded pl-4 pr-1 py-1.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
               />
             </div>
           ))}
@@ -113,7 +113,7 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
             Width
           </label>
           <input
@@ -121,11 +121,11 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
             placeholder="auto"
             value={sizing.width || ""}
             onChange={(e) => updateSizing({ width: e.target.value })}
-            className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+            className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
           />
         </div>
         <div>
-          <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
             Height
           </label>
           <input
@@ -133,7 +133,7 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
             placeholder="auto"
             value={sizing.height || ""}
             onChange={(e) => updateSizing({ height: e.target.value })}
-            className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+            className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
           />
         </div>
       </div>

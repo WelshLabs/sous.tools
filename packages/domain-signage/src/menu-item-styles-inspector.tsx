@@ -30,7 +30,7 @@ export const MenuItemStylesInspector: React.FC<
 
   return (
     <div className="flex flex-col gap-4 py-2">
-      <div className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+      <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
         Menu Item Styles
       </div>
 
@@ -43,7 +43,7 @@ export const MenuItemStylesInspector: React.FC<
         styles={styles}
       />
 
-      <div className="flex justify-center p-4 bg-card/50 rounded-xl border border-black/5 dark:border-white/5">
+      <div className="flex justify-center p-4 bg-card/50 rounded-xl border border-border">
         <div className="w-full max-w-[260px]">
           <MenuItemPreviewCard
             stateStyle={styles[activeState]}
@@ -56,7 +56,7 @@ export const MenuItemStylesInspector: React.FC<
       </div>
 
       {selectedAtom ? (
-        <div className="border border-black/5 dark:border-white/5 rounded-xl bg-card/30 overflow-hidden">
+        <div className="border border-border rounded-xl bg-card/30 overflow-hidden">
           <AtomEditorPopover
             atom={selectedAtom}
             activeState={activeState}
@@ -66,7 +66,7 @@ export const MenuItemStylesInspector: React.FC<
           />
         </div>
       ) : (
-        <div className="text-center p-4 rounded-xl border border-dashed border-black/10 dark:border-white/10 text-[11px] text-zinc-400 dark:text-zinc-500">
+        <div className="text-center p-4 rounded-xl border border-dashed border-border text-[11px] text-muted-foreground">
           Click elements on the preview card above to edit colors, sizes,
           borders, and animations.
         </div>

@@ -55,7 +55,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-2 h-12 px-3 bg-zinc-950/80 backdrop-blur border-b border-black/5 dark:border-white/5 shrink-0 relative">
+    <div className="flex items-center justify-between gap-2 h-12 px-3 bg-card/90 backdrop-blur border-b border-border shrink-0 relative">
       {/* Left — name / slug · play · nav */}
       <div className="flex items-center gap-2 min-w-0">
         <div className="flex flex-col min-w-0">
@@ -65,19 +65,19 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             onChange={(e) => setNameInput(e.target.value)}
             onBlur={handleNameBlur}
             onKeyDown={(e) => e.key === "Enter" && handleNameBlur()}
-            className="bg-transparent hover:bg-black/5 dark:bg-white/5 border border-transparent hover:border-black/10 dark:border-white/10 rounded px-1 py-0.5 text-white font-bold text-xs focus:bg-zinc-50 dark:bg-zinc-950 focus:border-white/20 focus:outline-none max-w-[150px] truncate"
+            className="bg-transparent hover:bg-muted/50 border border-transparent hover:border-border rounded px-1 py-0.5 text-foreground font-bold text-xs focus:bg-background focus:border-primary/40 focus:outline-none max-w-[150px] truncate"
             title="Click to rename"
           />
           {deckSlug && (
             <div className="flex items-center gap-1.5 pl-1 text-[10px] font-mono">
-              <span className="cursor-pointer text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-0.5" onClick={handleCopySlug} title="Copy live URL">
+              <span className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5" onClick={handleCopySlug} title="Copy live URL">
                 /s/{deckSlug}
                 {copied ? <Check className="w-2.5 h-2.5 text-green-400" /> : <Copy className="w-2.5 h-2.5" />}
               </span>
               <a
                 href={typeof window !== "undefined" && window.location.hostname === "localhost" ? `http://localhost:5003/s/dtown-cafe/${deckSlug}` : `/s/dtown-cafe/${deckSlug}`}
                 target="_blank" rel="noopener noreferrer"
-                className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
                 title="Open live view in new tab"
               >
                 <ExternalLink className="w-2.5 h-2.5" />
@@ -85,22 +85,22 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </div>
           )}
         </div>
-        <div className="w-px h-6 bg-black/10 dark:bg-white/10 mx-1" />
+        <div className="w-px h-6 bg-border mx-1" />
         <button
           id="editor-top-bar-play"
           onClick={onTogglePlay}
           disabled={noSlides}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border border-black/10 dark:border-white/10 hover:border-white/25 bg-zinc-100 dark:bg-card hover:bg-zinc-800 disabled:opacity-40 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border border-border bg-muted/50 hover:bg-muted disabled:opacity-40 transition-all cursor-pointer text-foreground"
         >
           {isPlaying ? <Pause className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" /> : <Play className="w-3.5 h-3.5 text-green-400 fill-green-400" />}
-          <span className="text-zinc-300 font-mono tracking-tight">{totalSlides > 0 ? `${activeSlideIndex + 1} / ${totalSlides}` : "0 / 0"}</span>
+          <span className="text-foreground font-mono tracking-tight">{totalSlides > 0 ? `${activeSlideIndex + 1} / ${totalSlides}` : "0 / 0"}</span>
         </button>
-        <div className="flex items-center rounded-md overflow-hidden border border-black/10 dark:border-white/10">
-          <button id="editor-top-bar-prev" onClick={onPrevSlide} disabled={noSlides} className="p-1 hover:bg-black/10 dark:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer">
-            <ChevronLeft className="w-4 h-4 text-zinc-400" />
+        <div className="flex items-center rounded-md overflow-hidden border border-border">
+          <button id="editor-top-bar-prev" onClick={onPrevSlide} disabled={noSlides} className="p-1 hover:bg-muted disabled:opacity-40 transition-colors cursor-pointer text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="w-4 h-4" />
           </button>
-          <button id="editor-top-bar-next" onClick={onNextSlide} disabled={noSlides} className="p-1 hover:bg-black/10 dark:bg-white/10 disabled:opacity-40 transition-colors cursor-pointer">
-            <ChevronRight className="w-4 h-4 text-zinc-400" />
+          <button id="editor-top-bar-next" onClick={onNextSlide} disabled={noSlides} className="p-1 hover:bg-muted disabled:opacity-40 transition-colors cursor-pointer text-muted-foreground hover:text-foreground">
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -35,7 +35,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 }) => {
   if (slide.type === "IMAGE") {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-card">
+      <div className="w-full h-full flex items-center justify-center bg-card">
         {slide.imageUrl ? (
           <img
             src={slide.imageUrl}
@@ -52,7 +52,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
   }
   if (slide.type === "VIDEO") {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-card">
+      <div className="w-full h-full flex items-center justify-center bg-card">
         {slide.videoUrl ? (
           <video
             src={slide.videoUrl}
@@ -95,7 +95,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 
     if (isPreviewing) {
       return (
-        <div className="relative w-full h-full flex flex-col bg-white dark:bg-black">
+        <div className="relative w-full h-full flex flex-col bg-background dark:bg-background">
           {blocks.map((block) => (
             <PreviewBlockRenderer
               key={block.id}
@@ -133,7 +133,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
             />
           ))
         ) : (
-          <div className="flex-1 border border-dashed border-black/10 dark:border-white/10 rounded-xl flex items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm cursor-pointer hover:border-cyan-400 hover:text-cyan-400 transition-colors">
+          <div className="flex-1 border border-dashed border-border rounded-xl flex items-center justify-center text-muted-foreground text-sm cursor-pointer hover:border-cyan-400 hover:text-cyan-400 transition-colors">
             Empty Canvas
           </div>
         )}

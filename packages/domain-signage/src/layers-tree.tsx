@@ -23,12 +23,12 @@ const TreeNode = ({ block, depth, selectedBlockId, onSelectBlock }: { block: Sig
   return (
     <div className="flex flex-col">
       <div 
-        className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-cyan-500/20 text-cyan-400" : "hover:bg-black/5 dark:bg-white/5 text-zinc-700 dark:text-zinc-300"}`}
+        className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-cyan-500/20 text-cyan-400" : "hover:bg-muted/50 text-muted-foreground"}`}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
         onClick={() => onSelectBlock(block.id || null)}
       >
         {isContainer ? (
-           <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} className="p-0.5 hover:bg-black/10 dark:bg-white/10 rounded">
+           <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} className="p-0.5 hover:bg-background/10 dark:bg-background/10 rounded">
              {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
            </button>
         ) : <div className="w-4" />}
@@ -54,7 +54,7 @@ export const LayersTree: React.FC<LayersTreeProps> = ({
   return (
     <div className="flex flex-col flex-1 overflow-y-auto p-2">
       <div className="flex flex-col gap-1">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2 py-1 mb-1">Root Layout</div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2 py-1 mb-1">Root Layout</div>
         {activeSlide.columns[0]?.blocks?.map(block => (
           <TreeNode key={block.id} block={block} depth={0} selectedBlockId={selectedBlockId} onSelectBlock={onSelectBlock} />
         ))}

@@ -55,7 +55,7 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div className="fixed inset-0 bg-background/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
       <form
         onSubmit={handlePairSubmit}
         className="w-full max-w-sm bg-card border border-border p-6 rounded-2xl shadow-2xl relative space-y-4 text-foreground"

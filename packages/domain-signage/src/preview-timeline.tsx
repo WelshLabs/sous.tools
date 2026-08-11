@@ -14,9 +14,9 @@ export function PreviewTimeline({ block }: { block: any }) {
         .join(" ");
       return (
         <div className={classes} data-unique-id={block.uniqueSelector}>
-          <div className="absolute left-[15px] top-4 bottom-4 w-px bg-white/20 z-0"></div>
+          <div className="absolute left-[15px] top-4 bottom-4 w-px bg-background/20 z-0"></div>
           {steps.length === 0 ? (
-            <span className="text-[10px] text-zinc-500 italic relative z-10 bg-zinc-50 dark:bg-zinc-950 pl-2">
+            <span className="text-[10px] text-muted-foreground italic relative z-10 bg-background pl-2">
               No timeline steps configured.
             </span>
           ) : (

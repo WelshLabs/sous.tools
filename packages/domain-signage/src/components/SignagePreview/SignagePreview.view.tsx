@@ -88,7 +88,7 @@ export const SignagePreviewView: React.FC<SignagePreviewViewProps> = (props) => 
   const animationCss = config.menuItemStyles ? buildAllAnimationCss(config.menuItemStyles) : "";
 
   return (
-    <div className="w-full min-h-full relative flex flex-col items-center justify-start signage-preview-container bg-white dark:bg-black pt-8 pb-32 st-signage-root" ref={containerRef}>
+    <div className="w-full min-h-full relative flex flex-col items-center justify-start signage-preview-container bg-background dark:bg-background pt-8 pb-32 st-signage-root" ref={containerRef}>
       {(customCss || animationCss) && <style dangerouslySetInnerHTML={{ __html: `${animationCss}\n${customCss}` }} />}
       
       {isPreviewing && config.aspectRatio !== "responsive" && config.scaleToFit !== false ? (
@@ -113,15 +113,15 @@ export const SignagePreviewView: React.FC<SignagePreviewViewProps> = (props) => 
 const PreviewContent = (props: any) => {
   const { config, activeSlide, bgStyle, items, isPreviewing, selectedBlockId, onSelectBlock, onAddBlock, onUpdateBlock, fetchModifiers } = props;
   return (
-    <div className={`w-full flex-1 h-full relative st-layout-background flex flex-col ${config.aspectRatio === "responsive" ? "" : "border-2 border-black/10 dark:border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
+    <div className={`w-full flex-1 h-full relative st-layout-background flex flex-col ${config.aspectRatio === "responsive" ? "" : "border-2 border-border shadow-2xl rounded-2xl"}`} style={bgStyle}>
       {!activeSlide ? (
-        <div className="flex items-center justify-center h-full text-zinc-500 text-sm font-mono">Click + Add Slide to begin</div>
+        <div className="flex items-center justify-center h-full text-muted-foreground text-sm font-mono">Click + Add Slide to begin</div>
       ) : (
         <SlideRenderer slide={activeSlide} items={items} config={config} isPreviewing={isPreviewing} selectedBlockId={selectedBlockId} onSelectBlock={onSelectBlock} onAddBlock={onAddBlock} onUpdateBlock={onUpdateBlock} fetchModifiers={fetchModifiers} />
       )}
       {(config.overlays ?? []).map((o: any) => (
-        <div key={o.id} className={`absolute text-[9px] bg-zinc-950/80 border border-zinc-800 px-1.5 py-0.5 rounded shadow signage-overlay ${o.customCssClass ?? ""}`} style={{ top: o.position.top, bottom: o.position.bottom, left: o.position.left, right: o.position.right, zIndex: o.zIndex ?? 10 }}>
-          {o.type === "BADGE" && <span className="bg-red-500 text-white font-bold px-0.5 rounded mr-0.5 text-[8px]">SOLD OUT</span>}
+        <div key={o.id} className={`absolute text-[9px] bg-background/80 border border-border px-1.5 py-0.5 rounded shadow signage-overlay ${o.customCssClass ?? ""}`} style={{ top: o.position.top, bottom: o.position.bottom, left: o.position.left, right: o.position.right, zIndex: o.zIndex ?? 10 }}>
+          {o.type === "BADGE" && <span className="bg-red-500 text-foreground font-bold px-0.5 rounded mr-0.5 text-[8px]">SOLD OUT</span>}
           {o.content}
         </div>
       ))}
@@ -131,8 +131,8 @@ const PreviewContent = (props: any) => {
 
 const SlideRenderer = (props: any) => {
   const { slide, items, config, isPreviewing, selectedBlockId, onSelectBlock, onAddBlock, onUpdateBlock, fetchModifiers } = props;
-  if (slide.type === "IMAGE") return <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-card">{slide.imageUrl ? <img src={slide.imageUrl} alt="Slide" className="w-full h-full object-cover" /> : <p className="text-xs text-blue-400 italic">Image: (no URL set)</p>}</div>;
-  if (slide.type === "VIDEO") return <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-card">{slide.videoUrl ? <video src={slide.videoUrl} autoPlay loop={slide.loop} muted={slide.mute} className="w-full h-full object-cover" /> : <p className="text-xs text-purple-400 italic">Video: (no URL set)</p>}</div>;
+  if (slide.type === "IMAGE") return <div className="w-full h-full flex items-center justify-center bg-card">{slide.imageUrl ? <img src={slide.imageUrl} alt="Slide" className="w-full h-full object-cover" /> : <p className="text-xs text-blue-400 italic">Image: (no URL set)</p>}</div>;
+  if (slide.type === "VIDEO") return <div className="w-full h-full flex items-center justify-center bg-card">{slide.videoUrl ? <video src={slide.videoUrl} autoPlay loop={slide.loop} muted={slide.mute} className="w-full h-full object-cover" /> : <p className="text-xs text-purple-400 italic">Video: (no URL set)</p>}</div>;
   if (slide.type === "IFRAME") return <div className="w-full h-full">{slide.url ? <iframe src={slide.url} className="w-full h-full border-none" title="Iframe slide" /> : <div className="flex items-center justify-center h-full"><p className="text-xs text-yellow-400 italic">Iframe: (no URL set)</p></div>}</div>;
 
   if (slide.type === "COLUMN_LAYOUT") {
@@ -140,7 +140,7 @@ const SlideRenderer = (props: any) => {
     const styles = config.menuItemStyles || DEFAULT_MENU_ITEM_STYLES;
     if (isPreviewing) {
       return (
-        <div className="relative w-full h-full flex flex-col bg-white dark:bg-black">
+        <div className="relative w-full h-full flex flex-col bg-background dark:bg-background">
           {blocks.map((block: any) => (
             <PreviewBlockRenderer key={block.id} block={block} items={items} styles={styles} isRoot fetchModifiers={fetchModifiers} />
           ))}
@@ -154,7 +154,7 @@ const SlideRenderer = (props: any) => {
             <BlockEditorNode key={block.id || `block-fallback-${idx}`} block={block} items={items} menuItemStyles={styles} onUpdate={onUpdateBlock!} onAddBlock={onAddBlock!} onSelectBlock={onSelectBlock!} selectedBlockId={selectedBlockId || undefined} isRoot />
           ))
         ) : (
-          <div className="flex-1 border border-dashed border-black/10 dark:border-white/10 rounded-xl flex items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm cursor-pointer hover:border-cyan-400 hover:text-cyan-400 transition-colors">Empty Canvas</div>
+          <div className="flex-1 border border-dashed border-border rounded-xl flex items-center justify-center text-muted-foreground text-sm cursor-pointer hover:border-cyan-400 hover:text-cyan-400 transition-colors">Empty Canvas</div>
         )}
       </div>
     );
@@ -166,20 +166,20 @@ const PreviewBlockRenderer = (props: any) => {
   const { block, items, styles, isRoot, fetchModifiers } = props;
   switch (block.type) {
     case "ColumnBlock": {
-      const classes = ["flex flex-col gap-2 w-full st-layout-column", block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
+      const classes = ["flex flex-col gap-2 w-full st-layout-column", block.panelStyle === "glass" ? "st-glass-panel p-2 border border-border bg-muted/50 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
       return <div className={classes} data-unique-id={block.uniqueSelector}>{(block.blocks || []).map((sub: any, idx: number) => <PreviewBlockRenderer key={idx} block={sub} items={items} styles={styles} fetchModifiers={fetchModifiers} />)}</div>;
     }
     case "RowBlock": {
-      const classes = ["flex flex-row gap-2 w-full overflow-x-auto st-layout-row", block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
+      const classes = ["flex flex-row gap-2 w-full overflow-x-auto st-layout-row", block.panelStyle === "glass" ? "st-glass-panel p-2 border border-border bg-muted/50 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
       return <div className={classes} data-unique-id={block.uniqueSelector}>{(block.blocks || []).map((sub: any, idx: number) => <PreviewBlockRenderer key={idx} block={sub} items={items} styles={styles} fetchModifiers={fetchModifiers} />)}</div>;
     }
     case "GridBlock": {
       const colClass = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4", 5: "grid-cols-5", 6: "grid-cols-6" }[block.columns as number] || "grid-cols-2";
-      const classes = ["grid gap-2 w-full st-layout-grid", colClass, block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
+      const classes = ["grid gap-2 w-full st-layout-grid", colClass, block.panelStyle === "glass" ? "st-glass-panel p-2 border border-border bg-muted/50 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
       return <div className={classes} data-unique-id={block.uniqueSelector}>{(block.cells || []).map((sub: any, idx: number) => <PreviewBlockRenderer key={idx} block={sub} items={items} styles={styles} fetchModifiers={fetchModifiers} />)}</div>;
     }
     case "ExplodedItemBlock": {
-      const classes = ["flex flex-col gap-2 w-full st-exploded-item", block.panelStyle === "glass" ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
+      const classes = ["flex flex-col gap-2 w-full st-exploded-item", block.panelStyle === "glass" ? "st-glass-panel p-2 border border-border bg-muted/50 rounded" : "", isRoot ? "flex-1 h-full" : "", block.className].filter(Boolean).join(" ");
       return <div className={classes} data-unique-id={block.uniqueSelector}>{(block.blocks || []).map((sub: any, idx: number) => <PreviewBlockRenderer key={idx} block={sub} items={items} styles={styles} fetchModifiers={fetchModifiers} />)}</div>;
     }
     default:
@@ -196,9 +196,9 @@ const PreviewContentBlocks = ({ block, items, styles, fetchModifiers }: any) => 
     case "MediaCarouselBlock": return <PreviewMediaCarousel block={block} />;
     case "ModifierGroupBlock": return <PreviewModifierGroup block={block} fetchModifiers={fetchModifiers} />;
     case "TimelineBlock": return <PreviewTimeline block={block} />;
-    case "ImageBlock": return <div className="w-full h-full min-h-[60px] flex items-center justify-center bg-zinc-950/50 border border-dashed border-black/10 rounded overflow-hidden">{block.imageUrl ? <img src={block.imageUrl} className="w-full h-full object-cover"/> : <span className="text-[10px]">Static Image</span>}</div>;
-    case "VideoBlock": return <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-zinc-950/50 border border-dashed rounded"><video src={block.videoUrl || ""} autoPlay loop muted playsInline className="w-full h-full object-cover" /></div>;
-    default: return <div className="w-full min-h-[100px] flex items-center justify-center bg-black/5 dark:bg-white/5 border border-dashed rounded"><span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">Unconfigured Content</span></div>;
+    case "ImageBlock": return <div className="w-full h-full min-h-[60px] flex items-center justify-center bg-background/50 border border-dashed border-black/10 rounded overflow-hidden">{block.imageUrl ? <img src={block.imageUrl} className="w-full h-full object-cover"/> : <span className="text-[10px]">Static Image</span>}</div>;
+    case "VideoBlock": return <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-background/50 border border-dashed rounded"><video src={block.videoUrl || ""} autoPlay loop muted playsInline className="w-full h-full object-cover" /></div>;
+    default: return <div className="w-full min-h-[100px] flex items-center justify-center bg-muted/50 border border-dashed rounded"><span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center">Unconfigured Content</span></div>;
   }
 };
 
@@ -208,7 +208,7 @@ const PreviewCategoryHeader = ({ block }: any) => {
     <div className={`w-full p-2 rounded flex flex-col gap-0.5 ${block.panelStyle === "glass" ? "st-glass-panel" : ""} ${block.className || ""}`}>
       <div className="flex justify-between items-center w-full gap-2">
         <h5 className="text-[10px] uppercase tracking-wider flex-1" style={{...typoStyle, fontSize: typoStyle.fontSize || block.fontSize}}>{block.title}</h5>
-        {block.badge && <span className={`text-[6px] px-1 bg-red-600 rounded text-white font-bold shrink-0 ${block.animateBadge ? "animate-pulse" : ""}`}>{block.badge}</span>}
+        {block.badge && <span className={`text-[6px] px-1 bg-red-600 rounded text-foreground font-bold shrink-0 ${block.animateBadge ? "animate-pulse" : ""}`}>{block.badge}</span>}
       </div>
       {block.subtitle && <p className="text-[8px] opacity-80" style={getTypoStyle(block, "subtitle")}>{block.subtitle}</p>}
     </div>
@@ -217,7 +217,7 @@ const PreviewCategoryHeader = ({ block }: any) => {
 
 const PreviewPosItem = ({ block, items, styles }: any) => {
   const item = items.find((i: any) => i.id === block.posItemId || i.externalId === block.posItemId);
-  if (!item) return <div className="text-[8px] text-zinc-500 italic">Item not found ({block.posItemId})</div>;
+  if (!item) return <div className="text-[8px] text-muted-foreground italic">Item not found ({block.posItemId})</div>;
   const optStyle = resolveItemState(item, false, styles);
   if (optStyle.hidden && item.isSoldOut) return null;
   return (
@@ -229,7 +229,7 @@ const PreviewPosItem = ({ block, items, styles }: any) => {
 };
 
 const PreviewMenuList = ({ block, items, styles }: any) => {
-  if (!block.itemIds?.length) return <div className="text-[10px] text-zinc-400">Select items...</div>;
+  if (!block.itemIds?.length) return <div className="text-[10px] text-muted-foreground">Select items...</div>;
   return (
     <div className={`flex flex-col gap-2 w-full ${block.className || ""}`}>
       {block.itemIds.map((itemId: string) => {
@@ -277,7 +277,7 @@ const PreviewMediaCarousel = ({ block }: any) => {
     return () => clearInterval(interval);
   }, [block.slides, block.slideDuration]);
   
-  if (!block.slides?.length) return <span className="text-zinc-500 italic relative z-20">Media Carousel</span>;
+  if (!block.slides?.length) return <span className="text-muted-foreground italic relative z-20">Media Carousel</span>;
   return (
     <div className="relative overflow-hidden w-full h-full min-h-[200px]">
       {block.slides.map((s: any, i: number) => (
@@ -293,7 +293,7 @@ const PreviewModifierGroup = ({ block, fetchModifiers }: any) => {
     if (block.modifierGroupId) fetchModifiers(block.modifierGroupId).then(setOpts).catch(console.error);
   }, [block.modifierGroupId, fetchModifiers]);
   
-  if (!opts.length) return <div className="text-[10px] text-zinc-500">Modifier Group loading...</div>;
+  if (!opts.length) return <div className="text-[10px] text-muted-foreground">Modifier Group loading...</div>;
   return (
     <div className="w-full flex flex-col divide-y divide-white/5">
       <div className="px-3 py-2 font-semibold text-[10px] uppercase">Options</div>
@@ -332,7 +332,7 @@ const SlideFilmstrip = ({ slides, activeSlideIndex, onSelectSlide, onAddSlide, o
               <Draggable key={slide.id || index} draggableId={slide.id || `slide-${index}`} index={index}>
                 {(drag) => (
                   <div ref={drag.innerRef} {...drag.draggableProps} className="flex items-center gap-1">
-                    <div {...drag.dragHandleProps} className="text-white/30"><GripVertical className="w-4 h-4" /></div>
+                    <div {...drag.dragHandleProps} className="text-foreground/30"><GripVertical className="w-4 h-4" /></div>
                     <div onClick={() => onSelectSlide?.(index)} className={`w-32 h-20 border rounded cursor-pointer ${index === activeSlideIndex ? "border-cyan-500" : "border-white/20"}`}>
                        Slide {index + 1}
                     </div>

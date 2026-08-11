@@ -70,7 +70,9 @@ export function playSuccessSound() {
 export function getFilteredItems(items: CatalogItem[], searchQuery: string, selectedCategory: string): CatalogItem[] {
   return items.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "" || item.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "" ||
+      (item.category && item.category.trim().toLowerCase() === selectedCategory.trim().toLowerCase());
     return matchesSearch && matchesCategory;
   });
 }
@@ -115,12 +117,15 @@ export function parseCatalogPayload(data: unknown) {
   const rawGroups = ((payload as Record<string, unknown>)?.modifierGroups as Record<string, unknown>[]) || [];
 
   const categoryMap = new Map<string, string>();
-  const catNames: string[] = [];
+  const catNamesSet = new Set<string>();
+
   rawCategories.forEach((c) => {
     const cid = String(c.id || "");
+    const extId = String(c.external_id || "");
     const cname = String(c.name || "");
-    categoryMap.set(cid, cname);
-    catNames.push(cname);
+    if (cid && cname) categoryMap.set(cid, cname);
+    if (extId && cname) categoryMap.set(extId, cname);
+    if (cname) catNamesSet.add(cname);
   });
 
   const mappedGroups: ModifierGroup[] = rawGroups.map((mg) => ({
@@ -136,18 +141,42 @@ export function parseCatalogPayload(data: unknown) {
     })),
   }));
 
-  const mappedItems: CatalogItem[] = rawItems.map((item) => ({
-    id: String(item.id || ""),
-    name: String(item.name || ""),
-    price: Number(item.price || 0),
-    category: item.category_id ? categoryMap.get(String(item.category_id)) || "Other" : "Other",
-    image: item.image_url ? String(item.image_url) : undefined,
-    isSoldOut: Boolean(item.is_sold_out || false),
-    description: item.description ? String(item.description) : undefined,
-    modifierGroupIds: ((item.pos_item_modifier_groups as Record<string, unknown>[]) || []).map((g) => String(g.modifier_group_id)),
-  }));
+  const mappedItems: CatalogItem[] = rawItems.map((item) => {
+    const itemName = String(item.name || "");
+    let itemCat: string | undefined;
 
-  return { categories: catNames, modifierGroups: mappedGroups, items: mappedItems };
+    if (item.category_id) {
+      itemCat = categoryMap.get(String(item.category_id));
+    }
+    if (!itemCat && (item.category || item.category_name)) {
+      itemCat = String(item.category || item.category_name);
+    }
+    if (!itemCat || itemCat === "Other") {
+      const derived = getCategory(itemName);
+      if (derived && derived !== "Other") {
+        itemCat = derived;
+      } else if (!itemCat) {
+        itemCat = "Other";
+      }
+    }
+
+    if (itemCat) {
+      catNamesSet.add(itemCat);
+    }
+
+    return {
+      id: String(item.id || ""),
+      name: itemName,
+      price: Number(item.price || 0),
+      category: itemCat,
+      image: item.image_url ? String(item.image_url) : undefined,
+      isSoldOut: Boolean(item.is_sold_out || false),
+      description: item.description ? String(item.description) : undefined,
+      modifierGroupIds: ((item.pos_item_modifier_groups as Record<string, unknown>[]) || []).map((g) => String(g.modifier_group_id)),
+    };
+  });
+
+  return { categories: Array.from(catNamesSet), modifierGroups: mappedGroups, items: mappedItems };
 }
 
 

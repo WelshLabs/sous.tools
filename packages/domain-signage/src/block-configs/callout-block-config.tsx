@@ -8,7 +8,7 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
 <>
                 {selectedBlock.type === "CalloutBlock" && (
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
                       Callout Content
                     </label>
                     <input
@@ -20,7 +20,7 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                           title: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     />
                     <input
                       type="text"
@@ -31,7 +31,7 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                           message: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     />
                     <select
                       value={(selectedBlock as any).iconName || "Info"}
@@ -40,7 +40,7 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                           iconName: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-foreground"
                     >
                       <option value="Info">Info</option>
                       <option value="AlertTriangle">Alert Triangle</option>
@@ -59,19 +59,19 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                             accentBorder: e.target.checked,
                           } as any)
                         }
-                        className="w-4 h-4 rounded border-black/10 dark:border-white/10 bg-white dark:bg-black text-cyan-500 focus:ring-cyan-500"
+                        className="w-4 h-4 rounded border-border bg-background dark:bg-background text-cyan-500 focus:ring-cyan-500"
                       />
-                      <span className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                         Accent Border
                       </span>
                     </label>
-                    <div className="pt-2 border-t border-black/5 dark:border-white/5 space-y-3">
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">
+                    <div className="pt-2 border-t border-border space-y-3">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
                         Typography & Colors
                       </label>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+                          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
                             Text Color
                           </label>
                           <input
@@ -84,11 +84,11 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                                 textColor: e.target.value,
                               } as any)
                             }
-                            className="w-full h-8 bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded cursor-pointer"
+                            className="w-full h-8 bg-card border border-border rounded cursor-pointer"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+                          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
                             Font Size
                           </label>
                           <select
@@ -98,7 +98,7 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                                 fontSize: e.target.value,
                               } as any)
                             }
-                            className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-cyan-500"
+                            className="w-full bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
                           >
                             <option value="">Default</option>
                             <option value="12px">12px</option>
@@ -111,7 +111,7 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                         </div>
                       </div>
                       <div>
-                        <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+                        <label className="text-[10px] text-muted-foreground uppercase block mb-1">
                           Background Opacity
                         </label>
                         <input
@@ -127,7 +127,7 @@ export function CalloutBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlo
                           }
                           className="w-full accent-cyan-500"
                         />
-                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 text-right">
+                        <div className="text-[10px] text-muted-foreground text-right">
                           {Math.round(
                             ((selectedBlock as any).backgroundOpacity ?? 1) *
                               100,

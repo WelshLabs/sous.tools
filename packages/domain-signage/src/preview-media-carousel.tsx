@@ -22,7 +22,7 @@ export const PreviewMediaCarousel = ({ block }: { block: any }) => {
         ? "object-fill"
         : "object-cover";
   const classes = [
-    "relative overflow-hidden w-full h-full min-h-[200px] bg-zinc-50 dark:bg-zinc-950 rounded border border-black/5 dark:border-white/5 flex items-center justify-center text-[9px] st-media-carousel",
+    "relative overflow-hidden w-full h-full min-h-[200px] bg-background rounded border border-border flex items-center justify-center text-[9px] st-media-carousel",
     block.className,
   ]
     .filter(Boolean)
@@ -43,7 +43,7 @@ export const PreviewMediaCarousel = ({ block }: { block: any }) => {
           );
         })
       ) : (
-        <span className="text-zinc-500 italic relative z-20">
+        <span className="text-muted-foreground italic relative z-20">
           Media Carousel Preview
         </span>
       )}

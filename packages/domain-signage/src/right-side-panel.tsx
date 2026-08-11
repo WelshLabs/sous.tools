@@ -67,20 +67,20 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
   };
 
   return (
-    <div className={`absolute right-0 top-0 bottom-0 z-30 w-96 flex flex-col bg-zinc-50 dark:bg-zinc-950 border-l border-black/5 dark:border-white/5 shadow-2xl h-full overflow-hidden transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
-      <div className="flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/5 shrink-0 bg-card/50">
-        <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 tracking-wide">Workspace Inspector</span>
-        <button onClick={onClose} aria-label="Close panel" className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 transition-colors p-0.5 cursor-pointer">
+    <div className={`absolute right-0 top-0 bottom-0 z-30 w-96 flex flex-col bg-card border-l border-border shadow-2xl h-full overflow-hidden transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0 bg-muted/40">
+        <span className="text-sm font-semibold text-foreground tracking-wide">Workspace Inspector</span>
+        <button onClick={onClose} aria-label="Close panel" className="text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer">
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="flex border-b border-black/5 dark:border-white/5 shrink-0">
+      <div className="flex border-b border-border shrink-0">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-1 border-b-2 transition-colors ${activeTab === tab.id ? "border-cyan-400 text-cyan-400 bg-black/5 dark:bg-white/5" : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:bg-white/5"}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-1 border-b-2 transition-colors ${activeTab === tab.id ? "border-primary text-primary bg-muted/50" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"}`}
           >
             <tab.icon className="w-4 h-4" />
             <span className="text-[9px] font-bold uppercase tracking-wider">{tab.label}</span>
@@ -111,7 +111,7 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
               onFetchModifierGroups={onFetchModifierGroups}
             />
           ) : (
-            <div className="flex flex-1 items-center justify-center p-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
+            <div className="flex flex-1 items-center justify-center p-6 text-center text-xs text-muted-foreground">
               Select a block to configure
             </div>
           )

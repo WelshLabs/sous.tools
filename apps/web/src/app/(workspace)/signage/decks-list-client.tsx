@@ -6,6 +6,8 @@ import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type SignageLayoutConfig } from "@soustools/api-types";
 
+import { api } from "@soustools/api-client";
+
 interface SignageDeck {
   id: string;
   organization_id: string;
@@ -28,16 +30,15 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
     setCreating(true);
     try {
       const name = `Deck ${initialDecks.length + 1}`;
-      const res = await fetch("/api/signage/layouts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+      const { data, error } = await api.POST("/signage/layouts", {
+        body: { name } as any,
       });
-      const data = await res.json();
-      if (data.success && data.data) {
-        router.push(`/signage/${data.data.id}`);
+      const responseData = data as any;
+      if (!error && responseData?.data?.id) {
+        router.push(`/signage/${responseData.data.id}`);
       } else {
-        alert(data.error || "Failed to create deck");
+        const errMsg = typeof error === "string" ? error : (error as any)?.message || responseData?.error || "Failed to create deck";
+        alert(errMsg);
       }
     } catch (err) {
       console.error("Failed to create deck:", err);
@@ -55,14 +56,13 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
     if (!deckToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/signage/layouts/${deckToDelete}`, {
-        method: "DELETE",
+      const { error } = await api.DELETE("/signage/layouts/{id}", {
+        params: { path: { id: deckToDelete } },
       });
-      const data = await res.json();
-      if (data.success) {
+      if (!error) {
         router.refresh();
       } else {
-        alert(data.error || "Failed to delete deck");
+        alert("Failed to delete deck");
       }
     } catch (err) {
       console.error("Failed to delete deck:", err);
@@ -75,16 +75,14 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
 
   const handleRename = async (id: string, name: string, slug: string) => {
     try {
-      const res = await fetch(`/api/signage/layouts/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, slug }),
+      const { error } = await api.PUT("/signage/layouts/{id}", {
+        params: { path: { id } },
+        body: { name, slug } as any,
       });
-      const data = await res.json();
-      if (data.success) {
+      if (!error) {
         router.refresh();
       } else {
-        alert(data.error || "Failed to rename deck");
+        alert("Failed to rename deck");
       }
     } catch (err) {
       console.error("Failed to rename deck:", err);

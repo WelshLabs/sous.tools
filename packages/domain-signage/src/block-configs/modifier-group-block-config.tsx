@@ -20,7 +20,7 @@ export function ModifierGroupBlockConfig({
 
   return (
     <div className="space-y-3">
-      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">
+      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
         Contextual Modifiers
       </label>
       {(!parentExplodedItem ||

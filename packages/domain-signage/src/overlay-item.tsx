@@ -33,7 +33,7 @@ export const OverlayItem: React.FC<OverlayItemProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="p-3 bg-zinc-950 border border-zinc-900 rounded-lg space-y-3 animate-fadeIn">
+    <div className="p-3 bg-background border border-zinc-900 rounded-lg space-y-3 animate-fadeIn">
       <div className="flex justify-between items-center gap-2">
         <select
           value={overlay.type}
@@ -42,7 +42,7 @@ export const OverlayItem: React.FC<OverlayItemProps> = ({
               type: e.target.value as "TEXT" | "BADGE" | "IMAGE",
             })
           }
-          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-200"
+          className="bg-card border border-border rounded px-2 py-1 text-xs text-foreground"
         >
           <option value="TEXT">Text</option>
           <option value="BADGE">Badge</option>
@@ -59,31 +59,31 @@ export const OverlayItem: React.FC<OverlayItemProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <div>
-          <label className="block text-[10px] text-zinc-400 mb-1">
+          <label className="block text-[10px] text-muted-foreground mb-1">
             Content / URL
           </label>
           <input
             type="text"
             value={overlay.content}
             onChange={(e) => onUpdate({ content: e.target.value })}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
+            className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground"
           />
         </div>
         <div>
-          <label className="block text-[10px] text-zinc-400 mb-1">
+          <label className="block text-[10px] text-muted-foreground mb-1">
             CSS Class (Optional)
           </label>
           <input
             type="text"
             value={overlay.customCssClass || ""}
             onChange={(e) => onUpdate({ customCssClass: e.target.value })}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
+            className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-[10px] text-zinc-400 mb-1">
+        <label className="block text-[10px] text-muted-foreground mb-1">
           Positions (e.g. 10%, 20px)
         </label>
         <div className="grid grid-cols-4 gap-1.5">
@@ -94,7 +94,7 @@ export const OverlayItem: React.FC<OverlayItemProps> = ({
               placeholder={posKey}
               value={overlay.position[posKey] || ""}
               onChange={(e) => onUpdatePosition(posKey, e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 rounded px-1.5 py-1 text-center text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-600"
+              className="bg-card border border-border rounded px-1.5 py-1 text-center text-xs text-foreground placeholder-zinc-600"
             />
           ))}
         </div>

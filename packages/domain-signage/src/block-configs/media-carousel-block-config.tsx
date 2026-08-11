@@ -8,7 +8,7 @@ export function MediaCarouselBlockConfig({ selectedBlock, selectedBlockId, onUpd
 <>
                 {selectedBlock.type === "MediaCarouselBlock" && (
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
                       Carousel Images
                     </label>
                     <div className="space-y-2">
@@ -28,7 +28,7 @@ export function MediaCarouselBlockConfig({ selectedBlock, selectedBlockId, onUpd
                                   slides: newSlides,
                                 } as any);
                               }}
-                              className="flex-1 bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                              className="flex-1 bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                             />
                             <button
                               onClick={() => {
@@ -62,7 +62,7 @@ export function MediaCarouselBlockConfig({ selectedBlock, selectedBlockId, onUpd
                         + Add Image
                       </button>
                     </div>
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mt-3">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mt-3">
                       Carousel Settings
                     </label>
                     <input
@@ -74,7 +74,7 @@ export function MediaCarouselBlockConfig({ selectedBlock, selectedBlockId, onUpd
                           slideDuration: Number(e.target.value),
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     />
                     <select
                       value={(selectedBlock as any).objectFit || "cover"}
@@ -83,7 +83,7 @@ export function MediaCarouselBlockConfig({ selectedBlock, selectedBlockId, onUpd
                           objectFit: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-foreground"
                     >
                       <option value="cover">Cover (Fill & Crop)</option>
                       <option value="contain">Contain (Show All)</option>

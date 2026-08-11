@@ -61,7 +61,7 @@ export function BlockSettingsPanel({
 
   return (
     <div className="flex-1 overflow-y-auto flex flex-col min-h-0 relative">
-      <div className="px-4 py-3 flex justify-end border-b border-black/5 dark:border-white/5 bg-card/20">
+      <div className="px-4 py-3 flex justify-end border-b border-border bg-card/20">
         <button
           onClick={handleDeleteBlock}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40 rounded-lg transition-colors"

@@ -53,7 +53,7 @@ export function TypographyControls({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
             Color
           </label>
           <div className="flex items-center gap-2">
@@ -72,13 +72,13 @@ export function TypographyControls({
               placeholder={`Global Default ${defaultColor ? `(${defaultColor})` : ""}`}
               value={typo.color || ""}
               onChange={(e) => updateTypo({ color: e.target.value })}
-              className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600"
+              className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground placeholder:text-zinc-600"
             />
           </div>
         </div>
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block">
+            <label className="text-[10px] text-muted-foreground uppercase block">
               Font Size
             </label>
             <span className="text-[10px] text-cyan-400 font-mono">
@@ -93,12 +93,12 @@ export function TypographyControls({
               step="1"
               value={typo.fontSize ? parseInt(typo.fontSize) : 24}
               onChange={(e) => updateTypo({ fontSize: `${e.target.value}px` })}
-              className="w-full accent-cyan-500 h-1.5 bg-zinc-800 rounded appearance-none cursor-pointer"
+              className="w-full accent-cyan-500 h-1.5 bg-secondary rounded appearance-none cursor-pointer"
             />
             {typo.fontSize && (
               <button
                 onClick={() => updateTypo({ fontSize: undefined })}
-                className="text-[10px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 shrink-0"
+                className="text-[10px] text-muted-foreground hover:text-muted-foreground shrink-0"
               >
                 Reset
               </button>
@@ -109,13 +109,13 @@ export function TypographyControls({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
             Font Weight
           </label>
           <select
             value={typo.fontWeight || ""}
             onChange={(e) => updateTypo({ fontWeight: e.target.value })}
-            className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+            className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
           >
             <option value="">
               Global Default {defaultWeight ? `(${defaultWeight})` : ""}
@@ -130,13 +130,13 @@ export function TypographyControls({
           </select>
         </div>
         <div>
-          <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
             Alignment
           </label>
           <select
             value={typo.textAlign || ""}
             onChange={(e) => updateTypo({ textAlign: e.target.value as any })}
-            className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+            className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
           >
             <option value="">Default</option>
             <option value="left">Left</option>
@@ -147,13 +147,13 @@ export function TypographyControls({
       </div>
 
       <div>
-        <label className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase block mb-1">
+        <label className="text-[10px] text-muted-foreground uppercase block mb-1">
           Font Family
         </label>
         <select
           value={typo.fontFamily || ""}
           onChange={(e) => updateTypo({ fontFamily: e.target.value })}
-          className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+          className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
         >
           <option value="">
             Global Default {defaultFontFamily ? `(${defaultFontFamily})` : ""}

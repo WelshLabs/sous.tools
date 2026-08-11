@@ -10,7 +10,7 @@ export function PreviewPosItem({ block, items, styles }: { block: any, items: Po
       );
       if (!item) {
         return (
-          <div className="text-[8px] text-zinc-500 italic">
+          <div className="text-[8px] text-muted-foreground italic">
             Item not found ({block.posItemId})
           </div>
         );
@@ -34,7 +34,7 @@ export function PreviewPosItem({ block, items, styles }: { block: any, items: Po
           ? "st-glass-panel"
           : isFlat
             ? "bg-transparent border-transparent"
-            : "border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5",
+            : "border border-border bg-muted/50",
         item.isSoldOut ? "st-sold-out" : "",
         block.className,
       ]

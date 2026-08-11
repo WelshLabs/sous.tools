@@ -48,7 +48,7 @@ export function EditorTopBarActions({
           {onDiscard && (
             <button
               onClick={onDiscard}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-zinc-400 hover:text-white bg-transparent border border-black/10 dark:border-white/10 hover:border-white/20 rounded-md cursor-pointer transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground bg-transparent border border-border hover:border-white/20 rounded-md cursor-pointer transition-colors"
               title="Discard unsaved changes"
             >
               <RefreshCcw className="w-3 h-3" /> Discard
@@ -61,8 +61,8 @@ export function EditorTopBarActions({
         onClick={onToggleStyles}
         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
           isStylesOpen
-            ? "bg-black/10 dark:bg-white/10 border-white/20 text-white"
-            : "bg-transparent border-black/10 dark:border-white/10 text-zinc-400 hover:text-white"
+            ? "bg-background/10 dark:bg-background/10 border-white/20 text-foreground"
+            : "bg-transparent border-border text-muted-foreground hover:text-foreground"
         }`}
       >
         <Palette className="w-3.5 h-3.5" /> Slide Workspace
@@ -72,8 +72,8 @@ export function EditorTopBarActions({
         onClick={onTogglePreview}
         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-colors ${
           isPreviewing
-            ? "bg-black/10 dark:bg-white/10 border-white/20 text-white"
-            : "bg-transparent border-black/10 dark:border-white/10 text-zinc-400 hover:text-white"
+            ? "bg-background/10 dark:bg-background/10 border-white/20 text-foreground"
+            : "bg-transparent border-border text-muted-foreground hover:text-foreground"
         }`}
       >
         <Eye className="w-3.5 h-3.5" /> Preview
@@ -85,7 +85,7 @@ export function EditorTopBarActions({
         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer border transition-all disabled:opacity-60 ${
           saveState === "saved"
             ? "border-green-500/40 bg-green-500/10 text-green-400"
-            : "border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-card hover:bg-zinc-800 text-zinc-300"
+            : "border-border bg-card hover:bg-secondary text-muted-foreground"
         }`}
       >
         {SaveIcon}{" "}

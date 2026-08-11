@@ -46,7 +46,7 @@ export function BlockEditorNode({
   else if (parentType === "GridBlock") childLayoutClasses = "w-full h-full min-h-[60px] min-w-[60px]";
 
   const baseClasses = `relative transition-all border-2 rounded-lg ${
-    isSelected ? "border-[oklch(0.7_0.15_200)] shadow-[0_0_15px_oklch(0.7_0.15_200/0.5)] z-20" : "border-dashed border-black/10 dark:border-white/10 hover:border-white/30 z-10"
+    isSelected ? "border-[oklch(0.7_0.15_200)] shadow-[0_0_15px_oklch(0.7_0.15_200/0.5)] z-20" : "border-dashed border-border hover:border-white/30 z-10"
   } ${isRoot ? "w-full h-full border-solid border-transparent" : childLayoutClasses}`;
 
   const handleSelect = (e: React.MouseEvent) => {
@@ -70,9 +70,9 @@ export function BlockEditorNode({
           <Droppable droppableId={block.id!} type="BLOCK" direction="vertical">
             {(dropProps) => (
               <div ref={dropProps.innerRef} {...dropProps.droppableProps} className={`${getLayoutClass("column", block.panelStyle, block.className)} pt-8`} onClick={handleSelect}>
-                <div className="absolute top-0 left-0 px-2 py-1 bg-zinc-800 border-b border-r border-zinc-700 rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1 z-30 pointer-events-none">
+                <div className="absolute top-0 left-0 px-2 py-1 bg-secondary border-b border-r border-border rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 z-30 pointer-events-none">
                   {dragProps && (
-                    <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-black/10 dark:bg-white/10 rounded">
+                    <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-background/10 dark:bg-background/10 rounded">
                       <GripVertical className="w-3 h-3 text-cyan-400" />
                     </div>
                   )}
@@ -91,9 +91,9 @@ export function BlockEditorNode({
           <Droppable droppableId={block.id!} type="BLOCK" direction="horizontal">
             {(dropProps) => (
               <div ref={dropProps.innerRef} {...dropProps.droppableProps} className={`${getLayoutClass("row", block.panelStyle, block.className)} pt-8`} onClick={handleSelect}>
-                <div className="absolute top-0 left-0 px-2 py-1 bg-zinc-800 border-b border-r border-zinc-700 rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1 z-30 pointer-events-none">
+                <div className="absolute top-0 left-0 px-2 py-1 bg-secondary border-b border-r border-border rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 z-30 pointer-events-none">
                   {dragProps && (
-                    <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-black/10 dark:bg-white/10 rounded">
+                    <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-background/10 dark:bg-background/10 rounded">
                       <GripVertical className="w-3 h-3 text-cyan-400" />
                     </div>
                   )}
@@ -119,9 +119,9 @@ export function BlockEditorNode({
                 style={{ gridTemplateColumns: `repeat(${block.columns ?? 1}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${block.rows ?? 1}, minmax(0, 1fr))` }}
                 onClick={handleSelect}
               >
-                <div className="absolute top-0 left-0 px-2 py-1 bg-zinc-800 border-b border-r border-zinc-700 rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1 z-30 pointer-events-none">
+                <div className="absolute top-0 left-0 px-2 py-1 bg-secondary border-b border-r border-border rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 z-30 pointer-events-none">
                   {dragProps && (
-                    <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-black/10 dark:bg-white/10 rounded">
+                    <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-background/10 dark:bg-background/10 rounded">
                       <GripVertical className="w-3 h-3 text-cyan-400" />
                     </div>
                   )}
@@ -141,35 +141,35 @@ export function BlockEditorNode({
       const explodedItem = block.menuItemId ? items.find(i => i.id === block.menuItemId || i.externalId === block.menuItemId) : null;
       return renderDraggable((dragProps) => (
         <div ref={dragProps?.innerRef} {...dragProps?.draggableProps} style={{ ...sizingStyles, ...dragProps?.draggableProps.style }} className={`${baseClasses} flex flex-col overflow-hidden`}>
-          <div className="absolute top-0 left-0 px-2 py-1 bg-zinc-800 border-b border-r border-zinc-700 rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1 z-30 pointer-events-auto cursor-pointer hover:bg-zinc-700 transition-colors" onClick={(e) => { e.stopPropagation(); onSelectBlock(block.id!); }}>
+          <div className="absolute top-0 left-0 px-2 py-1 bg-secondary border-b border-r border-border rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 z-30 pointer-events-auto cursor-pointer hover:bg-zinc-700 transition-colors" onClick={(e) => { e.stopPropagation(); onSelectBlock(block.id!); }}>
             {dragProps && (
-              <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing flex items-center justify-center p-0.5 hover:bg-black/10 dark:bg-white/10 rounded" onClick={(e) => e.stopPropagation()}>
+              <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing flex items-center justify-center p-0.5 hover:bg-background/10 dark:bg-background/10 rounded" onClick={(e) => e.stopPropagation()}>
                 <GripVertical className="w-3 h-3 text-cyan-400" />
               </div>
             )}
             <Columns className="w-3 h-3" /> Exploded Item
           </div>
           
-          <div className="pt-8 px-4 pb-2 border-b border-black/5 dark:border-white/5 flex flex-col gap-1">
+          <div className="pt-8 px-4 pb-2 border-b border-border flex flex-col gap-1">
             {explodedItem ? (
               <>
                 {(!(block as { hideTitle?: boolean }).hideTitle || !(block as { hidePrice?: boolean }).hidePrice) && (
                   <div className="flex justify-between items-start">
-                    {!(block as { hideTitle?: boolean }).hideTitle && <span className="font-bold text-lg text-white tracking-wide uppercase">{explodedItem.name}</span>}
+                    {!(block as { hideTitle?: boolean }).hideTitle && <span className="font-bold text-lg text-foreground tracking-wide uppercase">{explodedItem.name}</span>}
                     {!(block as { hidePrice?: boolean }).hidePrice && <span className="font-mono text-cyan-400 font-bold ml-auto">${Number(explodedItem.price).toFixed(2)}</span>}
                   </div>
                 )}
-                {!(block as { hideDescription?: boolean }).hideDescription && explodedItem.description && <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{explodedItem.description}</span>}
+                {!(block as { hideDescription?: boolean }).hideDescription && explodedItem.description && <span className="text-[10px] text-muted-foreground">{explodedItem.description}</span>}
               </>
             ) : (
-              <span className="text-[10px] font-bold text-zinc-400 italic">Select a base POS item from Block Settings</span>
+              <span className="text-[10px] font-bold text-muted-foreground italic">Select a base POS item from Block Settings</span>
             )}
           </div>
           
           <MenuItemContext.Provider value={block.menuItemId || null}>
             <Droppable droppableId={block.id!} type="BLOCK" direction="vertical">
               {(dropProps) => (
-                <div ref={dropProps.innerRef} {...dropProps.droppableProps} className="flex flex-col gap-3 flex-1 w-full h-full p-3 bg-zinc-950/20 min-h-[100px] min-w-[100px]" onClick={handleSelect}>
+                <div ref={dropProps.innerRef} {...dropProps.droppableProps} className="flex flex-col gap-3 flex-1 w-full h-full p-3 bg-background/20 min-h-[100px] min-w-[100px]" onClick={handleSelect}>
                   <BlockChildren childrenBlocks={block.blocks} direction="column" parentType={block.type} items={items} menuItemStyles={menuItemStyles} onUpdate={onUpdate} onAddBlock={onAddBlock} onSelectBlock={onSelectBlock} selectedBlockId={selectedBlockId} config={config} parentBlock={block} />
                   {dropProps.placeholder}
                 </div>
@@ -189,8 +189,8 @@ export function BlockEditorNode({
           onClick={handleSelect}
         >
           {dragProps && (
-            <div className="absolute top-0 left-0 px-2 py-1 bg-zinc-800 border-b border-r border-zinc-700 rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1 z-30 pointer-events-none">
-               <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-black/10 dark:bg-white/10 rounded">
+            <div className="absolute top-0 left-0 px-2 py-1 bg-secondary border-b border-r border-border rounded-br-lg rounded-tl-lg text-[9px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1 z-30 pointer-events-none">
+               <div {...dragProps.dragHandleProps} className="cursor-grab active:cursor-grabbing pointer-events-auto flex items-center justify-center p-0.5 hover:bg-background/10 dark:bg-background/10 rounded">
                  <GripVertical className="w-3 h-3 text-cyan-400" />
                </div>
                <span>Content</span>

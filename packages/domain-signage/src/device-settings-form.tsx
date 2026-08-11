@@ -38,21 +38,21 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <label className="block text-xs text-zinc-400">Device Name</label>
+        <label className="block text-xs text-muted-foreground">Device Name</label>
         <input
           type="text"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-primary"
+          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
         />
       </div>
       <div className="space-y-1">
-        <label className="block text-xs text-zinc-400">Timezone</label>
+        <label className="block text-xs text-muted-foreground">Timezone</label>
         <select
           value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-primary cursor-pointer"
+          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary cursor-pointer"
         >
           {TZs.map((tz) => (
             <option key={tz} value={tz}>
@@ -62,14 +62,14 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
         </select>
       </div>
       <div className="space-y-1">
-        <label className="block text-xs text-zinc-400">Maintenance Window</label>
+        <label className="block text-xs text-muted-foreground">Maintenance Window</label>
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-[10px] text-zinc-500 mb-0.5">Hour</label>
+            <label className="block text-[10px] text-muted-foreground mb-0.5">Hour</label>
             <select
               value={hour}
               onChange={(e) => setHour(parseInt(e.target.value, 10))}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none cursor-pointer"
             >
               {Array.from({ length: 24 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -79,11 +79,11 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-[10px] text-zinc-500 mb-0.5">Minute</label>
+            <label className="block text-[10px] text-muted-foreground mb-0.5">Minute</label>
             <select
               value={minute}
               onChange={(e) => setMinute(parseInt(e.target.value, 10))}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none cursor-pointer"
             >
               {Array.from({ length: 60 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -93,11 +93,11 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-[10px] text-zinc-500 mb-0.5">Day of Week</label>
+            <label className="block text-[10px] text-muted-foreground mb-0.5">Day of Week</label>
             <select
               value={dayOfWeek}
               onChange={(e) => setDayOfWeek(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none cursor-pointer"
             >
               <option value="all">Every Day</option>
               {DAYs.map((d, i) => (

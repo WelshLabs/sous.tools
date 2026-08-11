@@ -93,7 +93,7 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
 
   if (activeItems.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-zinc-500 text-[10px] italic">
+      <div className="flex items-center justify-center h-full text-muted-foreground text-[10px] italic">
         No menu items selected
       </div>
     );
@@ -101,7 +101,7 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
 
   return (
     <div className="w-full h-full p-2.5 bg-[oklch(0.08_0.01_260)] flex flex-col rounded-lg overflow-hidden">
-      <h4 className="text-[10px] font-bold text-center mb-1.5 font-brand text-zinc-300">Menu</h4>
+      <h4 className="text-[10px] font-bold text-center mb-1.5 font-brand text-muted-foreground">Menu</h4>
       <div className="grid grid-cols-3 gap-1.5 overflow-y-auto max-h-[140px] pr-1">
         {activeItems.map(renderPreviewItem)}
       </div>

@@ -1,5 +1,5 @@
 
-const iconCls = "rounded border border-white/20 bg-black/10 dark:bg-white/10";
+const iconCls = "rounded border border-white/20 bg-background/10 dark:bg-background/10";
 
 export const FullScreenIcon: React.FC = () => (
   <div className="w-20 h-12 flex items-center justify-center">

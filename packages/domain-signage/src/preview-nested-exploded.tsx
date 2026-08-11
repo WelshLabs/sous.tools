@@ -28,7 +28,7 @@ export function PreviewNestedItem({ block, items, styles }: ComplexPreviewProps)
 
   const containerClasses = [
     "p-2 rounded flex flex-col gap-1 text-[9px]",
-    isFlat ? "bg-transparent border-transparent" : "bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5",
+    isFlat ? "bg-transparent border-transparent" : "bg-muted/50 border border-border",
     isGlass ? "" : "st-nested-item",
     isGlass ? "" : block.className
   ].filter(Boolean).join(" ");
@@ -44,7 +44,7 @@ export function PreviewNestedItem({ block, items, styles }: ComplexPreviewProps)
       {baseDesc && (
         <div style={buildDescriptionStyle(optStyle)} className="text-[8px] opacity-80 -mt-0.5 mb-1 leading-snug">{baseDesc}</div>
       )}
-      <ul className={`flex flex-col gap-0.5 text-[8px] opacity-80 ${isGroupHeader ? "" : "pl-2 border-l border-black/10 dark:border-white/10"}`}>
+      <ul className={`flex flex-col gap-0.5 text-[8px] opacity-80 ${isGroupHeader ? "" : "pl-2 border-l border-border"}`}>
         {(b.upgradeItems || []).map((up: any, idx: number) => {
           const upItem = items.find((i) => i.id === up.posItemId || i.externalId === up.posItemId);
           const upName = upItem ? upItem.name : up.posItemId.replace("dummy-", "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");

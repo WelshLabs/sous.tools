@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { LayoutBuilder, MOCK_POS_ITEMS } from "@soustools/domain-signage";
 import { type SignageLayoutConfig, type PosItem } from "@soustools/api-types";
 import { mapDbItemToPosItem, type RawDbPosItem } from "@/app/display/[id]/helpers";
-import { createWebSocketClient } from "@soustools/api-client";
+import { api, createWebSocketClient } from "@soustools/api-client";
 import { useRouter } from "next/navigation";
 
 interface SignageDeck {
@@ -73,14 +73,13 @@ export default function TVSignageEditorClient({ deckId, initialDeck, initialItem
   const handleSave = async (newConfig: SignageLayoutConfig) => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/signage/layouts/${deckId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ config: newConfig }),
+      const { data, error } = await api.PUT("/signage/layouts/{id}", {
+        params: { path: { id: deckId } },
+        body: { config: newConfig } as any,
       });
-      const data = await res.json();
-      if (data.success && data.data) {
-        setDeck(data.data);
+      const responseData = data as any;
+      if (!error && responseData?.data) {
+        setDeck(responseData.data);
         router.refresh();
       }
     } catch (err) {
@@ -92,14 +91,13 @@ export default function TVSignageEditorClient({ deckId, initialDeck, initialItem
 
   const handleRenameDeck = async (name: string, slug: string) => {
     try {
-      const res = await fetch(`/api/signage/layouts/${deckId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, slug }),
+      const { data, error } = await api.PUT("/signage/layouts/{id}", {
+        params: { path: { id: deckId } },
+        body: { name, slug } as any,
       });
-      const data = await res.json();
-      if (data.success && data.data) {
-        setDeck(data.data);
+      const responseData = data as any;
+      if (!error && responseData?.data) {
+        setDeck(responseData.data);
         router.refresh();
       }
     } catch (err) {
@@ -117,7 +115,7 @@ export default function TVSignageEditorClient({ deckId, initialDeck, initialItem
   }
 
   return (
-    <div className="-m-6 h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="w-full h-full flex flex-col overflow-hidden">
       <LayoutBuilder
         deckId={deckId}
         deckSlug={deck.slug}

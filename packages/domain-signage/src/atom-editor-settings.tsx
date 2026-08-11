@@ -33,50 +33,50 @@ export const AtomEditorCardSettings = ({
       onChange={(v) => onChange({ borderColor: v })}
     />
     <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">Border width</span>
+      <span className="text-xs text-muted-foreground">Border width</span>
       <input
         type="number"
         min={0}
         max={8}
         value={style.borderWidth ?? 1}
         onChange={(e) => onChange({ borderWidth: Number(e.target.value) })}
-        className="w-16 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+        className="w-16 bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
       />
     </div>
     <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">Border radius</span>
+      <span className="text-xs text-muted-foreground">Border radius</span>
       <input
         type="text"
         value={style.borderRadius ?? "12px"}
         onChange={(e) => onChange({ borderRadius: e.target.value })}
-        className="w-24 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+        className="w-24 bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
       />
     </div>
     <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">Box shadow</span>
+      <span className="text-xs text-muted-foreground">Box shadow</span>
       <input
         type="text"
         value={style.shadow ?? ""}
         onChange={(e) => onChange({ shadow: e.target.value || undefined })}
-        className="w-36 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+        className="w-36 bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
       />
     </div>
     <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">Card padding</span>
+      <span className="text-xs text-muted-foreground">Card padding</span>
       <input
         type="text"
         value={style.cardPadding ?? "16px"}
         onChange={(e) => onChange({ cardPadding: e.target.value })}
         placeholder="16px"
-        className="w-24 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+        className="w-24 bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
       />
     </div>
     <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">Animation</span>
+      <span className="text-xs text-muted-foreground">Animation</span>
       <select
         value={style.animation ?? "none"}
         onChange={(e) => onChange({ animation: e.target.value as typeof style.animation })}
-        className="bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 cursor-pointer focus:outline-none"
+        className="bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground cursor-pointer focus:outline-none"
       >
         {ANIMATION_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -86,7 +86,7 @@ export const AtomEditorCardSettings = ({
       </select>
     </div>
     <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">Dim opacity</span>
+      <span className="text-xs text-muted-foreground">Dim opacity</span>
       <input
         type="number"
         min={0}
@@ -94,11 +94,11 @@ export const AtomEditorCardSettings = ({
         step={0.05}
         value={style.dimOpacity ?? 1}
         onChange={(e) => onChange({ dimOpacity: Number(e.target.value) })}
-        className="w-16 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none"
+        className="w-16 bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
       />
     </div>
     <div className="flex gap-4 flex-wrap">
-      <label className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer">
+      <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
         <input
           type="checkbox"
           checked={style.grayscale ?? false}
@@ -107,7 +107,7 @@ export const AtomEditorCardSettings = ({
         />
         Grayscale
       </label>
-      <label className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer">
+      <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
         <input
           type="checkbox"
           checked={style.strikethrough ?? false}
@@ -117,7 +117,7 @@ export const AtomEditorCardSettings = ({
         Strikethrough
       </label>
       {activeState === "soldOut" && (
-        <label className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer">
+        <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
           <input
             type="checkbox"
             checked={style.hidden ?? false}

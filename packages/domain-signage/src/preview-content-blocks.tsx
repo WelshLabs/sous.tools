@@ -54,7 +54,7 @@ export function PreviewContentBlocks({
             ? "object-fill"
             : "object-cover";
       const classes = [
-        "w-full h-full min-h-[60px] flex items-center justify-center bg-zinc-950/50 border border-dashed border-black/10 dark:border-white/10 rounded overflow-hidden",
+        "w-full h-full min-h-[60px] flex items-center justify-center bg-background/50 border border-dashed border-border rounded overflow-hidden",
         block.className,
       ]
         .filter(Boolean)
@@ -68,7 +68,7 @@ export function PreviewContentBlocks({
               className={`w-full h-full ${objectFitClass}`}
             />
           ) : (
-            <span className="text-[10px] text-zinc-500 italic">
+            <span className="text-[10px] text-muted-foreground italic">
               Static Image
             </span>
           )}
@@ -82,7 +82,7 @@ export function PreviewContentBlocks({
         b.videoUrl ||
         "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
       const classes = [
-        "w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-zinc-950/50 border border-dashed border-black/10 dark:border-white/10 rounded overflow-hidden p-0 relative st-video-container aspect-video",
+        "w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-background/50 border border-dashed border-border rounded overflow-hidden p-0 relative st-video-container aspect-video",
         block.className,
       ]
         .filter(Boolean)
@@ -98,8 +98,8 @@ export function PreviewContentBlocks({
             className="w-full h-full object-cover st-video-player"
           />
           {!b.videoUrl && (
-            <div className="absolute inset-0 bg-black/5 dark:bg-black/40 flex items-center justify-center pointer-events-none z-10">
-              <span className="text-[10px] text-zinc-300 italic px-3 py-1 bg-white/50 dark:bg-black/60 rounded">
+            <div className="absolute inset-0 bg-background/5 dark:bg-background/40 flex items-center justify-center pointer-events-none z-10">
+              <span className="text-[10px] text-muted-foreground italic px-3 py-1 bg-background/50 dark:bg-background/60 rounded">
                 Placeholder Video
               </span>
             </div>
@@ -113,10 +113,10 @@ export function PreviewContentBlocks({
     default:
       return (
         <div
-          className="w-full min-h-[100px] flex items-center justify-center bg-black/5 dark:bg-white/5 border border-dashed border-black/10 dark:border-white/10 rounded"
+          className="w-full min-h-[100px] flex items-center justify-center bg-muted/50 border border-dashed border-border rounded"
           data-unique-id={block.uniqueSelector}
         >
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center">
             Unconfigured Content
           </span>
         </div>

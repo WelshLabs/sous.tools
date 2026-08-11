@@ -97,9 +97,9 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   const animationCss = config.menuItemStyles ? buildAllAnimationCss(config.menuItemStyles) : "";
 
   const previewContent = (
-    <div className={`w-full flex-1 min-h-[100vh] relative st-layout-background flex flex-col ${config.aspectRatio === "responsive" ? "" : "border-2 border-black/10 dark:border-white/10 shadow-2xl rounded-2xl"}`} style={bgStyle}>
+    <div className={`w-full flex-1 min-h-[100vh] relative st-layout-background flex flex-col ${config.aspectRatio === "responsive" ? "" : "border-2 border-border shadow-2xl rounded-2xl"}`} style={bgStyle}>
       {!activeSlide ? (
-        <div className="flex items-center justify-center h-full text-zinc-500 text-sm font-mono">Click + Add Slide to begin</div>
+        <div className="flex items-center justify-center h-full text-muted-foreground text-sm font-mono">Click + Add Slide to begin</div>
       ) : (
         <SlideRenderer
           slide={activeSlide} items={items} config={config} isPreviewing={isPreviewing}
@@ -107,8 +107,8 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
         />
       )}
       {(config.overlays ?? []).map((o) => (
-        <div key={o.id} className={`absolute text-[9px] bg-zinc-950/80 border border-zinc-800 px-1.5 py-0.5 rounded shadow signage-overlay ${o.customCssClass ?? ""}`} style={{ top: o.position.top, bottom: o.position.bottom, left: o.position.left, right: o.position.right, zIndex: o.zIndex ?? 10 }}>
-          {o.type === "BADGE" && <span className="bg-red-500 text-white font-bold px-0.5 rounded mr-0.5 text-[8px]">SOLD OUT</span>}
+        <div key={o.id} className={`absolute text-[9px] bg-background/80 border border-border px-1.5 py-0.5 rounded shadow signage-overlay ${o.customCssClass ?? ""}`} style={{ top: o.position.top, bottom: o.position.bottom, left: o.position.left, right: o.position.right, zIndex: o.zIndex ?? 10 }}>
+          {o.type === "BADGE" && <span className="bg-red-500 text-foreground font-bold px-0.5 rounded mr-0.5 text-[8px]">SOLD OUT</span>}
           {o.content}
         </div>
       ))}
@@ -116,7 +116,7 @@ export const LayoutPreview: React.FC<LayoutPreviewProps> = ({
   );
 
   return (
-    <div className="w-full min-h-full relative flex items-start justify-center signage-preview-container bg-white dark:bg-black pt-8 pb-32 st-signage-root" ref={containerRef}>
+    <div className="w-full min-h-full relative flex items-start justify-center signage-preview-container bg-background dark:bg-background pt-8 pb-32 st-signage-root" ref={containerRef}>
       {(customCss || animationCss) && <style dangerouslySetInnerHTML={{ __html: `${animationCss}\n${customCss}` }} />}
       {isPreviewing && config.aspectRatio !== "responsive" && config.scaleToFit !== false ? (
         <div className="w-[1920px] h-[1080px] shrink-0 origin-top transform-gpu shadow-2xl" style={{ transform: `scale(${scale})` }}>{previewContent}</div>

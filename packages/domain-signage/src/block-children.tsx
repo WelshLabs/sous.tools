@@ -17,12 +17,12 @@ export function renderEmptyState(layoutType?: "row" | "column" | "grid", block?:
   return (
     <div
       onClick={(e) => { e.stopPropagation(); if (block?.id) { onSelectBlock(block.id); if (onAddBlock) onAddBlock(block.id); } }}
-      className="flex flex-col items-center justify-center w-full h-full min-h-[120px] border-2 border-dashed border-white/20 hover:border-cyan-400 bg-black/5 dark:bg-white/5 hover:bg-cyan-900/20 rounded-xl cursor-pointer transition-all group p-4"
+      className="flex flex-col items-center justify-center w-full h-full min-h-[120px] border-2 border-dashed border-white/20 hover:border-cyan-400 bg-muted/50 hover:bg-cyan-900/20 rounded-xl cursor-pointer transition-all group p-4"
     >
       <div className="p-3 bg-cyan-500/20 rounded-full group-hover:scale-110 transition-transform">
         <Icon className="w-6 h-6 text-cyan-400" />
       </div>
-      <span className="mt-3 text-xs font-bold text-zinc-300 uppercase tracking-widest text-center">
+      <span className="mt-3 text-xs font-bold text-muted-foreground uppercase tracking-widest text-center">
         {text}
       </span>
     </div>

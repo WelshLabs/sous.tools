@@ -10,7 +10,7 @@ export function NestedItemBlockConfig({ selectedBlock, selectedBlockId, onUpdate
                 {selectedBlock.type === "NestedItemBlock" && (
                   <div className="space-y-4">
                     <div>
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">
                         Base POS Item
                       </label>
                       <PosItemPicker
@@ -24,7 +24,7 @@ export function NestedItemBlockConfig({ selectedBlock, selectedBlockId, onUpdate
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">
                         Base Description Override
                       </label>
                       <input
@@ -38,11 +38,11 @@ export function NestedItemBlockConfig({ selectedBlock, selectedBlockId, onUpdate
                             baseDescriptionOverride: e.target.value,
                           } as any)
                         }
-                        className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                        className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mb-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">
                         Child Upgrades (Multiselect)
                       </label>
                       <PosItemMultiPicker
@@ -92,7 +92,7 @@ export function NestedItemBlockConfig({ selectedBlock, selectedBlockId, onUpdate
                                   } as any);
                                 }
                               }}
-                              className="ml-6 mt-1 bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] text-zinc-800 dark:text-zinc-200"
+                              className="ml-6 mt-1 bg-background border border-border rounded px-2 py-1 text-[10px] text-foreground"
                             />
                           ) : null
                         }

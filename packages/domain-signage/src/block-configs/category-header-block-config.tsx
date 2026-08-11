@@ -9,7 +9,7 @@ export function CategoryHeaderBlockConfig({ selectedBlock, selectedBlockId, onUp
                 {selectedBlock.type === "CategoryHeaderBlock" && (
                   <div className="space-y-6">
                     <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block border-b border-black/5 dark:border-white/5 pb-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block border-b border-border pb-1">
                         Header Details
                       </label>
                       <input
@@ -21,7 +21,7 @@ export function CategoryHeaderBlockConfig({ selectedBlock, selectedBlockId, onUp
                             title: e.target.value,
                           } as any)
                         }
-                        className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                        className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                       />
                       <input
                         type="text"
@@ -32,7 +32,7 @@ export function CategoryHeaderBlockConfig({ selectedBlock, selectedBlockId, onUp
                             subtitle: e.target.value,
                           })
                         }
-                        className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                        className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                       />
                       <input
                         type="text"
@@ -43,7 +43,7 @@ export function CategoryHeaderBlockConfig({ selectedBlock, selectedBlockId, onUp
                             badge: e.target.value,
                           })
                         }
-                        className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                        className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                       />
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
@@ -54,9 +54,9 @@ export function CategoryHeaderBlockConfig({ selectedBlock, selectedBlockId, onUp
                               animateBadge: e.target.checked,
                             } as any)
                           }
-                          className="w-4 h-4 rounded border-black/10 dark:border-white/10 bg-white dark:bg-black text-cyan-500 focus:ring-cyan-500"
+                          className="w-4 h-4 rounded border-border bg-background dark:bg-background text-cyan-500 focus:ring-cyan-500"
                         />
-                        <span className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                           Animate Badge Pulse
                         </span>
                       </label>
@@ -67,7 +67,7 @@ export function CategoryHeaderBlockConfig({ selectedBlock, selectedBlockId, onUp
                             icon: e.target.value,
                           } as any)
                         }
-                        className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                        className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                       >
                         <option value="none">No Icon</option>
                         <option value="CheckCircle">Check Circle</option>
@@ -85,9 +85,9 @@ export function CategoryHeaderBlockConfig({ selectedBlock, selectedBlockId, onUp
                               accentBorder: e.target.checked,
                             } as any)
                           }
-                          className="w-4 h-4 rounded border-black/10 dark:border-white/10 bg-white dark:bg-black text-cyan-500 focus:ring-cyan-500"
+                          className="w-4 h-4 rounded border-border bg-background dark:bg-background text-cyan-500 focus:ring-cyan-500"
                         />
-                        <span className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                           Accent Border
                         </span>
                       </label>

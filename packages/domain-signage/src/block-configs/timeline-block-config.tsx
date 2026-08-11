@@ -8,7 +8,7 @@ export function TimelineBlockConfig({ selectedBlock, selectedBlockId, onUpdateBl
 <>
                 {selectedBlock.type === "TimelineBlock" && (
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
                       Timeline Steps
                     </label>
                     <div className="space-y-2">
@@ -28,7 +28,7 @@ export function TimelineBlockConfig({ selectedBlock, selectedBlockId, onUpdateBl
                                     steps: newSteps,
                                   } as any);
                                 }}
-                                className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                                className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                               />
                               <input
                                 type="text"
@@ -43,7 +43,7 @@ export function TimelineBlockConfig({ selectedBlock, selectedBlockId, onUpdateBl
                                     steps: newSteps,
                                   } as any);
                                 }}
-                                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1 text-[10px] text-zinc-700 dark:text-zinc-300"
+                                className="w-full bg-background border border-border rounded-lg px-2.5 py-1 text-[10px] text-muted-foreground"
                               />
                             </div>
                             <button
@@ -78,7 +78,7 @@ export function TimelineBlockConfig({ selectedBlock, selectedBlockId, onUpdateBl
                         + Add Step
                       </button>
                     </div>
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mt-3">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mt-3">
                       Marker Type
                     </label>
                     <select
@@ -88,7 +88,7 @@ export function TimelineBlockConfig({ selectedBlock, selectedBlockId, onUpdateBl
                           markerType: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     >
                       <option value="bullets">Bullets</option>
                       <option value="numbers">Numbers</option>

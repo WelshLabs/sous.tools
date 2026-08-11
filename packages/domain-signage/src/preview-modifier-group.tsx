@@ -40,7 +40,7 @@ export const PreviewModifierGroup = ({ block, onFetchModifierOptions }: { block:
   }
 
   const classes = [
-    "w-full bg-black/5 dark:bg-black/40 rounded border border-black/5 dark:border-white/5 overflow-hidden",
+    "w-full bg-background/5 dark:bg-background/40 rounded border border-border overflow-hidden",
     block.className,
   ]
     .filter(Boolean)
@@ -48,7 +48,7 @@ export const PreviewModifierGroup = ({ block, onFetchModifierOptions }: { block:
 
   return (
     <div className={classes} data-unique-id={block.uniqueSelector}>
-      <div className="px-3 py-2 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/5 font-semibold text-[10px] text-zinc-300 uppercase tracking-wider">
+      <div className="px-3 py-2 bg-muted/50 border-b border-border font-semibold text-[10px] text-muted-foreground uppercase tracking-wider">
         Options
       </div>
       <div className="flex flex-col divide-y divide-white/5">
@@ -57,8 +57,8 @@ export const PreviewModifierGroup = ({ block, onFetchModifierOptions }: { block:
             key={opt.id}
             className="flex justify-between items-center px-3 py-2 text-[10px]"
           >
-            <span className="text-zinc-200">{opt.name}</span>
-            <span className="text-zinc-400 font-mono">
+            <span className="text-foreground">{opt.name}</span>
+            <span className="text-muted-foreground font-mono">
               {opt.price > 0 ? `+$${Number(opt.price).toFixed(2)}` : "Free"}
             </span>
           </div>

@@ -55,9 +55,9 @@ export const MenuListModifierSettings: React.FC<
   };
 
   return (
-    <div className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5 mt-4">
+    <div className="space-y-4 pt-4 border-t border-border mt-4">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
+        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
           <Layers className="w-3.5 h-3.5" /> Modifier Overrides
         </label>
         <select
@@ -65,7 +65,7 @@ export const MenuListModifierSettings: React.FC<
           onChange={(e) =>
             onChangeLayout(e.target.value as "stacked" | "inline")
           }
-          className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] text-zinc-700 dark:text-zinc-300"
+          className="bg-card border border-border rounded px-2 py-1 text-[10px] text-muted-foreground"
         >
           <option value="stacked">Stacked List</option>
           <option value="inline">Inline (Side-by-Side)</option>
@@ -81,10 +81,10 @@ export const MenuListModifierSettings: React.FC<
           return (
             <div
               key={item.id}
-              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg p-3 space-y-2"
+              className="bg-background border border-border rounded-lg p-3 space-y-2"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="text-xs font-semibold text-foreground">
                   {item.name}
                 </span>
                 <button
@@ -98,10 +98,10 @@ export const MenuListModifierSettings: React.FC<
               {overrides.map((override, idx) => (
                 <div
                   key={idx}
-                  className="space-y-2 bg-card/50 border border-black/5 dark:border-white/5 rounded p-2"
+                  className="space-y-2 bg-card/50 border border-border rounded p-2"
                 >
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <label className="text-[10px] text-muted-foreground">
                       Modifier Display Rule
                     </label>
                     <button
@@ -123,7 +123,7 @@ export const MenuListModifierSettings: React.FC<
                           .filter(Boolean),
                       })
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs text-zinc-700 dark:text-zinc-300"
+                    className="w-full bg-background border border-border rounded px-2 py-1 text-xs text-muted-foreground"
                   />
                   <input
                     type="text"
@@ -134,7 +134,7 @@ export const MenuListModifierSettings: React.FC<
                         displayNameOverride: e.target.value,
                       })
                     }
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded px-2 py-1 text-xs text-cyan-400"
+                    className="w-full bg-background border border-border rounded px-2 py-1 text-xs text-cyan-400"
                   />
                 </div>
               ))}
@@ -142,7 +142,7 @@ export const MenuListModifierSettings: React.FC<
           );
         })}
         {selectedItems.length === 0 && (
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 italic">
+          <p className="text-xs text-muted-foreground italic">
             Select items above to configure modifiers.
           </p>
         )}

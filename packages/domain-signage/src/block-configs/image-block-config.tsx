@@ -7,7 +7,7 @@ export function ImageBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock
 <>
                 {selectedBlock.type === "ImageBlock" && (
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
                       Image Source
                     </label>
                     <input
@@ -19,10 +19,10 @@ export function ImageBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock
                           imageUrl: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     />
 
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block mt-3">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mt-3">
                       Object Fit
                     </label>
                     <select
@@ -32,7 +32,7 @@ export function ImageBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock
                           objectFit: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     >
                       <option value="contain">Contain</option>
                       <option value="cover">Cover</option>

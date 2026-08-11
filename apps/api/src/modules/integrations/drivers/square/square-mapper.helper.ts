@@ -248,7 +248,7 @@ export function mapSquareOrders(
       if (order.fulfillments && order.fulfillments.length > 0) {
         const completedFulfillment = order.fulfillments.find(f => f.state === "COMPLETED");
         if (completedFulfillment && (completedFulfillment.completed_at || completedFulfillment.picked_up_at)) {
-          return completedFulfillment.completed_at || completedFulfillment.picked_up_at;
+          return completedFulfillment.completed_at || completedFulfillment.picked_up_at || null;
         }
       }
       return order.closed_at || null;
@@ -315,8 +315,12 @@ export function mapSquarePosItems(
     const stockQuantity = countsMap[variationId] !== undefined ? countsMap[variationId] : 1;
     
     let localCategoryId = null;
-    if (item.item_data?.category_id) {
-      localCategoryId = catMap.get(item.item_data.category_id) || null;
+    const sqCatId =
+      item.item_data?.category_id ||
+      (item.item_data as any)?.categories?.[0]?.id ||
+      (item.item_data as any)?.reporting_category?.id;
+    if (sqCatId) {
+      localCategoryId = catMap.get(sqCatId) || null;
     }
 
     return {

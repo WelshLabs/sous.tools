@@ -9,10 +9,10 @@ export function PreviewMenuList({ block, items, styles }: { block: any, items: P
       if (!block.itemIds || block.itemIds.length === 0) {
         return (
           <div
-            className="flex flex-col items-center justify-center w-full min-h-[60px] p-4 border border-dashed border-black/10 dark:border-white/10 rounded-xl bg-black/5 dark:bg-white/5 opacity-80"
+            className="flex flex-col items-center justify-center w-full min-h-[60px] p-4 border border-dashed border-border rounded-xl bg-muted/50 opacity-80"
             data-unique-id={block.uniqueSelector}
           >
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center">
               Select POS items from Block Settings to populate this space.
             </span>
           </div>
@@ -24,7 +24,7 @@ export function PreviewMenuList({ block, items, styles }: { block: any, items: P
       const containerClasses = [
         "flex flex-col gap-2 w-full st-menu-list",
         isGlass
-          ? "st-glass-panel p-2 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 rounded"
+          ? "st-glass-panel p-2 border border-border bg-muted/50 rounded"
           : "",
         block.className,
       ]
@@ -58,7 +58,7 @@ export function PreviewMenuList({ block, items, styles }: { block: any, items: P
                 ? "bg-transparent border-transparent"
                 : isFlatItem
                   ? "bg-transparent border-transparent"
-                  : "border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5",
+                  : "border border-border bg-muted/50",
               item.isSoldOut ? "st-sold-out" : "",
             ]
               .filter(Boolean)
@@ -101,11 +101,11 @@ export function PreviewMenuList({ block, items, styles }: { block: any, items: P
                     </span>
                   )}
                   {(block as any).priceDisplay && (
-                    <div className="flex gap-8 border-t border-black/10 dark:border-white/10 pt-3 mt-2">
+                    <div className="flex gap-8 border-t border-border pt-3 mt-2">
                       {Object.entries((block as any).priceDisplay).map(
                         ([key, value]) => (
                           <div key={key} className="flex gap-2 items-center">
-                            <span className="text-zinc-400 capitalize text-[8px]">
+                            <span className="text-muted-foreground capitalize text-[8px]">
                               {key}
                             </span>
                             <span className="font-mono st-price-tag text-[9px]">

@@ -39,26 +39,26 @@ export const PosItemCard: React.FC<PosItemCardProps> = ({
     >
       <div className="min-w-0 pr-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-zinc-200 truncate">
+          <span className="text-sm font-bold text-foreground truncate">
             {item.name}
           </span>
           <span className="text-xs text-emerald-400 font-mono font-medium">
             ${item.price.toFixed(2)}
           </span>
         </div>
-        <p className="text-xs text-zinc-400 mt-1 truncate">
+        <p className="text-xs text-muted-foreground mt-1 truncate">
           {item.description}
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {isUpdating ? (
-          <RotateCw className="w-5 h-5 text-zinc-500 animate-spin" />
+          <RotateCw className="w-5 h-5 text-muted-foreground animate-spin" />
         ) : item.isSoldOut ? (
           <div className="flex items-center gap-1.5 text-xs text-red-400 font-bold bg-red-950/40 px-2.5 py-1 rounded-full border border-red-900/50">
             <CheckSquare className="w-4 h-4" /> SOLD OUT
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded-full border border-zinc-800">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-card px-2.5 py-1 rounded-full border border-border">
             <Square className="w-4 h-4" /> IN STOCK
           </div>
         )}

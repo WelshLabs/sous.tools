@@ -55,8 +55,8 @@ export function BlockTypeConfigFields({
       <CalloutBlockConfig selectedBlock={selectedBlock} selectedBlockId={selectedBlockId} onUpdateBlock={onUpdateBlock} />
                 {(selectedBlock.type === "MenuListBlock" ||
                   selectedBlock.type === "NestedItemBlock") && (
-                  <div className="pt-4 border-t border-black/5 dark:border-white/5">
-                    <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3">
+                  <div className="pt-4 border-t border-border">
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">
                       Item Styles
                     </div>
                     <MenuItemStylesInspector
@@ -71,10 +71,10 @@ export function BlockTypeConfigFields({
                   </div>
                 )}
 
-                <div className="h-px bg-black/5 dark:bg-white/5 w-full my-6" />
+                <div className="h-px bg-muted/50 w-full my-6" />
                 {/* Generic Layout Controls */}
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block border-b border-black/5 dark:border-white/5 pb-1">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block border-b border-border pb-1">
                     Layout
                   </label>
                   <LayoutControls
@@ -84,7 +84,7 @@ export function BlockTypeConfigFields({
                 </div>
                 {/* Generic Typography Controls */}
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block border-b border-black/5 dark:border-white/5 pb-1">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block border-b border-border pb-1">
                     {selectedBlock.type === "CategoryHeaderBlock"
                       ? "Heading Typography"
                       : "Typography"}
@@ -105,7 +105,7 @@ export function BlockTypeConfigFields({
                 {/* Category Header Subtitle Typography */}
                 {selectedBlock.type === "CategoryHeaderBlock" && (
                   <div className="space-y-3 mt-6">
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block border-b border-black/5 dark:border-white/5 pb-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block border-b border-border pb-1">
                       Subtitle Typography
                     </label>
                     <TypographyControls
@@ -119,7 +119,7 @@ export function BlockTypeConfigFields({
                 )}
                 {/* Generic Background Controls */}
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block border-b border-black/5 dark:border-white/5 pb-1">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block border-b border-border pb-1">
                     Background
                   </label>
                   <BackgroundControls

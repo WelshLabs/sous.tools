@@ -10,9 +10,9 @@ export function PreviewCallout({ block }: { block: any }) {
       const classes = [
         "p-5 rounded-xl flex flex-col items-center text-center gap-3 st-callout w-full",
         isGlass
-          ? "st-glass-panel border border-black/10 dark:border-white/10"
+          ? "st-glass-panel border border-border"
           : block.panelStyle !== "none"
-            ? "bg-zinc-100 dark:bg-card border border-zinc-800"
+            ? "bg-card border border-border"
             : "",
         block.accentBorder ? "border-t-4 border-t-cyan-400" : "",
         block.className,

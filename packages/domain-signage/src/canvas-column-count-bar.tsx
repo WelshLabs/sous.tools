@@ -24,12 +24,12 @@ export const CanvasColumnCountBar: React.FC<CanvasColumnCountBarProps> = ({
   return (
     <div
       className="absolute top-3 left-3 z-20
-                 bg-card/90 backdrop-blur border border-black/10 dark:border-white/10
+                 bg-card/90 backdrop-blur border border-border
                  rounded-full flex items-center gap-1 px-2 py-1"
       role="group"
       aria-label="Column count control"
     >
-      <span className="text-[10px] font-semibold text-white/50 uppercase tracking-wider select-none px-1">
+      <span className="text-[10px] font-semibold text-foreground/50 uppercase tracking-wider select-none px-1">
         Columns
       </span>
 
@@ -37,7 +37,7 @@ export const CanvasColumnCountBar: React.FC<CanvasColumnCountBarProps> = ({
         onClick={() => onChangeCount(count - 1)}
         disabled={count <= 1}
         className="w-5 h-5 rounded-full flex items-center justify-center
-                   text-white/70 hover:bg-black/10 dark:bg-white/10 hover:text-white
+                   text-foreground/70 hover:bg-background/10 dark:bg-background/10 hover:text-foreground
                    disabled:opacity-30 disabled:cursor-not-allowed
                    transition-colors"
         aria-label="Remove column"
@@ -45,7 +45,7 @@ export const CanvasColumnCountBar: React.FC<CanvasColumnCountBarProps> = ({
         <Minus className="w-3 h-3" />
       </button>
 
-      <span className="text-sm font-bold text-white tabular-nums w-4 text-center select-none">
+      <span className="text-sm font-bold text-foreground tabular-nums w-4 text-center select-none">
         {count}
       </span>
 
@@ -53,7 +53,7 @@ export const CanvasColumnCountBar: React.FC<CanvasColumnCountBarProps> = ({
         onClick={() => onChangeCount(count + 1)}
         disabled={count >= 4}
         className="w-5 h-5 rounded-full flex items-center justify-center
-                   text-white/70 hover:bg-black/10 dark:bg-white/10 hover:text-white
+                   text-foreground/70 hover:bg-background/10 dark:bg-background/10 hover:text-foreground
                    disabled:opacity-30 disabled:cursor-not-allowed
                    transition-colors"
         aria-label="Add column"

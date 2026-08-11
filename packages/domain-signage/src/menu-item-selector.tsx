@@ -67,7 +67,7 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-500 rounded px-2.5 py-1.5 text-xs text-zinc-200 cursor-pointer"
+        className="flex items-center justify-between w-full bg-background border border-border hover:border-zinc-500 rounded px-2.5 py-1.5 text-xs text-foreground cursor-pointer"
       >
         <span>
           {selectedItemIds.length === 0
@@ -80,13 +80,13 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
       {isOpen && (
         <div className="absolute left-0 right-0 mt-1 z-30 bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] rounded-lg shadow-xl p-2 max-h-60 overflow-y-auto space-y-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-zinc-500" />
+            <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded pl-8 pr-2 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-primary placeholder-zinc-500"
+              className="w-full bg-background border border-border rounded pl-8 pr-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary placeholder-zinc-500"
             />
           </div>
 
@@ -104,8 +104,8 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
                   onClick={() => handleToggleSelect(item.id)}
                   className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all ${
                     isSelected
-                      ? "bg-primary/10 text-white"
-                      : "hover:bg-zinc-900/50 text-zinc-300"
+                      ? "bg-primary/10 text-foreground"
+                      : "hover:bg-card/50 text-muted-foreground"
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -116,7 +116,7 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
                     </div>
                     <div className="truncate">
                       <div className="text-xs font-semibold truncate">{item.name}</div>
-                      <div className="text-[10px] text-zinc-400 font-mono">${Number(item.price).toFixed(2)}</div>
+                      <div className="text-[10px] text-muted-foreground font-mono">${Number(item.price).toFixed(2)}</div>
                     </div>
                   </div>
 
@@ -124,8 +124,8 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
                     <button
                       type="button"
                       onClick={(e) => handleToggleHighlight(item.id, e)}
-                      className={`p-1 rounded hover:bg-zinc-800/50 transition-colors shrink-0 ${
-                        isHighlighted ? "text-amber-400" : "text-zinc-500 hover:text-zinc-300"
+                      className={`p-1 rounded hover:bg-secondary/50 transition-colors shrink-0 ${
+                        isHighlighted ? "text-amber-400" : "text-muted-foreground hover:text-muted-foreground"
                       }`}
                     >
                       <Star className={`w-3.5 h-3.5 ${isHighlighted ? "fill-current" : ""}`} />
@@ -135,7 +135,7 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
               );
             })}
             {filteredItems.length === 0 && (
-              <div className="text-center text-[10px] text-zinc-500 p-2 font-mono">No items found</div>
+              <div className="text-center text-[10px] text-muted-foreground p-2 font-mono">No items found</div>
             )}
           </div>
         </div>

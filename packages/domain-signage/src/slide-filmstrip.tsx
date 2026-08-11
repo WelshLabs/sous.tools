@@ -53,7 +53,7 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex flex-row gap-3 overflow-x-auto p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-black/5 dark:border-white/5"
+            className="flex flex-row gap-3 overflow-x-auto p-3 bg-card border-t border-border"
           >
             {slides.map((slide, index) => {
               const slideId = slide.id || `slide-fallback-${index}`;
@@ -67,7 +67,7 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
                   >
                     <div
                       {...drag.dragHandleProps}
-                      className="text-white/30 hover:text-white/70 cursor-grab active:cursor-grabbing"
+                      className="text-foreground/30 hover:text-foreground/70 cursor-grab active:cursor-grabbing"
                     >
                       <GripVertical className="w-4 h-4" />
                     </div>
@@ -87,7 +87,7 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
             <button
               onClick={onAddSlide}
               className="w-40 h-[90px] flex-shrink-0 flex flex-col items-center justify-center gap-1
-                         rounded-lg border-2 border-dashed border-white/20 text-white/40
+                         rounded-lg border-2 border-dashed border-white/20 text-foreground/40
                          hover:border-primary/60 hover:text-primary/80 transition-colors cursor-pointer"
               aria-label="Add slide"
             >

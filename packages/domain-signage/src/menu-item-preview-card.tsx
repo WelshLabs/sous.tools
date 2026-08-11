@@ -27,7 +27,7 @@ const MOCK = {
 };
 
 const Tooltip: React.FC<{ label: string }> = ({ label }) => (
-  <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap px-2 py-0.5 bg-zinc-800 border border-black/10 dark:border-white/10 rounded-full text-[9px] text-zinc-700 dark:text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity">
+  <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap px-2 py-0.5 bg-secondary border border-border rounded-full text-[9px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
     {label}
   </span>
 );
@@ -75,7 +75,7 @@ export const MenuItemPreviewCard: React.FC<MenuItemPreviewCardProps> = ({
     // Extra padding around the card so box-shadows are never clipped
     <div style={{ transform: `scale(${scale})`, transformOrigin: "top center", padding: "16px", margin: "-16px" }}>
       {stateLabel && (
-        <p className="text-center text-[10px] text-zinc-400 dark:text-zinc-500 mb-2 font-medium uppercase tracking-widest">{stateLabel}</p>
+        <p className="text-center text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-widest">{stateLabel}</p>
       )}
       {/* overflow:visible so box-shadow is never clipped by parent */}
       <AtomWrap atomKey="card" selected={selectedAtom === "card"} onSelect={onSelectAtom} tooltip="Card">

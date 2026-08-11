@@ -27,7 +27,7 @@ export function PreviewCategoryHeader({ block }: { block: any }) {
             </h5>
             {block.badge && (
               <span
-                className={`text-[6px] px-1 bg-red-600 rounded text-white font-bold shrink-0 ${block.animateBadge ? "animate-pulse" : ""}`}
+                className={`text-[6px] px-1 bg-red-600 rounded text-foreground font-bold shrink-0 ${block.animateBadge ? "animate-pulse" : ""}`}
               >
                 {block.badge}
               </span>

@@ -57,7 +57,7 @@ export function ModifierGroupSettings({
         return (
           <label
             key={g.id}
-            className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors ${isSelected ? "bg-cyan-900/30 border-cyan-500/50" : "bg-zinc-100 dark:bg-card border-black/5 dark:border-white/5 hover:border-cyan-500/30"}`}
+            className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors ${isSelected ? "bg-cyan-900/30 border-cyan-500/50" : "bg-card border-border hover:border-cyan-500/30"}`}
           >
             <input
               type="radio"
@@ -67,10 +67,10 @@ export function ModifierGroupSettings({
                 if (e.target.checked)
                   onUpdateBlock(selectedBlockId, { modifierGroupId: g.id } as Partial<SignageBlock>);
               }}
-              className="w-4 h-4 text-cyan-500 bg-zinc-100 dark:bg-card border-black/10 dark:border-white/10"
+              className="w-4 h-4 text-cyan-500 bg-card border-border"
             />
             <div className="flex flex-col">
-              <span className="text-xs text-zinc-800 dark:text-zinc-200 font-medium">{g.name}</span>
+              <span className="text-xs text-foreground font-medium">{g.name}</span>
             </div>
           </label>
         );

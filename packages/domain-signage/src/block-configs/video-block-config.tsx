@@ -7,7 +7,7 @@ export function VideoBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock
 <>
                 {selectedBlock.type === "VideoBlock" && (
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
                       Video Source (MP4)
                     </label>
                     <input
@@ -19,7 +19,7 @@ export function VideoBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock
                           videoUrl: e.target.value,
                         } as any)
                       }
-                      className="w-full bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100"
+                      className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
                     />
                   </div>
                 )}
