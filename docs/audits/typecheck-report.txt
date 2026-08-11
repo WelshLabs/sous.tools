@@ -23,12 +23,12 @@ $ tsc --noEmit
 cache miss, executing 1781c04f98425f78
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/api-types:typecheck
-cache miss, executing fe1890647abb6c06
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/api-client:typecheck
 cache miss, executing 0d42e1970d83932e
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing fe1890647abb6c06
 $ tsc --noEmit
 ::endgroup::
 ::group::cli:typecheck
@@ -40,39 +40,39 @@ cache miss, executing e44c77df7e7f80be
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/design-system:typecheck
-cache miss, executing 516a5ecc3543f4c4
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 71008eea29d105a5
-$ tsc --noEmit
-::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing ab470f4926ffedd0
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 1acaccfa10a2af2a
+cache miss, executing d1c52383d28367f5
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-settings:typecheck
-cache miss, executing bccd0a60840326b9
+cache miss, executing 433e9d8096c99ef3
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing 55d07a1c9e8e6a41
+::group::pos-simulator:typecheck
+cache miss, executing 55d3fc2bd94b89ad
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 9dfda4333b374f0f
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing b0dccea032a3d84b
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-recipes:typecheck
-cache miss, executing ee777981ee9d97be
+cache miss, executing 8b2fd96d2f31fc25
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing 3fb5926324820329
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-signage:typecheck
-cache miss, executing 82704096eda53e93
+cache miss, executing 8e36f94cafe79c64
 $ tsc --noEmit
 ::endgroup::
 [;31mapi:typecheck[;0m
-cache miss, executing ee9a87e4db4b0658
+cache miss, executing b5f51cf542eca90a
 $ tsc --noEmit
 src/modules/integrations/drivers/square/square-mapper.helper.ts(230,3): error TS2322: Type '{ organization_id: string; pos_provider: string; external_id: string; location_id: string | null; state: string; total_money: number; total_discount_money: number; total_tax_money: number; ... 4 more ...; updated_at: string; }[]' is not assignable to type 'POSOrderUpsert[]'.
   Type '{ organization_id: string; pos_provider: string; external_id: string; location_id: string | null; state: string; total_money: number; total_discount_money: number; total_tax_money: number; ... 4 more ...; updated_at: string; }' is not assignable to type 'POSOrderUpsert'.
@@ -81,13 +81,13 @@ src/modules/integrations/drivers/square/square-mapper.helper.ts(230,3): error TS
         Type 'undefined' is not assignable to type 'string | null'.
 [ELIFECYCLE] Command failed with exit code 2.
 ::group::web:typecheck
-cache miss, executing b0ddd154477f8c05
+cache miss, executing 22b55a6ea15fe793
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    17 successful, 19 total
 Cached:    3 cached, 19 total
-  Time:    52.191s 
+  Time:    52.643s 
 Failed:    api#typecheck
 
