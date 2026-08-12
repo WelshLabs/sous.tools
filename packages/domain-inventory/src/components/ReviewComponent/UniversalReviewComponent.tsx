@@ -16,6 +16,7 @@ import {
   useOmnibarContext,
 } from "@soustools/design-system";
 import { CheckCircle2, FileText, ChevronLeft, ChevronRight, Save, Sparkles } from "lucide-react";
+import { api } from "@soustools/api-client";
 
 export interface UniversalReviewComponentProps {
   reviewId?: string;
@@ -44,11 +45,9 @@ export function UniversalReviewComponent({
     const targetId = activeReviewId || "latest";
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/unified-ingestion/review/${targetId}`, {
-        cache: "no-store",
-      });
-      if (response.ok) {
-        const record = await response.json();
+      const { data } = await api.GET(`/unified-ingestion/review/${targetId}` as any, {});
+      if (data) {
+        const record = data as any;
         if (record && record.id) {
           setActiveReviewId(record.id);
           if (record.status === "PENDING" && record.parsed_data?.processing) {
@@ -95,10 +94,8 @@ export function UniversalReviewComponent({
   const persistPayloadToBackend = async (newPayload: any) => {
     if (!activeReviewId) return;
     try {
-      await fetch(`/api/unified-ingestion/review/${activeReviewId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parsedData: newPayload }),
+      await api.PATCH(`/unified-ingestion/review/${activeReviewId}` as any, {
+        body: { parsedData: newPayload } as any,
       });
     } catch (err) {
       console.error("Failed to persist updated review payload to Postgres:", err);
@@ -227,10 +224,8 @@ export function UniversalReviewComponent({
     if (!activeReviewId) return;
     setIsSubmitting(true);
     try {
-      await fetch(`/api/unified-ingestion/commit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reviewId: activeReviewId, approvedPayload: payload }),
+      await api.POST(`/unified-ingestion/commit` as any, {
+        body: { reviewId: activeReviewId, approvedPayload: payload } as any,
       });
       setStatusMessage("Successfully committed to Postgres database & 1:1 Neo4j Graph!");
       onCommitSuccess?.();

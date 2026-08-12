@@ -18,6 +18,7 @@ import {
   useOmnibarContext,
 } from "@soustools/design-system";
 import { Sparkles, Bot, CheckSquare, Search, BookOpen, ExternalLink } from "lucide-react";
+import { api } from "@soustools/api-client";
 
 export interface AnswerViewProps {
   initialQuery?: string;
@@ -47,9 +48,8 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
 
   // Fetch real database dashboard metrics for revenue and ticket time charts
   useEffect(() => {
-    fetch("/api/dashboard/stats")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
+    api.GET("/dashboard/stats" as any, { params: { query: { orgId: "d0000000-0000-0000-0000-000000000000" } } as any })
+      .then(({ data }: any) => {
         if (data?.revenue && Array.isArray(data.revenue)) {
           setRealRevenueData(data.revenue);
         }
@@ -57,7 +57,7 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
           setRealTicketTimeData(data.ticketTimes);
         }
       })
-      .catch((err) => console.error("Failed to fetch real dashboard metrics:", err));
+      .catch((err: any) => console.error("Failed to fetch real dashboard metrics:", err));
   }, []);
 
   // Handle URL query prompt when visiting /answer?q=... directly
@@ -74,13 +74,10 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
         };
 
         // Call backend API to fetch conversational response for query
-        fetch("/api/commands/execute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: initialQuery, history: [...chatHistory, newMsg] }),
+        api.POST("/commands/execute" as any, {
+          body: { command: initialQuery, history: [...chatHistory, newMsg] } as any,
         })
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => {
+          .then(({ data }: any) => {
             setIsProcessing(false);
             if (data?.response) {
               setChatHistory([
@@ -106,7 +103,7 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
               ]);
             }
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.error("Failed to execute answer query:", err);
             setIsProcessing(false);
             setChatHistory([

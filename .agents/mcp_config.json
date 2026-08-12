@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "open-terminal": {
+      "command": "npx",
+      "args": ["-y", "smart-terminal-mcp"]
+    },
+    "redis": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-redis", "redis://redis:6379"]
+    },
+    "neo4j": {
+      "command": "npx",
+      "args": ["-y", "@johnymontana/neo4j-mcp"],
+      "env": {
+        "NEO4J_URL": "bolt://neo4j:7687",
+        "NEO4J_USER": "neo4j",
+        "NEO4J_PASSWORD": "sousToolsPassword"
+      }
+    },
+    "docker": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-docker"],
+      "env": {
+        "DOCKER_HOST": "unix:///var/run/docker.sock",
+        "DOCKER_READ_ONLY": "true"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "infisical": {
+      "command": "npx",
+      "args": ["-y", "@infisical/mcp"],
+      "env": {
+        "INFISICAL_TOKEN": "${INFISICAL_TOKEN}"
+      }
+    },
+    "supabase": {
+      "serverUrl": "https://mcp.supabase.com/mcp?project_ref=rdzjkbfwhgnboqtuqhgv&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching",
+      "headers": {
+        "Authorization": "Bearer ${SUPABASE_ACCESS_TOKEN}"
+      }
+    },
+    "qdrant": {
+      "command": "uvx",
+      "args": ["mcp-server-qdrant"],
+      "env": {
+        "QDRANT_URL": "https://qdrant.sous.tools",
+        "UV_TOOL_DIR": "/home/cptruser/.gemini/antigravity-cli/scratch/uv"
+      }
+    }
+  }
+}
+
