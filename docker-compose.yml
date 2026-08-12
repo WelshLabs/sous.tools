@@ -258,7 +258,6 @@ services:
       dockerfile: Dockerfile.cptr
     profiles: ["prod"]
     container_name: kanban-runner
-    user: "1000:1000"
     restart: unless-stopped
     environment:
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
@@ -276,16 +275,17 @@ services:
       - "/bin/sh"
       - "-c"
       - |
+        sudo chown -R 1000:1000 /workspace/.git 2>/dev/null || true
         export INFISICAL_TOKEN=$$(infisical login --method=universal-auth --client-id=$${INFISICAL_CLIENT_ID} --client-secret=$${INFISICAL_CLIENT_SECRET} --silent --plain)
         exec infisical run --log-level info --projectId $${INFISICAL_PROJECT_ID} --env $${INFISICAL_ENV:-dev} -- sh -c 'sleep infinity'
     volumes:
-      - /home/conar/code/sous.tools:/workspace
-      - /home/conar/.gemini:/home/cptruser/.gemini
-      - /home/conar/.config:/home/cptruser/.config
-      - /home/conar/.ssh:/home/cptruser/.ssh
-      - /home/conar/.gitconfig:/home/cptruser/.gitconfig
-      # Shared pnpm store to prevent permission conflicts during tests
-      - /home/conar/.local/share/pnpm:/home/cptruser/.local/share/pnpm
+      - .:/workspace
+      - ${HOME}/.gemini:/home/cptruser/.gemini
+      - ${HOME}/.config:/home/cptruser/.config
+      - ${HOME}/.ssh:/home/cptruser/.ssh
+      - ${HOME}/.gitconfig:/home/cptruser/.gitconfig
+      # Shared pnpm store
+      - ${HOME}/.local/share/pnpm:/home/cptruser/.local/share/pnpm
     networks:
       - traefik_public
     deploy:
