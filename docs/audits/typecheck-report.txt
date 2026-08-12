@@ -35,38 +35,20 @@ src/react.tsx(4,10): error TS2305: Module '"./websocket"' has no exported member
 src/react.tsx(4,25): error TS2305: Module '"./websocket"' has no exported member 'SocketConfig'.
 src/react.tsx(29,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
 [ELIFECYCLE] Command failed with exit code 2.
-::group::cli:typecheck
-cache miss, executing 79e8b738ed2d3fea
-::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 445b7554811582d8
-::endgroup::
 ::group::api:typecheck
 cache miss, executing f9ed2fd01af9a7ea
-::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing 4abcf7914920b294
 ::endgroup::
 ::group::@soustools/setup-portal:typecheck
 cache miss, executing 00fe955f6490c59d
 ::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing 445b7554811582d8
+::endgroup::
 ::group::web:typecheck
 cache miss, executing 2124d65dbab73f64
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 20716b602dd75dbe
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing ced64116b1d33ec0
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 9de6dce89ec59ec1
+::group::cli:typecheck
+cache miss, executing 79e8b738ed2d3fea
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -80,14 +62,34 @@ cache miss, executing f352138e54e498a7
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing ced64116b1d33ec0
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 9de6dce89ec59ec1
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing 4abcf7914920b294
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
 ::group::@soustools/design-system:typecheck
 cache miss, executing 45b2ea2e623b6d28
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 20716b602dd75dbe
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    6 successful, 19 total
 Cached:    2 cached, 19 total
-  Time:    14.45s 
+  Time:    14.751s 
 Failed:    @soustools/api-client#typecheck
 
