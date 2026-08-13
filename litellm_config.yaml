@@ -6,7 +6,6 @@ model_list:
     litellm_params:
       model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
       fallbacks: ["gemini-3.6-flash"]
 
   # =========================================================================
@@ -24,11 +23,19 @@ model_list:
     litellm_params:
       model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
-      drop_params: true 
       fallbacks: ["claude-3-7-sonnet"]
 
   # =========================================================================
-  # 3. DIRECT OLLAMA OPENAI-COMPATIBLE ENDPOINTS & BASE CLOUD MODELS
+  # 3. OMNIBAR AI COMMANDS MODEL WITH LOCAL OLLAMA FALLBACK
+  # =========================================================================
+  - model_name: omnibar
+    litellm_params:
+      model: gemini/gemini-3.6-flash
+      api_key: os.environ/GEMINI_API_KEY
+      fallbacks: ["openai/qwen2.5-coder:7b"]
+
+  # =========================================================================
+  # 4. DIRECT OLLAMA OPENAI-COMPATIBLE ENDPOINTS & BASE CLOUD MODELS
   # =========================================================================
   - model_name: coder
     litellm_params:
@@ -53,19 +60,16 @@ model_list:
     litellm_params:
       model: gemini/gemini-3.1-pro-preview
       api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
 
   - model_name: gemini-3.6-flash
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
-      drop_params: true
 
   - model_name: claude-3-7-sonnet
     litellm_params:
       model: anthropic/claude-3-7-sonnet-20250219
       api_key: os.environ/ANTHROPIC_API_KEY
-      drop_params: true
 
 general_settings:
   master_key: sk-1234

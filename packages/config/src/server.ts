@@ -26,6 +26,7 @@ export const serverSchema = z.object({
   NEW_RELIC_APP_NAME: z.string(),
   NEW_RELIC_ENABLED: z.boolean(),
 
+  OPENAI_API_KEY: z.string(),
   GEMINI_API_KEY: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
@@ -102,6 +103,8 @@ try {
       process.env.NEW_RELIC_APP_NAME ?? (isMockRun ? "mock" : undefined),
     NEW_RELIC_ENABLED: process.env.NEW_RELIC_ENABLED === "true",
 
+    OPENAI_API_KEY:
+      process.env.OPENAI_API_KEY ?? (isMockRun ? "mock" : undefined),
     GEMINI_API_KEY:
       process.env.GEMINI_API_KEY ?? (isMockRun ? "mock" : undefined),
     GOOGLE_CLIENT_ID:

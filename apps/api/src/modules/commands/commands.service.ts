@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { OmnibarCommandPayload, OmniMessage,
 } from "@soustools/api-types";
 import { ALL_COMMAND_TOOLS } from "./commands-tools";
@@ -8,13 +8,10 @@ import { WhiteboardService } from "../items/whiteboard.service";
 import { RecipeCostService } from "../recipe/recipe-cost.service";
 import { Neo4jService } from "../neo4j-sync/neo4j.service";
 import { randomUUID } from "crypto";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { type Cache } from "cache-manager";
 import { serverConfig as config } from "@soustools/config/server";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { supabase } from "../../lib/supabase";
-import { fallbackToOllama } from "./commands-ollama.helper";
 
 @Injectable()
 export class CommandsService {
@@ -26,15 +23,23 @@ export class CommandsService {
     private readonly whiteboardService: WhiteboardService,
     private readonly recipeCostService: RecipeCostService,
     private readonly neo4jService: Neo4jService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    @InjectQueue("ingestion") private ingestionQueue: Queue,
+    @InjectQueue("unified-ingestion") private ingestionQueue: Queue,
   ) {}
 
   private mapToGeminiContent(chatHistory: OmniMessage[]): any[] {
-    return chatHistory.map((msg) => ({
-      role: msg.role === "model" || msg.role === "agent_step" ? "assistant" : "user",
-      content: msg.content,
-    }));
+    return chatHistory.map((msg) => {
+      let textContent = msg.content || "";
+      if (msg.attachments && msg.attachments.length > 0) {
+        const urls = msg.attachments.map((a: any) => a.url || a.publicUrl || a.fileUrl).filter(Boolean);
+        if (urls.length > 0) {
+          textContent += `\n[Attached File URLs: ${urls.join(", ")}]`;
+        }
+      }
+      return {
+        role: msg.role === "model" || msg.role === "agent_step" ? "assistant" : "user",
+        content: textContent,
+      };
+    });
   }
 
   async handleCommand(
@@ -48,12 +53,6 @@ export class CommandsService {
     const conversationId = payload.context?.conversationId || randomUUID();
 
     try {
-      const isLockedOut = await this.cacheManager.get("gemini_quota_lockout");
-
-      if (isLockedOut) {
-        return this.fallbackToOllama(history, emitMessage);
-      }
-
       const contents = this.mapToGeminiContent(history);
 
       // We will loop to handle function calls
@@ -65,70 +64,49 @@ export class CommandsService {
         iterations++;
 
         let response;
-        try {
-          const payload = {
-            model: "gemini-3.1-flash-lite",
-            messages: [
-              {
-                role: "system",
-                content: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains '[1 attachment]', or indicates they are uploading a file, invoice, or recipe, you MUST immediately call the ingest_document tool with the attachment url."
-              },
-              ...contents
-            ],
-            tools: ALL_COMMAND_TOOLS.map((t: any) => ({
-              type: "function",
-              function: {
-                name: t.name,
-                description: t.description,
-                parameters: {
-                  type: "object",
-                  properties: Object.fromEntries(
-                    Object.entries(t.parameters.properties).map(([k, v]: [string, any]) => [
-                      k,
-                      { type: v.type.toLowerCase(), description: v.description }
-                    ])
-                  ),
-                  required: t.parameters.required || []
-                }
-              }
-            }))
-          };
-
-          const res = await fetch("https://api.sous.tools/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${config.GEMINI_API_KEY || "dummy"}`
+        const llmPayload = {
+          model: "omnibar",
+          messages: [
+            {
+              role: "system",
+              content: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains '[1 attachment]', or indicates they are uploading a file, invoice, or recipe, you MUST immediately call the ingest_document tool with the attachment url."
             },
-            body: JSON.stringify(payload)
-          });
-          
-          if (!res.ok) {
-            const errBody = await res.text();
-            throw new Error(`LiteLLM Error: ${res.status} ${errBody}`);
-          }
-          const body = await res.json();
-          response = body.choices[0].message;
-        } catch (genError: any) {
-          if (genError.status === 429 || genError.message?.includes("429")) {
-            this.logger.warn(
-              "Gemini 429 Quota Exceeded. Setting lockout and falling back to Ollama.",
-            );
-            // cache-manager-ioredis expects TTL in SECONDS, not milliseconds.
-            // 3600000 seconds was setting a 41.6 day lockout in Redis.
-            await this.cacheManager.set("gemini_quota_lockout", true, 3600); // 3600 seconds (1 hour)
-            if (emitMessage) {
-              emitMessage({
-                id: randomUUID(),
-                role: "agent_step",
-                content: "Quota exceeded. Falling back to local Ollama...",
-                timestamp: new Date(),
-              });
+            ...contents
+          ],
+          tools: ALL_COMMAND_TOOLS.map((t: any) => ({
+            type: "function",
+            function: {
+              name: t.name,
+              description: t.description,
+              parameters: {
+                type: "object",
+                properties: Object.fromEntries(
+                  Object.entries(t.parameters.properties).map(([k, v]: [string, any]) => [
+                    k,
+                    { type: v.type.toLowerCase(), description: v.description }
+                  ])
+                ),
+                required: t.parameters.required || []
+              }
             }
-            return this.fallbackToOllama(history, emitMessage);
-          }
-          throw genError;
+          }))
+        };
+
+        const res = await fetch("https://ai.sous.tools/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`
+          },
+          body: JSON.stringify(llmPayload)
+        });
+        
+        if (!res.ok) {
+          const errBody = await res.text();
+          throw new Error(`LiteLLM Error: ${res.status} ${errBody}`);
         }
+        const body = await res.json();
+        response = body.choices[0].message;
 
         if (response.tool_calls && response.tool_calls.length > 0) {
           const call = response.tool_calls[0].function;
@@ -516,13 +494,6 @@ export class CommandsService {
         message: fallbackMsg,
       };
     }
-  }
-
-  private async fallbackToOllama(
-    history: OmniMessage[],
-    emitMessage?: (msg: OmniMessage) => void,
-  ) {
-    return fallbackToOllama(history, this.logger, emitMessage);
   }
 
   private async performWebSearch(

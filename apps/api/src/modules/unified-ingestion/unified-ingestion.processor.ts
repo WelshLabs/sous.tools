@@ -132,7 +132,6 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     _imageUrl?: string,
     conversationId?: string,
   ): Promise<ExtractedBlock[]> {
-    const ollamaHost = config.OLLAMA_HOST || "http://127.0.0.1:11434";
     let extractedResponse: any = null;
 
     try {
@@ -159,15 +158,15 @@ Page input: ${rawText.substring(0, 1500)}`;
         }
       }
 
-      // Try LiteLLM first (gemini-3.1-pro)
-      const liteLlmRes = await fetch("https://api.sous.tools/v1/chat/completions", {
+      // Try LiteLLM
+      const liteLlmRes = await fetch("https://ai.sous.tools/v1/chat/completions", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${config.GEMINI_API_KEY || "dummy"}`
+          "Authorization": `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`
         },
         body: JSON.stringify({
-          model: "gemini-3.1-pro",
+          model: "gemini-3.6-flash",
           messages: [
             {
               role: "user",
@@ -188,36 +187,7 @@ Page input: ${rawText.substring(0, 1500)}`;
         throw new Error(`LiteLLM failed: ${liteLlmRes.status} ${await liteLlmRes.text()}`);
       }
     } catch (err) {
-      this.logger.warn("LiteLLM Vision extract failed, falling back to Ollama:", err);
-      
-      // Fallback to Ollama
-      try {
-        const prompt = `Analyze this page content and classify into content blocks. Return ONLY a valid JSON array of objects with fields:
-- type: 'PROSE' | 'RECIPE' | 'INVOICE'
-- bbox: [ymin, xmin, ymax, xmax] (normalized 0-1000)
-- content: (string for PROSE)
-- title, yieldCount, yieldUnit, instructions (string array), ingredients (array of { rawName }) for RECIPE
-- vendorName, totals ({ subtotal, tax, total }), lineItems (array of { rawName, unitPrice, extendedPrice }) for INVOICE
-Page input: ${rawText.substring(0, 1500)}`;
-
-        const res = await fetch(`${ollamaHost}/api/generate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "llama3.2-vision",
-            prompt,
-            stream: false,
-            json: true,
-          }),
-        });
-
-        if (res.ok) {
-          const body = await res.json();
-          extractedResponse = JSON.parse(body.response || "[]");
-        }
-      } catch (ollamaErr) {
-        this.logger.warn("Local Ollama Vision extract fallback also failed:", ollamaErr);
-      }
+      this.logger.error("LiteLLM extraction failed:", err);
     }
 
     const rawBlocks: any[] =

@@ -1,6 +1,13 @@
 /**
  * Kanban Orchestrator Script (Typescript)
  * 
+ * n8n Execute Command Node Configuration:
+ * ----------------------------------------
+ * docker exec -i -e GH_TOKEN="{{ $env.GITHUB_TOKEN }}" -u 1000 kanban-runner bash -c 'cd /workspace && head -n 1 > /tmp/webhook.json && pnpm exec tsx scripts/kanban-orchestrator.ts /tmp/webhook.json' << 'EOF_WEBHOOK'
+ * {{ JSON.stringify($json) }}
+ * EOF_WEBHOOK
+ * ----------------------------------------
+ * 
  * GitHub Labels Documentation:
  * 
  * Standard Workflow Labels (Trigger the agent via Webhook):
@@ -141,8 +148,9 @@ async function main() {
   }
 
   // Early Exit Check: Ensure the issue actually has a trigger label before spinning up the agent
-  const labelsCheckRes = runCommand(`gh issue view ${issueNumber} --repo ${repo} --json labels -q ".labels[].name"`, true);
-  const currentLabels = labelsCheckRes.stdout || "";
+  // Extract labels directly from the webhook payload to avoid slow network calls
+  const payloadLabels: any[] = ghPayload.issue?.labels || [];
+  const currentLabels = payloadLabels.map((l: any) => typeof l === 'string' ? l : l.name);
   
   const isReady = currentLabels.includes("Ready") || currentLabels.includes("agent:ready");
   if (!isReady && !commentBody) {
@@ -151,9 +159,17 @@ async function main() {
   }
 
   // Update Labels (reacts to standard labels, sets internal agent labels)
-  runCommand(`gh issue edit ${issueNumber} --repo ${repo} --remove-label "Ready,agent:ready,agent:needs-input" --add-label "In Progress,agent:in-progress"`);
-
+  const labelsToRemove = ["Ready", "agent:ready", "agent:needs-input"].filter(l => currentLabels.includes(l));
   
+  if (labelsToRemove.length > 0) {
+    runCommand(`gh issue edit ${issueNumber} --repo ${repo} --remove-label "${labelsToRemove.join(",")}" --add-label "In Progress,agent:in-progress" || true`);
+  } else {
+    runCommand(`gh issue edit ${issueNumber} --repo ${repo} --add-label "In Progress,agent:in-progress" || true`);
+  }
+  
+  // Bypass .ssh/known_hosts permission denied errors for git fetch/checkout
+  process.env.GIT_SSH_COMMAND = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
+
   runCommand(`git fetch origin`);
   runCommand(`git checkout issue-${issueNumber} || git checkout -b issue-${issueNumber}`);
 
