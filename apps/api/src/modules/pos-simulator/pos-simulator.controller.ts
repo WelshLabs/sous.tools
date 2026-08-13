@@ -151,37 +151,43 @@ export class PosSimulatorController {
     });
   }
 
-  @Put('items/:id')
+  @Put("items/:id")
   async updateItem(
-    @Param('id') id: string,
-    @Body() body: { name?: string; description?: string | null; price?: number; is_sold_out?: boolean },
+    @Param("id") id: string,
+    @Body()
+    body: {
+      name?: string;
+      description?: string | null;
+      price?: number;
+      is_sold_out?: boolean;
+    },
   ): Promise<ApiResponse<unknown>> {
     return runControllerAction(async () => {
       const { data, error } = await supabase
-        .from('pos_items')
+        .from("pos_items")
         .update({
           ...body,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', id)
+        .eq("id", id)
         .select()
         .single();
 
       if (error || !data) {
-        throw new NotFoundException(error?.message || 'Item not found');
+        throw new NotFoundException(error?.message || "Item not found");
       }
 
       // Broadcast updated items to all signage decks so they hot-reload
       const { data: allItems } = await supabase
-        .from('pos_items')
-        .select('*')
-        .eq('organization_id', (data as any).organization_id)
-        .eq('pos_provider', 'SQUARE');
+        .from("pos_items")
+        .select("*")
+        .eq("organization_id", (data as any).organization_id)
+        .eq("pos_provider", "SQUARE");
 
       const { data: decks } = await supabase
-        .from('signage_decks')
-        .select('id, config')
-        .eq('organization_id', (data as any).organization_id);
+        .from("signage_decks")
+        .select("id, config")
+        .eq("organization_id", (data as any).organization_id);
 
       if (decks) {
         for (const deck of decks) {

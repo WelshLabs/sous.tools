@@ -42,7 +42,9 @@ export function mapDbItemToPosItem(item: RawDbPosItem): PosItem {
  * @param displayId - The custom name or ID of the display device.
  * @returns The registered display ID, or null if registration fails.
  */
-export async function registerDisplayDevice(displayId: string): Promise<string | null> {
+export async function registerDisplayDevice(
+  displayId: string,
+): Promise<string | null> {
   const registerUrl = `${window.location.protocol}//${window.location.hostname}:6000/signage/displays/pair/register`;
   try {
     const res = await fetch(registerUrl, {

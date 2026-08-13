@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Settings, CheckCircle, AlertTriangle, Clock, ChevronLeft, Check } from "lucide-react";
+import {
+  Settings,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  ChevronLeft,
+  Check,
+} from "lucide-react";
 import { Button, OmniBar } from "@soustools/design-system";
 import { type KDSTicket, type KDSTicketItem } from "./kds.types";
 
@@ -62,7 +69,9 @@ export function KDSView({
             <button
               onClick={() => onSetViewFilter("OPEN")}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                viewFilter === "OPEN" ? "bg-black/10 dark:bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+                viewFilter === "OPEN"
+                  ? "bg-black/10 dark:bg-white/10 text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Open ({tickets.filter((t) => t.status === "OPEN").length})
@@ -70,7 +79,9 @@ export function KDSView({
             <button
               onClick={() => onSetViewFilter("CLOSED")}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                viewFilter === "CLOSED" ? "bg-black/10 dark:bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+                viewFilter === "CLOSED"
+                  ? "bg-black/10 dark:bg-white/10 text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Completed ({tickets.filter((t) => t.status === "CLOSED").length})
@@ -88,17 +99,24 @@ export function KDSView({
 
       <div className="flex-1 flex gap-6 overflow-hidden min-h-0 h-[calc(100vh-230px)]">
         <div className="flex-1 flex flex-col min-w-0">
-          <div className={`flex-1 overflow-y-auto pr-1 grid ${gridClasses} pb-10`}>
+          <div
+            className={`flex-1 overflow-y-auto pr-1 grid ${gridClasses} pb-10`}
+          >
             {filteredTickets.length === 0 ? (
               <div className="glass-panel col-span-full flex flex-col items-center justify-center p-12 text-muted-foreground rounded-2xl h-64">
                 <CheckCircle className="w-12 h-12 mb-3 opacity-60" />
-                <p className="font-bold text-lg text-foreground">All tickets completed!</p>
-                <p className="text-sm mt-1">Ready for incoming transactions...</p>
+                <p className="font-bold text-lg text-foreground">
+                  All tickets completed!
+                </p>
+                <p className="text-sm mt-1">
+                  Ready for incoming transactions...
+                </p>
               </div>
             ) : (
               filteredTickets.map((ticket) => {
                 const ageMinutes = Math.floor(
-                  (Date.now() - new Date(ticket.createdAt).getTime()) / (60 * 1000)
+                  (Date.now() - new Date(ticket.createdAt).getTime()) /
+                    (60 * 1000),
                 );
                 return (
                   <div
@@ -113,7 +131,9 @@ export function KDSView({
                       <div className="flex justify-between items-start pb-2 border-b border-black/5 dark:border-white/5 mb-3">
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className={`font-black tracking-tight ${fontClasses.title} ${ticket.isRush ? "text-amber-500" : "text-foreground"}`}>
+                            <span
+                              className={`font-black tracking-tight ${fontClasses.title} ${ticket.isRush ? "text-amber-500" : "text-foreground"}`}
+                            >
                               Ticket #{ticket.ticketNumber}
                             </span>
                             {ticket.isRush && (
@@ -122,7 +142,9 @@ export function KDSView({
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-muted-foreground">{ticket.tableNumber}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {ticket.tableNumber}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1 text-muted-foreground text-xs">
                           <Clock className="w-3.5 h-3.5" />
@@ -136,7 +158,10 @@ export function KDSView({
                           return (
                             <div
                               key={item.id}
-                              onClick={() => ticket.status === "OPEN" && onToggleLineItem(ticket.id, item)}
+                              onClick={() =>
+                                ticket.status === "OPEN" &&
+                                onToggleLineItem(ticket.id, item)
+                              }
                               className={`p-2 rounded-lg border transition-all cursor-pointer select-none ${
                                 isDone
                                   ? "bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 opacity-50 line-through"
@@ -144,13 +169,19 @@ export function KDSView({
                               }`}
                             >
                               <div className="flex justify-between items-center">
-                                <span className={`font-bold ${fontClasses.body} ${isDone ? "text-muted-foreground" : "text-foreground"}`}>
+                                <span
+                                  className={`font-bold ${fontClasses.body} ${isDone ? "text-muted-foreground" : "text-foreground"}`}
+                                >
                                   {item.qty}x {item.name}
                                 </span>
-                                {isDone && <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />}
+                                {isDone && (
+                                  <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                                )}
                               </div>
                               {item.notes && (
-                                <span className={`text-orange-400 font-semibold italic mt-0.5 block ${fontClasses.notes}`}>
+                                <span
+                                  className={`text-orange-400 font-semibold italic mt-0.5 block ${fontClasses.notes}`}
+                                >
                                   * {item.notes}
                                 </span>
                               )}
@@ -189,14 +220,18 @@ export function KDSView({
 
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {allDayPrep.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground text-xs">No active items to prepare.</div>
+              <div className="text-center py-12 text-muted-foreground text-xs">
+                No active items to prepare.
+              </div>
             ) : (
               allDayPrep.map(([name, count]) => (
                 <div
                   key={name}
                   className="flex justify-between items-center p-3 bg-white/50 dark:bg-black/20 border border-black/5 dark:border-white/5 rounded-xl transition-colors"
                 >
-                  <span className="text-sm font-bold text-foreground">{name}</span>
+                  <span className="text-sm font-bold text-foreground">
+                    {name}
+                  </span>
                   <span className="text-xs px-2.5 py-1 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 font-black">
                     {count}
                   </span>

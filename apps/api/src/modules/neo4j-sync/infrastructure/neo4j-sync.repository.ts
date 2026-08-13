@@ -13,7 +13,11 @@ export class Neo4jSyncRepository implements INeo4jSyncRepository {
 
   constructor(private readonly neo4jService: Neo4jService) {}
 
-  async upsertNode(label: string, id: string, properties: Record<string, any>): Promise<void> {
+  async upsertNode(
+    label: string,
+    id: string,
+    properties: Record<string, any>,
+  ): Promise<void> {
     const cleanLabel = sanitize(label);
     this.logger.log(`Upserting ${cleanLabel} node in Neo4j: ${id}`);
     const query = `
@@ -45,7 +49,7 @@ export class Neo4jSyncRepository implements INeo4jSyncRepository {
     this.logger.log(
       `Clearing existing relationship of type ${cleanRel} (${
         direction === "in" ? "incoming" : "outgoing"
-      }) from ${cleanSrc}:${srcId}`
+      }) from ${cleanSrc}:${srcId}`,
     );
 
     const query =
@@ -77,7 +81,7 @@ export class Neo4jSyncRepository implements INeo4jSyncRepository {
     this.logger.log(
       `Creating relationship (${cleanSrc}:${srcId}) ${
         direction === "in" ? "<-" : "-"
-      }[:${cleanRel}]${direction === "in" ? "-" : "->"} (${cleanTarget}:${targetId})`
+      }[:${cleanRel}]${direction === "in" ? "-" : "->"} (${cleanTarget}:${targetId})`,
     );
 
     const query =
@@ -109,7 +113,7 @@ export class Neo4jSyncRepository implements INeo4jSyncRepository {
     const cleanRel = sanitize(relationLabel);
 
     this.logger.log(
-      `Creating direct relationship (${cleanSrc}:${srcId})-[:${cleanRel}]->(${cleanTarget}:${targetId})`
+      `Creating direct relationship (${cleanSrc}:${srcId})-[:${cleanRel}]->(${cleanTarget}:${targetId})`,
     );
 
     const query = `
@@ -134,7 +138,7 @@ export class Neo4jSyncRepository implements INeo4jSyncRepository {
     const cleanRel = sanitize(relationLabel);
 
     this.logger.log(
-      `Deleting relationship (${cleanSrc}:${srcId})-[:${cleanRel}]->(${cleanTarget}:${targetId})`
+      `Deleting relationship (${cleanSrc}:${srcId})-[:${cleanRel}]->(${cleanTarget}:${targetId})`,
     );
 
     const query = `

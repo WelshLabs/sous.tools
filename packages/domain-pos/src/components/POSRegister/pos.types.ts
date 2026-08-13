@@ -4,7 +4,7 @@ export const CartItemModifierSchema = z.object({
   id: z.string(),
   external_id: z.string().nullable(),
   name: z.string(),
-  price: z.number()
+  price: z.number(),
 });
 
 export const CartItemSchema = z.object({
@@ -13,7 +13,7 @@ export const CartItemSchema = z.object({
   name: z.string(),
   price: z.number(),
   quantity: z.number().min(1),
-  modifiers: z.array(CartItemModifierSchema)
+  modifiers: z.array(CartItemModifierSchema),
 });
 
 export const CartSchema = z.array(CartItemSchema);
@@ -26,7 +26,7 @@ export const CatalogItemSchema = z.object({
   image: z.string().optional(),
   isSoldOut: z.boolean().optional(),
   description: z.string().optional(),
-  modifierGroupIds: z.array(z.string()).optional()
+  modifierGroupIds: z.array(z.string()).optional(),
 });
 
 export type CartItemModifier = z.infer<typeof CartItemModifierSchema>;

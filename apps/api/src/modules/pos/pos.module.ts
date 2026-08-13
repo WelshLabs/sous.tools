@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { PosTransactionsService } from './pos-transactions.service';
-import { PosLinksService } from './pos-links.service';
-import { PosController } from './pos.controller';
-import { PosGateway } from './pos.gateway';
+import { Module } from "@nestjs/common";
+import { PosTransactionsService } from "./pos-transactions.service";
+import { PosLinksService } from "./pos-links.service";
+import { PosController } from "./pos.controller";
+import { PosGateway } from "./pos.gateway";
 
 @Module({
   controllers: [PosController],
@@ -10,4 +10,3 @@ import { PosGateway } from './pos.gateway';
   exports: [PosTransactionsService, PosLinksService, PosGateway],
 })
 export class PosModule {}
-

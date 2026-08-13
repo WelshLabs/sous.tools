@@ -22,11 +22,17 @@ const TABS: TabDef[] = [
   { key: "soldOut", label: "Sold Out", sub: "Unavailable items" },
 ];
 
-export const StateTabBar: React.FC<StateTabBarProps> = ({ activeState, onChange, styles }) => (
+export const StateTabBar: React.FC<StateTabBarProps> = ({
+  activeState,
+  onChange,
+  styles,
+}) => (
   <div className="flex gap-1.5 px-4 py-2 border-b border-border shrink-0">
     {TABS.map(({ key, label, sub }) => {
       const isActive = activeState === key;
-      const bg = styles[key].backgroundColor ?? (key === "highlighted" ? "#3b5" : key === "soldOut" ? "#f55" : "#888");
+      const bg =
+        styles[key].backgroundColor ??
+        (key === "highlighted" ? "#3b5" : key === "soldOut" ? "#f55" : "#888");
       return (
         <button
           key={key}
@@ -40,11 +46,18 @@ export const StateTabBar: React.FC<StateTabBarProps> = ({ activeState, onChange,
           <div className="flex items-center gap-1.5">
             <span
               className="rounded-sm shrink-0"
-              style={{ width: 12, height: 12, backgroundColor: bg, display: "inline-block" }}
+              style={{
+                width: 12,
+                height: 12,
+                backgroundColor: bg,
+                display: "inline-block",
+              }}
             />
             <span className="text-xs font-semibold">{label}</span>
           </div>
-          <span className="text-[9px] text-muted-foreground leading-none">{sub}</span>
+          <span className="text-[9px] text-muted-foreground leading-none">
+            {sub}
+          </span>
         </button>
       );
     })}

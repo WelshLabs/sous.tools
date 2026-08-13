@@ -1,8 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import type { VesselProfile, MasterIngredient, Recipe, RecipeIngredient, RecipeInstruction } from "@soustools/api-types";
-import { type RecipeIngredientLine, type RecipeInstructionStep } from "../../types";
+import type {
+  VesselProfile,
+  MasterIngredient,
+  Recipe,
+  RecipeIngredient,
+  RecipeInstruction,
+} from "@soustools/api-types";
+import {
+  type RecipeIngredientLine,
+  type RecipeInstructionStep,
+} from "../../types";
 import { RecipeBuilderView } from "./RecipeBuilder.view";
 
 export interface RecipeBuilderProps {
@@ -25,7 +34,14 @@ export interface RecipeBuilderProps {
 }
 
 export function RecipeBuilder(props: RecipeBuilderProps) {
-  const { initialData, vessels, masterIngredients, loading = false, onSave, backHref = "/recipes" } = props;
+  const {
+    initialData,
+    vessels,
+    masterIngredients,
+    loading = false,
+    onSave,
+    backHref = "/recipes",
+  } = props;
 
   const [title, setTitle] = useState("");
   const [yieldCount, setYieldCount] = useState(1);
@@ -51,14 +67,14 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
           baseCalculationGroup: ri.baseCalculationGroup,
           prepNotes: ri.prepNotes || "",
           rawName: ri.rawName,
-        }))
+        })),
       );
       setSteps(
         (initialData.instructions || []).map((step: RecipeInstruction) => ({
           stepNumber: step.stepNumber,
           text: step.text,
           timerDurationSeconds: step.timerDurationSeconds,
-        }))
+        })),
       );
 
       setStatus(initialData.status || "APPROVED");
@@ -103,9 +119,12 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
     setIngredients((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleUpdateIngredientLine = (idx: number, fields: Partial<RecipeIngredientLine>) => {
+  const handleUpdateIngredientLine = (
+    idx: number,
+    fields: Partial<RecipeIngredientLine>,
+  ) => {
     setIngredients((prev) =>
-      prev.map((line, i) => (i === idx ? { ...line, ...fields } : line))
+      prev.map((line, i) => (i === idx ? { ...line, ...fields } : line)),
     );
   };
 
@@ -127,9 +146,12 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
     });
   };
 
-  const handleUpdateInstructionStep = (idx: number, fields: Partial<RecipeInstructionStep>) => {
+  const handleUpdateInstructionStep = (
+    idx: number,
+    fields: Partial<RecipeInstructionStep>,
+  ) => {
     setSteps((prev) =>
-      prev.map((step, i) => (i === idx ? { ...step, ...fields } : step))
+      prev.map((step, i) => (i === idx ? { ...step, ...fields } : step)),
     );
   };
 

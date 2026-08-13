@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, Inject } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  Inject,
+} from "@nestjs/common";
 import type { INeo4jSyncRepository } from "./domain/neo4j-sync.repository.interface";
 import { SCHEMA_REGISTRY, IGNORED_FIELDS } from "./domain/schema-registry";
 
@@ -13,7 +18,7 @@ export class SupabaseWebhookPayload {
 // Helper to convert snake_case to camelCase
 export function snakeToCamelCase(str: string): string {
   return str.replace(/([-_][a-z])/g, (group) =>
-    group.toUpperCase().replace("-", "").replace("_", "")
+    group.toUpperCase().replace("-", "").replace("_", ""),
   );
 }
 
@@ -37,14 +42,13 @@ export function resolveNodeLabel(table: string): string {
     name = name.slice(0, -1);
   }
 
-  return name
-    .split("_")
-    .map(capitalize)
-    .join("");
+  return name.split("_").map(capitalize).join("");
 }
 
 // Helper to serialize nested objects and maps for Neo4j compatibility
-export function serializeProperties(properties: Record<string, any>): Record<string, any> {
+export function serializeProperties(
+  properties: Record<string, any>,
+): Record<string, any> {
   const serialized: Record<string, any> = {};
   for (const [key, value] of Object.entries(properties)) {
     if (value === null || value === undefined) {
@@ -61,7 +65,10 @@ export function serializeProperties(properties: Record<string, any>): Record<str
         // If it's a primitive array (e.g. string[], number[]), keep it.
         // If it contains objects, serialize the array.
         const hasObjects = value.some(
-          (item) => item !== null && typeof item === "object" && !(item instanceof Date)
+          (item) =>
+            item !== null &&
+            typeof item === "object" &&
+            !(item instanceof Date),
         );
         if (hasObjects) {
           serialized[key] = JSON.stringify(value);
@@ -94,7 +101,9 @@ export class Neo4jSyncService {
    */
   async handleWebhook(payload: SupabaseWebhookPayload): Promise<void> {
     const { table, type, schema } = payload;
-    this.logger.log(`Processing database webhook: [${schema}.${table}] [${type}]`);
+    this.logger.log(
+      `Processing database webhook: [${schema}.${table}] [${type}]`,
+    );
 
     const config = SCHEMA_REGISTRY[table];
 
@@ -103,7 +112,9 @@ export class Neo4jSyncService {
       if (type === "DELETE") {
         const record = payload.old_record;
         if (!record) {
-          throw new BadRequestException(`Missing old_record in DELETE payload for join table ${table}`);
+          throw new BadRequestException(
+            `Missing old_record in DELETE payload for join table ${table}`,
+          );
         }
 
         const srcId = record[config.source.fkField];
@@ -111,7 +122,7 @@ export class Neo4jSyncService {
 
         if (!srcId || !targetId) {
           this.logger.warn(
-            `Skipping join table deleteRelationship for ${table}: missing ${config.source.fkField} or ${config.target.fkField}`
+            `Skipping join table deleteRelationship for ${table}: missing ${config.source.fkField} or ${config.target.fkField}`,
           );
           return;
         }
@@ -121,12 +132,14 @@ export class Neo4jSyncService {
           srcId,
           config.target.targetLabel,
           targetId,
-          config.relationLabel
+          config.relationLabel,
         );
       } else {
         const record = payload.record;
         if (!record) {
-          throw new BadRequestException(`Missing record in ${type} payload for join table ${table}`);
+          throw new BadRequestException(
+            `Missing record in ${type} payload for join table ${table}`,
+          );
         }
 
         const srcId = record[config.source.fkField];
@@ -134,7 +147,7 @@ export class Neo4jSyncService {
 
         if (!srcId || !targetId) {
           this.logger.warn(
-            `Skipping join table createDirectRelationship for ${table}: missing ${config.source.fkField} or ${config.target.fkField}`
+            `Skipping join table createDirectRelationship for ${table}: missing ${config.source.fkField} or ${config.target.fkField}`,
           );
           return;
         }
@@ -169,7 +182,7 @@ export class Neo4jSyncService {
           config.target.targetLabel,
           targetId,
           config.relationLabel,
-          serialized
+          serialized,
         );
       }
       return;
@@ -183,7 +196,9 @@ export class Neo4jSyncService {
       // Support primary key 'user_id' for tables like user_profiles, fallback to 'id'
       const id = record?.id || record?.user_id;
       if (!id) {
-        throw new BadRequestException(`Missing identifier in DELETE payload for table ${table}`);
+        throw new BadRequestException(
+          `Missing identifier in DELETE payload for table ${table}`,
+        );
       }
 
       await this.repository.deleteNode(nodeLabel, id);
@@ -191,36 +206,63 @@ export class Neo4jSyncService {
       const record = payload.record;
       const id = record?.id || record?.user_id;
       if (!record || !id) {
-        throw new BadRequestException(`Missing record or identifier in ${type} payload for table ${table}`);
+        throw new BadRequestException(
+          `Missing record or identifier in ${type} payload for table ${table}`,
+        );
       }
 
       // Check validation constraints from legacy manual switches
       if (table === "recipes" && !record.organization_id) {
-        throw new BadRequestException("Missing organization_id in recipe record");
+        throw new BadRequestException(
+          "Missing organization_id in recipe record",
+        );
       }
       if (table === "vendors" && !record.organization_id) {
-        throw new BadRequestException("Missing organization_id in vendor record");
+        throw new BadRequestException(
+          "Missing organization_id in vendor record",
+        );
       }
       if (table === "items" && !record.organization_id) {
         throw new BadRequestException("Missing organization_id in item record");
       }
       if (table === "recipe_ingredients" && !record.recipe_id) {
-        throw new BadRequestException("Missing recipe_id in recipe ingredient record");
+        throw new BadRequestException(
+          "Missing recipe_id in recipe ingredient record",
+        );
       }
-      if (table === "inventory_on_hand" && (!record.organization_id || !record.item_id)) {
-        throw new BadRequestException("Missing organization_id or item_id in inventory record");
+      if (
+        table === "inventory_on_hand" &&
+        (!record.organization_id || !record.item_id)
+      ) {
+        throw new BadRequestException(
+          "Missing organization_id or item_id in inventory record",
+        );
       }
-      if (table === "purchase_orders" && (!record.organization_id || !record.vendor_id)) {
-        throw new BadRequestException("Missing organization_id or vendor_id in purchase order record");
+      if (
+        table === "purchase_orders" &&
+        (!record.organization_id || !record.vendor_id)
+      ) {
+        throw new BadRequestException(
+          "Missing organization_id or vendor_id in purchase order record",
+        );
       }
       if (table === "purchase_order_items" && !record.po_id) {
-        throw new BadRequestException("Missing po_id in purchase order item record");
+        throw new BadRequestException(
+          "Missing po_id in purchase order item record",
+        );
       }
-      if (table === "vendor_item_aliases" && (!record.organization_id || !record.vendor_id)) {
-        throw new BadRequestException("Missing organization_id or vendor_id in vendor item alias record");
+      if (
+        table === "vendor_item_aliases" &&
+        (!record.organization_id || !record.vendor_id)
+      ) {
+        throw new BadRequestException(
+          "Missing organization_id or vendor_id in vendor item alias record",
+        );
       }
       if (table === "tickets" && !record.organization_id) {
-        throw new BadRequestException("Missing organization_id in ticket record");
+        throw new BadRequestException(
+          "Missing organization_id in ticket record",
+        );
       }
       if (table === "orders" && !record.ticket_id) {
         throw new BadRequestException("Missing ticket_id in order record");
@@ -229,19 +271,35 @@ export class Neo4jSyncService {
         throw new BadRequestException("Missing order_id in order item record");
       }
       if (table === "shifts" && (!record.organization_id || !record.user_id)) {
-        throw new BadRequestException("Missing organization_id or user_id in shift record");
+        throw new BadRequestException(
+          "Missing organization_id or user_id in shift record",
+        );
       }
-      if (table === "time_clocks" && (!record.organization_id || !record.user_id)) {
-        throw new BadRequestException("Missing organization_id or user_id in time clock record");
+      if (
+        table === "time_clocks" &&
+        (!record.organization_id || !record.user_id)
+      ) {
+        throw new BadRequestException(
+          "Missing organization_id or user_id in time clock record",
+        );
       }
-      if (table === "invoices" && (!record.organization_id || !record.vendor_id)) {
-        throw new BadRequestException("Missing organization_id or vendor_id in invoice record");
+      if (
+        table === "invoices" &&
+        (!record.organization_id || !record.vendor_id)
+      ) {
+        throw new BadRequestException(
+          "Missing organization_id or vendor_id in invoice record",
+        );
       }
       if (table === "invoice_items" && !record.invoice_id) {
-        throw new BadRequestException("Missing invoice_id in invoice item record");
+        throw new BadRequestException(
+          "Missing invoice_id in invoice item record",
+        );
       }
       if (table === "wastage_logs" && !record.organization_id) {
-        throw new BadRequestException("Missing organization_id in wastage log record");
+        throw new BadRequestException(
+          "Missing organization_id in wastage log record",
+        );
       }
 
       const properties: Record<string, any> = {};
@@ -285,7 +343,7 @@ export class Neo4jSyncService {
                   nodeLabel,
                   id,
                   rel.relationLabel,
-                  rel.direction || "out"
+                  rel.direction || "out",
                 );
               }
             }
@@ -296,7 +354,7 @@ export class Neo4jSyncService {
               rel.targetLabel,
               fkValue,
               rel.relationLabel,
-              rel.direction || "out"
+              rel.direction || "out",
             );
           }
         }
@@ -314,17 +372,17 @@ export class Neo4jSyncService {
           }
 
           const prefix = key.slice(0, -3); // remove '_id'
-          let targetLabel = prefix
-            .split("_")
-            .map(capitalize)
-            .join("");
+          let targetLabel = prefix.split("_").map(capitalize).join("");
 
           // Align naming deviations to target labels
           if (targetLabel === "Employee" || targetLabel === "RecordedBy") {
             targetLabel = "User";
           } else if (targetLabel === "Po") {
             targetLabel = "PurchaseOrder";
-          } else if (targetLabel === "InternalItem" || targetLabel === "MasterItem") {
+          } else if (
+            targetLabel === "InternalItem" ||
+            targetLabel === "MasterItem"
+          ) {
             targetLabel = "Item";
           } else if (targetLabel === "SubRecipe") {
             targetLabel = "Recipe";
@@ -340,13 +398,22 @@ export class Neo4jSyncService {
             }
           } else if (key === "po_id" && table === "invoices") {
             relationLabel = "RECONCILES";
-          } else if (key === "user_id" || key === "employee_id" || key === "recorded_by") {
+          } else if (
+            key === "user_id" ||
+            key === "employee_id" ||
+            key === "recorded_by"
+          ) {
             if (table === "shifts") relationLabel = "WORKED_BY";
             else if (table === "time_clocks") relationLabel = "CLOCKED_BY";
             else if (table === "tickets") relationLabel = "SOLD_BY";
             else if (table === "wastage_logs") relationLabel = "REPORTED_BY";
             else relationLabel = "LINKED_TO";
-          } else if (key === "order_id" || key === "invoice_id" || key === "po_id" || key === "ticket_id") {
+          } else if (
+            key === "order_id" ||
+            key === "invoice_id" ||
+            key === "po_id" ||
+            key === "ticket_id"
+          ) {
             relationLabel = "PART_OF";
           } else if (key === "item_id") {
             if (table === "inventory_on_hand") relationLabel = "OF_ITEM";
@@ -366,7 +433,7 @@ export class Neo4jSyncService {
                 nodeLabel,
                 id,
                 relationLabel,
-                "out"
+                "out",
               );
             }
           }
@@ -377,7 +444,7 @@ export class Neo4jSyncService {
             targetLabel,
             value,
             relationLabel,
-            "out"
+            "out",
           );
         }
       }

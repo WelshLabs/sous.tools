@@ -1,4 +1,11 @@
-import { Controller, Post, Body, Req, UseGuards, UnauthorizedException } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ApiBody, ApiProperty } from "@nestjs/swagger";
 import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
 import { ApiResponse } from "@soustools/api-types";
@@ -22,7 +29,9 @@ export class StorageController {
   async getUploadUrl(
     @Body() body: UploadUrlDto,
     @Req() req: any,
-  ): Promise<ApiResponse<{ signedUrl: string; publicUrl: string; filePath: string }>> {
+  ): Promise<
+    ApiResponse<{ signedUrl: string; publicUrl: string; filePath: string }>
+  > {
     const user = req.user;
     if (!user) {
       throw new UnauthorizedException("User not authenticated");

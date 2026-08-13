@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import { Star } from 'lucide-react';
-import { Chip } from './Chip';
+import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
+import { Star } from "lucide-react";
+import { Chip } from "./Chip";
 
 const meta: Meta<typeof Chip> = {
-  title: 'Components/Chip',
+  title: "Components/Chip",
   component: Chip,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -14,34 +14,34 @@ type Story = StoryObj<typeof Chip>;
 
 export const Default: Story = {
   args: {
-    children: 'Standard Chip',
+    children: "Standard Chip",
   },
 };
 
 export const Selected: Story = {
   args: {
-    children: 'Selected Chip',
+    children: "Selected Chip",
     selected: true,
   },
 };
 
 export const WithIcon: Story = {
   args: {
-    children: 'With Icon',
+    children: "With Icon",
     icon: <Star className="w-4 h-4" />,
   },
 };
 
 export const Removable: Story = {
   args: {
-    children: 'Removable Chip',
-    onRemove: () => alert('Removed!'),
+    children: "Removable Chip",
+    onRemove: () => alert("Removed!"),
   },
 };
 
 export const Disabled: Story = {
   args: {
-    children: 'Disabled Chip',
+    children: "Disabled Chip",
     disabled: true,
   },
 };

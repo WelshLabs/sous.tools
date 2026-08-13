@@ -1,20 +1,20 @@
 import { clientConfig as config } from "@soustools/config/client";
 import { RecipeBuilderClient } from "@/app/(workspace)/recipes/RecipeBuilderClient";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function NewRecipePage() {
   const baseUrl = config.NEXT_PUBLIC_API_URL;
-  
+
   let vessels = [];
   let masterIngredients = [];
 
   try {
     const [vesselsRes, ingRes] = await Promise.all([
       fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/ingredients`, { cache: "no-store" })
+      fetch(`${baseUrl}/recipes/ingredients`, { cache: "no-store" }),
     ]);
-    
+
     if (vesselsRes.ok) {
       const payload = await vesselsRes.json();
       vessels = payload.data || [];
@@ -29,9 +29,9 @@ export default async function NewRecipePage() {
 
   return (
     <div className="py-6 px-4">
-      <RecipeBuilderClient 
-        vessels={vessels} 
-        masterIngredients={masterIngredients} 
+      <RecipeBuilderClient
+        vessels={vessels}
+        masterIngredients={masterIngredients}
       />
     </div>
   );

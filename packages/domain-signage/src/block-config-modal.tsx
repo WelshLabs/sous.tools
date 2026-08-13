@@ -14,9 +14,15 @@ interface BlockConfigModalProps {
   onSave: (block: SignageBlock) => void;
 }
 
-export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }: BlockConfigModalProps): React.JSX.Element {
+export function BlockConfigModal({
+  block: initialBlock,
+  items,
+  onClose,
+  onSave,
+}: BlockConfigModalProps): React.JSX.Element {
   const [activeBlock, setActiveBlock] = useState<SignageBlock>(
-    initialBlock ?? ({ id: "block-" + Math.random().toString() } as SignageBlock),
+    initialBlock ??
+      ({ id: "block-" + Math.random().toString() } as SignageBlock),
   );
 
   const handleTypeSelect = (type: string) => {
@@ -43,7 +49,10 @@ export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }
               {isNew ? "Assemble Component" : "Inspect Component"}
             </h3>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1 cursor-pointer">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 cursor-pointer"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -51,7 +60,9 @@ export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {isNew && (
             <div className="space-y-3">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select Component Type</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                Select Component Type
+              </span>
               <div className="grid grid-cols-3 gap-2">
                 {BLOCK_TYPES.map((bt) => (
                   <button
@@ -64,7 +75,9 @@ export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }
                     }`}
                   >
                     {bt.icon}
-                    <span className="text-[10px] font-semibold">{bt.label}</span>
+                    <span className="text-[10px] font-semibold">
+                      {bt.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -73,23 +86,41 @@ export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }
 
           {activeBlock.type && (
             <div className="space-y-4 pt-2 border-t border-border">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Configure Settings</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                Configure Settings
+              </span>
               <ContentConfigFields
                 block={activeBlock}
                 items={items}
-                onChange={(updates) => setActiveBlock((prev) => ({ ...prev, ...updates } as SignageBlock))}
+                onChange={(updates) =>
+                  setActiveBlock(
+                    (prev) => ({ ...prev, ...updates }) as SignageBlock,
+                  )
+                }
               />
             </div>
           )}
         </div>
 
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-card/30">
-          <button onClick={onClose} className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer">Cancel</button>
           <button
-            onClick={() => { if (activeBlock.type) { onSave(activeBlock); onClose(); } }}
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              if (activeBlock.type) {
+                onSave(activeBlock);
+                onClose();
+              }
+            }}
             disabled={!activeBlock.type}
             className={`px-5 py-2 text-xs font-semibold rounded-xl transition shadow-[0_4px_12px_rgba(34,211,238,0.2)] ${activeBlock.type ? "text-foreground bg-cyan-400 hover:bg-cyan-300 cursor-pointer" : "text-muted-foreground bg-secondary cursor-not-allowed shadow-none"}`}
-          >Apply Component</button>
+          >
+            Apply Component
+          </button>
         </div>
       </div>
     </div>

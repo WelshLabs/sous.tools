@@ -62,7 +62,10 @@ export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
         </div>
       ) : null}
 
-      {(activeSlide.captionTitle || activeSlide.description || activeSlide.captionSubtitle || activeSlide.captionPrice) && (
+      {(activeSlide.captionTitle ||
+        activeSlide.description ||
+        activeSlide.captionSubtitle ||
+        activeSlide.captionPrice) && (
         <div className="absolute bottom-4 left-4 p-4 st-glass-pill flex items-center justify-between gap-4 text-white max-w-[85%] z-10 rounded-xl">
           <div className="flex flex-col">
             {activeSlide.captionSubtitle && (

@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type PosItem,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { MenuItemCard } from "./menu-item-card";
 import { DEFAULT_MENU_ITEM_STYLES } from "@soustools/domain-signage";
 
@@ -25,11 +29,13 @@ export function SingleColumn({
       let columnItems = items;
       if (column.itemIds && column.itemIds.length > 0) {
         columnItems = column.itemIds
-          .map((id) => items.find((item) => item.id === id || item.externalId === id))
+          .map((id) =>
+            items.find((item) => item.id === id || item.externalId === id),
+          )
           .filter((item): item is PosItem => !!item);
       }
       columnItems = columnItems.filter(
-        (item) => !(item.isSoldOut && (menuItemStyles.soldOut.hidden ?? false))
+        (item) => !(item.isSoldOut && (menuItemStyles.soldOut.hidden ?? false)),
       );
       return (
         <div
@@ -68,7 +74,9 @@ export function SingleColumn({
               className={`w-full h-full object-${column.fit || "cover"}`}
             />
           ) : (
-            <div className="text-muted-foreground dark:text-zinc-500 text-sm">No Image Selected</div>
+            <div className="text-muted-foreground dark:text-zinc-500 text-sm">
+              No Image Selected
+            </div>
           )}
         </div>
       );
@@ -126,7 +134,10 @@ export function SingleColumn({
           {column.title && (
             <h2
               className="text-3xl font-extrabold tracking-tight mb-4 text-white"
-              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+              style={{
+                fontFamily: "var(--marketing-text-font)",
+                color: "var(--marketing-text-color)",
+              }}
             >
               {column.title}
             </h2>
@@ -134,13 +145,18 @@ export function SingleColumn({
           {column.content && (
             <p
               className="text-lg text-zinc-700 dark:text-zinc-300 whitespace-pre-line"
-              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+              style={{
+                fontFamily: "var(--marketing-text-font)",
+                color: "var(--marketing-text-color)",
+              }}
             >
               {column.content}
             </p>
           )}
           {!column.title && !column.content && (
-            <div className="text-muted-foreground dark:text-zinc-500 text-sm">No Text Configured</div>
+            <div className="text-muted-foreground dark:text-zinc-500 text-sm">
+              No Text Configured
+            </div>
           )}
         </div>
       );

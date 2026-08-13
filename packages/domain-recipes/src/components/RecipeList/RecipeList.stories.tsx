@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
 import type { Meta, StoryObj } from "@storybook/react";
 import { RecipeListView } from "./RecipeList.view";
 import type { Recipe } from "@soustools/api-types";
@@ -11,7 +9,10 @@ const mockRecipes: Recipe[] = [
     status: "APPROVED",
     yieldCount: 4,
     yieldUnit: "servings",
-    instructions: [{ id: "i1", text: "Grill the patty" }, { id: "i2", text: "Toast the bun" }],
+    instructions: [
+      { id: "i1", text: "Grill the patty" },
+      { id: "i2", text: "Toast the bun" },
+    ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     version: 1,

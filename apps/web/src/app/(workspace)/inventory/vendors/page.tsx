@@ -1,7 +1,7 @@
 import { clientConfig as config } from "@soustools/config/client";
 import { VendorsClient } from "./vendors-client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function VendorsPage() {
   const baseUrl = config.NEXT_PUBLIC_API_URL;

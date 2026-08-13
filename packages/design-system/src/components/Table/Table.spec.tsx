@@ -1,6 +1,6 @@
-import * as React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import * as React from "react";
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import {
   Table,
   TableHeader,
@@ -10,10 +10,10 @@ import {
   TableHead,
   TableCell,
   TableCaption,
-} from './Table';
+} from "./Table";
 
-describe('Table', () => {
-  it('renders completely', () => {
+describe("Table", () => {
+  it("renders completely", () => {
     render(
       <Table>
         <TableCaption>Test Caption</TableCaption>
@@ -32,12 +32,12 @@ describe('Table', () => {
             <TableCell>Footer</TableCell>
           </TableRow>
         </TableFooter>
-      </Table>
+      </Table>,
     );
 
-    expect(screen.getByText('Test Caption')).toBeInTheDocument();
-    expect(screen.getByText('Header')).toBeInTheDocument();
-    expect(screen.getByText('Cell')).toBeInTheDocument();
-    expect(screen.getByText('Footer')).toBeInTheDocument();
+    expect(screen.getByText("Test Caption")).toBeInTheDocument();
+    expect(screen.getByText("Header")).toBeInTheDocument();
+    expect(screen.getByText("Cell")).toBeInTheDocument();
+    expect(screen.getByText("Footer")).toBeInTheDocument();
   });
 });

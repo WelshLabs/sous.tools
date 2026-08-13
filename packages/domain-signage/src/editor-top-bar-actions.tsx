@@ -43,7 +43,9 @@ export function EditorTopBarActions({
         <>
           <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 border border-amber-500/25 rounded-md">
             <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-            <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Draft</span>
+            <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">
+              Draft
+            </span>
           </div>
           {onDiscard && (
             <button
@@ -89,7 +91,11 @@ export function EditorTopBarActions({
         }`}
       >
         {SaveIcon}{" "}
-        {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : "Save"}
+        {saveState === "saving"
+          ? "Saving…"
+          : saveState === "saved"
+            ? "Saved"
+            : "Save"}
       </button>
     </div>
   );

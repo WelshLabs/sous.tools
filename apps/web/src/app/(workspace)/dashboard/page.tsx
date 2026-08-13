@@ -1,9 +1,9 @@
 import React from "react";
 import { clientConfig as config } from "@soustools/config/client";
 import { graphqlClient } from "@soustools/api-client";
-import { 
-  RevenueChart, 
-  TicketTimeChart, 
+import {
+  RevenueChart,
+  TicketTimeChart,
   Card,
   CardHeader,
   CardTitle,
@@ -60,14 +60,17 @@ const DASHBOARD_GRAPHQL_QUERY = `
 async function getDashboardStats(): Promise<DashboardStats> {
   // 1. Try GraphQL Query first via api-client
   try {
-    const gqlRes = await graphqlClient.request<{ dashboardStats: DashboardStats }>(
-      DASHBOARD_GRAPHQL_QUERY
-    );
+    const gqlRes = await graphqlClient.request<{
+      dashboardStats: DashboardStats;
+    }>(DASHBOARD_GRAPHQL_QUERY);
     if (gqlRes.data?.dashboardStats) {
       return gqlRes.data.dashboardStats;
     }
   } catch (gqlErr) {
-    console.warn("GraphQL Dashboard fetch failed, attempting REST fallback...", gqlErr);
+    console.warn(
+      "GraphQL Dashboard fetch failed, attempting REST fallback...",
+      gqlErr,
+    );
   }
 
   // 2. REST Fallback
@@ -103,7 +106,9 @@ export default async function DashboardPage() {
     <div className="p-6 md:p-8 space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto w-full">
       <LiveRefresher />
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight">Kitchen Dashboard</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          Kitchen Dashboard
+        </h1>
         <p className="text-muted-foreground text-sm">
           Real-time metrics and operations overview.
         </p>
@@ -119,8 +124,12 @@ export default async function DashboardPage() {
             <CircleDollarSign className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.summary.dailyRevenue}</div>
-            <p className="text-xs text-muted-foreground mt-1">+14% from yesterday</p>
+            <div className="text-2xl font-bold">
+              {stats.summary.dailyRevenue}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              +14% from yesterday
+            </p>
           </CardContent>
         </Card>
 
@@ -132,8 +141,12 @@ export default async function DashboardPage() {
             <Activity className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.summary.totalOrders}</div>
-            <p className="text-xs text-muted-foreground mt-1">+8% from yesterday</p>
+            <div className="text-2xl font-bold">
+              {stats.summary.totalOrders}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              +8% from yesterday
+            </p>
           </CardContent>
         </Card>
 
@@ -145,8 +158,12 @@ export default async function DashboardPage() {
             <Clock className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.summary.averageTicketTime}</div>
-            <p className="text-xs text-muted-foreground mt-1">-2m from yesterday</p>
+            <div className="text-2xl font-bold">
+              {stats.summary.averageTicketTime}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              -2m from yesterday
+            </p>
           </CardContent>
         </Card>
 
@@ -158,7 +175,9 @@ export default async function DashboardPage() {
             <Users className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.summary.activeTables}</div>
+            <div className="text-2xl font-bold">
+              {stats.summary.activeTables}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">82% capacity</p>
           </CardContent>
         </Card>
@@ -194,16 +213,25 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {stats.inventoryAlerts.map((alert, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border">
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border"
+                >
                   <div className="flex flex-col">
-                    <span className="font-semibold text-foreground">{alert.item}</span>
-                    <span className="text-xs text-muted-foreground">Remaining: {alert.quantity}</span>
+                    <span className="font-semibold text-foreground">
+                      {alert.item}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Remaining: {alert.quantity}
+                    </span>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    alert.status === "Critical" 
-                      ? "bg-destructive/10 text-destructive" 
-                      : "bg-primary/10 text-primary"
-                  }`}>
+                  <div
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      alert.status === "Critical"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
                     {alert.status}
                   </div>
                 </div>

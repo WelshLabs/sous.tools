@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, Eye, EyeOff, Loader2, ShieldCheck, CheckCircle } from "lucide-react";
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+  ShieldCheck,
+  CheckCircle,
+} from "lucide-react";
 import { Button, Input, PrimaryLogo } from "@soustools/design-system";
 import { clientConfig } from "@soustools/config/client";
 import { createApiClient } from "@soustools/api-client";
@@ -20,7 +27,9 @@ function ResetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -72,16 +81,25 @@ function ResetPasswordContent() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-[#0a0a0a] p-4 font-sans relative overflow-hidden">
         <div className="absolute top-8 left-8 flex items-center gap-3 select-none">
-          <PrimaryLogo gradient className="w-8 h-8 md:w-10 md:h-10 text-zinc-950 dark:text-zinc-100" />
+          <PrimaryLogo
+            gradient
+            className="w-8 h-8 md:w-10 md:h-10 text-zinc-950 dark:text-zinc-100"
+          />
           <span className="font-extrabold tracking-tight text-xl text-zinc-950 dark:text-zinc-100 hidden sm:block">
             sous.tools
           </span>
         </div>
         <div className="w-full max-w-[420px] bg-white dark:bg-[#111111] border border-black/10 dark:border-white/10 p-8 rounded-2xl shadow-xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-300">
           <CheckCircle className="w-16 h-16 text-emerald-500 mb-6" />
-          <h2 className="text-2xl font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">Password Reset!</h2>
-          <p className="text-zinc-500 mt-2">Your password has been successfully updated.</p>
-          <p className="text-sm text-zinc-400 mt-6">Redirecting you to the dashboard...</p>
+          <h2 className="text-2xl font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">
+            Password Reset!
+          </h2>
+          <p className="text-zinc-500 mt-2">
+            Your password has been successfully updated.
+          </p>
+          <p className="text-sm text-zinc-400 mt-6">
+            Redirecting you to the dashboard...
+          </p>
         </div>
       </main>
     );
@@ -90,7 +108,10 @@ function ResetPasswordContent() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-[#0a0a0a] p-4 font-sans relative overflow-hidden">
       <div className="absolute top-8 left-8 flex items-center gap-3 select-none">
-        <PrimaryLogo gradient className="w-8 h-8 md:w-10 md:h-10 text-zinc-950 dark:text-zinc-100" />
+        <PrimaryLogo
+          gradient
+          className="w-8 h-8 md:w-10 md:h-10 text-zinc-950 dark:text-zinc-100"
+        />
         <span className="font-extrabold tracking-tight text-xl text-zinc-950 dark:text-zinc-100 hidden sm:block">
           sous.tools
         </span>
@@ -110,7 +131,9 @@ function ResetPasswordContent() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {status === "error" && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                <span className="text-red-500 text-sm font-semibold">{errorMessage}</span>
+                <span className="text-red-500 text-sm font-semibold">
+                  {errorMessage}
+                </span>
               </div>
             )}
 
@@ -135,7 +158,11 @@ function ResetPasswordContent() {
                     className="absolute right-3.5 top-3.5 p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none"
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -160,7 +187,11 @@ function ResetPasswordContent() {
                     className="absolute right-3.5 top-3.5 p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none"
                     tabIndex={-1}
                   >
-                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirm ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>

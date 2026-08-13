@@ -3,7 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RecipeBuilder } from "@soustools/domain-recipes";
-import { type Recipe, type VesselProfile, type MasterIngredient } from "@soustools/api-types";
+import {
+  type Recipe,
+  type VesselProfile,
+  type MasterIngredient,
+} from "@soustools/api-types";
 import { toast } from "sonner";
 
 export interface RecipeBuilderClientProps {
@@ -19,26 +23,30 @@ export function RecipeBuilderClient({
 }: RecipeBuilderClientProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [liveIngredients, setLiveIngredients] = useState<MasterIngredient[]>(initialMasterIngredients);
+  const [liveIngredients, setLiveIngredients] = useState<MasterIngredient[]>(
+    initialMasterIngredients,
+  );
 
   React.useEffect(() => {
     // Fetch live prices on mount
-    fetch('/api/recipes/ingredients')
-      .then(res => res.json())
-      .then(json => {
+    fetch("/api/recipes/ingredients")
+      .then((res) => res.json())
+      .then((json) => {
         if (json.success && json.data) {
           setLiveIngredients(json.data);
         }
       })
-      .catch(err => console.error('Failed to fetch live ingredients:', err));
+      .catch((err) => console.error("Failed to fetch live ingredients:", err));
   }, []);
 
   const handleSave = async (payload: any) => {
     setSaving(true);
     try {
       const method = initialData ? "PUT" : "POST";
-      const url = initialData ? `/api/recipes/${initialData.id}` : "/api/recipes";
-      
+      const url = initialData
+        ? `/api/recipes/${initialData.id}`
+        : "/api/recipes";
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },

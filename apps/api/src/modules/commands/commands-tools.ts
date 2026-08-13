@@ -1,241 +1,275 @@
-
-
 export const addToPurchaseOrderTool = {
-  name: 'add_to_purchase_order',
-  description: 'Adds an item to a draft purchase order for a specific vendor.',
+  name: "add_to_purchase_order",
+  description: "Adds an item to a draft purchase order for a specific vendor.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      itemName: { type: 'string', description: 'The name of the item to add' },
-      quantity: { type: 'number', description: 'The quantity to order' },
-      unit: { type: 'string', description: 'The unit of measure (e.g., cases, lbs, unit)' },
-      vendorName: { type: 'string', description: 'The name of the vendor' },
+      itemName: { type: "string", description: "The name of the item to add" },
+      quantity: { type: "number", description: "The quantity to order" },
+      unit: {
+        type: "string",
+        description: "The unit of measure (e.g., cases, lbs, unit)",
+      },
+      vendorName: { type: "string", description: "The name of the vendor" },
     },
-    required: ['itemName', 'quantity', 'unit', 'vendorName'],
+    required: ["itemName", "quantity", "unit", "vendorName"],
   },
 };
 
 export const addToWhiteboardTool = {
-  name: 'add_to_whiteboard',
-  description: 'Adds an item to the kitchen whiteboard when a vendor is not specified or unknown.',
+  name: "add_to_whiteboard",
+  description:
+    "Adds an item to the kitchen whiteboard when a vendor is not specified or unknown.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      itemName: { type: 'string', description: 'The name of the item to add' },
-      quantity: { type: 'number', description: 'The quantity to order' },
-      unit: { type: 'string', description: 'The unit of measure' },
+      itemName: { type: "string", description: "The name of the item to add" },
+      quantity: { type: "number", description: "The quantity to order" },
+      unit: { type: "string", description: "The unit of measure" },
     },
-    required: ['itemName', 'quantity', 'unit'],
+    required: ["itemName", "quantity", "unit"],
   },
 };
 
 export const getRecipeCostTool = {
-  name: 'get_recipe_cost',
-  description: 'Calculates the current cost of a specific recipe.',
+  name: "get_recipe_cost",
+  description: "Calculates the current cost of a specific recipe.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      recipeId: { type: 'string', description: 'The ID of the recipe' },
+      recipeId: { type: "string", description: "The ID of the recipe" },
     },
-    required: ['recipeId'],
+    required: ["recipeId"],
   },
 };
 
 export const ingestDocumentTool = {
-  name: 'ingest_document',
-  description: 'Ingests documents such as vendor/supplier invoices, receipts, order bills, recipes, and manuals.',
+  name: "ingest_document",
+  description:
+    "Ingests documents such as vendor/supplier invoices, receipts, order bills, recipes, and manuals.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      fileUrl: { type: 'string', description: 'The URL of the uploaded file' },
+      fileUrl: { type: "string", description: "The URL of the uploaded file" },
     },
-    required: ['fileUrl'],
+    required: ["fileUrl"],
   },
 };
 
 export const updateItemStatusTool = {
-  name: 'update_item_status',
-  description: 'Updates the status of an item (e.g., 86ing an item by setting it to out_of_stock).',
+  name: "update_item_status",
+  description:
+    "Updates the status of an item (e.g., 86ing an item by setting it to out_of_stock).",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      itemId: { type: 'string', description: 'The ID or name of the item' },
-      status: { type: 'string', description: 'The new status (e.g., out_of_stock)' },
+      itemId: { type: "string", description: "The ID or name of the item" },
+      status: {
+        type: "string",
+        description: "The new status (e.g., out_of_stock)",
+      },
     },
-    required: ['itemId', 'status'],
+    required: ["itemId", "status"],
   },
 };
 
 export const adjustThrottleTimeTool = {
-  name: 'adjust_throttle_time',
-  description: 'Adjusts the ticket or kitchen throttle time when the kitchen is busy.',
+  name: "adjust_throttle_time",
+  description:
+    "Adjusts the ticket or kitchen throttle time when the kitchen is busy.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      minutes: { type: 'number', description: 'The number of minutes to add to the throttle time' },
+      minutes: {
+        type: "number",
+        description: "The number of minutes to add to the throttle time",
+      },
     },
-    required: ['minutes'],
+    required: ["minutes"],
   },
 };
 
 export const reconcileInventoryTool = {
-  name: 'reconcile_inventory',
-  description: 'Performs an absolute overwrite of an inventory count.',
+  name: "reconcile_inventory",
+  description: "Performs an absolute overwrite of an inventory count.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      itemId: { type: 'string', description: 'The ID or name of the item' },
-      quantity: { type: 'number', description: 'The absolute quantity on hand' },
-      unit: { type: 'string', description: 'The unit of measure' },
+      itemId: { type: "string", description: "The ID or name of the item" },
+      quantity: {
+        type: "number",
+        description: "The absolute quantity on hand",
+      },
+      unit: { type: "string", description: "The unit of measure" },
     },
-    required: ['itemId', 'quantity', 'unit'],
+    required: ["itemId", "quantity", "unit"],
   },
 };
-
 
 // ─── V1 ReAct Tool Registry ───────────────────────────────────────────────────
 
 export const executeCypherQueryTool = {
-  name: 'execute_cypher_query',
-  description: 'Executes a raw Cypher query against the Neo4j Core Matrix to read or write graph data. Use for relationship traversal, knowledge lookups, or schema inspection.',
+  name: "execute_cypher_query",
+  description:
+    "Executes a raw Cypher query against the Neo4j Core Matrix to read or write graph data. Use for relationship traversal, knowledge lookups, or schema inspection.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
       query: {
-        type: 'string',
-        description: 'The Cypher query string to execute (e.g., MATCH (n:Ingredient) RETURN n LIMIT 10)',
+        type: "string",
+        description:
+          "The Cypher query string to execute (e.g., MATCH (n:Ingredient) RETURN n LIMIT 10)",
       },
       params: {
-        type: 'object',
-        description: 'Optional named parameters to bind into the Cypher query (e.g., { "id": "abc-123" })',
+        type: "object",
+        description:
+          'Optional named parameters to bind into the Cypher query (e.g., { "id": "abc-123" })',
       },
     },
-    required: ['query'],
+    required: ["query"],
   },
 };
 
 export const renderUiComponentTool = {
-  name: 'render_ui_component',
-  description: 'Instructs the frontend to swap the current chat bubble for a rich interactive component. Use when the response is better represented as a UI widget (e.g., a POS ticket, a metric chart, an ingredient table).',
+  name: "render_ui_component",
+  description:
+    "Instructs the frontend to swap the current chat bubble for a rich interactive component. Use when the response is better represented as a UI widget (e.g., a POS ticket, a metric chart, an ingredient table).",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
       componentName: {
-        type: 'string',
-        description: 'The name of the registered frontend component to render (e.g., "PosTicket", "MetricChart", "IngredientTable")',
+        type: "string",
+        description:
+          'The name of the registered frontend component to render (e.g., "PosTicket", "MetricChart", "IngredientTable")',
       },
       props: {
-        type: 'object',
-        description: 'The data props to pass into the component',
+        type: "object",
+        description: "The data props to pass into the component",
       },
     },
-    required: ['componentName', 'props'],
+    required: ["componentName", "props"],
   },
 };
 
 export const enqueueBackgroundTaskTool = {
-  name: 'enqueue_background_task',
-  description: 'Offloads a heavy or long-running operation to the Redis/BullMQ background queue. Use for tasks that would block the real-time response (e.g., bulk PDF parsing, large dataset sync).',
+  name: "enqueue_background_task",
+  description:
+    "Offloads a heavy or long-running operation to the Redis/BullMQ background queue. Use for tasks that would block the real-time response (e.g., bulk PDF parsing, large dataset sync).",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
       jobName: {
-        type: 'string',
-        description: 'The registered BullMQ job name (e.g., "process-ingestion", "sync-square-catalog")',
+        type: "string",
+        description:
+          'The registered BullMQ job name (e.g., "process-ingestion", "sync-square-catalog")',
       },
       payload: {
-        type: 'object',
-        description: 'The job payload to enqueue',
+        type: "object",
+        description: "The job payload to enqueue",
       },
       priority: {
-        type: 'number',
-        description: 'Optional job priority (lower number = higher priority). Defaults to 5.',
+        type: "number",
+        description:
+          "Optional job priority (lower number = higher priority). Defaults to 5.",
       },
     },
-    required: ['jobName', 'payload'],
+    required: ["jobName", "payload"],
   },
 };
 
 export const ingestKnowledgeSourceTool = {
-  name: 'ingest_knowledge_source',
-  description: 'Parses and ingests a knowledge source (book, URL, PDF) into the Neo4j knowledge graph. Routes to the correct namespace: "tenant" for restaurant-specific data or "global" for shared culinary knowledge.',
+  name: "ingest_knowledge_source",
+  description:
+    'Parses and ingests a knowledge source (book, URL, PDF) into the Neo4j knowledge graph. Routes to the correct namespace: "tenant" for restaurant-specific data or "global" for shared culinary knowledge.',
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
       sourceUrl: {
-        type: 'string',
-        description: 'The URL or file URL of the knowledge source to ingest',
+        type: "string",
+        description: "The URL or file URL of the knowledge source to ingest",
       },
       scope: {
-        type: 'string',
-        description: 'Routing scope: "tenant" (organization-specific) or "global" (shared across all tenants)',
+        type: "string",
+        description:
+          'Routing scope: "tenant" (organization-specific) or "global" (shared across all tenants)',
       },
       instructions: {
-        type: 'string',
-        description: 'Natural language instructions for the parser (e.g., "Extract all recipes and map ingredients to master list")',
+        type: "string",
+        description:
+          'Natural language instructions for the parser (e.g., "Extract all recipes and map ingredients to master list")',
       },
       sourceName: {
-        type: 'string',
-        description: 'Optional human-readable name for the source (e.g., "The French Laundry Cookbook")',
+        type: "string",
+        description:
+          'Optional human-readable name for the source (e.g., "The French Laundry Cookbook")',
       },
     },
-    required: ['sourceUrl', 'scope', 'instructions'],
+    required: ["sourceUrl", "scope", "instructions"],
   },
 };
 
 export const searchTheWebTool = {
-  name: 'search_the_web',
-  description: 'Searches the internet for missing culinary data such as recipes, ingredient substitutions, or supplier information. Use when internal knowledge is insufficient.',
+  name: "search_the_web",
+  description:
+    "Searches the internet for missing culinary data such as recipes, ingredient substitutions, or supplier information. Use when internal knowledge is insufficient.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
       query: {
-        type: 'string',
-        description: 'The search query string (e.g., "classic beef bourguignon recipe ingredients")',
+        type: "string",
+        description:
+          'The search query string (e.g., "classic beef bourguignon recipe ingredients")',
       },
       maxResults: {
-        type: 'number',
-        description: 'Maximum number of results to return. Defaults to 5.',
+        type: "number",
+        description: "Maximum number of results to return. Defaults to 5.",
       },
     },
-    required: ['query'],
+    required: ["query"],
   },
 };
 
 export const updateReviewStateTool = {
-  name: 'update_review_state',
-  description: 'Dynamically updates page navigation or item mappings on the active UniversalReviewComponent UI based on natural language instructions.',
+  name: "update_review_state",
+  description:
+    "Dynamically updates page navigation or item mappings on the active UniversalReviewComponent UI based on natural language instructions.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
       action: {
-        type: 'string',
-        description: 'The action type: "TURN_PAGE", "ACCEPT_ALL_PAGE", or "MAP_ITEM"',
+        type: "string",
+        description:
+          'The action type: "TURN_PAGE", "ACCEPT_ALL_PAGE", or "MAP_ITEM"',
       },
       pageNumber: {
-        type: 'number',
-        description: 'The target page number to navigate to (1-indexed)',
+        type: "number",
+        description: "The target page number to navigate to (1-indexed)",
       },
       itemIndex: {
-        type: 'number',
-        description: 'The zero-indexed or 1-indexed item number to map',
+        type: "number",
+        description: "The zero-indexed or 1-indexed item number to map",
       },
       targetName: {
-        type: 'string',
-        description: 'Target master item or ingredient name',
+        type: "string",
+        description: "Target master item or ingredient name",
       },
     },
-    required: ['action'],
+    required: ["action"],
   },
 };
 
 export const getPosSalesStatsTool = {
-  name: 'get_pos_sales_stats',
-  description: 'Queries real POS orders from Supabase Postgres database to calculate sales totals, order counts, and daily revenue metrics.',
+  name: "get_pos_sales_stats",
+  description:
+    "Queries real POS orders from Supabase Postgres database to calculate sales totals, order counts, and daily revenue metrics.",
   parameters: {
-    type: 'object',
+    type: "object",
     properties: {
-      days: { type: 'number', description: 'Number of past days to calculate sales for (defaults to 7)' },
+      days: {
+        type: "number",
+        description:
+          "Number of past days to calculate sales for (defaults to 7)",
+      },
     },
   },
 };

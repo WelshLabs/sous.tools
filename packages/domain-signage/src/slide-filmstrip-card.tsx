@@ -6,8 +6,13 @@ import type { SignageSlide, ColumnLayoutSlide } from "@soustools/api-types";
 const COLUMN_COLORS = ["#0091FF", "#22c55e", "#f59e0b", "#ec4899"];
 
 /** Full 640×360 miniature scaled to 25% to fit inside a 160×90 thumbnail. */
-export function SlideMiniature({ slide }: { slide: SignageSlide }): React.ReactElement {
-  const colSlide = slide.type === "COLUMN_LAYOUT" ? (slide as ColumnLayoutSlide) : null;
+export function SlideMiniature({
+  slide,
+}: {
+  slide: SignageSlide;
+}): React.ReactElement {
+  const colSlide =
+    slide.type === "COLUMN_LAYOUT" ? (slide as ColumnLayoutSlide) : null;
 
   return (
     <div
@@ -23,18 +28,58 @@ export function SlideMiniature({ slide }: { slide: SignageSlide }): React.ReactE
       }}
     >
       {/* Type badge top-left */}
-      <div style={{ position:"absolute", top:12, left:12, background:"rgba(0,0,0,0.6)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:999, padding:"4px 14px", color:"#fff", fontSize:18, fontWeight:600, zIndex:2 }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 12,
+          left: 12,
+          background: "rgba(0,0,0,0.6)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: 999,
+          padding: "4px 14px",
+          color: "#fff",
+          fontSize: 18,
+          fontWeight: 600,
+          zIndex: 2,
+        }}
+      >
         {slide.type.replace("_", " ")}
       </div>
 
       {/* Column dividers for COLUMN_LAYOUT */}
-      {colSlide && colSlide.columns.length > 1 &&
+      {colSlide &&
+        colSlide.columns.length > 1 &&
         colSlide.columns.slice(1).map((_, i) => (
-          <div key={i} style={{ position:"absolute", top:0, bottom:0, left:`${((i + 1) / colSlide.columns.length) * 100}%`, width:4, background:COLUMN_COLORS[i % COLUMN_COLORS.length], opacity:0.7, zIndex:1 }} />
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: `${((i + 1) / colSlide.columns.length) * 100}%`,
+              width: 4,
+              background: COLUMN_COLORS[i % COLUMN_COLORS.length],
+              opacity: 0.7,
+              zIndex: 1,
+            }}
+          />
         ))}
 
       {/* Duration badge bottom-right */}
-      <div style={{ position:"absolute", bottom:12, right:12, background:"rgba(0,0,0,0.6)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:999, padding:"4px 14px", color:"#fff", fontSize:18, zIndex:2 }}>
+      <div
+        style={{
+          position: "absolute",
+          bottom: 12,
+          right: 12,
+          background: "rgba(0,0,0,0.6)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: 999,
+          padding: "4px 14px",
+          color: "#fff",
+          fontSize: 18,
+          zIndex: 2,
+        }}
+      >
         {slide.durationSeconds}s
       </div>
     </div>
@@ -49,7 +94,12 @@ interface SlideCardProps {
 }
 
 /** Individual filmstrip thumbnail with hover-revealed trash button. */
-export function SlideCard({ slide, isActive, onSelect, onRemove }: SlideCardProps): React.ReactElement {
+export function SlideCard({
+  slide,
+  isActive,
+  onSelect,
+  onRemove,
+}: SlideCardProps): React.ReactElement {
   return (
     <div
       onClick={onSelect}

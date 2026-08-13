@@ -7,16 +7,22 @@ interface POSTenderKeypadProps {
 export function POSTenderKeypad({ onPress }: POSTenderKeypadProps) {
   return (
     <div className="grid grid-cols-3 gap-1.5 pt-2">
-      {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "⌫"].map((key) => (
-        <button
-          key={key}
-          type="button"
-          onClick={() => onPress(key)}
-          className="h-12 text-sm font-bold rounded-[var(--radius-sm)] border border-border/50 bg-card/30 hover:bg-card/70 text-foreground cursor-pointer flex items-center justify-center transition-all"
-        >
-          {key === "⌫" ? <Delete className="h-4 w-4 text-muted-foreground" /> : key}
-        </button>
-      ))}
+      {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "⌫"].map(
+        (key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onPress(key)}
+            className="h-12 text-sm font-bold rounded-[var(--radius-sm)] border border-border/50 bg-card/30 hover:bg-card/70 text-foreground cursor-pointer flex items-center justify-center transition-all"
+          >
+            {key === "⌫" ? (
+              <Delete className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              key
+            )}
+          </button>
+        ),
+      )}
       <button
         type="button"
         onClick={() => onPress("C")}

@@ -59,12 +59,16 @@ export type { HamburgerProps } from "./components/Hamburger/Hamburger";
 export { ThemeToggle } from "./components/ThemeToggle/ThemeToggle";
 
 export { BottomNav } from "./components/BottomNav/BottomNav";
-export type { BottomNavProps, BottomNavItem } from "./components/BottomNav/BottomNav";
-
-
+export type {
+  BottomNavProps,
+  BottomNavItem,
+} from "./components/BottomNav/BottomNav";
 
 export { Sidebar } from "./components/Sidebar/Sidebar";
-export type { SidebarProps, SidebarNavItem } from "./components/Sidebar/Sidebar";
+export type {
+  SidebarProps,
+  SidebarNavItem,
+} from "./components/Sidebar/Sidebar";
 
 export { SidebarLayout } from "./components/Sidebar/SidebarLayout";
 export type { SidebarLayoutProps } from "./components/Sidebar/SidebarLayout";
@@ -93,15 +97,21 @@ export type {
 } from "./components/OmniBar";
 
 export { AppBar, AppBarPresentation } from "./components/AppBar";
-export type { AppBarProps, AppBarPresentationProps, AppBarNotification } from "./components/AppBar";
+export type {
+  AppBarProps,
+  AppBarPresentationProps,
+  AppBarNotification,
+} from "./components/AppBar";
 
 export { InsightsSidebar } from "./components/InsightsSidebar/InsightsSidebar";
 export type { InsightsSidebarProps } from "./components/InsightsSidebar/InsightsSidebar";
 export type { OrderSupplier, OrderLineItem } from "./types/order-types";
 
-export { QuickAddBar, inferVendorForItem } from "./components/QuickAddBar/QuickAddBar";
+export {
+  QuickAddBar,
+  inferVendorForItem,
+} from "./components/QuickAddBar/QuickAddBar";
 export type { QuickAddSuggestion } from "./components/QuickAddBar/QuickAddBar";
-
 
 export {
   resetFaviconStatus,
@@ -115,8 +125,14 @@ export { Chip, type ChipProps } from "./components/Chip/Chip";
 // export { MicroIcon } from "./components/logos/MicroIcon";
 // export { Lettermark } from "./components/logos/Lettermark";
 export { PrimaryLogo, MicroIcon, Lettermark } from "./components/Logos/Logo";
-export { RevenueChart, TicketTimeChart } from "./components/DashboardCharts/DashboardCharts";
-export type { RevenueData, TicketTimeData } from "./components/DashboardCharts/DashboardCharts";
+export {
+  RevenueChart,
+  TicketTimeChart,
+} from "./components/DashboardCharts/DashboardCharts";
+export type {
+  RevenueData,
+  TicketTimeData,
+} from "./components/DashboardCharts/DashboardCharts";
 
 export { AuroraBackground } from "./components/AuroraBackground/AuroraBackground";
 
@@ -130,5 +146,7 @@ export {
   TopProgress,
 } from "./components/Loader/Loader";
 export { GoogleIcon, GitHubIcon } from "./components/BrandIcons/BrandIcons";
-export { LoginButton, type LoginState } from "./components/LoginButton/LoginButton";
-
+export {
+  LoginButton,
+  type LoginState,
+} from "./components/LoginButton/LoginButton";

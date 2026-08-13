@@ -6,8 +6,8 @@ export default [
     files: ["**/*.ts"],
     rules: {
       "no-restricted-syntax": "off",
-      "max-lines": "off"
-    }
+      "max-lines": "off",
+    },
   },
   { ignores: ["dist/**", "node_modules/**"] },
 ];

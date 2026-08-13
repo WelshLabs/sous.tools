@@ -16,8 +16,10 @@ describe("OrdersPanel", () => {
         onChangeSupplier={vi.fn()}
         onSubmitPO={vi.fn()}
         onShopOrder={vi.fn()}
-      />
+      />,
     );
-    expect(screen.getByRole("heading", { name: /Order\s+Manager/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Order\s+Manager/i }),
+    ).toBeInTheDocument();
   });
 });

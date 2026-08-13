@@ -24,18 +24,17 @@ metadata:
 - [ ] If the evaluator task uses a third-party dependency, add the necessary CI steps to install them
 
 ### GitHub specific checklist
+
 - [ ] Ask the user how they want the [workflow to be triggered](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)
-- [ ] If available, use the `gh` CLI to check secret existence / set secrets for:
-      - Langfuse credentials
-      - Credentials required by the evaluator task (e.g. OpenAI or Anthropic API keys)
+- [ ] If available, use the `gh` CLI to check secret existence / set secrets for: - Langfuse credentials - Credentials required by the evaluator task (e.g. OpenAI or Anthropic API keys)
 
 ## Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| `gh` is missing or not authenticated | Install the GitHub CLI if needed, then run `gh auth status` and `gh auth login` before using `gh secret` or `gh workflow` commands. |
-| Local Langfuse environment variables are not set | Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_HOST` locally before using `langfuse-cli`; do not ask the user to paste secret values into chat. |
-| Workflow secrets or action inputs are wrong | Verify `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `langfuse_base_url`, and provider secrets exist in the target repo/environment and are passed to the action step. |
-| Forked PR cannot access secrets | GitHub restricts secret access for forked PRs. Document the limitation or choose a trusted trigger such as internal PR, trusted-branch `push`, or `workflow_dispatch`. |
-| No default/base branch exists | Create an initial empty commit on the intended default branch before trying to verify a PR-triggered workflow. |
-| Script fails reading dataset fields | Re-inspect the dataset items with the Langfuse CLI, check `input`, `expected_output`, and metadata, and extract fields from object-shaped outputs explicitly. |
+| Issue                                            | Solution                                                                                                                                                               |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gh` is missing or not authenticated             | Install the GitHub CLI if needed, then run `gh auth status` and `gh auth login` before using `gh secret` or `gh workflow` commands.                                    |
+| Local Langfuse environment variables are not set | Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_HOST` locally before using `langfuse-cli`; do not ask the user to paste secret values into chat.       |
+| Workflow secrets or action inputs are wrong      | Verify `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `langfuse_base_url`, and provider secrets exist in the target repo/environment and are passed to the action step. |
+| Forked PR cannot access secrets                  | GitHub restricts secret access for forked PRs. Document the limitation or choose a trusted trigger such as internal PR, trusted-branch `push`, or `workflow_dispatch`. |
+| No default/base branch exists                    | Create an initial empty commit on the intended default branch before trying to verify a PR-triggered workflow.                                                         |
+| Script fails reading dataset fields              | Re-inspect the dataset items with the Langfuse CLI, check `input`, `expected_output`, and metadata, and extract fields from object-shaped outputs explicitly.          |

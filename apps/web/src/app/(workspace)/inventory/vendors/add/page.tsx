@@ -18,7 +18,15 @@ export default function AddVendorPage() {
   });
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const DAYS_OF_WEEK = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
 
   const handleSave = async () => {
     if (!form.name) {
@@ -35,7 +43,8 @@ export default function AddVendorPage() {
       });
 
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Failed to save vendor");
+      if (!res.ok || !json.success)
+        throw new Error(json.error || "Failed to save vendor");
 
       toast.success("Vendor created successfully!");
       await navigateToVendors();
@@ -52,10 +61,12 @@ export default function AddVendorPage() {
         title="Add Vendor"
         breadcrumb="Inventory / Vendors / Add"
       />
-      
+
       <div className="st-glass-panel p-8 rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-500/5 shadow-md flex flex-col gap-6">
         <div>
-          <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Vendor Name</label>
+          <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
+            Vendor Name
+          </label>
           <input
             autoFocus
             type="text"
@@ -67,7 +78,9 @@ export default function AddVendorPage() {
         </div>
 
         <div>
-          <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Order Method</label>
+          <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
+            Order Method
+          </label>
           <select
             value={form.order_method}
             onChange={(e) => setForm({ ...form, order_method: e.target.value })}
@@ -81,7 +94,9 @@ export default function AddVendorPage() {
 
         {form.order_method === "EMAIL" && (
           <div>
-            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Email Address</label>
+            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
+              Email Address
+            </label>
             <input
               type="email"
               placeholder="vendor@example.com"
@@ -94,7 +109,9 @@ export default function AddVendorPage() {
 
         {form.order_method === "SMS" && (
           <div>
-            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Phone Number</label>
+            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
+              Phone Number
+            </label>
             <input
               type="tel"
               placeholder="+1 555-555-5555"
@@ -106,7 +123,9 @@ export default function AddVendorPage() {
         )}
 
         <div>
-          <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Select Order Days</span>
+          <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">
+            Select Order Days
+          </span>
           <div className="flex flex-wrap gap-2">
             {DAYS_OF_WEEK.map((day) => {
               const isSelected = form.order_days.includes(day);

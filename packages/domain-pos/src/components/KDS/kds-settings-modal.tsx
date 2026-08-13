@@ -1,6 +1,14 @@
 "use client";
 
-import { Settings, Volume2, VolumeX, Search, PackageX, Eye, EyeOff } from "lucide-react";
+import {
+  Settings,
+  Volume2,
+  VolumeX,
+  Search,
+  PackageX,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export interface POSItem {
   id: string;
@@ -45,7 +53,7 @@ export function KDSSettingsModal({
   if (!isOpen) return null;
 
   const filteredItems = posItems.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -77,7 +85,9 @@ export function KDSSettingsModal({
                 )}
                 <div>
                   <p className="text-sm font-semibold">Chime Alerts</p>
-                  <p className="text-xs text-muted-foreground">Play chiming sounds on ticket updates</p>
+                  <p className="text-xs text-muted-foreground">
+                    Play chiming sounds on ticket updates
+                  </p>
                 </div>
               </div>
               <button
@@ -116,14 +126,18 @@ export function KDSSettingsModal({
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                <p className="text-xs font-semibold text-foreground">Text Size</p>
+                <p className="text-xs font-semibold text-foreground">
+                  Text Size
+                </p>
                 <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
                   {(["sm", "md", "lg"] as const).map((sz) => (
                     <button
                       key={sz}
                       onClick={() => onChangeTextSize(sz)}
                       className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                        textSize === sz ? "bg-black/10 dark:bg-white/10 text-foreground" : "text-muted-foreground"
+                        textSize === sz
+                          ? "bg-black/10 dark:bg-white/10 text-foreground"
+                          : "text-muted-foreground"
                       }`}
                     >
                       {sz === "sm" ? "Small" : sz === "md" ? "Medium" : "Large"}
@@ -133,17 +147,25 @@ export function KDSSettingsModal({
               </div>
 
               <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                <p className="text-xs font-semibold text-foreground">Grid Layout Density</p>
+                <p className="text-xs font-semibold text-foreground">
+                  Grid Layout Density
+                </p>
                 <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
                   {(["compact", "standard", "spacious"] as const).map((den) => (
                     <button
                       key={den}
                       onClick={() => onChangeDensity(den)}
                       className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                        density === den ? "bg-black/10 dark:bg-white/10 text-foreground" : "text-muted-foreground"
+                        density === den
+                          ? "bg-black/10 dark:bg-white/10 text-foreground"
+                          : "text-muted-foreground"
                       }`}
                     >
-                      {den === "compact" ? "Compact" : den === "standard" ? "Standard" : "Spacious"}
+                      {den === "compact"
+                        ? "Compact"
+                        : den === "standard"
+                          ? "Standard"
+                          : "Spacious"}
                     </button>
                   ))}
                 </div>
@@ -153,7 +175,8 @@ export function KDSSettingsModal({
 
           <div className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5">
             <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider flex items-center gap-1.5">
-              <PackageX className="w-4 h-4 text-sky-400" /> Manage Unavailable (86'd) Items
+              <PackageX className="w-4 h-4 text-sky-400" /> Manage Unavailable
+              (86'd) Items
             </h4>
 
             <div className="relative">
@@ -169,15 +192,24 @@ export function KDSSettingsModal({
 
             <div className="border border-black/5 dark:border-white/5 rounded-xl max-h-48 overflow-y-auto p-2 bg-black/20 divide-y divide-white/5">
               {filteredItems.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground text-xs">No matching POS items.</div>
+                <div className="text-center py-6 text-muted-foreground text-xs">
+                  No matching POS items.
+                </div>
               ) : (
                 filteredItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center py-2.5 px-2 hover:bg-black/5 bg-card transition-colors">
-                    <span className={`text-sm font-semibold ${item.is_sold_out ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  <div
+                    key={item.id}
+                    className="flex justify-between items-center py-2.5 px-2 hover:bg-black/5 bg-card transition-colors"
+                  >
+                    <span
+                      className={`text-sm font-semibold ${item.is_sold_out ? "text-muted-foreground line-through" : "text-foreground"}`}
+                    >
                       {item.name}
                     </span>
                     <button
-                      onClick={() => onToggleSoldOut(item.id, item.is_sold_out ?? false)}
+                      onClick={() =>
+                        onToggleSoldOut(item.id, item.is_sold_out ?? false)
+                      }
                       className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all flex items-center gap-1 cursor-pointer ${
                         item.is_sold_out
                           ? "bg-red-500/10 text-red-400 border-red-500/20"

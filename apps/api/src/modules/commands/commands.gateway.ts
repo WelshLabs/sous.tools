@@ -57,7 +57,7 @@ export class CommandsGateway {
         this.server
           .to(`conversation-${payload.conversationId}`)
           .emit("ingestion:updated", payload);
-          
+
         if (payload.message) {
           const msg = {
             id: randomUUID(),
@@ -65,8 +65,12 @@ export class CommandsGateway {
             content: payload.message,
             timestamp: new Date(),
           };
-          this.server.to(`conversation-${payload.conversationId}`).emit("chat_message", msg);
-          this.commandsService.persistMessage(payload.conversationId, "unknown", undefined, msg).catch((e) => this.logger.warn("Failed to persist agent_step", e));
+          this.server
+            .to(`conversation-${payload.conversationId}`)
+            .emit("chat_message", msg);
+          this.commandsService
+            .persistMessage(payload.conversationId, "unknown", undefined, msg)
+            .catch((e) => this.logger.warn("Failed to persist agent_step", e));
         }
 
         if (payload.status === "RENDER") {
@@ -76,8 +80,14 @@ export class CommandsGateway {
             content: payload.message!,
             timestamp: new Date(),
           };
-          this.server.to(`conversation-${payload.conversationId}`).emit("chat_message", msg);
-          this.commandsService.persistMessage(payload.conversationId, "unknown", undefined, msg).catch((e) => this.logger.warn("Failed to persist render_component", e));
+          this.server
+            .to(`conversation-${payload.conversationId}`)
+            .emit("chat_message", msg);
+          this.commandsService
+            .persistMessage(payload.conversationId, "unknown", undefined, msg)
+            .catch((e) =>
+              this.logger.warn("Failed to persist render_component", e),
+            );
         }
       } else {
         this.server.emit("ingestion:updated", payload);

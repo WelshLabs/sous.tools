@@ -6,11 +6,13 @@ export type { POSCatalogProps } from "./components/POSRegister/components/pos-ca
 export { POSTicket } from "./components/POSRegister/components/pos-ticket";
 export type { POSTicketProps } from "./components/POSRegister/components/pos-ticket";
 export { POSModifiersModal } from "./components/POSRegister/components/pos-modifiers-modal";
-export type { POSModifiersModalProps, ModifierOption, ModifierGroup } from "./components/POSRegister/components/pos-modifiers-modal";
+export type {
+  POSModifiersModalProps,
+  ModifierOption,
+  ModifierGroup,
+} from "./components/POSRegister/components/pos-modifiers-modal";
 export { POSTenderModal } from "./components/POSRegister/components/pos-tender-modal";
 export type { POSTenderModalProps } from "./components/POSRegister/components/pos-tender-modal";
 export { POSRegisterContainer } from "./components/POSRegister/pos.container";
 export { KDSContainer } from "./components/KDS/kds.container";
 export * from "./components/KDS/kds.types";
-
-

@@ -20,6 +20,7 @@ Draft the feedback using these two fields:
 
 **Describe your idea or feedback** (required)
 A clear description of what went wrong or what could be improved. Include:
+
 - What the user was trying to do
 - What the skill did vs what was expected
 - Any specific instructions that were incorrect or missing

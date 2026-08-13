@@ -2,7 +2,15 @@ import { z } from "zod";
 
 export const OmniMessageSchema = z.object({
   id: z.string(),
-  role: z.enum(["user", "model", "agent_step", "ingestion", "metrics", "change", "render_component"]),
+  role: z.enum([
+    "user",
+    "model",
+    "agent_step",
+    "ingestion",
+    "metrics",
+    "change",
+    "render_component",
+  ]),
   content: z.string(),
   timestamp: z.date().or(z.string().transform((v) => new Date(v))),
   isLoading: z.boolean().optional(),

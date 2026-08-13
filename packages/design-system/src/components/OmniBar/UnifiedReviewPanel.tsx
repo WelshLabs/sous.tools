@@ -9,7 +9,8 @@ import { type RecipeExtractionDTO } from "@soustools/api-types";
 export interface UnifiedLineItem {
   rawName: string;
   suggestedInternalName?: string | null;
-  category: "INGREDIENT" | "PACKAGING" | "CLEANING" | "SMALLWARES" | "FEE" | "OTHER";
+  category:
+    "INGREDIENT" | "PACKAGING" | "CLEANING" | "SMALLWARES" | "FEE" | "OTHER";
   amount: number;
   unit: string;
   price: number;
@@ -83,14 +84,22 @@ export function UnifiedReviewPanel({
 
   const isSaveDisabled = useMemo(() => {
     if (!lineItems || lineItems.length === 0) return true;
-    return lineItems.some((item) => !item.itemId && !item.isNonInventoryExpense);
+    return lineItems.some(
+      (item) => !item.itemId && !item.isNonInventoryExpense,
+    );
   }, [lineItems]);
 
   const handleSave = () => {
     if (isInvoice) {
       onSaveInvoice?.({
-        vendorName: payload.vendorName || (extractedMetadata?.vendorName as string) || "Unknown Vendor",
-        invoiceNumber: payload.invoiceNumber || (extractedMetadata?.invoiceNumber as string) || "",
+        vendorName:
+          payload.vendorName ||
+          (extractedMetadata?.vendorName as string) ||
+          "Unknown Vendor",
+        invoiceNumber:
+          payload.invoiceNumber ||
+          (extractedMetadata?.invoiceNumber as string) ||
+          "",
         items: lineItems.map((li) => ({
           rawName: li.rawName,
           itemId: li.itemId || null,
@@ -101,10 +110,22 @@ export function UnifiedReviewPanel({
       });
     } else {
       onSaveRecipe?.({
-        recipeName: payload.recipeName || (extractedMetadata?.recipeName as string) || "Untitled Recipe",
-        yieldAmount: payload.yieldAmount || (extractedMetadata?.yieldAmount as number) || 1,
-        yieldUnit: payload.yieldUnit || (extractedMetadata?.yieldUnit as string) || "EACH",
-        prepTimeMinutes: payload.prepTimeMinutes || (extractedMetadata?.prepTimeMinutes as number) || 0,
+        recipeName:
+          payload.recipeName ||
+          (extractedMetadata?.recipeName as string) ||
+          "Untitled Recipe",
+        yieldAmount:
+          payload.yieldAmount ||
+          (extractedMetadata?.yieldAmount as number) ||
+          1,
+        yieldUnit:
+          payload.yieldUnit ||
+          (extractedMetadata?.yieldUnit as string) ||
+          "EACH",
+        prepTimeMinutes:
+          payload.prepTimeMinutes ||
+          (extractedMetadata?.prepTimeMinutes as number) ||
+          0,
         instructions: payload.instructions || [],
         ingredients: lineItems.map((li) => ({
           rawString: li.rawName,
@@ -122,20 +143,32 @@ export function UnifiedReviewPanel({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full text-left max-h-[80vh] overflow-y-auto pr-1">
       {/* Left Pane: Zoomable Document Viewer */}
-      <DocumentViewer sourceUrl={sourceUrl} lineItems={lineItems} hoveredIndex={hoveredIndex} />
+      <DocumentViewer
+        sourceUrl={sourceUrl}
+        lineItems={lineItems}
+        hoveredIndex={hoveredIndex}
+      />
 
       {/* Right Pane: Mapping Rows and Details */}
       <div className="flex flex-col gap-4">
         <div className="backdrop-blur-md bg-white/10 dark:bg-zinc-900/40 border border-white/20 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xl flex items-center justify-between gap-4">
           <div>
             <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-semibold flex items-center gap-1.5">
-              {isInvoice ? <Receipt className="w-3.5 h-3.5" /> : <BookOpen className="w-3.5 h-3.5" />}
+              {isInvoice ? (
+                <Receipt className="w-3.5 h-3.5" />
+              ) : (
+                <BookOpen className="w-3.5 h-3.5" />
+              )}
               {isInvoice ? "Extracted Invoice" : "Extracted Recipe"}
             </span>
             <h2 className="text-lg font-bold text-foreground mt-0.5">
               {isInvoice
-                ? payload.vendorName || (extractedMetadata?.vendorName as string) || "Unknown Vendor"
-                : payload.recipeName || (extractedMetadata?.recipeName as string) || "Untitled Recipe"}
+                ? payload.vendorName ||
+                  (extractedMetadata?.vendorName as string) ||
+                  "Unknown Vendor"
+                : payload.recipeName ||
+                  (extractedMetadata?.recipeName as string) ||
+                  "Untitled Recipe"}
             </h2>
           </div>
         </div>
@@ -145,53 +178,89 @@ export function UnifiedReviewPanel({
           {isInvoice ? (
             <>
               {(() => {
-                const invNum = payload.invoiceNumber ||
+                const invNum =
+                  payload.invoiceNumber ||
                   (extractedMetadata?.invoiceNumber as string) ||
-                  ((extractedMetadata?.invoice_metadata as Record<string,unknown>)?.invoice_number as string);
+                  ((
+                    extractedMetadata?.invoice_metadata as Record<
+                      string,
+                      unknown
+                    >
+                  )?.invoice_number as string);
                 return invNum ? (
                   <span className="text-[11px] text-zinc-400">
-                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Invoice #</span>
-                    <span className="font-semibold text-foreground">{invNum}</span>
+                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">
+                      Invoice #
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {invNum}
+                    </span>
                   </span>
                 ) : null;
               })()}
               {(() => {
                 const dateStr =
                   (extractedMetadata?.date as string) ||
-                  ((extractedMetadata?.invoice_metadata as Record<string,unknown>)?.date as string);
+                  ((
+                    extractedMetadata?.invoice_metadata as Record<
+                      string,
+                      unknown
+                    >
+                  )?.date as string);
                 return dateStr ? (
                   <span className="text-[11px] text-zinc-400">
-                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Date</span>
-                    <span className="font-semibold text-foreground">{dateStr}</span>
+                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">
+                      Date
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {dateStr}
+                    </span>
                   </span>
                 ) : null;
               })()}
               {(() => {
-                const total = (extractedMetadata?.financials as Record<string,unknown>)?.invoice_total as number | undefined;
+                const total = (
+                  extractedMetadata?.financials as Record<string, unknown>
+                )?.invoice_total as number | undefined;
                 return total != null ? (
                   <span className="text-[11px] text-zinc-400">
-                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Total</span>
-                    <span className="font-semibold text-foreground">${total.toFixed(2)}</span>
+                    <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">
+                      Total
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      ${total.toFixed(2)}
+                    </span>
                   </span>
                 ) : null;
               })()}
             </>
           ) : (
             <>
-              {(payload.yieldAmount || (extractedMetadata?.yieldAmount as number)) && (
+              {(payload.yieldAmount ||
+                (extractedMetadata?.yieldAmount as number)) && (
                 <span className="text-[11px] text-zinc-400">
-                  <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Yield</span>
+                  <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">
+                    Yield
+                  </span>
                   <span className="font-semibold text-foreground">
-                    {payload.yieldAmount || (extractedMetadata?.yieldAmount as number)}{" "}
-                    {payload.yieldUnit || (extractedMetadata?.yieldUnit as string) || ""}
+                    {payload.yieldAmount ||
+                      (extractedMetadata?.yieldAmount as number)}{" "}
+                    {payload.yieldUnit ||
+                      (extractedMetadata?.yieldUnit as string) ||
+                      ""}
                   </span>
                 </span>
               )}
-              {(payload.prepTimeMinutes || (extractedMetadata?.prepTimeMinutes as number)) && (
+              {(payload.prepTimeMinutes ||
+                (extractedMetadata?.prepTimeMinutes as number)) && (
                 <span className="text-[11px] text-zinc-400">
-                  <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">Prep</span>
+                  <span className="text-zinc-500 font-mono uppercase tracking-wider text-[9px] mr-1">
+                    Prep
+                  </span>
                   <span className="font-semibold text-foreground">
-                    {payload.prepTimeMinutes || (extractedMetadata?.prepTimeMinutes as number)} min
+                    {payload.prepTimeMinutes ||
+                      (extractedMetadata?.prepTimeMinutes as number)}{" "}
+                    min
                   </span>
                 </span>
               )}
@@ -200,7 +269,9 @@ export function UnifiedReviewPanel({
         </div>
 
         <div className="flex-1 flex flex-col gap-3 min-h-0">
-          <div className="text-xs font-semibold uppercase tracking-wider text-cyan-300 font-mono border-b border-white/10 pb-1">Line Items</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-cyan-300 font-mono border-b border-white/10 pb-1">
+            Line Items
+          </div>
           <div className="flex flex-col gap-3 overflow-y-auto max-h-[360px] pr-1">
             {lineItems && lineItems.length > 0 ? (
               lineItems.map((item, index) => (
@@ -214,31 +285,42 @@ export function UnifiedReviewPanel({
                   onUpdateItem={onUpdateItem}
                   onItemCreated={onItemCreated}
                   isHovered={hoveredIndex === index}
-                  onHoverChange={(hovered) => setHoveredIndex(hovered ? index : null)}
+                  onHoverChange={(hovered) =>
+                    setHoveredIndex(hovered ? index : null)
+                  }
                 />
               ))
             ) : (
-              <span className="text-xs text-muted-foreground italic">No line items extracted.</span>
+              <span className="text-xs text-muted-foreground italic">
+                No line items extracted.
+              </span>
             )}
           </div>
         </div>
 
         {/* Recipe Instructions Support */}
-        {!isInvoice && payload.instructions && payload.instructions.length > 0 && (
-          <div className="flex flex-col gap-2 mt-2">
-            <div className="text-xs font-semibold uppercase tracking-wider text-cyan-300 font-mono border-b border-white/10 pb-1">Instructions</div>
-            <div className="flex flex-col gap-2 max-h-[150px] overflow-y-auto pr-1">
-              {payload.instructions.map((step, idx) => (
-                <div key={idx} className="flex gap-2 items-start text-xs text-muted-foreground leading-relaxed">
-                  <span className="w-4 h-4 rounded-full bg-cyan-500/10 text-cyan-400 text-[10px] font-bold border border-cyan-500/20 flex items-center justify-center flex-shrink-0 font-mono mt-0.5">
-                    {idx + 1}
-                  </span>
-                  <p className="mt-0.5">{step}</p>
-                </div>
-              ))}
+        {!isInvoice &&
+          payload.instructions &&
+          payload.instructions.length > 0 && (
+            <div className="flex flex-col gap-2 mt-2">
+              <div className="text-xs font-semibold uppercase tracking-wider text-cyan-300 font-mono border-b border-white/10 pb-1">
+                Instructions
+              </div>
+              <div className="flex flex-col gap-2 max-h-[150px] overflow-y-auto pr-1">
+                {payload.instructions.map((step, idx) => (
+                  <div
+                    key={idx}
+                    className="flex gap-2 items-start text-xs text-muted-foreground leading-relaxed"
+                  >
+                    <span className="w-4 h-4 rounded-full bg-cyan-500/10 text-cyan-400 text-[10px] font-bold border border-cyan-500/20 flex items-center justify-center flex-shrink-0 font-mono mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <p className="mt-0.5">{step}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         <div className="flex justify-end mt-4">
           <button

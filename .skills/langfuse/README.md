@@ -6,9 +6,9 @@
 
 ## Skills
 
-| Skill                                                           | Description                                                                                        |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| [langfuse](./skills/langfuse)                                   | Main skill to work with Langfuse. Query and manage traces, prompts, datasets, and scores via the Langfuse API; look up documentation; do things with best practices in mind. |
+| Skill                         | Description                                                                                                                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [langfuse](./skills/langfuse) | Main skill to work with Langfuse. Query and manage traces, prompts, datasets, and scores via the Langfuse API; look up documentation; do things with best practices in mind. |
 
 ## Installation
 

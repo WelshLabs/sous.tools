@@ -1,6 +1,10 @@
 "use client";
 
-import { type ColumnConfig, type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type PosItem,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { Image as ImageIcon } from "lucide-react";
 import {
   buildCardStyle,
@@ -73,26 +77,35 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
                 style={cardStyle}
               >
                 <div className="flex items-center justify-between w-full gap-1">
-                  <span className="font-semibold truncate max-w-[70%] text-[10px]" style={titleStyle}>
-                    {stateStyle.icon && stateStyle.iconPosition === "before-title" && (
-                      <span className="mr-0.5">{stateStyle.icon}</span>
-                    )}
+                  <span
+                    className="font-semibold truncate max-w-[70%] text-[10px]"
+                    style={titleStyle}
+                  >
+                    {stateStyle.icon &&
+                      stateStyle.iconPosition === "before-title" && (
+                        <span className="mr-0.5">{stateStyle.icon}</span>
+                      )}
                     {item.name}
-                    {stateStyle.icon && stateStyle.iconPosition === "after-title" && (
-                      <span className="ml-0.5">{stateStyle.icon}</span>
-                    )}
+                    {stateStyle.icon &&
+                      stateStyle.iconPosition === "after-title" && (
+                        <span className="ml-0.5">{stateStyle.icon}</span>
+                      )}
                   </span>
                   <div className="flex items-center gap-1 shrink-0">
                     <span className="font-mono text-[10px]" style={priceStyle}>
                       ${Number(item.price).toFixed(2)}
                     </span>
-                    {stateStyle.icon && stateStyle.iconPosition === "top-right-corner" && (
-                      <span className="text-[10px]">{stateStyle.icon}</span>
-                    )}
+                    {stateStyle.icon &&
+                      stateStyle.iconPosition === "top-right-corner" && (
+                        <span className="text-[10px]">{stateStyle.icon}</span>
+                      )}
                   </div>
                 </div>
                 {item.description && (
-                  <p className="text-[8px] line-clamp-2 text-left" style={descStyle}>
+                  <p
+                    className="text-[8px] line-clamp-2 text-left"
+                    style={descStyle}
+                  >
                     {item.description}
                   </p>
                 )}
@@ -120,7 +133,11 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
     return (
       <div className="w-full h-full min-h-[120px] flex items-center justify-center bg-background/20 rounded overflow-hidden">
         {column.imageUrl ? (
-          <img src={column.imageUrl} alt="Column visual" className={`w-full h-full object-${column.fit || "cover"}`} />
+          <img
+            src={column.imageUrl}
+            alt="Column visual"
+            className={`w-full h-full object-${column.fit || "cover"}`}
+          />
         ) : (
           <div className="flex flex-col items-center text-zinc-600 text-[10px]">
             <ImageIcon className="w-6 h-6 mb-1" />
@@ -134,8 +151,12 @@ export const ColumnContentView: React.FC<ColumnContentViewProps> = ({
   if (column.type === "TEXT") {
     return (
       <div className="text-center space-y-1">
-        <h4 className="text-xs font-bold text-foreground">{column.title || "Untitled"}</h4>
-        <p className="text-[10px] text-muted-foreground leading-normal">{column.content || "Empty content"}</p>
+        <h4 className="text-xs font-bold text-foreground">
+          {column.title || "Untitled"}
+        </h4>
+        <p className="text-[10px] text-muted-foreground leading-normal">
+          {column.content || "Empty content"}
+        </p>
       </div>
     );
   }

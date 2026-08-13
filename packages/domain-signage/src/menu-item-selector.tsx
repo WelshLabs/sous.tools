@@ -9,7 +9,7 @@ interface MenuItemSelectorProps {
   highlightItems: (string | HighlightItemConfig)[];
   onChange: (
     itemIds: string[],
-    highlightItems: (string | HighlightItemConfig)[]
+    highlightItems: (string | HighlightItemConfig)[],
   ) => void;
 }
 
@@ -59,7 +59,7 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
   };
 
   const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -74,7 +74,11 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
             ? "No items selected"
             : `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} selected`}
         </span>
-        {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        {isOpen ? (
+          <ChevronUp className="w-3.5 h-3.5" />
+        ) : (
+          <ChevronDown className="w-3.5 h-3.5" />
+        )}
       </button>
 
       {isOpen && (
@@ -109,14 +113,24 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
-                      isSelected ? "border-primary bg-primary text-primary-foreground" : "border-zinc-600"
-                    }`}>
-                      {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                    <div
+                      className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
+                        isSelected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-zinc-600"
+                      }`}
+                    >
+                      {isSelected && (
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      )}
                     </div>
                     <div className="truncate">
-                      <div className="text-xs font-semibold truncate">{item.name}</div>
-                      <div className="text-[10px] text-muted-foreground font-mono">${Number(item.price).toFixed(2)}</div>
+                      <div className="text-xs font-semibold truncate">
+                        {item.name}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground font-mono">
+                        ${Number(item.price).toFixed(2)}
+                      </div>
                     </div>
                   </div>
 
@@ -125,17 +139,23 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
                       type="button"
                       onClick={(e) => handleToggleHighlight(item.id, e)}
                       className={`p-1 rounded hover:bg-secondary/50 transition-colors shrink-0 ${
-                        isHighlighted ? "text-amber-400" : "text-muted-foreground hover:text-muted-foreground"
+                        isHighlighted
+                          ? "text-amber-400"
+                          : "text-muted-foreground hover:text-muted-foreground"
                       }`}
                     >
-                      <Star className={`w-3.5 h-3.5 ${isHighlighted ? "fill-current" : ""}`} />
+                      <Star
+                        className={`w-3.5 h-3.5 ${isHighlighted ? "fill-current" : ""}`}
+                      />
                     </button>
                   )}
                 </div>
               );
             })}
             {filteredItems.length === 0 && (
-              <div className="text-center text-[10px] text-muted-foreground p-2 font-mono">No items found</div>
+              <div className="text-center text-[10px] text-muted-foreground p-2 font-mono">
+                No items found
+              </div>
             )}
           </div>
         </div>

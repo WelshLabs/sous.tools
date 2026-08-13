@@ -69,8 +69,4 @@ export interface InventoryItem {
 
 /** Wastage reason codes. */
 export type WastageReason =
-  | "TRIM"
-  | "SPOILAGE"
-  | "OVERPRODUCTION"
-  | "SPILL"
-  | "OTHER";
+  "TRIM" | "SPOILAGE" | "OVERPRODUCTION" | "SPILL" | "OTHER";

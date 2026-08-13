@@ -17,12 +17,15 @@ export function KDSContainer() {
 
   const [showSettings, setShowSettings] = useState(false);
   const [textSize, setTextSize] = useState<"sm" | "md" | "lg">("md");
-  const [density, setDensity] = useState<"compact" | "standard" | "spacious">("standard");
+  const [density, setDensity] = useState<"compact" | "standard" | "spacious">(
+    "standard",
+  );
   const [soundsEnabled, setSoundsEnabled] = useState(true);
   const [soundVolume, setSoundVolume] = useState(0.5);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const playChime = (type: "new" | "complete") => triggerChime(type, soundsEnabled, soundVolume);
+  const playChime = (type: "new" | "complete") =>
+    triggerChime(type, soundsEnabled, soundVolume);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -38,7 +41,9 @@ export function KDSContainer() {
 
     const fetchItems = async () => {
       try {
-        const { data } = await api.GET("/pos-simulator/items", { params: { query: { organizationId: orgId } } });
+        const { data } = await api.GET("/pos-simulator/items", {
+          params: { query: { organizationId: orgId } },
+        });
         if (data) setPosItems((data as any).data || data || []);
       } catch (err) {
         console.error("Failed to fetch pos items", err);
@@ -47,7 +52,9 @@ export function KDSContainer() {
 
     const fetchOrders = async () => {
       try {
-        const { data, error } = await api.GET("/pos/orders", { params: { query: { orgId } } });
+        const { data, error } = await api.GET("/pos/orders", {
+          params: { query: { orgId } },
+        });
         if (!error && data) {
           const payload = (data as any).data || data;
           if (Array.isArray(payload)) {
@@ -63,7 +70,7 @@ export function KDSContainer() {
 
     const socket = createWebSocketClient({
       namespace: "/pos",
-      query: { orgId }
+      query: { orgId },
     });
 
     socket.on("orders_updated", () => {
@@ -79,16 +86,26 @@ export function KDSContainer() {
     };
   }, [orgId]);
 
-  const handleToggleLineItem = async (ticketId: string, item: KDSTicketItem) => {
-    const nextStatus: "OPEN" | "COMPLETED" = item.status === "COMPLETED" ? "OPEN" : "COMPLETED";
+  const handleToggleLineItem = async (
+    ticketId: string,
+    item: KDSTicketItem,
+  ) => {
+    const nextStatus: "OPEN" | "COMPLETED" =
+      item.status === "COMPLETED" ? "OPEN" : "COMPLETED";
 
     setTickets((prev) =>
       prev.map((ticket) => {
         if (ticket.id !== ticketId) return ticket;
-        const updatedItems = ticket.items.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i));
+        const updatedItems = ticket.items.map((i) =>
+          i.id === item.id ? { ...i, status: nextStatus } : i,
+        );
         const allDone = updatedItems.every((i) => i.status === "COMPLETED");
-        return { ...ticket, items: updatedItems, status: allDone ? "CLOSED" : ticket.status };
-      })
+        return {
+          ...ticket,
+          items: updatedItems,
+          status: allDone ? "CLOSED" : ticket.status,
+        };
+      }),
     );
 
     try {
@@ -113,9 +130,13 @@ export function KDSContainer() {
     setTickets((prev) =>
       prev.map((ticket) =>
         ticket.id === ticketId
-          ? { ...ticket, status: "CLOSED", items: ticket.items.map((i) => ({ ...i, status: "COMPLETED" })) }
-          : ticket
-      )
+          ? {
+              ...ticket,
+              status: "CLOSED",
+              items: ticket.items.map((i) => ({ ...i, status: "COMPLETED" })),
+            }
+          : ticket,
+      ),
     );
 
     try {
@@ -130,14 +151,21 @@ export function KDSContainer() {
     }
   };
 
-  const handleToggleSoldOut = async (itemId: string, currentStatus: boolean) => {
+  const handleToggleSoldOut = async (
+    itemId: string,
+    currentStatus: boolean,
+  ) => {
     const nextStatus = !currentStatus;
     try {
       const { error } = await api.POST("/pos-simulator/items/toggle-sold-out", {
         body: { itemId, isSoldOut: nextStatus } as any,
       });
       if (error) throw new Error("Failed to update item");
-      setPosItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, is_sold_out: nextStatus } : item)));
+      setPosItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId ? { ...item, is_sold_out: nextStatus } : item,
+        ),
+      );
       toast.success("Updated item availability.");
     } catch (err: any) {
       toast.error(`Failed to update item availability: ${err.message}`);
@@ -183,13 +211,25 @@ export function KDSContainer() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         soundsEnabled={soundsEnabled}
-        onToggleSounds={(e) => { setSoundsEnabled(e); localStorage.setItem("kds_sounds_enabled", String(e)); }}
+        onToggleSounds={(e) => {
+          setSoundsEnabled(e);
+          localStorage.setItem("kds_sounds_enabled", String(e));
+        }}
         soundVolume={soundVolume}
-        onChangeVolume={(v) => { setSoundVolume(v); localStorage.setItem("kds_sound_volume", String(v)); }}
+        onChangeVolume={(v) => {
+          setSoundVolume(v);
+          localStorage.setItem("kds_sound_volume", String(v));
+        }}
         textSize={textSize}
-        onChangeTextSize={(sz) => { setTextSize(sz); localStorage.setItem("kds_text_size", sz); }}
+        onChangeTextSize={(sz) => {
+          setTextSize(sz);
+          localStorage.setItem("kds_text_size", sz);
+        }}
         density={density}
-        onChangeDensity={(d) => { setDensity(d); localStorage.setItem("kds_density", d); }}
+        onChangeDensity={(d) => {
+          setDensity(d);
+          localStorage.setItem("kds_density", d);
+        }}
         posItems={posItems}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}

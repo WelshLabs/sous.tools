@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { RecipeListView } from "./RecipeList.view";
@@ -28,12 +27,16 @@ describe("RecipeListView", () => {
   });
 
   it("renders a loading state", () => {
-    const { container } = render(<RecipeListView recipes={[]} loading onDelete={vi.fn()} />);
+    const { container } = render(
+      <RecipeListView recipes={[]} loading onDelete={vi.fn()} />,
+    );
     expect(container.querySelector(".animate-spin")).toBeInTheDocument();
   });
 
   it("renders empty state when no recipes match", () => {
     render(<RecipeListView recipes={[]} onDelete={vi.fn()} />);
-    expect(screen.getByText("No recipes found matching your criteria.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No recipes found matching your criteria."),
+    ).toBeInTheDocument();
   });
 });

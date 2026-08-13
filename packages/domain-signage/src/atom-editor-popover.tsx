@@ -2,10 +2,7 @@
 
 import { X } from "lucide-react";
 import { type MenuItemStateStyle } from "@soustools/api-types";
-import {
-  BadgeControls,
-  IconControls,
-} from "./atom-editor-controls";
+import { BadgeControls, IconControls } from "./atom-editor-controls";
 import {
   AtomEditorCardSettings,
   AtomEditorTitleSettings,
@@ -32,7 +29,6 @@ const ATOM_LABELS: Record<AtomKey, string> = {
   icon: "Icon",
 };
 
-
 export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({
   atom,
   activeState,
@@ -43,13 +39,21 @@ export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({
   const inner = (() => {
     switch (atom) {
       case "card":
-        return <AtomEditorCardSettings style={style} activeState={activeState} onChange={onChange} />;
+        return (
+          <AtomEditorCardSettings
+            style={style}
+            activeState={activeState}
+            onChange={onChange}
+          />
+        );
       case "title":
         return <AtomEditorTitleSettings style={style} onChange={onChange} />;
       case "price":
         return <AtomEditorPriceSettings style={style} onChange={onChange} />;
       case "description":
-        return <AtomEditorDescriptionSettings style={style} onChange={onChange} />;
+        return (
+          <AtomEditorDescriptionSettings style={style} onChange={onChange} />
+        );
       case "badge":
         return (
           <BadgeControls badge={style.badge} onChange={(u) => onChange(u)} />

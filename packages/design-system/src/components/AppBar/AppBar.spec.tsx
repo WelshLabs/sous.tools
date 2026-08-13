@@ -5,7 +5,11 @@ import { AppBar } from "./AppBar";
 
 // Mock next/link to render simple anchor tags
 vi.mock("next/link", () => ({
-  default: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+  default: ({
+    children,
+    href,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -34,7 +38,7 @@ describe("AppBar", () => {
       { id: "1", title: "New Item", message: "An item has been added." },
     ];
     render(<AppBar notifications={notifications} />);
-    
+
     // Dropdown should start closed
     expect(screen.queryByText("Notifications")).not.toBeInTheDocument();
 

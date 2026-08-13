@@ -19,7 +19,11 @@ export interface ReviewRecipeBlockProps {
   ingredients?: RecipeIngredientData[];
   onTitleChange: (title: string) => void;
   onYieldChange: (count: number, unit: string) => void;
-  onIngredientMappingChange: (index: number, tenantId: string, usdaId?: number) => void;
+  onIngredientMappingChange: (
+    index: number,
+    tenantId: string,
+    usdaId?: number,
+  ) => void;
 }
 
 export function ReviewRecipeBlock({
@@ -56,7 +60,9 @@ export function ReviewRecipeBlock({
             <input
               type="number"
               value={yieldCount || 1}
-              onChange={(e) => onYieldChange(Number(e.target.value), yieldUnit || "servings")}
+              onChange={(e) =>
+                onYieldChange(Number(e.target.value), yieldUnit || "servings")
+              }
               className="w-16 p-2 text-sm rounded bg-zinc-900 border border-zinc-800 text-zinc-100"
             />
             <input
@@ -70,20 +76,38 @@ export function ReviewRecipeBlock({
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-zinc-300">3-Way Mapping UI: [Raw Item] &lt;-&gt; [Tenant master_items] &lt;-&gt; [USDA Item]</span>
+        <span className="text-xs font-medium text-zinc-300">
+          3-Way Mapping UI: [Raw Item] &lt;-&gt; [Tenant master_items] &lt;-&gt;
+          [USDA Item]
+        </span>
         {ingredients.map((ing, idx) => (
-          <div key={idx} className="p-3 rounded bg-zinc-900/80 border border-zinc-800 flex flex-col gap-2">
+          <div
+            key={idx}
+            className="p-3 rounded bg-zinc-900/80 border border-zinc-800 flex flex-col gap-2"
+          >
             <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-amber-300">{ing.rawName}</span>
-              <span className="text-zinc-400">{ing.quantity || 1} {ing.unit || "unit"}</span>
+              <span className="font-semibold text-amber-300">
+                {ing.rawName}
+              </span>
+              <span className="text-zinc-400">
+                {ing.quantity || 1} {ing.unit || "unit"}
+              </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
               <div>
-                <label className="text-[10px] text-zinc-400">Tenant master_items (Top 5)</label>
+                <label className="text-[10px] text-zinc-400">
+                  Tenant master_items (Top 5)
+                </label>
                 <select
                   value={ing.selectedTenantId || ""}
-                  onChange={(e) => onIngredientMappingChange(idx, e.target.value, ing.selectedUsdaId)}
+                  onChange={(e) =>
+                    onIngredientMappingChange(
+                      idx,
+                      e.target.value,
+                      ing.selectedUsdaId,
+                    )
+                  }
                   className="w-full mt-0.5 p-1.5 rounded bg-zinc-950 border border-zinc-700 text-zinc-100 text-xs"
                 >
                   <option value="">-- Select Master Item --</option>
@@ -96,10 +120,18 @@ export function ReviewRecipeBlock({
               </div>
 
               <div>
-                <label className="text-[10px] text-zinc-400">USDA FDC Matches (Top 5)</label>
+                <label className="text-[10px] text-zinc-400">
+                  USDA FDC Matches (Top 5)
+                </label>
                 <select
                   value={ing.selectedUsdaId || ""}
-                  onChange={(e) => onIngredientMappingChange(idx, ing.selectedTenantId || "", Number(e.target.value))}
+                  onChange={(e) =>
+                    onIngredientMappingChange(
+                      idx,
+                      ing.selectedTenantId || "",
+                      Number(e.target.value),
+                    )
+                  }
                   className="w-full mt-0.5 p-1.5 rounded bg-zinc-950 border border-zinc-700 text-zinc-100 text-xs"
                 >
                   <option value="">-- Select USDA Item --</option>
@@ -116,7 +148,9 @@ export function ReviewRecipeBlock({
       </div>
 
       <div>
-        <label className="text-xs text-zinc-400">Instructions ({instructions.length} steps)</label>
+        <label className="text-xs text-zinc-400">
+          Instructions ({instructions.length} steps)
+        </label>
         <div className="mt-1 p-2 rounded bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 flex flex-col gap-1 max-h-32 overflow-y-auto">
           {instructions.map((step, i) => (
             <div key={i} className="flex gap-2">

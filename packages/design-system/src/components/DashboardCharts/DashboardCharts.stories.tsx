@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { RevenueChart } from './DashboardCharts';
+import type { Meta, StoryObj } from "@storybook/react";
+import { RevenueChart } from "./DashboardCharts";
 
 const meta: Meta<typeof RevenueChart> = {
-  title: 'Components/DashboardCharts',
+  title: "Components/DashboardCharts",
   component: RevenueChart,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { data: [{ name: 'Mon', value: 100 }] }
+  args: { data: [{ name: "Mon", value: 100 }] },
 };

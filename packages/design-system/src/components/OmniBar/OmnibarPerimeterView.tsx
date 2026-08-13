@@ -19,7 +19,9 @@ export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
   const reducedMotion = useReducedMotion();
   const gradientId = useId();
   const frameRef = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(
+    null,
+  );
 
   useLayoutEffect(() => {
     const frame = frameRef.current;

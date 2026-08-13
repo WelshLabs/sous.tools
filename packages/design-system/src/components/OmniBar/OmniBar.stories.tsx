@@ -1,12 +1,18 @@
-import type { Meta } from '@storybook/react';
-import { OmniBarPresentation } from './OmniBarPresentation';
-import { OmniBarProvider } from './OmniBarProvider';
+import type { Meta } from "@storybook/react";
+import { OmniBarPresentation } from "./OmniBarPresentation";
+import { OmniBarProvider } from "./OmniBarProvider";
 
 const meta: Meta<typeof OmniBarPresentation> = {
-  title: 'Components/OmniBar',
+  title: "Components/OmniBar",
   component: OmniBarPresentation,
-  decorators: [(Story) => <OmniBarProvider><Story /></OmniBarProvider>],
-  tags: ['autodocs'],
+  decorators: [
+    (Story) => (
+      <OmniBarProvider>
+        <Story />
+      </OmniBarProvider>
+    ),
+  ],
+  tags: ["autodocs"],
 };
 export default meta;
 

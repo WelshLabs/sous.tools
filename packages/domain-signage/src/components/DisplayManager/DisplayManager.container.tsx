@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { type SignageDisplay } from "@soustools/api-types";
-import { 
-  DisplayManagerView, 
-  DisplayPickerView, 
-  DisplayCardView, 
-  DeckCardView 
+import {
+  DisplayManagerView,
+  DisplayPickerView,
+  DisplayCardView,
+  DeckCardView,
 } from "./DisplayManager.view";
 
 export interface DisplayManagerProps {
@@ -37,7 +37,10 @@ export const DisplayManager: React.FC<DisplayManagerProps> = ({
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
   const handleAddBrowserDisplay = async () => {
-    const name = prompt("Enter standalone browser display name:", "Browser View");
+    const name = prompt(
+      "Enter standalone browser display name:",
+      "Browser View",
+    );
     if (!name) return;
     await onAddBrowserDisplay(name);
   };
@@ -95,7 +98,11 @@ export interface DeckCardProps {
   onRename: (id: string, name: string, slug: string) => void;
 }
 
-export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) => {
+export const DeckCard: React.FC<DeckCardProps> = ({
+  deck,
+  onDelete,
+  onRename,
+}) => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(deck.name);
@@ -110,7 +117,10 @@ export const DeckCard: React.FC<DeckCardProps> = ({ deck, onDelete, onRename }) 
   };
 
   const getLiveUrl = (s: string) => {
-    if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    if (
+      typeof window !== "undefined" &&
+      window.location.hostname === "localhost"
+    ) {
       return `http://localhost:5003/s/dtown-cafe/${s}`;
     }
     return `${typeof window !== "undefined" ? window.location.origin : ""}/s/dtown-cafe/${s}`;

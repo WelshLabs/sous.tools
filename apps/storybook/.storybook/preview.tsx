@@ -50,7 +50,7 @@ const preview: Preview = {
         items: [
           { value: "light", icon: "sun", title: "Light" },
           { value: "dark", icon: "moon", title: "Dark" },
-          { value: "system", icon: "browser", title: "System" }
+          { value: "system", icon: "browser", title: "System" },
         ],
         showName: true,
       },
@@ -60,7 +60,12 @@ const preview: Preview = {
     (Story, context) => {
       const theme = context.globals.theme || "dark";
       return (
-        <ThemeProvider key={theme} attribute="class" defaultTheme={theme} enableSystem>
+        <ThemeProvider
+          key={theme}
+          attribute="class"
+          defaultTheme={theme}
+          enableSystem
+        >
           <div className="bg-background text-foreground antialiased min-h-screen p-4">
             <Story />
           </div>

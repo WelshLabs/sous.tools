@@ -49,10 +49,7 @@ export function AppBarPresentation({
     <header className="sticky top-0 z-[100000] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">
       {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself */}
       {isAnyMenuOpen && (
-        <div
-          className="fixed inset-0 z-[100001]"
-          onClick={onCloseMenus}
-        />
+        <div className="fixed inset-0 z-[100001]" onClick={onCloseMenus} />
       )}
 
       {/* Left: Brand Logo & Hamburger */}
@@ -149,8 +146,8 @@ export function AppBarPresentation({
                 )}
               </div>
               <div className="px-4 py-2 border-t border-border bg-black/20 text-center">
-                <Link 
-                  href="/notifications" 
+                <Link
+                  href="/notifications"
                   onClick={onCloseMenus}
                   className="text-xs text-[var(--color-primary)] font-medium hover:underline transition-colors"
                 >

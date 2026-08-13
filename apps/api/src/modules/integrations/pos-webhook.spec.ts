@@ -64,7 +64,7 @@ describe("PosWebhookController", () => {
     } as unknown as Request;
 
     await expect(
-      controller.handleWebhook("square", "sig", "", mockReq)
+      controller.handleWebhook("square", "sig", "", mockReq),
     ).rejects.toThrow(UnauthorizedException);
   });
 
@@ -76,7 +76,7 @@ describe("PosWebhookController", () => {
           merchant_id: "merchant-123",
           type: "catalog.version.updated",
           data: { id: "event-1", object: {} },
-        })
+        }),
       ),
     } as unknown as Request;
 
@@ -96,7 +96,7 @@ describe("PosWebhookController", () => {
     });
 
     await expect(
-      controller.handleWebhook("square", "sig", "", mockReq)
+      controller.handleWebhook("square", "sig", "", mockReq),
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -108,7 +108,7 @@ describe("PosWebhookController", () => {
           merchant_id: "merchant-123",
           type: "catalog.version.updated",
           data: { id: "event-1", object: { key: "val" } },
-        })
+        }),
       ),
     } as unknown as Request;
 

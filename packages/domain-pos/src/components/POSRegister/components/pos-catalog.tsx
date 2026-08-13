@@ -33,7 +33,7 @@ export function POSCatalog({
   // Deduplicate and filter out empty or non-string categories
   const sanitizedCategories = useMemo(() => {
     const validCats = (categories || []).filter(
-      (cat): cat is string => typeof cat === "string" && cat.trim().length > 0
+      (cat): cat is string => typeof cat === "string" && cat.trim().length > 0,
     );
     return Array.from(new Set(validCats));
   }, [categories]);

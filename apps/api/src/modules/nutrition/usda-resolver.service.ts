@@ -54,7 +54,9 @@ export class UsdaResolverService {
     }
   }
 
-  async searchTop5(query: string): Promise<Array<{ fdcId: number; description: string }>> {
+  async searchTop5(
+    query: string,
+  ): Promise<Array<{ fdcId: number; description: string }>> {
     try {
       const url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&pageSize=5&api_key=${this.apiKey}`;
       const response = await fetch(url);

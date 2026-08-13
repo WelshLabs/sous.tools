@@ -66,7 +66,9 @@ describe("Integrations", () => {
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockResolvedValue({
-        data: [{ provider: "SQUARE", metadata: { connectedAs: "My Business" } }],
+        data: [
+          { provider: "SQUARE", metadata: { connectedAs: "My Business" } },
+        ],
         error: null,
       }),
     });
@@ -79,7 +81,9 @@ describe("Integrations", () => {
   });
 
   it("should disconnect correctly", async () => {
-    const thenMock = jest.fn().mockImplementation((callback) => callback({ error: null }));
+    const thenMock = jest
+      .fn()
+      .mockImplementation((callback) => callback({ error: null }));
     (supabase.from as jest.Mock).mockReturnValue({
       delete: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),

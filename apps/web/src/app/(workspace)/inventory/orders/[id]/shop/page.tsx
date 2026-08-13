@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { type PurchaseOrder, type PurchaseOrderItem, type Vendor } from "@soustools/api-types";
+import {
+  type PurchaseOrder,
+  type PurchaseOrderItem,
+  type Vendor,
+} from "@soustools/api-types";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Circle } from "lucide-react";
 import { api } from "@soustools/api-client";
@@ -21,7 +25,9 @@ export default function SelfShopPage() {
   useEffect(() => {
     const fetchPO = async () => {
       try {
-        const { data, error } = await (api.GET as any)(`/purchase-orders/${id}`);
+        const { data, error } = await (api.GET as any)(
+          `/purchase-orders/${id}`,
+        );
         if (!error && data) {
           const payload = (data as any).data;
           if (payload) {
@@ -38,7 +44,6 @@ export default function SelfShopPage() {
     };
     fetchPO();
   }, [id]);
-
 
   const toggleCheck = (itemId: string) => {
     const next = new Set(checkedItems);
@@ -137,25 +142,29 @@ export default function SelfShopPage() {
             </span>
           </div>
 
-          {allChecked && po.status !== 'SUBMITTED' && po.status !== 'RECEIVED' && po.status !== 'RECONCILED' && (
-            <div className="text-center animate-in zoom-in">
-              <p className="text-green-400 font-bold text-xl mb-2">
-                Shopping Complete!
-              </p>
-              <p className="text-sm text-muted-foreground">
-                To reconcile pricing, please scan the physical receipt using the
-                Ingestion importer.
-              </p>
-            </div>
-          )}
+          {allChecked &&
+            po.status !== "SUBMITTED" &&
+            po.status !== "RECEIVED" &&
+            po.status !== "RECONCILED" && (
+              <div className="text-center animate-in zoom-in">
+                <p className="text-green-400 font-bold text-xl mb-2">
+                  Shopping Complete!
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  To reconcile pricing, please scan the physical receipt using
+                  the Ingestion importer.
+                </p>
+              </div>
+            )}
 
-          {po.status === 'SUBMITTED' && (
+          {po.status === "SUBMITTED" && (
             <div className="text-center animate-in zoom-in space-y-4">
               <p className="text-blue-400 font-bold text-xl mb-2">
                 Order Submitted
               </p>
               <p className="text-sm text-muted-foreground">
-                When you receive the physical invoice, ingest it here to automatically reconcile this purchase order.
+                When you receive the physical invoice, ingest it here to
+                automatically reconcile this purchase order.
               </p>
               <label className="cursor-pointer inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 transition-all">
                 Ingest Invoice
@@ -169,15 +178,17 @@ export default function SelfShopPage() {
                     const formData = new FormData();
                     formData.append("file", file);
                     formData.append("po_id", po.id);
-                    
+
                     try {
                       // Post to the backend ingestion endpoint
                       const res = await fetch("/api/ingestion", {
                         method: "POST",
-                        body: formData
+                        body: formData,
                       });
                       if (res.ok) {
-                        alert("Invoice ingested successfully! It is now processing.");
+                        alert(
+                          "Invoice ingested successfully! It is now processing.",
+                        );
                       } else {
                         alert("Failed to ingest invoice.");
                       }
