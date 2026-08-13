@@ -170,7 +170,24 @@ async function main() {
   // Bypass .ssh/known_hosts permission denied errors for git fetch/checkout
   process.env.GIT_SSH_COMMAND = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
 
-  runCommand(`git fetch origin`);
+  // Create isolated workspace to prevent the agent from breaking the production server
+  const workspacePath = `/tmp/agent-workspace-${issueNumber}`;
+  console.log(`[ORCHESTRATOR] Creating isolated workspace at ${workspacePath}`);
+  runCommand(`rm -rf ${workspacePath} || true`);
+  
+  const cloneRes = runCommand(`git clone git@github.com:${repo}.git ${workspacePath}`);
+  if (cloneRes.exitCode !== 0) {
+    console.error("[ORCHESTRATOR] Failed to clone repository into isolated workspace!");
+    return;
+  }
+  
+  process.chdir(workspacePath);
+  
+  console.log("[ORCHESTRATOR] Installing dependencies in isolated workspace...");
+  runCommand(`pnpm install`);
+
+  // Checkout existing branch or create a new one
+  runCommand(`git fetch origin issue-${issueNumber} || true`);
   runCommand(`git checkout issue-${issueNumber} || git checkout -b issue-${issueNumber}`);
 
   console.log(`[ORCHESTRATOR] Fetching last ${COMMENT_FETCH_LIMIT} comments...`);
