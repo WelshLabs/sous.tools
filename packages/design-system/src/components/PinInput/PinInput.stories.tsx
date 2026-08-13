@@ -1,18 +1,18 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
-import { PinInput } from './PinInput';
+import type { Meta, StoryObj } from "@storybook/react";
+import React, { useState } from "react";
+import { PinInput } from "./PinInput";
 
 const meta: Meta<typeof PinInput> = {
-  title: 'Components/PinInput',
+  title: "Components/PinInput",
   component: PinInput,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
 type Story = StoryObj<typeof PinInput>;
 
 const PinInputWrapperDefault = () => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
   return (
     <div className="p-8 bg-background flex flex-col items-center gap-4">
       <PinInput value={value} onChange={setValue} length={6} />
@@ -26,7 +26,7 @@ export const Default: Story = {
 };
 
 const PinInputWrapperCustomLength = () => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
   return (
     <div className="p-8 bg-background flex flex-col items-center gap-4">
       <PinInput value={value} onChange={setValue} length={4} />

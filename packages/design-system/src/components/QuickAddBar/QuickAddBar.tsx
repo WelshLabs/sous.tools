@@ -171,12 +171,10 @@ export function QuickAddBar({
  * @param ingredientName - Raw ingredient name from the quick-add input.
  * @returns The inferred supplierId, or null when confidence is too low.
  * ─────────────────────────────────────────────────────────────────────────── */
-export function inferVendorForItem(
-  ingredientName: string,
-): string | null {
-    console.info(
+export function inferVendorForItem(ingredientName: string): string | null {
+  console.info(
     `[VendorInference] Stub invoked for "${ingredientName}". ` +
-    "Replace with AI assignment call when engine is ready.",
+      "Replace with AI assignment call when engine is ready.",
   );
   return null;
 }

@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type PosItem,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { SingleColumn } from "./single-column";
 
 interface ColumnLayoutRendererProps {

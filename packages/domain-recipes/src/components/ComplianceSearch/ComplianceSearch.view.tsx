@@ -52,7 +52,10 @@ export function ComplianceSearchView({
         </button>
 
         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <Search className="w-5 h-5" style={{ color: "var(--color-primary)" }} />
+          <Search
+            className="w-5 h-5"
+            style={{ color: "var(--color-primary)" }}
+          />
           Compliance Search (Open Food Facts)
         </h3>
 
@@ -128,7 +131,9 @@ export function ComplianceSearchView({
                     className="text-sm font-bold line-clamp-1"
                     style={{ color: "var(--color-foreground)" }}
                   >
-                    {prod.product_name || prod.product_name_en || "Unnamed Product"}
+                    {prod.product_name ||
+                      prod.product_name_en ||
+                      "Unnamed Product"}
                   </h4>
                   <p
                     className="text-xs"

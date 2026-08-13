@@ -9,7 +9,10 @@ interface ColumnEmptyViewProps {
   onOpenEditor?: () => void;
 }
 
-export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({ onUpdate, onOpenEditor }) => {
+export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({
+  onUpdate,
+  onOpenEditor,
+}) => {
   const [isFlashing, setIsFlashing] = useState(false);
 
   const handleSelect = useCallback(() => {

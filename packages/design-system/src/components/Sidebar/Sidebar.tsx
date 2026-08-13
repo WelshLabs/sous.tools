@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -98,7 +97,9 @@ export function Sidebar({
         : pathname.startsWith(href);
 
   const navLinkStyle = (href: string): React.CSSProperties => ({
-    color: isActive(href) ? "var(--color-primary)" : "var(--color-muted-foreground)",
+    color: isActive(href)
+      ? "var(--color-primary)"
+      : "var(--color-muted-foreground)",
     backgroundColor: isActive(href) ? "rgb(76 201 240 / 0.08)" : "transparent",
   });
 

@@ -24,10 +24,14 @@ export interface WebSocketClientOptions {
  * before reconnecting.
  */
 export function createWebSocketClient(
-  options: WebSocketClientOptions = {}
+  options: WebSocketClientOptions = {},
 ): Socket {
   const baseUrl = options.url || config.NEXT_PUBLIC_API_URL;
-  const namespace = options.namespace ? (options.namespace.startsWith("/") ? options.namespace : `/${options.namespace}`) : "";
+  const namespace = options.namespace
+    ? options.namespace.startsWith("/")
+      ? options.namespace
+      : `/${options.namespace}`
+    : "";
   const targetUrl = `${baseUrl.replace(/\/$/, "")}${namespace}`;
 
   const socket = io(targetUrl, {
@@ -37,7 +41,7 @@ export function createWebSocketClient(
     auth: async (cb) => {
       // This function runs every single time socket.connect() fires
       const token = options.token;
-      
+
       cb({ token });
     },
     query: options.query,
@@ -61,11 +65,15 @@ export function createWebSocketClient(
       isRefreshing = true;
 
       try {
-        console.warn("[api-client] WebSocket auth error encountered. Attempting session refresh...");
+        console.warn(
+          "[api-client] WebSocket auth error encountered. Attempting session refresh...",
+        );
         const refreshed = await refreshAuthSession();
 
         if (refreshed) {
-          console.log("[api-client] Auth session refreshed. Updating socket auth and reconnecting...");
+          console.log(
+            "[api-client] Auth session refreshed. Updating socket auth and reconnecting...",
+          );
           socket.disconnect();
 
           let newToken = options.token;
@@ -73,7 +81,10 @@ export function createWebSocketClient(
             try {
               newToken = await options.getToken();
             } catch (err) {
-              console.error("[api-client] Failed to retrieve new token via getToken():", err);
+              console.error(
+                "[api-client] Failed to retrieve new token via getToken():",
+                err,
+              );
             }
           }
 
@@ -87,7 +98,9 @@ export function createWebSocketClient(
           socket.connect();
           socket.emit("reauthenticated");
         } else {
-          console.warn("[api-client] Auth session refresh returned false. Socket remains disconnected without forced logout.");
+          console.warn(
+            "[api-client] Auth session refresh returned false. Socket remains disconnected without forced logout.",
+          );
         }
       } catch (err) {
         console.error("[api-client] Error during WebSocket auth refresh:", err);

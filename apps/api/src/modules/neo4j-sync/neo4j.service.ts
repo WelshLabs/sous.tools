@@ -8,7 +8,9 @@ export class Neo4jService implements OnApplicationShutdown {
   private readonly driver: Driver;
 
   constructor() {
-    this.logger.log(`Initializing Neo4j connection to ${config.NEO4J_URI} as user ${config.NEO4J_USERNAME}`);
+    this.logger.log(
+      `Initializing Neo4j connection to ${config.NEO4J_URI} as user ${config.NEO4J_USERNAME}`,
+    );
     this.driver = neo4j.driver(
       config.NEO4J_URI,
       neo4j.auth.basic(config.NEO4J_USERNAME, config.NEO4J_PASSWORD),
@@ -23,7 +25,10 @@ export class Neo4jService implements OnApplicationShutdown {
     try {
       return await session.executeWrite((tx) => tx.run(query, params));
     } catch (error) {
-      this.logger.error(`Failed to execute Cypher query: ${query}`, (error as Error).stack);
+      this.logger.error(
+        `Failed to execute Cypher query: ${query}`,
+        (error as Error).stack,
+      );
       throw error;
     } finally {
       await session.close();

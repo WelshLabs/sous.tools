@@ -17,12 +17,14 @@ const mockNotifications = [
   {
     id: "1",
     title: "New Recipe Ingested",
-    message: "The chocolate chip cookies recipe has been successfully parsed and added to your inventory.",
+    message:
+      "The chocolate chip cookies recipe has been successfully parsed and added to your inventory.",
   },
   {
     id: "2",
     title: "System Update",
-    message: "Neon-Glass design system has been upgraded to v1.2.0. Enjoy Tailwind v4 improvements.",
+    message:
+      "Neon-Glass design system has been upgraded to v1.2.0. Enjoy Tailwind v4 improvements.",
   },
 ];
 

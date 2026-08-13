@@ -1,10 +1,17 @@
-import * as React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card';
-import { Button } from '../Button/Button';
+import * as React from "react";
+import type { Meta, StoryObj } from "@storybook/react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "./Card";
+import { Button } from "../Button/Button";
 
 const meta: Meta<typeof Card> = {
-  title: 'Components/Card',
+  title: "Components/Card",
   component: Card,
 };
 export default meta;
@@ -20,7 +27,9 @@ export const Default: StoryObj<typeof Card> = {
         <p>Card Content Goes Here</p>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" className="w-full">Cancel</Button>
+        <Button variant="outline" className="w-full">
+          Cancel
+        </Button>
         <Button className="w-full">Deploy</Button>
       </CardFooter>
     </Card>

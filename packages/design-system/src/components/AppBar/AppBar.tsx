@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppBarPresentation, type AppBarNotification } from "./AppBarPresentation";
+import {
+  AppBarPresentation,
+  type AppBarNotification,
+} from "./AppBarPresentation";
 
 export interface AppBarProps {
   notifications?: AppBarNotification[];
@@ -10,7 +13,7 @@ export interface AppBarProps {
   isAdmin?: boolean;
 }
 
-export function AppBar({ 
+export function AppBar({
   notifications = [],
   onLogoutAction,
   onMarkAllAsReadAction,
@@ -88,4 +91,3 @@ export function AppBar({
     />
   );
 }
-

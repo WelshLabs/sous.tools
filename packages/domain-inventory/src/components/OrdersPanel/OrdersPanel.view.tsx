@@ -3,7 +3,11 @@
 import { TwoToneHeader } from "@soustools/design-system";
 import { OrdersHistoryTab } from "./OrdersHistoryTab";
 import { OrdersListTab } from "./OrdersListTab";
-import type { OrderLineItem, OrderSupplier, QuickAddSuggestion } from "@soustools/design-system";
+import type {
+  OrderLineItem,
+  OrderSupplier,
+  QuickAddSuggestion,
+} from "@soustools/design-system";
 import type { PurchaseOrder } from "@soustools/api-types";
 
 interface OrdersPanelViewProps {
@@ -27,23 +31,44 @@ interface OrdersPanelViewProps {
 }
 
 export function OrdersPanelView({
-  activeTab, setActiveTab, items, searchQuery, suggestions, suppliers,
-  groupedItems, placingOrderId, historyOrders, onSearchChange, onSelectSuggestion,
-  onAddFreeText, onRemoveItem, onChangeQty, onChangeSupplier, onPlaceOrder, onShopOrder
+  activeTab,
+  setActiveTab,
+  items,
+  searchQuery,
+  suggestions,
+  suppliers,
+  groupedItems,
+  placingOrderId,
+  historyOrders,
+  onSearchChange,
+  onSelectSuggestion,
+  onAddFreeText,
+  onRemoveItem,
+  onChangeQty,
+  onChangeSupplier,
+  onPlaceOrder,
+  onShopOrder,
 }: OrdersPanelViewProps) {
   return (
     <div className="flex-1 bg-background p-8 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
-        <TwoToneHeader breadcrumb="Procurement / Living Order List" title="Order Manager" />
+        <TwoToneHeader
+          breadcrumb="Procurement / Living Order List"
+          title="Order Manager"
+        />
         <div className="flex bg-muted/50 dark:bg-card/70 rounded-2xl p-1 border border-border dark:border-border">
           {(["list", "history"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={[
-                "h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                activeTab === tab ? "bg-background dark:bg-zinc-800 shadow-sm text-primary" : "text-muted-foreground hover:text-foreground",
-              ].join(" ") || undefined}
+              className={
+                [
+                  "h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                  activeTab === tab
+                    ? "bg-background dark:bg-zinc-800 shadow-sm text-primary"
+                    : "text-muted-foreground hover:text-foreground",
+                ].join(" ") || undefined
+              }
             >
               {tab === "list" ? "Living List" : "Order History"}
             </button>
@@ -52,7 +77,10 @@ export function OrdersPanelView({
       </div>
 
       {activeTab === "history" ? (
-        <OrdersHistoryTab historyOrders={historyOrders} onShopOrder={onShopOrder} />
+        <OrdersHistoryTab
+          historyOrders={historyOrders}
+          onShopOrder={onShopOrder}
+        />
       ) : (
         <OrdersListTab
           items={items}

@@ -76,6 +76,7 @@ The Pi automatically runs `ansible-pull` during its configured maintenance windo
 See `roles/config/files/sync-watchtower.js` for the implementation.
 
 Manual trigger on Pi:
+
 ```bash
 sudo ansible-pull \
   -U "https://$(cat /etc/sous-github-pat)@github.com/conarwelsh/sous.tools.git" \

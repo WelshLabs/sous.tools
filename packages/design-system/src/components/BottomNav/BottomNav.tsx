@@ -37,8 +37,8 @@ export interface BottomNavProps {
 
 const DEFAULT_ITEMS: BottomNavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Recipes",   href: "/recipes",   icon: ChefHat },
-  { label: "Orders",    href: "/inventory/orders", icon: ShoppingBag },
+  { label: "Recipes", href: "/recipes", icon: ChefHat },
+  { label: "Orders", href: "/inventory/orders", icon: ShoppingBag },
 ];
 
 /**
@@ -75,20 +75,26 @@ export function BottomNav({
   const rightItems = items.slice(midpoint);
 
   const navItemClass = (href: string) => {
-    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
-    return [
-      "flex flex-col items-center justify-center min-w-[64px] min-h-[64px]",
-      "transition-transform active:scale-90 touch-manipulation",
-      "text-xs font-medium gap-1",
-    ].join(" ") + " " + (isActive
-      ? ""
-      : "");
+    const isActive =
+      href === "/" ? pathname === "/" : pathname.startsWith(href);
+    return (
+      [
+        "flex flex-col items-center justify-center min-w-[64px] min-h-[64px]",
+        "transition-transform active:scale-90 touch-manipulation",
+        "text-xs font-medium gap-1",
+      ].join(" ") +
+      " " +
+      (isActive ? "" : "")
+    );
   };
 
   const navItemStyle = (href: string): React.CSSProperties => {
-    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+    const isActive =
+      href === "/" ? pathname === "/" : pathname.startsWith(href);
     return {
-      color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
+      color: isActive
+        ? "var(--color-primary)"
+        : "var(--color-muted-foreground)",
     };
   };
 

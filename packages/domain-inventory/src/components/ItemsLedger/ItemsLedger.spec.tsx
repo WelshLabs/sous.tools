@@ -10,7 +10,7 @@ describe("ItemsLedgerView", () => {
         loading={false}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
-      />
+      />,
     );
     expect(screen.getByText("No items found in ledger.")).toBeInTheDocument();
   });

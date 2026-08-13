@@ -95,7 +95,6 @@ export class IntegrationsController {
     });
   }
 
-
   @Get("google/files")
   async getGoogleFiles(
     @Query("q") query?: string,

@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type SignageBlock, type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type SignageBlock,
+  type PosItem,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { ColumnEmptyView } from "./column-empty-view";
 import { ColumnContentView } from "./column-content-view";
 import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
@@ -20,8 +25,15 @@ interface PreviewColumnEditorProps {
 }
 
 export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
-  column, items, onUpdate, menuItemStyles, isPreviewing = false,
-  selectedBlockId, onSelectBlock, onAddBlock, onUpdateBlock
+  column,
+  items,
+  onUpdate,
+  menuItemStyles,
+  isPreviewing = false,
+  selectedBlockId,
+  onSelectBlock,
+  onAddBlock,
+  onUpdateBlock,
 }) => {
   const styles = menuItemStyles ?? DEFAULT_MENU_ITEM_STYLES;
 
@@ -46,21 +58,39 @@ export const PreviewColumnEditor: React.FC<PreviewColumnEditorProps> = ({
           </div>
         );
       }
-      return <ColumnContentView column={column} items={items} menuItemStyles={styles} />;
+      return (
+        <ColumnContentView
+          column={column}
+          items={items}
+          menuItemStyles={styles}
+        />
+      );
     }
 
     if (column.type === "EMPTY") {
       return <ColumnEmptyView onUpdate={onUpdate} onOpenEditor={() => {}} />;
     }
 
-    return <ColumnContentView column={column} items={items} menuItemStyles={styles} />;
+    return (
+      <ColumnContentView
+        column={column}
+        items={items}
+        menuItemStyles={styles}
+      />
+    );
   };
 
   return (
-    <div className={`relative group flex flex-col h-full overflow-hidden ${
-      isPreviewing ? "bg-transparent border-none" : "bg-transparent border border-dashed border-border hover:border-white/20 min-h-[200px] rounded-xl"
-    }`}>
-      <div className={`flex-1 flex flex-col justify-center ${isPreviewing ? "p-0" : "p-3"}`}>
+    <div
+      className={`relative group flex flex-col h-full overflow-hidden ${
+        isPreviewing
+          ? "bg-transparent border-none"
+          : "bg-transparent border border-dashed border-border hover:border-white/20 min-h-[200px] rounded-xl"
+      }`}
+    >
+      <div
+        className={`flex-1 flex flex-col justify-center ${isPreviewing ? "p-0" : "p-3"}`}
+      >
         {renderContent()}
       </div>
     </div>

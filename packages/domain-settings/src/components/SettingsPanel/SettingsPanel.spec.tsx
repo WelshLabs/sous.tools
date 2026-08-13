@@ -6,7 +6,11 @@ describe("SettingsPanel", () => {
   it("renders all sections successfully", () => {
     render(
       <SettingsPanel
-        initialData={{ name: "Test User", email: "test@example.com", role: "admin" }}
+        initialData={{
+          name: "Test User",
+          email: "test@example.com",
+          role: "admin",
+        }}
         onSaveGeneral={vi.fn()}
         initialTokens={{}}
         onSaveTokens={vi.fn()}
@@ -14,7 +18,7 @@ describe("SettingsPanel", () => {
         onConnectIntegration={vi.fn()}
         onDisconnectIntegration={vi.fn()}
         onSquareAction={vi.fn()}
-      />
+      />,
     );
 
     // Verify sections render by checking for standard texts

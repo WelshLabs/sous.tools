@@ -71,10 +71,23 @@ export function DevicesClientWrapper({
   };
 
   const renderEdgeDevices = () => {
-    const devices = edgeDevices && edgeDevices.length > 0 ? edgeDevices : [
-      { id: "mock-1", name: "Kitchen WearOS", deviceType: "wearos", assignedUser: "Chef Gordon" },
-      { id: "mock-2", name: "Prep RPi", deviceType: "rpi", assignedUser: "Line Cook A" }
-    ];
+    const devices =
+      edgeDevices && edgeDevices.length > 0
+        ? edgeDevices
+        : [
+            {
+              id: "mock-1",
+              name: "Kitchen WearOS",
+              deviceType: "wearos",
+              assignedUser: "Chef Gordon",
+            },
+            {
+              id: "mock-2",
+              name: "Prep RPi",
+              deviceType: "rpi",
+              assignedUser: "Line Cook A",
+            },
+          ];
 
     return (
       <div className="mt-12 bg-card text-card-foreground border border-black/5 dark:border-white/10 shadow-sm rounded-2xl p-6">
@@ -91,12 +104,21 @@ export function DevicesClientWrapper({
             </thead>
             <tbody>
               {devices.map((device: any) => (
-                <tr key={device.id} className="border-b border-border hover:bg-muted/50">
-                  <td className="py-4 px-4 font-medium">{device.name || "Unknown Device"}</td>
-                  <td className="py-4 px-4 text-muted-foreground uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
-                  <td className="py-4 px-4 text-muted-foreground">{device.assignedUser || "Unassigned"}</td>
+                <tr
+                  key={device.id}
+                  className="border-b border-border hover:bg-muted/50"
+                >
+                  <td className="py-4 px-4 font-medium">
+                    {device.name || "Unknown Device"}
+                  </td>
+                  <td className="py-4 px-4 text-muted-foreground uppercase text-xs tracking-wider">
+                    {device.deviceType || "wearos"}
+                  </td>
+                  <td className="py-4 px-4 text-muted-foreground">
+                    {device.assignedUser || "Unassigned"}
+                  </td>
                   <td className="py-4 px-4 text-right">
-                    <button 
+                    <button
                       onClick={() => handleRevokeDevice(device.id)}
                       className="px-3 py-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-sm font-semibold transition-colors"
                     >
@@ -129,4 +151,3 @@ export function DevicesClientWrapper({
     </div>
   );
 }
-

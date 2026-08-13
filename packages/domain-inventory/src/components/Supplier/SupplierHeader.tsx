@@ -48,11 +48,7 @@ export function SupplierHeader({
         >
           <Truck
             size={22}
-            className={
-              isUnassigned
-                ? "text-muted-foreground"
-                : "text-accent"
-            }
+            className={isUnassigned ? "text-muted-foreground" : "text-accent"}
           />
         </div>
         <div>

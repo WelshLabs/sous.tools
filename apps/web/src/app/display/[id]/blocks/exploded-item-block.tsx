@@ -27,10 +27,14 @@ export function ExplodedItemBlock({
     isGlass ? "" : "border-transparent bg-transparent",
     "rounded-2xl p-6 flex flex-col gap-6 text-zinc-100 my-4",
     "st-exploded-item",
-    className
-  ].filter(Boolean).join(" ");
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  const explodedItem = menuItemId ? items.find(i => i.id === menuItemId || i.externalId === menuItemId) : null;
+  const explodedItem = menuItemId
+    ? items.find((i) => i.id === menuItemId || i.externalId === menuItemId)
+    : null;
 
   return (
     <div className={containerClasses}>
@@ -46,21 +50,24 @@ export function ExplodedItemBlock({
               )}
               {!hidePrice && (
                 <div className="text-[14px] font-medium text-muted-foreground tracking-wider uppercase ml-auto">
-                  BASE <span className="font-extrabold text-[#00f0ff] ml-1 st-menu-glow-text">${Number(explodedItem.price).toFixed(2)}</span>
+                  BASE{" "}
+                  <span className="font-extrabold text-[#00f0ff] ml-1 st-menu-glow-text">
+                    ${Number(explodedItem.price).toFixed(2)}
+                  </span>
                 </div>
               )}
             </div>
           )}
           {!hideDescription && explodedItem.description && (
-            <p className="text-sm text-muted-foreground max-w-2xl">{explodedItem.description}</p>
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              {explodedItem.description}
+            </p>
           )}
         </div>
       )}
 
       {/* Children Drop Zone */}
-      <div className="flex flex-col gap-4">
-        {children}
-      </div>
+      <div className="flex flex-col gap-4">{children}</div>
     </div>
   );
 }

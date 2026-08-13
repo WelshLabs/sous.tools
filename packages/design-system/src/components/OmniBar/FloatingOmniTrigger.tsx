@@ -3,7 +3,12 @@
 import { motion } from "framer-motion";
 import { OmniBar } from "./index";
 
-const shellTransition = { type: "spring" as const, stiffness: 320, damping: 32, mass: 0.9 };
+const shellTransition = {
+  type: "spring" as const,
+  stiffness: 320,
+  damping: 32,
+  mass: 0.9,
+};
 
 export function FloatingOmniTrigger() {
   return (

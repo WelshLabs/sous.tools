@@ -14,7 +14,10 @@ export interface SidebarLayoutProps {
  * A standard layout template for routes that need a secondary side-panel layout
  * (e.g., Inventory, Recipes, Settings). Uses Midnight Slate theme variables.
  */
-export function SidebarLayout({ sidebarContent, mainContent }: SidebarLayoutProps) {
+export function SidebarLayout({
+  sidebarContent,
+  mainContent,
+}: SidebarLayoutProps) {
   const { isExpanded, setHasSidebar, setExpanded } = useSidebarStore();
 
   useEffect(() => {
@@ -41,7 +44,13 @@ export function SidebarLayout({ sidebarContent, mainContent }: SidebarLayoutProp
           ${isExpanded ? "w-64 translate-x-0" : "w-16 md:w-64 -translate-x-0"}
         `}
       >
-        <div className={isExpanded ? "sidebar-expanded" : "sidebar-collapsed md:sidebar-expanded"}>
+        <div
+          className={
+            isExpanded
+              ? "sidebar-expanded"
+              : "sidebar-collapsed md:sidebar-expanded"
+          }
+        >
           {sidebarContent}
         </div>
       </aside>
@@ -53,4 +62,3 @@ export function SidebarLayout({ sidebarContent, mainContent }: SidebarLayoutProp
     </div>
   );
 }
-

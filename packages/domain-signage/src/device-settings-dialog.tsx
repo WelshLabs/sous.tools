@@ -41,13 +41,14 @@ export const DeviceSettingsDialog: React.FC<DeviceSettingsDialogProps> = ({
         if (result) {
           setName(result.name || "");
           setTimezone(result.timezone || "UTC");
-          const mw = result.maintenance_window || result.maintenanceWindow || {};
+          const mw =
+            result.maintenance_window || result.maintenanceWindow || {};
           setHour(mw.hour !== undefined ? mw.hour : 2);
           setMinute(mw.minute !== undefined ? mw.minute : 0);
           setDayOfWeek(
             mw.dayOfWeek !== null && mw.dayOfWeek !== undefined
               ? String(mw.dayOfWeek)
-              : "all"
+              : "all",
           );
         } else {
           setError("Failed to load settings.");

@@ -18,7 +18,9 @@ export interface BlockSettingsPanelProps {
   items?: PosItem[];
   config: SignageLayoutConfig;
   activeSlideIndex: number;
-  onFetchModifierGroups?: (posItemId: string) => Promise<Array<{ id: string; name: string }>>;
+  onFetchModifierGroups?: (
+    posItemId: string,
+  ) => Promise<Array<{ id: string; name: string }>>;
 }
 
 /** Container: Block settings inspector panel for the right sidebar. */
@@ -37,27 +39,33 @@ export function BlockSettingsPanel({
   };
 
   const activeSlide = config?.slides?.[activeSlideIndex];
-  const parentExplodedItem = activeSlide?.type === "COLUMN_LAYOUT"
-    ? (() => {
-        function find(block: SignageBlock, childId: string): SignageBlock | null {
-          if (!("blocks" in block)) return null;
-          for (const b of (block as { blocks?: SignageBlock[] }).blocks ?? []) {
-            if (b.id === childId) return block;
-            const found = find(b, childId);
-            if (found) return found;
+  const parentExplodedItem =
+    activeSlide?.type === "COLUMN_LAYOUT"
+      ? (() => {
+          function find(
+            block: SignageBlock,
+            childId: string,
+          ): SignageBlock | null {
+            if (!("blocks" in block)) return null;
+            for (const b of (block as { blocks?: SignageBlock[] }).blocks ??
+              []) {
+              if (b.id === childId) return block;
+              const found = find(b, childId);
+              if (found) return found;
+            }
+            return null;
+          }
+          for (const col of (activeSlide as ColumnLayoutSlide).columns) {
+            for (const b of col.blocks ?? []) {
+              if (b.id === selectedBlockId)
+                return b.type === "ExplodedItemBlock" ? b : null;
+              const found = find(b, selectedBlockId);
+              if (found?.type === "ExplodedItemBlock") return found;
+            }
           }
           return null;
-        }
-        for (const col of (activeSlide as ColumnLayoutSlide).columns) {
-          for (const b of col.blocks ?? []) {
-            if (b.id === selectedBlockId) return b.type === "ExplodedItemBlock" ? b : null;
-            const found = find(b, selectedBlockId);
-            if (found?.type === "ExplodedItemBlock") return found;
-          }
-        }
-        return null;
-      })()
-    : null;
+        })()
+      : null;
 
   return (
     <div className="flex-1 overflow-y-auto flex flex-col min-h-0 relative">
@@ -80,7 +88,6 @@ export function BlockSettingsPanel({
         parentExplodedItem={parentExplodedItem}
         config={config}
       />
-
     </div>
   );
 }

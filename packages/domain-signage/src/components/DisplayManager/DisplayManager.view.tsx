@@ -5,7 +5,20 @@ import React from "react";
 import Link from "next/link";
 import { type SignageDisplay } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";
-import { Monitor, Plus, RefreshCw, Trash2, Wifi, WifiOff, ExternalLink, Settings, Edit2, Copy, Check, Eye } from "lucide-react";
+import {
+  Monitor,
+  Plus,
+  RefreshCw,
+  Trash2,
+  Wifi,
+  WifiOff,
+  ExternalLink,
+  Settings,
+  Edit2,
+  Copy,
+  Check,
+  Eye,
+} from "lucide-react";
 import { PairDisplayDialog } from "../../pair-display-dialog";
 import { DeviceSettingsDialog } from "../../device-settings-dialog";
 import { isOnline } from "../../display-utils";
@@ -115,7 +128,11 @@ export interface DisplayPickerViewProps {
   onToggleDisplay: (displayId: string, isAssigned: boolean) => Promise<void>;
 }
 
-export const DisplayPickerView: React.FC<DisplayPickerViewProps> = ({ deckId, displays, onToggleDisplay }) => {
+export const DisplayPickerView: React.FC<DisplayPickerViewProps> = ({
+  deckId,
+  displays,
+  onToggleDisplay,
+}) => {
   if (!deckId || displays.length === 0) return null;
 
   return (
@@ -127,11 +144,19 @@ export const DisplayPickerView: React.FC<DisplayPickerViewProps> = ({ deckId, di
         {displays.map((disp) => {
           const isAssigned = disp.deckId === deckId;
           return (
-            <label key={disp.id} className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" checked={isAssigned}
+            <label
+              key={disp.id}
+              className="flex items-center gap-2 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                checked={isAssigned}
                 onChange={(e) => onToggleDisplay(disp.id, e.target.checked)}
-                className="accent-primary w-3.5 h-3.5" />
-              <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{disp.name}</span>
+                className="accent-primary w-3.5 h-3.5"
+              />
+              <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                {disp.name}
+              </span>
             </label>
           );
         })}
@@ -270,7 +295,7 @@ export const DeckCardView: React.FC<DeckCardViewProps> = ({
   onDelete,
   getLiveUrl,
   slideCount,
-  onEditClick
+  onEditClick,
 }) => {
   return (
     <div className="flex flex-col bg-card/60 backdrop-blur border border-border rounded-xl p-5 hover:border-white/20 transition-all duration-300">
@@ -288,7 +313,9 @@ export const DeckCardView: React.FC<DeckCardViewProps> = ({
               autoFocus
             />
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-muted-foreground font-mono">/s/</span>
+              <span className="text-[10px] text-muted-foreground font-mono">
+                /s/
+              </span>
               <input
                 type="text"
                 value={slug}

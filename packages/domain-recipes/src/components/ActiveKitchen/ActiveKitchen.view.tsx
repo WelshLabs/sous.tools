@@ -1,9 +1,23 @@
 /* eslint-disable max-lines */
 "use client";
 
-import { ArrowLeft, Sun, CheckCircle2, Play, Pause, RotateCcw, X, Bell, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  Sun,
+  CheckCircle2,
+  Play,
+  Pause,
+  RotateCcw,
+  X,
+  Bell,
+  Clock,
+} from "lucide-react";
 import Link from "next/link";
-import { type Recipe, type RecipeInstruction, type KitchenTimerState } from "@soustools/api-types";
+import {
+  type Recipe,
+  type RecipeInstruction,
+  type KitchenTimerState,
+} from "@soustools/api-types";
 
 export interface ActiveKitchenViewProps {
   recipe: Recipe;
@@ -122,7 +136,10 @@ export function ActiveKitchenView({
               borderBottom: "1px solid var(--color-border)",
             }}
           >
-            <Clock className="w-4 h-4 animate-pulse" style={{ color: "#10b981" }} />
+            <Clock
+              className="w-4 h-4 animate-pulse"
+              style={{ color: "#10b981" }}
+            />
             Active Timers ({tickedTimers.length})
           </h4>
 
@@ -159,7 +176,9 @@ function ActiveKitchenStepView({
     <div
       className={`p-6 rounded-2xl border transition-all flex items-start gap-4 cursor-pointer select-none min-h-[56px]`}
       style={{
-        backgroundColor: isChecked ? "rgb(15 23 42 / 0.40)" : "var(--color-card)",
+        backgroundColor: isChecked
+          ? "rgb(15 23 42 / 0.40)"
+          : "var(--color-card)",
         borderColor: isChecked ? "transparent" : "var(--color-border)",
         opacity: isChecked ? 0.5 : 1,
       }}
@@ -209,7 +228,8 @@ function ActiveKitchenStepView({
             border: "1px solid rgb(16 185 129 / 0.30)",
           }}
         >
-          <Play className="w-4 h-4 fill-current" /> {Math.floor(step.timerDurationSeconds / 60)}m
+          <Play className="w-4 h-4 fill-current" />{" "}
+          {Math.floor(step.timerDurationSeconds / 60)}m
         </button>
       )}
     </div>
@@ -242,7 +262,7 @@ function ActiveKitchenTimerRowView({
   const seconds = remaining % 60;
   const progressPercent = Math.min(
     100,
-    (totalElapsed / timer.durationSeconds) * 100
+    (totalElapsed / timer.durationSeconds) * 100,
   );
 
   return (
@@ -256,7 +276,10 @@ function ActiveKitchenTimerRowView({
       }}
     >
       <div className="flex justify-between items-center mb-1">
-        <span className="text-xs font-bold" style={{ color: "var(--color-foreground)" }}>
+        <span
+          className="text-xs font-bold"
+          style={{ color: "var(--color-foreground)" }}
+        >
           Step {timer.stepIndex} Timer
         </span>
         <button
@@ -275,7 +298,8 @@ function ActiveKitchenTimerRowView({
             className="text-2xl font-black font-mono tracking-tight"
             style={{ color: "var(--color-foreground)" }}
           >
-            {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
+            {minutes.toString().padStart(2, "0")}:
+            {seconds.toString().padStart(2, "0")}
           </span>
           {isDone && (
             <Bell
@@ -291,8 +315,14 @@ function ActiveKitchenTimerRowView({
             className="p-1.5 rounded-lg transition-colors cursor-pointer"
             style={
               timer.isActive
-                ? { backgroundColor: "rgb(245 158 11 / 0.15)", color: "#f59e0b" }
-                : { backgroundColor: "rgb(16 185 129 / 0.15)", color: "#10b981" }
+                ? {
+                    backgroundColor: "rgb(245 158 11 / 0.15)",
+                    color: "#f59e0b",
+                  }
+                : {
+                    backgroundColor: "rgb(16 185 129 / 0.15)",
+                    color: "#10b981",
+                  }
             }
             aria-label={timer.isActive ? "Pause timer" : "Start timer"}
           >

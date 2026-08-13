@@ -1,9 +1,9 @@
-import type { Meta } from '@storybook/react';
-import { BrandLoader, Spinner, DotsLoader, ProgressBar } from './Loader';
+import type { Meta } from "@storybook/react";
+import { BrandLoader, Spinner, DotsLoader, ProgressBar } from "./Loader";
 
 const meta: Meta = {
-  title: 'Components/Loader',
-  tags: ['autodocs'],
+  title: "Components/Loader",
+  tags: ["autodocs"],
 };
 export default meta;
 

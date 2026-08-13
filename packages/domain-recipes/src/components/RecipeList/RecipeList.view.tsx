@@ -2,8 +2,22 @@
 "use client";
 
 import React from "react";
-import { type Recipe, type RecipeCategory, type RecipeTag } from "@soustools/api-types";
-import { Loader2, Play, Edit3, Trash2, Scale, Link as LinkIcon, Folder, Tag, Sparkles } from "lucide-react";
+import {
+  type Recipe,
+  type RecipeCategory,
+  type RecipeTag,
+} from "@soustools/api-types";
+import {
+  Loader2,
+  Play,
+  Edit3,
+  Trash2,
+  Scale,
+  Link as LinkIcon,
+  Folder,
+  Tag,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { type RecipeListProps } from "./RecipeList.container";
 
@@ -26,7 +40,10 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
     >
       <div>
         <div className="flex justify-between items-start gap-2">
-          <h3 className="text-base font-bold line-clamp-1" style={{ color: "var(--color-foreground)" }}>
+          <h3
+            className="text-base font-bold line-clamp-1"
+            style={{ color: "var(--color-foreground)" }}
+          >
             {recipe.title}
           </h3>
           {recipe.status === "PENDING_REVIEW" && (
@@ -43,44 +60,72 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
           )}
         </div>
 
-        <p className="text-xs mt-1" style={{ color: "var(--color-muted-foreground)" }}>
+        <p
+          className="text-xs mt-1"
+          style={{ color: "var(--color-muted-foreground)" }}
+        >
           Yield: {recipe.yieldCount} {recipe.yieldUnit}
         </p>
 
         {recipe.sourceBook && (
-          <p className="text-[10px] mt-1" style={{ color: "var(--color-muted-foreground)" }}>
-            Source: <span style={{ color: "var(--color-foreground)" }}>{recipe.sourceBook}</span>
+          <p
+            className="text-[10px] mt-1"
+            style={{ color: "var(--color-muted-foreground)" }}
+          >
+            Source:{" "}
+            <span style={{ color: "var(--color-foreground)" }}>
+              {recipe.sourceBook}
+            </span>
             {recipe.sourcePageStart && ` (p. ${recipe.sourcePageStart})`}
           </p>
         )}
 
         {recipe.vessel && (
-          <p className="text-[11px] mt-1 flex items-center gap-1 font-semibold" style={{ color: "var(--color-primary)" }}>
+          <p
+            className="text-[11px] mt-1 flex items-center gap-1 font-semibold"
+            style={{ color: "var(--color-primary)" }}
+          >
             <Scale className="w-3.5 h-3.5" /> Pan: {recipe.vessel.name}
           </p>
         )}
 
         {recipe.posItemId ? (
-          <p className="text-[11px] mt-1 flex items-center gap-1 font-semibold" style={{ color: "var(--color-success, #10b981)" }}>
+          <p
+            className="text-[11px] mt-1 flex items-center gap-1 font-semibold"
+            style={{ color: "var(--color-success, #10b981)" }}
+          >
             <LinkIcon className="w-3.5 h-3.5" /> Linked POS Item
           </p>
         ) : (
-          <p className="text-[11px] mt-1 flex items-center gap-1" style={{ color: "var(--color-muted-foreground)" }}>
+          <p
+            className="text-[11px] mt-1 flex items-center gap-1"
+            style={{ color: "var(--color-muted-foreground)" }}
+          >
             <LinkIcon className="w-3.5 h-3.5" /> Unlinked POS
           </p>
         )}
 
-        <div className="text-xs mt-3 line-clamp-2" style={{ color: "var(--color-muted-foreground)" }}>
-          {recipe.instructions.length} step{recipe.instructions.length !== 1 ? "s" : ""}:{" "}
+        <div
+          className="text-xs mt-3 line-clamp-2"
+          style={{ color: "var(--color-muted-foreground)" }}
+        >
+          {recipe.instructions.length} step
+          {recipe.instructions.length !== 1 ? "s" : ""}:{" "}
           {recipe.instructions.map((step) => step.text).join(", ")}
         </div>
       </div>
 
-      <div className="flex gap-2 mt-6 pt-4" style={{ borderTop: "1px solid var(--color-border)" }}>
+      <div
+        className="flex gap-2 mt-6 pt-4"
+        style={{ borderTop: "1px solid var(--color-border)" }}
+      >
         <Link href={`/recipes/${recipe.id}`} className="flex-1">
           <button
             className="w-full py-1.5 px-3 text-xs rounded-lg font-semibold cursor-pointer transition-colors"
-            style={{ backgroundColor: "var(--color-secondary)", color: "var(--color-secondary-foreground)" }}
+            style={{
+              backgroundColor: "var(--color-secondary)",
+              color: "var(--color-secondary-foreground)",
+            }}
           >
             View &amp; Scale
           </button>
@@ -88,7 +133,10 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
         <Link href={`/recipes/${recipe.id}/kitchen`}>
           <button
             className="py-1.5 px-3 text-xs rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
-            style={{ backgroundColor: "rgb(16 185 129 / 0.10)", color: "#10b981" }}
+            style={{
+              backgroundColor: "rgb(16 185 129 / 0.10)",
+              color: "#10b981",
+            }}
           >
             <Play className="w-3.5 h-3.5 fill-current" /> Run
           </button>
@@ -96,7 +144,10 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
         <Link href={`/recipes/${recipe.id}/edit`}>
           <button
             className="p-2 rounded-lg cursor-pointer transition-colors"
-            style={{ backgroundColor: "var(--color-secondary)", color: "var(--color-secondary-foreground)" }}
+            style={{
+              backgroundColor: "var(--color-secondary)",
+              color: "var(--color-secondary-foreground)",
+            }}
           >
             <Edit3 className="w-3.5 h-3.5" />
           </button>
@@ -104,7 +155,10 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
         <button
           onClick={() => onDelete(recipe.id)}
           className="p-2 rounded-lg cursor-pointer transition-colors"
-          style={{ backgroundColor: "rgb(244 63 94 / 0.10)", color: "var(--color-destructive)" }}
+          style={{
+            backgroundColor: "rgb(244 63 94 / 0.10)",
+            color: "var(--color-destructive)",
+          }}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -124,7 +178,9 @@ export interface RecipeFilterProps {
   selectedTag: string | null;
   onSelectTag: (id: string | null) => void;
   selectedStatus: string;
-  onSelectStatus: (status: "ALL" | "APPROVED" | "PENDING_REVIEW" | "ARCHIVED") => void;
+  onSelectStatus: (
+    status: "ALL" | "APPROVED" | "PENDING_REVIEW" | "ARCHIVED",
+  ) => void;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
 }
@@ -148,7 +204,9 @@ export function RecipeFilter({
   searchQuery,
   onSearchQueryChange,
 }: RecipeFilterProps) {
-  const labelStyle: React.CSSProperties = { color: "var(--color-muted-foreground)" };
+  const labelStyle: React.CSSProperties = {
+    color: "var(--color-muted-foreground)",
+  };
   const inputStyle: React.CSSProperties = {
     backgroundColor: "var(--color-input)",
     borderColor: "var(--color-border)",
@@ -156,38 +214,68 @@ export function RecipeFilter({
   };
 
   return (
-    <div className="p-4 rounded-xl space-y-4" style={{ backgroundColor: "rgb(30 41 59 / 0.50)", border: "1px solid var(--color-border)" }}>
+    <div
+      className="p-4 rounded-xl space-y-4"
+      style={{
+        backgroundColor: "rgb(30 41 59 / 0.50)",
+        border: "1px solid var(--color-border)",
+      }}
+    >
       <div className="flex flex-wrap gap-4 items-center justify-between">
         <div className="space-y-1">
-          <label className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1" style={labelStyle}>
+          <label
+            className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1"
+            style={labelStyle}
+          >
             <Sparkles className="w-3 h-3 text-amber-500" /> Status Queue
           </label>
-          <div className="flex gap-1.5 p-1 rounded-lg" style={{ backgroundColor: "var(--color-secondary)", border: "1px solid var(--color-border)" }}>
-            {(["APPROVED", "PENDING_REVIEW", "ARCHIVED", "ALL"] as const).map((status) => (
-              <button
-                key={status}
-                onClick={() => onSelectStatus(status)}
-                className="px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors"
-                style={
-                  selectedStatus === status
-                    ? { backgroundColor: "var(--color-card)", color: "var(--color-foreground)", boxShadow: "0 1px 2px rgb(0 0 0 / 0.2)" }
-                    : { color: "var(--color-muted-foreground)" }
-                }
-              >
-                {STATUS_LABELS[status]}
-              </button>
-            ))}
+          <div
+            className="flex gap-1.5 p-1 rounded-lg"
+            style={{
+              backgroundColor: "var(--color-secondary)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            {(["APPROVED", "PENDING_REVIEW", "ARCHIVED", "ALL"] as const).map(
+              (status) => (
+                <button
+                  key={status}
+                  onClick={() => onSelectStatus(status)}
+                  className="px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors"
+                  style={
+                    selectedStatus === status
+                      ? {
+                          backgroundColor: "var(--color-card)",
+                          color: "var(--color-foreground)",
+                          boxShadow: "0 1px 2px rgb(0 0 0 / 0.2)",
+                        }
+                      : { color: "var(--color-muted-foreground)" }
+                  }
+                >
+                  {STATUS_LABELS[status]}
+                </button>
+              ),
+            )}
           </div>
         </div>
 
         {categories.length > 0 && (
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1" style={labelStyle}>
-              <Folder className="w-3 h-3" style={{ color: "var(--color-primary)" }} /> Category
+            <label
+              className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1"
+              style={labelStyle}
+            >
+              <Folder
+                className="w-3 h-3"
+                style={{ color: "var(--color-primary)" }}
+              />{" "}
+              Category
             </label>
             <select
               value={selectedCategory || ""}
-              onChange={(e) => onSelectCategory(e.target.value ? e.target.value : null)}
+              onChange={(e) =>
+                onSelectCategory(e.target.value ? e.target.value : null)
+              }
               className="text-xs border rounded-lg p-1.5 focus:outline-none min-w-[140px] cursor-pointer"
               style={inputStyle}
             >
@@ -203,12 +291,17 @@ export function RecipeFilter({
 
         {tags.length > 0 && (
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1" style={labelStyle}>
+            <label
+              className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1"
+              style={labelStyle}
+            >
               <Tag className="w-3 h-3 text-emerald-400" /> Tag
             </label>
             <select
               value={selectedTag || ""}
-              onChange={(e) => onSelectTag(e.target.value ? e.target.value : null)}
+              onChange={(e) =>
+                onSelectTag(e.target.value ? e.target.value : null)
+              }
               className="text-xs border rounded-lg p-1.5 focus:outline-none min-w-[140px] cursor-pointer"
               style={inputStyle}
             >
@@ -223,7 +316,10 @@ export function RecipeFilter({
         )}
 
         <div className="space-y-1 flex-1 min-w-[200px]">
-          <label className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1" style={labelStyle}>
+          <label
+            className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1"
+            style={labelStyle}
+          >
             Search
           </label>
           <input
@@ -261,27 +357,39 @@ export function RecipeListView({
 }: RecipeListProps) {
   return (
     <div className="space-y-6">
-      {showFilter && categories && tags && onSelectCategory && onSelectTag && onSelectStatus && onSearchQueryChange && (
-        <RecipeFilter
-          categories={categories}
-          tags={tags}
-          selectedCategory={selectedCategory ?? null}
-          onSelectCategory={onSelectCategory}
-          selectedTag={selectedTag ?? null}
-          onSelectTag={onSelectTag}
-          selectedStatus={selectedStatus ?? "ALL"}
-          onSelectStatus={onSelectStatus}
-          searchQuery={searchQuery ?? ""}
-          onSearchQueryChange={onSearchQueryChange}
-        />
-      )}
+      {showFilter &&
+        categories &&
+        tags &&
+        onSelectCategory &&
+        onSelectTag &&
+        onSelectStatus &&
+        onSearchQueryChange && (
+          <RecipeFilter
+            categories={categories}
+            tags={tags}
+            selectedCategory={selectedCategory ?? null}
+            onSelectCategory={onSelectCategory}
+            selectedTag={selectedTag ?? null}
+            onSelectTag={onSelectTag}
+            selectedStatus={selectedStatus ?? "ALL"}
+            onSelectStatus={onSelectStatus}
+            searchQuery={searchQuery ?? ""}
+            onSearchQueryChange={onSearchQueryChange}
+          />
+        )}
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--color-primary)" }} />
+          <Loader2
+            className="w-8 h-8 animate-spin"
+            style={{ color: "var(--color-primary)" }}
+          />
         </div>
       ) : recipes.length === 0 ? (
-        <div className="text-center py-20 text-sm" style={{ color: "var(--color-muted-foreground)" }}>
+        <div
+          className="text-center py-20 text-sm"
+          style={{ color: "var(--color-muted-foreground)" }}
+        >
           No recipes found matching your criteria.
         </div>
       ) : (

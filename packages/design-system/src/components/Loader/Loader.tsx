@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 // TopProgress is in its own file to stay within the 200-line architectural limit.
 export { TopProgress } from "../TopProgress/TopProgress";
 
-
 const loaderSize = cva("", {
   variants: {
     size: {

@@ -1,7 +1,6 @@
 import React from "react";
 import { AnswerView } from "@soustools/domain-inventory";
 
-
 export const dynamic = "force-dynamic";
 
 export default async function HomePage({

@@ -149,6 +149,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </AnimatePresence>
       </div>
     );
-  }
+  },
 );
 Input.displayName = "Input";

@@ -17,14 +17,16 @@ export class GraphQLClient {
 
   constructor(options: GraphQLClientOptions = {}) {
     const baseUrl = options.url || config.NEXT_PUBLIC_API_URL;
-    this.url = baseUrl.endsWith("/graphql") ? baseUrl : `${baseUrl.replace(/\/$/, "")}/graphql`;
+    this.url = baseUrl.endsWith("/graphql")
+      ? baseUrl
+      : `${baseUrl.replace(/\/$/, "")}/graphql`;
     this.headers = options.headers || {};
   }
 
   async request<TData = any, TVariables = Record<string, any>>(
     query: string,
     variables?: TVariables,
-    requestInit?: RequestInit
+    requestInit?: RequestInit,
   ): Promise<GraphQLResponse<TData>> {
     const fetchQuery = async (): Promise<Response> => {
       return fetch(this.url, {
@@ -50,7 +52,9 @@ export class GraphQLClient {
     }
 
     if (!response.ok) {
-      throw new Error(`GraphQL HTTP Error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `GraphQL HTTP Error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const json: GraphQLResponse<TData> = await response.json();
@@ -58,7 +62,7 @@ export class GraphQLClient {
     const hasAuthError = json.errors?.some(
       (e) =>
         e.message?.toLowerCase().includes("unauthorized") ||
-        e.extensions?.code === "UNAUTHENTICATED"
+        e.extensions?.code === "UNAUTHENTICATED",
     );
 
     if (hasAuthError) {
@@ -75,7 +79,9 @@ export class GraphQLClient {
   }
 }
 
-export function createGraphQLClient(options?: GraphQLClientOptions): GraphQLClient {
+export function createGraphQLClient(
+  options?: GraphQLClientOptions,
+): GraphQLClient {
   return new GraphQLClient(options);
 }
 

@@ -88,7 +88,9 @@ export function ComplianceSearch({
         )}&search_simple=1&action=process&json=1`,
       );
       if (res.ok) {
-        const data = (await res.json()) as { products?: OpenFoodFactsProduct[] };
+        const data = (await res.json()) as {
+          products?: OpenFoodFactsProduct[];
+        };
         setResults(data.products || []);
       } else {
         setError("Failed to fetch data from Open Food Facts.");
@@ -111,9 +113,8 @@ export function ComplianceSearch({
       ) / 10;
     const carbsG =
       Math.round(
-        Number(
-          nutriments.carbohydrates_100g || nutriments.carbohydrates || 0,
-        ) * 10,
+        Number(nutriments.carbohydrates_100g || nutriments.carbohydrates || 0) *
+          10,
       ) / 10;
     const fatG =
       Math.round(Number(nutriments.fat_100g || nutriments.fat || 0) * 10) / 10;

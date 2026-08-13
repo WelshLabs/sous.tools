@@ -1,5 +1,5 @@
-import * as React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
+import * as React from "react";
+import type { Meta, StoryObj } from "@storybook/react";
 import {
   Table,
   TableHeader,
@@ -9,10 +9,10 @@ import {
   TableHead,
   TableCell,
   TableCaption,
-} from './Table';
+} from "./Table";
 
 const meta: Meta<typeof Table> = {
-  title: 'Components/Table',
+  title: "Components/Table",
   component: Table,
 };
 export default meta;

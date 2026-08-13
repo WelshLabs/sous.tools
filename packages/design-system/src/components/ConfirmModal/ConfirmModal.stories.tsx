@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
-import { ConfirmModal } from './ConfirmModal';
-import { Button } from '../Button/Button';
+import type { Meta, StoryObj } from "@storybook/react";
+import React, { useState } from "react";
+import { ConfirmModal } from "./ConfirmModal";
+import { Button } from "../Button/Button";
 
 const meta: Meta<typeof ConfirmModal> = {
-  title: 'Components/ConfirmModal',
+  title: "Components/ConfirmModal",
   component: ConfirmModal,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -43,7 +43,9 @@ const ConfirmModalDestructiveWrapper = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="p-8">
-      <Button variant="destructive" onClick={() => setIsOpen(true)}>Delete Item</Button>
+      <Button variant="destructive" onClick={() => setIsOpen(true)}>
+        Delete Item
+      </Button>
       <ConfirmModal
         isOpen={isOpen}
         title="Delete Recipe"

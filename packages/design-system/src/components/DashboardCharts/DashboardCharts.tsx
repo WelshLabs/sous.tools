@@ -40,33 +40,45 @@ export function RevenueChart({ data }: RevenueChartProps) {
   return (
     <div className="w-full h-[320px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-          <XAxis 
-            dataKey="name" 
-            stroke="#a1a1aa" 
-            fontSize={12} 
-            tickLine={false} 
-            axisLine={false} 
+        <BarChart
+          data={chartData}
+          margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="#27272a"
+            vertical={false}
           />
-          <YAxis 
-            stroke="#a1a1aa" 
-            fontSize={12} 
-            tickLine={false} 
-            axisLine={false} 
-            tickFormatter={(value) => `$${value}`} 
+          <XAxis
+            dataKey="name"
+            stroke="#a1a1aa"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
           />
-          <Tooltip 
-            cursor={{ fill: "rgba(255,255,255,0.05)" }} 
-            contentStyle={{ 
-              backgroundColor: "#09090b", 
+          <YAxis
+            stroke="#a1a1aa"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `$${value}`}
+          />
+          <Tooltip
+            cursor={{ fill: "rgba(255,255,255,0.05)" }}
+            contentStyle={{
+              backgroundColor: "#09090b",
               borderColor: "#27272a",
               borderRadius: "12px",
-              color: "#f4f4f5"
+              color: "#f4f4f5",
             }}
           />
           {chartData.length > 0 && chartData[0].sales !== undefined ? null : (
-            <Bar dataKey="value" name="Revenue" fill="#22d3ee" radius={[6, 6, 0, 0]} />
+            <Bar
+              dataKey="value"
+              name="Revenue"
+              fill="#22d3ee"
+              radius={[6, 6, 0, 0]}
+            />
           )}
           {chartData.length > 0 && chartData[0].sales !== undefined ? (
             <Bar dataKey="sales" name="Sales" stackId="a" fill="#22d3ee" />
@@ -75,10 +87,22 @@ export function RevenueChart({ data }: RevenueChartProps) {
             <Bar dataKey="tax" name="Tax" stackId="a" fill="#3b82f6" />
           ) : null}
           {chartData.length > 0 && chartData[0].sales !== undefined ? (
-            <Bar dataKey="tips" name="Tips" stackId="a" fill="#818cf8" radius={[6, 6, 0, 0]} />
+            <Bar
+              dataKey="tips"
+              name="Tips"
+              stackId="a"
+              fill="#818cf8"
+              radius={[6, 6, 0, 0]}
+            />
           ) : null}
           {chartData.length > 0 && chartData[0].sales !== undefined ? (
-            <Bar dataKey="processingFee" name="Processing Fees" stackId="a" fill="#ef4444" radius={[0, 0, 6, 6]} />
+            <Bar
+              dataKey="processingFee"
+              name="Processing Fees"
+              stackId="a"
+              fill="#ef4444"
+              radius={[0, 0, 6, 6]}
+            />
           ) : null}
         </BarChart>
       </ResponsiveContainer>
@@ -92,38 +116,50 @@ export function TicketTimeChart({ data }: TicketTimeChartProps) {
   return (
     <div className="w-full h-[320px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-          <XAxis 
-            dataKey="time" 
-            stroke="#a1a1aa" 
-            fontSize={12} 
-            tickLine={false} 
-            axisLine={false} 
+        <LineChart
+          data={chartData}
+          margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="#27272a"
+            vertical={false}
           />
-          <YAxis 
-            stroke="#a1a1aa" 
-            fontSize={12} 
-            tickLine={false} 
-            axisLine={false} 
-            tickFormatter={(value) => `${value}m`} 
+          <XAxis
+            dataKey="time"
+            stroke="#a1a1aa"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
           />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: "#09090b", 
+          <YAxis
+            stroke="#a1a1aa"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}m`}
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#09090b",
               borderColor: "#27272a",
               borderRadius: "12px",
-              color: "#f4f4f5"
+              color: "#f4f4f5",
             }}
             itemStyle={{ color: "#22d3ee" }}
           />
-          <Line 
-            type="monotone" 
-            dataKey="minutes" 
-            stroke="#22d3ee" 
+          <Line
+            type="monotone"
+            dataKey="minutes"
+            stroke="#22d3ee"
             strokeWidth={3}
             dot={{ fill: "#09090b", stroke: "#22d3ee", strokeWidth: 2, r: 4 }}
-            activeDot={{ r: 6, fill: "#22d3ee", stroke: "#09090b", strokeWidth: 2 }}
+            activeDot={{
+              r: 6,
+              fill: "#22d3ee",
+              stroke: "#09090b",
+              strokeWidth: 2,
+            }}
           />
         </LineChart>
       </ResponsiveContainer>

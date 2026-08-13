@@ -37,7 +37,12 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
       if (!error && responseData?.data?.id) {
         router.push(`/signage/${responseData.data.id}`);
       } else {
-        const errMsg = typeof error === "string" ? error : (error as any)?.message || responseData?.error || "Failed to create deck";
+        const errMsg =
+          typeof error === "string"
+            ? error
+            : (error as any)?.message ||
+              responseData?.error ||
+              "Failed to create deck";
         alert(errMsg);
       }
     } catch (err) {

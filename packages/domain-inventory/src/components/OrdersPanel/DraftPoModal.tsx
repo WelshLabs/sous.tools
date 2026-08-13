@@ -13,7 +13,11 @@ export interface DraftPoModalProps {
 }
 
 export function DraftPoModal({
-  isOpen, onClose, items, vendors, onCreatePO,
+  isOpen,
+  onClose,
+  items,
+  vendors,
+  onCreatePO,
 }: DraftPoModalProps) {
   const [selectedVendor, setSelectedVendor] = useState("");
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -36,7 +40,9 @@ export function DraftPoModal({
       setSelectedItems(new Set());
       onClose();
     } catch (err: unknown) {
-      toast.error(`An unexpected error occurred: ${err instanceof Error ? err.message : String(err)}`);
+      toast.error(
+        `An unexpected error occurred: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -67,15 +73,37 @@ export function DraftPoModal({
         </div>
         <div className="max-h-64 overflow-y-auto space-y-2 border border-black/10 dark:border-border p-4 rounded-md mb-6">
           {items.map((item) => (
-            <label key={item.id} className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-card rounded">
-              <input type="checkbox" checked={selectedItems.has(item.id)} onChange={() => toggleSelection(item.id)} className="w-5 h-5 border-black/20 dark:border-white/20" />
-              <span className="text-lg text-zinc-900 dark:text-foreground">{item.raw_name}</span>
+            <label
+              key={item.id}
+              className="flex items-center gap-4 cursor-pointer p-2 hover:bg-black/5 dark:bg-card rounded"
+            >
+              <input
+                type="checkbox"
+                checked={selectedItems.has(item.id)}
+                onChange={() => toggleSelection(item.id)}
+                className="w-5 h-5 border-black/20 dark:border-white/20"
+              />
+              <span className="text-lg text-zinc-900 dark:text-foreground">
+                {item.raw_name}
+              </span>
             </label>
           ))}
         </div>
         <div className="flex justify-end gap-4">
-          <button onClick={onClose} disabled={isSubmitting} className="px-6 py-2 rounded-md font-medium text-zinc-700 dark:text-muted-foreground hover:bg-card dark:bg-white/10 transition-colors disabled:opacity-50">Cancel</button>
-          <button onClick={createPO} disabled={!selectedVendor || selectedItems.size === 0 || isSubmitting} className="bg-card dark:bg-white text-foreground dark:text-foreground px-6 py-2 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors">
+          <button
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="px-6 py-2 rounded-md font-medium text-zinc-700 dark:text-muted-foreground hover:bg-card dark:bg-white/10 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={createPO}
+            disabled={
+              !selectedVendor || selectedItems.size === 0 || isSubmitting
+            }
+            className="bg-card dark:bg-white text-foreground dark:text-foreground px-6 py-2 rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          >
             {isSubmitting ? "Creating..." : "Create PO"}
           </button>
         </div>

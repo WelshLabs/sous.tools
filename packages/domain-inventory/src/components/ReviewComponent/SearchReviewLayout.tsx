@@ -26,7 +26,9 @@ export function SearchReviewLayout({
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 block mb-1">
                 AI Intelligence Summary
               </span>
-              <p>Heard, Chef. Displaying results for query &ldquo;{query}&rdquo;.</p>
+              <p>
+                Heard, Chef. Displaying results for query &ldquo;{query}&rdquo;.
+              </p>
             </div>
           </div>
         )}

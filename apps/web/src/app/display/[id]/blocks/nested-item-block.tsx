@@ -1,6 +1,15 @@
 import React from "react";
-import { type PosItem, type MenuItemStyles, type UpgradeItem } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle } from "@/app/display/[id]/menu-item-style-utils";
+import {
+  type PosItem,
+  type MenuItemStyles,
+  type UpgradeItem,
+} from "@soustools/api-types";
+import {
+  resolveItemState,
+  buildTitleStyle,
+  buildPriceStyle,
+  buildCardStyle,
+} from "@/app/display/[id]/menu-item-style-utils";
 
 interface NestedItemBlockProps {
   basePosItemId?: string;
@@ -19,10 +28,20 @@ export function NestedItemBlock({
   panelStyle,
   className,
 }: NestedItemBlockProps) {
-  const baseItem = items.find((i) => i.id === basePosItemId || i.externalId === basePosItemId);
+  const baseItem = items.find(
+    (i) => i.id === basePosItemId || i.externalId === basePosItemId,
+  );
 
   // Fallback if base item is a seeded mock/dummy not in DB
-  const baseName = baseItem ? baseItem.name : (basePosItemId ? basePosItemId.replace("dummy-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Unknown Item");
+  const baseName = baseItem
+    ? baseItem.name
+    : basePosItemId
+      ? basePosItemId
+          .replace("dummy-", "")
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ")
+      : "Unknown Item";
   const basePrice = baseItem ? Number(baseItem.price) : 0;
   const isBaseSoldOut = baseItem ? baseItem.isSoldOut : false;
 
@@ -53,8 +72,10 @@ export function NestedItemBlock({
   const containerClasses = [
     `p-6 rounded-2xl ${borderClass} flex flex-col gap-3 transition-all duration-300 relative`,
     panelStyle === "glass" ? "" : "st-nested-item",
-    panelStyle === "glass" ? "" : className
-  ].filter(Boolean).join(" ");
+    panelStyle === "glass" ? "" : className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const element = (
     <div
@@ -76,16 +97,30 @@ export function NestedItemBlock({
           {baseName}
         </h3>
         {basePrice > 0 && (
-          <span className="text-lg font-extrabold whitespace-nowrap st-price-tag" style={priceStyle}>
+          <span
+            className="text-lg font-extrabold whitespace-nowrap st-price-tag"
+            style={priceStyle}
+          >
             ${basePrice.toFixed(2)}
           </span>
         )}
       </div>
 
-      <ul className={`flex flex-col gap-2 ${isGroupHeader ? "" : "pl-4 border-l border-zinc-800"}`}>
+      <ul
+        className={`flex flex-col gap-2 ${isGroupHeader ? "" : "pl-4 border-l border-zinc-800"}`}
+      >
         {upgradeItems.map((upgrade, idx) => {
-          const upItem = items.find((i) => i.id === upgrade.posItemId || i.externalId === upgrade.posItemId);
-          const upName = upItem ? upItem.name : upgrade.posItemId.replace("dummy-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          const upItem = items.find(
+            (i) =>
+              i.id === upgrade.posItemId || i.externalId === upgrade.posItemId,
+          );
+          const upName = upItem
+            ? upItem.name
+            : upgrade.posItemId
+                .replace("dummy-", "")
+                .split("-")
+                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(" ");
           const upPrice = upItem ? Number(upItem.price) : null;
           const isUpSoldOut = upItem ? upItem.isSoldOut : false;
 
@@ -103,11 +138,16 @@ export function NestedItemBlock({
               key={idx}
               className="flex justify-between items-center text-sm transition-opacity duration-300"
               style={{
-                opacity: isUpSoldOut ? (menuItemStyles.soldOut.dimOpacity ?? 0.5) : 1,
+                opacity: isUpSoldOut
+                  ? (menuItemStyles.soldOut.dimOpacity ?? 0.5)
+                  : 1,
               }}
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-zinc-300" style={upTitleStyle}>
+                <span
+                  className="font-semibold text-zinc-300"
+                  style={upTitleStyle}
+                >
                   {isGroupHeader ? upName : `• ${upName}`}
                   {isUpSoldOut && menuItemStyles.soldOut.badge && (
                     <span className="ml-2 text-[8px] px-1 bg-red-500 text-white rounded font-bold uppercase st-sold-out-badge">
@@ -122,8 +162,13 @@ export function NestedItemBlock({
                 )}
               </div>
               {upPrice !== null && upPrice > 0 && (
-                <span className="font-bold text-muted-foreground pl-4 st-price-tag" style={upPriceStyle}>
-                  {isGroupHeader ? `$${upPrice.toFixed(2)}` : `+$${upPrice.toFixed(2)}`}
+                <span
+                  className="font-bold text-muted-foreground pl-4 st-price-tag"
+                  style={upPriceStyle}
+                >
+                  {isGroupHeader
+                    ? `$${upPrice.toFixed(2)}`
+                    : `+$${upPrice.toFixed(2)}`}
                 </span>
               )}
             </li>
@@ -135,7 +180,9 @@ export function NestedItemBlock({
 
   if (panelStyle === "glass") {
     return (
-      <div className={[" p-4 st-nested-item", className].filter(Boolean).join(" ")}>
+      <div
+        className={[" p-4 st-nested-item", className].filter(Boolean).join(" ")}
+      >
         {element}
       </div>
     );

@@ -53,7 +53,7 @@ export function TopProgress({
     }
 
     return clearTrickle;
-      }, [active, visible]);
+  }, [active, visible]);
 
   return (
     <AnimatePresence>

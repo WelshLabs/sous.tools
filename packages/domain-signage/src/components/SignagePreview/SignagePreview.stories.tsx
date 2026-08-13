@@ -17,17 +17,21 @@ const dummyConfig: SignageLayoutConfig = {
   id: "preview-1",
   name: "Preview 1",
   aspectRatio: "16:9",
-  slides: [{
-    id: "slide-1",
-    type: "COLUMN_LAYOUT",
-    duration: 10,
-    backgroundColor: "#111111",
-    columns: [{
-      id: "col-1",
-      width: "100%",
-      blocks: []
-    }]
-  }]
+  slides: [
+    {
+      id: "slide-1",
+      type: "COLUMN_LAYOUT",
+      duration: 10,
+      backgroundColor: "#111111",
+      columns: [
+        {
+          id: "col-1",
+          width: "100%",
+          blocks: [],
+        },
+      ],
+    },
+  ],
 };
 
 export const Default: Story = {
@@ -38,6 +42,6 @@ export const Default: Story = {
     isPreviewing: true,
     scale: 1,
     containerRef: { current: null },
-    fetchModifiers: async () => []
+    fetchModifiers: async () => [],
   },
 };

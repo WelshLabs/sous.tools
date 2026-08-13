@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { google } from "googleapis";
 import { serverConfig as config } from "@soustools/config/server";
 import { supabase } from "../../../../lib/supabase";
@@ -21,16 +25,18 @@ export class GoogleDriveService {
     const oauth2Client = new google.auth.OAuth2(
       config.GOOGLE_CLIENT_ID,
       config.GOOGLE_CLIENT_SECRET,
-      redirectUri
+      redirectUri,
     );
-    
+
     oauth2Client.setCredentials({
       access_token: integration.access_token,
       refresh_token: integration.refresh_token,
-      token_type: 'Bearer',
-      expiry_date: integration.expires_at ? new Date(integration.expires_at).getTime() : undefined,
+      token_type: "Bearer",
+      expiry_date: integration.expires_at
+        ? new Date(integration.expires_at).getTime()
+        : undefined,
     });
-    
+
     return oauth2Client;
   }
 
@@ -48,19 +54,31 @@ export class GoogleDriveService {
       q = "'root' in parents";
     }
 
-    const response = await drive.files.list({
-      q,
-      fields: "files(id, name, mimeType, webViewLink)",
-      spaces: "drive",
-    }).catch(error => {
-      if (error.code === 401 || (error.response && error.response.status === 401)) {
-        throw new UnauthorizedException("Google Drive authentication failed. Please reconnect.");
-      }
-      if (error.code === 403 || (error.response && error.response.status === 403)) {
-        throw new UnauthorizedException("Insufficient Google Drive permissions. Please reconnect and ensure you check the box to grant Drive access on the consent screen.");
-      }
-      throw error;
-    });
+    const response = await drive.files
+      .list({
+        q,
+        fields: "files(id, name, mimeType, webViewLink)",
+        spaces: "drive",
+      })
+      .catch((error) => {
+        if (
+          error.code === 401 ||
+          (error.response && error.response.status === 401)
+        ) {
+          throw new UnauthorizedException(
+            "Google Drive authentication failed. Please reconnect.",
+          );
+        }
+        if (
+          error.code === 403 ||
+          (error.response && error.response.status === 403)
+        ) {
+          throw new UnauthorizedException(
+            "Insufficient Google Drive permissions. Please reconnect and ensure you check the box to grant Drive access on the consent screen.",
+          );
+        }
+        throw error;
+      });
 
     return response.data.files || [];
   }
@@ -80,26 +98,47 @@ export class GoogleDriveService {
         });
         return response.data as string;
       } else {
-        const response = await drive.files.get({
-          fileId,
-          alt: "media",
-        }, { responseType: 'arraybuffer' });
-        
+        const response = await drive.files.get(
+          {
+            fileId,
+            alt: "media",
+          },
+          { responseType: "arraybuffer" },
+        );
+
         const buffer = Buffer.from(response.data as ArrayBuffer);
-        return buffer.toString('utf8');
+        return buffer.toString("utf8");
       }
     } catch (error: any) {
-      if (error.code === 401 || (error.response && error.response.status === 401)) {
-        throw new UnauthorizedException("Google Drive authentication failed. Please reconnect.");
+      if (
+        error.code === 401 ||
+        (error.response && error.response.status === 401)
+      ) {
+        throw new UnauthorizedException(
+          "Google Drive authentication failed. Please reconnect.",
+        );
       }
-      if (error.code === 403 || (error.response && error.response.status === 403)) {
-        throw new UnauthorizedException("Insufficient Google Drive permissions. Please reconnect and ensure you check the box to grant Drive access on the consent screen.");
+      if (
+        error.code === 403 ||
+        (error.response && error.response.status === 403)
+      ) {
+        throw new UnauthorizedException(
+          "Insufficient Google Drive permissions. Please reconnect and ensure you check the box to grant Drive access on the consent screen.",
+        );
       }
       throw error;
     }
   }
 
-  async processDriveFile(fileId: string, orgId: string, reviewId: string): Promise<{ text?: string, sourceDocumentUrl?: string, sourceName?: string }> {
+  async processDriveFile(
+    fileId: string,
+    orgId: string,
+    reviewId: string,
+  ): Promise<{
+    text?: string;
+    sourceDocumentUrl?: string;
+    sourceName?: string;
+  }> {
     const auth = await this.getAuthClient(orgId);
     const drive = google.drive({ version: "v3", auth });
 
@@ -115,22 +154,27 @@ export class GoogleDriveService {
         });
         return { text: response.data as string, sourceName: name };
       } else {
-        const response = await drive.files.get({
-          fileId,
-          alt: "media",
-        }, { responseType: 'arraybuffer' });
-        
+        const response = await drive.files.get(
+          {
+            fileId,
+            alt: "media",
+          },
+          { responseType: "arraybuffer" },
+        );
+
         const buffer = Buffer.from(response.data as ArrayBuffer);
-        
+
         // If it's a known text format, just return text
-        if (mimeType.startsWith('text/') || mimeType === 'application/json') {
-           return { text: buffer.toString('utf8'), sourceName: name };
+        if (mimeType.startsWith("text/") || mimeType === "application/json") {
+          return { text: buffer.toString("utf8"), sourceName: name };
         }
-        
+
         // Otherwise, it's an image, PDF, etc. Upload to Supabase!
-        const ext = name.split('.').pop() || (mimeType === 'application/pdf' ? 'pdf' : 'jpg');
+        const ext =
+          name.split(".").pop() ||
+          (mimeType === "application/pdf" ? "pdf" : "jpg");
         const fileName = `${reviewId}_${fileId}.${ext}`;
-        
+
         const { error: uploadErr } = await supabase.storage
           .from("ingestion-sources")
           .upload(fileName, buffer, { contentType: mimeType, upsert: true });
@@ -143,8 +187,11 @@ export class GoogleDriveService {
         const { data: urlData } = supabase.storage
           .from("ingestion-sources")
           .getPublicUrl(fileName);
-          
-        return { sourceDocumentUrl: urlData?.publicUrl || "", sourceName: name };
+
+        return {
+          sourceDocumentUrl: urlData?.publicUrl || "",
+          sourceName: name,
+        };
       }
     } catch (error: any) {
       console.error("Drive processing error:", error);

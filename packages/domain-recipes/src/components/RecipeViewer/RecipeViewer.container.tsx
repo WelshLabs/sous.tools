@@ -2,8 +2,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import type { Recipe, VesselProfile, MasterIngredient, RecipeNutritionCache } from "@soustools/api-types";
-import type { ScaledIngredient, RecipeCostData, VersionRow, InventoryItem, WastageReason } from "../../types";
+import type {
+  Recipe,
+  VesselProfile,
+  MasterIngredient,
+  RecipeNutritionCache,
+} from "@soustools/api-types";
+import type {
+  ScaledIngredient,
+  RecipeCostData,
+  VersionRow,
+  InventoryItem,
+  WastageReason,
+} from "../../types";
 import { RecipeViewerView } from "./RecipeViewer.view";
 
 export type ScaleMode = "yield" | "weight" | "vessel";
@@ -24,13 +35,17 @@ export interface RecipeViewerProps {
   versionHistory: VersionRow[];
 
   onScaleChange: (multiplier: number, customOpts?: CustomWeightOpts) => void;
-  onIngredientWeightChange: (ingId: string, amount: number, unit: string) => void;
+  onIngredientWeightChange: (
+    ingId: string,
+    amount: number,
+    unit: string,
+  ) => void;
   onCostFactorsChange?: (wastePct: number, portions: number) => void;
 
   onSaveVersion: () => Promise<void>;
   onRestoreVersion: (version: VersionRow) => void;
   onDownloadLabel: () => void;
-  
+
   onSearchItems: (query: string) => Promise<InventoryItem[]>;
   onSubmitWastage: (payload: {
     itemId: string;
@@ -61,7 +76,9 @@ export function RecipeViewer(props: RecipeViewerProps) {
   const [scaleMode, setScaleMode] = useState<ScaleMode>("yield");
   const [targetYield, setTargetYield] = useState(props.recipe.yieldCount);
   const [targetWeight, setTargetWeight] = useState("");
-  const [selectedVesselId, setSelectedVesselId] = useState(props.recipe.vesselId || "");
+  const [selectedVesselId, setSelectedVesselId] = useState(
+    props.recipe.vesselId || "",
+  );
 
   useEffect(() => {
     if (scaleMode === "yield") {
@@ -71,13 +88,21 @@ export function RecipeViewer(props: RecipeViewerProps) {
 
   useEffect(() => {
     if (scaleMode === "vessel" && selectedVesselId) {
-      const currentVessel = props.vessels.find((v) => v.id === props.recipe.vesselId);
+      const currentVessel = props.vessels.find(
+        (v) => v.id === props.recipe.vesselId,
+      );
       const targetVessel = props.vessels.find((v) => v.id === selectedVesselId);
       if (currentVessel && targetVessel) {
         props.onScaleChange(targetVessel.volumeMl / currentVessel.volumeMl);
       }
     }
-  }, [scaleMode, selectedVesselId, props.vessels, props.recipe.vesselId, props.onScaleChange]);
+  }, [
+    scaleMode,
+    selectedVesselId,
+    props.vessels,
+    props.recipe.vesselId,
+    props.onScaleChange,
+  ]);
 
   const handleWeightChange = (val: string) => {
     setTargetWeight(val);
@@ -100,7 +125,10 @@ export function RecipeViewer(props: RecipeViewerProps) {
     setTimeout(() => setSavedFlash(false), 2000);
   };
 
-  const handleCostFactorsChange = (newWastePct: number, newPortions: number) => {
+  const handleCostFactorsChange = (
+    newWastePct: number,
+    newPortions: number,
+  ) => {
     setWastePct(newWastePct);
     setPortions(newPortions);
     props.onCostFactorsChange?.(newWastePct, newPortions);
@@ -109,7 +137,8 @@ export function RecipeViewer(props: RecipeViewerProps) {
   // WastageEntryModal / Form states
   const [wastageSearchQuery, setWastageSearchQuery] = useState("");
   const [wastageItems, setWastageItems] = useState<InventoryItem[]>([]);
-  const [wastageSelectedItem, setWastageSelectedItem] = useState<InventoryItem | null>(null);
+  const [wastageSelectedItem, setWastageSelectedItem] =
+    useState<InventoryItem | null>(null);
   const [wastageAmount, setWastageAmount] = useState("");
   const [wastageUnit, setWastageUnit] = useState("g");
   const [wastageReason, setWastageReason] = useState<WastageReason>("TRIM");
@@ -117,7 +146,10 @@ export function RecipeViewer(props: RecipeViewerProps) {
 
   // Debounced search for wastage
   useEffect(() => {
-    if (!wastageSearchQuery || wastageSelectedItem?.name === wastageSearchQuery) {
+    if (
+      !wastageSearchQuery ||
+      wastageSelectedItem?.name === wastageSearchQuery
+    ) {
       setWastageItems([]);
       return;
     }
@@ -160,7 +192,7 @@ export function RecipeViewer(props: RecipeViewerProps) {
     <RecipeViewerView
       // Props from parent
       {...props}
-      
+
       // RecipeViewer states
       isWastageOpen={isWastageOpen}
       setIsWastageOpen={setIsWastageOpen}

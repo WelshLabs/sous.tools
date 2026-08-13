@@ -1,4 +1,4 @@
-import { SetupWizard } from '../components/SetupWizard';
+import { SetupWizard } from "../components/SetupWizard";
 
 export default function Page() {
   return (

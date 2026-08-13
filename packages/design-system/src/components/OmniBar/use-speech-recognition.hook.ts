@@ -21,7 +21,7 @@ interface SpeechRecognition extends EventTarget {
 }
 
 interface SpeechRecognitionStatic {
-  new(): SpeechRecognition;
+  new (): SpeechRecognition;
 }
 
 interface WindowWithSpeechRecognition extends Window {
@@ -37,7 +37,10 @@ export function useSpeechRecognition({
   const [isListening, setIsListening] = useState(false);
 
   const handleMicClick = () => {
-    const SpeechRecognition = (window as unknown as WindowWithSpeechRecognition).SpeechRecognition || (window as unknown as WindowWithSpeechRecognition).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as unknown as WindowWithSpeechRecognition).SpeechRecognition ||
+      (window as unknown as WindowWithSpeechRecognition)
+        .webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast.error("Speech recognition is not supported in this browser.");
       return;

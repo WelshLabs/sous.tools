@@ -32,7 +32,9 @@ async function getBook(bookId: string): Promise<BookData> {
   return { title: `Book ${bookId}`, pdfUrl: null };
 }
 
-export default async function LibraryReaderPage({ params }: LibraryReaderPageProps) {
+export default async function LibraryReaderPage({
+  params,
+}: LibraryReaderPageProps) {
   const { bookId } = await params;
   const book = await getBook(bookId);
 

@@ -28,7 +28,10 @@ export class PosGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("join")
-  handleJoin(client: Socket, payload: { orgId: string }): { status: string; joined?: string[] } {
+  handleJoin(
+    client: Socket,
+    payload: { orgId: string },
+  ): { status: string; joined?: string[] } {
     if (payload?.orgId) {
       client.join(`org:${payload.orgId}`);
       return { status: "success", joined: [`org:${payload.orgId}`] };

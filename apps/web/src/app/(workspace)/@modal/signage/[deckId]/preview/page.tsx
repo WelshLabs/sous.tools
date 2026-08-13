@@ -96,7 +96,10 @@ export default function DeckPreviewModal({
       ) : (
         <div className="flex flex-col">
           {/* 16:9 live preview iframe */}
-          <div className="relative w-full bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
+          <div
+            className="relative w-full bg-white dark:bg-black"
+            style={{ paddingTop: "56.25%" }}
+          >
             <iframe
               src={getLiveUrl()}
               title={deck.name}
@@ -107,12 +110,18 @@ export default function DeckPreviewModal({
           {/* Action strip */}
           <div className="flex items-center gap-3 px-5 py-4 border-t border-black/5 dark:border-white/5 bg-zinc-50 dark:bg-card">
             <Monitor className="w-4 h-4 text-muted-foreground dark:text-zinc-500 shrink-0" />
-            <p className="text-xs text-zinc-500 dark:text-muted-foreground flex-1 font-mono truncate">{getLiveUrl()}</p>
+            <p className="text-xs text-zinc-500 dark:text-muted-foreground flex-1 font-mono truncate">
+              {getLiveUrl()}
+            </p>
             <button
               onClick={handleCopy}
               className="flex items-center gap-1 px-3 py-1.5 text-xs border border-black/10 dark:border-white/10 hover:border-white/20 text-zinc-700 dark:text-zinc-300 hover:text-white rounded-lg transition cursor-pointer shrink-0"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-green-400" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
               {copied ? "Copied!" : "Copy URL"}
             </button>
             <a

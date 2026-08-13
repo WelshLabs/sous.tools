@@ -1,10 +1,10 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { OmniBarPresentation } from './OmniBarPresentation';
-import { OmniBarProvider } from './OmniBarProvider';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { OmniBarPresentation } from "./OmniBarPresentation";
+import { OmniBarProvider } from "./OmniBarProvider";
 
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   usePathname: () => "/",
   useRouter: () => ({
     push: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('next/navigation', () => ({
 // Mock global fetch to prevent invalid URL or request failures
 beforeEach(() => {
   global.fetch = vi.fn().mockImplementation((url: string) => {
-    if (url.includes('/api/integrations/status')) {
+    if (url.includes("/api/integrations/status")) {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ data: [] }),
@@ -32,24 +32,24 @@ beforeEach(() => {
 
 // Mock browser dependencies that might not exist in jsdom using constructor classes
 vi.stubGlobal(
-  'webkitSpeechRecognition',
+  "webkitSpeechRecognition",
   class {
     start() {}
     stop() {}
-  }
+  },
 );
 
 vi.stubGlobal(
-  'ResizeObserver',
+  "ResizeObserver",
   class {
     observe() {}
     unobserve() {}
     disconnect() {}
-  }
+  },
 );
 
 // Mock socket.io-client including the "io" export
-vi.mock('socket.io-client', () => {
+vi.mock("socket.io-client", () => {
   const mockSocket = {
     on: vi.fn(),
     off: vi.fn(),
@@ -62,17 +62,19 @@ vi.mock('socket.io-client', () => {
   };
 });
 
-describe('OmniBar', () => {
-  it('renders OmniBarProvider and presentation components without crashing', () => {
+describe("OmniBar", () => {
+  it("renders OmniBarProvider and presentation components without crashing", () => {
     const { container } = render(
       <OmniBarProvider>
         <OmniBarPresentation />
-      </OmniBarProvider>
+      </OmniBarProvider>,
     );
     expect(container).toBeTruthy();
-    
+
     // Check that the trigger button is rendered
-    const triggerButtons = screen.getAllByRole('button', { name: "Open sous chef" });
+    const triggerButtons = screen.getAllByRole("button", {
+      name: "Open sous chef",
+    });
     expect(triggerButtons.length).toBeGreaterThan(0);
   });
 });

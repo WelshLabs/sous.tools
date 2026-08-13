@@ -162,16 +162,20 @@ export function OmniChatWindow({
                     >
                       {msg.attachments && msg.attachments.length > 0 && (
                         <div className="flex gap-3 mb-3">
-                          {msg.attachments.map((att: any, i: number) => 
+                          {msg.attachments.map((att: any, i: number) =>
                             att.url ? (
                               <motion.div
                                 key={i}
                                 layoutId={`active-task-container-${msg.id}-${i}`}
                                 className="w-32 h-24 rounded-xl overflow-hidden border border-accent/30 shadow-glow-accent relative shrink-0"
                               >
-                                <img src={att.url} alt="Attachment thumbnail" className="w-full h-full object-cover" />
+                                <img
+                                  src={att.url}
+                                  alt="Attachment thumbnail"
+                                  className="w-full h-full object-cover"
+                                />
                               </motion.div>
-                            ) : null
+                            ) : null,
                           )}
                         </div>
                       )}
@@ -192,16 +196,15 @@ export function OmniChatWindow({
                                 </Link>
                               );
                             }
-                            return (
-                              <span key={i}>
-                                {part}
-                              </span>
-                            );
+                            return <span key={i}>{part}</span>;
                           })}
                       </span>
                       {msg.timestamp && (
                         <span className="mt-1.5 block text-[10px] uppercase tracking-[.16em] text-muted-foreground">
-                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(msg.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       )}
                     </div>

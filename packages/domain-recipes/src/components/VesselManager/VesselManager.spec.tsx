@@ -35,7 +35,7 @@ describe("VesselManagerView", () => {
         setVolumeUnit={() => {}}
         onSaveVessel={async () => {}}
         onDeleteVessel={async () => {}}
-      />
+      />,
     );
 
     expect(screen.getByText("Vessels Manager")).toBeInTheDocument();
@@ -61,10 +61,10 @@ describe("VesselManagerView", () => {
         setVolumeUnit={() => {}}
         onSaveVessel={async () => {}}
         onDeleteVessel={async () => {}}
-      />
+      />,
     );
 
-    // The overlay is the first div. 
+    // The overlay is the first div.
     const buttons = screen.getAllByRole("button");
     // Find close button in header
     fireEvent.click(buttons[0]);

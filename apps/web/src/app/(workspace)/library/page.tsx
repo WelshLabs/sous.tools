@@ -30,9 +30,12 @@ export default async function LibraryPage() {
   return (
     <div className="p-6 md:p-8 space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight">Private Library</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          Private Library
+        </h1>
         <p className="text-muted-foreground text-sm">
-          Scraped textbooks and culinary references, available for offline reading.
+          Scraped textbooks and culinary references, available for offline
+          reading.
         </p>
       </div>
 
@@ -53,14 +56,21 @@ export default async function LibraryPage() {
               key={book.id}
               href={`/library/${book.id}`}
               className="group flex flex-col gap-2 rounded-xl border p-3 transition-all hover:border-primary/50 hover:shadow-lg"
-              style={{ borderColor: "var(--color-border)", background: "var(--color-card)" }}
+              style={{
+                borderColor: "var(--color-border)",
+                background: "var(--color-card)",
+              }}
             >
               <div
                 className="aspect-[3/4] rounded-lg overflow-hidden flex items-center justify-center"
                 style={{ background: "var(--color-muted)" }}
               >
                 {book.coverUrl ? (
-                  <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
+                  <img
+                    src={book.coverUrl}
+                    alt={book.title}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <BookOpen className="w-10 h-10 text-muted-foreground" />
                 )}
@@ -69,7 +79,9 @@ export default async function LibraryPage() {
                 {book.title}
               </p>
               {book.author && (
-                <p className="text-[10px] text-muted-foreground truncate">{book.author}</p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {book.author}
+                </p>
               )}
             </Link>
           ))}

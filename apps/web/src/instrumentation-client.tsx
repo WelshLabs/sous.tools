@@ -1,5 +1,5 @@
-'use client';
-import initializeBrowserLogger from '@soustools/logger/browser';
+"use client";
+import initializeBrowserLogger from "@soustools/logger/browser";
 
 export function register() {
   initializeBrowserLogger();

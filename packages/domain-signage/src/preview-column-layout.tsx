@@ -1,6 +1,11 @@
 "use client";
 
-import { type ColumnLayoutSlide, type SignageSlide, type MenuItemStyles, type PosItem } from "@soustools/api-types";
+import {
+  type ColumnLayoutSlide,
+  type SignageSlide,
+  type MenuItemStyles,
+  type PosItem,
+} from "@soustools/api-types";
 import { PreviewBlockRenderer } from "./preview-block-renderer";
 import { DEFAULT_MENU_ITEM_STYLES } from "./config-migration";
 
@@ -22,11 +27,18 @@ export const PreviewColumnLayout: React.FC<PreviewColumnLayoutProps> = ({
   return (
     <div className="flex flex-col h-full w-full p-2 bg-[oklch(0.08_0.01_260)] rounded-lg overflow-hidden">
       <div className="flex items-center justify-between mb-2 border-b border-border pb-1">
-        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Layout Preview</span>
+        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+          Layout Preview
+        </span>
       </div>
       <div className="flex flex-col gap-1.5 h-full items-stretch overflow-y-auto">
-        {blocks.map(block => (
-          <PreviewBlockRenderer key={block.id} block={block} items={items} styles={menuItemStyles || DEFAULT_MENU_ITEM_STYLES} />
+        {blocks.map((block) => (
+          <PreviewBlockRenderer
+            key={block.id}
+            block={block}
+            items={items}
+            styles={menuItemStyles || DEFAULT_MENU_ITEM_STYLES}
+          />
         ))}
       </div>
     </div>

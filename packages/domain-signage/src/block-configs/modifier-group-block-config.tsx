@@ -23,9 +23,9 @@ export function ModifierGroupBlockConfig({
       <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
         Contextual Modifiers
       </label>
-      {(!parentExplodedItem ||
-        parentExplodedItem.type !== "ExplodedItemBlock" ||
-        !(parentExplodedItem as any).menuItemId) ? (
+      {!parentExplodedItem ||
+      parentExplodedItem.type !== "ExplodedItemBlock" ||
+      !(parentExplodedItem as any).menuItemId ? (
         <div className="text-xs text-muted-foreground p-2 italic bg-card rounded border border-border">
           This block must be placed inside an Exploded Item container with a
           Base POS Item selected.

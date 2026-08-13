@@ -20,7 +20,7 @@ export function POSRegisterView({
     <div
       className={cn(
         "flex h-screen w-full flex-col overflow-hidden bg-background font-sans text-foreground",
-        className
+        className,
       )}
     >
       {/* Top Navigation / Header slot if provided */}

@@ -17,7 +17,10 @@ export interface CreateItemDto {
   nutrition_macros?: Record<string, unknown>;
 }
 
-export type UpdateItemDto = Partial<CreateItemDto> & { force_usda_sync?: boolean; usda_query?: string };
+export type UpdateItemDto = Partial<CreateItemDto> & {
+  force_usda_sync?: boolean;
+  usda_query?: string;
+};
 
 export interface ClassifiedDietInfo {
   is_dairy: boolean;
@@ -40,7 +43,7 @@ export function classifyItemDietAndAllergens(
     is_seafood: boolean;
     is_meat: boolean;
     is_animal_product: boolean;
-  }
+  },
 ): ClassifiedDietInfo {
   const allergens = [...initialAllergens];
   let is_dairy = initialStates.is_dairy;
@@ -69,7 +72,9 @@ export function classifyItemDietAndAllergens(
   if (fullName.match(/peanut/)) {
     if (!allergens.includes("peanuts")) allergens.push("peanuts");
   }
-  if (fullName.match(/almond|walnut|pecan|cashew|pistachio|macadamia|hazelnut/)) {
+  if (
+    fullName.match(/almond|walnut|pecan|cashew|pistachio|macadamia|hazelnut/)
+  ) {
     if (!allergens.includes("tree_nuts")) allergens.push("tree_nuts");
   }
   if (fullName.match(/soy|edamame|tofu|tempeh/)) {
@@ -85,7 +90,11 @@ export function classifyItemDietAndAllergens(
     is_animal_product = true;
     if (!allergens.includes("shellfish")) allergens.push("shellfish");
   }
-  if (fullName.match(/beef|pork|chicken|turkey|lamb|bacon|sausage|meat|steak|veal/)) {
+  if (
+    fullName.match(
+      /beef|pork|chicken|turkey|lamb|bacon|sausage|meat|steak|veal/,
+    )
+  ) {
     is_meat = true;
     is_animal_product = true;
   }
