@@ -132,8 +132,19 @@ async function main() {
     return;
   }
 
+  // Early Exit Check: Ensure the issue actually has a trigger label before spinning up the agent
+  const labelsCheckRes = runCommand(`gh issue view ${issueNumber} --repo ${repo} --json labels -q ".labels[].name"`, true);
+  const currentLabels = labelsCheckRes.stdout || "";
+  
+  const isReady = currentLabels.includes("Ready") || currentLabels.includes("agent:ready");
+  if (!isReady && !commentBody) {
+    console.log("[ORCHESTRATOR] Issue does not have 'Ready' label and no comment was provided. Exiting cleanly.");
+    return;
+  }
+
   // Update Labels (reacts to standard labels, sets internal agent labels)
   runCommand(`gh issue edit ${issueNumber} --repo ${repo} --remove-label "Ready,agent:ready,agent:needs-input" --add-label "In Progress,agent:in-progress"`);
+
   
   runCommand(`git fetch origin`);
   runCommand(`git checkout issue-${issueNumber} || git checkout -b issue-${issueNumber}`);
