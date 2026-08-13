@@ -4,87 +4,83 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache hit, replaying logs a9c50672d1bbe6a5
+cache hit, replaying logs 5ffa998be804098d
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache hit, replaying logs b5a3c034bb0ac1a3
+cache hit, replaying logs 47b81ee91d81a371
+$ tsc
+::endgroup::
+::group::@soustools/logger:build
+cache hit, replaying logs 1dc457416b957c58
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
-cache miss, executing 3d6cf44cbbecf005
+cache miss, executing 5addbf37ad4fcfe7
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 6f1b9a7dcc996264
-$ tsc
-::endgroup::
 ::group::@soustools/logger:typecheck
-cache miss, executing 35af99eb2095927b
+cache miss, executing 347e933f17a59f1c
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-types:typecheck
-cache miss, executing 70d9e028fecc0ac6
+cache miss, executing 07d534ebca2cf5db
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/api-client:typecheck
-cache miss, executing d00b012353301427
+cache miss, executing 293204ed0a3eae44
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
-cache miss, executing 343d75acef881693
+cache miss, executing 912d460485c461b9
 $ tsc --noEmit
 ::endgroup::
 ::group::cli:typecheck
-cache miss, executing d65b4ac77d78c66d
+cache miss, executing dbc556573cd814f0
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/design-system:typecheck
-cache miss, executing 79cce80a5dfa972e
+cache miss, executing 1249a4d84e7f8d1a
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-settings:typecheck
-cache miss, executing 47d419e9d1e9e6d3
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing 75f6e02082382dc6
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 4f769f8b6b43dc2a
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 0029f7bc347a0593
+cache miss, executing 805ddca6065e76ef
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/setup-portal:typecheck
-cache miss, executing 7a81229f48a15c76
+cache miss, executing 0ecf24ebb70ec447
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing b32f73b6952f341f
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 7289807d0859250c
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing 65466daf1f8be654
 $ tsc --noEmit
 ::endgroup::
 ::group::pos-simulator:typecheck
-cache miss, executing 136961e035248a3c
+cache miss, executing bbf18bbcabe33db0
 $ tsc --noEmit
 ::endgroup::
-[;31mweb:typecheck[;0m
-cache miss, executing 2febb7153edd9fb3
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing d9b745c5faecbefc
 $ tsc --noEmit
-src/app/(workspace)/notifications/page.tsx(3,16): error TS6133: 'CardHeader' is declared but its value is never read.
-src/app/(workspace)/notifications/page.tsx(3,28): error TS6133: 'CardTitle' is declared but its value is never read.
-[ELIFECYCLE] Command failed with exit code 2.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 96ad2580ae4e8f03
+$ tsc --noEmit
+::endgroup::
 ::group::api:typecheck
-cache miss, executing 52b36765e7fa0d37
+cache miss, executing 608cb080a6477489
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::web:typecheck
+cache miss, executing 3715b0d79080381b
+$ tsc --noEmit
 ::endgroup::
 
- Tasks:    17 successful, 19 total
-Cached:    2 cached, 19 total
-  Time:    56.771s 
-Failed:    web#typecheck
+ Tasks:    19 successful, 19 total
+Cached:    3 cached, 19 total
+  Time:    41.651s 
 
