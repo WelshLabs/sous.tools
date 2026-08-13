@@ -23,69 +23,67 @@ $ tsc --noEmit
 cache miss, executing ef686139e4f1194f
 $ tsc --noEmit
 ::endgroup::
-[;31m@soustools/api-client:typecheck[;0m
-cache miss, executing 4c3d5ffdbbc43bc5
-$ tsc --noEmit
-src/react.tsx(3,74): error TS2307: Cannot find module 'react' or its corresponding type declarations.
-src/react.tsx(4,10): error TS2305: Module '"./websocket"' has no exported member 'SocketManager'.
-src/react.tsx(4,25): error TS2305: Module '"./websocket"' has no exported member 'SocketConfig'.
-src/react.tsx(29,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
-[ELIFECYCLE] Command failed with exit code 2.
-::group::pos-simulator:typecheck
-cache miss, executing 445b7554811582d8
-::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 9de6dce89ec59ec1
-::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing f352138e54e498a7
-::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 20716b602dd75dbe
-::endgroup::
-::group::@soustools/design-system:typecheck
-cache miss, executing 45b2ea2e623b6d28
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::cli:typecheck
-cache miss, executing 79e8b738ed2d3fea
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 00fe955f6490c59d
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::@soustools/api-types:typecheck
 cache miss, executing 0451ae38c7285536
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/config:typecheck
 cache miss, executing 9e5cb6b3ed1d3d25
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/api-client:typecheck
+cache miss, executing 5baa1e1d301862ad
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/design-system:typecheck
+cache miss, executing 9c6df6a3fa571b1a
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing a8ef8cf373d25221
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing f11972004f43d93b
+$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-pos:typecheck
-cache miss, executing ced64116b1d33ec0
+cache miss, executing dfaf8fd92e8fe34d
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 51ecbf1731827af4
+$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-inventory:typecheck
-cache miss, executing 4abcf7914920b294
+cache miss, executing db9216b5504bee0d
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing ce812c6fc052097e
+$ tsc --noEmit
+::endgroup::
+::group::cli:typecheck
+cache miss, executing 79e8b738ed2d3fea
+$ tsc --noEmit
+::endgroup::
+::group::pos-simulator:typecheck
+cache miss, executing 8b7e56a0d1737e3c
+$ tsc --noEmit
 ::endgroup::
 ::group::api:typecheck
 cache miss, executing f9ed2fd01af9a7ea
 $ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
+[;31mweb:typecheck[;0m
+cache miss, executing d991123892dd9d4c
+$ tsc --noEmit
+src/app/(workspace)/notifications/page.tsx(3,16): error TS6133: 'CardHeader' is declared but its value is never read.
+src/app/(workspace)/notifications/page.tsx(3,28): error TS6133: 'CardTitle' is declared but its value is never read.
+[ELIFECYCLE] Command failed with exit code 2.
 
- Tasks:    5 successful, 18 total
-Cached:    3 cached, 18 total
-  Time:    14.311s 
-Failed:    @soustools/api-client#typecheck
+ Tasks:    18 successful, 19 total
+Cached:    3 cached, 19 total
+  Time:    55.912s 
+Failed:    web#typecheck
 

@@ -7,13 +7,13 @@
 cache miss, executing 79a5f26fef198fc2
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/mcp-server:lint
-cache miss, executing b1f5b5b72570ed0e
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing 26caae6c323679df
 $ tsc
+::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing b1f5b5b72570ed0e
+$ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:lint
 cache miss, executing fe6459002ff53be9
@@ -27,41 +27,12 @@ $ eslint . --max-warnings 0
 cache miss, executing 123509fdca9f2f42
 $ tsc
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing 39a1ea9ba015e78e
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/logger:build
 cache miss, executing f7bdbd5b2e359bf4
 $ tsc
 ::endgroup::
-[;31m@soustools/api-client:lint[;0m
-cache miss, executing 023e25744d6b4846
-$ eslint . --max-warnings 0
-
-/home/runner/work/sous.tools/sous.tools/packages/api-client/src/react.tsx
-  3:1  error  Imports "ReactNode" are only used as type     @typescript-eslint/consistent-type-imports
-  4:1  error  Imports "SocketConfig" are only used as type  @typescript-eslint/consistent-type-imports
-
-✖ 2 problems (2 errors, 0 warnings)
-  2 errors and 0 warnings potentially fixable with the `--fix` option.
-
-[ELIFECYCLE] Command failed with exit code 1.
-::group::api:lint
-cache miss, executing fd83e76edab98b4c
-::endgroup::
-::group::web:lint
-cache miss, executing 4ae66ede474a235b
-::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing fd23578838c8523a
-$ eslint . --max-warnings 0
-::endgroup::
-::group::pos-simulator:lint
-cache miss, executing 53fb7dab448deae5
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 2937f779cf15fe85
+[;31m@soustools/domain-inventory:lint[;0m
+cache miss, executing 151404b636f6e4da
 $ eslint . --max-warnings 0
 
 /home/runner/work/sous.tools/sous.tools/packages/domain-inventory/src/components/AnswerView/AnswerView.tsx
@@ -112,36 +83,86 @@ $ eslint . --max-warnings 0
 ✖ 41 problems (2 errors, 39 warnings)
 
 [ELIFECYCLE] Command failed with exit code 1.
+::group::api:lint
+cache miss, executing fd83e76edab98b4c
 ::endgroup::
 ::group::cli:lint
 cache miss, executing d43853b820518cf2
 ::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing 20096cbe8f4e987b
+::group::web:lint
+cache miss, executing 2bb5d4157ee48648
 ::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing 1ceb672445d2481d
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
+::group::@soustools/setup-portal:lint
+cache miss, executing 90c1ceb73bf247f0
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 6e7149eae26d1c97
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing 0892e69b0c8a18b3
+cache miss, executing f7f522ac6cc9ab24
 $ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing 69bfa185066b118e
+::group::@soustools/api-client:lint
+cache miss, executing 269073ea68f99cd1
 $ eslint . --max-warnings 0
+
+/home/runner/work/sous.tools/sous.tools/packages/api-client/src/react.tsx
+  3:1  error  Imports "ReactNode" are only used as type                                 @typescript-eslint/consistent-type-imports
+  4:1  error  Imports "WebSocketClientOptions" are only used as type                    @typescript-eslint/consistent-type-imports
+  5:1  error  All imports in the declaration are only used as types. Use `import type`  @typescript-eslint/consistent-type-imports
+
+✖ 3 problems (3 errors, 0 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-signage:lint
-cache miss, executing b5f41561e90c086b
+cache miss, executing 2cfed6da117d83c1
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing 62d10610bdcd91ca
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing e01909f084b29137
+$ eslint . --max-warnings 0
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.container.tsx
+   29:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.container.tsx
+  130:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 11 problems (0 errors, 11 warnings)
+
+ESLint found too many warnings (maximum: 0).
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing 166c5968072051de
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing fd23578838c8523a
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    9 successful, 20 total
+ Tasks:    7 successful, 20 total
 Cached:    0 cached, 20 total
-  Time:    17.549s 
-Failed:    @soustools/api-client#lint
+  Time:    17.78s 
+Failed:    @soustools/domain-inventory#lint
 
