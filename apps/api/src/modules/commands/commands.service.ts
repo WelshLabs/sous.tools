@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { OmnibarCommandPayload, OmniMessage,
-} from "@soustools/api-types";
+import { OmnibarCommandPayload, OmniMessage } from "@soustools/api-types";
 import { ALL_COMMAND_TOOLS } from "./commands-tools";
 import { PurchaseOrdersService } from "../items/purchase-orders.service";
 import { VendorsService } from "../items/vendors.service";
@@ -30,13 +29,18 @@ export class CommandsService {
     return chatHistory.map((msg) => {
       let textContent = msg.content || "";
       if (msg.attachments && msg.attachments.length > 0) {
-        const urls = msg.attachments.map((a: any) => a.url || a.publicUrl || a.fileUrl).filter(Boolean);
+        const urls = msg.attachments
+          .map((a: any) => a.url || a.publicUrl || a.fileUrl)
+          .filter(Boolean);
         if (urls.length > 0) {
           textContent += `\n[Attached File URLs: ${urls.join(", ")}]`;
         }
       }
       return {
-        role: msg.role === "model" || msg.role === "agent_step" ? "assistant" : "user",
+        role:
+          msg.role === "model" || msg.role === "agent_step"
+            ? "assistant"
+            : "user",
         content: textContent,
       };
     });
@@ -69,9 +73,10 @@ export class CommandsService {
           messages: [
             {
               role: "system",
-              content: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains '[1 attachment]', or indicates they are uploading a file, invoice, or recipe, you MUST immediately call the ingest_document tool with the attachment url."
+              content:
+                "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains '[1 attachment]', or indicates they are uploading a file, invoice, or recipe, you MUST immediately call the ingest_document tool with the attachment url.",
             },
-            ...contents
+            ...contents,
           ],
           tools: ALL_COMMAND_TOOLS.map((t: any) => ({
             type: "function",
@@ -80,27 +85,47 @@ export class CommandsService {
               description: t.description,
               parameters: {
                 type: "object",
+                // @TODO: If any tool takes an array (e.g. items: { type: "string" }) or an enum (e.g. enum: ["invoice", "recipe"]), Gemini or LiteLLM will receive an incomplete schema and fail parameter validation.
+                // Pass t.parameters directly or strip only unnecessary keys while keeping nested structures intact
                 properties: Object.fromEntries(
-                  Object.entries(t.parameters.properties).map(([k, v]: [string, any]) => [
-                    k,
-                    { type: v.type.toLowerCase(), description: v.description }
-                  ])
+                  Object.entries(t.parameters.properties).map(
+                    ([k, v]: [string, any]) => [
+                      k,
+                      {
+                        type: v.type.toLowerCase(),
+                        description: v.description,
+                      },
+                    ],
+                  ),
                 ),
-                required: t.parameters.required || []
-              }
-            }
-          }))
+                required: t.parameters.required || [],
+              },
+            },
+          })),
         };
 
         const res = await fetch("https://ai.sous.tools/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`
+            Authorization: `Bearer sk-1234`,
           },
-          body: JSON.stringify(llmPayload)
+          body: JSON.stringify(llmPayload),
         });
-        
+
+        this.logger.log(
+          "LiteLLMServed By:",
+          res.headers.get("x-litellm-model-id"),
+        );
+        this.logger.log(
+          "LiteLLM Provider:",
+          res.headers.get("x-litellm-model-api-base"),
+        );
+        this.logger.log(
+          "LiteLLM Call ID:",
+          res.headers.get("x-litellm-call-id"),
+        );
+
         if (!res.ok) {
           const errBody = await res.text();
           throw new Error(`LiteLLM Error: ${res.status} ${errBody}`);
@@ -278,7 +303,10 @@ export class CommandsService {
                   is_read: false,
                 });
               } catch (notifErr) {
-                this.logger.warn("Failed to create notification record:", notifErr);
+                this.logger.warn(
+                  "Failed to create notification record:",
+                  notifErr,
+                );
               }
 
               // Emit render_component message so /answer UI switches to UniversalReviewComponent skeleton loader
@@ -286,7 +314,10 @@ export class CommandsService {
                 emitMessage({
                   id: randomUUID(),
                   role: "render_component" as any,
-                  content: JSON.stringify({ componentName: "INGESTION_REVIEW", props: { reviewId: review.id } }),
+                  content: JSON.stringify({
+                    componentName: "INGESTION_REVIEW",
+                    props: { reviewId: review.id },
+                  }),
                   timestamp: new Date(),
                 });
               }
@@ -303,12 +334,16 @@ export class CommandsService {
               };
             }
 
-          // ─── V1 ReAct Tool Routing ────────────────────────────────────────────
-
+            // ─── V1 ReAct Tool Routing ────────────────────────────────────────────
           } else if (functionName === "execute_cypher_query") {
             agentMessageContent = `Querying the Core Matrix...`;
             if (emitMessage)
-              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
 
             try {
               const result = await this.neo4jService.runQuery(
@@ -316,45 +351,76 @@ export class CommandsService {
                 (args.params as Record<string, any>) ?? {},
               );
               const records = result.records.map((r: any) => r.toObject());
-              toolResponseData = { success: true, records, count: records.length };
+              toolResponseData = {
+                success: true,
+                records,
+                count: records.length,
+              };
             } catch (err: any) {
               toolResponseData = { success: false, error: err.message };
             }
-
           } else if (functionName === "render_ui_component") {
             agentMessageContent = `Rendering ${args.componentName} component...`;
             if (emitMessage) {
-              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
               // Emit a dedicated socket event so the frontend can intercept and swap the bubble
               emitMessage({
                 id: randomUUID(),
                 role: "render_component" as any,
-                content: JSON.stringify({ componentName: args.componentName, props: args.props }),
+                content: JSON.stringify({
+                  componentName: args.componentName,
+                  props: args.props,
+                }),
                 timestamp: new Date(),
               });
             }
-            toolResponseData = { success: true, rendered: true, componentName: args.componentName };
-
+            toolResponseData = {
+              success: true,
+              rendered: true,
+              componentName: args.componentName,
+            };
           } else if (functionName === "enqueue_background_task") {
             agentMessageContent = `Queuing background task: ${args.jobName}...`;
             if (emitMessage)
-              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
 
             try {
               const job = await this.ingestionQueue.add(
                 args.jobName as string,
                 args.payload as Record<string, any>,
-                { priority: (args.priority as number) ?? 5, attempts: 3, backoff: { type: "exponential", delay: 2000 } },
+                {
+                  priority: (args.priority as number) ?? 5,
+                  attempts: 3,
+                  backoff: { type: "exponential", delay: 2000 },
+                },
               );
-              toolResponseData = { success: true, jobId: job.id, jobName: args.jobName };
+              toolResponseData = {
+                success: true,
+                jobId: job.id,
+                jobName: args.jobName,
+              };
             } catch (err: any) {
               toolResponseData = { success: false, error: err.message };
             }
-
           } else if (functionName === "ingest_knowledge_source") {
             agentMessageContent = `Ingesting knowledge source (${args.scope} scope)...`;
             if (emitMessage)
-              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
 
             try {
               const job = await this.ingestionQueue.add(
@@ -368,18 +434,29 @@ export class CommandsService {
                 },
                 { attempts: 3, backoff: { type: "exponential", delay: 2000 } },
               );
-              toolResponseData = { success: true, jobId: job.id, scope: args.scope };
+              toolResponseData = {
+                success: true,
+                jobId: job.id,
+                scope: args.scope,
+              };
             } catch (err: any) {
               toolResponseData = { success: false, error: err.message };
             }
-
           } else if (functionName === "search_the_web") {
             agentMessageContent = `Searching the web for: "${args.query}"...`;
             if (emitMessage)
-              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
 
             const maxResults = (args.maxResults as number) || 5;
-            const searchResults = await this.performWebSearch(args.query as string, maxResults);
+            const searchResults = await this.performWebSearch(
+              args.query as string,
+              maxResults,
+            );
             toolResponseData = {
               success: true,
               query: args.query,
@@ -414,7 +491,12 @@ export class CommandsService {
           } else if (functionName === "get_pos_sales_stats") {
             agentMessageContent = `Querying real POS sales from Postgres database...`;
             if (emitMessage) {
-              emitMessage({ id: randomUUID(), role: "agent_step", content: agentMessageContent, timestamp: new Date() });
+              emitMessage({
+                id: randomUUID(),
+                role: "agent_step",
+                content: agentMessageContent,
+                timestamp: new Date(),
+              });
             }
 
             const { data: dbOrders } = await supabase
@@ -423,16 +505,44 @@ export class CommandsService {
               .eq("state", "COMPLETED");
 
             const orders = dbOrders || [];
-            const totalRevenueVal = orders.reduce((sum, o) => sum + Number(o.total_money || 0), 0);
+            const totalRevenueVal = orders.reduce(
+              (sum, o) => sum + Number(o.total_money || 0),
+              0,
+            );
 
-            const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-            const weeklyRevenueMap: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+            const daysOfWeek = [
+              "Sun",
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri",
+              "Sat",
+            ];
+            const weeklyRevenueMap: Record<string, number> = {
+              Mon: 0,
+              Tue: 0,
+              Wed: 0,
+              Thu: 0,
+              Fri: 0,
+              Sat: 0,
+              Sun: 0,
+            };
             orders.forEach((o) => {
               const day = daysOfWeek[new Date(o.created_at).getDay()];
-              weeklyRevenueMap[day] = (weeklyRevenueMap[day] || 0) + Number(o.total_money || 0);
+              weeklyRevenueMap[day] =
+                (weeklyRevenueMap[day] || 0) + Number(o.total_money || 0);
             });
 
-            const orderedDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+            const orderedDays = [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri",
+              "Sat",
+              "Sun",
+            ];
             const revenueChartData = orderedDays.map((day) => ({
               name: day,
               value: Math.round(weeklyRevenueMap[day] || 0),
@@ -454,7 +564,7 @@ export class CommandsService {
             role: "tool",
             tool_call_id: response.tool_calls[0].id,
             name: functionName,
-            content: JSON.stringify(toolResponseData)
+            content: JSON.stringify(toolResponseData),
           });
         } else if (response.content) {
           isDone = true;
@@ -538,7 +648,8 @@ export class CommandsService {
       }
 
       const html = await res.text();
-      const results: Array<{ title: string; snippet: string; url: string }> = [];
+      const results: Array<{ title: string; snippet: string; url: string }> =
+        [];
 
       const sanitize = (text: string) =>
         text
@@ -571,7 +682,9 @@ export class CommandsService {
         if (titleMatch) {
           let rawUrl = titleMatch[1];
           if (rawUrl.includes("uddg=")) {
-            const searchParams = new URLSearchParams(rawUrl.split("?")[1] || "");
+            const searchParams = new URLSearchParams(
+              rawUrl.split("?")[1] || "",
+            );
             rawUrl = searchParams.get("uddg") || rawUrl;
           }
 
@@ -596,7 +709,9 @@ export class CommandsService {
         ) {
           let rawUrl = aMatch[1];
           if (rawUrl.includes("uddg=")) {
-            const searchParams = new URLSearchParams(rawUrl.split("?")[1] || "");
+            const searchParams = new URLSearchParams(
+              rawUrl.split("?")[1] || "",
+            );
             rawUrl = searchParams.get("uddg") || rawUrl;
           }
           const title = sanitize(aMatch[2]);
@@ -608,12 +723,17 @@ export class CommandsService {
 
       return results;
     } catch (err: any) {
-      this.logger.error(`Error performing web search: ${err.message}`, err.stack);
+      this.logger.error(
+        `Error performing web search: ${err.message}`,
+        err.stack,
+      );
       return [];
     }
   }
 
-  async getConversationMessages(conversationId: string): Promise<OmniMessage[]> {
+  async getConversationMessages(
+    conversationId: string,
+  ): Promise<OmniMessage[]> {
     const { data, error } = await supabase
       .from("chat_messages")
       .select("*")
@@ -634,10 +754,14 @@ export class CommandsService {
     }));
   }
 
-
-  public async persistMessage(conversationId: string, orgId: string, userId: string | undefined, msg: OmniMessage) {
+  public async persistMessage(
+    conversationId: string,
+    orgId: string,
+    userId: string | undefined,
+    msg: OmniMessage,
+  ) {
     if (!conversationId) return;
-    
+
     // Ensure conversation exists
     const { data: existingConv } = await supabase
       .from("chat_conversations")
@@ -648,7 +772,8 @@ export class CommandsService {
     if (!existingConv) {
       await supabase.from("chat_conversations").insert({
         id: conversationId,
-        organization_id: orgId !== "unknown" ? orgId : "d0000000-0000-0000-0000-000000000000",
+        organization_id:
+          orgId !== "unknown" ? orgId : "d0000000-0000-0000-0000-000000000000",
         user_id: userId || null,
         title: "New Conversation",
       });
@@ -663,5 +788,3 @@ export class CommandsService {
     });
   }
 }
-
-

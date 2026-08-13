@@ -173,6 +173,7 @@ services:
     volumes:
       - ./litellm_config.yaml:/app/config.yaml
     environment:
+      # - LITELLM_LOG=DEBUG
       - LITELLM_MASTER_KEY=sk-1234
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
@@ -182,6 +183,8 @@ services:
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
     networks:
       - traefik_public
     depends_on:
