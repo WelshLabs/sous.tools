@@ -3,31 +3,111 @@
    • Running lint in 19 packages
    • Remote caching disabled
 
-::group::@soustools/eslint-config:lint
-cache miss, executing e969fe704007358a
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/mcp-server:lint
 cache miss, executing 9eb020de849961c4
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/config:lint
-cache miss, executing 0d0bc33abc779b53
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing f7369844ab6b2d1d
 $ tsc
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing b42b1a92c2e1f34e
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/config:build
 cache miss, executing a71e8d2a52cb9ae9
 $ tsc
 ::endgroup::
-[;31m@soustools/api-client:lint[;0m
+::group::@soustools/logger:lint
+cache miss, executing 6b266a30ab40b6c5
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/eslint-config:lint
+cache miss, executing e969fe704007358a
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-settings:lint
+cache miss, executing 1b63de642f456bb2
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing ec82401ff8a831b9
+$ tsc
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing b42b1a92c2e1f34e
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:lint
+cache miss, executing 0d0bc33abc779b53
+$ eslint . --max-warnings 0
+::endgroup::
+[;31m@soustools/domain-inventory:lint[;0m
+cache miss, executing fffa9b9ad3e0129f
+$ eslint . --max-warnings 0
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-inventory/src/components/AnswerView/AnswerView.tsx
+   69:34  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+   72:14  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+   74:24  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+   82:20  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+   93:71  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+   94:26  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  100:22  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  134:42  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  138:20  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  140:30  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  155:26  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  162:6   warning  React Hook useEffect has missing dependencies: 'chatHistory', 'initialReviewId', 'setChatHistory', 'setIsProcessing', and 'socket'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  186:48  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  228:6   warning  React Hook useMemo has an unnecessary dependency: 'initialReviewId'. Either exclude it or remove the dependency array                                                                   react-hooks/exhaustive-deps
+  250:53  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  268:56  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+  276:34  error    'err' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                          @typescript-eslint/no-unused-vars
+  284:54  warning  Unexpected any. Specify a different type                                                                                                                                                @typescript-eslint/no-explicit-any
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-inventory/src/components/ReviewComponent/UniversalReviewComponent.tsx
+   23:20  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   34:42  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   48:81  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   50:32  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   74:42  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+   98:54  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  101:72  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  102:45  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  112:60  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  122:25  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  124:50  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  128:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  132:56  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  142:53  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  159:25  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  161:50  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  165:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  170:87  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  184:81  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  204:6   warning  React Hook useEffect has a missing dependency: 'persistPayloadToBackend'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  208:39  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  210:62  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  211:23  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  213:45  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  217:41  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  220:1   error    File has too many lines (372). Maximum allowed is 200                                                                       max-lines
+  231:53  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  232:73  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  236:19  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  351:48  warning  Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+
+✖ 48 problems (2 errors, 46 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.
+::group::cli:lint
+cache miss, executing 5e4d90c20923bc73
+::endgroup::
+::group::pos-simulator:lint
+cache miss, executing 843bef4a6b398b9b
+::endgroup::
+::group::web:lint
+cache miss, executing 3bc5804fdc307ccd
+::endgroup::
+::group::@soustools/api-client:lint
 cache miss, executing d57eeea97946c666
 $ eslint . --max-warnings 0
 
@@ -39,24 +119,15 @@ $ eslint . --max-warnings 0
 ✖ 3 problems (3 errors, 0 warnings)
   3 errors and 0 warnings potentially fixable with the `--fix` option.
 
-[ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/domain-recipes:lint
-cache miss, executing 4b5a62b2691bf59e
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing 9b280fd47e254f01
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 6b266a30ab40b6c5
-$ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/design-system:lint
 cache miss, executing d168d23b155780ce
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-recipes:lint
+cache miss, executing 4b5a62b2691bf59e
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -65,24 +136,24 @@ cache miss, executing 33996bcb883c9976
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing fffa9b9ad3e0129f
+::group::@soustools/setup-portal:lint
+cache miss, executing bf904f4f02471065
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing 1b63de642f456bb2
+::group::api:lint
+cache miss, executing 175de5dd53f22601
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing ec82401ff8a831b9
-$ tsc
+::group::@soustools/domain-signage:lint
+cache miss, executing 9b280fd47e254f01
+$ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    6 successful, 15 total
-Cached:    0 cached, 15 total
-  Time:    17.311s 
-Failed:    @soustools/api-client#lint
+ Tasks:    9 successful, 20 total
+Cached:    0 cached, 20 total
+  Time:    11.29s 
+Failed:    @soustools/domain-inventory#lint
 
