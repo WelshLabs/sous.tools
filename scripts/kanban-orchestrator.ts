@@ -1,3 +1,21 @@
+/**
+ * Kanban Orchestrator Script (Typescript)
+ * 
+ * GitHub Labels Documentation:
+ * 
+ * Standard Workflow Labels (Trigger the agent via Webhook):
+ * - "Ready"       : Starts the agent loop on a new task. Generates the first commit.
+ * - "Review"      : Set automatically by the agent when it finishes a task successfully.
+ * - "Done"        : Merges the PR immediately.
+ * 
+ * Internal/State Labels (Managed automatically by this script):
+ * - "agent:in-progress" : Agent is currently working on the task.
+ * - "agent:needs-input" : Agent is blocked and waiting for human response.
+ * 
+ * Modifiers (To override default behavior):
+ * - "agent:heavy"       : Forces the agent to use the 'heavy' LLM model instead of the 'light' model for the first pass.
+ */
+
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
@@ -26,6 +44,45 @@ function runCommand(command: string, hideOutput: boolean = false): { stdout: str
   }
 }
 
+// Function to natively fetch RAG context from Qdrant via LiteLLM embeddings
+async function fetchQdrantContext(queryText: string): Promise<string> {
+  try {
+    const LITELLM_API_KEY = "sk-1234";
+    const LITELLM_URL = "http://litellm:4000/v1/embeddings";
+    const QDRANT_URL = "http://qdrant:6333/collections/conarwelsh_sous_tools/points/search";
+
+    // 1. Get embedding for the issue title
+    const embedRes = await fetch(LITELLM_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LITELLM_API_KEY}` },
+      body: JSON.stringify({ model: "nomic-embed-text", input: queryText })
+    });
+    if (!embedRes.ok) throw new Error("LiteLLM Embedding failed");
+    const embedData = await embedRes.json();
+    const vector = embedData.data[0].embedding;
+
+    // 2. Search Qdrant
+    const searchRes = await fetch(QDRANT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vector, limit: 3, with_payload: true })
+    });
+    if (!searchRes.ok) throw new Error("Qdrant search failed");
+    const searchData = await searchRes.json();
+
+    const results = searchData.result || [];
+    const contextLines = results.map((r: any) => r.payload.content || r.payload.text).filter(Boolean);
+    
+    return contextLines.length > 0 
+      ? contextLines.join("\n\n---\n\n") 
+      : "No relevant architectural rules found in Qdrant.";
+
+  } catch (err: any) {
+    console.error(`[QDRANT ERROR] Failed to fetch RAG context: ${err.message}`);
+    return "Failed to connect to Qdrant.";
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   if (args.length === 0) {
@@ -49,9 +106,11 @@ async function main() {
   const LITELLM_URL = "http://litellm:4000/v1";
   
   // 2. Tiered Model Routing Configuration
+  // Note: We use the 'openai/' prefix here because Aider requires an OpenAI-compatible endpoint.
+  // These map to 'light' and 'heavy' aliases configured in litellm_config.yaml.
   const MODELS = {
-    fast: "openai/gemini-1.5-flash",
-    heavy: "openai/gemini-1.5-pro",
+    fast: "openai/light",
+    heavy: "openai/heavy",
   };
 
   console.log(`[ORCHESTRATOR] Processing event: ${event} for issue #${issueNumber}`);
@@ -92,10 +151,8 @@ async function main() {
   const readMatches = commentBody?.match(/\/read\s+([^\s]+)/g) || [];
   const extraFilesToRead = readMatches.map(m => m.split(' ')[1]).join(' ');
 
-  // Query Qdrant for related architectural context (Mocked API call for now, grabbing relevant markdown)
-  // In a robust implementation, this makes a direct HTTP POST to http://qdrant:6333
   console.log(`[ORCHESTRATOR] Querying Qdrant for context related to: ${issueTitle}`);
-  const qdrantContext = "Remember to strictly follow Domain-Driven Design constraints. No Supabase access outside apps/api.";
+  const qdrantContext = await fetchQdrantContext(issueTitle);
 
   let attempt = 0;
   const maxAttempts = 3;
@@ -114,9 +171,9 @@ async function main() {
 
     if (attempt === 1) {
       if (event === "ready" || event === "Ready") {
-        promptContent = `[TASK]: ${issueTitle}\n[DETAILS]: ${issueBody || "None"}\n[RECENT CONVERSATION]: ${recentComments}\n[QDRANT MEMORY]: ${qdrantContext}\n\nRules:\n1. Read AGENTS.md for architectural constraints.\n2. Keep changes minimal and focused.\n3. If blocked, output EXACTLY: NEEDS_INPUT: <question> and stop immediately.\n`;
+        promptContent = `[TASK]: ${issueTitle}\n[DETAILS]: ${issueBody || "None"}\n[RECENT CONVERSATION]: ${recentComments}\n[QDRANT MEMORY]:\n${qdrantContext}\n\nRules:\n1. Read AGENTS.md for architectural constraints.\n2. Keep changes minimal and focused.\n3. If blocked, output EXACTLY: NEEDS_INPUT: <question> and stop immediately.\n`;
       } else {
-        promptContent = `[HUMAN FEEDBACK]: ${commentBody || "None"}\n[RECENT CONVERSATION]: ${recentComments}\n[QDRANT MEMORY]: ${qdrantContext}\n\nComplete task: ${issueTitle}\n`;
+        promptContent = `[HUMAN FEEDBACK]: ${commentBody || "None"}\n[RECENT CONVERSATION]: ${recentComments}\n[QDRANT MEMORY]:\n${qdrantContext}\n\nComplete task: ${issueTitle}\n`;
       }
     } else {
       console.log(`\n[SELF-REPAIR] Attempt ${attempt}/${maxAttempts}. Swapping to Heavy model for reasoning...`);

@@ -13,35 +13,29 @@ model_list:
   # 2. BULLETPROOF FREE LOCAL OLLAMA DEVOPS & CODER EXECUTION AGENTS
   # Using Ollama's native OpenAI-compatible endpoint (http://ollama:11434/v1)
   # =========================================================================
-  - model_name: coder
+  - model_name: light
     litellm_params:
       model: openai/qwen2.5-coder:7b
       api_base: http://ollama:11434/v1
       drop_params: true # qwen2.5-coder:7b does not support function_call schema
       fallbacks: ["gemini-3.6-flash"]
 
-  - model_name: devops
+  - model_name: heavy
     litellm_params:
-      model: openai/qwen2.5-coder:7b
-      api_base: http://ollama:11434/v1
-      drop_params: true # qwen2.5-coder:7b does not support function_call schema
-      fallbacks: ["gemini-3.6-flash"]
-
-  - model_name: triage
-    litellm_params:
-      model: openai/qwen2.5-coder:7b
-      api_base: http://ollama:11434/v1
-      drop_params: true # qwen2.5-coder:7b does not support function_call schema
-      fallbacks: ["gemini-3.6-flash"]
+      model: gemini/gemini-3.1-pro-preview
+      api_key: os.environ/GEMINI_API_KEY
+      drop_params: true 
+      fallbacks: ["claude-3-7-sonnet"]
 
   # =========================================================================
   # 3. DIRECT OLLAMA OPENAI-COMPATIBLE ENDPOINTS & BASE CLOUD MODELS
   # =========================================================================
-  - model_name: qwen2.5-coder:7b
+  - model_name: coder
     litellm_params:
       model: openai/qwen2.5-coder:7b
       api_base: http://ollama:11434/v1
       drop_params: true
+      fallbacks: ["gemini-3.6-flash"]
 
   - model_name: nomic-embed-text
     litellm_params:
