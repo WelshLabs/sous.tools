@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -17,7 +18,14 @@ import {
   TicketTimeChart,
   useOmnibarContext,
 } from "@soustools/design-system";
-import { Sparkles, Bot, CheckSquare, Search, BookOpen, ExternalLink } from "lucide-react";
+import {
+  Sparkles,
+  Bot,
+  CheckSquare,
+  Search,
+  BookOpen,
+  ExternalLink,
+} from "lucide-react";
 import { api } from "@soustools/api-client";
 
 export interface AnswerViewProps {
@@ -25,17 +33,25 @@ export interface AnswerViewProps {
   initialReviewId?: string;
 }
 
-export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewProps) {
-  const { chatHistory, setChatHistory, isProcessing, setIsProcessing } = useOmnibarContext();
+export function AnswerView({
+  initialQuery = "",
+  initialReviewId,
+}: AnswerViewProps) {
+  const { chatHistory, setChatHistory, isProcessing, setIsProcessing, socket } =
+    useOmnibarContext();
   const [activeReviewId] = useState<string | undefined>(initialReviewId);
-  const [prepListItems, setPrepListItems] = useState<Array<{ id: string; text: string; done: boolean }>>([
+  const [prepListItems, setPrepListItems] = useState<
+    Array<{ id: string; text: string; done: boolean }>
+  >([
     { id: "1", text: "Dice 10lbs yellow onions for soup base", done: false },
     { id: "2", text: "Trim & portion ribeye loins (12oz steaks)", done: false },
     { id: "3", text: "Simmer beef bone broth (8 hours low heat)", done: true },
     { id: "4", text: "Grate Gruyère cheese for crock topping", done: false },
   ]);
 
-  const [realRevenueData, setRealRevenueData] = useState<Array<{ name: string; value: number }>>([
+  const [realRevenueData, setRealRevenueData] = useState<
+    Array<{ name: string; value: number }>
+  >([
     { name: "Mon", value: 193 },
     { name: "Tue", value: 213 },
     { name: "Wed", value: 130 },
@@ -44,11 +60,18 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     { name: "Sat", value: 0 },
     { name: "Sun", value: 0 },
   ]);
-  const [realTicketTimeData, setRealTicketTimeData] = useState<Array<{ time: string; minutes: number }>>([]);
+  const [realTicketTimeData, setRealTicketTimeData] = useState<
+    Array<{ time: string; minutes: number }>
+  >([]);
 
   // Fetch real database dashboard metrics for revenue and ticket time charts
   useEffect(() => {
-    api.GET("/dashboard/stats" as any, { params: { query: { orgId: "d0000000-0000-0000-0000-000000000000" } } as any })
+    api
+      .GET("/dashboard/stats" as any, {
+        params: {
+          query: { orgId: "d0000000-0000-0000-0000-000000000000" },
+        } as any,
+      })
       .then(({ data }: any) => {
         if (data?.revenue && Array.isArray(data.revenue)) {
           setRealRevenueData(data.revenue);
@@ -57,13 +80,17 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
           setRealTicketTimeData(data.ticketTimes);
         }
       })
-      .catch((err: any) => console.error("Failed to fetch real dashboard metrics:", err));
+      .catch((err: any) =>
+        console.error("Failed to fetch real dashboard metrics:", err),
+      );
   }, []);
 
   // Handle URL query prompt when visiting /answer?q=... directly
   useEffect(() => {
     if (initialQuery && initialQuery.trim().length > 0) {
-      const hasUserMsg = chatHistory.some((m) => m.role === "user" && m.content.includes(initialQuery));
+      const hasUserMsg = chatHistory.some(
+        (m) => m.role === "user" && m.content.includes(initialQuery),
+      );
       if (!hasUserMsg) {
         setIsProcessing(true);
         const newMsg = {
@@ -73,50 +100,43 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
           timestamp: new Date(),
         };
 
-        // Call backend API to fetch conversational response for query
-        api.POST("/commands/execute" as any, {
-          body: { command: initialQuery, history: [...chatHistory, newMsg] } as any,
-        })
-          .then(({ data }: any) => {
-            setIsProcessing(false);
-            if (data?.response) {
-              setChatHistory([
-                ...chatHistory,
-                newMsg,
-                {
-                  id: crypto.randomUUID(),
-                  role: "model" as const,
-                  content: data.response,
-                  timestamp: new Date(),
-                },
-              ]);
-            } else {
-              setChatHistory([
-                ...chatHistory,
-                newMsg,
-                {
-                  id: crypto.randomUUID(),
-                  role: "model" as const,
-                  content: `Heard, Chef. I have queried our backend databases for "${initialQuery}". Here are the active sales metrics and operational insights.`,
-                  timestamp: new Date(),
-                },
-              ]);
-            }
-          })
-          .catch((err: any) => {
-            console.error("Failed to execute answer query:", err);
-            setIsProcessing(false);
-            setChatHistory([
-              ...chatHistory,
-              newMsg,
-              {
-                id: crypto.randomUUID(),
-                role: "model" as const,
-                content: `Heard, Chef. Systems online for query "${initialQuery}". How would you like to refine this calculation or workflow?`,
-                timestamp: new Date(),
-              },
-            ]);
+        if (socket && socket.connected) {
+          socket.emit("executeCommand", {
+            chatHistory: [...chatHistory, newMsg],
+            source: "omnibar",
+            path: "/home",
+            context: {},
+            conversationId: activeReviewId,
           });
+        } else {
+          // Fallback to REST API if socket isn't ready
+          api
+            .POST("/commands/execute" as any, {
+              body: {
+                command: initialQuery,
+                history: [...chatHistory, newMsg],
+              } as any,
+            })
+            .then(({ data }: any) => {
+              setIsProcessing(false);
+              if (data?.response) {
+                setChatHistory([
+                  ...chatHistory,
+                  newMsg,
+                  {
+                    id: crypto.randomUUID(),
+                    role: "model" as const,
+                    content: data.response,
+                    timestamp: new Date(),
+                  },
+                ]);
+              }
+            })
+            .catch((err: any) => {
+              console.error("Failed to execute answer query:", err);
+              setIsProcessing(false);
+            });
+        }
       }
     }
   }, [initialQuery]);
@@ -128,13 +148,17 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
   }, [chatHistory, initialQuery]);
 
   const latestModelMessage = useMemo(() => {
-    const modelMsgs = chatHistory.filter((m) => m.role === "model" || m.role === "agent_step");
+    const modelMsgs = chatHistory.filter(
+      (m) => m.role === "model" || m.role === "agent_step",
+    );
     return modelMsgs[modelMsgs.length - 1]?.content || null;
   }, [chatHistory]);
 
   // Detect component render directive from tool execution
   const componentDirective = useMemo(() => {
-    const renderMsg = chatHistory.find((m) => m.role === ("render_component" as any));
+    const renderMsg = chatHistory.find(
+      (m) => m.role === ("render_component" as any),
+    );
     if (renderMsg && renderMsg.content) {
       try {
         return JSON.parse(renderMsg.content);
@@ -153,7 +177,13 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     const q = (latestUserMessage || "").toLowerCase().trim();
     if (!q) return null;
 
-    if (activeReviewId || q.includes("invoice") || q.includes("ingest") || q.includes("review") || q.includes("document")) {
+    if (
+      activeReviewId ||
+      q.includes("invoice") ||
+      q.includes("ingest") ||
+      q.includes("review") ||
+      q.includes("document")
+    ) {
       return "INGESTION_REVIEW";
     }
     if (q.includes("revenue") || q.includes("sales") || q.includes("chart")) {
@@ -168,7 +198,11 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
     if (q.includes("search") || q.includes("find") || q.includes("google")) {
       return "SEARCH_RESULTS";
     }
-    if (q.includes("item") || q.includes("inventory") || q.includes("supplier")) {
+    if (
+      q.includes("item") ||
+      q.includes("inventory") ||
+      q.includes("supplier")
+    ) {
       return "INGREDIENT_TABLE";
     }
 
@@ -177,31 +211,38 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
 
   const togglePrepItem = (id: string) => {
     setPrepListItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
+      prev.map((item) =>
+        item.id === id ? { ...item, done: !item.done } : item,
+      ),
     );
   };
 
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-6 pb-24">
       {/* ── Conversational Answer Card ── */}
-      <Card className="w-full border-cyan-500/20 bg-zinc-950/80 backdrop-blur-xl shadow-2xl p-6">
+      <Card className="w-full border-border bg-card/80 backdrop-blur-xl shadow-2xl p-6">
         <div className="flex items-start gap-4">
-          <div className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+          <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div className="flex-1 flex flex-col gap-3">
             {latestModelMessage ? (
-              <div className="prose prose-invert max-w-none text-zinc-100 text-base leading-relaxed font-sans">
+              <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
                 <p className="whitespace-pre-wrap">{latestModelMessage}</p>
               </div>
             ) : isProcessing ? (
-              <div className="flex items-center gap-3 text-sm text-cyan-400 font-mono">
-                <Bot className="w-4 h-4 animate-bounce text-cyan-400" />
-                <span>Heard, Chef. Systems online and processing your prompt...</span>
+              <div className="flex items-center gap-3 text-sm text-primary font-mono">
+                <Bot className="w-4 h-4 animate-bounce text-primary" />
+                <span>
+                  Heard, Chef. Systems online and processing your prompt...
+                </span>
               </div>
             ) : (
-              <div className="prose prose-invert max-w-none text-zinc-100 text-base leading-relaxed font-sans">
-                <p>Heard, Chef. Systems are online and ready. What&apos;s the move — prepping, ordering, or digging into data?</p>
+              <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
+                <p>
+                  Heard, Chef. Systems are online and ready. What&apos;s the
+                  move — prepping, ordering, or digging into data?
+                </p>
               </div>
             )}
           </div>
@@ -210,42 +251,50 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
 
       {/* ── Polymorphic Data Views (ONLY rendered when real matched data exists) ── */}
       {track2Type === "INGESTION_REVIEW" && (
-        <UniversalReviewComponent reviewId={componentDirective?.props?.reviewId || activeReviewId} />
+        <UniversalReviewComponent
+          reviewId={componentDirective?.props?.reviewId || activeReviewId}
+        />
       )}
 
       {track2Type === "REVENUE_CHART" && (
-        <Card className="w-full border-zinc-800 bg-zinc-950/80 p-6 backdrop-blur-xl shadow-2xl">
+        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
               Weekly Revenue & Sales Metrics
             </CardTitle>
-            <p className="text-xs text-zinc-400">Real-time Square & POS aggregate sales trends from database</p>
+            <p className="text-xs text-muted-foreground">
+              Real-time Square & POS aggregate sales trends from database
+            </p>
           </CardHeader>
           <RevenueChart data={realRevenueData} />
         </Card>
       )}
 
       {track2Type === "TICKET_TIME_CHART" && (
-        <Card className="w-full border-zinc-800 bg-zinc-950/80 p-6 backdrop-blur-xl shadow-2xl">
+        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
               Kitchen Ticket Fulfillment Times
             </CardTitle>
-            <p className="text-xs text-zinc-400">KDS throttle metrics and station turnaround speeds from database</p>
+            <p className="text-xs text-muted-foreground">
+              KDS throttle metrics and station turnaround speeds from database
+            </p>
           </CardHeader>
           <TicketTimeChart data={realTicketTimeData} />
         </Card>
       )}
 
       {track2Type === "PREP_LIST" && (
-        <Card className="w-full border-zinc-800 bg-zinc-950/80 p-6 backdrop-blur-xl shadow-2xl flex flex-col gap-4">
+        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl flex flex-col gap-4">
           <CardHeader className="px-0 pt-0 pb-2 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                <CheckSquare className="w-5 h-5 text-cyan-400" />
+              <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+                <CheckSquare className="w-5 h-5 text-primary" />
                 Kitchen Prep Checklist
               </CardTitle>
-              <p className="text-xs text-zinc-400">Interactive prep list — speak to Omnibar to alter items</p>
+              <p className="text-xs text-muted-foreground">
+                Interactive prep list — speak to Omnibar to alter items
+              </p>
             </div>
           </CardHeader>
           <div className="flex flex-col gap-2">
@@ -255,15 +304,15 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
                 onClick={() => togglePrepItem(item.id)}
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                   item.done
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 line-through opacity-75"
-                    : "bg-zinc-900/60 border-zinc-800 text-zinc-100 hover:border-cyan-500/40"
+                    ? "bg-primary/10 border-primary/30 text-primary line-through opacity-75"
+                    : "bg-muted/60 border-border text-foreground hover:border-primary/40"
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={item.done}
                   onChange={() => {}}
-                  className="w-4 h-4 rounded accent-cyan-500 cursor-pointer"
+                  className="w-4 h-4 rounded accent-primary cursor-pointer"
                 />
                 <span className="text-sm font-medium">{item.text}</span>
               </div>
@@ -273,10 +322,10 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
       )}
 
       {track2Type === "INGREDIENT_TABLE" && (
-        <Card className="w-full border-zinc-800 bg-zinc-950/80 p-6 backdrop-blur-xl shadow-2xl">
+        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-cyan-400" />
+            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-primary" />
               Inventory Master Items Ledger
             </CardTitle>
           </CardHeader>
@@ -291,22 +340,40 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="font-semibold text-white">Yellow Onions 5lb</TableCell>
+                <TableCell className="font-semibold text-foreground">
+                  Yellow Onions 5lb
+                </TableCell>
                 <TableCell>Produce</TableCell>
                 <TableCell>5 lb bag</TableCell>
-                <TableCell><Chip selected={true} size="sm">In Stock</Chip></TableCell>
+                <TableCell>
+                  <Chip selected={true} size="sm">
+                    In Stock
+                  </Chip>
+                </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-semibold text-white">Beef Ribeye Lip On</TableCell>
+                <TableCell className="font-semibold text-foreground">
+                  Beef Ribeye Lip On
+                </TableCell>
                 <TableCell>Meat</TableCell>
                 <TableCell>15 lb case</TableCell>
-                <TableCell><Chip selected={true} size="sm">In Stock</Chip></TableCell>
+                <TableCell>
+                  <Chip selected={true} size="sm">
+                    In Stock
+                  </Chip>
+                </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-semibold text-white">Heavy Cream 40%</TableCell>
+                <TableCell className="font-semibold text-foreground">
+                  Heavy Cream 40%
+                </TableCell>
                 <TableCell>Dairy</TableCell>
                 <TableCell>1 Gallon</TableCell>
-                <TableCell><Chip selected={true} size="sm">In Stock</Chip></TableCell>
+                <TableCell>
+                  <Chip selected={true} size="sm">
+                    In Stock
+                  </Chip>
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -314,25 +381,27 @@ export function AnswerView({ initialQuery = "", initialReviewId }: AnswerViewPro
       )}
 
       {track2Type === "SEARCH_RESULTS" && (
-        <Card className="w-full border-zinc-800 bg-zinc-950/80 p-6 backdrop-blur-xl shadow-2xl flex flex-col gap-4">
+        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl flex flex-col gap-4">
           <CardHeader className="px-0 pt-0 pb-2">
-            <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <Search className="w-5 h-5 text-cyan-400" />
+            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Search className="w-5 h-5 text-primary" />
               Web & Culinary Knowledge Search Results
             </CardTitle>
           </CardHeader>
           <div className="flex flex-col gap-3">
-            <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/60 flex flex-col gap-1">
+            <div className="p-4 rounded-xl border border-border bg-muted/60 flex flex-col gap-1">
               <a
                 href="https://fdc.nal.usda.gov"
                 target="_blank"
                 rel="noreferrer"
-                className="text-sm font-bold text-cyan-400 hover:underline flex items-center gap-1.5"
+                className="text-sm font-bold text-primary hover:underline flex items-center gap-1.5"
               >
-                USDA FoodData Central — Yellow Onions Raw <ExternalLink className="w-3.5 h-3.5" />
+                USDA FoodData Central — Yellow Onions Raw{" "}
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
-              <p className="text-xs text-zinc-400">
-                FDC ID #170000. Contains 40 kcal per 100g. Standard culinary raw yellow onion nutritional vector data.
+              <p className="text-xs text-muted-foreground">
+                FDC ID #170000. Contains 40 kcal per 100g. Standard culinary raw
+                yellow onion nutritional vector data.
               </p>
             </div>
           </div>

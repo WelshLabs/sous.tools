@@ -49,15 +49,32 @@ export function useOmniBarHotkeys({
     setIsProcessing(true);
     setErrorMessage(null);
 
-    // Always route to /answer page when submitting a query from Omnibar
-    router.push(textToSubmit ? `/answer?q=${encodeURIComponent(textToSubmit)}` : "/answer");
+    // Always route to /home with chat session when submitting a query
+    const searchParams = new URLSearchParams(window.location.search);
+    const existingChatId = searchParams.get("chat");
+
+    if (pathname !== "/home" || !existingChatId) {
+      const newChatId = existingChatId || crypto.randomUUID();
+      const params = new URLSearchParams();
+      params.set("chat", newChatId);
+      if (textToSubmit) params.set("prompt", textToSubmit);
+      router.push(`/home?${params.toString()}`);
+
+      if (pathname !== "/home") {
+        setIsProcessing(false);
+        setIsOpen(false);
+        return;
+      }
+    }
     setIsOpen(true);
 
     // Build a human-readable user message that reflects what was submitted
     const attachmentSummary = hasFiles
       ? `[${stagedFiles.length} attachment${stagedFiles.length > 1 ? "s" : ""}]`
       : "";
-    const userContent = [attachmentSummary, textToSubmit].filter(Boolean).join(" ");
+    const userContent = [attachmentSummary, textToSubmit]
+      .filter(Boolean)
+      .join(" ");
 
     const newUserMessage: OmniMessage = {
       id: crypto.randomUUID(),

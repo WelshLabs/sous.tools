@@ -41,15 +41,37 @@ export class CommandsGateway {
   /**
    * Broadcast real-time ingestion events to connected WebSocket clients
    */
-  emitIngestionUpdate(payload: { reviewId: string; parsedData: any; status: string }) {
-    this.logger.log(`Emitting WebSocket ingestion:updated for review ${payload.reviewId}`);
+  emitIngestionUpdate(payload: {
+    reviewId: string;
+    conversationId?: string;
+    parsedData?: any;
+    status: string;
+    message?: string;
+  }) {
+    this.logger.log(
+      `Emitting WebSocket ingestion:updated for review ${payload.reviewId}`,
+    );
     if (this.server) {
-      this.server.emit("ingestion:updated", payload);
-      this.server.emit("notification:new", {
-        title: "Ingestion Processing Complete",
-        message: `Review document ${payload.reviewId.substring(0, 8)} is ready.`,
-        link: `/answer?reviewId=${payload.reviewId}`,
-      });
+      if (payload.conversationId) {
+        this.server
+          .to(`conversation-${payload.conversationId}`)
+          .emit("ingestion:updated", payload);
+      } else {
+        this.server.emit("ingestion:updated", payload);
+      }
+
+      if (payload.status === "COMPLETED") {
+        this.server.emit("notification:new", {
+          title: "Ingestion Processing Complete",
+          message: `Review document ${payload.reviewId.substring(0, 8)} is ready.`,
+          link: `/answer?reviewId=${payload.reviewId}`,
+          payload: {
+            type: "INGESTION_READY",
+            reviewId: payload.reviewId,
+            conversationId: payload.conversationId,
+          },
+        });
+      }
     }
   }
 

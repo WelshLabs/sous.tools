@@ -18,6 +18,7 @@ const remotePatterns = [];
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 if (supabaseUrl) {
   try {
+    // eslint-disable-next-line no-undef
     const url = new URL(supabaseUrl);
     remotePatterns.push({
       protocol: url.protocol.replace(":", ""),
@@ -25,7 +26,7 @@ if (supabaseUrl) {
       port: url.port || "",
       pathname: "/**",
     });
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
@@ -33,6 +34,7 @@ if (supabaseUrl) {
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 if (apiUrl) {
   try {
+    // eslint-disable-next-line no-undef
     const url = new URL(apiUrl);
     remotePatterns.push({
       protocol: url.protocol.replace(":", ""),
@@ -40,7 +42,7 @@ if (apiUrl) {
       port: url.port || "",
       pathname: "/**",
     });
-  } catch (e) {
+  } catch {
     // ignore
   }
 }

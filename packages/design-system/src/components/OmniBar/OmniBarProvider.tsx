@@ -11,17 +11,12 @@ import { useGlobalDrag } from "./use-global-drag.hook";
 import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
 
-
 interface IntegrationStatus {
   provider: string;
   connected: boolean;
 }
 
-export function OmniBarProvider({
-  children,
-}: {
-  children?: React.ReactNode;
-}) {
+export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   const isFocusPage = pathname === "/home";
 
@@ -40,14 +35,12 @@ export function OmniBarProvider({
 
   const handleClearHistory = () => setChatHistory([]);
 
-  const { socket, errorMessage, setErrorMessage } =
-    useOmniSocket();
+  const { socket, errorMessage, setErrorMessage } = useOmniSocket();
 
   useEffect(() => {
     setSocket(socket);
   }, [socket, setSocket]);
 
-  
   useGlobalDrag(
     () => {
       setIsDragging(true);
@@ -57,17 +50,24 @@ export function OmniBarProvider({
     },
     () => {
       setIsDragging(false);
-    }
+    },
   );
 
   // Fetch integration status for Google Drive
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch("/api/integrations/status");
-        if (res.ok) {
-          const payload = await res.json() as { data: IntegrationStatus[] } | IntegrationStatus[];
-          const list: IntegrationStatus[] = Array.isArray(payload) ? payload : payload.data || [];
+        const { data, error } = await api.GET("/integrations/status" as any, {
+          params: {
+            query: { orgId: "d0000000-0000-0000-0000-000000000000" },
+          } as any,
+        });
+        if (data && !error) {
+          const payload = data as
+            { data: IntegrationStatus[] } | IntegrationStatus[];
+          const list: IntegrationStatus[] = Array.isArray(payload)
+            ? payload
+            : payload.data || [];
           const google = list.find((item) => item.provider === "GOOGLE");
           setIsGoogleDriveConnected(!!google?.connected);
         }
@@ -78,7 +78,6 @@ export function OmniBarProvider({
     fetchStatus();
   }, [setIsGoogleDriveConnected]);
 
-  
   // Ensure modal overlay is closed on route changes to prevent backdrop flashes
   useEffect(() => {
     setIsOpen(false);
@@ -94,8 +93,15 @@ export function OmniBarProvider({
     setInputText(e.target.value);
   };
 
-  const { handleKeyDown, handleSubmit } = useOmniBarHotkeys({ socket, isFocusPage, pathname, setErrorMessage });
-  const { isListening, handleMicClick } = useSpeechRecognition({ onTranscript: setInputText });
+  const { handleKeyDown, handleSubmit } = useOmniBarHotkeys({
+    socket,
+    isFocusPage,
+    pathname,
+    setErrorMessage,
+  });
+  const { isListening, handleMicClick } = useSpeechRecognition({
+    onTranscript: setInputText,
+  });
 
   // Global escape listener for when textarea is not focused
   useEffect(() => {

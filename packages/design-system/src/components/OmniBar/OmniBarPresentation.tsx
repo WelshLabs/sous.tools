@@ -1,7 +1,8 @@
+/* eslint-disable max-lines */
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
 import { OmniInputPill } from "./OmniInputPill";
@@ -26,7 +27,12 @@ export interface OmniBarPresentationProps {
   onClearHistory: () => void;
 }
 
-const springTransition = { type: "spring" as const, stiffness: 300, damping: 30, mass: 0.9 };
+const springTransition = {
+  type: "spring" as const,
+  stiffness: 300,
+  damping: 30,
+  mass: 0.9,
+};
 
 const glowLoopTransition = {
   boxShadow: {
@@ -52,7 +58,8 @@ export function OmniBarPresentation({
   onSubmit,
 }: OmniBarPresentationProps) {
   const pathname = usePathname();
-  const isAnswerPage = pathname === "/answer";
+  const searchParams = useSearchParams();
+  const isAnswerPage = pathname === "/home" && searchParams?.has("chat");
   const { isDragging, stagedFiles } = useOmnibarContext();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -82,8 +89,8 @@ export function OmniBarPresentation({
         )}
       </AnimatePresence>
 
-      {/* ── MODE 1: /home — Dead Center Omnibar (NO FAB, NO BACKDROP) ── */}
-      {isFocusPage && (
+      {/* ── MODE 1: /home (without chat) — Dead Center Omnibar (NO FAB, NO BACKDROP) ── */}
+      {isFocusPage && !isAnswerPage && (
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center">
           <div className="w-full flex flex-col justify-center gap-0 pointer-events-auto">
             <StagingArea files={stagedFiles} />
@@ -104,7 +111,7 @@ export function OmniBarPresentation({
         </div>
       )}
 
-      {/* ── MODE 2: /answer — Fixed right below AppBar for continued conversation (NO FAB, NO BACKDROP) ── */}
+      {/* ── MODE 2: /home?chat=... — Fixed right below AppBar for continued conversation (NO FAB, NO BACKDROP) ── */}
       {isAnswerPage && (
         <div className="fixed top-[72px] left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-start">
           <div className="w-full flex flex-col justify-center gap-0 pointer-events-auto shadow-2xl">

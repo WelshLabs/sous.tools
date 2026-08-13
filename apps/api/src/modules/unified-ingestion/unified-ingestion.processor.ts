@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import { Job } from "bullmq";
@@ -16,7 +17,12 @@ export interface UnifiedIngestionJobData {
   source: string;
   sourceName?: string;
   sourceDocumentUrl?: string;
-  pagesInput?: Array<{ pageNumber: number; imageUrl?: string; rawText?: string }>;
+  pagesInput?: Array<{
+    pageNumber: number;
+    imageUrl?: string;
+    rawText?: string;
+  }>;
+  conversationId?: string;
 }
 
 import { CommandsGateway } from "../commands/commands.gateway";
@@ -28,23 +34,46 @@ export class UnifiedIngestionProcessor extends WorkerHost {
   constructor(
     private readonly ingestionService: UnifiedIngestionService,
     private readonly usdaResolver: UsdaResolverService,
-    private readonly commandsGateway: CommandsGateway
+    private readonly commandsGateway: CommandsGateway,
   ) {
     super();
   }
 
   async process(job: Job<UnifiedIngestionJobData>): Promise<any> {
-    this.logger.log(`Processing unified ingestion job ${job.id} for org ${job.data.organizationId}`);
-    const { organizationId, userId, source, sourceName, sourceDocumentUrl, pagesInput } = job.data;
+    this.logger.log(
+      `Processing unified ingestion job ${job.id} for org ${job.data.organizationId}`,
+    );
+    const {
+      organizationId,
+      userId,
+      source,
+      sourceName,
+      sourceDocumentUrl,
+      pagesInput,
+      conversationId,
+    } = job.data;
 
     const pagesData: IngestionPage[] = [];
-    const inputPages = pagesInput && pagesInput.length > 0
-      ? pagesInput
-      : [{ pageNumber: 1, rawText: "Sample Document Page Content" }];
+    const inputPages =
+      pagesInput && pagesInput.length > 0
+        ? pagesInput
+        : [{ pageNumber: 1, rawText: "Sample Document Page Content" }];
 
     for (const pInput of inputPages) {
       this.logger.log(`Extracting blocks for page ${pInput.pageNumber}...`);
-      const blocks = await this.extractPageBlocks(pInput.rawText || "", pInput.imageUrl);
+      if (conversationId) {
+        this.commandsGateway.emitIngestionUpdate({
+          reviewId: "pending",
+          conversationId,
+          status: "IN_PROGRESS",
+          message: "Analyzing recipe image...",
+        });
+      }
+      const blocks = await this.extractPageBlocks(
+        pInput.rawText || "",
+        pInput.imageUrl,
+        conversationId,
+      );
       pagesData.push({
         pageNumber: pInput.pageNumber,
         imageUrl: pInput.imageUrl,
@@ -71,6 +100,11 @@ export class UnifiedIngestionProcessor extends WorkerHost {
         message: `Review document "${sourceName || "Document"}" is ready for review.`,
         link: `/answer?reviewId=${reviewRecord.id}`,
         is_read: false,
+        payload: {
+          type: "INGESTION_READY",
+          reviewId: reviewRecord.id,
+          conversationId,
+        },
       });
     } catch (notifErr) {
       this.logger.warn("Failed to create notification:", notifErr);
@@ -80,8 +114,10 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     try {
       this.commandsGateway.emitIngestionUpdate({
         reviewId: reviewRecord.id,
+        conversationId,
         parsedData: { pages: pagesData },
         status: "COMPLETED",
+        message: "Done!",
       });
     } catch (wsErr) {
       this.logger.warn("Failed to emit WebSocket ingestion update:", wsErr);
@@ -92,7 +128,8 @@ export class UnifiedIngestionProcessor extends WorkerHost {
 
   private async extractPageBlocks(
     rawText: string,
-    _imageUrl?: string
+    _imageUrl?: string,
+    conversationId?: string,
   ): Promise<ExtractedBlock[]> {
     const host = config.OLLAMA_HOST || "http://127.0.0.1:11434";
     let ollamaResponse: any = null;
@@ -125,9 +162,10 @@ Page input: ${rawText.substring(0, 1500)}`;
       this.logger.warn("Local Ollama Vision extract fallback:", err);
     }
 
-    const rawBlocks: any[] = Array.isArray(ollamaResponse) && ollamaResponse.length > 0
-      ? ollamaResponse
-      : this.buildFallbackBlocks(rawText);
+    const rawBlocks: any[] =
+      Array.isArray(ollamaResponse) && ollamaResponse.length > 0
+        ? ollamaResponse
+        : this.buildFallbackBlocks(rawText);
 
     const processedBlocks: ExtractedBlock[] = [];
 
@@ -135,14 +173,26 @@ Page input: ${rawText.substring(0, 1500)}`;
       const b = rawBlocks[i];
       const blockId = `block-${Date.now()}-${i}`;
       const blockType = b.type || "PROSE";
-      const bbox: [number, number, number, number] = b.bbox || [0, 0, 1000, 1000];
+      const bbox: [number, number, number, number] = b.bbox || [
+        0, 0, 1000, 1000,
+      ];
 
       if (blockType === "RECIPE") {
+        if (conversationId) {
+          this.commandsGateway.emitIngestionUpdate({
+            reviewId: "pending",
+            conversationId,
+            status: "IN_PROGRESS",
+            message: "Extracting ingredients...",
+          });
+        }
         const ingredients = [];
         for (const ing of b.ingredients || [{ rawName: "Sample Ingredient" }]) {
           const guessName = ing.rawName || "Ingredient";
-          const queryEmbedding = await this.ingestionService.getEmbedding(guessName);
-          const tenantMatches = await this.ingestionService.searchMasterItemsTop5(queryEmbedding);
+          const queryEmbedding =
+            await this.ingestionService.getEmbedding(guessName);
+          const tenantMatches =
+            await this.ingestionService.searchMasterItemsTop5(queryEmbedding);
           const usdaMatches = await this.usdaResolver.searchTop5(guessName);
 
           ingredients.push({
@@ -169,10 +219,14 @@ Page input: ${rawText.substring(0, 1500)}`;
         });
       } else if (blockType === "INVOICE") {
         const lineItems = [];
-        for (const item of b.lineItems || [{ rawName: "Sample Line Item", unitPrice: 10, extendedPrice: 10 }]) {
+        for (const item of b.lineItems || [
+          { rawName: "Sample Line Item", unitPrice: 10, extendedPrice: 10 },
+        ]) {
           const guessName = item.rawName || "Item";
-          const queryEmbedding = await this.ingestionService.getEmbedding(guessName);
-          const tenantMatches = await this.ingestionService.searchMasterItemsTop5(queryEmbedding);
+          const queryEmbedding =
+            await this.ingestionService.getEmbedding(guessName);
+          const tenantMatches =
+            await this.ingestionService.searchMasterItemsTop5(queryEmbedding);
           const usdaMatches = await this.usdaResolver.searchTop5(guessName);
 
           lineItems.push({
@@ -201,7 +255,8 @@ Page input: ${rawText.substring(0, 1500)}`;
           id: blockId,
           type: "PROSE",
           bbox,
-          content: b.content || rawText || "Standard document prose block content.",
+          content:
+            b.content || rawText || "Standard document prose block content.",
         });
       }
     }
@@ -210,7 +265,10 @@ Page input: ${rawText.substring(0, 1500)}`;
   }
 
   private buildFallbackBlocks(rawText: string): any[] {
-    if (rawText.toLowerCase().includes("recipe") || rawText.toLowerCase().includes("ingredients")) {
+    if (
+      rawText.toLowerCase().includes("recipe") ||
+      rawText.toLowerCase().includes("ingredients")
+    ) {
       return [
         {
           type: "RECIPE",
@@ -218,11 +276,17 @@ Page input: ${rawText.substring(0, 1500)}`;
           title: "Extracted Recipe",
           yieldCount: 4,
           yieldUnit: "servings",
-          instructions: ["Mix ingredients thoroughly.", "Cook over medium heat."],
+          instructions: [
+            "Mix ingredients thoroughly.",
+            "Cook over medium heat.",
+          ],
           ingredients: [{ rawName: "Olive Oil" }, { rawName: "Ground Beef" }],
         },
       ];
-    } else if (rawText.toLowerCase().includes("invoice") || rawText.toLowerCase().includes("total")) {
+    } else if (
+      rawText.toLowerCase().includes("invoice") ||
+      rawText.toLowerCase().includes("total")
+    ) {
       return [
         {
           type: "INVOICE",
@@ -230,7 +294,11 @@ Page input: ${rawText.substring(0, 1500)}`;
           vendorName: "Sysco Food Services",
           totals: { subtotal: 250, tax: 20, total: 270 },
           lineItems: [
-            { rawName: "Chicken Breast 10lb", unitPrice: 45, extendedPrice: 90 },
+            {
+              rawName: "Chicken Breast 10lb",
+              unitPrice: 45,
+              extendedPrice: 90,
+            },
             { rawName: "Heavy Cream 1Gal", unitPrice: 15, extendedPrice: 30 },
           ],
         },
