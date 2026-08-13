@@ -3,7 +3,7 @@
  * 
  * n8n Execute Command Node Configuration:
  * ----------------------------------------
- * docker exec -i -e GH_TOKEN="{{ $env.GITHUB_TOKEN }}" -u 1000 kanban-runner bash -c 'cd /workspace && head -n 1 > /tmp/webhook.json && pnpm exec tsx scripts/kanban-orchestrator.ts /tmp/webhook.json' << 'EOF_WEBHOOK'
+ * docker exec -i -e GH_TOKEN="{{ $env.GITHUB_TOKEN }}" -u 1000 kanban-runner bash -c 'cd /workspace && head -n 1 > /tmp/webhook.json && ./node_modules/.bin/tsx scripts/kanban-orchestrator.ts /tmp/webhook.json' << 'EOF_WEBHOOK'
  * {{ JSON.stringify($json) }}
  * EOF_WEBHOOK
  * ----------------------------------------
@@ -183,7 +183,7 @@ async function main() {
   const cloneRes = runCommand(`git clone ${gitUrl} ${workspacePath}`);
   if (cloneRes.exitCode !== 0) {
     console.error("[ORCHESTRATOR] Failed to clone repository into isolated workspace!");
-    return;
+    process.exit(1);
   }
   
   process.chdir(workspacePath);
@@ -215,7 +215,7 @@ async function main() {
   const labelsRes = runCommand(`gh issue view ${issueNumber} --repo ${repo} --json labels -q ".labels[].name"`, true);
   let currentModel = labelsRes.stdout.includes("agent:heavy") ? MODELS.heavy : MODELS.fast;
 
-  const promptFile = path.resolve("/workspace/.aider.prompt.txt");
+  const promptFile = path.resolve(`${workspacePath}/.aider.prompt.txt`);
 
   while (attempt < maxAttempts) {
     attempt++;
