@@ -85,6 +85,9 @@ general_settings:
   success_callback: ["langfuse"]
   failure_callback: ["langfuse"]
 
+litellm_settings:
+  turn_off_message_logging: true
+
 router_settings:
   num_retries: 2
   retry_after: 5

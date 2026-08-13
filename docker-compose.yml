@@ -179,6 +179,7 @@ services:
       - ./litellm_config.yaml:/app/config.yaml
     environment:
       # - LITELLM_LOG=DEBUG
+      - LITELLM_LOG=INFO
       - LITELLM_MASTER_KEY=sk-1234
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
