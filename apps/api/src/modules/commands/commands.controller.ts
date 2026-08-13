@@ -10,8 +10,10 @@ import {
 } from "@nestjs/common";
 import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
-import { type OmnibarCommandPayload,
-  OmnibarCommandPayloadSchema, type ApiResponse,
+import {
+  type OmnibarCommandPayload,
+  OmnibarCommandPayloadSchema,
+  type ApiResponse,
 } from "@soustools/api-types";
 import { CommandsService } from "./commands.service";
 import { runControllerAction } from "../signage/response.helper";
@@ -28,9 +30,7 @@ export class CommandsController {
     @Req() req: any,
   ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
-      const orgId =
-        req.user?.user_metadata?.organization_id ||
-        "d0000000-0000-0000-0000-000000000000";
+      const orgId = req.user?.user_metadata?.organization_id || "";
       // We pass user in payload context just to be safe
       payload.context = payload.context || {};
       payload.context.userId = req.user?.id;

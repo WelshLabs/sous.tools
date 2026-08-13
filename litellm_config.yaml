@@ -1,32 +1,39 @@
 model_list:
   # =========================================================================
-  # 1. HIGH-INTELLIGENCE PLANNING AGENTS (RESERVED FOR PLANNING & ADRs)
+  # 1. HIGH-INTELLIGENCE PLANNING AGENTS
   # =========================================================================
   - model_name: planner
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks: ["gemini-3.5-flash", "gemma-4-31b", "gemini-3.5-flash-lite", "claude-3-7-sonnet"]
+      fallbacks:
+        ["gemini-3.5-flash", "gemma-4-31b", "gemini-3.5-flash-lite", "coder"]
 
   # =========================================================================
-  # 2. BULLETPROOF FREE LOCAL OLLAMA DEVOPS & CODER EXECUTION AGENTS
-  # Using Ollama's native OpenAI-compatible endpoint (http://ollama:11434/v1)
+  # 2. LOCAL OLLAMA DEVOPS & CODER EXECUTION AGENTS
   # =========================================================================
   - model_name: light
     litellm_params:
       model: openai/qwen2.5-coder:7b
       api_base: http://ollama:11434/v1
-      drop_params: true # qwen2.5-coder:7b does not support function_call schema
-      fallbacks: ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemma-4-31b"]
+      drop_params: true
+      fallbacks:
+        [
+          "gemini-3.1-flash-lite",
+          "gemini-3.5-flash-lite",
+          "gemma-4-31b",
+          "coder",
+        ]
 
   - model_name: heavy
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks: ["gemini-3.5-flash", "gemma-4-31b", "gemini-3.5-flash-lite", "claude-3-7-sonnet"]
+      fallbacks:
+        ["gemini-3.5-flash", "gemma-4-31b", "gemini-3.5-flash-lite", "coder"]
 
   # =========================================================================
-  # 3. OMNIBAR AI COMMANDS MODEL WITH LOCAL OLLAMA FALLBACK
+  # 3. OMNIBAR AI COMMANDS MODEL
   # =========================================================================
   - model_name: omnibar
     litellm_params:
@@ -35,7 +42,7 @@ model_list:
       fallbacks: ["gemini-3.1-flash-lite", "gemma-4-31b", "coder"]
 
   # =========================================================================
-  # 4. DIRECT OLLAMA OPENAI-COMPATIBLE ENDPOINTS & BASE CLOUD MODELS
+  # 4. DIRECT ENDPOINTS & BASE MODELS
   # =========================================================================
   - model_name: coder
     litellm_params:
@@ -44,6 +51,9 @@ model_list:
       drop_params: true
       fallbacks: ["gemma-4-31b", "gemini-3.5-flash-lite"]
 
+  # =========================================================================
+  # 4. ACTUAL MODELS
+  # =========================================================================
   - model_name: nomic-embed-text
     litellm_params:
       model: openai/nomic-embed-text
@@ -80,11 +90,6 @@ model_list:
     litellm_params:
       model: gemini/gemma-4-31b
       api_key: os.environ/GEMINI_API_KEY
-
-  - model_name: claude-3-7-sonnet
-    litellm_params:
-      model: anthropic/claude-3-7-sonnet-20250219
-      api_key: os.environ/ANTHROPIC_API_KEY
 
 general_settings:
   master_key: sk-1234
