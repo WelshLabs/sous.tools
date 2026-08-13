@@ -49,7 +49,7 @@ async function fetchQdrantContext(queryText: string): Promise<string> {
   try {
     const LITELLM_API_KEY = "sk-1234";
     const LITELLM_URL = "http://litellm:4000/v1/embeddings";
-    const QDRANT_URL = "http://qdrant:6333/collections/conarwelsh_sous_tools/points/search";
+    const QDRANT_URL = "http://qdrant:6333/collections/sous_tools_memory/points/search";
 
     // 1. Get embedding for the issue title
     const embedRes = await fetch(LITELLM_URL, {

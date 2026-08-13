@@ -5,6 +5,10 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react.tsx"
+  },
   "scripts": {
     "generate": "openapi-typescript ../../apps/api/openapi.json -o ./src/schema.d.ts",
     "typecheck": "tsc --noEmit",
@@ -12,14 +16,19 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@soustools/config": "workspace:*",
     "openapi-fetch": "^0.11.1",
-    "socket.io-client": "^4.8.3",
-    "@soustools/config": "workspace:*"
+    "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "@soustools/tsconfig": "workspace:*",
+    "@types/react": "^19.0.0",
     "openapi-typescript": "^7.3.0",
     "typescript": "^5.4.0",
-    "vitest": "^4.1.9",
-    "@soustools/tsconfig": "workspace:*"
+    "vitest": "^4.1.9"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   }
 }

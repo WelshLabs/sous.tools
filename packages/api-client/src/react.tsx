@@ -1,10 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, ReactNode } from "react";
-import { SocketManager, SocketConfig } from "./websocket";
+import { createContext, useContext, useEffect, ReactNode, useRef } from "react";
+import { createWebSocketClient, WebSocketClientOptions } from "./websocket";
+import { Socket } from "socket.io-client";
+import { api } from "./index";
 
 interface ApiContextValue {
-  socket: SocketManager;
+  socket: Socket;
+  api: typeof api;
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null);
@@ -14,19 +17,25 @@ export function ApiProvider({
   config,
 }: {
   children: ReactNode;
-  config: SocketConfig;
+  config?: WebSocketClientOptions;
 }) {
-  const socketManager = useMemo(() => {
-    return SocketManager.getInstance();
-  }, []);
+  const socketRef = useRef<Socket | null>(null);
+
+  if (!socketRef.current) {
+    socketRef.current = createWebSocketClient(config);
+  }
 
   useEffect(() => {
-    // Only initialize once on the client
-    socketManager.init(config);
-  }, [socketManager, config]);
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
 
   return (
-    <ApiContext.Provider value={{ socket: socketManager }}>
+    <ApiContext.Provider value={{ socket: socketRef.current, api }}>
       {children}
     </ApiContext.Provider>
   );
@@ -39,3 +48,4 @@ export function useApi() {
   }
   return context;
 }
+

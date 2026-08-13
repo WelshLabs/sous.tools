@@ -681,6 +681,12 @@ importers:
       openapi-fetch:
         specifier: ^0.11.1
         version: 0.11.3
+      react:
+        specifier: 19.2.7
+        version: 19.2.7
+      react-dom:
+        specifier: 19.2.7
+        version: 19.2.7(react@19.2.7)
       socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3(supports-color@10.2.2)
@@ -688,6 +694,9 @@ importers:
       '@soustools/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
+      '@types/react':
+        specifier: 19.0.8
+        version: 19.0.8
       openapi-typescript:
         specifier: ^7.3.0
         version: 7.13.0(typescript@5.9.3)

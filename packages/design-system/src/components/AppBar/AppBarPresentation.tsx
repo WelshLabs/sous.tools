@@ -136,7 +136,7 @@ export function AppBarPresentation({
                   notifications.map((n) => (
                     <div
                       key={n.id}
-                      className="p-4 border-b border-white/5 hover:bg-card transition-colors cursor-pointer text-left"
+                      className="p-4 border-b border-border hover:bg-zinc-800/50 transition-colors cursor-pointer text-left"
                     >
                       <p className="text-sm font-medium text-foreground">
                         {n.title}
@@ -147,6 +147,15 @@ export function AppBarPresentation({
                     </div>
                   ))
                 )}
+              </div>
+              <div className="px-4 py-2 border-t border-border bg-black/20 text-center">
+                <Link 
+                  href="/notifications" 
+                  onClick={onCloseMenus}
+                  className="text-xs text-[var(--color-primary)] font-medium hover:underline transition-colors"
+                >
+                  View All Notifications
+                </Link>
               </div>
             </div>
           )}
