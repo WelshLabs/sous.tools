@@ -11,13 +11,13 @@ $ tsc
 cache hit, replaying logs b5a3c034bb0ac1a3
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache hit, replaying logs 6f1b9a7dcc996264
-$ tsc
-::endgroup::
 ::group::@soustools/mcp-server:typecheck
 cache miss, executing 3d6cf44cbbecf005
 $ tsc --noEmit
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 6f1b9a7dcc996264
+$ tsc
 ::endgroup::
 ::group::@soustools/logger:typecheck
 cache miss, executing 35af99eb2095927b
@@ -39,10 +39,6 @@ $ tsc --noEmit
 cache miss, executing d65b4ac77d78c66d
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing 4f769f8b6b43dc2a
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/design-system:typecheck
 cache miss, executing 79cce80a5dfa972e
 $ tsc --noEmit
@@ -51,28 +47,28 @@ $ tsc --noEmit
 cache miss, executing 47d419e9d1e9e6d3
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-recipes:typecheck
-cache miss, executing 0029f7bc347a0593
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing 75f6e02082382dc6
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing 4f769f8b6b43dc2a
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/domain-recipes:typecheck
+cache miss, executing 0029f7bc347a0593
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/setup-portal:typecheck
 cache miss, executing 7a81229f48a15c76
 $ tsc --noEmit
 ::endgroup::
-::group::pos-simulator:typecheck
-cache miss, executing 136961e035248a3c
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/domain-signage:typecheck
 cache miss, executing b32f73b6952f341f
 $ tsc --noEmit
 ::endgroup::
-::group::api:typecheck
-cache miss, executing 52b36765e7fa0d37
+::group::pos-simulator:typecheck
+cache miss, executing 136961e035248a3c
 $ tsc --noEmit
 ::endgroup::
 [;31mweb:typecheck[;0m
@@ -81,9 +77,14 @@ $ tsc --noEmit
 src/app/(workspace)/notifications/page.tsx(3,16): error TS6133: 'CardHeader' is declared but its value is never read.
 src/app/(workspace)/notifications/page.tsx(3,28): error TS6133: 'CardTitle' is declared but its value is never read.
 [ELIFECYCLE] Command failed with exit code 2.
+::group::api:typecheck
+cache miss, executing 52b36765e7fa0d37
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
 
- Tasks:    18 successful, 19 total
-Cached:    3 cached, 19 total
-  Time:    53.031s 
+ Tasks:    17 successful, 19 total
+Cached:    2 cached, 19 total
+  Time:    56.771s 
 Failed:    web#typecheck
 
