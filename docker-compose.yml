@@ -275,7 +275,6 @@ services:
       - "/bin/sh"
       - "-c"
       - |
-        sudo chown -R 1000:1000 /workspace/.git 2>/dev/null || true
         export INFISICAL_TOKEN=$$(infisical login --method=universal-auth --client-id=$${INFISICAL_CLIENT_ID} --client-secret=$${INFISICAL_CLIENT_SECRET} --silent --plain)
         exec infisical run --log-level info --projectId $${INFISICAL_PROJECT_ID} --env $${INFISICAL_ENV:-dev} -- sh -c 'sleep infinity'
     volumes:
