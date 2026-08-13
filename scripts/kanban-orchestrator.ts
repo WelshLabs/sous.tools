@@ -152,6 +152,12 @@ async function main() {
   const payloadLabels: any[] = ghPayload.issue?.labels || [];
   const currentLabels = payloadLabels.map((l: any) => typeof l === 'string' ? l : l.name);
   
+  const isAlreadyRunning = currentLabels.includes("agent:in-progress");
+  if (isAlreadyRunning && !commentBody) {
+    console.log("[ORCHESTRATOR] Agent is already running for this issue (agent:in-progress). Ignoring duplicate webhook.");
+    return;
+  }
+
   const isReady = currentLabels.includes("Ready") || currentLabels.includes("agent:ready");
   if (!isReady && !commentBody) {
     console.log("[ORCHESTRATOR] Issue does not have 'Ready' label and no comment was provided. Exiting cleanly.");
@@ -167,15 +173,14 @@ async function main() {
     runCommand(`gh issue edit ${issueNumber} --repo ${repo} --add-label "In Progress,agent:in-progress" || true`);
   }
   
-  // Bypass .ssh/known_hosts permission denied errors for git fetch/checkout
-  process.env.GIT_SSH_COMMAND = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
-
   // Create isolated workspace to prevent the agent from breaking the production server
   const workspacePath = `/tmp/agent-workspace-${issueNumber}`;
   console.log(`[ORCHESTRATOR] Creating isolated workspace at ${workspacePath}`);
   runCommand(`rm -rf ${workspacePath} || true`);
   
-  const cloneRes = runCommand(`git clone git@github.com:${repo}.git ${workspacePath}`);
+  // Use HTTPS with GH_TOKEN to bypass all SSH permission issues securely
+  const gitUrl = `https://x-access-token:${process.env.GH_TOKEN}@github.com/${repo}.git`;
+  const cloneRes = runCommand(`git clone ${gitUrl} ${workspacePath}`);
   if (cloneRes.exitCode !== 0) {
     console.error("[ORCHESTRATOR] Failed to clone repository into isolated workspace!");
     return;
@@ -239,8 +244,17 @@ async function main() {
       const match = aiderRes.stdout.match(/NEEDS_INPUT:\s*(.+)/);
       const question = match ? match[1].trim() : "Agent needs additional information.";
       console.log(`[ORCHESTRATOR] Agent is blocked: ${question}`);
-      runCommand(`gh issue edit ${issueNumber} --repo ${repo} --remove-label "agent:in-progress" --add-label "agent:needs-input"`);
+      
+      const finalLabelsToRemove = ["In Progress", "agent:in-progress"].filter(l => currentLabels.includes(l));
+      if (finalLabelsToRemove.length > 0) {
+        runCommand(`gh issue edit ${issueNumber} --repo ${repo} --remove-label "${finalLabelsToRemove.join(",")}" --add-label "agent:needs-input" || true`);
+      } else {
+        runCommand(`gh issue edit ${issueNumber} --repo ${repo} --add-label "agent:needs-input" || true`);
+      }
+      
       runCommand(`gh issue comment ${issueNumber} --repo ${repo} --body "[NEEDS_INPUT] The autonomous agent requires additional information:\n\n> ${question}\n\nPlease reply to this comment to unblock the agent."`);
+      process.chdir("/");
+      runCommand(`rm -rf ${workspacePath} || true`);
       return;
     }
 
@@ -281,14 +295,21 @@ async function main() {
     runCommand(`gh pr comment issue-${issueNumber} --repo ${repo} --body "Branch updated.\n\n## Test Results ${statusIcon}\n\`\`\`\n${testOutput.substring(0, 2000)}\n\`\`\``);
   }
 
-  if (!success) {
-    runCommand(`gh issue edit ${issueNumber} --repo ${repo} --add-label "agent:needs-input"`);
+  // Final label updates
+  const endLabelsToRemove = ["In Progress", "agent:in-progress"].filter(l => currentLabels.includes(l));
+  if (endLabelsToRemove.length > 0) {
+    runCommand(`gh issue edit ${issueNumber} --repo ${repo} --remove-label "${endLabelsToRemove.join(",")}" --add-label "Review" || true`);
   } else {
-    runCommand(`gh issue edit ${issueNumber} --repo ${repo} --add-label "Review"`);
+    runCommand(`gh issue edit ${issueNumber} --repo ${repo} --add-label "Review" || true`);
   }
+  
+  // Cleanup isolated workspace
+  process.chdir("/");
+  runCommand(`rm -rf ${workspacePath} || true`);
+  console.log(`[ORCHESTRATOR] Cleaned up temporary workspace. Finished successfully!`);
 
   // Sync Qdrant
-  runCommand(`python3 scripts/populate_qdrant.py || true`);
+  runCommand(`python3 /workspace/scripts/populate_qdrant.py || true`);
   console.log("[ORCHESTRATOR] Pipeline complete.");
 }
 
