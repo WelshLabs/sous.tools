@@ -179,7 +179,7 @@ async function main() {
   runCommand(`rm -rf ${workspacePath} || true`);
   
   // Use HTTPS with GH_TOKEN to bypass all SSH permission issues securely
-  const gitUrl = `https://x-access-token:${process.env.GH_TOKEN}@github.com/${repo}.git`;
+  const gitUrl = `https://${process.env.GH_TOKEN}@github.com/${repo}.git`;
   const cloneRes = runCommand(`git clone ${gitUrl} ${workspacePath}`);
   if (cloneRes.exitCode !== 0) {
     console.error("[ORCHESTRATOR] Failed to clone repository into isolated workspace!");
