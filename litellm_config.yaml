@@ -6,13 +6,6 @@ model_list:
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks:
-        [
-          "studio-3.5-flash",
-          "studio-gemma-4-31b",
-          "studio-3.5-flash-lite",
-          "coder",
-        ]
 
   # =========================================================================
   # 2. LOCAL OLLAMA DEVOPS & CODER EXECUTION AGENTS
@@ -22,25 +15,11 @@ model_list:
       model: openai/qwen2.5-coder:7b
       api_base: http://ollama:11434/v1
       drop_params: true
-      fallbacks:
-        [
-          "studio-3.1-flash-lite",
-          "studio-3.5-flash-lite",
-          "studio-gemma-4-31b",
-          "coder",
-        ]
 
   - model_name: heavy
     litellm_params:
       model: gemini/gemini-3.6-flash
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks:
-        [
-          "studio-3.5-flash",
-          "studio-gemma-4-31b",
-          "studio-3.5-flash-lite",
-          "coder",
-        ]
 
   # =========================================================================
   # 3. OMNIBAR AI COMMANDS MODEL
@@ -49,7 +28,6 @@ model_list:
     litellm_params:
       model: gemini/gemini-3.5-flash-lite
       api_key: os.environ/GEMINI_API_KEY
-      fallbacks: ["studio-3.1-flash-lite", "studio-gemma-4-31b", "coder"]
 
   # =========================================================================
   # 4. DIRECT ENDPOINTS & BASE MODELS
@@ -58,11 +36,10 @@ model_list:
     litellm_params:
       model: openai/qwen2.5-coder:7b
       api_base: http://ollama:11434/v1
-      # drop_params: true  # Left commented out so tools array correctly passes to Qwen
-      fallbacks: ["studio-gemma-4-31b", "studio-3.5-flash-lite"]
+      # drop_params: true (Left commented out to allow tool calls)
 
   # =========================================================================
-  # 5. ACTUAL MODELS (Renamed to prevent Vertex AI hijacking)
+  # 5. ACTUAL MODELS (Distinct aliases)
   # =========================================================================
   - model_name: nomic-embed-text
     litellm_params:
@@ -109,5 +86,35 @@ general_settings:
   failure_callback: ["langfuse"]
 
 router_settings:
-  num_retries: 2 # Tries the primary model 2 more times (total 3 attempts) before failing over
-  retry_after: 5 # Waits 5 seconds between rate limit retries
+  num_retries: 2
+  retry_after: 5
+  fallbacks:
+    - {
+        "planner":
+          [
+            "studio-3.5-flash",
+            "studio-gemma-4-31b",
+            "studio-3.5-flash-lite",
+            "coder",
+          ],
+      }
+    - {
+        "light":
+          [
+            "studio-3.1-flash-lite",
+            "studio-3.5-flash-lite",
+            "studio-gemma-4-31b",
+            "coder",
+          ],
+      }
+    - {
+        "heavy":
+          [
+            "studio-3.5-flash",
+            "studio-gemma-4-31b",
+            "studio-3.5-flash-lite",
+            "coder",
+          ],
+      }
+    - { "omnibar": ["studio-3.1-flash-lite", "studio-gemma-4-31b", "coder"] }
+    - { "coder": ["studio-gemma-4-31b", "studio-3.5-flash-lite"] }
