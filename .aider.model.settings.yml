@@ -1,0 +1,15 @@
+- name: openai/light
+  edit_format: diff-fenced
+  max_chat_history_tokens: 1048576
+
+- name: openai/heavy
+  edit_format: diff-fenced
+  max_chat_history_tokens: 1048576
+
+- name: gemini/gemini-2.5-pro
+  edit_format: diff-fenced
+  max_chat_history_tokens: 1048576
+
+- name: gemini/gemini-2.5-flash
+  edit_format: diff-fenced
+  max_chat_history_tokens: 1048576

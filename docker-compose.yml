@@ -261,12 +261,12 @@ services:
         limits:
           memory: 2g
 
-  kanban-runner:
+  agent-runner:
     build:
       context: .
-      dockerfile: Dockerfile.cptr
+      dockerfile: Dockerfile.agent-runner
     profiles: ["prod"]
-    container_name: kanban-runner
+    container_name: agent-runner
     restart: unless-stopped
     environment:
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
@@ -281,6 +281,8 @@ services:
       - GIT_CONFIG_KEY_0=safe.directory
       - GIT_CONFIG_VALUE_0=*
     entrypoint:
+      - "/usr/bin/tini"
+      - "--"
       - "/bin/sh"
       - "-c"
       - |

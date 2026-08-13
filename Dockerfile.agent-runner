@@ -1,0 +1,37 @@
+FROM python:3.11-slim
+
+# 1. Base Utilities, Docker CLI, System Tools, and Github CLI
+RUN apt-get update && apt-get install -y \
+    tini \
+    curl \
+    git \
+    jq \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update && apt-get install -y gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Node.js 22 Setup
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Install Global CLI Tools (Infisical, pnpm)
+RUN npm install -g pnpm @infisical/cli
+
+# 4. Install Aider and other Python dependencies
+RUN pip install --no-cache-dir aider-chat qdrant-client
+
+# 5. Setup the 1000 User and Group for Permissions
+RUN groupadd -g 1000 agentgroup && \
+    useradd -u 1000 -g 1000 -m -s /bin/bash agentuser
+
+# 6. Switch to the new user context
+USER 1000
+ENV HOME=/home/agentuser
+ENV PATH="$HOME/.local/bin:$PATH"
+
+WORKDIR /workspace
+
+ENTRYPOINT ["/usr/bin/tini", "--"]

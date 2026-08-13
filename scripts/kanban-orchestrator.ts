@@ -3,7 +3,7 @@
  *
  * n8n Execute Command Node Configuration:
  * ----------------------------------------
- * docker exec -i -e GH_TOKEN="{{ $env.GITHUB_TOKEN }}" -u 1000 kanban-runner bash -c 'cd /workspace && head -n 1 > /tmp/webhook.json && ./node_modules/.bin/tsx scripts/kanban-orchestrator.ts /tmp/webhook.json' << 'EOF_WEBHOOK'
+ * docker exec -i -e GH_TOKEN="{{ $env.GITHUB_TOKEN }}" -u 1000 agent-runner tini -- bash -c 'cd /workspace && head -n 1 > /tmp/webhook.json && ./node_modules/.bin/tsx scripts/kanban-orchestrator.ts /tmp/webhook.json' << 'EOF_WEBHOOK'
  * {{ JSON.stringify($json) }}
  * EOF_WEBHOOK
  * ----------------------------------------
