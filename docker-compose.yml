@@ -166,8 +166,13 @@ services:
     profiles: ["prod"]
     container_name: litellm
     restart: unless-stopped
-    command:
-      ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
+    command: [
+        "--config",
+        "/app/config.yaml",
+        "--port",
+        "4000",
+        # "--detailed_debug"
+      ]
     ports:
       - "4000:4000"
     volumes:
