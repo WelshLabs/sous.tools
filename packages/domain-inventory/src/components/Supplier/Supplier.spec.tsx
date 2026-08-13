@@ -15,7 +15,7 @@ describe("SupplierOrderGroup", () => {
         onChangeQty={vi.fn()}
         onChangeSupplier={vi.fn()}
         onShopOrder={vi.fn()}
-      />
+      />,
     );
     expect(screen.getByText("Unassigned Items")).toBeInTheDocument();
   });

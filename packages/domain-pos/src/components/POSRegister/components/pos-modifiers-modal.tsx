@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Card, CardHeader, CardTitle, CardContent, CardFooter, cn } from "@soustools/design-system";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  cn,
+} from "@soustools/design-system";
 import { X, Check } from "lucide-react";
 import { type CatalogItem } from "../pos.types";
 
@@ -35,7 +43,9 @@ export function POSModifiersModal({
   groups = [],
   onSubmit,
 }: POSModifiersModalProps) {
-  const [selections, setSelections] = useState<Record<string, ModifierOption[]>>({});
+  const [selections, setSelections] = useState<
+    Record<string, ModifierOption[]>
+  >({});
 
   useEffect(() => {
     if (isOpen) {
@@ -77,7 +87,10 @@ export function POSModifiersModal({
   const isAllValid = groups.every(isGroupValid);
 
   const flatSelectedOptions = Object.values(selections).flat();
-  const totalModifierPrice = flatSelectedOptions.reduce((sum, opt) => sum + opt.price, 0);
+  const totalModifierPrice = flatSelectedOptions.reduce(
+    (sum, opt) => sum + opt.price,
+    0,
+  );
   const totalPrice = item.price + totalModifierPrice;
 
   const handleSave = () => {
@@ -91,8 +104,12 @@ export function POSModifiersModal({
       <Card className="w-full max-w-lg border border-border bg-card shadow-glow-sm flex flex-col max-h-[90vh]">
         <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
           <div>
-            <CardTitle className="text-xl font-bold text-foreground">{item.name}</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Customize your item</p>
+            <CardTitle className="text-xl font-bold text-foreground">
+              {item.name}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Customize your item
+            </p>
           </div>
           <Button
             variant="ghost"
@@ -113,11 +130,15 @@ export function POSModifiersModal({
               <div key={group.id} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-semibold text-foreground">{group.name}</h4>
+                    <h4 className="text-sm font-semibold text-foreground">
+                      {group.name}
+                    </h4>
                     <p className="text-[11px] text-muted-foreground">
                       {group.required
                         ? `Required (Choose ${group.minSelections}${
-                            group.maxSelections > group.minSelections ? `-${group.maxSelections}` : ""
+                            group.maxSelections > group.minSelections
+                              ? `-${group.maxSelections}`
+                              : ""
                           })`
                         : `Optional (Max ${group.maxSelections})`}
                     </p>
@@ -131,7 +152,9 @@ export function POSModifiersModal({
 
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {group.options.map((option) => {
-                    const isSelected = groupSelections.some((opt) => opt.id === option.id);
+                    const isSelected = groupSelections.some(
+                      (opt) => opt.id === option.id,
+                    );
                     return (
                       <button
                         key={option.id}
@@ -141,22 +164,28 @@ export function POSModifiersModal({
                           "flex items-center justify-between p-3 rounded-[var(--radius-sm)] border text-left transition-all cursor-pointer",
                           isSelected
                             ? "border-primary bg-primary/10 text-primary"
-                            : "border-border/60 bg-card/40 hover:border-border hover:bg-card/80 text-foreground"
+                            : "border-border/60 bg-card/40 hover:border-border hover:bg-card/80 text-foreground",
                         )}
                       >
                         <div className="flex items-center gap-2">
                           <div
                             className={cn(
                               "flex h-4 w-4 shrink-0 items-center justify-center border transition-all",
-                              group.maxSelections === 1 ? "rounded-full" : "rounded-sm",
+                              group.maxSelections === 1
+                                ? "rounded-full"
+                                : "rounded-sm",
                               isSelected
                                 ? "border-primary bg-primary text-primary-foreground"
-                                : "border-muted-foreground/50"
+                                : "border-muted-foreground/50",
                             )}
                           >
-                            {isSelected && <Check className="h-3 w-3 stroke-[3px]" />}
+                            {isSelected && (
+                              <Check className="h-3 w-3 stroke-[3px]" />
+                            )}
                           </div>
-                          <span className="text-xs font-medium">{option.name}</span>
+                          <span className="text-xs font-medium">
+                            {option.name}
+                          </span>
                         </div>
                         {option.price > 0 && (
                           <span className="text-xs font-semibold text-accent">
@@ -177,10 +206,16 @@ export function POSModifiersModal({
             <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider leading-none">
               Total Price
             </span>
-            <span className="text-xl font-black text-accent mt-1">${totalPrice.toFixed(2)}</span>
+            <span className="text-xl font-black text-accent mt-1">
+              ${totalPrice.toFixed(2)}
+            </span>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1 sm:flex-none" onClick={onClose}>
+            <Button
+              variant="ghost"
+              className="flex-1 sm:flex-none"
+              onClick={onClose}
+            >
               Cancel
             </Button>
             <Button

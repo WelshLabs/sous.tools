@@ -1,8 +1,8 @@
-import React from 'react';
-import { SignageEditorView } from './SignageEditor.view';
+import React from "react";
+import { SignageEditorView } from "./SignageEditor.view";
 
 export default {
-  title: 'SignageEditorView',
+  title: "SignageEditorView",
   component: SignageEditorView,
 };
 

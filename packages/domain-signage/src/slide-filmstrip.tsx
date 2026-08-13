@@ -6,7 +6,11 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import type { SignageSlide, PosItem, SignageLayoutConfig } from "@soustools/api-types";
+import type {
+  SignageSlide,
+  PosItem,
+  SignageLayoutConfig,
+} from "@soustools/api-types";
 import { GripVertical, Plus } from "lucide-react";
 import { SlideCard } from "./slide-filmstrip-card";
 
@@ -58,29 +62,33 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
             {slides.map((slide, index) => {
               const slideId = slide.id || `slide-fallback-${index}`;
               return (
-              <Draggable key={slideId} draggableId={slideId} index={index}>
-                {(drag) => (
-                  <div
-                    ref={drag.innerRef}
-                    {...drag.draggableProps}
-                    className="flex items-center gap-1 flex-shrink-0"
-                  >
+                <Draggable key={slideId} draggableId={slideId} index={index}>
+                  {(drag) => (
                     <div
-                      {...drag.dragHandleProps}
-                      className="text-foreground/30 hover:text-foreground/70 cursor-grab active:cursor-grabbing"
+                      ref={drag.innerRef}
+                      {...drag.draggableProps}
+                      className="flex items-center gap-1 flex-shrink-0"
                     >
-                      <GripVertical className="w-4 h-4" />
+                      <div
+                        {...drag.dragHandleProps}
+                        className="text-foreground/30 hover:text-foreground/70 cursor-grab active:cursor-grabbing"
+                      >
+                        <GripVertical className="w-4 h-4" />
+                      </div>
+                      <SlideCard
+                        slide={slide}
+                        isActive={index === activeSlideIndex}
+                        onSelect={() => onSelectSlide(index)}
+                        onRemove={(e) => {
+                          e.stopPropagation();
+                          onRemoveSlide(index);
+                        }}
+                      />
                     </div>
-                    <SlideCard
-                      slide={slide}
-                      isActive={index === activeSlideIndex}
-                      onSelect={() => onSelectSlide(index)}
-                      onRemove={(e) => { e.stopPropagation(); onRemoveSlide(index); }}
-                    />
-                  </div>
-                )}
-              </Draggable>
-            )})}
+                  )}
+                </Draggable>
+              );
+            })}
             {provided.placeholder}
 
             {/* Add Slide card */}

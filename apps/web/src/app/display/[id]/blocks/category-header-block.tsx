@@ -25,13 +25,18 @@ export function CategoryHeaderBlock({
       ? " p-6 rounded-2xl relative my-4 flex flex-col gap-1.5"
       : "py-4 flex flex-col gap-1",
     "st-category-header",
-    className
-  ].filter(Boolean).join(" ");
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={containerClasses}>
       <div className="flex justify-between items-start gap-4">
-        <h2 className="text-3xl font-extrabold tracking-tight uppercase text-white font-brand" style={{ color, fontSize }}>
+        <h2
+          className="text-3xl font-extrabold tracking-tight uppercase text-white font-brand"
+          style={{ color, fontSize }}
+        >
           {title}
         </h2>
         {badge && (

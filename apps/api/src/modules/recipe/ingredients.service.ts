@@ -28,7 +28,10 @@ export class IngredientsService {
 
   async create(
     orgId: string,
-    payload: Omit<MasterIngredient, "id" | "organizationId" | "createdAt" | "updatedAt">
+    payload: Omit<
+      MasterIngredient,
+      "id" | "organizationId" | "createdAt" | "updatedAt"
+    >,
   ): Promise<MasterIngredient> {
     const { data, error } = await supabase
       .from("items")
@@ -48,14 +51,20 @@ export class IngredientsService {
     return this.mapRow(data);
   }
 
-  async update(id: string, payload: Partial<MasterIngredient>): Promise<MasterIngredient> {
+  async update(
+    id: string,
+    payload: Partial<MasterIngredient>,
+  ): Promise<MasterIngredient> {
     const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
     if (payload.name !== undefined) updateData.name = payload.name;
-    if (payload.densityGMl !== undefined) updateData.density_g_ml = payload.densityGMl;
-    if (payload.nutritionMacros !== undefined) updateData.nutrition_macros = payload.nutritionMacros;
-    if (payload.allergens !== undefined) updateData.allergens = payload.allergens;
+    if (payload.densityGMl !== undefined)
+      updateData.density_g_ml = payload.densityGMl;
+    if (payload.nutritionMacros !== undefined)
+      updateData.nutrition_macros = payload.nutritionMacros;
+    if (payload.allergens !== undefined)
+      updateData.allergens = payload.allergens;
 
     const { data, error } = await supabase
       .from("items")
@@ -96,7 +105,12 @@ export class IngredientsService {
       organizationId: row.organization_id,
       name: row.name,
       densityGMl: Number(row.density_g_ml || 0),
-      nutritionMacros: row.nutrition_macros || { calories: null, proteinG: null, carbsG: null, fatG: null },
+      nutritionMacros: row.nutrition_macros || {
+        calories: null,
+        proteinG: null,
+        carbsG: null,
+        fatG: null,
+      },
       allergens: row.allergens || [],
       currentCostPerG: Number(row.current_cost_per_g || 0) || 0,
       createdAt: row.created_at || "",

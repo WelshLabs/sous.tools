@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type MenuItemStyles, type PosItem } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type MenuItemStyles,
+  type PosItem,
+} from "@soustools/api-types";
 import { Image as ImageIcon } from "lucide-react";
 import {
   buildCardStyle,
@@ -59,7 +63,10 @@ export const ColumnMenuPreview: React.FC<ColumnPreviewProps> = ({
             style={cardStyle}
           >
             <div className="flex justify-between items-start gap-1">
-              <h5 className="font-bold truncate max-w-[70%] text-[8px]" style={titleStyle}>
+              <h5
+                className="font-bold truncate max-w-[70%] text-[8px]"
+                style={titleStyle}
+              >
                 {item.name}
               </h5>
               <span className="font-semibold text-[8px]" style={priceStyle}>
@@ -86,7 +93,9 @@ export const ColumnMenuPreview: React.FC<ColumnPreviewProps> = ({
   );
 };
 
-export const ColumnImagePreview: React.FC<{ imageUrl?: string }> = ({ imageUrl }) => (
+export const ColumnImagePreview: React.FC<{ imageUrl?: string }> = ({
+  imageUrl,
+}) => (
   <div className="w-full h-full relative flex items-center justify-center bg-background rounded overflow-hidden">
     {imageUrl ? (
       <img src={imageUrl} alt="Promo" className="w-full h-full object-cover" />
@@ -109,14 +118,22 @@ export const ColumnTextPreview: React.FC<{
     style={marketingText ? { fontFamily: marketingText } : undefined}
   >
     {title ? (
-      <h4 className="text-xs font-bold text-foreground leading-tight">{title}</h4>
+      <h4 className="text-xs font-bold text-foreground leading-tight">
+        {title}
+      </h4>
     ) : (
-      <h4 className="text-xs font-bold text-muted-foreground italic">No Title</h4>
+      <h4 className="text-xs font-bold text-muted-foreground italic">
+        No Title
+      </h4>
     )}
     {content ? (
-      <p className="text-[9px] text-muted-foreground leading-normal line-clamp-4">{content}</p>
+      <p className="text-[9px] text-muted-foreground leading-normal line-clamp-4">
+        {content}
+      </p>
     ) : (
-      <p className="text-[8px] text-muted-foreground italic">No content text entered</p>
+      <p className="text-[8px] text-muted-foreground italic">
+        No content text entered
+      </p>
     )}
   </div>
 );

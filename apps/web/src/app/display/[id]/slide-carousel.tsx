@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { type SignageSlide, type PosItem, type ColumnLayoutSlide, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type SignageSlide,
+  type PosItem,
+  type ColumnLayoutSlide,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
 
 interface SlideCarouselProps {
@@ -58,7 +63,10 @@ export function SlideCarousel({
   }
 
   const activeSlide = slides[visibleIndex];
-  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? (activeSlide as ColumnLayoutSlide) : null;
+  const columnSlide =
+    activeSlide?.type === "COLUMN_LAYOUT"
+      ? (activeSlide as ColumnLayoutSlide)
+      : null;
 
   const bgStyle: React.CSSProperties = {
     opacity,

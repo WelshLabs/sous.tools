@@ -28,7 +28,7 @@ export class VesselsService {
 
   async create(
     orgId: string,
-    payload: Omit<VesselProfile, "id" | "organizationId" | "createdAt">
+    payload: Omit<VesselProfile, "id" | "organizationId" | "createdAt">,
   ): Promise<VesselProfile> {
     const { data, error } = await supabase
       .from("vessel_profiles")
@@ -51,7 +51,10 @@ export class VesselsService {
     return this.mapRow(data);
   }
 
-  async update(id: string, payload: Partial<VesselProfile>): Promise<VesselProfile> {
+  async update(
+    id: string,
+    payload: Partial<VesselProfile>,
+  ): Promise<VesselProfile> {
     const updateData: Record<string, unknown> = {};
     if (payload.name !== undefined) updateData.name = payload.name;
     if (payload.shape !== undefined) updateData.shape = payload.shape;

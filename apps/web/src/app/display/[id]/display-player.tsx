@@ -16,9 +16,20 @@ interface DisplayPlayerProps {
   initialErrorState?: string | null;
 }
 
-export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initialItems, initialErrorState }: DisplayPlayerProps) {
-  const { display, layout, items, loading, errorState } =
-    useDisplayPlayer(displayId, initialDisplay, initialLayout, initialItems, initialErrorState);
+export function DisplayPlayer({
+  displayId,
+  initialDisplay,
+  initialLayout,
+  initialItems,
+  initialErrorState,
+}: DisplayPlayerProps) {
+  const { display, layout, items, loading, errorState } = useDisplayPlayer(
+    displayId,
+    initialDisplay,
+    initialLayout,
+    initialItems,
+    initialErrorState,
+  );
 
   useEffect(() => {
     const config = layout?.config;
@@ -29,7 +40,9 @@ export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initia
     if (config.googleFont) fontsToLoad.add(config.googleFont);
 
     // Clean up existing dynamic font links
-    document.querySelectorAll("[id^='signage-dynamic-font']").forEach((el) => el.remove());
+    document
+      .querySelectorAll("[id^='signage-dynamic-font']")
+      .forEach((el) => el.remove());
     Array.from(fontsToLoad).forEach((font, idx) => {
       const link = document.createElement("link");
       link.id = `signage-dynamic-font-${idx}`;
@@ -74,7 +87,9 @@ export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initia
         <h2 className="text-2xl font-bold text-[oklch(0.60_0.25_25)] mb-2 font-brand">
           Display Load Failed
         </h2>
-        <p className="text-zinc-500 dark:text-muted-foreground font-sans">{errorState}</p>
+        <p className="text-zinc-500 dark:text-muted-foreground font-sans">
+          {errorState}
+        </p>
       </div>
     );
   }
@@ -92,14 +107,22 @@ export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initia
       style={{
         fontFamily: layout?.config?.googleFont || "inherit",
         // CSS variables for typography overrides
-        ["--menu-title-font" as any]: layout?.config?.typography?.menuItemTitle || "inherit",
-        ["--menu-price-font" as any]: layout?.config?.typography?.menuItemPrice || "inherit",
-        ["--menu-description-font" as any]: layout?.config?.typography?.menuItemDescription || "inherit",
-        ["--marketing-text-font" as any]: layout?.config?.typography?.marketingText || "inherit",
-        ["--menu-title-color" as any]: layout?.config?.typography?.menuItemTitleColor || "inherit",
-        ["--menu-price-color" as any]: layout?.config?.typography?.menuItemPriceColor || "inherit",
-        ["--menu-desc-color" as any]: layout?.config?.typography?.menuItemDescriptionColor || "inherit",
-        ["--marketing-text-color" as any]: layout?.config?.typography?.marketingTextColor || "inherit",
+        ["--menu-title-font" as any]:
+          layout?.config?.typography?.menuItemTitle || "inherit",
+        ["--menu-price-font" as any]:
+          layout?.config?.typography?.menuItemPrice || "inherit",
+        ["--menu-description-font" as any]:
+          layout?.config?.typography?.menuItemDescription || "inherit",
+        ["--marketing-text-font" as any]:
+          layout?.config?.typography?.marketingText || "inherit",
+        ["--menu-title-color" as any]:
+          layout?.config?.typography?.menuItemTitleColor || "inherit",
+        ["--menu-price-color" as any]:
+          layout?.config?.typography?.menuItemPriceColor || "inherit",
+        ["--menu-desc-color" as any]:
+          layout?.config?.typography?.menuItemDescriptionColor || "inherit",
+        ["--marketing-text-color" as any]:
+          layout?.config?.typography?.marketingTextColor || "inherit",
       }}
     >
       <SlideCarousel

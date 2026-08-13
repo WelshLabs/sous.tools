@@ -1,7 +1,5 @@
 "use client";
 
-
-
 /**
  * Props for the Hamburger component.
  */

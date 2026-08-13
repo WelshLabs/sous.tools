@@ -37,7 +37,7 @@ export function getSquareBaseUrl(): string {
 
 export async function getVariationAndLocationId(
   accessToken: string,
-  squareId: string
+  squareId: string,
 ): Promise<{ variationId: string; locationId: string }> {
   const baseUrl = getSquareBaseUrl();
   const itemRes = await fetch(`${baseUrl}/v2/catalog/object/${squareId}`, {
@@ -57,8 +57,12 @@ export async function getVariationAndLocationId(
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (locRes.ok) {
-    const locData = (await locRes.json()) as { locations?: Array<{ id: string; status: string }> };
-    const activeLoc = locData.locations?.find((l) => l.status === "ACTIVE") || locData.locations?.[0];
+    const locData = (await locRes.json()) as {
+      locations?: Array<{ id: string; status: string }>;
+    };
+    const activeLoc =
+      locData.locations?.find((l) => l.status === "ACTIVE") ||
+      locData.locations?.[0];
     if (activeLoc) {
       locationId = activeLoc.id;
     }

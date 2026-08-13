@@ -8,7 +8,10 @@ interface HistoryTabProps {
   onShopOrder: (poId: string) => void;
 }
 
-export function OrdersHistoryTab({ historyOrders, onShopOrder }: HistoryTabProps) {
+export function OrdersHistoryTab({
+  historyOrders,
+  onShopOrder,
+}: HistoryTabProps) {
   if (historyOrders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
@@ -23,7 +26,8 @@ export function OrdersHistoryTab({ historyOrders, onShopOrder }: HistoryTabProps
   return (
     <div className="flex flex-col gap-4">
       {historyOrders.map((po) => {
-        const isReceived = po.status === "RECEIVED" || po.status === "RECONCILED";
+        const isReceived =
+          po.status === "RECEIVED" || po.status === "RECONCILED";
         return (
           <div
             key={po.id}

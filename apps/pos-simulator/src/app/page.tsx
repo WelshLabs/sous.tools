@@ -14,7 +14,9 @@ export default function PosSimulatorPage() {
             POS Simulator Dev Utility
           </h1>
           <p className="text-sm text-zinc-400 mt-2">
-            This workspace serves as a dedicated portal for local POS simulation. The backend controller handles mock actions and maps POS items to `pos_items`.
+            This workspace serves as a dedicated portal for local POS
+            simulation. The backend controller handles mock actions and maps POS
+            items to `pos_items`.
           </p>
         </div>
 
@@ -24,4 +26,3 @@ export default function PosSimulatorPage() {
   );
 }
 // Force rebuild 1
-

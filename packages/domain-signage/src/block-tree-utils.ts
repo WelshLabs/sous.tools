@@ -1,8 +1,15 @@
 import { type SignageBlock } from "@soustools/api-types";
 
-export function findBlockInTree(block: SignageBlock, id: string): SignageBlock | null {
+export function findBlockInTree(
+  block: SignageBlock,
+  id: string,
+): SignageBlock | null {
   if (block.id === id) return block;
-  if (block.type === "ColumnBlock" || block.type === "RowBlock" || block.type === "ExplodedItemBlock") {
+  if (
+    block.type === "ColumnBlock" ||
+    block.type === "RowBlock" ||
+    block.type === "ExplodedItemBlock"
+  ) {
     for (const sub of block.blocks) {
       const found = findBlockInTree(sub, id);
       if (found) return found;
@@ -16,7 +23,11 @@ export function findBlockInTree(block: SignageBlock, id: string): SignageBlock |
   return null;
 }
 
-export function updateBlockInTree(block: SignageBlock, id: string, updates: Partial<SignageBlock>): SignageBlock {
+export function updateBlockInTree(
+  block: SignageBlock,
+  id: string,
+  updates: Partial<SignageBlock>,
+): SignageBlock {
   if (block.id === id) {
     const updated = { ...block, ...updates } as SignageBlock;
     if (updated.type === "GridBlock") {
@@ -28,7 +39,7 @@ export function updateBlockInTree(block: SignageBlock, id: string, updates: Part
         cells.push({
           id: `block-grid-cell-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           type: "ColumnBlock",
-          blocks: []
+          blocks: [],
         });
       }
       if (cells.length > totalCells) {
@@ -38,7 +49,11 @@ export function updateBlockInTree(block: SignageBlock, id: string, updates: Part
     }
     return updated;
   }
-  if (block.type === "ColumnBlock" || block.type === "RowBlock" || block.type === "ExplodedItemBlock") {
+  if (
+    block.type === "ColumnBlock" ||
+    block.type === "RowBlock" ||
+    block.type === "ExplodedItemBlock"
+  ) {
     return {
       ...block,
       blocks: block.blocks.map((b) => updateBlockInTree(b, id, updates)),
@@ -53,9 +68,17 @@ export function updateBlockInTree(block: SignageBlock, id: string, updates: Part
   return block;
 }
 
-export function insertBlockIntoTree(block: SignageBlock, parentId: string, newBlock: SignageBlock): SignageBlock {
+export function insertBlockIntoTree(
+  block: SignageBlock,
+  parentId: string,
+  newBlock: SignageBlock,
+): SignageBlock {
   if (block.id === parentId) {
-    if (block.type === "ColumnBlock" || block.type === "RowBlock" || block.type === "ExplodedItemBlock") {
+    if (
+      block.type === "ColumnBlock" ||
+      block.type === "RowBlock" ||
+      block.type === "ExplodedItemBlock"
+    ) {
       return {
         ...block,
         blocks: [...block.blocks, newBlock],
@@ -68,10 +91,16 @@ export function insertBlockIntoTree(block: SignageBlock, parentId: string, newBl
       };
     }
   }
-  if (block.type === "ColumnBlock" || block.type === "RowBlock" || block.type === "ExplodedItemBlock") {
+  if (
+    block.type === "ColumnBlock" ||
+    block.type === "RowBlock" ||
+    block.type === "ExplodedItemBlock"
+  ) {
     return {
       ...block,
-      blocks: block.blocks.map((b) => insertBlockIntoTree(b, parentId, newBlock)),
+      blocks: block.blocks.map((b) =>
+        insertBlockIntoTree(b, parentId, newBlock),
+      ),
     };
   }
   if (block.type === "GridBlock") {
@@ -83,25 +112,45 @@ export function insertBlockIntoTree(block: SignageBlock, parentId: string, newBl
   return block;
 }
 
-export function removeBlockFromTree(block: SignageBlock, idToRemove: string): SignageBlock {
-  if (block.type === "ColumnBlock" || block.type === "RowBlock" || block.type === "ExplodedItemBlock") {
+export function removeBlockFromTree(
+  block: SignageBlock,
+  idToRemove: string,
+): SignageBlock {
+  if (
+    block.type === "ColumnBlock" ||
+    block.type === "RowBlock" ||
+    block.type === "ExplodedItemBlock"
+  ) {
     return {
       ...block,
-      blocks: block.blocks.filter(b => b.id !== idToRemove).map(b => removeBlockFromTree(b, idToRemove))
+      blocks: block.blocks
+        .filter((b) => b.id !== idToRemove)
+        .map((b) => removeBlockFromTree(b, idToRemove)),
     };
   }
   if (block.type === "GridBlock") {
     return {
       ...block,
-      cells: block.cells.filter(b => b.id !== idToRemove).map(b => removeBlockFromTree(b, idToRemove))
+      cells: block.cells
+        .filter((b) => b.id !== idToRemove)
+        .map((b) => removeBlockFromTree(b, idToRemove)),
     };
   }
   return block;
 }
 
-export function insertBlockAt(block: SignageBlock, parentId: string, index: number, newBlock: SignageBlock): SignageBlock {
+export function insertBlockAt(
+  block: SignageBlock,
+  parentId: string,
+  index: number,
+  newBlock: SignageBlock,
+): SignageBlock {
   if (block.id === parentId) {
-    if (block.type === "ColumnBlock" || block.type === "RowBlock" || block.type === "ExplodedItemBlock") {
+    if (
+      block.type === "ColumnBlock" ||
+      block.type === "RowBlock" ||
+      block.type === "ExplodedItemBlock"
+    ) {
       const newBlocks = [...block.blocks];
       newBlocks.splice(index, 0, newBlock);
       return { ...block, blocks: newBlocks };
@@ -112,16 +161,24 @@ export function insertBlockAt(block: SignageBlock, parentId: string, index: numb
       return { ...block, cells: newCells };
     }
   }
-  if (block.type === "ColumnBlock" || block.type === "RowBlock" || block.type === "ExplodedItemBlock") {
+  if (
+    block.type === "ColumnBlock" ||
+    block.type === "RowBlock" ||
+    block.type === "ExplodedItemBlock"
+  ) {
     return {
       ...block,
-      blocks: block.blocks.map(b => insertBlockAt(b, parentId, index, newBlock))
+      blocks: block.blocks.map((b) =>
+        insertBlockAt(b, parentId, index, newBlock),
+      ),
     };
   }
   if (block.type === "GridBlock") {
     return {
       ...block,
-      cells: block.cells.map(b => insertBlockAt(b, parentId, index, newBlock))
+      cells: block.cells.map((b) =>
+        insertBlockAt(b, parentId, index, newBlock),
+      ),
     };
   }
   return block;

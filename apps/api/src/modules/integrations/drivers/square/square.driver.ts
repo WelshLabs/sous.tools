@@ -10,7 +10,7 @@ export class SquareDriver extends BaseIntegrationDriver implements IPosDriver {
   verifyWebhookSignature(
     signature: string,
     rawBody: string,
-    signatureKey?: string
+    signatureKey?: string,
   ): boolean {
     const key = signatureKey || config.SQUARE_WEBHOOK_SIGNATURE_KEY;
     if (config.IS_MOCK_ENV || !key) {
@@ -29,9 +29,12 @@ export class SquareDriver extends BaseIntegrationDriver implements IPosDriver {
     return hash === signature;
   }
 
-  normalizeWebhookEvent(rawPayload: Record<string, unknown>): NormalizedPosEvent {
+  normalizeWebhookEvent(
+    rawPayload: Record<string, unknown>,
+  ): NormalizedPosEvent {
     const eventId = String(rawPayload.event_id || rawPayload.eventId || "");
-    const merchantId = (rawPayload.merchant_id || rawPayload.merchantId) as string | undefined;
+    const merchantId = (rawPayload.merchant_id || rawPayload.merchantId) as
+      string | undefined;
     const rawType = String(rawPayload.type || "");
 
     let eventType: NormalizedPosEvent["eventType"] = "unknown";
@@ -95,7 +98,7 @@ export class SquareDriver extends BaseIntegrationDriver implements IPosDriver {
           merchant_id: data.merchant_id,
         },
       },
-      { onConflict: "organization_id,provider" }
+      { onConflict: "organization_id,provider" },
     );
 
     return data;
@@ -143,7 +146,7 @@ export class SquareDriver extends BaseIntegrationDriver implements IPosDriver {
     });
     if (!locRes.ok) {
       throw new Error(
-        `Failed to fetch Square locations: ${await locRes.text()}`
+        `Failed to fetch Square locations: ${await locRes.text()}`,
       );
     }
     const locData = await locRes.json();

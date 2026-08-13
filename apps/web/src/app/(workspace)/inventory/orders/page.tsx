@@ -1,7 +1,7 @@
 import { clientConfig as config } from "@soustools/config/client";
 import { OrdersClient } from "./OrdersClient";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function OrdersPage() {
   const baseUrl = config.NEXT_PUBLIC_API_URL;
@@ -34,5 +34,11 @@ export default async function OrdersPage() {
     console.error("Failed to load orders data:", err);
   }
 
-  return <OrdersClient initialVendors={vendors} initialWhiteboardItems={whiteboardItems} initialPurchaseOrders={purchaseOrders} />;
+  return (
+    <OrdersClient
+      initialVendors={vendors}
+      initialWhiteboardItems={whiteboardItems}
+      initialPurchaseOrders={purchaseOrders}
+    />
+  );
 }

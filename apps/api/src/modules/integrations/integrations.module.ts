@@ -32,7 +32,12 @@ import { PosModule } from "../pos/pos.module";
     }),
   ],
   controllers: [IntegrationsController, PosWebhookController],
-  providers: [IntegrationsService, PosSyncProcessor, GoogleDriveService, SquareDriver],
+  providers: [
+    IntegrationsService,
+    PosSyncProcessor,
+    GoogleDriveService,
+    SquareDriver,
+  ],
   exports: [IntegrationsService, GoogleDriveService, SquareDriver],
 })
 export class IntegrationsModule {}

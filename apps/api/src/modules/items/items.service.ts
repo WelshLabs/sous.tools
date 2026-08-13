@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
-import { CreateItemDto, UpdateItemDto,
+import {
+  CreateItemDto,
+  UpdateItemDto,
   classifyItemDietAndAllergens,
 } from "./items-query.helper";
 

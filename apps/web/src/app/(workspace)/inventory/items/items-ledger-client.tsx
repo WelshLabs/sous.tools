@@ -59,13 +59,21 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
   };
 
   const handleSearchUSDA = async (query: string) => {
-    const res = await fetch(`/api/recipes/usda/search?query=${encodeURIComponent(query)}`);
+    const res = await fetch(
+      `/api/recipes/usda/search?query=${encodeURIComponent(query)}`,
+    );
     return await res.json();
   };
 
   const handleExportCSV = () => {
     if (!initialItems.length) return;
-    const headers = ["name", "category", "purchase_unit", "density_g_ml", "allergens"];
+    const headers = [
+      "name",
+      "category",
+      "purchase_unit",
+      "density_g_ml",
+      "allergens",
+    ];
     const csvContent =
       "data:text/csv;charset=utf-8," +
       headers.join(",") +
@@ -91,18 +99,26 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
     reader.onload = async (event) => {
       try {
         const text = event.target?.result as string;
-        const lines = text.split("\\n").map((l) => l.trim()).filter(Boolean);
+        const lines = text
+          .split("\\n")
+          .map((l) => l.trim())
+          .filter(Boolean);
         if (lines.length < 2) return;
 
         const headers = lines[0].split(",");
 
         for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(",").map((v) => v.replace(/^"|"$/g, ""));
+          const values = lines[i]
+            .split(",")
+            .map((v) => v.replace(/^"|"$/g, ""));
           const payload: any = {};
           headers.forEach((h, idx) => {
-            if (h === "density_g_ml") payload[h] = parseFloat(values[idx]) || 1.0;
+            if (h === "density_g_ml")
+              payload[h] = parseFloat(values[idx]) || 1.0;
             else if (h === "allergens")
-              payload[h] = values[idx] ? values[idx].split(";").map((s) => s.trim()) : [];
+              payload[h] = values[idx]
+                ? values[idx].split(";").map((s) => s.trim())
+                : [];
             else payload[h] = values[idx];
           });
 
@@ -127,8 +143,12 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">Items Ledger</h1>
-          <p className="text-muted-foreground mt-2">Manage your master ingredients, density, and nutrition.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            Items Ledger
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your master ingredients, density, and nutrition.
+          </p>
         </div>
         <div className="flex gap-4">
           <button
@@ -149,7 +169,12 @@ export function ItemsLedgerClient({ initialItems }: { initialItems: any[] }) {
             disabled={importing}
             className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium rounded-lg flex items-center gap-2 transition-colors"
           >
-            {importing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />} Import
+            {importing ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Upload size={18} />
+            )}{" "}
+            Import
           </button>
           <button
             onClick={handleCreate}

@@ -1,4 +1,4 @@
-import { Langfuse } from 'langfuse';
+import { Langfuse } from "langfuse";
 
 /**
  * Langfuse Tracing Utility Module
@@ -11,11 +11,14 @@ import { Langfuse } from 'langfuse';
 
 const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
 const secretKey = process.env.LANGFUSE_SECRET_KEY;
-const baseUrl = process.env.LANGFUSE_HOST || process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com';
+const baseUrl =
+  process.env.LANGFUSE_HOST ||
+  process.env.LANGFUSE_BASE_URL ||
+  "https://cloud.langfuse.com";
 
 export const langfuse = new Langfuse({
-  publicKey: publicKey || 'pk-lf-placeholder',
-  secretKey: secretKey || 'sk-lf-placeholder',
+  publicKey: publicKey || "pk-lf-placeholder",
+  secretKey: secretKey || "sk-lf-placeholder",
   baseUrl,
   enabled: Boolean(publicKey && secretKey),
 });
@@ -45,9 +48,9 @@ export const createTrace = (options: TraceOptions) => {
     name: options.name,
     userId: options.userId,
     sessionId: options.sessionId,
-    tags: options.tags || ['soustools'],
+    tags: options.tags || ["soustools"],
     metadata: {
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV || "development",
       ...options.metadata,
     },
     input: options.input,
@@ -66,6 +69,6 @@ export const flushLangfuse = async (): Promise<void> => {
 };
 
 // Register process shutdown hooks for graceful flush
-process.on('beforeExit', () => {
+process.on("beforeExit", () => {
   void flushLangfuse();
 });

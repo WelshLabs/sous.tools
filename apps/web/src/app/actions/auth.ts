@@ -15,16 +15,13 @@ export async function logoutAction() {
     .join("; ");
 
   try {
-    await fetch(
-      `${config.NEXT_PUBLIC_API_URL}/auth/logout`,
-      {
-        method: "POST",
-        headers: {
-          // Pass the browser cookies so NestJS can read and clear them.
-          Cookie: cookieHeader,
-        },
+    await fetch(`${config.NEXT_PUBLIC_API_URL}/auth/logout`, {
+      method: "POST",
+      headers: {
+        // Pass the browser cookies so NestJS can read and clear them.
+        Cookie: cookieHeader,
       },
-    );
+    });
   } catch (error) {
     console.error("Logout API call failed", error);
   }

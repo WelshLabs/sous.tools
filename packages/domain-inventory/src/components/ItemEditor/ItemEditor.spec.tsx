@@ -4,13 +4,7 @@ import { ItemEditor } from "./ItemEditor.container";
 
 describe("ItemEditor", () => {
   it("renders correctly", () => {
-    render(
-      <ItemEditor
-        item={null}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />
-    );
+    render(<ItemEditor item={null} onClose={vi.fn()} onSave={vi.fn()} />);
     expect(screen.getByText("New Ledger Item")).toBeInTheDocument();
   });
 });

@@ -11,7 +11,9 @@ export async function uploadFile(file: File): Promise<string> {
     });
 
     if (error) {
-      throw new Error(`Failed to retrieve signed upload URL: ${JSON.stringify(error)}`);
+      throw new Error(
+        `Failed to retrieve signed upload URL: ${JSON.stringify(error)}`,
+      );
     }
 
     const payload = data as any;

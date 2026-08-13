@@ -28,7 +28,6 @@ Follow these principles for ALL Langfuse work:
 4. **Use latest Langfuse versions**: Unless the user specified otherwise or there's a good reason, always use the latest version of Langfuse SDKs/APIs. Even if you're only creating a plan for another agent to execute, be explicit about the exact version to use.
 5. **If you guide the user through UI** and are unsure about a label or location, inspect the user’s screenshots or ask to see the relevant screen. Do not assume UI labels have the exact same names as API, SDK, or CLI fields.
 
-
 ## Use case specific references
 
 - instrumenting an existing function/application: references/instrumentation.md
@@ -43,7 +42,6 @@ Follow these principles for ALL Langfuse work:
 - systematic error analysis — reading traces, building failure taxonomy, deciding what to fix: references/error-analysis.md
 - setting up CI/CD experiment gates with `langfuse/experiment-action`: references/ci-cd.md
 - submitting feedback about this skill: references/skill-feedback.md
-
 
 ## 1. Langfuse API via CLI
 
@@ -71,6 +69,7 @@ export LANGFUSE_PUBLIC_KEY=pk-lf-...
 export LANGFUSE_SECRET_KEY=sk-lf-...
 export LANGFUSE_BASE_URL=https://cloud.langfuse.com # example for EU cloud. For US cloud it's us.cloud.langfuse.com, and can also be a self-hosted URL. The server must always be specified in order to access Langfuse.
 ```
+
 If `LANGFUSE_BASE_URL` is used instead of `LANGFUSE_HOST`, run `export LANGFUSE_HOST="$LANGFUSE_BASE_URL"`.
 If not set, ask the user to set them in their shell or a `.env` file (do not ask them to paste keys into chat for security reasons). Keys are found in Langfuse UI → Settings → API Keys.
 

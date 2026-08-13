@@ -8,7 +8,9 @@ export default async function TransactionsPage() {
   let initialTransactions = [];
 
   try {
-    const { data, error } = await (api.GET as any)("/pos/transactions", { cache: "no-store" });
+    const { data, error } = await (api.GET as any)("/pos/transactions", {
+      cache: "no-store",
+    });
     if (!error && data) {
       initialTransactions = (data as any).data || data;
     }

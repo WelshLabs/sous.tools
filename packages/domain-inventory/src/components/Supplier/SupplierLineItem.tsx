@@ -71,9 +71,7 @@ export function OrderItemRow({
 
         <select
           value={item.supplier?.id ?? ""}
-          onChange={(e) =>
-            onChangeSupplier(item.id, e.target.value || null)
-          }
+          onChange={(e) => onChangeSupplier(item.id, e.target.value || null)}
           className="bg-secondary border border-border rounded-xl px-3 h-10 text-[10px] font-black uppercase appearance-none text-foreground min-w-[130px] outline-none focus:border-primary/50 transition-colors"
         >
           <option value="">Move to...</option>

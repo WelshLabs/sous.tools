@@ -99,4 +99,3 @@ export interface IntegrationStatus {
   connectedAs?: string;
   details?: Record<string, unknown>;
 }
-

@@ -66,12 +66,12 @@ describe("Neo4jSync", () => {
         old_record: null,
       };
 
-      await expect(
-        controller.handleWebhook(payload, "")
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(controller.handleWebhook(payload, "")).rejects.toThrow(
+        UnauthorizedException,
+      );
 
       await expect(
-        controller.handleWebhook(payload, "wrong-sig")
+        controller.handleWebhook(payload, "wrong-sig"),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -116,7 +116,7 @@ describe("Neo4jSync", () => {
           email: "test@example.com",
           role: "authenticated",
           fullName: "Conar Welsh",
-        })
+        }),
       );
     });
 
@@ -161,7 +161,7 @@ describe("Neo4jSync", () => {
           yieldCount: 8,
           yieldUnit: "slices",
           status: "APPROVED",
-        })
+        }),
       );
 
       expect(mockRepository.createRelationship).toHaveBeenCalledWith(
@@ -170,7 +170,7 @@ describe("Neo4jSync", () => {
         "Organization",
         "org-1",
         "BELONGS_TO",
-        "out"
+        "out",
       );
 
       expect(mockRepository.createRelationship).toHaveBeenCalledWith(
@@ -179,7 +179,7 @@ describe("Neo4jSync", () => {
         "VesselProfile",
         "vessel-1",
         "USES_VESSEL",
-        "out"
+        "out",
       );
     });
 
@@ -211,7 +211,10 @@ describe("Neo4jSync", () => {
 
       await service.handleWebhook(payload);
 
-      expect(mockRepository.deleteNode).toHaveBeenCalledWith("Recipe", "recipe-1");
+      expect(mockRepository.deleteNode).toHaveBeenCalledWith(
+        "Recipe",
+        "recipe-1",
+      );
     });
 
     it("should run upsertNode and create relationships on recipe_ingredients INSERT/UPDATE", async () => {
@@ -239,7 +242,7 @@ describe("Neo4jSync", () => {
           amount: 2.5,
           unit: "oz",
           prepNotes: "chopped",
-        })
+        }),
       );
 
       expect(mockRepository.createRelationship).toHaveBeenCalledWith(
@@ -248,7 +251,7 @@ describe("Neo4jSync", () => {
         "Recipe",
         "recipe-123",
         "INGREDIENT_OF",
-        "out"
+        "out",
       );
 
       expect(mockRepository.createRelationship).toHaveBeenCalledWith(
@@ -257,7 +260,7 @@ describe("Neo4jSync", () => {
         "MasterItem",
         "mi-456",
         "OF_INGREDIENT",
-        "out"
+        "out",
       );
     });
 
@@ -283,7 +286,7 @@ describe("Neo4jSync", () => {
         "Organization",
         "org-1",
         "MEMBER_OF",
-        expect.objectContaining({ role: "ADMIN" })
+        expect.objectContaining({ role: "ADMIN" }),
       );
     });
 
@@ -307,7 +310,7 @@ describe("Neo4jSync", () => {
         "user-1",
         "Organization",
         "org-1",
-        "MEMBER_OF"
+        "MEMBER_OF",
       );
     });
 
@@ -343,7 +346,7 @@ describe("Neo4jSync", () => {
           quantity: 2.5,
           basePriceMoney: 12.5,
           grossSalesMoney: 31.25,
-        })
+        }),
       );
     });
 

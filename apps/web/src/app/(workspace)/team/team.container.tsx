@@ -27,7 +27,9 @@ export function TeamPortalContainer() {
       });
 
       if (error) {
-        throw new Error(typeof error === "string" ? error : JSON.stringify(error));
+        throw new Error(
+          typeof error === "string" ? error : JSON.stringify(error),
+        );
       }
 
       setStatus("success");

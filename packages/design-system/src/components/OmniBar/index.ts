@@ -10,7 +10,10 @@ export type { StagedFile } from "./OmniBarContext";
 export { VerificationPanel } from "./VerificationPanel";
 export type { VerificationPanelProps } from "./VerificationPanel";
 export { CreatableSelect } from "./CreatableSelect";
-export type { CreatableSelectProps, CreatableSelectOption } from "./CreatableSelect";
+export type {
+  CreatableSelectProps,
+  CreatableSelectOption,
+} from "./CreatableSelect";
 export { UnifiedReviewPanel } from "./UnifiedReviewPanel";
 export type { UnifiedReviewPanelProps } from "./UnifiedReviewPanel";
 export { OmnibarPerimeterView } from "./OmnibarPerimeterView";

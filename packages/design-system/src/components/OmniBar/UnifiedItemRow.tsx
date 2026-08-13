@@ -37,18 +37,24 @@ function ConfidenceBadge({
   matchColor: "green" | "yellow" | "orange";
 }) {
   const colors = {
-    green:  "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    green: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
     yellow: "bg-amber-500/15   text-amber-400   border-amber-500/30",
     orange: "bg-orange-500/15  text-orange-400  border-orange-500/30",
   }[matchColor];
   const dot = {
-    green: "bg-emerald-400", yellow: "bg-amber-400", orange: "bg-orange-400",
+    green: "bg-emerald-400",
+    yellow: "bg-amber-400",
+    orange: "bg-orange-400",
   }[matchColor];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${colors}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${colors}`}
+    >
       <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${dot}`} />
       <span className="truncate max-w-[160px]">{name}</span>
-      <span className="font-mono text-[10px] opacity-70">{Math.round(similarity * 100)}%</span>
+      <span className="font-mono text-[10px] opacity-70">
+        {Math.round(similarity * 100)}%
+      </span>
     </span>
   );
 }
@@ -86,15 +92,15 @@ function InlineDropdown({
     c === "green"
       ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
       : c === "yellow"
-      ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-      : "bg-orange-500/10 text-orange-400 border-orange-500/20";
+        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+        : "bg-orange-500/10 text-orange-400 border-orange-500/20";
 
   const hasSuggestions = !!suggestions?.length && !search;
   const hasFiltered = filteredItems.length > 0;
   const canCreate =
     !!search.trim() &&
     !filteredItems.some(
-      (o) => o.name.toLowerCase() === search.trim().toLowerCase()
+      (o) => o.name.toLowerCase() === search.trim().toLowerCase(),
     );
 
   if (!hasSuggestions && !hasFiltered && !canCreate) return null;
@@ -114,7 +120,9 @@ function InlineDropdown({
                 onClick={() => onSelectItem(sug.itemId, sug.similarity)}
                 className="w-full text-left px-3 py-1.5 hover:bg-cyan-500/10 flex items-center justify-between gap-2"
               >
-                <span className="truncate font-medium text-zinc-200">{sug.name}</span>
+                <span className="truncate font-medium text-zinc-200">
+                  {sug.name}
+                </span>
                 <span
                   className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border flex-shrink-0 ${getMatchColors(sug.matchColor)}`}
                 >
@@ -136,7 +144,9 @@ function InlineDropdown({
                 type="button"
                 onClick={() => onSelectItem(opt.id, 1.0)}
                 className={`w-full text-left px-3 py-1.5 hover:bg-cyan-500/10 flex items-center ${
-                  opt.id === currentItemId ? "text-emerald-400 font-semibold" : "text-zinc-300"
+                  opt.id === currentItemId
+                    ? "text-emerald-400 font-semibold"
+                    : "text-zinc-300"
                 }`}
               >
                 <span className="truncate">{opt.name}</span>
@@ -177,7 +187,9 @@ export function UnifiedItemRow({
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isLinkingUsda, setIsLinkingUsda] = useState(false);
-  const [localItems, setLocalItems] = useState<Array<{ id: string; name: string }>>([]);
+  const [localItems, setLocalItems] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -206,7 +218,9 @@ export function UnifiedItemRow({
   }, [masterIngredients, localItems]);
 
   const currentSelected = mergedIngredients.find((o) => o.id === item.itemId);
-  const selectedSuggestion = item.suggestions?.find((s) => s.itemId === item.itemId);
+  const selectedSuggestion = item.suggestions?.find(
+    (s) => s.itemId === item.itemId,
+  );
 
   // Open the inline override editor, pre-filling the input with the best available name
   const openOverride = (prefill?: string) => {
@@ -227,13 +241,26 @@ export function UnifiedItemRow({
 
   // Auto-select top suggestion if confidence ≥ 0.90 and nothing is mapped yet
   useEffect(() => {
-    if (!item.itemId && !item.isNonInventoryExpense && item.suggestions?.length) {
+    if (
+      !item.itemId &&
+      !item.isNonInventoryExpense &&
+      item.suggestions?.length
+    ) {
       const top = item.suggestions[0];
       if (top.similarity >= 0.9) {
-        onUpdateItem?.(index, { itemId: top.itemId, confidence: top.similarity });
+        onUpdateItem?.(index, {
+          itemId: top.itemId,
+          confidence: top.similarity,
+        });
       }
     }
-  }, [item.itemId, item.isNonInventoryExpense, item.suggestions, index, onUpdateItem]);
+  }, [
+    item.itemId,
+    item.isNonInventoryExpense,
+    item.suggestions,
+    index,
+    onUpdateItem,
+  ]);
 
   // Close inline edit on outside click
   useEffect(() => {
@@ -252,7 +279,7 @@ export function UnifiedItemRow({
   const filtered = mergedIngredients.filter(
     (opt) =>
       opt.name.toLowerCase().includes(search.toLowerCase()) &&
-      !item.suggestions?.some((s) => s.itemId === opt.id)
+      !item.suggestions?.some((s) => s.itemId === opt.id),
   );
 
   // Selecting a tenant item — persists alias to vendor_item_aliases
@@ -350,7 +377,9 @@ export function UnifiedItemRow({
             &ldquo;{item.suggestedInternalName}&rdquo;
           </strong>
           {item.category && (
-            <span className="text-zinc-600 ml-1 not-italic">({item.category})</span>
+            <span className="text-zinc-600 ml-1 not-italic">
+              ({item.category})
+            </span>
           )}
         </span>
       )}
@@ -358,20 +387,28 @@ export function UnifiedItemRow({
       {/* ── Quantity / unit / price row ── */}
       <div className="flex items-center gap-3 text-[11px] text-zinc-500 font-mono">
         {item.amount != null && (
-          <span>qty: <span className="text-zinc-300">{item.amount}</span></span>
+          <span>
+            qty: <span className="text-zinc-300">{item.amount}</span>
+          </span>
         )}
         {item.unit && (
-          <span>unit: <span className="text-zinc-300">{item.unit}</span></span>
+          <span>
+            unit: <span className="text-zinc-300">{item.unit}</span>
+          </span>
         )}
         {item.price != null && (
-          <span>price: <span className="text-zinc-300">${Number(item.price).toFixed(2)}</span></span>
+          <span>
+            price:{" "}
+            <span className="text-zinc-300">
+              ${Number(item.price).toFixed(2)}
+            </span>
+          </span>
         )}
       </div>
 
       {/* ── Mapping chain ── */}
       {!isExpense ? (
         <div className="flex flex-col gap-1.5">
-
           {/* Step 1 — Tenant mapping row */}
           <div
             ref={containerRef}
@@ -512,7 +549,8 @@ export function UnifiedItemRow({
                 ) : (
                   <Plus className="h-3 w-3" />
                 )}
-                Create &ldquo;{item.suggestedInternalName || item.rawName}&rdquo;
+                Create &ldquo;{item.suggestedInternalName || item.rawName}
+                &rdquo;
               </button>
             </div>
           )}

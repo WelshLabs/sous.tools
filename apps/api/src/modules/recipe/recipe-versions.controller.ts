@@ -1,5 +1,11 @@
-import { Controller, Get, Post, Param, NotFoundException } from '@nestjs/common';
-import { supabase } from '../../lib/supabase';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  NotFoundException,
+} from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -8,15 +14,17 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-@Controller('recipes')
+@Controller("recipes")
 export class RecipeVersionsController {
-  @Post(':id/versions')
-  async createVersion(@Param('id') id: string): Promise<ApiResponse<{ versionId: string; versionNumber: number }>> {
+  @Post(":id/versions")
+  async createVersion(
+    @Param("id") id: string,
+  ): Promise<ApiResponse<{ versionId: string; versionNumber: number }>> {
     try {
       const { data: recipe, error: recipeError } = await supabase
-        .from('recipes')
-        .select('*')
-        .eq('id', id)
+        .from("recipes")
+        .select("*")
+        .eq("id", id)
         .single();
 
       if (recipeError || !recipe) {
@@ -24,29 +32,30 @@ export class RecipeVersionsController {
       }
 
       const { data: ingredients, error: ingError } = await supabase
-        .from('recipe_ingredients')
-        .select('*')
-        .eq('recipe_id', id);
+        .from("recipe_ingredients")
+        .select("*")
+        .eq("recipe_id", id);
 
       if (ingError) {
         throw new Error(ingError.message);
       }
 
       const { data: versions, error: verError } = await supabase
-        .from('formula_versions')
-        .select('version_number')
-        .eq('recipe_id', id)
-        .order('version_number', { ascending: false })
+        .from("formula_versions")
+        .select("version_number")
+        .eq("recipe_id", id)
+        .order("version_number", { ascending: false })
         .limit(1);
 
       if (verError) {
         throw new Error(verError.message);
       }
 
-      const nextVersion = versions && versions.length > 0 ? (versions[0].version_number + 1) : 1;
+      const nextVersion =
+        versions && versions.length > 0 ? versions[0].version_number + 1 : 1;
 
       const { data: inserted, error: insertError } = await supabase
-        .from('formula_versions')
+        .from("formula_versions")
         .insert([
           {
             recipe_id: id,
@@ -77,20 +86,20 @@ export class RecipeVersionsController {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }
   }
 
-  @Get(':id/versions')
-  async getVersions(@Param('id') id: string): Promise<ApiResponse<unknown[]>> {
+  @Get(":id/versions")
+  async getVersions(@Param("id") id: string): Promise<ApiResponse<unknown[]>> {
     try {
       const { data, error } = await supabase
-        .from('formula_versions')
-        .select('*')
-        .eq('recipe_id', id)
-        .order('version_number', { ascending: false });
+        .from("formula_versions")
+        .select("*")
+        .eq("recipe_id", id)
+        .order("version_number", { ascending: false });
 
       if (error) {
         throw new Error(error.message);
@@ -104,7 +113,7 @@ export class RecipeVersionsController {
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: err instanceof Error ? err.message : "Unknown error",
         timestamp: new Date().toISOString(),
       };
     }

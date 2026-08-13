@@ -1,11 +1,7 @@
 import { z } from "zod";
 
 export type IngestionSource =
-  | "google_drive"
-  | "camera"
-  | "share_target"
-  | "upload"
-  | "omnibar";
+  "google_drive" | "camera" | "share_target" | "upload" | "omnibar";
 
 export interface IngestionPayload {
   organizationId: string;
@@ -22,7 +18,13 @@ export interface IngestionPayload {
 export const IngestionPayloadSchema = z.object({
   organizationId: z.string(),
   userId: z.string(),
-  source: z.enum(["google_drive", "camera", "share_target", "upload", "omnibar"] as const),
+  source: z.enum([
+    "google_drive",
+    "camera",
+    "share_target",
+    "upload",
+    "omnibar",
+  ] as const),
   documentType: z.enum(["recipe", "invoice"]),
   fileIds: z.array(z.string()).optional(),
   imagesBase64: z.array(z.string()).optional(),
@@ -145,7 +147,10 @@ export const OcrInvoiceIngestionPayloadSchema = z
             raw_description: z.string(),
             uom: nullableString,
             unit: nullableString,
-            category: z.enum(['ingredient', 'cleaning', 'office', 'packaging', 'other']).optional().nullable(),
+            category: z
+              .enum(["ingredient", "cleaning", "office", "packaging", "other"])
+              .optional()
+              .nullable(),
             pack_size: nullableString,
             ordered_quantity: z.number(),
             ordered_unit: z.string(),
@@ -193,7 +198,7 @@ export const RecipeExtractionDTOSchema = z.object({
       itemId: z.string().uuid().nullable().optional(),
       confidence: z.number().nullable().optional(),
       sectionGroup: z.string().nullable().optional(),
-    })
+    }),
   ),
   instructions: z.array(z.string()),
 });

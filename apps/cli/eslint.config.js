@@ -1,11 +1,11 @@
 // apps/cli/eslint.config.js
-import { nestjsConfig } from "@soustools/eslint-config/nestjs";
+import { nestjsConfig } from '@soustools/eslint-config/nestjs';
 
 export default [
   ...nestjsConfig,
   {
-    files: ["src/**/*.ts"],
-    rules: { "boundaries/element-types": "off" },
+    files: ['src/**/*.ts'],
+    rules: { 'boundaries/element-types': 'off' },
   },
-  { ignores: ["dist/**", "node_modules/**", "playwright-session/**"] },
+  { ignores: ['dist/**', 'node_modules/**', 'playwright-session/**'] },
 ];

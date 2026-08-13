@@ -45,7 +45,7 @@ export function CreatableSelect({
   }, []);
 
   const filteredOptions = options.filter((o) =>
-    o.name.toLowerCase().includes(search.toLowerCase())
+    o.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const showCreateOption =
@@ -67,7 +67,10 @@ export function CreatableSelect({
         <span className="truncate">
           {selectedOption ? selectedOption.name : placeholder}
         </span>
-        <ChevronDown size={16} className="text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0" />
+        <ChevronDown
+          size={16}
+          className="text-zinc-500 dark:text-zinc-400 ml-2 flex-shrink-0"
+        />
       </div>
 
       {isOpen && (

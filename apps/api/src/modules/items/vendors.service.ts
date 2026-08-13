@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { supabase } from '../../lib/supabase';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
 
 export interface CreateVendorDto {
   name: string;
   order_days?: string[];
-  order_method?: 'EMAIL' | 'SMS' | 'MANUAL' | '';
+  order_method?: "EMAIL" | "SMS" | "MANUAL" | "";
   email?: string | null;
   phone?: string | null;
 }
@@ -15,10 +15,10 @@ export type UpdateVendorDto = Partial<CreateVendorDto>;
 export class VendorsService {
   async findAll(orgId: string): Promise<Record<string, unknown>[]> {
     const { data, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .eq('organization_id', orgId)
-      .order('name', { ascending: true });
+      .from("vendors")
+      .select("*")
+      .eq("organization_id", orgId)
+      .order("name", { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -28,20 +28,25 @@ export class VendorsService {
 
   async findOne(id: string): Promise<Record<string, unknown>> {
     const { data, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .eq('id', id)
+      .from("vendors")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error || !data) {
-      throw new NotFoundException(error?.message || `Vendor with ID ${id} not found`);
+      throw new NotFoundException(
+        error?.message || `Vendor with ID ${id} not found`,
+      );
     }
     return data;
   }
 
-  async create(orgId: string, dto: CreateVendorDto): Promise<Record<string, unknown>> {
+  async create(
+    orgId: string,
+    dto: CreateVendorDto,
+  ): Promise<Record<string, unknown>> {
     const { data, error } = await supabase
-      .from('vendors')
+      .from("vendors")
       .insert([
         {
           organization_id: orgId,
@@ -61,13 +66,16 @@ export class VendorsService {
     return data;
   }
 
-  async update(id: string, dto: UpdateVendorDto): Promise<Record<string, unknown>> {
+  async update(
+    id: string,
+    dto: UpdateVendorDto,
+  ): Promise<Record<string, unknown>> {
     const { data, error } = await supabase
-      .from('vendors')
+      .from("vendors")
       .update({
         ...dto,
       })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -79,9 +87,9 @@ export class VendorsService {
 
   async remove(id: string): Promise<Record<string, unknown>> {
     const { data, error } = await supabase
-      .from('vendors')
+      .from("vendors")
       .delete()
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 

@@ -37,4 +37,3 @@ export function getUpdatedTenderedBuffer(prev: string, val: string): string {
   if (val === "." && prev.includes(".")) return prev;
   return prev === "0" && val !== "." ? val : prev + val;
 }
-

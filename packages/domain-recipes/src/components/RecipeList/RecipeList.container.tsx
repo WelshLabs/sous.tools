@@ -1,4 +1,8 @@
-import { type Recipe, type RecipeCategory, type RecipeTag } from "@soustools/api-types";
+import {
+  type Recipe,
+  type RecipeCategory,
+  type RecipeTag,
+} from "@soustools/api-types";
 import { RecipeListView } from "./RecipeList.view";
 
 export interface RecipeListProps {
@@ -12,7 +16,9 @@ export interface RecipeListProps {
   selectedTag?: string | null;
   onSelectTag?: (id: string | null) => void;
   selectedStatus?: string;
-  onSelectStatus?: (status: "ALL" | "APPROVED" | "PENDING_REVIEW" | "ARCHIVED") => void;
+  onSelectStatus?: (
+    status: "ALL" | "APPROVED" | "PENDING_REVIEW" | "ARCHIVED",
+  ) => void;
   searchQuery?: string;
   onSearchQueryChange?: (query: string) => void;
   showFilter?: boolean;

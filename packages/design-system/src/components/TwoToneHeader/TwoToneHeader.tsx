@@ -55,9 +55,7 @@ export function TwoToneHeader({
   const rest = spaceIdx === -1 ? "" : title.slice(spaceIdx); // leading space preserved
 
   return (
-    <div
-      className={`flex items-start justify-between gap-4 ${className}`}
-    >
+    <div className={`flex items-start justify-between gap-4 ${className}`}>
       <div>
         {breadcrumb && (
           <p
@@ -67,9 +65,7 @@ export function TwoToneHeader({
             {breadcrumb}
           </p>
         )}
-        <h1
-          className="text-4xl font-black uppercase tracking-tighter leading-none"
-        >
+        <h1 className="text-4xl font-black uppercase tracking-tighter leading-none">
           <span style={{ color: "var(--color-foreground)" }}>{firstWord}</span>
           {rest && (
             <span style={{ color: "var(--color-primary)" }}>{rest}</span>

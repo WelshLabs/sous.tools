@@ -7,7 +7,9 @@ import { type RecipeExtractionDTO } from "@soustools/api-types";
 
 export function useOmniActions() {
   const { chatHistory, setChatHistory, contextPayload } = useOmnibarContext();
-  const organizationId = (contextPayload?.organizationId as string) || "d0000000-0000-0000-0000-000000000000";
+  const organizationId =
+    (contextPayload?.organizationId as string) ||
+    "d0000000-0000-0000-0000-000000000000";
 
   const handleConfirmAlias = async (rawName: string, itemId: string) => {
     try {
@@ -30,7 +32,7 @@ export function useOmniActions() {
   const handleUpdateIngredient = (
     msgIndex: number,
     ingIndex: number,
-    updates: Record<string, unknown>
+    updates: Record<string, unknown>,
   ) => {
     const updatedHistory = [...chatHistory];
     const msg = { ...updatedHistory[msgIndex] };
@@ -48,7 +50,7 @@ export function useOmniActions() {
   const handleUpdateInvoiceItem = (
     msgIndex: number,
     itemIndex: number,
-    updates: Record<string, unknown>
+    updates: Record<string, unknown>,
   ) => {
     const updatedHistory = [...chatHistory];
     const msg = { ...updatedHistory[msgIndex] };
@@ -97,15 +99,17 @@ export function useOmniActions() {
       }
 
       toast.success("Invoice confirmed and committed successfully!");
-      const updatedHistory = chatHistory.filter((m) => m.invoiceData !== invoice);
-      
+      const updatedHistory = chatHistory.filter(
+        (m) => m.invoiceData !== invoice,
+      );
+
       updatedHistory.push({
         id: crypto.randomUUID(),
         role: "model",
         content: `Invoice successfully processed and stock received!`,
         timestamp: new Date(),
       });
-      
+
       setChatHistory(updatedHistory);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
@@ -147,7 +151,7 @@ export function useOmniActions() {
 
       toast.success("Recipe confirmed and saved successfully!");
       const updatedHistory = chatHistory.filter((m) => m.recipeData !== recipe);
-      
+
       const recipeId = (data?.data as { id?: string })?.id;
       if (recipeId) {
         updatedHistory.push({
@@ -157,7 +161,7 @@ export function useOmniActions() {
           timestamp: new Date(),
         });
       }
-      
+
       setChatHistory(updatedHistory);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";

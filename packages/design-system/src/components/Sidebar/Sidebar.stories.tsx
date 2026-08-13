@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
-import { Home, Settings } from 'lucide-react';
-import { Sidebar } from './Sidebar';
-import { SidebarLayout } from './SidebarLayout';
+import type { Meta, StoryObj } from "@storybook/react";
+import React, { useState } from "react";
+import { Home, Settings } from "lucide-react";
+import { Sidebar } from "./Sidebar";
+import { SidebarLayout } from "./SidebarLayout";
 
 const meta: Meta<typeof Sidebar> = {
-  title: 'Components/Sidebar',
+  title: "Components/Sidebar",
   component: Sidebar,
   parameters: {
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
 };
 
@@ -16,11 +16,13 @@ export default meta;
 type Story = StoryObj<typeof Sidebar>;
 
 const navItems = [
-  { label: 'Home', href: '/', icon: Home },
-  { label: 'Settings', href: '/settings', icon: Settings },
+  { label: "Home", href: "/", icon: Home },
+  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-const SidebarWrapper = (args: Partial<React.ComponentProps<typeof Sidebar>>) => {
+const SidebarWrapper = (
+  args: Partial<React.ComponentProps<typeof Sidebar>>,
+) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
 
@@ -54,5 +56,5 @@ export const LayoutStory: StoryObj<typeof SidebarLayout> = {
         mainContent={<div className="p-4">Main Content</div>}
       />
     );
-  }
+  },
 };

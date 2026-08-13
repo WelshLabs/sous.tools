@@ -1,4 +1,7 @@
-import { type ModifierGroup, type ModifierOption } from "./components/pos-modifiers-modal";
+import {
+  type ModifierGroup,
+  type ModifierOption,
+} from "./components/pos-modifiers-modal";
 import { type CatalogItem, type CartItem } from "./pos.types";
 
 export const MOCK_BURGER_MODIFIERS: ModifierGroup[] = [
@@ -30,13 +33,29 @@ export const MOCK_BURGER_MODIFIERS: ModifierGroup[] = [
 
 export const getCategory = (itemName: string): string => {
   const name = itemName.toLowerCase();
-  if (name.includes("burger") || name.includes("sandwich") || name.includes("steak") || name.includes("salmon")) {
+  if (
+    name.includes("burger") ||
+    name.includes("sandwich") ||
+    name.includes("steak") ||
+    name.includes("salmon")
+  ) {
     return "Mains";
   }
-  if (name.includes("salad") || name.includes("fries") || name.includes("soup") || name.includes("tater")) {
+  if (
+    name.includes("salad") ||
+    name.includes("fries") ||
+    name.includes("soup") ||
+    name.includes("tater")
+  ) {
     return "Sides/Salads";
   }
-  if (name.includes("beer") || name.includes("ipa") || name.includes("drink") || name.includes("soda") || name.includes("water")) {
+  if (
+    name.includes("beer") ||
+    name.includes("ipa") ||
+    name.includes("drink") ||
+    name.includes("soda") ||
+    name.includes("water")
+  ) {
     return "Beverages";
   }
   return "Other";
@@ -50,7 +69,10 @@ interface WindowWithAudioContext extends Window {
 
 export function playSuccessSound() {
   try {
-    const audioCtx = new (window.AudioContext || (window as WindowWithAudioContext).webkitAudioContext)();
+    const audioCtx = new (
+      window.AudioContext ||
+      (window as WindowWithAudioContext).webkitAudioContext
+    )();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
@@ -67,25 +89,46 @@ export function playSuccessSound() {
   }
 }
 
-export function getFilteredItems(items: CatalogItem[], searchQuery: string, selectedCategory: string): CatalogItem[] {
+export function getFilteredItems(
+  items: CatalogItem[],
+  searchQuery: string,
+  selectedCategory: string,
+): CatalogItem[] {
   return items.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === "" ||
-      (item.category && item.category.trim().toLowerCase() === selectedCategory.trim().toLowerCase());
+      (item.category &&
+        item.category.trim().toLowerCase() ===
+          selectedCategory.trim().toLowerCase());
     return matchesSearch && matchesCategory;
   });
 }
 
 export function calculateTotals(cart: CartItem[]) {
-  const subtotal = cart.reduce((sum, item) => sum + (item.price + item.modifiers.reduce((mSum, m) => mSum + m.price, 0)) * item.quantity, 0);
+  const subtotal = cart.reduce(
+    (sum, item) =>
+      sum +
+      (item.price + item.modifiers.reduce((mSum, m) => mSum + m.price, 0)) *
+        item.quantity,
+    0,
+  );
   const tax = subtotal * 0.0825;
   const total = subtotal + tax;
   return { subtotal, tax, total };
 }
 
-export function buildCartWithAddedItem(prevCart: CartItem[], item: CatalogItem, selectedMods: ModifierOption[]): CartItem[] {
-  const cartItemKey = `${item.id}-${selectedMods.map((m) => m.id).sort().join("-")}`;
+export function buildCartWithAddedItem(
+  prevCart: CartItem[],
+  item: CatalogItem,
+  selectedMods: ModifierOption[],
+): CartItem[] {
+  const cartItemKey = `${item.id}-${selectedMods
+    .map((m) => m.id)
+    .sort()
+    .join("-")}`;
   const existingIndex = prevCart.findIndex((ci) => ci.id === cartItemKey);
   if (existingIndex > -1) {
     const updated = [...prevCart];
@@ -112,9 +155,21 @@ export function buildCartWithAddedItem(prevCart: CartItem[], item: CatalogItem, 
 
 export function parseCatalogPayload(data: unknown) {
   const payload = (data as Record<string, unknown>)?.data || data;
-  const rawCategories = ((payload as Record<string, unknown>)?.categories as Record<string, unknown>[]) || [];
-  const rawItems = ((payload as Record<string, unknown>)?.items as Record<string, unknown>[]) || [];
-  const rawGroups = ((payload as Record<string, unknown>)?.modifierGroups as Record<string, unknown>[]) || [];
+  const rawCategories =
+    ((payload as Record<string, unknown>)?.categories as Record<
+      string,
+      unknown
+    >[]) || [];
+  const rawItems =
+    ((payload as Record<string, unknown>)?.items as Record<
+      string,
+      unknown
+    >[]) || [];
+  const rawGroups =
+    ((payload as Record<string, unknown>)?.modifierGroups as Record<
+      string,
+      unknown
+    >[]) || [];
 
   const categoryMap = new Map<string, string>();
   const catNamesSet = new Set<string>();
@@ -134,11 +189,13 @@ export function parseCatalogPayload(data: unknown) {
     required: (Number(mg.min_selected_modifiers) || 0) > 0,
     minSelections: Number(mg.min_selected_modifiers) || 0,
     maxSelections: Number(mg.max_selected_modifiers) || 10,
-    options: ((mg.pos_modifier_options as Record<string, unknown>[]) || []).map((mo) => ({
-      id: String(mo.id || ""),
-      name: String(mo.name || ""),
-      price: Number(mo.price || 0),
-    })),
+    options: ((mg.pos_modifier_options as Record<string, unknown>[]) || []).map(
+      (mo) => ({
+        id: String(mo.id || ""),
+        name: String(mo.name || ""),
+        price: Number(mo.price || 0),
+      }),
+    ),
   }));
 
   const mappedItems: CatalogItem[] = rawItems.map((item) => {
@@ -172,11 +229,15 @@ export function parseCatalogPayload(data: unknown) {
       image: item.image_url ? String(item.image_url) : undefined,
       isSoldOut: Boolean(item.is_sold_out || false),
       description: item.description ? String(item.description) : undefined,
-      modifierGroupIds: ((item.pos_item_modifier_groups as Record<string, unknown>[]) || []).map((g) => String(g.modifier_group_id)),
+      modifierGroupIds: (
+        (item.pos_item_modifier_groups as Record<string, unknown>[]) || []
+      ).map((g) => String(g.modifier_group_id)),
     };
   });
 
-  return { categories: Array.from(catNamesSet), modifierGroups: mappedGroups, items: mappedItems };
+  return {
+    categories: Array.from(catNamesSet),
+    modifierGroups: mappedGroups,
+    items: mappedItems,
+  };
 }
-
-

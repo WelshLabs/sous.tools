@@ -4,7 +4,7 @@ export interface Vendor {
   id: string;
   organization_id: string;
   name: string;
-  order_method: 'EMAIL' | 'SMS' | 'MANUAL' | '';
+  order_method: "EMAIL" | "SMS" | "MANUAL" | "";
   email?: string;
   phone?: string;
   order_days?: string[];
@@ -23,10 +23,10 @@ export interface PurchaseOrder {
   id: string;
   organization_id: string;
   vendor_id: string;
-  status: 'DRAFT' | 'SUBMITTED' | 'RECEIVED' | 'RECONCILED';
+  status: "DRAFT" | "SUBMITTED" | "RECEIVED" | "RECONCILED";
   order_date: string;
   created_at: string;
-  
+
   vendors?: Vendor;
   purchase_order_items?: PurchaseOrderItem[];
 }
@@ -52,5 +52,6 @@ export const CreatePurchaseOrderSchema = z.object({
 });
 
 export type OrderItemPayload = z.infer<typeof OrderItemSchema>;
-export type CreatePurchaseOrderPayload = z.infer<typeof CreatePurchaseOrderSchema>;
-
+export type CreatePurchaseOrderPayload = z.infer<
+  typeof CreatePurchaseOrderSchema
+>;

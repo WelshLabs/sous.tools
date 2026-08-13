@@ -35,7 +35,7 @@ import { HealthModule } from "./health/health.module";
 if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
   throw new Error(
     `FATAL: REDIS_HOST resolved to '127.0.0.1' in production. ` +
-    `Infisical must provide a real Redis hostname (e.g. 'redis').`
+      `Infisical must provide a real Redis hostname (e.g. 'redis').`,
   );
 }
 

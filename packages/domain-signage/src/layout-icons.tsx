@@ -1,5 +1,5 @@
-
-const iconCls = "rounded border border-white/20 bg-background/10 dark:bg-background/10";
+const iconCls =
+  "rounded border border-white/20 bg-background/10 dark:bg-background/10";
 
 export const FullScreenIcon: React.FC = () => (
   <div className="w-20 h-12 flex items-center justify-center">
@@ -22,8 +22,14 @@ export const SplitIcon: React.FC<{ ratio: SplitRatioLabel }> = ({ ratio }) => {
   const total = parts[0] + parts[1];
   return (
     <div className="w-20 h-12 flex gap-0.5">
-      <div className={`h-full ${iconCls}`} style={{ width: `${(parts[0] / total) * 100}%` }} />
-      <div className={`h-full ${iconCls}`} style={{ width: `${(parts[1] / total) * 100}%` }} />
+      <div
+        className={`h-full ${iconCls}`}
+        style={{ width: `${(parts[0] / total) * 100}%` }}
+      />
+      <div
+        className={`h-full ${iconCls}`}
+        style={{ width: `${(parts[1] / total) * 100}%` }}
+      />
     </div>
   );
 };

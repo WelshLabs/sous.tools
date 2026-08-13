@@ -9,16 +9,20 @@ describe("SignagePreviewView", () => {
       id: "preview-1",
       name: "Preview",
       aspectRatio: "16:9",
-      slides: [{
-        id: "slide-1",
-        type: "COLUMN_LAYOUT",
-        duration: 10,
-        columns: [{
-          id: "col-1",
-          width: "100%",
-          blocks: []
-        }]
-      }]
+      slides: [
+        {
+          id: "slide-1",
+          type: "COLUMN_LAYOUT",
+          duration: 10,
+          columns: [
+            {
+              id: "col-1",
+              width: "100%",
+              blocks: [],
+            },
+          ],
+        },
+      ],
     };
 
     render(
@@ -30,7 +34,7 @@ describe("SignagePreviewView", () => {
         scale={1}
         containerRef={{ current: null }}
         fetchModifiers={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText("Empty Canvas")).toBeDefined();

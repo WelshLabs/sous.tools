@@ -1,11 +1,11 @@
-import type { Meta } from '@storybook/react';
-import { Hamburger } from './Hamburger';
-import { useState } from 'react';
+import type { Meta } from "@storybook/react";
+import { Hamburger } from "./Hamburger";
+import { useState } from "react";
 
 const meta: Meta<typeof Hamburger> = {
-  title: 'Components/Hamburger',
+  title: "Components/Hamburger",
   component: Hamburger,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 export default meta;
 

@@ -1,7 +1,9 @@
 import {
   WebSocketGateway,
   WebSocketServer,
-  SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect,
+  SubscribeMessage,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { SignageLayoutConfig } from "@soustools/api-types";
@@ -68,9 +70,7 @@ export class SignageGateway
    */
   broadcastDeckUpdate(deckId: string, config: SignageLayoutConfig): void {
     if (this.server) {
-      this.server
-        .to(`deck:${deckId}`)
-        .emit("deck_updated", { deckId, config });
+      this.server.to(`deck:${deckId}`).emit("deck_updated", { deckId, config });
     }
   }
 
@@ -86,9 +86,7 @@ export class SignageGateway
   /** Broadcasts all updated POS items to clients subscribed to a deck room. */
   broadcastItemsUpdate(deckId: string, items: unknown[]): void {
     if (this.server) {
-      this.server
-        .to(`deck:${deckId}`)
-        .emit("items_updated", { deckId, items });
+      this.server.to(`deck:${deckId}`).emit("items_updated", { deckId, items });
     }
   }
 
@@ -98,14 +96,12 @@ export class SignageGateway
   broadcastDevicePaired(deviceId: string, orgId: string): void {
     import("@soustools/config/server").then(({ serverConfig: config }) => {
       if (this.server) {
-        this.server
-          .to(`pairing:${deviceId}`)
-          .emit("device_paired", { 
-            deviceId, 
-            orgId,
-            supabaseUrl: config.NEXT_PUBLIC_SUPABASE_URL,
-            supabaseAnonKey: config.NEXT_PUBLIC_SUPABASE_ANON_KEY
-          });
+        this.server.to(`pairing:${deviceId}`).emit("device_paired", {
+          deviceId,
+          orgId,
+          supabaseUrl: config.NEXT_PUBLIC_SUPABASE_URL,
+          supabaseAnonKey: config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        });
       }
     });
   }

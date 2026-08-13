@@ -11,8 +11,26 @@ import { RecipeCostService } from "./recipe-cost.service";
 import { RecipeVersionsController } from "./recipe-versions.controller";
 
 @Module({
-  controllers: [RecipesController, IngredientsController, VesselsController, RecipeMetaController, RecipeVersionsController],
-  providers: [RecipesService, IngredientsService, VesselsService, RecipeMetaService, RecipeCostService],
-  exports: [RecipesService, IngredientsService, VesselsService, RecipeMetaService, RecipeCostService],
+  controllers: [
+    RecipesController,
+    IngredientsController,
+    VesselsController,
+    RecipeMetaController,
+    RecipeVersionsController,
+  ],
+  providers: [
+    RecipesService,
+    IngredientsService,
+    VesselsService,
+    RecipeMetaService,
+    RecipeCostService,
+  ],
+  exports: [
+    RecipesService,
+    IngredientsService,
+    VesselsService,
+    RecipeMetaService,
+    RecipeCostService,
+  ],
 })
 export class RecipeModule {}

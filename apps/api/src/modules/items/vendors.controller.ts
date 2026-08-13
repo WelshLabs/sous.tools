@@ -7,7 +7,10 @@ import {
   Body,
   Param,
 } from "@nestjs/common";
-import { VendorsService, type CreateVendorDto, type UpdateVendorDto,
+import {
+  VendorsService,
+  type CreateVendorDto,
+  type UpdateVendorDto,
 } from "./vendors.service";
 import { ApiResponse } from "./inventory.controller";
 
