@@ -11,31 +11,28 @@ $ tsc
 cache miss, executing 171e284798ee9efa
 $ tsc
 ::endgroup::
-[;31m@soustools/api-client:test[;0m
-cache miss, executing db379b13a0c5ffec
+[;31m@soustools/domain-inventory:test[;0m
+cache miss, executing 6172574e205c7d21
 $ vitest run --coverage --passWithNoTests
-[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
-
-[ELIFECYCLE] Test failed. See above for more details.
-::group::@soustools/domain-signage:test
-cache miss, executing 53f630c093b91df3
-$ vitest run --coverage --passWithNoTests
-[2m10:03:28 AM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
+[2m10:18:03 AM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
 `optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
 [33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
 [vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
 [1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
-[39m
 [ELIFECYCLE] Test failed. See above for more details.
-::endgroup::
-::group::@soustools/domain-inventory:test
-cache miss, executing 6172574e205c7d21
+::group::@soustools/api-client:test
+cache miss, executing db379b13a0c5ffec
 $ vitest run --coverage --passWithNoTests
 [ELIFECYCLE] Test failed. See above for more details.
 ::endgroup::
 ::group::@soustools/domain-settings:test
 cache miss, executing 980419ee5c694b80
+$ vitest run --coverage --passWithNoTests
+[ELIFECYCLE] Test failed. See above for more details.
+::endgroup::
+::group::@soustools/domain-pos:test
+cache miss, executing a0c28cac5b38cbd0
 $ vitest run --coverage --passWithNoTests
 [ELIFECYCLE] Test failed. See above for more details.
 ::endgroup::
@@ -49,22 +46,15 @@ cache miss, executing 4d4aa38b2498e9b1
 $ vitest run --coverage --passWithNoTests
 [ELIFECYCLE] Test failed. See above for more details.
 ::endgroup::
-::group::@soustools/domain-pos:test
-cache miss, executing a0c28cac5b38cbd0
+::group::@soustools/domain-signage:test
+cache miss, executing 53f630c093b91df3
 $ vitest run --coverage --passWithNoTests
-[2m10:03:29 AM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
-`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
-[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
-[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
-[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
-
 [ELIFECYCLE] Test failed. See above for more details.
-[39m
 ::endgroup::
 ::group::@soustools/design-system:test
 cache miss, executing 92125a43fbc54bfc
 $ vitest run --coverage --passWithNoTests
-[2m10:03:29 AM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
+[2m10:18:04 AM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
 `optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
 [33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
 [vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
@@ -76,6 +66,6 @@ $ vitest run --coverage --passWithNoTests
 
  Tasks:    2 successful, 10 total
 Cached:    0 cached, 10 total
-  Time:    6.441s 
-Failed:    @soustools/api-client#test
+  Time:    4.576s 
+Failed:    @soustools/domain-inventory#test
 
