@@ -31,34 +31,20 @@ src/react.tsx(4,10): error TS2305: Module '"./websocket"' has no exported member
 src/react.tsx(4,25): error TS2305: Module '"./websocket"' has no exported member 'SocketConfig'.
 src/react.tsx(29,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
 [ELIFECYCLE] Command failed with exit code 2.
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 00fe955f6490c59d
-::endgroup::
-::group::@soustools/domain-inventory:typecheck
-cache miss, executing 4abcf7914920b294
-::endgroup::
-::group::@soustools/domain-pos:typecheck
-cache miss, executing ced64116b1d33ec0
-::endgroup::
-::group::@soustools/api-types:typecheck
-cache miss, executing 0451ae38c7285536
-$ tsc --noEmit
-::endgroup::
 ::group::pos-simulator:typecheck
 cache miss, executing 445b7554811582d8
 ::endgroup::
+::group::@soustools/domain-signage:typecheck
+cache miss, executing 9de6dce89ec59ec1
+::endgroup::
 ::group::@soustools/domain-recipes:typecheck
 cache miss, executing f352138e54e498a7
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/config:typecheck
-cache miss, executing 9e5cb6b3ed1d3d25
-$ tsc --noEmit
-[ELIFECYCLE] Command failed.
+::group::@soustools/domain-settings:typecheck
+cache miss, executing 20716b602dd75dbe
 ::endgroup::
-::group::api:typecheck
-cache miss, executing f9ed2fd01af9a7ea
+::group::@soustools/design-system:typecheck
+cache miss, executing 45b2ea2e623b6d28
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -67,24 +53,39 @@ cache miss, executing 79e8b738ed2d3fea
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/design-system:typecheck
-cache miss, executing 45b2ea2e623b6d28
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 00fe955f6490c59d
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-signage:typecheck
-cache miss, executing 9de6dce89ec59ec1
+::group::@soustools/api-types:typecheck
+cache miss, executing 0451ae38c7285536
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing 20716b602dd75dbe
+::group::@soustools/config:typecheck
+cache miss, executing 9e5cb6b3ed1d3d25
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-pos:typecheck
+cache miss, executing ced64116b1d33ec0
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:typecheck
+cache miss, executing 4abcf7914920b294
+$ tsc --noEmit
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::api:typecheck
+cache miss, executing f9ed2fd01af9a7ea
 $ tsc --noEmit
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    5 successful, 18 total
 Cached:    3 cached, 18 total
-  Time:    14.261s 
+  Time:    14.311s 
 Failed:    @soustools/api-client#typecheck
 
