@@ -30,10 +30,19 @@ export class UnifiedIngestionController {
       sourceName?: string;
       sourceDocumentUrl?: string;
       pagesInput?: Array<{ pageNumber: number; imageUrl?: string; rawText?: string }>;
+      conversationId?: string;
     },
     @Headers("x-org-id") orgHeader?: string
   ) {
     const orgId = orgHeader || "d0000000-0000-0000-0000-000000000000";
+
+    const reviewRecord = await this.ingestionService.createReviewRecord({
+      organizationId: orgId,
+      source: body.source || "upload",
+      sourceName: body.sourceName || "Uploaded File",
+      sourceDocumentUrl: body.sourceDocumentUrl,
+      parsedData: { pages: [], processing: true } as any,
+    });
 
     const job = await this.ingestionQueue.add("process-document", {
       organizationId: orgId,
@@ -41,9 +50,11 @@ export class UnifiedIngestionController {
       sourceName: body.sourceName || "Uploaded File",
       sourceDocumentUrl: body.sourceDocumentUrl,
       pagesInput: body.pagesInput,
+      reviewId: reviewRecord.id,
+      conversationId: body.conversationId,
     });
 
-    return { success: true, jobId: job.id, message: "Document ingestion queued successfully." };
+    return { success: true, jobId: job.id, message: "Document ingestion queued successfully.", reviewId: reviewRecord.id };
   }
 
   @Get("review/:id")

@@ -1,7 +1,6 @@
 import { Injectable, Logger, Inject } from "@nestjs/common";
 import { OmnibarCommandPayload, OmniMessage,
 } from "@soustools/api-types";
-import { GoogleGenAI, Content, Part } from "@google/genai";
 import { ALL_COMMAND_TOOLS } from "./commands-tools";
 import { PurchaseOrdersService } from "../items/purchase-orders.service";
 import { VendorsService } from "../items/vendors.service";
@@ -20,7 +19,6 @@ import { fallbackToOllama } from "./commands-ollama.helper";
 @Injectable()
 export class CommandsService {
   private readonly logger = new Logger(CommandsService.name);
-  private readonly ai = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
 
   constructor(
     private readonly purchaseOrdersService: PurchaseOrdersService,
@@ -32,11 +30,10 @@ export class CommandsService {
     @InjectQueue("ingestion") private ingestionQueue: Queue,
   ) {}
 
-  private mapToGeminiContent(chatHistory: OmniMessage[]): Content[] {
+  private mapToGeminiContent(chatHistory: OmniMessage[]): any[] {
     return chatHistory.map((msg) => ({
-      role:
-        msg.role === "model" || msg.role === "agent_step" ? "model" : "user",
-      parts: [{ text: msg.content }],
+      role: msg.role === "model" || msg.role === "agent_step" ? "assistant" : "user",
+      content: msg.content,
     }));
   }
 
@@ -47,9 +44,11 @@ export class CommandsService {
   ) {
     this.logger.log(`\n🤖 AI COMMAND RECEIVED [${payload.source}]`);
 
+    const history = payload.chatHistory || [];
+    const conversationId = payload.context?.conversationId || randomUUID();
+
     try {
       const isLockedOut = await this.cacheManager.get("gemini_quota_lockout");
-      const history = payload.chatHistory || [];
 
       if (isLockedOut) {
         return this.fallbackToOllama(history, emitMessage);
@@ -67,25 +66,49 @@ export class CommandsService {
 
         let response;
         try {
-          response = await this.ai.models.generateContent({
+          const payload = {
             model: "gemini-3.1-flash-lite",
-            contents,
-            config: {
-              systemInstruction: {
+            messages: [
+              {
                 role: "system",
-                parts: [
-                  {
-                    text: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor.",
-                  },
-                ],
+                content: "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains '[1 attachment]', or indicates they are uploading a file, invoice, or recipe, you MUST immediately call the ingest_document tool with the attachment url."
               },
-              tools: [
-                {
-                  functionDeclarations: ALL_COMMAND_TOOLS,
-                },
-              ],
+              ...contents
+            ],
+            tools: ALL_COMMAND_TOOLS.map((t: any) => ({
+              type: "function",
+              function: {
+                name: t.name,
+                description: t.description,
+                parameters: {
+                  type: "object",
+                  properties: Object.fromEntries(
+                    Object.entries(t.parameters.properties).map(([k, v]: [string, any]) => [
+                      k,
+                      { type: v.type.toLowerCase(), description: v.description }
+                    ])
+                  ),
+                  required: t.parameters.required || []
+                }
+              }
+            }))
+          };
+
+          const res = await fetch("https://api.sous.tools/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${config.GEMINI_API_KEY || "dummy"}`
             },
+            body: JSON.stringify(payload)
           });
+          
+          if (!res.ok) {
+            const errBody = await res.text();
+            throw new Error(`LiteLLM Error: ${res.status} ${errBody}`);
+          }
+          const body = await res.json();
+          response = body.choices[0].message;
         } catch (genError: any) {
           if (genError.status === 429 || genError.message?.includes("429")) {
             this.logger.warn(
@@ -107,10 +130,10 @@ export class CommandsService {
           throw genError;
         }
 
-        if (response.functionCalls && response.functionCalls.length > 0) {
-          const call = response.functionCalls[0];
+        if (response.tool_calls && response.tool_calls.length > 0) {
+          const call = response.tool_calls[0].function;
           const functionName = call.name;
-          const args = call.args as Record<string, any>;
+          const args = JSON.parse(call.arguments || "{}");
 
           this.logger.log(`🛠️ Tool invoked: ${functionName}`, args);
 
@@ -224,8 +247,8 @@ export class CommandsService {
               success: true,
               message: `Inventory reconciled.`,
             };
-          } else if (functionName === "ingest_vendor_invoice") {
-            agentMessageContent = `Invoice received. Sending to the ingestion pipeline...`;
+          } else if (functionName === "ingest_document") {
+            agentMessageContent = `Document received. Sending to the ingestion pipeline...`;
             if (emitMessage)
               emitMessage({
                 id: randomUUID(),
@@ -261,6 +284,7 @@ export class CommandsService {
                   documentType: "invoice",
                   sourceDocumentUrl: args.fileUrl,
                   reviewId: review.id,
+                  conversationId: conversationId,
                 },
                 { attempts: 3, backoff: { type: "exponential", delay: 2000 } },
               );
@@ -272,7 +296,7 @@ export class CommandsService {
                   user_id: userId,
                   title: "Document Ingestion Started",
                   message: `Invoice file processing queued (${review.id.substring(0, 8)}).`,
-                  link: `/answer?reviewId=${review.id}`,
+                  link: `/home?chat=${conversationId}`,
                   is_read: false,
                 });
               } catch (notifErr) {
@@ -444,37 +468,25 @@ export class CommandsService {
             };
           }
 
-          // Append model's full response content to history to preserve thought_signature, text, and functionCall
-          if (response.candidates?.[0]?.content) {
-            contents.push(response.candidates[0].content);
-          } else {
-            contents.push({
-              role: "model",
-              parts: [{ functionCall: call }] as Part[],
-            });
-          }
+          // Append model's full response content to history
+          contents.push(response);
 
           // Append tool response to history
           contents.push({
-            role: "user", // SDK uses 'user' for function responses, or 'function' depending on SDK version. GenAI uses 'user' with functionResponse part.
-            parts: [
-              {
-                functionResponse: {
-                  name: functionName,
-                  response: toolResponseData,
-                },
-              },
-            ] as Part[],
+            role: "tool",
+            tool_call_id: response.tool_calls[0].id,
+            name: functionName,
+            content: JSON.stringify(toolResponseData)
           });
-        } else if (response.text) {
+        } else if (response.content) {
           isDone = true;
-          finalResult = { action: "SUCCESS", message: response.text };
+          finalResult = { action: "SUCCESS", message: response.content };
 
           if (emitMessage) {
             emitMessage({
               id: randomUUID(),
               role: "model",
-              content: response.text,
+              content: response.content,
               timestamp: new Date(),
             });
           }
@@ -629,4 +641,56 @@ export class CommandsService {
       return [];
     }
   }
+
+  async getConversationMessages(conversationId: string): Promise<OmniMessage[]> {
+    const { data, error } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      this.logger.error("Failed to fetch messages", error);
+      throw new Error("Failed to fetch messages");
+    }
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      role: row.role as OmniMessage["role"],
+      content: row.content,
+      attachments: row.attachments || undefined,
+      timestamp: new Date(row.created_at),
+    }));
+  }
+
+
+  public async persistMessage(conversationId: string, orgId: string, userId: string | undefined, msg: OmniMessage) {
+    if (!conversationId) return;
+    
+    // Ensure conversation exists
+    const { data: existingConv } = await supabase
+      .from("chat_conversations")
+      .select("id, organization_id, user_id")
+      .eq("id", conversationId)
+      .single();
+
+    if (!existingConv) {
+      await supabase.from("chat_conversations").insert({
+        id: conversationId,
+        organization_id: orgId !== "unknown" ? orgId : "d0000000-0000-0000-0000-000000000000",
+        user_id: userId || null,
+        title: "New Conversation",
+      });
+    }
+
+    await supabase.from("chat_messages").insert({
+      id: msg.id || randomUUID(),
+      conversation_id: conversationId,
+      role: msg.role,
+      content: msg.content,
+      attachments: msg.attachments || [],
+    });
+  }
 }
+
+

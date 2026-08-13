@@ -59,6 +59,29 @@ export class UnifiedIngestionService {
   ) {}
 
   async getEmbedding(text: string): Promise<number[]> {
+    try {
+      const litellmRes = await fetch("https://api.sous.tools/v1/embeddings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${config.GEMINI_API_KEY || "dummy"}`
+        },
+        body: JSON.stringify({
+          model: "text-embedding-004",
+          input: [text]
+        }),
+      });
+
+      if (litellmRes.ok) {
+        const body = await litellmRes.json();
+        if (body.data && body.data[0] && body.data[0].embedding) {
+          return body.data[0].embedding;
+        }
+      }
+    } catch (geminiErr) {
+      this.logger.warn("LiteLLM embedding failed, falling back to local Ollama", geminiErr);
+    }
+
     const host = config.OLLAMA_HOST || "http://127.0.0.1:11434";
     try {
       const response = await fetch(`${host}/api/embeddings`, {

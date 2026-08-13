@@ -39,7 +39,6 @@ export function AnswerView({
 }: AnswerViewProps) {
   const { chatHistory, setChatHistory, isProcessing, setIsProcessing, socket } =
     useOmnibarContext();
-  const [activeReviewId] = useState<string | undefined>(initialReviewId);
   const [prepListItems, setPrepListItems] = useState<
     Array<{ id: string; text: string; done: boolean }>
   >([
@@ -85,8 +84,29 @@ export function AnswerView({
       );
   }, []);
 
+  const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
+
+  // Fetch chat history from DB on load
+  useEffect(() => {
+    if (initialReviewId) {
+      api
+        .GET(`/commands/conversations/${initialReviewId}/messages` as any, {})
+        .then(({ data }: any) => {
+          const messages = data?.data || data;
+          if (messages && Array.isArray(messages) && messages.length > 0) {
+            setChatHistory(messages);
+          }
+        })
+        .catch((err: any) => console.error("Failed to fetch chat history:", err))
+        .finally(() => setHasFetchedHistory(true));
+    } else {
+      setHasFetchedHistory(true);
+    }
+  }, [initialReviewId, setChatHistory]);
+
   // Handle URL query prompt when visiting /answer?q=... directly
   useEffect(() => {
+    if (!hasFetchedHistory) return;
     if (initialQuery && initialQuery.trim().length > 0) {
       const hasUserMsg = chatHistory.some(
         (m) => m.role === "user" && m.content.includes(initialQuery),
@@ -106,7 +126,7 @@ export function AnswerView({
             source: "omnibar",
             path: "/home",
             context: {},
-            conversationId: activeReviewId,
+            conversationId: initialReviewId,
           });
         } else {
           // Fallback to REST API if socket isn't ready
@@ -139,7 +159,18 @@ export function AnswerView({
         }
       }
     }
-  }, [initialQuery]);
+  }, [initialQuery, hasFetchedHistory]);
+
+  // Auto-scroll logic
+  useEffect(() => {
+    const main = document.getElementById("workspace-main");
+    if (main) {
+      // scroll to bottom smoothly
+      setTimeout(() => {
+        main.scrollTo({ top: main.scrollHeight, behavior: "smooth" });
+      }, 50);
+    }
+  }, [chatHistory.length, isProcessing]);
 
   // Extract latest user prompt and AI model message
   const latestUserMessage = useMemo(() => {
@@ -147,12 +178,7 @@ export function AnswerView({
     return userMsgs[userMsgs.length - 1]?.content || initialQuery;
   }, [chatHistory, initialQuery]);
 
-  const latestModelMessage = useMemo(() => {
-    const modelMsgs = chatHistory.filter(
-      (m) => m.role === "model" || m.role === "agent_step",
-    );
-    return modelMsgs[modelMsgs.length - 1]?.content || null;
-  }, [chatHistory]);
+
 
   // Detect component render directive from tool execution
   const componentDirective = useMemo(() => {
@@ -177,15 +203,7 @@ export function AnswerView({
     const q = (latestUserMessage || "").toLowerCase().trim();
     if (!q) return null;
 
-    if (
-      activeReviewId ||
-      q.includes("invoice") ||
-      q.includes("ingest") ||
-      q.includes("review") ||
-      q.includes("document")
-    ) {
-      return "INGESTION_REVIEW";
-    }
+
     if (q.includes("revenue") || q.includes("sales") || q.includes("chart")) {
       return "REVENUE_CHART";
     }
@@ -207,7 +225,7 @@ export function AnswerView({
     }
 
     return null; // General conversation ("test", "hello") renders NO Track 2 box
-  }, [activeReviewId, componentDirective, latestUserMessage]);
+  }, [initialReviewId, componentDirective, latestUserMessage]);
 
   const togglePrepItem = (id: string) => {
     setPrepListItems((prev) =>
@@ -218,43 +236,98 @@ export function AnswerView({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-6 pb-24">
+    <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-6 pt-32 pb-64">
       {/* ── Conversational Answer Card ── */}
       <Card className="w-full border-border bg-card/80 backdrop-blur-xl shadow-2xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
-            <Sparkles className="w-5 h-5 animate-pulse" />
-          </div>
-          <div className="flex-1 flex flex-col gap-3">
-            {latestModelMessage ? (
-              <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
-                <p className="whitespace-pre-wrap">{latestModelMessage}</p>
+        <div className="flex flex-col gap-6">
+          {chatHistory.length > 0 ? (
+            chatHistory
+              .filter(
+                (m) =>
+                  m.role === "model" ||
+                  m.role === "user" ||
+                  m.role === "agent_step" ||
+                  m.role === ("render_component" as any),
+              )
+              .map((m) => (
+                <div key={m.id} className="flex items-start gap-4">
+                  <div
+                    className={`p-2.5 rounded-2xl shrink-0 ${
+                      m.role === "user"
+                        ? "bg-secondary/10 text-secondary border border-secondary/20"
+                        : "bg-primary/10 text-primary border border-primary/20"
+                    }`}
+                  >
+                    {m.role === "user" ? (
+                      <span className="font-bold">You</span>
+                    ) : (
+                      <Sparkles className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-col pt-1">
+                    {m.role === ("render_component" as any) ? (
+                      (() => {
+                        try {
+                          const directive = JSON.parse(m.content);
+                          if (directive.componentName === "INGESTION_REVIEW") {
+                            return <div className="mt-2"><UniversalReviewComponent reviewId={directive.props.reviewId} /></div>;
+                          }
+                          return null;
+                        } catch (err) {
+                          return null;
+                        }
+                      })()
+                    ) : (
+                      <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
+                        {m.attachments && m.attachments.length > 0 && (
+                          <div className="flex gap-3 mb-3">
+                            {m.attachments.map((att: any, i: number) => 
+                              att.url ? (
+                                <img key={i} src={att.url} alt="Attachment thumbnail" className="w-20 h-20 rounded-lg object-cover border border-border shadow-sm" />
+                              ) : null
+                            )}
+                          </div>
+                        )}
+                        <p className="whitespace-pre-wrap m-0">{m.content.replace(/^\[\d+ attachments?\]\s*/, "")}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+          ) : null}
+          
+          {isProcessing && (
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+                <Bot className="w-5 h-5 animate-bounce" />
               </div>
-            ) : isProcessing ? (
-              <div className="flex items-center gap-3 text-sm text-primary font-mono">
-                <Bot className="w-4 h-4 animate-bounce text-primary" />
-                <span>
+              <div className="flex-1 flex flex-col pt-2">
+                <span className="text-sm text-primary font-mono">
                   Heard, Chef. Systems online and processing your prompt...
                 </span>
               </div>
-            ) : (
-              <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
-                <p>
-                  Heard, Chef. Systems are online and ready. What&apos;s the
-                  move — prepping, ordering, or digging into data?
-                </p>
+            </div>
+          )}
+
+          {!isProcessing && chatHistory.length === 0 && (
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+                <Sparkles className="w-5 h-5 animate-pulse" />
               </div>
-            )}
-          </div>
+              <div className="flex-1 flex flex-col pt-1">
+                <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
+                  <p className="m-0">
+                    Heard, Chef. Systems are online and ready. What&apos;s the
+                    move — prepping, ordering, or digging into data?
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
       {/* ── Polymorphic Data Views (ONLY rendered when real matched data exists) ── */}
-      {track2Type === "INGESTION_REVIEW" && (
-        <UniversalReviewComponent
-          reviewId={componentDirective?.props?.reviewId || activeReviewId}
-        />
-      )}
 
       {track2Type === "REVENUE_CHART" && (
         <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl">

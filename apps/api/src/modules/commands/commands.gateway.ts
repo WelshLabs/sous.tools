@@ -14,6 +14,7 @@ import {
   OmnibarCommandPayloadSchema,
   type OmniMessage,
 } from "@soustools/api-types";
+import { randomUUID } from "crypto";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { UseFilters } from "@nestjs/common";
 import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter";
@@ -56,6 +57,28 @@ export class CommandsGateway {
         this.server
           .to(`conversation-${payload.conversationId}`)
           .emit("ingestion:updated", payload);
+          
+        if (payload.message) {
+          const msg = {
+            id: randomUUID(),
+            role: "agent_step" as any,
+            content: payload.message,
+            timestamp: new Date(),
+          };
+          this.server.to(`conversation-${payload.conversationId}`).emit("chat_message", msg);
+          this.commandsService.persistMessage(payload.conversationId, "unknown", undefined, msg).catch((e) => this.logger.warn("Failed to persist agent_step", e));
+        }
+
+        if (payload.status === "RENDER") {
+          const msg = {
+            id: randomUUID(),
+            role: "render_component" as any,
+            content: payload.message!,
+            timestamp: new Date(),
+          };
+          this.server.to(`conversation-${payload.conversationId}`).emit("chat_message", msg);
+          this.commandsService.persistMessage(payload.conversationId, "unknown", undefined, msg).catch((e) => this.logger.warn("Failed to persist render_component", e));
+        }
       } else {
         this.server.emit("ingestion:updated", payload);
       }
@@ -64,7 +87,7 @@ export class CommandsGateway {
         this.server.emit("notification:new", {
           title: "Ingestion Processing Complete",
           message: `Review document ${payload.reviewId.substring(0, 8)} is ready.`,
-          link: `/answer?reviewId=${payload.reviewId}`,
+          link: `/home?chat=${payload.conversationId}`,
           payload: {
             type: "INGESTION_READY",
             reviewId: payload.reviewId,
@@ -86,12 +109,17 @@ export class CommandsGateway {
       `Received chat history via WebSocket (${payload.chatHistory?.length || 0} messages)`,
     );
 
-    // orgId from authenticated user
     const orgId =
       client.user?.user_metadata?.organization_id ||
       "d0000000-0000-0000-0000-000000000000";
 
-    // Emitter callback for real-time ReAct loop
+    payload.context = payload.context || {};
+    payload.context.userId = client.user?.id;
+
+    if (payload.context.conversationId) {
+      client.join(`conversation-${payload.context.conversationId}`);
+    }
+
     const emitMessage = (message: OmniMessage) => {
       client.emit("chat_message", message);
     };

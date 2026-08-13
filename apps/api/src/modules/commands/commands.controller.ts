@@ -1,6 +1,8 @@
 import {
   Controller,
   Post,
+  Get,
+  Param,
   Body,
   UseGuards,
   UsePipes,
@@ -29,7 +31,20 @@ export class CommandsController {
       const orgId =
         req.user?.user_metadata?.organization_id ||
         "d0000000-0000-0000-0000-000000000000";
+      // We pass user in payload context just to be safe
+      payload.context = payload.context || {};
+      payload.context.userId = req.user?.id;
       return this.commandsService.handleCommand(payload, orgId);
+    });
+  }
+
+  @Get("/conversations/:id/messages")
+  @UseGuards(SupabaseAuthGuard)
+  async getConversationMessages(
+    @Param("id") conversationId: string,
+  ): Promise<ApiResponse<any>> {
+    return runControllerAction(async () => {
+      return this.commandsService.getConversationMessages(conversationId);
     });
   }
 }

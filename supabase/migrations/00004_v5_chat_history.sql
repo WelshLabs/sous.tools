@@ -1,5 +1,3 @@
--- Chat History Schema
-
 CREATE TABLE IF NOT EXISTS chat_conversations (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -18,5 +16,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   updated_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
--- Notifications
--- Added `payload` JSONB column to notifications table for real-time payload tracking.
+ALTER TABLE chat_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_conversations FORCE ROW LEVEL SECURITY;
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages FORCE ROW LEVEL SECURITY;

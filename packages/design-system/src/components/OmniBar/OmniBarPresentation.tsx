@@ -113,7 +113,7 @@ export function OmniBarPresentation({
 
       {/* ── MODE 2: /home?chat=... — Fixed right below AppBar for continued conversation (NO FAB, NO BACKDROP) ── */}
       {isAnswerPage && (
-        <div className="fixed top-[72px] left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-start">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-start">
           <div className="w-full flex flex-col justify-center gap-0 pointer-events-auto shadow-2xl">
             <StagingArea files={stagedFiles} />
             <OmniInputPill
@@ -180,7 +180,7 @@ export function OmniBarPresentation({
             /* Expanded Modal — Dead center of screen */
             <div
               key="workspace-modal-container"
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center"
+              className="fixed top-24 left-1/2 -translate-x-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center"
             >
               <div className="w-full flex flex-col justify-center gap-0 pointer-events-auto">
                 <StagingArea files={stagedFiles} />

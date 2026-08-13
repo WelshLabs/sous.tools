@@ -58,7 +58,8 @@
   "dependencies": {
     "dotenv": "^16.6.1",
     "eslint-plugin-react": "^7.37.5",
-    "neo4j-driver": "^6.2.0"
+    "neo4j-driver": "^6.2.0",
+    "pg": "^8.23.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

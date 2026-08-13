@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Eye, EyeOff, Loader2, ShieldCheck, CheckCircle } from "lucide-react";
 import { Button, Input, PrimaryLogo } from "@soustools/design-system";
 import { clientConfig } from "@soustools/config/client";
 import { createApiClient } from "@soustools/api-client";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const api = createApiClient({ baseUrl: clientConfig.NEXT_PUBLIC_API_URL });
@@ -184,5 +184,13 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

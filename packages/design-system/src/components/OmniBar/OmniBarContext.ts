@@ -47,6 +47,7 @@ export interface OmniBarState {
   setExecuteBackgroundCommand: (fn: (text: string) => void) => void;
 }
 
+
 export const useOmnibarContext = create<OmniBarState>((set) => ({
   contextPayload: {},
   setContextPayload: (payload) => set({ contextPayload: payload }),

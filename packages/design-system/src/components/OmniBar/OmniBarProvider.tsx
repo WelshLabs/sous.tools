@@ -10,6 +10,7 @@ import { useSpeechRecognition } from "./use-speech-recognition.hook";
 import { useGlobalDrag } from "./use-global-drag.hook";
 import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "@soustools/api-client";
 
 interface IntegrationStatus {
   provider: string;

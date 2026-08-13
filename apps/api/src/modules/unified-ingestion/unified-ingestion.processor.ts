@@ -51,13 +51,14 @@ export class UnifiedIngestionProcessor extends WorkerHost {
       sourceDocumentUrl,
       pagesInput,
       conversationId,
-    } = job.data;
+      rawText,
+    } = job.data as any;
 
     const pagesData: IngestionPage[] = [];
     const inputPages =
       pagesInput && pagesInput.length > 0
         ? pagesInput
-        : [{ pageNumber: 1, rawText: "Sample Document Page Content" }];
+        : [{ pageNumber: 1, rawText: rawText || "", imageUrl: sourceDocumentUrl }];
 
     for (const pInput of inputPages) {
       this.logger.log(`Extracting blocks for page ${pInput.pageNumber}...`);
@@ -98,7 +99,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
         type: "INGESTION_COMPLETE",
         title: "Ingestion Processing Complete",
         message: `Review document "${sourceName || "Document"}" is ready for review.`,
-        link: `/answer?reviewId=${reviewRecord.id}`,
+        link: `/home?chat=${conversationId}`,
         is_read: false,
         payload: {
           type: "INGESTION_READY",
@@ -131,11 +132,67 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     _imageUrl?: string,
     conversationId?: string,
   ): Promise<ExtractedBlock[]> {
-    const host = config.OLLAMA_HOST || "http://127.0.0.1:11434";
-    let ollamaResponse: any = null;
+    const ollamaHost = config.OLLAMA_HOST || "http://127.0.0.1:11434";
+    let extractedResponse: any = null;
 
     try {
       const prompt = `Analyze this page content and classify into content blocks. Return ONLY a valid JSON array of objects with fields:
+- type: 'PROSE' | 'RECIPE' | 'INVOICE'
+- bbox: [ymin, xmin, ymax, xmax] (normalized 0-1000)
+- content: (string for PROSE)
+- title, yieldCount, yieldUnit, instructions (string array), ingredients (array of { rawName, quantity, unit }) for RECIPE
+- vendorName, totals ({ subtotal, tax, total }), lineItems (array of { rawName, unitPrice, extendedPrice, quantity }) for INVOICE
+Page input: ${rawText.substring(0, 1500)}`;
+
+      const images = [];
+      if (_imageUrl) {
+        try {
+          const imageRes = await fetch(_imageUrl);
+          if (imageRes.ok) {
+            const arrayBuffer = await imageRes.arrayBuffer();
+            const base64Image = Buffer.from(arrayBuffer).toString("base64");
+            const mimeType = imageRes.headers.get("content-type") || "image/jpeg";
+            images.push({ type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Image}` } });
+          }
+        } catch (imgErr) {
+          this.logger.warn("Failed to fetch image for Vision", imgErr);
+        }
+      }
+
+      // Try LiteLLM first (gemini-3.1-pro)
+      const liteLlmRes = await fetch("https://api.sous.tools/v1/chat/completions", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${config.GEMINI_API_KEY || "dummy"}`
+        },
+        body: JSON.stringify({
+          model: "gemini-3.1-pro",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: prompt },
+                ...images
+              ]
+            }
+          ],
+          response_format: { type: "json_object" }
+        }),
+      });
+
+      if (liteLlmRes.ok) {
+        const body = await liteLlmRes.json();
+        extractedResponse = JSON.parse(body.choices[0].message.content || "[]");
+      } else {
+        throw new Error(`LiteLLM failed: ${liteLlmRes.status} ${await liteLlmRes.text()}`);
+      }
+    } catch (err) {
+      this.logger.warn("LiteLLM Vision extract failed, falling back to Ollama:", err);
+      
+      // Fallback to Ollama
+      try {
+        const prompt = `Analyze this page content and classify into content blocks. Return ONLY a valid JSON array of objects with fields:
 - type: 'PROSE' | 'RECIPE' | 'INVOICE'
 - bbox: [ymin, xmin, ymax, xmax] (normalized 0-1000)
 - content: (string for PROSE)
@@ -143,28 +200,29 @@ export class UnifiedIngestionProcessor extends WorkerHost {
 - vendorName, totals ({ subtotal, tax, total }), lineItems (array of { rawName, unitPrice, extendedPrice }) for INVOICE
 Page input: ${rawText.substring(0, 1500)}`;
 
-      const res = await fetch(`${host}/api/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "llama3.2-vision",
-          prompt,
-          stream: false,
-          json: true,
-        }),
-      });
+        const res = await fetch(`${ollamaHost}/api/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "llama3.2-vision",
+            prompt,
+            stream: false,
+            json: true,
+          }),
+        });
 
-      if (res.ok) {
-        const body = await res.json();
-        ollamaResponse = JSON.parse(body.response || "[]");
+        if (res.ok) {
+          const body = await res.json();
+          extractedResponse = JSON.parse(body.response || "[]");
+        }
+      } catch (ollamaErr) {
+        this.logger.warn("Local Ollama Vision extract fallback also failed:", ollamaErr);
       }
-    } catch (err) {
-      this.logger.warn("Local Ollama Vision extract fallback:", err);
     }
 
     const rawBlocks: any[] =
-      Array.isArray(ollamaResponse) && ollamaResponse.length > 0
-        ? ollamaResponse
+      Array.isArray(extractedResponse) && extractedResponse.length > 0
+        ? extractedResponse
         : this.buildFallbackBlocks(rawText);
 
     const processedBlocks: ExtractedBlock[] = [];

@@ -31,6 +31,19 @@ export interface JoinTableConfig {
 export type RegistryConfig = TableConfig | JoinTableConfig;
 
 export const SCHEMA_REGISTRY: Record<string, RegistryConfig> = {
+  chat_conversations: {
+    nodeLabel: "Conversation",
+    relationships: [
+      { fkField: "organization_id", relationLabel: "BELONGS_TO", targetLabel: "Organization" },
+      { fkField: "user_id", relationLabel: "OWNED_BY", targetLabel: "User" },
+    ],
+  },
+  chat_messages: {
+    nodeLabel: "Message",
+    relationships: [
+      { fkField: "conversation_id", relationLabel: "PART_OF", targetLabel: "Conversation" },
+    ],
+  },
   users: {
     nodeLabel: "User",
     relationships: [],

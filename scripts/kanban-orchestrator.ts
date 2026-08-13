@@ -92,8 +92,16 @@ async function main() {
 
   const payloadPath = args[0];
   const payloadRaw = fs.readFileSync(path.resolve(payloadPath), "utf-8");
-  const payload: WebhookPayload = JSON.parse(payloadRaw);
-  const { issueNumber, issueTitle, issueBody, commentBody, repo, event } = payload;
+  const payload: any = JSON.parse(payloadRaw);
+  
+  // Extract fields handling both flattened structures or raw n8n GitHub Webhook JSON
+  const ghPayload = payload.body || payload;
+  const issueNumber = payload.issueNumber || ghPayload.issue?.number;
+  const issueTitle = payload.issueTitle || ghPayload.issue?.title;
+  const issueBody = payload.issueBody || ghPayload.issue?.body;
+  const commentBody = payload.commentBody || ghPayload.comment?.body;
+  const repo = payload.repo || ghPayload.repository?.full_name;
+  const event = payload.event || ghPayload.action;
   // GitHub token check removed to rely on host machine git configs
 
   // 1. Configurable Parameters

@@ -52,11 +52,12 @@ export function useOmniBarHotkeys({
     // Always route to /home with chat session when submitting a query
     const searchParams = new URLSearchParams(window.location.search);
     const existingChatId = searchParams.get("chat");
+    let currentChatId = existingChatId;
 
     if (pathname !== "/home" || !existingChatId) {
-      const newChatId = existingChatId || crypto.randomUUID();
+      currentChatId = existingChatId || crypto.randomUUID();
       const params = new URLSearchParams();
-      params.set("chat", newChatId);
+      params.set("chat", currentChatId);
       if (textToSubmit) params.set("prompt", textToSubmit);
       router.push(`/home?${params.toString()}`);
 
@@ -76,23 +77,36 @@ export function useOmniBarHotkeys({
       .filter(Boolean)
       .join(" ");
 
+    // Build attachments array from staged files for the backend
+    const attachments = await Promise.all(
+      stagedFiles.map(async (f) => {
+        let dataUrl = f.url ?? f.previewUrl ?? null;
+        if (f.file) {
+          dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(f.file!);
+          });
+        }
+        return {
+          id: f.id,
+          name: f.file?.name ?? "unknown",
+          mimeType: f.file?.type ?? "application/octet-stream",
+          url: dataUrl,
+        };
+      })
+    );
+
     const newUserMessage: OmniMessage = {
       id: crypto.randomUUID(),
       role: "user",
       content: userContent,
       timestamp: new Date(),
+      attachments,
     };
 
     const updatedHistory = [...chatHistory, newUserMessage];
     setChatHistory(updatedHistory);
-
-    // Build attachments array from staged files for the backend
-    const attachments = stagedFiles.map((f) => ({
-      id: f.id,
-      name: f.file?.name ?? "unknown",
-      mimeType: f.file?.type ?? "application/octet-stream",
-      url: f.url ?? f.previewUrl ?? null,
-    }));
 
     try {
       if (!socket || !socket.connected) {
@@ -106,7 +120,7 @@ export function useOmniBarHotkeys({
         chatHistory: updatedHistory,
         source: "omnibar",
         path: pathname,
-        context: contextPayload,
+        context: { ...contextPayload, conversationId: currentChatId },
         attachments,
       });
     } catch (err: unknown) {

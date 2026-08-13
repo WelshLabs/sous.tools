@@ -160,16 +160,24 @@ export function OmniChatWindow({
                           : "bg-card/78 border border-border text-foreground rounded-tl-sm backdrop-blur-xl"
                       }`}
                     >
-                      {msg.content.match(/(https?|blob|data):[^\s]+/) && (
-                        <motion.div
-                          layoutId={`active-task-container-${msg.id}`}
-                          className="mb-2 w-48 h-32 rounded-xl overflow-hidden border border-accent/30 shadow-glow-accent relative"
-                        >
-                          <img src={msg.content.match(/(https?|blob|data):[^\s]+/)![0]} alt="Uploaded file" className="w-full h-full object-cover" />
-                        </motion.div>
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className="flex gap-3 mb-3">
+                          {msg.attachments.map((att: any, i: number) => 
+                            att.url ? (
+                              <motion.div
+                                key={i}
+                                layoutId={`active-task-container-${msg.id}-${i}`}
+                                className="w-32 h-24 rounded-xl overflow-hidden border border-accent/30 shadow-glow-accent relative shrink-0"
+                              >
+                                <img src={att.url} alt="Attachment thumbnail" className="w-full h-full object-cover" />
+                              </motion.div>
+                            ) : null
+                          )}
+                        </div>
                       )}
                       <span>
                         {msg.content
+                          .replace(/^\[\d+ attachments?\]\s*/, "")
                           .split(/(\[[^\]]+\]\([^)]+\))/g)
                           .map((part, i) => {
                             const match = part.match(/\[([^\]]+)\]\(([^)]+)\)/);
@@ -186,7 +194,7 @@ export function OmniChatWindow({
                             }
                             return (
                               <span key={i}>
-                                {part.replace(/(https?|blob|data):[^\s]+/, "")}
+                                {part}
                               </span>
                             );
                           })}

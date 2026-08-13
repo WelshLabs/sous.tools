@@ -74,10 +74,14 @@ export function UniversalReviewComponent({
     const handleIngestionUpdate = (data: any) => {
       if (data?.reviewId && (data.reviewId === activeReviewId || activeReviewId === "latest" || !activeReviewId)) {
         if (data.reviewId) setActiveReviewId(data.reviewId);
-        setIsProcessingState(false);
-        setIsLoading(false);
-        setPayload(data.parsedData);
-        setStatusMessage("Ingestion processing complete — updated via real-time WebSocket!");
+        if (data.status === "IN_PROGRESS") {
+          setIsProcessingState(true);
+        } else if (data.status === "COMPLETED") {
+          setIsProcessingState(false);
+          setIsLoading(false);
+          setPayload(data.parsedData);
+          setStatusMessage("Ingestion processing complete — updated via real-time WebSocket!");
+        }
       }
     };
 
