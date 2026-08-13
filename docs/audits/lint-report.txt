@@ -7,6 +7,14 @@
 cache miss, executing 60d163f42cb4ff4b
 $ eslint . --max-warnings 0
 ::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing 1b2eabd38726195e
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/config:lint
+cache miss, executing d386fcb7045c2111
+$ eslint . --max-warnings 0
+::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing a9c50672d1bbe6a5
 $ tsc
@@ -15,56 +23,13 @@ $ tsc
 cache miss, executing 242975c0ec82719d
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/config:lint
-cache miss, executing d386fcb7045c2111
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/mcp-server:lint
-cache miss, executing 1b2eabd38726195e
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/config:build
 cache miss, executing b5a3c034bb0ac1a3
 $ tsc
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 6f1b9a7dcc996264
-$ tsc
-::endgroup::
-[;31m@soustools/domain-pos:lint[;0m
-cache miss, executing 9d73b10a2c6a3406
+::group::@soustools/logger:lint
+cache miss, executing 0bdd08e3b00a5708
 $ eslint . --max-warnings 0
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.container.tsx
-   29:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   30:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   42:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   52:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   96:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  102:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  122:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  128:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  137:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  142:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.container.tsx
-  130:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-✖ 11 problems (0 errors, 11 warnings)
-
-ESLint found too many warnings (maximum: 0).
-[ELIFECYCLE] Command failed with exit code 1.
-::group::web:lint
-cache miss, executing 733c0f13d326af75
-::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing ab82a2a62d7a13a4
-::endgroup::
-::group::cli:lint
-cache miss, executing 71b33ccf8b000d26
-::endgroup::
-::group::api:lint
-cache miss, executing 181ad7676ba536a2
 ::endgroup::
 [;31m@soustools/api-client:lint[;0m
 cache miss, executing f4d81954c9b38779
@@ -79,16 +44,12 @@ $ eslint . --max-warnings 0
   3 errors and 0 warnings potentially fixable with the `--fix` option.
 
 [ELIFECYCLE] Command failed with exit code 1.
-::group::pos-simulator:lint
-cache miss, executing 792f0377b125b52d
+::group::@soustools/logger:build
+cache miss, executing 6f1b9a7dcc996264
+$ tsc
 ::endgroup::
 ::group::@soustools/domain-signage:lint
 cache miss, executing 17ebbd0c53101a4a
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 368ab112cb5fa735
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -97,13 +58,12 @@ cache miss, executing cb07c188fd2c8a8c
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 0bdd08e3b00a5708
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
 ::group::@soustools/domain-settings:lint
 cache miss, executing d7f6dff4ff79c791
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 368ab112cb5fa735
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -112,9 +72,14 @@ cache miss, executing f8859e48179de25e
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::@soustools/domain-pos:lint
+cache miss, executing 9d73b10a2c6a3406
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 
- Tasks:    7 successful, 20 total
-Cached:    0 cached, 20 total
-  Time:    16.297s 
-Failed:    @soustools/api-client#lint, @soustools/domain-pos#lint
+ Tasks:    7 successful, 15 total
+Cached:    0 cached, 15 total
+  Time:    17.815s 
+Failed:    @soustools/api-client#lint
 
