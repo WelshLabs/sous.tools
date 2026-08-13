@@ -94,12 +94,7 @@ async function main() {
   const payloadRaw = fs.readFileSync(path.resolve(payloadPath), "utf-8");
   const payload: WebhookPayload = JSON.parse(payloadRaw);
   const { issueNumber, issueTitle, issueBody, commentBody, repo, event } = payload;
-  const githubToken = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
-
-  if (!githubToken) {
-    console.error("Missing GH_TOKEN or GITHUB_TOKEN environment variable");
-    process.exit(1);
-  }
+  // GitHub token check removed to rely on host machine git configs
 
   // 1. Configurable Parameters
   const COMMENT_FETCH_LIMIT = 5;
