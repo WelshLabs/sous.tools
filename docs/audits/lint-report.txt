@@ -15,19 +15,37 @@ $ eslint . --max-warnings 0
 cache miss, executing f9fae72d607a88a8
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing b296140551ecc27f
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/api-types:build
 cache miss, executing a578c84cf967c27c
 $ tsc
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing b296140551ecc27f
+$ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
 cache miss, executing 01978c106b621e4d
 $ tsc
 ::endgroup::
-[;31m@soustools/domain-settings:lint[;0m
+[;31m@soustools/api-client:lint[;0m
+cache miss, executing c0a7868a4e45625c
+$ eslint . --max-warnings 0
+
+/home/runner/work/sous.tools/sous.tools/packages/api-client/src/react.tsx
+  3:1  error  Imports "ReactNode" are only used as type                                 @typescript-eslint/consistent-type-imports
+  4:1  error  Imports "WebSocketClientOptions" are only used as type                    @typescript-eslint/consistent-type-imports
+  5:1  error  All imports in the declaration are only used as types. Use `import type`  @typescript-eslint/consistent-type-imports
+
+✖ 3 problems (3 errors, 0 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+
+[ELIFECYCLE] Command failed with exit code 1.
+::group::@soustools/domain-inventory:lint
+cache miss, executing 1de522ca5a4c6c7f
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-settings:lint
 cache miss, executing 3afaab845d87b027
 $ eslint . --max-warnings 0
 
@@ -36,34 +54,10 @@ $ eslint . --max-warnings 0
 
 ✖ 1 problem (1 error, 0 warnings)
 
-[ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/domain-signage:lint
-cache miss, executing c3012821c8471df0
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/api-client:lint
-cache miss, executing c0a7868a4e45625c
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing b6de417c17e8aa56
-$ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-recipes:lint
 cache miss, executing aaa03d49d1f3c069
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/logger:build
-cache miss, executing 58621578dfdd7ef6
-$ tsc
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 1de522ca5a4c6c7f
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -105,6 +99,16 @@ $ eslint . --max-warnings 0
 
 ✖ 18 problems (7 errors, 11 warnings)
 
+[ELIFECYCLE] Command failed with exit code 1.
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing c3012821c8471df0
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 58621578dfdd7ef6
+$ tsc
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/logger:lint
@@ -112,9 +116,14 @@ cache miss, executing 633643e152423baf
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing b6de417c17e8aa56
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
 
  Tasks:    6 successful, 15 total
 Cached:    0 cached, 15 total
-  Time:    15.398s 
-Failed:    @soustools/domain-settings#lint
+  Time:    16.79s 
+Failed:    @soustools/api-client#lint
 
