@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js & Supabase CLI
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Run Supabase Automated DB Migrations Against Hosted Supabase
         run: |

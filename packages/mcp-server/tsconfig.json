@@ -1,1 +1,10 @@
-{"extends":"@soustools/tsconfig/base.json","compilerOptions":{"moduleResolution":"NodeNext","module":"NodeNext","outDir":"./dist","rootDir":"."},"include":["index.ts"]}
+{
+  "extends": "@soustools/tsconfig/base.json",
+  "compilerOptions": {
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": ["index.ts"]
+}

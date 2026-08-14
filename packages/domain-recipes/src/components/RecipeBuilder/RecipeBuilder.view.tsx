@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React from "react";
 import { Button } from "@soustools/design-system";
 import { ChefHat, ArrowLeft, Plus, Trash2, Clock } from "lucide-react";
