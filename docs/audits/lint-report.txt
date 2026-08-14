@@ -11,13 +11,13 @@ $ eslint . --max-warnings 0
 cache miss, executing f9fae72d607a88a8
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/api-types:build
-cache miss, executing a578c84cf967c27c
-$ tsc
-::endgroup::
 ::group::@soustools/mcp-server:lint
 cache miss, executing f21e60543e9c09fa
 $ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-types:build
+cache miss, executing a578c84cf967c27c
+$ tsc
 ::endgroup::
 ::group::@soustools/api-types:lint
 cache miss, executing b296140551ecc27f
@@ -31,7 +31,26 @@ $ tsc
 cache miss, executing 58621578dfdd7ef6
 $ tsc
 ::endgroup::
-[;31m@soustools/api-client:lint[;0m
+[;31m@soustools/domain-settings:lint[;0m
+cache miss, executing 3afaab845d87b027
+$ eslint . --max-warnings 0
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-settings/src/components/SettingsPanel/SettingsPanel.container.tsx
+  225:1  error  File has too many lines (281). Maximum allowed is 200  max-lines
+
+✖ 1 problem (1 error, 0 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.
+::group::api:lint
+cache miss, executing b2f15cbe797837ab
+::endgroup::
+::group::cli:lint
+cache miss, executing 08ad439aa16de528
+::endgroup::
+::group::@soustools/setup-portal:lint
+cache miss, executing 9ba15fd761469e04
+::endgroup::
+::group::@soustools/api-client:lint
 cache miss, executing c0a7868a4e45625c
 $ eslint . --max-warnings 0
 
@@ -44,34 +63,17 @@ $ eslint . --max-warnings 0
   3 errors and 0 warnings potentially fixable with the `--fix` option.
 
 [ELIFECYCLE] Command failed with exit code 1.
+::endgroup::
 ::group::web:lint
 cache miss, executing 4ccca2e94aaf4ef9
 ::endgroup::
-::group::cli:lint
-cache miss, executing 08ad439aa16de528
+::group::@soustools/domain-pos:lint
+cache miss, executing 2a4fa7fb099b8d96
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/logger:lint
 cache miss, executing 633643e152423baf
-$ eslint . --max-warnings 0
-::endgroup::
-::group::api:lint
-cache miss, executing b2f15cbe797837ab
-::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing 3afaab845d87b027
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/setup-portal:lint
-cache miss, executing 9ba15fd761469e04
-::endgroup::
-::group::@soustools/domain-inventory:lint
-cache miss, executing 1de522ca5a4c6c7f
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing b6de417c17e8aa56
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -85,49 +87,19 @@ cache miss, executing c3012821c8471df0
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing 2a4fa7fb099b8d96
+::group::@soustools/design-system:lint
+cache miss, executing b6de417c17e8aa56
 $ eslint . --max-warnings 0
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds-settings-modal.tsx
-  214:1  error  File has too many lines (225). Maximum allowed is 200  max-lines
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.container.tsx
-   32:66  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   33:67  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   47:40  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-   59:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  113:64  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  119:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  143:70  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  149:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  161:52  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  170:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  224:1   error    File has too many lines (218). Maximum allowed is 200  max-lines
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/KDS/kds.view.tsx
-  213:1  error  File has too many lines (233). Maximum allowed is 200  max-lines
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/components/pos-modifiers-modal.tsx
-  219:1  error  File has too many lines (217). Maximum allowed is 200  max-lines
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/components/pos-tender-modal.tsx
-  218:1  error  File has too many lines (217). Maximum allowed is 200  max-lines
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.container.tsx
-  157:39  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
-  223:1   error    File has too many lines (219). Maximum allowed is 200  max-lines
-
-/home/runner/work/sous.tools/sous.tools/packages/domain-pos/src/components/POSRegister/pos.helpers.ts
-  216:1  error  File has too many lines (225). Maximum allowed is 200  max-lines
-
-✖ 18 problems (7 errors, 11 warnings)
-
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-inventory:lint
+cache miss, executing 1de522ca5a4c6c7f
+$ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    7 successful, 19 total
 Cached:    0 cached, 19 total
-  Time:    18.342s 
-Failed:    @soustools/api-client#lint
+  Time:    15.574s 
+Failed:    @soustools/domain-settings#lint
 
