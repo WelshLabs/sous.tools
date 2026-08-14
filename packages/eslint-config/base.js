@@ -28,7 +28,7 @@ const BOUNDARY_ELEMENTS = [
     type: "ui",
     pattern: ["packages/design-system/**"],
   },
-  
+
   {
     type: "shared",
     pattern: [
@@ -84,14 +84,12 @@ export const baseConfig = [
             {
               from: "domain",
               disallow: ["backend"],
-              message:
-                "Domain packages cannot import from backend apps.",
+              message: "Domain packages cannot import from backend apps.",
             },
             {
               from: "ui",
               disallow: ["backend"],
-              message:
-                "Design system cannot import from backend apps.",
+              message: "Design system cannot import from backend apps.",
             },
           ],
         },
@@ -149,7 +147,12 @@ export const baseConfig = [
   },
   // ── Config & Foundational Utilities process.env Exemption ─────────────
   {
-    files: ["**/*.config.js", "**/*.config.mjs", "**/*.config.ts", "packages/logger/**/*.ts"],
+    files: [
+      "**/*.config.js",
+      "**/*.config.mjs",
+      "**/*.config.ts",
+      "packages/logger/**/*.ts",
+    ],
     languageOptions: {
       globals: {
         process: "readonly",
