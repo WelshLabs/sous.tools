@@ -20,6 +20,10 @@ jobs:
           PROJECT_PAT: ${{ secrets.KANBAN_PROJECT_PAT }}
           # Built-in token used to add labels (prevents infinite loop!)
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           EVENT_NAME="${{ github.event_name }}"
           
@@ -42,14 +46,18 @@ jobs:
             
             # Trigger Agent if Ready
             if [ "$LABEL" = "Ready" ]; then
+              JSON_PAYLOAD=$(jq -n --env ISSUE_NUMBER --env ISSUE_TITLE --env ISSUE_BODY \
+                '{body: {issue: {number: $ISSUE_NUMBER|tonumber, title: $ISSUE_TITLE, body: $ISSUE_BODY, state: "Ready"}}}')
               curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
               -H "Content-Type: application/json" \
-              -d "{ \"body\": { \"issue\": { \"number\": ${{ github.event.issue.number }}, \"title\": \"${{ github.event.issue.title }}\", \"body\": \"${{ github.event.issue.body }}\", \"state\": \"Ready\" } } }"
+              -d "$JSON_PAYLOAD"
             fi
 
           elif [ "$EVENT_NAME" = "issue_comment" ]; then
             # 3. Human responded to Agent block -> Trigger Agent
+            JSON_PAYLOAD=$(jq -n --env ISSUE_NUMBER --env COMMENT_BODY \
+              '{body: {issue: {number: $ISSUE_NUMBER|tonumber}, comment: {body: $COMMENT_BODY}}}')
             curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
               -H "Content-Type: application/json" \
-              -d "{ \"body\": { \"issue\": { \"number\": ${{ github.event.issue.number }} }, \"comment\": { \"body\": \"${{ github.event.comment.body }}\" } } }"
+              -d "$JSON_PAYLOAD"
           fi
