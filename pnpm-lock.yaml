@@ -14,8 +14,8 @@ importers:
   .:
     dependencies:
       "@welshlabs/automated-kanban-agent":
-        specifier: 1.0.3
-        version: 1.0.3
+        specifier: 1.0.4
+        version: 1.0.4
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
@@ -8106,11 +8106,11 @@ packages:
         integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==,
       }
 
-  "@welshlabs/automated-kanban-agent@1.0.3":
+  "@welshlabs/automated-kanban-agent@1.0.4":
     resolution:
       {
-        integrity: sha512-Vn1y8JjexW9HegGQ+gRcrvkdckA/e1cgcofqQScU2vQ1qpd8DHxl3e+MJlKHn7Vb7R9Gnt7BX5FsxFVrnvP5gw==,
-        tarball: https://npm.pkg.github.com/download/@welshlabs/automated-kanban-agent/1.0.3/1f85c91eeb74a471645729807bbd20b1599f6d85,
+        integrity: sha512-AhOplHdLBZhoxJUf7THttZDNaOklN7AYHuA95Kq8iDwnw35mEmUf7mCBsjQMHoRBBPAuyOGj5xmwaiB2LHkxaA==,
+        tarball: https://npm.pkg.github.com/download/@welshlabs/automated-kanban-agent/1.0.4/c367e5a71f08f0cc5d579a2636324e508f75a70c,
       }
     hasBin: true
 
@@ -22761,7 +22761,7 @@ snapshots:
       "@webassemblyjs/ast": 1.14.1
       "@xtuc/long": 4.2.2
 
-  "@welshlabs/automated-kanban-agent@1.0.3": {}
+  "@welshlabs/automated-kanban-agent@1.0.4": {}
 
   "@xhmikosr/archive-type@8.1.0(supports-color@10.2.2)":
     dependencies:
