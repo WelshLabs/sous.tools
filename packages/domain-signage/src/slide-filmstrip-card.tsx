@@ -49,23 +49,21 @@ export function SlideMiniature({
       {/* Column dividers for COLUMN_LAYOUT */}
       {colSlide &&
         colSlide.columns.length > 1 &&
-        colSlide.columns
-          .slice(1)
-          .map((_, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                top: 0,
-                bottom: 0,
-                left: `${((i + 1) / colSlide.columns.length) * 100}%`,
-                width: 4,
-                background: COLUMN_COLORS[i % COLUMN_COLORS.length],
-                opacity: 0.7,
-                zIndex: 1,
-              }}
-            />
-          ))}
+        colSlide.columns.slice(1).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: `${((i + 1) / colSlide.columns.length) * 100}%`,
+              width: 4,
+              background: COLUMN_COLORS[i % COLUMN_COLORS.length],
+              opacity: 0.7,
+              zIndex: 1,
+            }}
+          />
+        ))}
 
       {/* Duration badge bottom-right */}
       <div
