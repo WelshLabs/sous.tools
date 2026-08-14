@@ -1,0 +1,86 @@
+name: Kanban Two-Way Master Sync
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  projects_v2_item:
+    types: [edited]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync-and-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Handle Event and Sync
+        env:
+          # Personal Access Token needed to move cards on the Project Board
+          PROJECT_PAT: ${{ secrets.KANBAN_PROJECT_PAT }}
+          # Built-in token used to add labels (prevents infinite loop!)
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EVENT_NAME="${{ github.event_name }}"
+          
+          if [ "$EVENT_NAME" = "issues" ]; then
+            # 1. Label was added manually -> Move Kanban Card & Trigger Agent
+            LABEL="${{ github.event.label.name }}"
+            ISSUE_URL="${{ github.event.issue.html_url }}"
+            
+            # Move Card
+            if [[ "$LABEL" == "Ready" ]]; then STATUS="Ready";
+            elif [[ "$LABEL" == "In Progress" || "$LABEL" == "agent:in-progress" ]]; then STATUS="In Progress";
+            elif [[ "$LABEL" == "Review" ]]; then STATUS="Review";
+            elif [[ "$LABEL" == "Done" ]]; then STATUS="Done";
+            else exit 0; fi
+            
+            PROJECT_ID=$(GH_TOKEN=$PROJECT_PAT gh project view 1 --owner conarwelsh --format json -q '.id' || true)
+            if [[ -n "$PROJECT_ID" ]]; then
+               GH_TOKEN=$PROJECT_PAT gh project item-edit --id "$ISSUE_URL" --project-id "$PROJECT_ID" --field-id "Status" --text "$STATUS" || true
+            fi
+            
+            # Trigger Agent if Ready
+            if [ "$LABEL" = "Ready" ]; then
+              curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
+              -H "Content-Type: application/json" \
+              -d "{ \"body\": { \"issue\": { \"number\": ${{ github.event.issue.number }}, \"title\": \"${{ github.event.issue.title }}\", \"body\": \"${{ github.event.issue.body }}\", \"state\": \"Ready\" } } }"
+            fi
+
+          elif [ "$EVENT_NAME" = "projects_v2_item" ]; then
+            # 2. Card was moved on the board manually -> Update Label & Trigger Agent
+            # Note: Project V2 payload doesn't provide issue URL directly easily via github context.
+            # But we can extract the content node ID. For simplicity, if you move the board,
+            # we use the GitHub API to fetch the issue number from the content_node_id.
+            CONTENT_NODE_ID="${{ github.event.projects_v2_item.content_node_id }}"
+            NEW_STATUS="${{ github.event.projects_v2_item.changes.field_value.to.name }}"
+            
+            # Fetch issue details using GraphQL
+            ISSUE_JSON=$(gh api graphql -F id="$CONTENT_NODE_ID" -f query='query($id: ID!) { node(id: $id) { ... on Issue { number title body url } } }')
+            ISSUE_NUMBER=$(echo "$ISSUE_JSON" | jq -r '.data.node.number')
+            ISSUE_TITLE=$(echo "$ISSUE_JSON" | jq -r '.data.node.title')
+            ISSUE_URL=$(echo "$ISSUE_JSON" | jq -r '.data.node.url')
+            
+            if [ "$ISSUE_NUMBER" != "null" ]; then
+              if [ "$NEW_STATUS" = "Ready" ]; then
+                 # Using built-in GH_TOKEN prevents recursive issues:labeled trigger!
+                 gh issue edit $ISSUE_URL --add-label "Ready"
+                 # Trigger Agent
+                 curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
+                 -H "Content-Type: application/json" \
+                 -d "{ \"body\": { \"issue\": { \"number\": $ISSUE_NUMBER, \"title\": \"$ISSUE_TITLE\", \"state\": \"Ready\" } } }"
+              elif [ "$NEW_STATUS" = "In Progress" ]; then
+                 gh issue edit $ISSUE_URL --add-label "agent:in-progress"
+              elif [ "$NEW_STATUS" = "Review" ]; then
+                 gh issue edit $ISSUE_URL --add-label "Review"
+              fi
+            fi
+            
+          elif [ "$EVENT_NAME" = "issue_comment" ]; then
+            # 3. Human responded to Agent block -> Trigger Agent
+            curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
+              -H "Content-Type: application/json" \
+              -d "{ \"body\": { \"issue\": { \"number\": ${{ github.event.issue.number }} }, \"comment\": { \"body\": \"${{ github.event.comment.body }}\" } } }"
+          fi
