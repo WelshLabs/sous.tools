@@ -5,8 +5,6 @@ on:
     types: [labeled]
   issue_comment:
     types: [created]
-  projects_v2_item:
-    types: [edited]
 
 permissions:
   contents: read
@@ -49,41 +47,6 @@ jobs:
               -d "{ \"body\": { \"issue\": { \"number\": ${{ github.event.issue.number }}, \"title\": \"${{ github.event.issue.title }}\", \"body\": \"${{ github.event.issue.body }}\", \"state\": \"Ready\" } } }"
             fi
 
-          elif [ "$EVENT_NAME" = "projects_v2_item" ]; then
-            # 2. Card was moved on the board manually -> Update Label & Trigger Agent
-            # Note: Project V2 payload doesn't provide issue URL directly easily via github context.
-            # But we can extract the content node ID. For simplicity, if you move the board,
-            # we use the GitHub API to fetch the issue number from the content_node_id.
-            CONTENT_NODE_ID="${{ github.event.projects_v2_item.content_node_id }}"
-            NEW_STATUS="${{ github.event.projects_v2_item.changes.field_value.to.name }}"
-            
-            # Fetch issue details using GraphQL
-            ISSUE_JSON=$(gh api graphql -F id="$CONTENT_NODE_ID" -f query='query($id: ID!) { node(id: $id) { ... on Issue { number title body url } } }')
-            ISSUE_NUMBER=$(echo "$ISSUE_JSON" | jq -r '.data.node.number')
-            ISSUE_TITLE=$(echo "$ISSUE_JSON" | jq -r '.data.node.title')
-            ISSUE_URL=$(echo "$ISSUE_JSON" | jq -r '.data.node.url')
-            
-            if [ "$ISSUE_NUMBER" != "null" ]; then
-              if [ "$NEW_STATUS" = "Ready" ]; then
-                 # Using built-in GH_TOKEN prevents recursive issues:labeled trigger!
-                 gh issue edit $ISSUE_URL --add-label "Ready"
-                 # Trigger Agent
-                 curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
-                 -H "Content-Type: application/json" \
-                 -d "{ \"body\": { \"issue\": { \"number\": $ISSUE_NUMBER, \"title\": \"$ISSUE_TITLE\", \"state\": \"Ready\" } } }"
-              elif [ "$NEW_STATUS" = "In Progress" ]; then
-                 gh issue edit $ISSUE_URL --add-label "agent:in-progress"
-              elif [ "$NEW_STATUS" = "Review" ]; then
-                 gh issue edit $ISSUE_URL --add-label "Review"
-              elif [ "$NEW_STATUS" = "Done" ]; then
-                 gh issue edit $ISSUE_URL --add-label "Done"
-                 # Trigger Agent to Auto-Merge PR
-                 curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
-                 -H "Content-Type: application/json" \
-                 -d "{ \"body\": { \"issue\": { \"number\": $ISSUE_NUMBER, \"title\": \"$ISSUE_TITLE\", \"state\": \"Done\" } } }"
-              fi
-            fi
-            
           elif [ "$EVENT_NAME" = "issue_comment" ]; then
             # 3. Human responded to Agent block -> Trigger Agent
             curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
