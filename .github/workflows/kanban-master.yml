@@ -39,7 +39,7 @@ jobs:
             elif [[ "$LABEL" == "Done" ]]; then STATUS="Done";
             else exit 0; fi
             
-            PROJECT_ID=$(GH_TOKEN=$PROJECT_PAT gh project view 1 --owner conarwelsh --format json -q '.id' || true)
+            PROJECT_ID=$(GH_TOKEN=$PROJECT_PAT gh project view 2 --owner conarwelsh --format json -q '.id' || true)
             if [[ -n "$PROJECT_ID" ]]; then
                GH_TOKEN=$PROJECT_PAT gh project item-edit --id "$ISSUE_URL" --project-id "$PROJECT_ID" --field-id "Status" --text "$STATUS" || true
             fi
