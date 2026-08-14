@@ -18,7 +18,7 @@ allowBuilds:
   "@welshlabs/automated-kanban-agent": true
   "@welshlabs/automated-kanban-agent@git+ssh://git@github.com/WelshLabs/automated-kanban-agent.git#5de6f1be4d6d18afdf06b0805448dd08c2c1af01": set this to true or false
 minimumReleaseAgeExclude:
-  - "@welshlabs/automated-kanban-agent@1.0.1 || 1.0.2"
+  - "@welshlabs/automated-kanban-agent@1.0.1 || 1.0.2 || 1.0.3"
 overrides:
   react: "19.2.7"
   react-dom: "19.2.7"
