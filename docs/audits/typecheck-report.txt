@@ -3,32 +3,32 @@
    • Running typecheck in 18 packages
    • Remote caching disabled
 
-::group::@soustools/api-types:build
-cache hit, replaying logs a578c84cf967c27c
-$ tsc
-::endgroup::
 ::group::@soustools/config:build
 cache hit, replaying logs 01978c106b621e4d
+$ tsc
+::endgroup::
+::group::@soustools/api-types:build
+cache hit, replaying logs a578c84cf967c27c
 $ tsc
 ::endgroup::
 ::group::@soustools/mcp-server:typecheck
 cache miss, executing 0219781b51d6a2fd
 $ tsc --noEmit
 ::endgroup::
+::group::@soustools/api-types:typecheck
+cache miss, executing d46751a92ab195cb
+$ tsc --noEmit
+::endgroup::
 ::group::@soustools/logger:build
 cache miss, executing 58621578dfdd7ef6
 $ tsc
-::endgroup::
-::group::@soustools/api-client:typecheck
-cache miss, executing ede134e38f8fd0ff
-$ tsc --noEmit
 ::endgroup::
 ::group::@soustools/logger:typecheck
 cache miss, executing c57e8c82c20cbbe5
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/api-types:typecheck
-cache miss, executing d46751a92ab195cb
+::group::@soustools/api-client:typecheck
+cache miss, executing ede134e38f8fd0ff
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/config:typecheck
@@ -47,24 +47,24 @@ $ tsc --noEmit
 cache miss, executing d721787b52cd88cc
 $ tsc --noEmit
 ::endgroup::
+::group::@soustools/domain-settings:typecheck
+cache miss, executing cbdd7ee8c4cae754
+$ tsc --noEmit
+::endgroup::
 ::group::@soustools/domain-inventory:typecheck
 cache miss, executing a790390dd340b8c5
+$ tsc --noEmit
+::endgroup::
+::group::@soustools/setup-portal:typecheck
+cache miss, executing 9e18fcbf49e34542
 $ tsc --noEmit
 ::endgroup::
 ::group::@soustools/domain-recipes:typecheck
 cache miss, executing e3e0d2f3eef83744
 $ tsc --noEmit
 ::endgroup::
-::group::@soustools/domain-settings:typecheck
-cache miss, executing cbdd7ee8c4cae754
-$ tsc --noEmit
-::endgroup::
 ::group::@soustools/domain-signage:typecheck
 cache miss, executing 30f349fabe5c3973
-$ tsc --noEmit
-::endgroup::
-::group::@soustools/setup-portal:typecheck
-cache miss, executing 9e18fcbf49e34542
 $ tsc --noEmit
 ::endgroup::
 ::group::web:typecheck
@@ -78,5 +78,5 @@ $ tsc --noEmit
 
  Tasks:    18 successful, 18 total
 Cached:    2 cached, 18 total
-  Time:    51.293s 
+  Time:    57.66s 
 
