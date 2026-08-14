@@ -146,4 +146,3 @@ jobs:
 
           echo "Wiping temporary staging directory..."
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
-
