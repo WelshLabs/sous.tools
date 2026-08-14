@@ -104,3 +104,4 @@ apps/web/public/sw.js
 apps/web/public/sw.js.map
 
 .aider*
+kanban-orchestrator.log
