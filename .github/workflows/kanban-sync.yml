@@ -12,11 +12,11 @@ jobs:
         env:
           # Note: Project V2 APIs require a Personal Access Token with 'project' scope.
           # You must add this token to your GitHub Repository Secrets!
-          GH_TOKEN: ${{ secrets.KANBAN_PROJECT_PAT }} 
+          GH_TOKEN: ${{ secrets.KANBAN_PROJECT_PAT }}
         run: |
           ISSUE_URL="${{ github.event.issue.html_url }}"
           LABEL="${{ github.event.label.name }}"
-          
+
           if [[ "$LABEL" == "Ready" ]]; then
             STATUS="Ready"
           elif [[ "$LABEL" == "In Progress" || "$LABEL" == "agent:in-progress" ]]; then
@@ -29,13 +29,13 @@ jobs:
             echo "Label $LABEL does not map to a Kanban status."
             exit 0
           fi
-          
+
           echo "Updating issue $ISSUE_URL to status $STATUS..."
-          
+
           # Replace '1' with your actual GitHub Project Number (e.g., if url is org/projects/3, use 3)
           PROJECT_NUMBER=1
           OWNER="conarwelsh"
-          
+
           PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner $OWNER --format json -q '.id' || true)
           if [[ -n "$PROJECT_ID" ]]; then
              gh project item-edit --id "$ISSUE_URL" --project-id "$PROJECT_ID" --field-id "Status" --text "$STATUS" || echo "Failed to update project item."
