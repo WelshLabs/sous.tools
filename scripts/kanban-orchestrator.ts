@@ -237,7 +237,7 @@ async function main() {
   console.log(
     "[ORCHESTRATOR] Installing dependencies in isolated workspace...",
   );
-  runCommand(`pnpm install`);
+  runCommand(`pnpm install --frozen-lockfile`);
 
   // Checkout existing branch or create a new one
   runCommand(`git fetch origin issue-${issueNumber} || true`);
@@ -334,10 +334,16 @@ async function main() {
 
     // Deterministic Auto-Fixes before tests
     console.log(
-      "[ORCHESTRATOR] Running deterministic auto-fixes (eslint/prettier)...",
+      "[ORCHESTRATOR] Running deterministic auto-fixes (eslint/prettier) on modified files...",
     );
-    runCommand(`pnpm eslint --fix . || true`, true);
-    runCommand(`pnpm prettier --write . || true`, true);
+    runCommand(
+      `git diff --name-only | grep -E '\\.(ts|tsx|js|jsx)$' | xargs -r pnpm eslint --fix || true`,
+      true,
+    );
+    runCommand(
+      `git diff --name-only | grep -E '\\.(ts|tsx|js|jsx|json|md)$' | xargs -r pnpm prettier --write || true`,
+      true,
+    );
 
     // Run Tests securely
     console.log("[ORCHESTRATOR] Running test suite...");
