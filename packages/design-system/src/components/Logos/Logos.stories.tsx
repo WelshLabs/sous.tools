@@ -1,9 +1,9 @@
-import type { Meta } from '@storybook/react';
-import { PrimaryLogo, MicroIcon, Lettermark, AnimatedLettermark } from './Logo';
+import type { Meta } from "@storybook/react";
+import { PrimaryLogo, MicroIcon, Lettermark, AnimatedLettermark } from "./Logo";
 
 const meta: Meta = {
-  title: 'Components/Logos',
-  tags: ['autodocs'],
+  title: "Components/Logos",
+  tags: ["autodocs"],
 };
 export default meta;
 
@@ -22,7 +22,9 @@ export const AllLogos = () => (
       <Lettermark className="h-12 w-auto" />
     </div>
     <div>
-      <h3 className="mb-4 text-sm font-bold text-zinc-500">AnimatedLettermark</h3>
+      <h3 className="mb-4 text-sm font-bold text-zinc-500">
+        AnimatedLettermark
+      </h3>
       <AnimatedLettermark className="h-12 w-auto" />
     </div>
   </div>

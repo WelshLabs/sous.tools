@@ -10,7 +10,9 @@ export interface RestClientOptions {
 
 export type RestApiClient = ReturnType<typeof createClient<paths>>;
 
-export function createRestClient(options: RestClientOptions = {}): RestApiClient {
+export function createRestClient(
+  options: RestClientOptions = {},
+): RestApiClient {
   const baseUrl = options.baseUrl || config.NEXT_PUBLIC_API_URL;
 
   const client = createClient<paths>({

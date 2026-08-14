@@ -1,7 +1,8 @@
 export interface NormalizedPosEvent {
   eventId: string;
   merchantId?: string;
-  eventType: "catalog.updated" | "order.updated" | "inventory.updated" | "unknown";
+  eventType:
+    "catalog.updated" | "order.updated" | "inventory.updated" | "unknown";
   rawType?: string;
   data: Record<string, unknown>;
   createdAt?: string;
@@ -14,11 +15,13 @@ export interface IPosDriver {
   verifyWebhookSignature(
     signature: string,
     rawBody: string,
-    signatureKey?: string
+    signatureKey?: string,
   ): boolean;
 
   /**
    * Normalizes the provider-specific webhook payload into a standardized event format.
    */
-  normalizeWebhookEvent(rawPayload: Record<string, unknown>): NormalizedPosEvent;
+  normalizeWebhookEvent(
+    rawPayload: Record<string, unknown>,
+  ): NormalizedPosEvent;
 }

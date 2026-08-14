@@ -47,9 +47,7 @@ export class DevicesController {
    * Poll endpoint for the Pi to check if a user has entered its pairing code.
    */
   @Get(":deviceId/status")
-  async getStatus(
-    @Param("deviceId") deviceId: string,
-  ): Promise<
+  async getStatus(@Param("deviceId") deviceId: string): Promise<
     ApiResponse<{
       paired: boolean;
       supabaseUrl?: string;

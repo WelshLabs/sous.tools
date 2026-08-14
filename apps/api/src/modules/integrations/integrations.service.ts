@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, Inject, Logger, OnModuleInit } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  Logger,
+  OnModuleInit,
+} from "@nestjs/common";
 import { serverConfig as config } from "@soustools/config/server";
 import { IntegrationStatus } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
@@ -15,7 +21,9 @@ export class IntegrationsService implements OnModuleInit {
 
   onModuleInit() {
     // Polling removed in favor of Square Webhooks (via Redis queue)
-    this.logger.log("IntegrationsService initialized. Webhooks will handle syncs.");
+    this.logger.log(
+      "IntegrationsService initialized. Webhooks will handle syncs.",
+    );
   }
 
   async checkout(orgId: string, orderData: any): Promise<any> {
@@ -34,7 +42,9 @@ export class IntegrationsService implements OnModuleInit {
         : "https://connect.squareupsandbox.com";
       const scope =
         "MERCHANT_PROFILE_READ+ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE+ORDERS_READ+ORDERS_WRITE+PAYMENTS_READ";
-      const squareRedirectUri = encodeURIComponent(`${config.NEXT_PUBLIC_API_URL}/integrations/callback/square`);
+      const squareRedirectUri = encodeURIComponent(
+        `${config.NEXT_PUBLIC_API_URL}/integrations/callback/square`,
+      );
       return `${baseUrl}/oauth2/authorize?client_id=${config.SQUARE_CLIENT_ID}&scope=${scope}&state=${state}&redirect_uri=${squareRedirectUri}&session=false`;
     } else if (provider === "google") {
       const scope = encodeURIComponent(
@@ -123,7 +133,9 @@ export class IntegrationsService implements OnModuleInit {
 
     if (!res.ok) {
       const errBody = await res.text();
-      this.logger.error(`Square token exchange failed [${res.status}]: ${errBody}`);
+      this.logger.error(
+        `Square token exchange failed [${res.status}]: ${errBody}`,
+      );
       throw new Error(`Square token exchange failed: ${errBody}`);
     }
 

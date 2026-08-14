@@ -11,7 +11,11 @@ export interface DocumentViewerProps {
   hoveredIndex?: number | null;
 }
 
-export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null }: DocumentViewerProps) {
+export function DocumentViewer({
+  sourceUrl,
+  lineItems = [],
+  hoveredIndex = null,
+}: DocumentViewerProps) {
   const [scale, setScale] = useState(1);
   const imgRef = useRef<HTMLImageElement>(null);
   const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
@@ -43,7 +47,9 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
 
   return (
     <div className="flex flex-col gap-3 h-[450px] lg:h-[620px] relative">
-      <div className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">Document Viewer</div>
+      <div className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">
+        Document Viewer
+      </div>
       <div className="flex-1 relative rounded-2xl border border-white/10 dark:border-zinc-800/80 overflow-hidden bg-slate-950/80 flex items-center justify-center">
         {sourceUrl ? (
           <div className="w-full h-full relative cursor-grab active:cursor-grabbing overflow-hidden flex items-center justify-center">
@@ -69,7 +75,8 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
               {/* Bounding Boxes — positioned in image-pixel space */}
               {imgSize &&
                 lineItems.map((item, idx) => {
-                  if (!item.boundingBox || item.boundingBox.length !== 4) return null;
+                  if (!item.boundingBox || item.boundingBox.length !== 4)
+                    return null;
                   // Coordinates are normalised [0,1] in [ymin, xmin, ymax, xmax] order
                   const [ymin, xmin, ymax, xmax] = item.boundingBox;
                   const isHoveredItem = hoveredIndex === idx;
@@ -83,10 +90,10 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
                           : "border-cyan-500 bg-cyan-500/10 z-20"
                       }`}
                       style={{
-                        top:    `${ymin * imgSize.h}px`,
-                        left:   `${xmin * imgSize.w}px`,
+                        top: `${ymin * imgSize.h}px`,
+                        left: `${xmin * imgSize.w}px`,
                         height: `${(ymax - ymin) * imgSize.h}px`,
-                        width:  `${(xmax - xmin) * imgSize.w}px`,
+                        width: `${(xmax - xmin) * imgSize.w}px`,
                       }}
                     />
                   );
@@ -94,7 +101,9 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
             </motion.div>
           </div>
         ) : (
-          <div className="text-xs text-muted-foreground italic text-center p-6">No source document visual available.</div>
+          <div className="text-xs text-muted-foreground italic text-center p-6">
+            No source document visual available.
+          </div>
         )}
 
         {sourceUrl && (
@@ -115,7 +124,12 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
             >
               <ZoomOut className="w-4 h-4" />
             </button>
-            <button type="button" onClick={() => setScale(1)} className="p-1.5 hover:bg-white/10 rounded-lg text-cyan-400" title="Reset Zoom">
+            <button
+              type="button"
+              onClick={() => setScale(1)}
+              className="p-1.5 hover:bg-white/10 rounded-lg text-cyan-400"
+              title="Reset Zoom"
+            >
               <RotateCcw className="w-4 h-4" />
             </button>
           </div>

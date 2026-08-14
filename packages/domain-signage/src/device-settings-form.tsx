@@ -1,6 +1,5 @@
 "use client";
 
-
 interface DeviceSettingsFormProps {
   name: string;
   setName: (v: string) => void;
@@ -21,7 +20,15 @@ const TZs = [
   "America/Denver",
   "America/Los_Angeles",
 ];
-const DAYs = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAYs = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
   name,
@@ -38,7 +45,9 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <label className="block text-xs text-muted-foreground">Device Name</label>
+        <label className="block text-xs text-muted-foreground">
+          Device Name
+        </label>
         <input
           type="text"
           required
@@ -62,10 +71,14 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
         </select>
       </div>
       <div className="space-y-1">
-        <label className="block text-xs text-muted-foreground">Maintenance Window</label>
+        <label className="block text-xs text-muted-foreground">
+          Maintenance Window
+        </label>
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-[10px] text-muted-foreground mb-0.5">Hour</label>
+            <label className="block text-[10px] text-muted-foreground mb-0.5">
+              Hour
+            </label>
             <select
               value={hour}
               onChange={(e) => setHour(parseInt(e.target.value, 10))}
@@ -79,7 +92,9 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-[10px] text-muted-foreground mb-0.5">Minute</label>
+            <label className="block text-[10px] text-muted-foreground mb-0.5">
+              Minute
+            </label>
             <select
               value={minute}
               onChange={(e) => setMinute(parseInt(e.target.value, 10))}
@@ -93,7 +108,9 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-[10px] text-muted-foreground mb-0.5">Day of Week</label>
+            <label className="block text-[10px] text-muted-foreground mb-0.5">
+              Day of Week
+            </label>
             <select
               value={dayOfWeek}
               onChange={(e) => setDayOfWeek(e.target.value)}

@@ -15,11 +15,7 @@ export interface HighlightItemConfig {
 
 /** CSS animation preset for a highlighted menu item card. */
 export type HighlightAnimation =
-  | "none"
-  | "pulse-glow"
-  | "shimmer"
-  | "bounce-scale"
-  | "border-flash";
+  "none" | "pulse-glow" | "shimmer" | "bounce-scale" | "border-flash";
 
 /** A small badge/label shown on a menu item card (any state). */
 export interface MenuItemBadge {
@@ -75,4 +71,3 @@ export interface MenuItemStyles {
   highlighted: MenuItemStateStyle;
   soldOut: MenuItemStateStyle;
 }
-

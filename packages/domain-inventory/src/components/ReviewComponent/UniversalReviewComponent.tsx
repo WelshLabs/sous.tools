@@ -15,7 +15,14 @@ import {
   Chip,
   useOmnibarContext,
 } from "@soustools/design-system";
-import { CheckCircle2, FileText, ChevronLeft, ChevronRight, Save, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Save,
+  Sparkles,
+} from "lucide-react";
 import { api } from "@soustools/api-client";
 
 export interface UniversalReviewComponentProps {
@@ -30,7 +37,9 @@ export function UniversalReviewComponent({
   onCommitSuccess,
 }: UniversalReviewComponentProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeReviewId, setActiveReviewId] = useState<string | undefined>(reviewId);
+  const [activeReviewId, setActiveReviewId] = useState<string | undefined>(
+    reviewId,
+  );
   const [payload, setPayload] = useState<any>(initialPayload || null);
   const [isLoading, setIsLoading] = useState<boolean>(!initialPayload);
   const [isProcessing, setIsProcessingState] = useState<boolean>(false);
@@ -45,7 +54,10 @@ export function UniversalReviewComponent({
     const targetId = activeReviewId || "latest";
     setIsLoading(true);
     try {
-      const { data } = await api.GET(`/unified-ingestion/review/${targetId}` as any, {});
+      const { data } = await api.GET(
+        `/unified-ingestion/review/${targetId}` as any,
+        {},
+      );
       if (data) {
         const record = data as any;
         if (record && record.id) {
@@ -60,7 +72,10 @@ export function UniversalReviewComponent({
         }
       }
     } catch (err) {
-      console.error("Failed to fetch ingestion review from Postgres backend:", err);
+      console.error(
+        "Failed to fetch ingestion review from Postgres backend:",
+        err,
+      );
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +87,12 @@ export function UniversalReviewComponent({
     if (!socket) return;
 
     const handleIngestionUpdate = (data: any) => {
-      if (data?.reviewId && (data.reviewId === activeReviewId || activeReviewId === "latest" || !activeReviewId)) {
+      if (
+        data?.reviewId &&
+        (data.reviewId === activeReviewId ||
+          activeReviewId === "latest" ||
+          !activeReviewId)
+      ) {
         if (data.reviewId) setActiveReviewId(data.reviewId);
         if (data.status === "IN_PROGRESS") {
           setIsProcessingState(true);
@@ -80,7 +100,9 @@ export function UniversalReviewComponent({
           setIsProcessingState(false);
           setIsLoading(false);
           setPayload(data.parsedData);
-          setStatusMessage("Ingestion processing complete — updated via real-time WebSocket!");
+          setStatusMessage(
+            "Ingestion processing complete — updated via real-time WebSocket!",
+          );
         }
       }
     };
@@ -102,7 +124,10 @@ export function UniversalReviewComponent({
         body: { parsedData: newPayload } as any,
       });
     } catch (err) {
-      console.error("Failed to persist updated review payload to Postgres:", err);
+      console.error(
+        "Failed to persist updated review payload to Postgres:",
+        err,
+      );
     }
   };
 
@@ -115,10 +140,18 @@ export function UniversalReviewComponent({
     const action = lastMsg.uiAction;
     if (action.type !== "UPDATE_REVIEW_STATE") return;
 
-    if (action.action === "TURN_PAGE" && typeof action.pageNumber === "number") {
+    if (
+      action.action === "TURN_PAGE" &&
+      typeof action.pageNumber === "number"
+    ) {
       setCurrentPage(action.pageNumber);
-      setStatusMessage(`Navigated to page ${action.pageNumber} via Omnibar command.`);
-    } else if (action.action === "ACCEPT_ALL_PAGE" || action.action === "ACCEPT_ALL") {
+      setStatusMessage(
+        `Navigated to page ${action.pageNumber} via Omnibar command.`,
+      );
+    } else if (
+      action.action === "ACCEPT_ALL_PAGE" ||
+      action.action === "ACCEPT_ALL"
+    ) {
       setPayload((prev: any) => {
         if (!prev || !prev.pages) return prev;
         const updatedPages = prev.pages.map((pg: any) => {
@@ -131,8 +164,10 @@ export function UniversalReviewComponent({
                   ...b,
                   ingredients: b.ingredients.map((ing: any) => ({
                     ...ing,
-                    selectedTenantId: ing.selectedTenantId || ing.tenantMatches?.[0]?.id,
-                    selectedUsdaId: ing.selectedUsdaId || ing.usdaMatches?.[0]?.fdcId,
+                    selectedTenantId:
+                      ing.selectedTenantId || ing.tenantMatches?.[0]?.id,
+                    selectedUsdaId:
+                      ing.selectedUsdaId || ing.usdaMatches?.[0]?.fdcId,
                   })),
                 };
               }
@@ -141,8 +176,10 @@ export function UniversalReviewComponent({
                   ...b,
                   lineItems: b.lineItems.map((item: any) => ({
                     ...item,
-                    selectedTenantId: item.selectedTenantId || item.tenantMatches?.[0]?.id,
-                    selectedUsdaId: item.selectedUsdaId || item.usdaMatches?.[0]?.fdcId,
+                    selectedTenantId:
+                      item.selectedTenantId || item.tenantMatches?.[0]?.id,
+                    selectedUsdaId:
+                      item.selectedUsdaId || item.usdaMatches?.[0]?.fdcId,
                   })),
                 };
               }
@@ -155,7 +192,10 @@ export function UniversalReviewComponent({
         return updatedPayload;
       });
       setStatusMessage("Accepted all top AI matches on current page.");
-    } else if (action.action === "MAP_ITEM" && (action.itemIndex != null || action.targetName)) {
+    } else if (
+      action.action === "MAP_ITEM" &&
+      (action.itemIndex != null || action.targetName)
+    ) {
       setPayload((prev: any) => {
         if (!prev || !prev.pages) return prev;
         const updatedPages = prev.pages.map((pg: any) => {
@@ -167,12 +207,18 @@ export function UniversalReviewComponent({
                 const updatedIngredients = [...b.ingredients];
                 const idx = (action.itemIndex ?? 1) - 1;
                 if (updatedIngredients[idx]) {
-                  const targetMatch = updatedIngredients[idx].tenantMatches?.find((m: any) =>
-                    m.name.toLowerCase().includes((action.targetName || "").toLowerCase())
+                  const targetMatch = updatedIngredients[
+                    idx
+                  ].tenantMatches?.find((m: any) =>
+                    m.name
+                      .toLowerCase()
+                      .includes((action.targetName || "").toLowerCase()),
                   );
                   updatedIngredients[idx] = {
                     ...updatedIngredients[idx],
-                    selectedTenantId: targetMatch?.id || updatedIngredients[idx].tenantMatches?.[0]?.id,
+                    selectedTenantId:
+                      targetMatch?.id ||
+                      updatedIngredients[idx].tenantMatches?.[0]?.id,
                   };
                 }
                 return { ...b, ingredients: updatedIngredients };
@@ -181,12 +227,17 @@ export function UniversalReviewComponent({
                 const updatedItems = [...b.lineItems];
                 const idx = (action.itemIndex ?? 1) - 1;
                 if (updatedItems[idx]) {
-                  const targetMatch = updatedItems[idx].tenantMatches?.find((m: any) =>
-                    m.name.toLowerCase().includes((action.targetName || "").toLowerCase())
+                  const targetMatch = updatedItems[idx].tenantMatches?.find(
+                    (m: any) =>
+                      m.name
+                        .toLowerCase()
+                        .includes((action.targetName || "").toLowerCase()),
                   );
                   updatedItems[idx] = {
                     ...updatedItems[idx],
-                    selectedTenantId: targetMatch?.id || updatedItems[idx].tenantMatches?.[0]?.id,
+                    selectedTenantId:
+                      targetMatch?.id ||
+                      updatedItems[idx].tenantMatches?.[0]?.id,
                   };
                 }
                 return { ...b, lineItems: updatedItems };
@@ -199,13 +250,16 @@ export function UniversalReviewComponent({
         persistPayloadToBackend(updatedPayload);
         return updatedPayload;
       });
-      setStatusMessage(`Mapped item via Omnibar command: ${action.targetName || `item #${action.itemIndex}`}`);
+      setStatusMessage(
+        `Mapped item via Omnibar command: ${action.targetName || `item #${action.itemIndex}`}`,
+      );
     }
   }, [chatHistory, currentPage]);
 
   const pages = payload?.pages || [];
   const totalPages = Math.max(pages.length, 1);
-  const currentPData = pages.find((p: any) => p.pageNumber === currentPage) || pages[0];
+  const currentPData =
+    pages.find((p: any) => p.pageNumber === currentPage) || pages[0];
 
   const handleUpdateBlock = (blockId: string, updatedFields: any) => {
     setPayload((prev: any) => {
@@ -214,9 +268,11 @@ export function UniversalReviewComponent({
         pg.pageNumber === currentPage
           ? {
               ...pg,
-              blocks: pg.blocks.map((b: any) => (b.id === blockId ? { ...b, ...updatedFields } : b)),
+              blocks: pg.blocks.map((b: any) =>
+                b.id === blockId ? { ...b, ...updatedFields } : b,
+              ),
             }
-          : pg
+          : pg,
       );
       const newPayload = { ...prev, pages: nextPages };
       persistPayloadToBackend(newPayload);
@@ -231,7 +287,9 @@ export function UniversalReviewComponent({
       await api.POST(`/unified-ingestion/commit` as any, {
         body: { reviewId: activeReviewId, approvedPayload: payload } as any,
       });
-      setStatusMessage("Successfully committed to Postgres database & 1:1 Neo4j Graph!");
+      setStatusMessage(
+        "Successfully committed to Postgres database & 1:1 Neo4j Graph!",
+      );
       onCommitSuccess?.();
     } catch (err: any) {
       console.error("Commit failed:", err);
@@ -245,10 +303,16 @@ export function UniversalReviewComponent({
   if (isLoading || isProcessing) {
     return (
       <Card className="w-full p-8 border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl shadow-2xl flex flex-col items-center justify-center min-h-[400px]">
-        <BrandLoader size="lg" label="BullMQ Ingestion Pipeline actively processing document..." />
+        <BrandLoader
+          size="lg"
+          label="BullMQ Ingestion Pipeline actively processing document..."
+        />
         <div className="mt-6 flex items-center gap-2 text-xs font-mono text-cyan-400">
           <Sparkles className="w-4 h-4 animate-spin" />
-          <span>Executing vector embeddings (nomic-embed-text) & USDA FDC searches...</span>
+          <span>
+            Executing vector embeddings (nomic-embed-text) & USDA FDC
+            searches...
+          </span>
         </div>
       </Card>
     );
@@ -259,9 +323,12 @@ export function UniversalReviewComponent({
     return (
       <Card className="w-full p-8 border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl shadow-2xl text-center flex flex-col items-center justify-center min-h-[300px]">
         <FileText className="w-12 h-12 text-zinc-600 mb-3" />
-        <h3 className="text-lg font-bold text-white mb-1">No Active Document Ingestion</h3>
+        <h3 className="text-lg font-bold text-white mb-1">
+          No Active Document Ingestion
+        </h3>
         <p className="text-xs text-zinc-400 max-w-md">
-          Type or speak instructions into the Omnibar, or drop a document to begin polymorphic AI ingestion review.
+          Type or speak instructions into the Omnibar, or drop a document to
+          begin polymorphic AI ingestion review.
         </p>
       </Card>
     );
@@ -274,12 +341,17 @@ export function UniversalReviewComponent({
         <div>
           <CardTitle className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
             <span>Polymorphic Ingestion Review</span>
-            <Chip selected={true} size="sm" className="text-[10px] uppercase font-mono tracking-wider">
+            <Chip
+              selected={true}
+              size="sm"
+              className="text-[10px] uppercase font-mono tracking-wider"
+            >
               Real Data
             </Chip>
           </CardTitle>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Omnibar Master Controller active • Real-time 3-Way pgvector & USDA Mapping
+            Omnibar Master Controller active • Real-time 3-Way pgvector & USDA
+            Mapping
           </p>
         </div>
 
@@ -354,7 +426,9 @@ export function UniversalReviewComponent({
                   <ReviewProseBlock
                     key={block.id}
                     content={block.content || ""}
-                    onChange={(val) => handleUpdateBlock(block.id, { content: val })}
+                    onChange={(val) =>
+                      handleUpdateBlock(block.id, { content: val })
+                    }
                   />
                 );
               }
@@ -365,10 +439,16 @@ export function UniversalReviewComponent({
                     vendorName={block.vendorName}
                     totals={block.totals}
                     lineItems={block.lineItems}
-                    onVendorChange={(v) => handleUpdateBlock(block.id, { vendorName: v })}
+                    onVendorChange={(v) =>
+                      handleUpdateBlock(block.id, { vendorName: v })
+                    }
                     onLineItemMappingChange={(idx, tId, uId) => {
                       const items = [...(block.lineItems || [])];
-                      items[idx] = { ...items[idx], selectedTenantId: tId, selectedUsdaId: uId };
+                      items[idx] = {
+                        ...items[idx],
+                        selectedTenantId: tId,
+                        selectedUsdaId: uId,
+                      };
                       handleUpdateBlock(block.id, { lineItems: items });
                     }}
                   />
@@ -383,11 +463,22 @@ export function UniversalReviewComponent({
                     yieldUnit={block.yieldUnit}
                     instructions={block.instructions}
                     ingredients={block.ingredients}
-                    onTitleChange={(t) => handleUpdateBlock(block.id, { title: t })}
-                    onYieldChange={(c, u) => handleUpdateBlock(block.id, { yieldCount: c, yieldUnit: u })}
+                    onTitleChange={(t) =>
+                      handleUpdateBlock(block.id, { title: t })
+                    }
+                    onYieldChange={(c, u) =>
+                      handleUpdateBlock(block.id, {
+                        yieldCount: c,
+                        yieldUnit: u,
+                      })
+                    }
                     onIngredientMappingChange={(idx, tId, uId) => {
                       const ings = [...(block.ingredients || [])];
-                      ings[idx] = { ...ings[idx], selectedTenantId: tId, selectedUsdaId: uId };
+                      ings[idx] = {
+                        ...ings[idx],
+                        selectedTenantId: tId,
+                        selectedUsdaId: uId,
+                      };
                       handleUpdateBlock(block.id, { ingredients: ings });
                     }}
                   />

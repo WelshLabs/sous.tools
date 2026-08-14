@@ -7,7 +7,7 @@ import { ApiResponse } from "@soustools/api-types";
  * @returns A promise resolving to a standard API response containing the result or error.
  */
 export async function runControllerAction<T>(
-  action: () => Promise<T>
+  action: () => Promise<T>,
 ): Promise<ApiResponse<T>> {
   try {
     const data = await action();

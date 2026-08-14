@@ -19,7 +19,7 @@ import {
 export class UnifiedIngestionController {
   constructor(
     @InjectQueue("unified-ingestion") private readonly ingestionQueue: Queue,
-    private readonly ingestionService: UnifiedIngestionService
+    private readonly ingestionService: UnifiedIngestionService,
   ) {}
 
   @Post("upload")
@@ -29,10 +29,14 @@ export class UnifiedIngestionController {
       source?: string;
       sourceName?: string;
       sourceDocumentUrl?: string;
-      pagesInput?: Array<{ pageNumber: number; imageUrl?: string; rawText?: string }>;
+      pagesInput?: Array<{
+        pageNumber: number;
+        imageUrl?: string;
+        rawText?: string;
+      }>;
       conversationId?: string;
     },
-    @Headers("x-org-id") orgHeader?: string
+    @Headers("x-org-id") orgHeader?: string,
   ) {
     const orgId = orgHeader || "d0000000-0000-0000-0000-000000000000";
 
@@ -54,7 +58,12 @@ export class UnifiedIngestionController {
       conversationId: body.conversationId,
     });
 
-    return { success: true, jobId: job.id, message: "Document ingestion queued successfully.", reviewId: reviewRecord.id };
+    return {
+      success: true,
+      jobId: job.id,
+      message: "Document ingestion queued successfully.",
+      reviewId: reviewRecord.id,
+    };
   }
 
   @Get("review/:id")
@@ -65,7 +74,7 @@ export class UnifiedIngestionController {
   @Patch("review/:id")
   async updateReview(
     @Param("id") id: string,
-    @Body() body: { parsedData: IngestionReviewPayload }
+    @Body() body: { parsedData: IngestionReviewPayload },
   ) {
     if (!body.parsedData) {
       throw new BadRequestException("parsedData is required");
@@ -80,12 +89,18 @@ export class UnifiedIngestionController {
       reviewId: string;
       approvedPayload: IngestionReviewPayload;
     },
-    @Headers("x-org-id") orgHeader?: string
+    @Headers("x-org-id") orgHeader?: string,
   ) {
     if (!body.reviewId || !body.approvedPayload) {
-      throw new BadRequestException("reviewId and approvedPayload are required");
+      throw new BadRequestException(
+        "reviewId and approvedPayload are required",
+      );
     }
     const orgId = orgHeader || "d0000000-0000-0000-0000-000000000000";
-    return this.ingestionService.commitReviewPayload(body.reviewId, body.approvedPayload, orgId);
+    return this.ingestionService.commitReviewPayload(
+      body.reviewId,
+      body.approvedPayload,
+      orgId,
+    );
   }
 }

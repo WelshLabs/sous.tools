@@ -3,7 +3,10 @@
 import React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
-import { type MenuItemStyles, type MenuItemStateStyle } from "@soustools/api-types";
+import {
+  type MenuItemStyles,
+  type MenuItemStateStyle,
+} from "@soustools/api-types";
 import { StateTabBar, type ItemState } from "./state-tab-bar";
 import { MenuItemPreviewCard, type AtomKey } from "./menu-item-preview-card";
 import { AtomEditorPopover } from "./atom-editor-popover";
@@ -17,16 +20,27 @@ export interface MenuItemStyleModalProps {
 }
 
 export const MenuItemStyleModal: React.FC<MenuItemStyleModalProps> = ({
-  open, onClose, styles, onChange, googleFont,
+  open,
+  onClose,
+  styles,
+  onChange,
+  googleFont,
 }) => {
   const [activeState, setActiveState] = useState<ItemState>("regular");
   const [selectedAtom, setSelectedAtom] = useState<AtomKey | null>(null);
 
-  const handleEsc = useCallback((e: KeyboardEvent): void => {
-    if (e.key === "Escape") {
-      if (selectedAtom) { setSelectedAtom(null); } else { onClose(); }
-    }
-  }, [onClose, selectedAtom]);
+  const handleEsc = useCallback(
+    (e: KeyboardEvent): void => {
+      if (e.key === "Escape") {
+        if (selectedAtom) {
+          setSelectedAtom(null);
+        } else {
+          onClose();
+        }
+      }
+    },
+    [onClose, selectedAtom],
+  );
 
   useEffect(() => {
     if (open) document.addEventListener("keydown", handleEsc);
@@ -36,7 +50,10 @@ export const MenuItemStyleModal: React.FC<MenuItemStyleModalProps> = ({
   if (!open) return null;
 
   const handleAtomChange = (updates: Partial<MenuItemStateStyle>): void => {
-    onChange({ ...styles, [activeState]: { ...styles[activeState], ...updates } });
+    onChange({
+      ...styles,
+      [activeState]: { ...styles[activeState], ...updates },
+    });
   };
 
   const switchState = (state: ItemState): void => {
@@ -57,8 +74,12 @@ export const MenuItemStyleModal: React.FC<MenuItemStyleModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-border shrink-0">
           <div>
-            <h2 className="text-sm font-bold text-foreground">Menu Item Styles</h2>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Click any part of the preview to edit that element</p>
+            <h2 className="text-sm font-bold text-foreground">
+              Menu Item Styles
+            </h2>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Click any part of the preview to edit that element
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -70,7 +91,11 @@ export const MenuItemStyleModal: React.FC<MenuItemStyleModalProps> = ({
         </div>
 
         {/* State tabs */}
-        <StateTabBar activeState={activeState} onChange={switchState} styles={styles} />
+        <StateTabBar
+          activeState={activeState}
+          onChange={switchState}
+          styles={styles}
+        />
 
         {/* Body — preview + editor side by side, fixed height, no overflow on the outer div */}
         <div className="flex flex-1 min-h-0">
@@ -120,7 +145,9 @@ export const MenuItemStyleModal: React.FC<MenuItemStyleModalProps> = ({
 
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-3 border-t border-border shrink-0">
-          <p className="text-[10px] text-zinc-600">Changes apply live · ESC to close</p>
+          <p className="text-[10px] text-zinc-600">
+            Changes apply live · ESC to close
+          </p>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-secondary border border-border rounded-xl text-xs text-muted-foreground hover:border-white/20 transition-all cursor-pointer"

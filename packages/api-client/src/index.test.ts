@@ -53,7 +53,7 @@ describe("packages/api-client", () => {
         {
           method: "POST",
           credentials: "include",
-        }
+        },
       );
     });
   });
@@ -82,7 +82,9 @@ describe("packages/api-client", () => {
   describe("createGraphQLClient", () => {
     it("executes GraphQL POST queries with credentials: include", async () => {
       global.fetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ data: { health: "OK" } }), { status: 200 })
+        new Response(JSON.stringify({ data: { health: "OK" } }), {
+          status: 200,
+        }),
       );
 
       const client = createGraphQLClient();
@@ -96,7 +98,7 @@ describe("packages/api-client", () => {
           method: "POST",
           credentials: "include",
           body: JSON.stringify({ query: "{ health }", variables: undefined }),
-        })
+        }),
       );
     });
   });

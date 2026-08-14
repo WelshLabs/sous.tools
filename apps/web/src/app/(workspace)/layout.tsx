@@ -4,10 +4,10 @@ import { logoutAction } from "@/app/actions/auth";
 import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
 import { api } from "@soustools/api-client";
 
-export default async function WorkspaceLayout({ 
+export default async function WorkspaceLayout({
   children,
-  modal
-}: { 
+  modal,
+}: {
   children: any;
   modal: any;
 }) {
@@ -20,7 +20,12 @@ export default async function WorkspaceLayout({
       notifications = (data as any).data || [];
     }
   } catch (error: any) {
-    if (error && (error.digest === 'DYNAMIC_SERVER_USAGE' || error.message?.includes('Dynamic server usage') || error.message?.includes('dynamic-server-error'))) {
+    if (
+      error &&
+      (error.digest === "DYNAMIC_SERVER_USAGE" ||
+        error.message?.includes("Dynamic server usage") ||
+        error.message?.includes("dynamic-server-error"))
+    ) {
       throw error;
     }
     console.error("Failed to fetch notifications:", error);
@@ -28,12 +33,15 @@ export default async function WorkspaceLayout({
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <AppBar 
-        notifications={notifications || []} 
-        onLogoutAction={logoutAction} 
+      <AppBar
+        notifications={notifications || []}
+        onLogoutAction={logoutAction}
         isAdmin={true}
       />
-      <main id="workspace-main" className="flex-1 min-h-0 flex flex-col relative overflow-y-auto min-w-0">
+      <main
+        id="workspace-main"
+        className="flex-1 min-h-0 flex flex-col relative overflow-y-auto min-w-0"
+      >
         <OmniBarProvider>
           {children}
           {modal}

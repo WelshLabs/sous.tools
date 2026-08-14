@@ -86,7 +86,7 @@ For each retained legacy evaluator, record:
 
 | Field             | Required evidence                                                                                                               |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Prerequisite      | Confirmed v4 SDK/ingestion shape, or the user's explicit acceptance of pre-upgrade migration risk                              |
+| Prerequisite      | Confirmed v4 SDK/ingestion shape, or the user's explicit acceptance of pre-upgrade migration risk                               |
 | Legacy behavior   | Evaluator and score names, filters, variable mappings and JSONPaths, sampling, delay, and expected one-score-per-trace behavior |
 | Candidate target  | One stable observation name/type and whether it is the root observation                                                         |
 | Variable coverage | Where every required input, output, metadata, or tool-call value exists on that observation                                     |

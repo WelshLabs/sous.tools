@@ -1,8 +1,11 @@
 "use client";
 
-import { type MenuItemStyles, type PosItem, type SignageBlock } from "@soustools/api-types";
+import {
+  type MenuItemStyles,
+  type PosItem,
+  type SignageBlock,
+} from "@soustools/api-types";
 import { PreviewNestedItem } from "./preview-nested-exploded";
-
 
 import { PreviewCategoryHeader } from "./preview-category-header";
 import { PreviewPosItem } from "./preview-pos-item";
@@ -28,13 +31,16 @@ export function PreviewContentBlocks({
   onFetchModifierOptions,
 }: PreviewContentBlocksProps): React.JSX.Element {
   switch (block.type) {
+    case "CategoryHeaderBlock":
+      return <PreviewCategoryHeader block={block} />;
+    case "PosItemBlock":
+      return <PreviewPosItem block={block} items={items} styles={styles} />;
 
-    case "CategoryHeaderBlock": return <PreviewCategoryHeader block={block} />;
-    case "PosItemBlock": return <PreviewPosItem block={block} items={items} styles={styles} />;
+    case "CalloutBlock":
+      return <PreviewCallout block={block} />;
 
-    case "CalloutBlock": return <PreviewCallout block={block} />;
-
-    case "MenuListBlock": return <PreviewMenuList block={block} items={items} styles={styles} />;
+    case "MenuListBlock":
+      return <PreviewMenuList block={block} items={items} styles={styles} />;
     case "NestedItemBlock":
       return <PreviewNestedItem block={block} items={items} styles={styles} />;
 
@@ -43,7 +49,12 @@ export function PreviewContentBlocks({
     }
 
     case "ModifierGroupBlock":
-      return <PreviewModifierGroup block={block} onFetchModifierOptions={onFetchModifierOptions} />;
+      return (
+        <PreviewModifierGroup
+          block={block}
+          onFetchModifierOptions={onFetchModifierOptions}
+        />
+      );
 
     case "ImageBlock": {
       const b = block as any;
@@ -108,8 +119,8 @@ export function PreviewContentBlocks({
       );
     }
 
-
-    case "TimelineBlock": return <PreviewTimeline block={block} />;
+    case "TimelineBlock":
+      return <PreviewTimeline block={block} />;
     default:
       return (
         <div

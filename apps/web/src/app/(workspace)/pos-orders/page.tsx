@@ -8,7 +8,9 @@ export default async function PosOrdersPage() {
   let initialOrders = [];
 
   try {
-    const { data, error } = await (api.GET as any)("/pos/orders", { cache: "no-store" });
+    const { data, error } = await (api.GET as any)("/pos/orders", {
+      cache: "no-store",
+    });
     if (!error && data) {
       initialOrders = (data as any).data || data;
     }

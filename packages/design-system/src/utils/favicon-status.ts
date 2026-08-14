@@ -21,7 +21,8 @@ function faviconLink() {
   );
 
   if (!link) {
-    const existing = document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]');
+    const existing =
+      document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]');
     if (existing.length > 0) {
       link = existing[0];
       for (let i = 1; i < existing.length; i++) {

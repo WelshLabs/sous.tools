@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { type MenuItemStyles, type MenuItemStateStyle } from "@soustools/api-types";
+import {
+  type MenuItemStyles,
+  type MenuItemStateStyle,
+} from "@soustools/api-types";
 import { StateTabBar, type ItemState } from "./state-tab-bar";
 import { MenuItemPreviewCard, type AtomKey } from "./menu-item-preview-card";
 import { AtomEditorPopover } from "./atom-editor-popover";

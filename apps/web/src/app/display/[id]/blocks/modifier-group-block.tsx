@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@soustools/api-client";
 import { type MenuItemStyles, type PosItem } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle } from "@/app/display/[id]/menu-item-style-utils";
+import {
+  resolveItemState,
+  buildTitleStyle,
+  buildPriceStyle,
+} from "@/app/display/[id]/menu-item-style-utils";
 
 interface ModifierOption {
   id: string;
@@ -41,16 +45,21 @@ export function ModifierGroupBlock({
 
       try {
         // Resolve group
-        const { data: grpData, error: grpError } = await (api.GET as any)(`/pos/modifier-groups/${modifierGroupId}`);
+        const { data: grpData, error: grpError } = await (api.GET as any)(
+          `/pos/modifier-groups/${modifierGroupId}`,
+        );
         if (grpError) throw new Error();
-        
+
         if (grpData) {
           setGroup((grpData as any).data || grpData);
         }
 
         // Fetch options linked to this group
-        const { data: optsData, error: optsError } = await (api.GET as any)(`/pos/modifier-groups/${modifierGroupId}/options`);
-        const opts = !optsError && optsData ? ((optsData as any).data || optsData) : [];
+        const { data: optsData, error: optsError } = await (api.GET as any)(
+          `/pos/modifier-groups/${modifierGroupId}/options`,
+        );
+        const opts =
+          !optsError && optsData ? (optsData as any).data || optsData : [];
         if (opts) {
           setOptions(opts as ModifierOption[]);
         }
@@ -86,11 +95,16 @@ export function ModifierGroupBlock({
         <h4 className="text-lg font-bold uppercase tracking-tight text-white font-brand">
           {group.name}
         </h4>
-        {(group.min_selected_modifiers !== null || group.max_selected_modifiers !== null) && (
+        {(group.min_selected_modifiers !== null ||
+          group.max_selected_modifiers !== null) && (
           <p className="text-xs text-zinc-500 font-sans italic mt-0.5">
-            {group.min_selected_modifiers !== null && `Min: ${group.min_selected_modifiers}`}
-            {group.min_selected_modifiers !== null && group.max_selected_modifiers !== null && " | "}
-            {group.max_selected_modifiers !== null && `Max: ${group.max_selected_modifiers}`}
+            {group.min_selected_modifiers !== null &&
+              `Min: ${group.min_selected_modifiers}`}
+            {group.min_selected_modifiers !== null &&
+              group.max_selected_modifiers !== null &&
+              " | "}
+            {group.max_selected_modifiers !== null &&
+              `Max: ${group.max_selected_modifiers}`}
           </p>
         )}
       </div>
@@ -124,7 +138,12 @@ export function ModifierGroupBlock({
               key={opt.id}
               className="flex justify-between items-center text-sm text-zinc-300 transition-opacity duration-300"
               style={{
-                opacity: optStyle.dimOpacity !== undefined ? optStyle.dimOpacity : (opt.is_sold_out ? 0.5 : 1),
+                opacity:
+                  optStyle.dimOpacity !== undefined
+                    ? optStyle.dimOpacity
+                    : opt.is_sold_out
+                      ? 0.5
+                      : 1,
                 filter: optStyle.grayscale ? "grayscale(1)" : undefined,
               }}
             >
@@ -137,7 +156,10 @@ export function ModifierGroupBlock({
                 )}
               </span>
               {Number(opt.price) > 0 && (
-                <span className="font-extrabold text-muted-foreground" style={priceStyle}>
+                <span
+                  className="font-extrabold text-muted-foreground"
+                  style={priceStyle}
+                >
                   +${Number(opt.price).toFixed(2)}
                 </span>
               )}

@@ -37,15 +37,16 @@ export default async function DeckPreviewPage({
   const deck = await fetchDeck(deckId);
 
   const liveBase = config.NEXT_PUBLIC_APP_URL;
-  const liveUrl = deck
-    ? `${liveBase}/s/dtown-cafe/${deck.slug}`
-    : null;
+  const liveUrl = deck ? `${liveBase}/s/dtown-cafe/${deck.slug}` : null;
 
   if (!deck) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-muted-foreground dark:text-zinc-500">
         <p>Deck not found.</p>
-        <Link href="/signage" className="mt-4 text-xs text-primary hover:underline">
+        <Link
+          href="/signage"
+          className="mt-4 text-xs text-primary hover:underline"
+        >
           ← Back to Decks
         </Link>
       </div>
@@ -88,7 +89,10 @@ export default async function DeckPreviewPage({
       </div>
 
       {liveUrl && (
-        <div className="relative w-full rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-white dark:bg-black" style={{ paddingTop: "56.25%" }}>
+        <div
+          className="relative w-full rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-white dark:bg-black"
+          style={{ paddingTop: "56.25%" }}
+        >
           <iframe
             src={liveUrl}
             title={deck.name}

@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React from "react";
@@ -42,7 +42,10 @@ export function VesselManagerHeaderView({
             className="text-lg font-bold flex items-center gap-2"
             style={{ color: "var(--color-foreground)" }}
           >
-            <Scale className="w-5 h-5" style={{ color: "var(--color-primary)" }} />{" "}
+            <Scale
+              className="w-5 h-5"
+              style={{ color: "var(--color-primary)" }}
+            />{" "}
             Vessels Manager
           </h2>
           <p
@@ -233,7 +236,10 @@ function DimensionInputs({
       {shape === "RECTANGULAR" ? (
         <>
           <div>
-            <label className="block text-xs font-medium mb-1" style={labelStyle}>
+            <label
+              className="block text-xs font-medium mb-1"
+              style={labelStyle}
+            >
               Length ({unitSystem})
             </label>
             <input
@@ -247,7 +253,10 @@ function DimensionInputs({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" style={labelStyle}>
+            <label
+              className="block text-xs font-medium mb-1"
+              style={labelStyle}
+            >
               Width ({unitSystem})
             </label>
             <input
@@ -342,13 +351,20 @@ function VolumeInput({
 // --- Vessel Dialog View ---
 
 export function VesselDialogView({
-  name, setName,
-  shape, setShape,
-  length, setLength,
-  width, setWidth,
-  height, setHeight,
-  diameter, setDiameter,
-  volumeMl, setVolumeMl,
+  name,
+  setName,
+  shape,
+  setShape,
+  length,
+  setLength,
+  width,
+  setWidth,
+  height,
+  setHeight,
+  diameter,
+  setDiameter,
+  volumeMl,
+  setVolumeMl,
   loading,
   unitSystem,
   volumeUnit,
@@ -544,10 +560,10 @@ export function VesselManagerView({
                       Dimensions:{" "}
                       {pan.shape === "RECTANGULAR"
                         ? `${formatDim(pan.length)} x ${formatDim(
-                            pan.width
+                            pan.width,
                           )} x ${formatDim(pan.height)}`
                         : `d: ${formatDim(pan.diameter)} x h: ${formatDim(
-                            pan.height
+                            pan.height,
                           )}`}
                     </p>
                     <div

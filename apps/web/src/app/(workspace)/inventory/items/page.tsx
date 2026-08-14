@@ -2,7 +2,7 @@ import { clientConfig as config } from "@soustools/config/client";
 import { TwoToneHeader } from "@soustools/design-system";
 import { ItemsLedgerClient } from "./items-ledger-client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function ItemsLedgerPage() {
   const baseUrl = config.NEXT_PUBLIC_API_URL;

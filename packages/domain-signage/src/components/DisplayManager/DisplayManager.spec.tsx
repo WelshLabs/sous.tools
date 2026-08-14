@@ -8,7 +8,7 @@ describe("DisplayManagerView", () => {
     const handleAddBrowserDisplay = vi.fn();
     const setShowPairModal = vi.fn();
     const handleDeleteDisplay = vi.fn();
-    
+
     render(
       <DisplayManagerView
         displays={[
@@ -17,7 +17,7 @@ describe("DisplayManagerView", () => {
             name: "Test Display",
             deckId: null,
             lastSeenAt: new Date().toISOString(),
-          } as any
+          } as any,
         ]}
         layouts={[]}
         showPairModal={false}
@@ -27,20 +27,22 @@ describe("DisplayManagerView", () => {
         setSelectedDeviceId={vi.fn()}
         onAssignDeck={vi.fn()}
         handleDeleteDisplay={handleDeleteDisplay}
-      />
+      />,
     );
 
     // Should render the title
     expect(screen.getByText("Display Manager")).toBeDefined();
-    
+
     // Should render the display
     expect(screen.getByText("Test Display")).toBeDefined();
 
     // Click add browser display
-    const addBrowserBtn = screen.getByRole("button", { name: /Browser Display/i });
+    const addBrowserBtn = screen.getByRole("button", {
+      name: /Browser Display/i,
+    });
     fireEvent.click(addBrowserBtn);
     expect(handleAddBrowserDisplay).toHaveBeenCalled();
-    
+
     // Click pair TV device
     const pairTvBtn = screen.getByRole("button", { name: /Pair TV Device/i });
     fireEvent.click(pairTvBtn);

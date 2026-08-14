@@ -10,6 +10,7 @@ running on Raspberry Pi 5 hardware.
 > See **[cloud-init/README.md](cloud-init/README.md)** for the full step-by-step guide.
 
 **Summary:**
+
 1. Download stock [Raspberry Pi OS Lite (64-bit)](https://www.raspberrypi.com/software/operating-systems/)
 2. Flash with **Raspberry Pi Imager** — configure Wi-Fi and SSH key via the ⚙️ Advanced Options UI
 3. Copy `cloud-init/user-data` to the SD card's boot partition
@@ -30,6 +31,7 @@ deploy/pi/
 ```
 
 **All runtime scripts and systemd service templates live in:**
+
 ```
 deploy/ansible/roles/config/files/    # kiosk.sh, sync-watchtower.js, fetch-secrets.js, etc.
 deploy/ansible/roles/services/templates/  # systemd .service.j2 templates
@@ -64,10 +66,12 @@ Raspberry Pi 5
 ## Ongoing Updates
 
 The Pi self-updates automatically during the maintenance window configured in the admin UI:
+
 - **Signage container**: Watchtower pulls new Docker image from Docker Hub
 - **System config**: `ansible-pull` applies playbook changes from this repo
 
 To manually push a configuration update to running Pi(s):
+
 ```bash
 ansible-playbook -i deploy/ansible/inventory.ini deploy/ansible/playbook.yml --ask-vault-pass
 
@@ -79,12 +83,12 @@ ansible-playbook -i deploy/ansible/inventory.ini deploy/ansible/playbook.yml --t
 
 ## Security Model
 
-| Secret | Location | How it gets there |
-|---|---|---|
-| Infisical client ID + secret | `/etc/sous-infisical.env` | Written by Ansible `secrets_bootstrap` role (from vault) |
-| GitHub PAT (ansible-pull) | `/etc/sous-github-pat` | Written by Ansible `secrets_bootstrap` role (from vault) |
-| Ansible vault password | `/etc/sous-ansible-vault-pass` | Written by Ansible `secrets_bootstrap` role (from vault) |
-| Supabase URL + anon key | `/etc/sous-secrets.env` | Fetched from Infisical at boot by `fetch-secrets.js` |
+| Secret                       | Location                       | How it gets there                                        |
+| ---------------------------- | ------------------------------ | -------------------------------------------------------- |
+| Infisical client ID + secret | `/etc/sous-infisical.env`      | Written by Ansible `secrets_bootstrap` role (from vault) |
+| GitHub PAT (ansible-pull)    | `/etc/sous-github-pat`         | Written by Ansible `secrets_bootstrap` role (from vault) |
+| Ansible vault password       | `/etc/sous-ansible-vault-pass` | Written by Ansible `secrets_bootstrap` role (from vault) |
+| Supabase URL + anon key      | `/etc/sous-secrets.env`        | Fetched from Infisical at boot by `fetch-secrets.js`     |
 
 **No secrets are stored in this repository.** The Ansible vault (`vault.yml`) is gitignored.
 

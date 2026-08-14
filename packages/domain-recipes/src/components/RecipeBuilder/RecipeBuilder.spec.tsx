@@ -32,7 +32,7 @@ describe("RecipeBuilderView", () => {
         onSubmit={(e) => e.preventDefault()}
         backHref="#"
         isEditing={false}
-      />
+      />,
     );
     expect(screen.getByText("Create Recipe")).toBeDefined();
     expect(screen.getByDisplayValue("My Recipe")).toBeDefined();

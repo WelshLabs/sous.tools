@@ -5,7 +5,11 @@ import { RecipeList } from "@soustools/domain-recipes";
 import { type Recipe } from "@soustools/api-types";
 import { toast } from "sonner";
 
-export function RecipesClientPage({ initialRecipes }: { initialRecipes: Recipe[] }) {
+export function RecipesClientPage({
+  initialRecipes,
+}: {
+  initialRecipes: Recipe[];
+}) {
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
 
   const handleDelete = async (id: string) => {

@@ -1,10 +1,10 @@
-import type { Meta } from '@storybook/react';
-import { AuroraBackground } from './AuroraBackground';
+import type { Meta } from "@storybook/react";
+import { AuroraBackground } from "./AuroraBackground";
 
 const meta: Meta<typeof AuroraBackground> = {
-  title: 'Components/AuroraBackground',
+  title: "Components/AuroraBackground",
   component: AuroraBackground,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 export default meta;
 

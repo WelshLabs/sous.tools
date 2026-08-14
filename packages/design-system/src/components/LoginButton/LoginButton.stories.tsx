@@ -1,10 +1,10 @@
-import type { Meta } from '@storybook/react';
-import { LoginButton } from './LoginButton';
+import type { Meta } from "@storybook/react";
+import { LoginButton } from "./LoginButton";
 
 const meta: Meta<typeof LoginButton> = {
-  title: 'Components/LoginButton',
+  title: "Components/LoginButton",
   component: LoginButton,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 export default meta;
 

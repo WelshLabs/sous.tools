@@ -1,13 +1,13 @@
 "use client";
 
 import React from "react";
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
-  TableCell 
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
 } from "@soustools/design-system";
 
 export interface PosOrder {
@@ -23,12 +23,20 @@ export interface PosOrder {
   created_at: string;
 }
 
-export function PosOrdersView({ initialOrders }: { initialOrders: PosOrder[] }) {
+export function PosOrdersView({
+  initialOrders,
+}: {
+  initialOrders: PosOrder[];
+}) {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">POS Orders</h1>
-        <p className="text-sm text-zinc-500 dark:text-muted-foreground mt-1">View Square POS order history.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+          POS Orders
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-muted-foreground mt-1">
+          View Square POS order history.
+        </p>
       </div>
 
       <Table>
@@ -45,24 +53,39 @@ export function PosOrdersView({ initialOrders }: { initialOrders: PosOrder[] }) 
         <TableBody>
           {initialOrders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center p-8 text-xs text-muted-foreground dark:text-zinc-500">
+              <TableCell
+                colSpan={6}
+                className="text-center p-8 text-xs text-muted-foreground dark:text-zinc-500"
+              >
                 No orders found.
               </TableCell>
             </TableRow>
           ) : (
             initialOrders.map((order) => (
               <TableRow key={order.id}>
-                <TableCell className="font-mono text-zinc-500">{order.external_id}</TableCell>
+                <TableCell className="font-mono text-zinc-500">
+                  {order.external_id}
+                </TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded text-xs font-bold ${
-                    order.state === "COMPLETED" ? "bg-emerald-500/20 text-emerald-400" : "bg-zinc-800 text-zinc-400"
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-bold ${
+                      order.state === "COMPLETED"
+                        ? "bg-emerald-500/20 text-emerald-400"
+                        : "bg-zinc-800 text-zinc-400"
+                    }`}
+                  >
                     {order.state}
                   </span>
                 </TableCell>
-                <TableCell className="text-zinc-400">{order.location_id || "Unknown"}</TableCell>
-                <TableCell className="font-bold text-cyan-400">${order.total_money.toFixed(2)}</TableCell>
-                <TableCell className="text-zinc-500">{new Date(order.created_at).toLocaleString()}</TableCell>
+                <TableCell className="text-zinc-400">
+                  {order.location_id || "Unknown"}
+                </TableCell>
+                <TableCell className="font-bold text-cyan-400">
+                  ${order.total_money.toFixed(2)}
+                </TableCell>
+                <TableCell className="text-zinc-500">
+                  {new Date(order.created_at).toLocaleString()}
+                </TableCell>
                 <TableCell>
                   <span className="px-2 py-1 rounded text-xs font-bold bg-sky-500/20 text-sky-400 uppercase">
                     {order.pos_provider}

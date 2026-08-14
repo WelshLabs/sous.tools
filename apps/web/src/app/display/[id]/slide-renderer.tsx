@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type SignageSlide, type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type SignageSlide,
+  type PosItem,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { ColumnLayoutRenderer } from "./column-layout-renderer";
 
 interface SlideRendererProps {

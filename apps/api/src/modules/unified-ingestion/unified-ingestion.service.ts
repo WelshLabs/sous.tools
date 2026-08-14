@@ -54,9 +54,7 @@ export interface IngestionReviewPayload {
 export class UnifiedIngestionService {
   private readonly logger = new Logger(UnifiedIngestionService.name);
 
-  constructor(
-    private readonly neo4jSync: Neo4jSyncService
-  ) {}
+  constructor(private readonly neo4jSync: Neo4jSyncService) {}
 
   async getEmbedding(text: string): Promise<number[]> {
     try {
@@ -64,11 +62,11 @@ export class UnifiedIngestionService {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`
+          Authorization: `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`,
         },
         body: JSON.stringify({
           model: "nomic-embed-text",
-          input: [text]
+          input: [text],
         }),
       });
 
@@ -80,29 +78,43 @@ export class UnifiedIngestionService {
       }
       return [];
     } catch (err) {
-      this.logger.error(`Failed to get embedding for "${text}" via LiteLLM:`, err);
+      this.logger.error(
+        `Failed to get embedding for "${text}" via LiteLLM:`,
+        err,
+      );
       return [];
     }
   }
 
-  async searchMasterItemsTop5(queryEmbedding: number[]): Promise<Array<{ id: string; name: string }>> {
+  async searchMasterItemsTop5(
+    queryEmbedding: number[],
+  ): Promise<Array<{ id: string; name: string }>> {
     if (!queryEmbedding || queryEmbedding.length === 0) {
-      const { data } = await supabase.from("master_items").select("id, name").limit(5);
+      const { data } = await supabase
+        .from("master_items")
+        .select("id, name")
+        .limit(5);
       return data || [];
     }
     try {
-      const { data: matches, error } = await supabase.rpc("match_master_items", {
-        query_embedding: `[${queryEmbedding.join(",")}]`,
-        match_threshold: 0.2,
-        match_count: 5,
-      });
+      const { data: matches, error } = await supabase.rpc(
+        "match_master_items",
+        {
+          query_embedding: `[${queryEmbedding.join(",")}]`,
+          match_threshold: 0.2,
+          match_count: 5,
+        },
+      );
       if (!error && matches && matches.length > 0) {
         return matches.map((m: any) => ({ id: m.id, name: m.name }));
       }
     } catch (err) {
       this.logger.warn("match_master_items RPC fallback:", err);
     }
-    const { data } = await supabase.from("master_items").select("id, name").limit(5);
+    const { data } = await supabase
+      .from("master_items")
+      .select("id, name")
+      .limit(5);
     return data || [];
   }
 
@@ -134,7 +146,13 @@ export class UnifiedIngestionService {
     }
 
     if (data) {
-      await this.neo4jSync.handleWebhook({ type: "INSERT", table: "ingestion_reviews", schema: "public", record: data, old_record: null });
+      await this.neo4jSync.handleWebhook({
+        type: "INSERT",
+        table: "ingestion_reviews",
+        schema: "public",
+        record: data,
+        old_record: null,
+      });
     }
     return data;
   }
@@ -166,10 +184,16 @@ export class UnifiedIngestionService {
     return data;
   }
 
-  async updateReviewRecordState(id: string, parsedData: IngestionReviewPayload) {
+  async updateReviewRecordState(
+    id: string,
+    parsedData: IngestionReviewPayload,
+  ) {
     const { data, error } = await supabase
       .from("ingestion_reviews")
-      .update({ parsed_data: parsedData as any, updated_at: new Date().toISOString() })
+      .update({
+        parsed_data: parsedData as any,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single();
@@ -181,7 +205,11 @@ export class UnifiedIngestionService {
     return data;
   }
 
-  async commitReviewPayload(reviewId: string, approvedPayload: IngestionReviewPayload, orgId: string) {
+  async commitReviewPayload(
+    reviewId: string,
+    approvedPayload: IngestionReviewPayload,
+    orgId: string,
+  ) {
     this.logger.log(`Committing approved review ${reviewId} for org ${orgId}`);
 
     for (const page of approvedPayload.pages) {
@@ -204,7 +232,13 @@ export class UnifiedIngestionService {
       .single();
 
     if (data) {
-      await this.neo4jSync.handleWebhook({ type: "UPDATE", table: "ingestion_reviews", schema: "public", record: data, old_record: null });
+      await this.neo4jSync.handleWebhook({
+        type: "UPDATE",
+        table: "ingestion_reviews",
+        schema: "public",
+        record: data,
+        old_record: null,
+      });
     }
     return { success: true, reviewId };
   }
@@ -229,7 +263,13 @@ export class UnifiedIngestionService {
           .single();
         if (newVendor) {
           vendorId = newVendor.id;
-          await this.neo4jSync.handleWebhook({ type: "INSERT", table: "vendors", schema: "public", record: newVendor, old_record: null });
+          await this.neo4jSync.handleWebhook({
+            type: "INSERT",
+            table: "vendors",
+            schema: "public",
+            record: newVendor,
+            old_record: null,
+          });
         }
       }
     }
@@ -262,7 +302,13 @@ export class UnifiedIngestionService {
       .single();
 
     if (recipe) {
-      await this.neo4jSync.handleWebhook({ type: "INSERT", table: "recipes", schema: "public", record: recipe, old_record: null });
+      await this.neo4jSync.handleWebhook({
+        type: "INSERT",
+        table: "recipes",
+        schema: "public",
+        record: recipe,
+        old_record: null,
+      });
 
       if (block.ingredients) {
         for (const ing of block.ingredients) {
@@ -280,7 +326,13 @@ export class UnifiedIngestionService {
             .single();
 
           if (ingRecord) {
-            await this.neo4jSync.handleWebhook({ type: "INSERT", table: "recipe_ingredients", schema: "public", record: ingRecord, old_record: null });
+            await this.neo4jSync.handleWebhook({
+              type: "INSERT",
+              table: "recipe_ingredients",
+              schema: "public",
+              record: ingRecord,
+              old_record: null,
+            });
           }
         }
       }
@@ -303,7 +355,13 @@ export class UnifiedIngestionService {
       .single();
 
     if (vectorRecord) {
-      await this.neo4jSync.handleWebhook({ type: "INSERT", table: "core_knowledge_vectors", schema: "public", record: vectorRecord, old_record: null });
+      await this.neo4jSync.handleWebhook({
+        type: "INSERT",
+        table: "core_knowledge_vectors",
+        schema: "public",
+        record: vectorRecord,
+        old_record: null,
+      });
     }
   }
 }

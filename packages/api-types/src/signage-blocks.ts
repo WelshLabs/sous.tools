@@ -124,7 +124,8 @@ export interface ExplodedItemBlock extends BaseBlock {
 /**
  * Union type of all layout containers.
  */
-export type LayoutComponent = ColumnBlock | RowBlock | GridBlock | ExplodedItemBlock;
+export type LayoutComponent =
+  ColumnBlock | RowBlock | GridBlock | ExplodedItemBlock;
 
 /**
  * Recursive union of all layouts and content blocks.

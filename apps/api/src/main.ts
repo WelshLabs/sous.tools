@@ -32,8 +32,10 @@ async function bootstrap(): Promise<void> {
    * Express refuses to set Secure cookies because it thinks the
    * connection is plain HTTP.
    */
-  const expressApp = app.getHttpAdapter().getInstance() as import('express').Express;
-  expressApp.set('trust proxy', 1);
+  const expressApp = app
+    .getHttpAdapter()
+    .getInstance() as import("express").Express;
+  expressApp.set("trust proxy", 1);
 
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ limit: "2mb", extended: true }));
@@ -49,20 +51,23 @@ async function bootstrap(): Promise<void> {
   // the request origin so any localhost port works.
   const allowedOrigins = config.IS_PRODUCTION
     ? [
-        'https://sous.tools',
-        'https://app.sous.tools',
-        'https://pos.sous.tools',
-        'https://tv.sous.tools',
-        'https://setup.sous.tools',
-        'https://editor.sous.tools',
-        'https://dev.sous.tools',
-        'https://dev-api.sous.tools',
-        'https://dev-pos.sous.tools',
-        'https://dev-setup.sous.tools',
-        'android-app://com.sous.wearos',
-        'app://com.sous.wearos'
+        "https://sous.tools",
+        "https://app.sous.tools",
+        "https://pos.sous.tools",
+        "https://tv.sous.tools",
+        "https://setup.sous.tools",
+        "https://editor.sous.tools",
+        "https://dev.sous.tools",
+        "https://dev-api.sous.tools",
+        "https://dev-pos.sous.tools",
+        "https://dev-setup.sous.tools",
+        "android-app://com.sous.wearos",
+        "app://com.sous.wearos",
       ]
-    : (origin: string | undefined, callback: (err: Error | null, allow?: any) => void) => {
+    : (
+        origin: string | undefined,
+        callback: (err: Error | null, allow?: any) => void,
+      ) => {
         callback(null, origin || "*");
       };
 
@@ -78,10 +83,10 @@ async function bootstrap(): Promise<void> {
     .setVersion("1.0")
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  if (config.NODE_ENV !== 'production') {
-    fs.writeFileSync('openapi.json', JSON.stringify(document));
+  if (config.NODE_ENV !== "production") {
+    fs.writeFileSync("openapi.json", JSON.stringify(document));
   }
-  
+
   const port = config.PORT;
   await app.listen(config.PORT, "0.0.0.0");
   console.log(`Application is running on: http://0.0.0.0:${port}`);

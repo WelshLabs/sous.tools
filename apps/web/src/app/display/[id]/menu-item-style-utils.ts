@@ -1,5 +1,10 @@
 import type React from "react";
-import { type MenuItemStateStyle, type MenuItemStyles, type HighlightAnimation, type PosItem } from "@soustools/api-types";
+import {
+  type MenuItemStateStyle,
+  type MenuItemStyles,
+  type HighlightAnimation,
+  type PosItem,
+} from "@soustools/api-types";
 import { type HighlightItemConfig } from "@soustools/api-types";
 
 /** Build inline card container styles from a state style object. */
@@ -7,7 +12,8 @@ export function buildCardStyle(style: MenuItemStateStyle): React.CSSProperties {
   const css: React.CSSProperties = {};
   if (style.backgroundColor) css.backgroundColor = style.backgroundColor;
   if (style.borderColor) css.borderColor = style.borderColor;
-  if (style.borderWidth !== undefined) css.borderWidth = `${style.borderWidth}px`;
+  if (style.borderWidth !== undefined)
+    css.borderWidth = `${style.borderWidth}px`;
   if (style.borderRadius) css.borderRadius = style.borderRadius;
   if (style.shadow) css.boxShadow = style.shadow;
   if (style.dimOpacity !== undefined) css.opacity = style.dimOpacity;
@@ -22,7 +28,9 @@ export function buildCardStyle(style: MenuItemStateStyle): React.CSSProperties {
 }
 
 /** Build inline title text styles from a state style object. */
-export function buildTitleStyle(style: MenuItemStateStyle): React.CSSProperties {
+export function buildTitleStyle(
+  style: MenuItemStateStyle,
+): React.CSSProperties {
   const css: React.CSSProperties = {};
   if (style.titleFont) css.fontFamily = style.titleFont;
   if (style.titleColor) css.color = style.titleColor;
@@ -33,7 +41,9 @@ export function buildTitleStyle(style: MenuItemStateStyle): React.CSSProperties 
 }
 
 /** Build inline price text styles from a state style object. */
-export function buildPriceStyle(style: MenuItemStateStyle): React.CSSProperties {
+export function buildPriceStyle(
+  style: MenuItemStateStyle,
+): React.CSSProperties {
   const css: React.CSSProperties = {};
   if (style.priceFont) css.fontFamily = style.priceFont;
   if (style.priceColor) css.color = style.priceColor;
@@ -43,7 +53,9 @@ export function buildPriceStyle(style: MenuItemStateStyle): React.CSSProperties 
 }
 
 /** Build inline description text styles from a state style object. */
-export function buildDescriptionStyle(style: MenuItemStateStyle): React.CSSProperties {
+export function buildDescriptionStyle(
+  style: MenuItemStateStyle,
+): React.CSSProperties {
   const css: React.CSSProperties = {};
   if (style.descriptionFont) css.fontFamily = style.descriptionFont;
   if (style.descriptionColor) css.color = style.descriptionColor;
@@ -55,7 +67,7 @@ export function buildDescriptionStyle(style: MenuItemStateStyle): React.CSSPrope
 export function resolveItemState(
   item: PosItem,
   isHighlighted: boolean,
-  styles: MenuItemStyles
+  styles: MenuItemStyles,
 ): MenuItemStateStyle {
   if (item.isSoldOut) return styles.soldOut;
   if (isHighlighted) return styles.highlighted;
@@ -65,13 +77,17 @@ export function resolveItemState(
 /** Check if an item matches the highlight list. */
 export function isItemHighlighted(
   item: PosItem,
-  highlightItems?: (string | HighlightItemConfig)[]
+  highlightItems?: (string | HighlightItemConfig)[],
 ): boolean {
   if (!highlightItems) return false;
   return highlightItems.some((h) => {
     if (!h) return false;
     if (typeof h === "string") {
-      return h === item.id || h === item.externalId || h.toLowerCase() === item.name.toLowerCase();
+      return (
+        h === item.id ||
+        h === item.externalId ||
+        h.toLowerCase() === item.name.toLowerCase()
+      );
     }
     return h.itemId === item.id || h.itemId === item.externalId;
   });
@@ -105,7 +121,11 @@ export function buildAnimationCss(animation?: HighlightAnimation): string {
 export function buildAllAnimationCss(styles: MenuItemStyles): string {
   const animations = new Set<HighlightAnimation>();
   if (styles.regular.animation) animations.add(styles.regular.animation);
-  if (styles.highlighted.animation) animations.add(styles.highlighted.animation);
+  if (styles.highlighted.animation)
+    animations.add(styles.highlighted.animation);
   if (styles.soldOut.animation) animations.add(styles.soldOut.animation);
-  return Array.from(animations).map(buildAnimationCss).filter(Boolean).join("\n");
+  return Array.from(animations)
+    .map(buildAnimationCss)
+    .filter(Boolean)
+    .join("\n");
 }

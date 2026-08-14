@@ -3,20 +3,34 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Camera, FileText, HardDrive, PlusCircle, ArrowRight, ChevronDown } from "lucide-react";
+import {
+  Camera,
+  FileText,
+  HardDrive,
+  PlusCircle,
+  ArrowRight,
+  ChevronDown,
+} from "lucide-react";
 import { TwoToneHeader } from "@soustools/design-system";
 // import { GoogleDriveBrowser } from "@soustools/domain-settings";
 import { toast } from "sonner";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "drive") => void }) {
+function ImportDropdown({
+  onSelect,
+}: {
+  onSelect: (type: "upload" | "camera" | "drive") => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -26,7 +40,7 @@ function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-bold hover:bg-primary/90 transition-colors cursor-pointer"
       >
@@ -37,15 +51,33 @@ function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-          <button onClick={() => { setIsOpen(false); onSelect("upload"); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left cursor-pointer">
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onSelect("upload");
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left cursor-pointer"
+          >
             <FileText className="w-5 h-5 text-blue-500" />
             <span className="font-medium">Upload an Image</span>
           </button>
-          <button onClick={() => { setIsOpen(false); onSelect("camera"); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left border-t border-border cursor-pointer">
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onSelect("camera");
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left border-t border-border cursor-pointer"
+          >
             <Camera className="w-5 h-5 text-emerald-500" />
             <span className="font-medium">Take Photo</span>
           </button>
-          <button onClick={() => { setIsOpen(false); onSelect("drive"); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left border-t border-border cursor-pointer">
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onSelect("drive");
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left border-t border-border cursor-pointer"
+          >
             <HardDrive className="w-5 h-5 text-amber-500" />
             <span className="font-medium">Google Drive</span>
           </button>
@@ -59,7 +91,7 @@ export default function InvoicesHubPage() {
   // const [showDriveBrowser, setShowDriveBrowser] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,7 +110,7 @@ export default function InvoicesHubPage() {
       const res = await fetch("/api/unified-ingestion/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         const payloadData = await res.json();
@@ -94,7 +126,10 @@ export default function InvoicesHubPage() {
     }
   };
 
-  const processFile = async (e: React.ChangeEvent<HTMLInputElement>, source: "upload" | "camera") => {
+  const processFile = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    source: "upload" | "camera",
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -105,7 +140,7 @@ export default function InvoicesHubPage() {
       await submitIngestionPayload({
         source,
         sourceName: file.name,
-        pagesInput: [{ pageNumber: 1, rawText: base64String }]
+        pagesInput: [{ pageNumber: 1, rawText: base64String }],
       });
     };
     reader.onerror = () => {
@@ -154,22 +189,30 @@ export default function InvoicesHubPage() {
           trailing={<ImportDropdown onSelect={handleImportSelect} />}
         />
         <p className="text-muted-foreground mt-2 max-w-2xl">
-          Centralize your purchasing records. Import physical or digital invoices to automatically reconcile purchase orders and update the items ledger.
+          Centralize your purchasing records. Import physical or digital
+          invoices to automatically reconcile purchase orders and update the
+          items ledger.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         {/* Manual Entry */}
-        <Link href="/inventory/invoices/new" className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border">
+        <Link
+          href="/inventory/invoices/new"
+          className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border"
+        >
           <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <PlusCircle className="w-6 h-6" />
           </div>
           <h3 className="font-bold text-lg mb-1">Manual Entry</h3>
           <p className="text-sm text-muted-foreground">Create a blank record</p>
         </Link>
-        
+
         {/* Processing Queue Link */}
-        <Link href="/home" className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border bg-card/50">
+        <Link
+          href="/home"
+          className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border bg-card/50"
+        >
           <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <FileText className="w-6 h-6" />
           </div>
@@ -181,9 +224,13 @@ export default function InvoicesHubPage() {
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-6">Recent Invoices</h2>
+        <h2 className="text-2xl font-bold tracking-tight mb-6">
+          Recent Invoices
+        </h2>
         <div className="glass-panel p-8 rounded-2xl border border-border text-center text-muted-foreground">
-          <p>The historical invoice view will be implemented in the next sprint.</p>
+          <p>
+            The historical invoice view will be implemented in the next sprint.
+          </p>
         </div>
       </div>
 

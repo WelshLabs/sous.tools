@@ -19,13 +19,17 @@ export default async function DisplayPage({ params }: DisplayPageProps) {
   let initialErrorState = null;
 
   // We only fetch server-side if it's a valid UUID (not a pairing code)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   if (uuidRegex.test(displayId)) {
     try {
-      const displayRes = await fetch(`${baseUrl}/signage/displays/${displayId}`, { cache: "no-store" });
+      const displayRes = await fetch(
+        `${baseUrl}/signage/displays/${displayId}`,
+        { cache: "no-store" },
+      );
       const displayJson = await displayRes.json();
-      
+
       if (displayJson.success && displayJson.data) {
         const displayData = displayJson.data;
         initialDisplay = {
@@ -41,10 +45,15 @@ export default async function DisplayPage({ params }: DisplayPageProps) {
 
         if (initialDisplay.deckId) {
           const [layoutRes, itemsRes] = await Promise.all([
-            fetch(`${baseUrl}/signage/layouts/${initialDisplay.deckId}`, { cache: "no-store" }),
-            fetch(`${baseUrl}/pos-simulator/items?organizationId=${initialDisplay.organizationId}`, { cache: "no-store" }),
+            fetch(`${baseUrl}/signage/layouts/${initialDisplay.deckId}`, {
+              cache: "no-store",
+            }),
+            fetch(
+              `${baseUrl}/pos-simulator/items?organizationId=${initialDisplay.organizationId}`,
+              { cache: "no-store" },
+            ),
           ]);
-          
+
           if (layoutRes.ok) {
             const layoutData = await layoutRes.json();
             if (layoutData.success) initialLayout = layoutData.data;
@@ -64,8 +73,8 @@ export default async function DisplayPage({ params }: DisplayPageProps) {
   }
 
   return (
-    <DisplayPlayer 
-      displayId={displayId} 
+    <DisplayPlayer
+      displayId={displayId}
       initialDisplay={initialDisplay}
       initialLayout={initialLayout}
       initialItems={initialItems}

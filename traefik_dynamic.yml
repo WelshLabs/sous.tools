@@ -1,7 +1,5 @@
 http:
   routers:
-
-
     dev-web:
       rule: "Host(`dev.sous.tools`)"
       entryPoints:
@@ -47,8 +45,6 @@ http:
       tls:
         certResolver: letsencrypt
 
-
-
   services:
     dev-web-service:
       loadBalancer:
@@ -74,5 +70,3 @@ http:
       loadBalancer:
         servers:
           - url: "http://cptr:3004"
-
-

@@ -76,7 +76,9 @@ async function run() {
   const secrets = await fetchSecretsStrict();
 
   const envSlug = process.env.INFISICAL_ENV || "dev";
-  console.log(`[@soustools/config] Fetching Infisical secrets for environment: "${envSlug}"`);
+  console.log(
+    `[@soustools/config] Fetching Infisical secrets for environment: "${envSlug}"`,
+  );
 
   const childEnv: Record<string, string> = {
     ...(process.env as Record<string, string>),

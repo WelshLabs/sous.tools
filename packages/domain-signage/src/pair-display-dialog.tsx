@@ -84,7 +84,9 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs text-muted-foreground">Display Name</label>
+          <label className="block text-xs text-muted-foreground">
+            Display Name
+          </label>
           <input
             type="text"
             required

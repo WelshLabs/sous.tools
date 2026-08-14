@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { type PosItem } from "@soustools/api-types";
 import { api } from "@soustools/api-client";
-import { MOCK_POS_ITEMS, mapDbItemToPosItem, type RawDbPosItem } from "./helpers";
+import {
+  MOCK_POS_ITEMS,
+  mapDbItemToPosItem,
+  type RawDbPosItem,
+} from "./helpers";
 import { PosSimulator } from "./PosSimulator";
 
 export const PosSimulatorContainer: React.FC = () => {
@@ -21,7 +25,10 @@ export const PosSimulatorContainer: React.FC = () => {
             organizationId: "d0000000-0000-0000-0000-000000000000",
           },
         },
-      })) as unknown as { data?: { success?: boolean; data?: RawDbPosItem[] }; error?: unknown };
+      })) as unknown as {
+        data?: { success?: boolean; data?: RawDbPosItem[] };
+        error?: unknown;
+      };
 
       const payload = result?.data;
       const error = result?.error;
@@ -47,13 +54,16 @@ export const PosSimulatorContainer: React.FC = () => {
     itemId: string,
     isSoldOut: boolean,
     quantity?: number,
-    unlimited?: boolean
+    unlimited?: boolean,
   ): Promise<void> => {
     setUpdatingId(itemId);
     try {
       const result = (await api.POST("/pos-simulator/items/toggle-sold-out", {
         body: { itemId, isSoldOut, quantity, unlimited },
-      } as never)) as unknown as { data?: { success?: boolean }; error?: unknown };
+      } as never)) as unknown as {
+        data?: { success?: boolean };
+        error?: unknown;
+      };
 
       const payload = result?.data;
       const error = result?.error;
@@ -61,8 +71,8 @@ export const PosSimulatorContainer: React.FC = () => {
       if (!error && payload?.success) {
         setItems((prev) =>
           prev.map((item) =>
-            item.id === itemId ? { ...item, isSoldOut } : item
-          )
+            item.id === itemId ? { ...item, isSoldOut } : item,
+          ),
         );
       }
     } catch (e) {
@@ -74,7 +84,7 @@ export const PosSimulatorContainer: React.FC = () => {
 
   const handleToggleSoldOut = async (
     itemId: string,
-    isSoldOut: boolean
+    isSoldOut: boolean,
   ): Promise<void> => {
     if (isSoldOut) {
       const item = items.find((i) => i.id === itemId);
@@ -86,7 +96,7 @@ export const PosSimulatorContainer: React.FC = () => {
 
   const handleConfirmStock = async (
     quantity: number | undefined,
-    unlimited: boolean
+    unlimited: boolean,
   ): Promise<void> => {
     if (!promptItem) return;
     const itemId = promptItem.id;
@@ -109,4 +119,3 @@ export const PosSimulatorContainer: React.FC = () => {
 };
 
 export default PosSimulatorContainer;
-

@@ -3,7 +3,11 @@
 import React from "react";
 import { toast } from "sonner";
 import { OrdersPanel } from "@soustools/domain-inventory";
-import type { Vendor, WhiteboardItem, PurchaseOrder } from "@soustools/api-types";
+import type {
+  Vendor,
+  WhiteboardItem,
+  PurchaseOrder,
+} from "@soustools/api-types";
 import { useRouter } from "next/navigation";
 
 export interface OrdersClientProps {
@@ -12,17 +16,28 @@ export interface OrdersClientProps {
   initialPurchaseOrders: PurchaseOrder[];
 }
 
-export function OrdersClient({ initialVendors, initialWhiteboardItems, initialPurchaseOrders }: OrdersClientProps) {
+export function OrdersClient({
+  initialVendors,
+  initialWhiteboardItems,
+  initialPurchaseOrders,
+}: OrdersClientProps) {
   const router = useRouter();
 
-  const handleAddFreeText = async (rawName: string, vendorId: string | null) => {
+  const handleAddFreeText = async (
+    rawName: string,
+    vendorId: string | null,
+  ) => {
     try {
       if (vendorId) {
         // Add to DRAFT PO
         const res = await fetch("/api/purchase-orders/draft-item", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ raw_name: rawName, vendor_id: vendorId, ordered_qty: 1 }),
+          body: JSON.stringify({
+            raw_name: rawName,
+            vendor_id: vendorId,
+            ordered_qty: 1,
+          }),
         });
         if (!res.ok) throw new Error("Failed to add to draft");
         const payload = await res.json();
@@ -46,7 +61,11 @@ export function OrdersClient({ initialVendors, initialWhiteboardItems, initialPu
     }
   };
 
-  const handleUpdateItemQty = async (itemId: string, qty: number, isWhiteboard: boolean) => {
+  const handleUpdateItemQty = async (
+    itemId: string,
+    qty: number,
+    isWhiteboard: boolean,
+  ) => {
     if (isWhiteboard) return; // Whiteboard items don't have qty
     try {
       const res = await fetch(`/api/purchase-orders/items/${itemId}`, {
@@ -91,7 +110,12 @@ export function OrdersClient({ initialVendors, initialWhiteboardItems, initialPu
     }
   };
 
-  const handleChangeSupplier = async (id: string, supplierId: string | null, isWhiteboard: boolean, rawName: string) => {
+  const handleChangeSupplier = async (
+    id: string,
+    supplierId: string | null,
+    isWhiteboard: boolean,
+    rawName: string,
+  ) => {
     try {
       // 1. Delete old item
       if (isWhiteboard) {
@@ -105,7 +129,11 @@ export function OrdersClient({ initialVendors, initialWhiteboardItems, initialPu
         await fetch("/api/purchase-orders/draft-item", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ raw_name: rawName, vendor_id: supplierId, ordered_qty: 1 }),
+          body: JSON.stringify({
+            raw_name: rawName,
+            vendor_id: supplierId,
+            ordered_qty: 1,
+          }),
         });
       } else {
         await fetch("/api/whiteboard", {
@@ -114,7 +142,7 @@ export function OrdersClient({ initialVendors, initialWhiteboardItems, initialPu
           body: JSON.stringify({ raw_name: rawName }),
         });
       }
-      
+
       router.refresh();
     } catch (err: any) {
       toast.error(`Change supplier failed: ${err.message}`);

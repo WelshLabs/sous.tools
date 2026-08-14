@@ -1,13 +1,19 @@
 "use client";
 
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React from "react";
 import { Button } from "@soustools/design-system";
 import { ChefHat, ArrowLeft, Plus, Trash2, Clock } from "lucide-react";
 import Link from "next/link";
-import { type VesselProfile, type MasterIngredient } from "@soustools/api-types";
-import { type RecipeIngredientLine, type RecipeInstructionStep } from "../../types";
+import {
+  type VesselProfile,
+  type MasterIngredient,
+} from "@soustools/api-types";
+import {
+  type RecipeIngredientLine,
+  type RecipeInstructionStep,
+} from "../../types";
 
 export interface RecipeBuilderViewProps {
   title: string;
@@ -23,11 +29,17 @@ export interface RecipeBuilderViewProps {
   ingredients: RecipeIngredientLine[];
   onAddIngredientLine: () => void;
   onRemoveIngredientLine: (idx: number) => void;
-  onUpdateIngredientLine: (idx: number, fields: Partial<RecipeIngredientLine>) => void;
+  onUpdateIngredientLine: (
+    idx: number,
+    fields: Partial<RecipeIngredientLine>,
+  ) => void;
   steps: RecipeInstructionStep[];
   onAddInstructionStep: () => void;
   onRemoveInstructionStep: (idx: number) => void;
-  onUpdateInstructionStep: (idx: number, fields: Partial<RecipeInstructionStep>) => void;
+  onUpdateInstructionStep: (
+    idx: number,
+    fields: Partial<RecipeInstructionStep>,
+  ) => void;
   vessels: VesselProfile[];
   masterIngredients: MasterIngredient[];
   loading: boolean;
@@ -38,15 +50,31 @@ export interface RecipeBuilderViewProps {
 }
 
 export function RecipeBuilderView({
-  title, setTitle,
-  yieldCount, setYieldCount,
-  yieldUnit, setYieldUnit,
-  vesselId, setVesselId,
-  status, setStatus,
-  ingredients, onAddIngredientLine, onRemoveIngredientLine, onUpdateIngredientLine,
-  steps, onAddInstructionStep, onRemoveInstructionStep, onUpdateInstructionStep,
-  vessels, masterIngredients,
-  loading, saving, onSubmit, backHref, isEditing
+  title,
+  setTitle,
+  yieldCount,
+  setYieldCount,
+  yieldUnit,
+  setYieldUnit,
+  vesselId,
+  setVesselId,
+  status,
+  setStatus,
+  ingredients,
+  onAddIngredientLine,
+  onRemoveIngredientLine,
+  onUpdateIngredientLine,
+  steps,
+  onAddInstructionStep,
+  onRemoveInstructionStep,
+  onUpdateInstructionStep,
+  vessels,
+  masterIngredients,
+  loading,
+  saving,
+  onSubmit,
+  backHref,
+  isEditing,
 }: RecipeBuilderViewProps) {
   return (
     <form
@@ -82,7 +110,10 @@ export function RecipeBuilderView({
               />{" "}
               {isEditing ? "Edit Recipe" : "Create Recipe"}
             </h2>
-            <p className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
+            <p
+              className="text-xs"
+              style={{ color: "var(--color-muted-foreground)" }}
+            >
               Configure yields, baseline flour groups, and step durations.
             </p>
           </div>
@@ -139,14 +170,21 @@ export function RecipeBuilderView({
 }
 
 export function RecipeBuilderFormFields({
-  title, setTitle,
-  yieldCount, setYieldCount,
-  yieldUnit, setYieldUnit,
-  vesselId, setVesselId,
-  status, setStatus,
-  vessels
+  title,
+  setTitle,
+  yieldCount,
+  setYieldCount,
+  yieldUnit,
+  setYieldUnit,
+  vesselId,
+  setVesselId,
+  status,
+  setStatus,
+  vessels,
 }: any) {
-  const labelStyle: React.CSSProperties = { color: "var(--color-muted-foreground)" };
+  const labelStyle: React.CSSProperties = {
+    color: "var(--color-muted-foreground)",
+  };
   const inputStyle: React.CSSProperties = {
     backgroundColor: "var(--color-input)",
     border: "1px solid var(--color-border)",
@@ -240,7 +278,11 @@ export function RecipeBuilderFormFields({
 }
 
 export function RecipeBuilderIngredients({
-  lines, onAddLine, onRemoveLine, onUpdateLine, masterIngredients
+  lines,
+  onAddLine,
+  onRemoveLine,
+  onUpdateLine,
+  masterIngredients,
 }: any) {
   return (
     <div className="space-y-4">
@@ -290,7 +332,11 @@ export function RecipeBuilderIngredients({
 }
 
 export function RecipeBuilderIngredientRow({
-  line, idx, masterIngredients, handleUpdateLine, handleRemoveLine
+  line,
+  idx,
+  masterIngredients,
+  handleUpdateLine,
+  handleRemoveLine,
 }: any) {
   const inputStyle: React.CSSProperties = {
     backgroundColor: "var(--color-input)",
@@ -322,7 +368,10 @@ export function RecipeBuilderIngredientRow({
           </option>
           {masterIngredients.map((mi: any) => (
             <option key={mi.id} value={mi.id}>
-              {mi.name} {mi.currentCostPerG ? `($${mi.currentCostPerG.toFixed(3)}/g)` : ""}
+              {mi.name}{" "}
+              {mi.currentCostPerG
+                ? `($${mi.currentCostPerG.toFixed(3)}/g)`
+                : ""}
             </option>
           ))}
         </select>
@@ -368,7 +417,8 @@ export function RecipeBuilderIngredientRow({
           value={line.calculationType}
           onChange={(e) =>
             handleUpdateLine(idx, {
-              calculationType: e.target.value as "fixed_weight" | "bakers_percentage",
+              calculationType: e.target.value as
+                "fixed_weight" | "bakers_percentage",
             })
           }
           className="rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
@@ -427,7 +477,10 @@ export function RecipeBuilderIngredientRow({
 }
 
 export function RecipeBuilderInstructions({
-  steps, onAddStep, onRemoveStep, onUpdateStep
+  steps,
+  onAddStep,
+  onRemoveStep,
+  onUpdateStep,
 }: any) {
   const inputStyle: React.CSSProperties = {
     backgroundColor: "var(--color-input)",
@@ -581,7 +634,11 @@ export function RecipeBuilderInstructions({
   );
 }
 
-export function AutoCalculateButton({ onAutoCalculate }: { onAutoCalculate: () => void }) {
+export function AutoCalculateButton({
+  onAutoCalculate,
+}: {
+  onAutoCalculate: () => void;
+}) {
   return (
     <button
       type="button"

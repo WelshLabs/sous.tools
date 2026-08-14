@@ -14,7 +14,10 @@ export interface PosSimulatorProps {
   setPromptItem: (item: PosItem | null) => void;
   onRefresh: () => Promise<void> | void;
   onToggleSoldOut: (itemId: string, isSoldOut: boolean) => Promise<void> | void;
-  onConfirmStock: (quantity: number | undefined, unlimited: boolean) => Promise<void> | void;
+  onConfirmStock: (
+    quantity: number | undefined,
+    unlimited: boolean,
+  ) => Promise<void> | void;
 }
 
 export const PosSimulator: React.FC<PosSimulatorProps> = ({
@@ -32,10 +35,12 @@ export const PosSimulator: React.FC<PosSimulatorProps> = ({
       <header className="flex justify-between items-center pb-3 border-b border-zinc-900">
         <div>
           <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-500" /> POS Simulator Panel
+            <AlertTriangle className="w-5 h-5 text-amber-500" /> POS Simulator
+            Panel
           </h2>
           <p className="text-xs text-zinc-400">
-            Simulate Point of Sale menu webhook updates. Changes trigger instant socket push updates.
+            Simulate Point of Sale menu webhook updates. Changes trigger instant
+            socket push updates.
           </p>
         </div>
         <button

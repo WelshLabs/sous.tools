@@ -8,7 +8,7 @@ interface RecipePageProps {
 export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
   const baseUrl = config.NEXT_PUBLIC_API_URL;
-  
+
   let recipe = null;
   let vessels = [];
   let costData = null;
@@ -16,14 +16,21 @@ export default async function RecipePage({ params }: RecipePageProps) {
   let versionHistory = [];
 
   try {
-    const [recipeRes, vesselsRes, costRes, nutritionRes, historyRes] = await Promise.all([
-      fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/${id}/cost`, { cache: "no-store" }).catch(() => null),
-      fetch(`${baseUrl}/recipes/${id}/nutrition`, { cache: "no-store" }).catch(() => null),
-      fetch(`${baseUrl}/recipes/${id}/versions`, { cache: "no-store" }).catch(() => null)
-    ]);
-    
+    const [recipeRes, vesselsRes, costRes, nutritionRes, historyRes] =
+      await Promise.all([
+        fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" }),
+        fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
+        fetch(`${baseUrl}/recipes/${id}/cost`, { cache: "no-store" }).catch(
+          () => null,
+        ),
+        fetch(`${baseUrl}/recipes/${id}/nutrition`, {
+          cache: "no-store",
+        }).catch(() => null),
+        fetch(`${baseUrl}/recipes/${id}/versions`, { cache: "no-store" }).catch(
+          () => null,
+        ),
+      ]);
+
     if (recipeRes.ok) {
       const payload = await recipeRes.json();
       recipe = payload.data;
@@ -49,12 +56,16 @@ export default async function RecipePage({ params }: RecipePageProps) {
   }
 
   if (!recipe) {
-    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
+    return (
+      <div className="p-12 text-center text-muted-foreground">
+        Recipe not found.
+      </div>
+    );
   }
 
   return (
     <div className="py-6 px-4">
-      <RecipeViewerClient 
+      <RecipeViewerClient
         recipe={recipe}
         vessels={vessels}
         costData={costData}

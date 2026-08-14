@@ -35,11 +35,15 @@ describe("PosSimulatorController", () => {
   });
 
   it("should list items successfully", async () => {
-    const mockItems = [{ id: "item-1", name: "Coffee", pos_provider: "SQUARE" }];
+    const mockItems = [
+      { id: "item-1", name: "Coffee", pos_provider: "SQUARE" },
+    ];
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn().mockImplementation((cb) => cb({ data: mockItems, error: null })),
+      then: jest
+        .fn()
+        .mockImplementation((cb) => cb({ data: mockItems, error: null })),
     });
 
     const response = await controller.getItems();
@@ -48,7 +52,12 @@ describe("PosSimulatorController", () => {
   });
 
   it("should toggle sold out and broadcast layout updates to paired TVs", async () => {
-    const mockItem = { id: "item-1", external_id: "sq-item-1", name: "Coffee", is_sold_out: true };
+    const mockItem = {
+      id: "item-1",
+      external_id: "sq-item-1",
+      name: "Coffee",
+      is_sold_out: true,
+    };
     const mockDecks = [{ id: "deck-1", config: {} }];
 
     const fromMock = jest.fn().mockImplementation((table: string) => {
@@ -58,7 +67,9 @@ describe("PosSimulatorController", () => {
           update: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           single: jest.fn().mockResolvedValue({ data: mockItem, error: null }),
-          then: jest.fn().mockImplementation((cb) => cb({ data: [mockItem], error: null })),
+          then: jest
+            .fn()
+            .mockImplementation((cb) => cb({ data: [mockItem], error: null })),
         };
       }
       if (table === "integrations") {

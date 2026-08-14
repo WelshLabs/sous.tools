@@ -4,13 +4,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FileText, X } from "lucide-react";
 import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
 
-const springTransition = { type: "spring" as const, stiffness: 380, damping: 30, mass: 0.8 };
+const springTransition = {
+  type: "spring" as const,
+  stiffness: 380,
+  damping: 30,
+  mass: 0.8,
+};
 
 interface StagingAreaProps {
   files: StagedFile[];
 }
 
-function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number }) {
+function StagedFileThumbnail({
+  file,
+  index,
+}: {
+  file: StagedFile;
+  index: number;
+}) {
   const { setStagedFiles } = useOmnibarContext();
 
   const handleRemove = () => {
@@ -47,13 +58,15 @@ function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number 
           <div className="flex flex-col items-center gap-1 px-1">
             <FileText
               className="w-6 h-6"
-              style={{ color: isPdf ? "var(--destructive)" : "var(--color-primary)" }}
+              style={{
+                color: isPdf ? "var(--destructive)" : "var(--color-primary)",
+              }}
             />
             <span
               className="text-[9px] font-semibold uppercase tracking-wide leading-none text-center truncate w-full px-0.5"
               style={{ color: "var(--muted-foreground)" }}
             >
-              {isPdf ? "PDF" : file.file?.name?.split(".").pop() ?? "FILE"}
+              {isPdf ? "PDF" : (file.file?.name?.split(".").pop() ?? "FILE")}
             </span>
           </div>
         )}
@@ -61,7 +74,10 @@ function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number 
         {/* Filename tooltip on hover */}
         <div
           className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none rounded-xl"
-          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)" }}
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)",
+          }}
         >
           <span className="text-[8px] text-white font-medium px-1 pb-1 truncate w-full text-center leading-none">
             {file.file?.name}
@@ -110,10 +126,7 @@ export function StagingArea({ files }: StagingAreaProps) {
           transition={springTransition}
           className="overflow-hidden"
         >
-          <motion.div
-            layout
-            className="flex flex-wrap gap-2 pt-1 pb-2 px-1"
-          >
+          <motion.div layout className="flex flex-wrap gap-2 pt-1 pb-2 px-1">
             <AnimatePresence mode="popLayout">
               {files.map((file, index) => (
                 <StagedFileThumbnail key={file.id} file={file} index={index} />

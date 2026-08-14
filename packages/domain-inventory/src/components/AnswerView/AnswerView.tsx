@@ -97,7 +97,9 @@ export function AnswerView({
             setChatHistory(messages);
           }
         })
-        .catch((err: any) => console.error("Failed to fetch chat history:", err))
+        .catch((err: any) =>
+          console.error("Failed to fetch chat history:", err),
+        )
         .finally(() => setHasFetchedHistory(true));
     } else {
       setHasFetchedHistory(true);
@@ -178,8 +180,6 @@ export function AnswerView({
     return userMsgs[userMsgs.length - 1]?.content || initialQuery;
   }, [chatHistory, initialQuery]);
 
-
-
   // Detect component render directive from tool execution
   const componentDirective = useMemo(() => {
     const renderMsg = chatHistory.find(
@@ -202,7 +202,6 @@ export function AnswerView({
     }
     const q = (latestUserMessage || "").toLowerCase().trim();
     if (!q) return null;
-
 
     if (q.includes("revenue") || q.includes("sales") || q.includes("chart")) {
       return "REVENUE_CHART";
@@ -240,62 +239,77 @@ export function AnswerView({
       {/* ── Conversational Answer Card ── */}
       <Card className="w-full border-border bg-card/80 backdrop-blur-xl shadow-2xl p-6">
         <div className="flex flex-col gap-6">
-          {chatHistory.length > 0 ? (
-            chatHistory
-              .filter(
-                (m) =>
-                  m.role === "model" ||
-                  m.role === "user" ||
-                  m.role === "agent_step" ||
-                  m.role === ("render_component" as any),
-              )
-              .map((m) => (
-                <div key={m.id} className="flex items-start gap-4">
-                  <div
-                    className={`p-2.5 rounded-2xl shrink-0 ${
-                      m.role === "user"
-                        ? "bg-secondary/10 text-secondary border border-secondary/20"
-                        : "bg-primary/10 text-primary border border-primary/20"
-                    }`}
-                  >
-                    {m.role === "user" ? (
-                      <span className="font-bold">You</span>
-                    ) : (
-                      <Sparkles className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div className="flex-1 flex flex-col pt-1">
-                    {m.role === ("render_component" as any) ? (
-                      (() => {
-                        try {
-                          const directive = JSON.parse(m.content);
-                          if (directive.componentName === "INGESTION_REVIEW") {
-                            return <div className="mt-2"><UniversalReviewComponent reviewId={directive.props.reviewId} /></div>;
+          {chatHistory.length > 0
+            ? chatHistory
+                .filter(
+                  (m) =>
+                    m.role === "model" ||
+                    m.role === "user" ||
+                    m.role === "agent_step" ||
+                    m.role === ("render_component" as any),
+                )
+                .map((m) => (
+                  <div key={m.id} className="flex items-start gap-4">
+                    <div
+                      className={`p-2.5 rounded-2xl shrink-0 ${
+                        m.role === "user"
+                          ? "bg-secondary/10 text-secondary border border-secondary/20"
+                          : "bg-primary/10 text-primary border border-primary/20"
+                      }`}
+                    >
+                      {m.role === "user" ? (
+                        <span className="font-bold">You</span>
+                      ) : (
+                        <Sparkles className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div className="flex-1 flex flex-col pt-1">
+                      {m.role === ("render_component" as any) ? (
+                        (() => {
+                          try {
+                            const directive = JSON.parse(m.content);
+                            if (
+                              directive.componentName === "INGESTION_REVIEW"
+                            ) {
+                              return (
+                                <div className="mt-2">
+                                  <UniversalReviewComponent
+                                    reviewId={directive.props.reviewId}
+                                  />
+                                </div>
+                              );
+                            }
+                            return null;
+                          } catch (err) {
+                            return null;
                           }
-                          return null;
-                        } catch (err) {
-                          return null;
-                        }
-                      })()
-                    ) : (
-                      <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
-                        {m.attachments && m.attachments.length > 0 && (
-                          <div className="flex gap-3 mb-3">
-                            {m.attachments.map((att: any, i: number) => 
-                              att.url ? (
-                                <img key={i} src={att.url} alt="Attachment thumbnail" className="w-20 h-20 rounded-lg object-cover border border-border shadow-sm" />
-                              ) : null
-                            )}
-                          </div>
-                        )}
-                        <p className="whitespace-pre-wrap m-0">{m.content.replace(/^\[\d+ attachments?\]\s*/, "")}</p>
-                      </div>
-                    )}
+                        })()
+                      ) : (
+                        <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
+                          {m.attachments && m.attachments.length > 0 && (
+                            <div className="flex gap-3 mb-3">
+                              {m.attachments.map((att: any, i: number) =>
+                                att.url ? (
+                                  <img
+                                    key={i}
+                                    src={att.url}
+                                    alt="Attachment thumbnail"
+                                    className="w-20 h-20 rounded-lg object-cover border border-border shadow-sm"
+                                  />
+                                ) : null,
+                              )}
+                            </div>
+                          )}
+                          <p className="whitespace-pre-wrap m-0">
+                            {m.content.replace(/^\[\d+ attachments?\]\s*/, "")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
-          ) : null}
-          
+                ))
+            : null}
+
           {isProcessing && (
             <div className="flex items-start gap-4">
               <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">

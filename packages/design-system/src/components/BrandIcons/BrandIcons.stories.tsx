@@ -1,10 +1,10 @@
-import React from 'react';
-import type { Meta } from '@storybook/react';
-import { GoogleIcon, GitHubIcon } from './BrandIcons';
+import React from "react";
+import type { Meta } from "@storybook/react";
+import { GoogleIcon, GitHubIcon } from "./BrandIcons";
 
 const meta: Meta = {
-  title: 'Components/BrandIcons',
-  tags: ['autodocs'],
+  title: "Components/BrandIcons",
+  tags: ["autodocs"],
 };
 export default meta;
 

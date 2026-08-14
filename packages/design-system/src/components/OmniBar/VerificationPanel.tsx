@@ -7,13 +7,16 @@ import { type StagedFile } from "./OmniBarContext";
 export interface VerificationPanelProps {
   stagedFiles: StagedFile[];
   onRemoveFile: (id: string) => void;
-  onAction: (action: "Extract Invoice" | "Parse Recipe", file: StagedFile) => void;
+  onAction: (
+    action: "Extract Invoice" | "Parse Recipe",
+    file: StagedFile,
+  ) => void;
 }
 
 export function VerificationPanel({
   stagedFiles,
   onRemoveFile,
-  onAction
+  onAction,
 }: VerificationPanelProps) {
   return (
     <div className="flex flex-col items-center justify-center text-center p-4 gap-4 w-full h-full">
@@ -22,7 +25,7 @@ export function VerificationPanel({
           CHEF?
         </span>
         <span className="text-muted-foreground text-xs leading-normal">
-          {stagedFiles.length > 0 && stagedFiles[0].file 
+          {stagedFiles.length > 0 && stagedFiles[0].file
             ? `I see "${stagedFiles[0].file.name}". Should I process this as a Recipe or an Invoice?`
             : "Found a document. How should we process it?"}
         </span>
@@ -46,14 +49,21 @@ export function VerificationPanel({
                         "conic-gradient(from 0deg, transparent 70%, rgba(6,182,212,1) 100%)",
                     }}
                     animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 2,
+                      ease: "linear",
+                    }}
                   />
                   <div className="absolute inset-[2px] bg-background z-10 rounded-2xl" />
                 </>
               )}
               {file.url || file.file ? (
                 <img
-                  src={file.url || (file.file ? URL.createObjectURL(file.file) : undefined)}
+                  src={
+                    file.url ||
+                    (file.file ? URL.createObjectURL(file.file) : undefined)
+                  }
                   alt="Staged Upload"
                   className="w-full h-full object-cover relative z-20 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)] rounded-2xl animate-fadeIn"
                 />
@@ -75,24 +85,25 @@ export function VerificationPanel({
       </div>
 
       {/* Action Chips */}
-      {stagedFiles.every((f) => f.status === "complete") && stagedFiles.length > 0 && (
-        <div className="flex flex-col gap-2 w-full max-w-[220px] mt-1">
-          <button
-            type="button"
-            onClick={() => onAction("Extract Invoice", stagedFiles[0])}
-            className="w-full py-2 bg-glass-panel text-glass-accent font-medium text-xs rounded-xl border border-cyan-500/30 transition-all shadow-[0_0_12px_rgba(6,182,212,0.1)] hover:bg-cyan-500/20 active:scale-98 cursor-pointer animate-fadeIn"
-          >
-            Extract Invoice
-          </button>
-          <button
-            type="button"
-            onClick={() => onAction("Parse Recipe", stagedFiles[0])}
-            className="w-full py-2 bg-glass-panel text-glass-accent font-medium text-xs rounded-xl border border-border transition-all hover:bg-muted active:scale-98 cursor-pointer animate-fadeIn"
-          >
-            Parse Recipe
-          </button>
-        </div>
-      )}
+      {stagedFiles.every((f) => f.status === "complete") &&
+        stagedFiles.length > 0 && (
+          <div className="flex flex-col gap-2 w-full max-w-[220px] mt-1">
+            <button
+              type="button"
+              onClick={() => onAction("Extract Invoice", stagedFiles[0])}
+              className="w-full py-2 bg-glass-panel text-glass-accent font-medium text-xs rounded-xl border border-cyan-500/30 transition-all shadow-[0_0_12px_rgba(6,182,212,0.1)] hover:bg-cyan-500/20 active:scale-98 cursor-pointer animate-fadeIn"
+            >
+              Extract Invoice
+            </button>
+            <button
+              type="button"
+              onClick={() => onAction("Parse Recipe", stagedFiles[0])}
+              className="w-full py-2 bg-glass-panel text-glass-accent font-medium text-xs rounded-xl border border-border transition-all hover:bg-muted active:scale-98 cursor-pointer animate-fadeIn"
+            >
+              Parse Recipe
+            </button>
+          </div>
+        )}
     </div>
   );
 }

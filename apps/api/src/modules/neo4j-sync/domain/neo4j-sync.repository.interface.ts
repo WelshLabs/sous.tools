@@ -1,5 +1,9 @@
 export interface INeo4jSyncRepository {
-  upsertNode(label: string, id: string, properties: Record<string, any>): Promise<void>;
+  upsertNode(
+    label: string,
+    id: string,
+    properties: Record<string, any>,
+  ): Promise<void>;
   deleteNode(label: string, id: string): Promise<void>;
   createRelationship(
     srcLabel: string,

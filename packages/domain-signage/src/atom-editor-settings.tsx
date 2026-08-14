@@ -1,7 +1,12 @@
 "use client";
 
 import { type MenuItemStateStyle } from "@soustools/api-types";
-import { ColorRow, FontRow, SliderRow, WeightSelect } from "./atom-editor-controls";
+import {
+  ColorRow,
+  FontRow,
+  SliderRow,
+  WeightSelect,
+} from "./atom-editor-controls";
 import type { ItemState } from "./state-tab-bar";
 
 const ANIMATION_OPTIONS = [
@@ -75,7 +80,9 @@ export const AtomEditorCardSettings = ({
       <span className="text-xs text-muted-foreground">Animation</span>
       <select
         value={style.animation ?? "none"}
-        onChange={(e) => onChange({ animation: e.target.value as typeof style.animation })}
+        onChange={(e) =>
+          onChange({ animation: e.target.value as typeof style.animation })
+        }
         className="bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground cursor-pointer focus:outline-none"
       >
         {ANIMATION_OPTIONS.map((o) => (
@@ -131,28 +138,97 @@ export const AtomEditorCardSettings = ({
   </div>
 );
 
-export const AtomEditorTitleSettings = ({ style, onChange }: { style: MenuItemStateStyle; onChange: (updates: Partial<MenuItemStateStyle>) => void }) => (
+export const AtomEditorTitleSettings = ({
+  style,
+  onChange,
+}: {
+  style: MenuItemStateStyle;
+  onChange: (updates: Partial<MenuItemStateStyle>) => void;
+}) => (
   <div className="space-y-2.5">
-    <FontRow font={style.titleFont} onChange={(f) => onChange({ titleFont: f })} />
-    <ColorRow label="Color" value={style.titleColor} onChange={(v) => onChange({ titleColor: v })} />
-    <SliderRow label="Size" value={style.titleSize} min={0.8} max={2.0} step={0.05} def={1.25} onChange={(v) => onChange({ titleSize: v })} />
-    <WeightSelect value={style.titleWeight} onChange={(v) => onChange({ titleWeight: v })} />
+    <FontRow
+      font={style.titleFont}
+      onChange={(f) => onChange({ titleFont: f })}
+    />
+    <ColorRow
+      label="Color"
+      value={style.titleColor}
+      onChange={(v) => onChange({ titleColor: v })}
+    />
+    <SliderRow
+      label="Size"
+      value={style.titleSize}
+      min={0.8}
+      max={2.0}
+      step={0.05}
+      def={1.25}
+      onChange={(v) => onChange({ titleSize: v })}
+    />
+    <WeightSelect
+      value={style.titleWeight}
+      onChange={(v) => onChange({ titleWeight: v })}
+    />
   </div>
 );
 
-export const AtomEditorPriceSettings = ({ style, onChange }: { style: MenuItemStateStyle; onChange: (updates: Partial<MenuItemStateStyle>) => void }) => (
+export const AtomEditorPriceSettings = ({
+  style,
+  onChange,
+}: {
+  style: MenuItemStateStyle;
+  onChange: (updates: Partial<MenuItemStateStyle>) => void;
+}) => (
   <div className="space-y-2.5">
-    <FontRow font={style.priceFont} onChange={(f) => onChange({ priceFont: f })} />
-    <ColorRow label="Color" value={style.priceColor} onChange={(v) => onChange({ priceColor: v })} />
-    <SliderRow label="Size" value={style.priceSize} min={0.8} max={1.8} step={0.05} def={1.0} onChange={(v) => onChange({ priceSize: v })} />
-    <WeightSelect value={style.priceWeight} onChange={(v) => onChange({ priceWeight: v })} />
+    <FontRow
+      font={style.priceFont}
+      onChange={(f) => onChange({ priceFont: f })}
+    />
+    <ColorRow
+      label="Color"
+      value={style.priceColor}
+      onChange={(v) => onChange({ priceColor: v })}
+    />
+    <SliderRow
+      label="Size"
+      value={style.priceSize}
+      min={0.8}
+      max={1.8}
+      step={0.05}
+      def={1.0}
+      onChange={(v) => onChange({ priceSize: v })}
+    />
+    <WeightSelect
+      value={style.priceWeight}
+      onChange={(v) => onChange({ priceWeight: v })}
+    />
   </div>
 );
 
-export const AtomEditorDescriptionSettings = ({ style, onChange }: { style: MenuItemStateStyle; onChange: (updates: Partial<MenuItemStateStyle>) => void }) => (
+export const AtomEditorDescriptionSettings = ({
+  style,
+  onChange,
+}: {
+  style: MenuItemStateStyle;
+  onChange: (updates: Partial<MenuItemStateStyle>) => void;
+}) => (
   <div className="space-y-2.5">
-    <FontRow font={style.descriptionFont} onChange={(f) => onChange({ descriptionFont: f })} />
-    <ColorRow label="Color" value={style.descriptionColor} onChange={(v) => onChange({ descriptionColor: v })} />
-    <SliderRow label="Size" value={style.descriptionSize} min={0.7} max={1.2} step={0.05} def={0.875} onChange={(v) => onChange({ descriptionSize: v })} />
+    <FontRow
+      font={style.descriptionFont}
+      onChange={(f) => onChange({ descriptionFont: f })}
+    />
+    <ColorRow
+      label="Color"
+      value={style.descriptionColor}
+      onChange={(v) => onChange({ descriptionColor: v })}
+    />
+    <SliderRow
+      label="Size"
+      value={style.descriptionSize}
+      min={0.7}
+      max={1.2}
+      step={0.05}
+      def={0.875}
+      onChange={(v) => onChange({ descriptionSize: v })}
+    />
   </div>
 );

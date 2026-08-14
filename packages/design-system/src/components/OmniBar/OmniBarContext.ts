@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import { type OmniMessage } from '@soustools/api-types';
-import type { Socket } from 'socket.io-client';
+import { create } from "zustand";
+import { type OmniMessage } from "@soustools/api-types";
+import type { Socket } from "socket.io-client";
 
 export interface StagedFile {
   id: string;
   url: string | null;
-  status: 'uploading' | 'complete' | 'error';
+  status: "uploading" | "complete" | "error";
   file?: File;
   /** Local object URL for image thumbnail preview. Revoked on unmount. */
   previewUrl?: string;
@@ -14,15 +14,15 @@ export interface StagedFile {
 export interface OmniBarState {
   contextPayload: Record<string, unknown>;
   setContextPayload: (payload: Record<string, unknown>) => void;
-  
+
   chatHistory: OmniMessage[];
   setChatHistory: (history: OmniMessage[]) => void;
   addMessage: (message: OmniMessage) => void;
   markLoadingComplete: () => void;
-  
+
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  
+
   isProcessing: boolean;
   setIsProcessing: (isProcessing: boolean) => void;
 
@@ -35,7 +35,9 @@ export interface OmniBarState {
   showGoogleDriveBrowser: boolean;
   setShowGoogleDriveBrowser: (show: boolean) => void;
   stagedFiles: StagedFile[];
-  setStagedFiles: (files: StagedFile[] | ((prev: StagedFile[]) => StagedFile[])) => void;
+  setStagedFiles: (
+    files: StagedFile[] | ((prev: StagedFile[]) => StagedFile[]),
+  ) => void;
 
   isGoogleDriveConnected: boolean;
   setIsGoogleDriveConnected: (connected: boolean) => void;
@@ -47,41 +49,46 @@ export interface OmniBarState {
   setExecuteBackgroundCommand: (fn: (text: string) => void) => void;
 }
 
-
 export const useOmnibarContext = create<OmniBarState>((set) => ({
   contextPayload: {},
   setContextPayload: (payload) => set({ contextPayload: payload }),
-  
+
   chatHistory: [],
   setChatHistory: (history) => set({ chatHistory: history }),
-  addMessage: (message) => set((state) => ({ chatHistory: [...state.chatHistory, message] })),
-  markLoadingComplete: () => set((state) => ({
-    chatHistory: state.chatHistory.map(msg => 
-      msg.role === 'agent_step' ? { ...msg, isLoading: false } : msg
-    )
-  })),
-  
+  addMessage: (message) =>
+    set((state) => ({ chatHistory: [...state.chatHistory, message] })),
+  markLoadingComplete: () =>
+    set((state) => ({
+      chatHistory: state.chatHistory.map((msg) =>
+        msg.role === "agent_step" ? { ...msg, isLoading: false } : msg,
+      ),
+    })),
+
   isOpen: false,
   setIsOpen: (isOpen) => set({ isOpen }),
-  
+
   isProcessing: false,
   setIsProcessing: (isProcessing) => set({ isProcessing }),
 
   isDragging: false,
   setIsDragging: (isDragging) => set({ isDragging }),
 
-  inputText: '',
+  inputText: "",
   setInputText: (inputText) => set({ inputText }),
 
   showGoogleDriveBrowser: false,
-  setShowGoogleDriveBrowser: (showGoogleDriveBrowser) => set({ showGoogleDriveBrowser }),
+  setShowGoogleDriveBrowser: (showGoogleDriveBrowser) =>
+    set({ showGoogleDriveBrowser }),
   stagedFiles: [],
-  setStagedFiles: (update) => set((state) => ({ 
-    stagedFiles: typeof update === 'function' ? update(state.stagedFiles) : update 
-  })),
+  setStagedFiles: (update) =>
+    set((state) => ({
+      stagedFiles:
+        typeof update === "function" ? update(state.stagedFiles) : update,
+    })),
 
   isGoogleDriveConnected: false,
-  setIsGoogleDriveConnected: (isGoogleDriveConnected) => set({ isGoogleDriveConnected }),
+  setIsGoogleDriveConnected: (isGoogleDriveConnected) =>
+    set({ isGoogleDriveConnected }),
 
   socket: null,
   setSocket: (socket) => set({ socket }),

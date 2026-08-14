@@ -1,8 +1,18 @@
 "use client";
 
-import { QuickAddBar, InsightsSidebar, type QuickAddSuggestion } from "@soustools/design-system";
-import { SupplierOrderGroup, EmptyOrderList } from "../Supplier/SupplierOrderGroup";
-import type { OrderLineItem, OrderSupplier } from "../Supplier/SupplierOrderGroup.types";
+import {
+  QuickAddBar,
+  InsightsSidebar,
+  type QuickAddSuggestion,
+} from "@soustools/design-system";
+import {
+  SupplierOrderGroup,
+  EmptyOrderList,
+} from "../Supplier/SupplierOrderGroup";
+import type {
+  OrderLineItem,
+  OrderSupplier,
+} from "../Supplier/SupplierOrderGroup.types";
 
 interface ListTabProps {
   items: OrderLineItem[];
@@ -22,9 +32,20 @@ interface ListTabProps {
 }
 
 export function OrdersListTab({
-  items, searchQuery, suggestions, suppliers, groupedItems, placingOrderId,
-  onSearchChange, onSelectSuggestion, onAddFreeText, onRemoveItem, onChangeQty,
-  onChangeSupplier, onPlaceOrder, onShopOrder,
+  items,
+  searchQuery,
+  suggestions,
+  suppliers,
+  groupedItems,
+  placingOrderId,
+  onSearchChange,
+  onSelectSuggestion,
+  onAddFreeText,
+  onRemoveItem,
+  onChangeQty,
+  onChangeSupplier,
+  onPlaceOrder,
+  onShopOrder,
 }: ListTabProps) {
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">

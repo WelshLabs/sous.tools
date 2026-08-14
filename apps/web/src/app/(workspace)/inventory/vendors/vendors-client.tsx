@@ -17,17 +17,22 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
     try {
       const url = id === "new" ? "/api/vendors" : `/api/vendors/${id}`;
       const method = id === "new" ? "POST" : "PUT";
-      
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Failed to save vendor");
-      
-      toast.success(id === "new" ? "Vendor created successfully!" : "Vendor updated successfully!");
+      if (!res.ok || !json.success)
+        throw new Error(json.error || "Failed to save vendor");
+
+      toast.success(
+        id === "new"
+          ? "Vendor created successfully!"
+          : "Vendor updated successfully!",
+      );
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Network error");
@@ -38,7 +43,8 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
     try {
       const res = await fetch(`/api/vendors/${id}`, { method: "DELETE" });
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Failed to delete vendor");
+      if (!res.ok || !json.success)
+        throw new Error(json.error || "Failed to delete vendor");
       toast.success("Vendor deleted");
       router.refresh();
     } catch (err: any) {
@@ -51,7 +57,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
       vendors={initialVendors}
       onSave={handleSave}
       onDelete={handleDelete}
-      onAddVendorClick={() => router.push('/inventory/vendors/add')}
+      onAddVendorClick={() => router.push("/inventory/vendors/add")}
     />
   );
 }

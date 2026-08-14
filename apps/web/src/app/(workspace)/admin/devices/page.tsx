@@ -3,7 +3,7 @@ import { clientConfig as config } from "@soustools/config/client";
 import { createApiClient } from "@soustools/api-client";
 import { DevicesClientWrapper } from "./devices-client-wrapper";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /**
  * DevicesPage mounts the signage physical displays pairing and status manager.
@@ -32,5 +32,11 @@ export default async function DevicesPage() {
     console.error("Failed to fetch signage displays/layouts:", err);
   }
 
-  return <DevicesClientWrapper displays={displays} layouts={layouts} edgeDevices={edgeDevices} />;
+  return (
+    <DevicesClientWrapper
+      displays={displays}
+      layouts={layouts}
+      edgeDevices={edgeDevices}
+    />
+  );
 }

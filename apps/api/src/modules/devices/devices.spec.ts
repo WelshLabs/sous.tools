@@ -81,7 +81,7 @@ describe("DevicesController", () => {
       "device-1",
       "Updated Device",
       "UTC",
-      { hour: 4, minute: 30, dayOfWeek: 2 }
+      { hour: 4, minute: 30, dayOfWeek: 2 },
     );
     expect(response.success).toBe(true);
     expect(response.data).toEqual({

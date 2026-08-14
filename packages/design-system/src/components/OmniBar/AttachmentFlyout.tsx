@@ -14,7 +14,12 @@ export interface AttachmentFlyoutProps {
 }
 
 const GoogleDriveIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 1443 1250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    className={className}
+    viewBox="0 0 1443 1250"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <path d="M481 0h481l481 833H962L481 0z" fill="#0066da" />
     <path d="M241 1250L0 833l481-833 240 417-480 833z" fill="#00a852" />
     <path d="M962 1250l241-417H481l-240 417h721z" fill="#ffcc00" />
@@ -36,7 +41,10 @@ export function AttachmentFlyout({
   const [hasCamera, setHasCamera] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
+    if (
+      typeof window !== "undefined" &&
+      navigator.mediaDevices?.enumerateDevices
+    ) {
       navigator.mediaDevices
         .enumerateDevices()
         .then((devices) => {

@@ -41,9 +41,7 @@ export const StockPromptModal: React.FC<StockPromptModalProps> = ({
           <X className="w-5 h-5" />
         </button>
         <div>
-          <h3 className="text-md font-bold text-foreground">
-            Adjust Stock
-          </h3>
+          <h3 className="text-md font-bold text-foreground">Adjust Stock</h3>
           <p className="text-xs text-muted-foreground mt-1">
             Set stock options for {itemName}
           </p>

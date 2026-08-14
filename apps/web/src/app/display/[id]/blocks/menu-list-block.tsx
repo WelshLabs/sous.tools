@@ -1,6 +1,16 @@
 import React from "react";
-import { type PosItem, type MenuItemStyles, type SignageBlock } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle, buildCardStyle, buildDescriptionStyle } from "@/app/display/[id]/menu-item-style-utils";
+import {
+  type PosItem,
+  type MenuItemStyles,
+  type SignageBlock,
+} from "@soustools/api-types";
+import {
+  resolveItemState,
+  buildTitleStyle,
+  buildPriceStyle,
+  buildCardStyle,
+  buildDescriptionStyle,
+} from "@/app/display/[id]/menu-item-style-utils";
 
 type MenuListBlockProps = Extract<SignageBlock, { type: "MenuListBlock" }> & {
   items: PosItem[];
@@ -24,23 +34,31 @@ export function MenuListBlock({
   const containerClasses = [
     "flex flex-col gap-2 w-full st-menu-list",
     isGlass ? " p-2 border border-white/10 bg-white/5 rounded" : "",
-    className
-  ].filter(Boolean).join(" ");
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={containerClasses}>
       {itemIds.map((itemId) => {
-        const item = items.find((i) => i.id === itemId || i.externalId === itemId);
+        const item = items.find(
+          (i) => i.id === itemId || i.externalId === itemId,
+        );
         if (!item) return null;
 
         const blockStyles = styles ?? menuItemStyles;
         const optStyle = resolveItemState(item, false, blockStyles);
         if (optStyle.hidden && item.isSoldOut) return null;
 
-        const isFlatItem = panelStyle === "none" || (
-          (!blockStyles.regular.backgroundColor || blockStyles.regular.backgroundColor === "transparent" || blockStyles.regular.backgroundColor.includes("0,0,0,0")) &&
-          (!blockStyles.regular.borderWidth || !blockStyles.regular.borderColor || blockStyles.regular.borderColor === "transparent")
-        );
+        const isFlatItem =
+          panelStyle === "none" ||
+          ((!blockStyles.regular.backgroundColor ||
+            blockStyles.regular.backgroundColor === "transparent" ||
+            blockStyles.regular.backgroundColor.includes("0,0,0,0")) &&
+            (!blockStyles.regular.borderWidth ||
+              !blockStyles.regular.borderColor ||
+              blockStyles.regular.borderColor === "transparent"));
 
         let borderClass = "border";
         const cardStyle = buildCardStyle(optStyle);
@@ -65,22 +83,33 @@ export function MenuListBlock({
             className={`flex flex-col justify-between items-start gap-1 w-full rounded-xl ${borderClass} transition-all duration-300 relative st-menu-item`}
             style={{
               ...cardStyle,
-              opacity: item.isSoldOut ? (blockStyles.soldOut.dimOpacity ?? 0.5) : 1,
+              opacity: item.isSoldOut
+                ? (blockStyles.soldOut.dimOpacity ?? 0.5)
+                : 1,
             }}
           >
             <div className="flex justify-between items-start w-full">
               <div className="flex flex-col">
-                <span className="font-bold tracking-tight st-item-title leading-snug" style={titleStyle}>
+                <span
+                  className="font-bold tracking-tight st-item-title leading-snug"
+                  style={titleStyle}
+                >
                   {item.name}
                 </span>
                 {!hideDescriptions && item.description && (
-                  <span className="text-[0.8rem] leading-tight mt-0.5 st-item-description" style={descStyle}>
+                  <span
+                    className="text-[0.8rem] leading-tight mt-0.5 st-item-description"
+                    style={descStyle}
+                  >
                     {item.description}
                   </span>
                 )}
               </div>
               {Number(item.price) > 0 && (
-                <span className="font-extrabold whitespace-nowrap st-price-tag shrink-0" style={priceStyle}>
+                <span
+                  className="font-extrabold whitespace-nowrap st-price-tag shrink-0"
+                  style={priceStyle}
+                >
                   ${Number(item.price).toFixed(2)}
                 </span>
               )}
@@ -88,12 +117,18 @@ export function MenuListBlock({
 
             {/* Modifiers List */}
             {overrides.length > 0 && (
-              <div className={`w-full mt-1 ${isInlineMod ? "flex flex-row flex-wrap gap-x-3 gap-y-1" : "flex flex-col gap-1 pl-2 border-l border-white/10"}`}>
+              <div
+                className={`w-full mt-1 ${isInlineMod ? "flex flex-row flex-wrap gap-x-3 gap-y-1" : "flex flex-col gap-1 pl-2 border-l border-white/10"}`}
+              >
                 {overrides.map((override, idx) => {
                   return (
-                    <div key={idx} className="flex items-center text-[0.85rem] text-zinc-300">
+                    <div
+                      key={idx}
+                      className="flex items-center text-[0.85rem] text-zinc-300"
+                    >
                       <span className="st-item-modifier text-cyan-400 font-medium">
-                        {override.displayNameOverride || `Modifier Group (${override.modifierIds.length} items)`}
+                        {override.displayNameOverride ||
+                          `Modifier Group (${override.modifierIds.length} items)`}
                       </span>
                     </div>
                   );

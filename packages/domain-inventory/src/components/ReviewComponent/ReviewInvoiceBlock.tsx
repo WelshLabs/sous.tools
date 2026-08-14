@@ -17,7 +17,11 @@ export interface ReviewInvoiceBlockProps {
   totals?: { subtotal?: number; tax?: number; total?: number };
   lineItems?: LineItemData[];
   onVendorChange: (name: string) => void;
-  onLineItemMappingChange: (index: number, tenantId: string, usdaId?: number) => void;
+  onLineItemMappingChange: (
+    index: number,
+    tenantId: string,
+    usdaId?: number,
+  ) => void;
 }
 
 export function ReviewInvoiceBlock({
@@ -48,27 +52,44 @@ export function ReviewInvoiceBlock({
         <div className="flex items-center justify-between p-2 rounded bg-zinc-900 border border-zinc-800 text-xs">
           <div>Subtotal: ${totals?.subtotal?.toFixed(2) || "0.00"}</div>
           <div>Tax: ${totals?.tax?.toFixed(2) || "0.00"}</div>
-          <div className="font-bold text-emerald-400">Total: ${totals?.total?.toFixed(2) || "0.00"}</div>
+          <div className="font-bold text-emerald-400">
+            Total: ${totals?.total?.toFixed(2) || "0.00"}
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-zinc-300">Line Items & 3-Way Waterfall Mapping</span>
+        <span className="text-xs font-medium text-zinc-300">
+          Line Items & 3-Way Waterfall Mapping
+        </span>
         {lineItems.map((item, idx) => (
-          <div key={idx} className="p-3 rounded bg-zinc-900/80 border border-zinc-800 flex flex-col gap-2">
+          <div
+            key={idx}
+            className="p-3 rounded bg-zinc-900/80 border border-zinc-800 flex flex-col gap-2"
+          >
             <div className="flex justify-between items-center text-xs">
               <span className="font-medium text-zinc-200">{item.rawName}</span>
               <span className="text-zinc-400">
-                Qty: {item.quantity || 1} | ${item.unitPrice?.toFixed(2) || "0.00"} ea | Total: ${item.extendedPrice?.toFixed(2) || "0.00"}
+                Qty: {item.quantity || 1} | $
+                {item.unitPrice?.toFixed(2) || "0.00"} ea | Total: $
+                {item.extendedPrice?.toFixed(2) || "0.00"}
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
               <div>
-                <label className="text-[10px] text-zinc-400">Tenant master_items (Top 5)</label>
+                <label className="text-[10px] text-zinc-400">
+                  Tenant master_items (Top 5)
+                </label>
                 <select
                   value={item.selectedTenantId || ""}
-                  onChange={(e) => onLineItemMappingChange(idx, e.target.value, item.selectedUsdaId)}
+                  onChange={(e) =>
+                    onLineItemMappingChange(
+                      idx,
+                      e.target.value,
+                      item.selectedUsdaId,
+                    )
+                  }
                   className="w-full mt-0.5 p-1.5 rounded bg-zinc-950 border border-zinc-700 text-zinc-100 text-xs"
                 >
                   <option value="">-- Select Master Item --</option>
@@ -80,10 +101,18 @@ export function ReviewInvoiceBlock({
                 </select>
               </div>
               <div>
-                <label className="text-[10px] text-zinc-400">USDA FDC Matches (Top 5)</label>
+                <label className="text-[10px] text-zinc-400">
+                  USDA FDC Matches (Top 5)
+                </label>
                 <select
                   value={item.selectedUsdaId || ""}
-                  onChange={(e) => onLineItemMappingChange(idx, item.selectedTenantId || "", Number(e.target.value))}
+                  onChange={(e) =>
+                    onLineItemMappingChange(
+                      idx,
+                      item.selectedTenantId || "",
+                      Number(e.target.value),
+                    )
+                  }
                   className="w-full mt-0.5 p-1.5 rounded bg-zinc-950 border border-zinc-700 text-zinc-100 text-xs"
                 >
                   <option value="">-- Select USDA Item --</option>

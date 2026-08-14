@@ -25,8 +25,6 @@ export interface MediaSlide {
   description?: string;
 }
 
-
-
 /**
  * Displays a category title, optional subtitle, and status badges.
  */
@@ -118,8 +116,6 @@ export interface TimelineBlock extends BaseBlock {
   type: "TimelineBlock";
   steps?: TimelineStep[];
 }
-
-
 
 /**
  * Union type of all content components.

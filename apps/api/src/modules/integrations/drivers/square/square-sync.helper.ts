@@ -338,7 +338,10 @@ async function syncSquareTransactions(
 
   let paymentCursor: string | undefined = undefined;
   const allPayments: any[] = [];
-  const headers = { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" };
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+  };
   do {
     // Only one locationId is used in Square Sync currently, wait, locationIds is an array
     let paymentUrl = `${baseUrl}/v2/payments?location_id=${locationIds[0]}&begin_time=${beginTime}`;
@@ -356,7 +359,10 @@ async function syncSquareTransactions(
   const feeMap = new Map<string, number>();
   for (const p of allPayments) {
     if (p.processing_fee && p.processing_fee.length > 0) {
-      const totalFee = p.processing_fee.reduce((sum: number, f: any) => sum + (f.amount_money?.amount || 0), 0);
+      const totalFee = p.processing_fee.reduce(
+        (sum: number, f: any) => sum + (f.amount_money?.amount || 0),
+        0,
+      );
       feeMap.set(p.order_id, (feeMap.get(p.order_id) || 0) + totalFee);
     }
   }
@@ -423,9 +429,24 @@ export async function syncSquareCatalog(
   const discounts = allObjects.filter((o) => o.type === "DISCOUNT");
 
   const countsMap = await fetchInventoryCounts(baseUrl, accessToken, items);
-  const catMap = await syncCategoriesAndDiscounts(supabaseClient, orgId, categories, discounts);
-  const mgMap = await syncModifierGroupsAndOptions(supabaseClient, orgId, modifierLists);
-  const itemMap = await syncPosItems(supabaseClient, orgId, items, countsMap, catMap);
+  const catMap = await syncCategoriesAndDiscounts(
+    supabaseClient,
+    orgId,
+    categories,
+    discounts,
+  );
+  const mgMap = await syncModifierGroupsAndOptions(
+    supabaseClient,
+    orgId,
+    modifierLists,
+  );
+  const itemMap = await syncPosItems(
+    supabaseClient,
+    orgId,
+    items,
+    countsMap,
+    catMap,
+  );
 
   await syncItemModifierGroups(supabaseClient, items, itemMap, mgMap);
   await syncSquareTransactions(accessToken, orgId, supabaseClient, itemMap);

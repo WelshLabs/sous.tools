@@ -3,6 +3,6 @@ export type {
   ComplianceSearchProps,
   ComplianceSearchResult,
   ComplianceNutritionMacros,
-  OpenFoodFactsProduct
+  OpenFoodFactsProduct,
 } from "./ComplianceSearch.container";
 export { ComplianceSearchView } from "./ComplianceSearch.view";

@@ -11,24 +11,32 @@ import {
   DownloadsPanel,
 } from "@soustools/domain-settings";
 import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
-import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";
+import type {
+  IntegrationStatus,
+  GlobalDesignTokens,
+} from "@soustools/api-types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-const SettingsSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-  password: z.string().optional(),
-  confirmPassword: z.string().optional(),
-}).refine((data) => {
-  if (data.password && data.password !== data.confirmPassword) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const SettingsSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email"),
+    password: z.string().optional(),
+    confirmPassword: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.password && data.password !== data.confirmPassword) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    },
+  );
 
 type SettingsFormValues = z.infer<typeof SettingsSchema>;
 
@@ -59,9 +67,19 @@ export function SettingsClient({
   const [generalSuccess, setGeneralSuccess] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<SettingsFormValues>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SettingsFormValues>({
     resolver: zodResolver(SettingsSchema),
-    defaultValues: { name: userProfile.name, email: userProfile.email, password: "", confirmPassword: "" },
+    defaultValues: {
+      name: userProfile.name,
+      email: userProfile.email,
+      password: "",
+      confirmPassword: "",
+    },
   });
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
@@ -73,7 +91,10 @@ export function SettingsClient({
 
   // --- Integrations State ---
   const [actionLoading, setActionLoading] = useState(false);
-  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string; } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -103,7 +124,9 @@ export function SettingsClient({
       setGeneralSuccess(true);
       setTimeout(() => setGeneralSuccess(false), 3000);
     } catch (err: any) {
-      setGeneralError(err instanceof Error ? err.message : "Failed to save settings");
+      setGeneralError(
+        err instanceof Error ? err.message : "Failed to save settings",
+      );
     } finally {
       setGeneralSaving(false);
     }
@@ -133,16 +156,20 @@ export function SettingsClient({
     }
   };
 
-  const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const getApiBase = () =>
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   const handleConnectIntegration = (provider: string) => {
     window.location.href = `${getApiBase()}/integrations/connect/${provider.toLowerCase()}?orgId=default`;
   };
 
   const handleDisconnectIntegration = async (provider: string) => {
-    const res = await fetch(`${getApiBase()}/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
-      method: "DELETE",
-    });
+    const res = await fetch(
+      `${getApiBase()}/integrations/disconnect/${provider.toLowerCase()}?orgId=default`,
+      {
+        method: "DELETE",
+      },
+    );
     if (!res.ok) throw new Error("Failed to disconnect");
     router.refresh();
   };
@@ -152,7 +179,10 @@ export function SettingsClient({
     setNotification(null);
     try {
       await handleDisconnectIntegration(provider);
-      setNotification({ type: "success", message: `${provider} integration disconnected.` });
+      setNotification({
+        type: "success",
+        message: `${provider} integration disconnected.`,
+      });
     } catch (err: any) {
       setNotification({ type: "error", message: err.message || "Error" });
     } finally {
@@ -161,9 +191,12 @@ export function SettingsClient({
   };
 
   const handleSquareAction = async (action: "sync") => {
-    const res = await fetch(`${getApiBase()}/integrations/square/${action}?orgId=default`, {
-      method: "POST",
-    });
+    const res = await fetch(
+      `${getApiBase()}/integrations/square/${action}?orgId=default`,
+      {
+        method: "POST",
+      },
+    );
     if (!res.ok) throw new Error("Failed to sync catalog");
   };
 
@@ -177,13 +210,18 @@ export function SettingsClient({
         message: "Square menu catalog synchronized successfully!",
       });
     } catch (err: any) {
-      setNotification({ type: "error", message: err.message || "Failed to sync catalog." });
+      setNotification({
+        type: "error",
+        message: err.message || "Failed to sync catalog.",
+      });
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleTabChange = (tab: "general" | "integrations" | "styling" | "downloads") => {
+  const handleTabChange = (
+    tab: "general" | "integrations" | "styling" | "downloads",
+  ) => {
     setActiveTab(tab);
     router.replace(`/settings?tab=${tab}`);
   };
@@ -240,7 +278,7 @@ export function SettingsClient({
                 {tab === "styling" ? "Global Styling" : tab}
               </button>
             );
-          }
+          },
         )}
       </div>
 

@@ -1,8 +1,13 @@
 "use client";
 import * as React from "react";
 
-
-export const PreviewModifierGroup = ({ block, onFetchModifierOptions }: { block: any; onFetchModifierOptions?: (id: string) => Promise<any[]> }) => {
+export const PreviewModifierGroup = ({
+  block,
+  onFetchModifierOptions,
+}: {
+  block: any;
+  onFetchModifierOptions?: (id: string) => Promise<any[]>;
+}) => {
   const [options, setOptions] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 

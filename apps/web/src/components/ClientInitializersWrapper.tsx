@@ -6,4 +6,3 @@ import { ClientInitializers } from "./ClientInitializers";
 export function ClientInitializersWrapper() {
   return <ClientInitializers />;
 }
-

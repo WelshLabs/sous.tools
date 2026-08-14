@@ -1,8 +1,17 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { inferVendorForItem, type OrderLineItem, type OrderSupplier } from "@soustools/design-system";
-import type { Vendor, WhiteboardItem, PurchaseOrder, PurchaseOrderItem } from "@soustools/api-types";
+import {
+  inferVendorForItem,
+  type OrderLineItem,
+  type OrderSupplier,
+} from "@soustools/design-system";
+import type {
+  Vendor,
+  WhiteboardItem,
+  PurchaseOrder,
+  PurchaseOrderItem,
+} from "@soustools/api-types";
 import { OrdersPanelView } from "./OrdersPanel.view";
 
 function toOrderSupplier(v: Vendor): OrderSupplier {
@@ -10,29 +19,65 @@ function toOrderSupplier(v: Vendor): OrderSupplier {
 }
 
 function toOrderLineItem(item: WhiteboardItem): OrderLineItem {
-  return { id: item.id, rawName: item.raw_name, quantity: 1, unit: "ea", isSystemSuggestion: false, supplier: null };
+  return {
+    id: item.id,
+    rawName: item.raw_name,
+    quantity: 1,
+    unit: "ea",
+    isSystemSuggestion: false,
+    supplier: null,
+  };
 }
 
-function toOrderLineItemFromPo(item: PurchaseOrderItem, vendorId: string, suppliers: OrderSupplier[]): OrderLineItem {
-  return { id: item.id, rawName: item.raw_name, quantity: item.ordered_qty || 1, unit: "ea", isSystemSuggestion: false, supplier: suppliers.find((s) => s.id === vendorId) ?? null };
+function toOrderLineItemFromPo(
+  item: PurchaseOrderItem,
+  vendorId: string,
+  suppliers: OrderSupplier[],
+): OrderLineItem {
+  return {
+    id: item.id,
+    rawName: item.raw_name,
+    quantity: item.ordered_qty || 1,
+    unit: "ea",
+    isSystemSuggestion: false,
+    supplier: suppliers.find((s) => s.id === vendorId) ?? null,
+  };
 }
 
 export interface OrdersPanelProps {
   vendors: Vendor[];
   whiteboardItems: WhiteboardItem[];
   purchaseOrders: PurchaseOrder[];
-  onAddFreeText: (rawName: string, vendorId: string | null) => Promise<string | null>;
+  onAddFreeText: (
+    rawName: string,
+    vendorId: string | null,
+  ) => Promise<string | null>;
   onRemoveItem: (id: string, isWhiteboard: boolean) => Promise<void>;
-  onUpdateItemQty: (id: string, qty: number, isWhiteboard: boolean) => Promise<void>;
-  onChangeSupplier: (id: string, supplierId: string | null, isWhiteboard: boolean, rawName: string) => Promise<void>;
+  onUpdateItemQty: (
+    id: string,
+    qty: number,
+    isWhiteboard: boolean,
+  ) => Promise<void>;
+  onChangeSupplier: (
+    id: string,
+    supplierId: string | null,
+    isWhiteboard: boolean,
+    rawName: string,
+  ) => Promise<void>;
   onSubmitPO: (poId: string) => Promise<void>;
   onShopOrder: (poId: string) => void;
 }
 
 export function OrdersPanel({
-  vendors, whiteboardItems, purchaseOrders,
-  onAddFreeText, onRemoveItem, onUpdateItemQty,
-  onChangeSupplier, onSubmitPO, onShopOrder,
+  vendors,
+  whiteboardItems,
+  purchaseOrders,
+  onAddFreeText,
+  onRemoveItem,
+  onUpdateItemQty,
+  onChangeSupplier,
+  onSubmitPO,
+  onShopOrder,
 }: OrdersPanelProps) {
   const [activeTab, setActiveTab] = useState<"list" | "history">("list");
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,7 +89,12 @@ export function OrdersPanel({
     const wItems = whiteboardItems.map(toOrderLineItem);
     const poItems = purchaseOrders
       .filter((po) => po.status === "DRAFT")
-      .flatMap((po) => po.purchase_order_items?.map((i) => toOrderLineItemFromPo(i, po.vendor_id, suppliers)) ?? []);
+      .flatMap(
+        (po) =>
+          po.purchase_order_items?.map((i) =>
+            toOrderLineItemFromPo(i, po.vendor_id, suppliers),
+          ) ?? [],
+      );
     return [...wItems, ...poItems];
   });
 
@@ -52,7 +102,12 @@ export function OrdersPanel({
     const wItems = whiteboardItems.map(toOrderLineItem);
     const poItems = purchaseOrders
       .filter((po) => po.status === "DRAFT")
-      .flatMap((po) => po.purchase_order_items?.map((i) => toOrderLineItemFromPo(i, po.vendor_id, suppliers)) ?? []);
+      .flatMap(
+        (po) =>
+          po.purchase_order_items?.map((i) =>
+            toOrderLineItemFromPo(i, po.vendor_id, suppliers),
+          ) ?? [],
+      );
     setItems([...wItems, ...poItems]);
   }, [whiteboardItems, purchaseOrders, suppliers]);
 
@@ -70,20 +125,35 @@ export function OrdersPanel({
   const suggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
     return items
-      .filter((i) => i.rawName.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter((i) =>
+        i.rawName.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
       .slice(0, 5)
       .map((i) => ({ id: i.id, name: i.rawName, baseUnit: i.unit }));
   }, [searchQuery, items]);
 
   const handleAddFreeTextLocal = async (rawName: string) => {
     const inferredVendorId = inferVendorForItem(rawName);
-    const assignedSupplier = suppliers.find((s) => s.id === inferredVendorId) ?? null;
+    const assignedSupplier =
+      suppliers.find((s) => s.id === inferredVendorId) ?? null;
     const tempId = `temp_${Date.now()}`;
-    setItems((prev) => [...prev, { id: tempId, rawName, quantity: 1, unit: "ea", isSystemSuggestion: false, supplier: assignedSupplier }]);
+    setItems((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        rawName,
+        quantity: 1,
+        unit: "ea",
+        isSystemSuggestion: false,
+        supplier: assignedSupplier,
+      },
+    ]);
     setSearchQuery("");
     const realId = await onAddFreeText(rawName, inferredVendorId);
     if (realId) {
-      setItems((prev) => prev.map((i) => (i.id === tempId ? { ...i, id: realId } : i)));
+      setItems((prev) =>
+        prev.map((i) => (i.id === tempId ? { ...i, id: realId } : i)),
+      );
     } else {
       setItems((prev) => prev.filter((i) => i.id !== tempId));
     }
@@ -99,19 +169,35 @@ export function OrdersPanel({
   const handleChangeQty = async (id: string, qty: number) => {
     const item = items.find((i) => i.id === id);
     if (!item) return;
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)));
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
+    );
     await onUpdateItemQty(id, qty, !item.supplier);
   };
 
-  const handleChangeSupplierLocal = async (id: string, supplierId: string | null) => {
+  const handleChangeSupplierLocal = async (
+    id: string,
+    supplierId: string | null,
+  ) => {
     const item = items.find((i) => i.id === id);
     if (!item) return;
-    setItems((prev) => prev.map((i) => i.id === id ? { ...i, supplier: suppliers.find((s) => s.id === supplierId) ?? null } : i));
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? {
+              ...i,
+              supplier: suppliers.find((s) => s.id === supplierId) ?? null,
+            }
+          : i,
+      ),
+    );
     await onChangeSupplier(id, supplierId, !item.supplier, item.rawName);
   };
 
   const handlePlaceOrderLocal = async (supplierId: string) => {
-    const po = purchaseOrders.find((p) => p.vendor_id === supplierId && p.status === "DRAFT");
+    const po = purchaseOrders.find(
+      (p) => p.vendor_id === supplierId && p.status === "DRAFT",
+    );
     if (!po) return;
     setPlacingOrderId(supplierId);
     await onSubmitPO(po.id);
@@ -119,11 +205,16 @@ export function OrdersPanel({
   };
 
   const handleShopOrderLocal = (supplierId: string) => {
-    const po = purchaseOrders.find((p) => p.vendor_id === supplierId && p.status === "DRAFT");
+    const po = purchaseOrders.find(
+      (p) => p.vendor_id === supplierId && p.status === "DRAFT",
+    );
     if (po) onShopOrder(po.id);
   };
 
-  const historyOrders = useMemo(() => purchaseOrders.filter((po) => po.status !== "DRAFT"), [purchaseOrders]);
+  const historyOrders = useMemo(
+    () => purchaseOrders.filter((po) => po.status !== "DRAFT"),
+    [purchaseOrders],
+  );
 
   return (
     <OrdersPanelView
