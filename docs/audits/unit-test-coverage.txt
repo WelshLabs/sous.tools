@@ -4,99 +4,69 @@
    • Remote caching disabled
 
 ::group::@soustools/api-types:build
-cache miss, executing cd6e2755aaa063df
+cache miss, executing cff83fb03eba53f0
 $ tsc
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing e7d14385989faf41
+cache miss, executing c167f78bcd32b449
 $ tsc
 ::endgroup::
-[;31m@soustools/domain-signage:test[;0m
-cache miss, executing 8a9db71a296f2ad1
+[;31m@soustools/domain-pos:test[;0m
+cache miss, executing f332d00738d8f91b
 $ vitest run --coverage --passWithNoTests
-[2m1:00:06 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
-`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
-[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
-[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
 [1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
 [ELIFECYCLE] Test failed. See above for more details.
-::group::@soustools/design-system:test
-cache miss, executing 62331d0e7beff94b
+::group::@soustools/domain-inventory:test
+cache miss, executing 5023ea5518a925e4
 $ vitest run --coverage --passWithNoTests
-[2m1:00:06 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
-`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
-[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
-[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
+[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
+
+[ELIFECYCLE] Test failed. See above for more details.
+[39m
+::endgroup::
+::group::@soustools/design-system:test
+cache miss, executing 19b72077cd20b905
+$ vitest run --coverage --passWithNoTests
+[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
+
+[ELIFECYCLE] Test failed. See above for more details.
+[39m
+::endgroup::
+::group::@soustools/domain-signage:test
+cache miss, executing 4baaee860af77a03
+$ vitest run --coverage --passWithNoTests
 [1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
 [ELIFECYCLE] Test failed. See above for more details.
 [39m
 ::endgroup::
 ::group::@soustools/api-client:test
-cache miss, executing d0623c5564c9b12f
+cache miss, executing 45fd870ebf103809
 $ vitest run --coverage --passWithNoTests
 [1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
-[39m
 [ELIFECYCLE] Test failed. See above for more details.
-::endgroup::
-::group::@soustools/domain-recipes:test
-cache miss, executing 3edc71a7dc006693
-$ vitest run --coverage --passWithNoTests
-[2m1:00:06 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
-`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
-[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
-[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
-[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
-
-[ELIFECYCLE] Test failed. See above for more details.
-[39m
-::endgroup::
-::group::@soustools/domain-settings:test
-cache miss, executing 708a6d302c5098e7
-$ vitest run --coverage --passWithNoTests
-[2m1:00:06 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
-`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
-[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
-[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
-[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
-[ELIFECYCLE] Test failed. See above for more details.
-
 [39m
 ::endgroup::
 ::group::@soustools/logger:build
-cache miss, executing 4248a3ad0e36a515
+cache miss, executing 1a31e43e2beb4b09
 $ tsc
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-pos:test
-cache miss, executing 9ab4bf84bd3aba10
+::group::@soustools/domain-settings:test
+cache miss, executing ea18591196789de7
 $ vitest run --coverage --passWithNoTests
-[2m1:00:06 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
-`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
-[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
-[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
-[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
-
 [ELIFECYCLE] Test failed. See above for more details.
-[39m
 ::endgroup::
-::group::@soustools/domain-inventory:test
-cache miss, executing b46b18f8e404dbe4
+::group::@soustools/domain-recipes:test
+cache miss, executing c001e23836fd4e7a
 $ vitest run --coverage --passWithNoTests
-[2m1:00:06 PM[22m [33m[1m[vite][22m[39m [33mwarning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.[39m
-`optimizeDeps.rollupOptions` / `ssr.optimizeDeps.rollupOptions` is deprecated. Use `optimizeDeps.rolldownOptions` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
-[33mBoth esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.[39m The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
-[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown
-[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
-
 [ELIFECYCLE] Test failed. See above for more details.
-[39m
 ::endgroup::
 
  Tasks:    2 successful, 10 total
 Cached:    0 cached, 10 total
-  Time:    6.778s 
-Failed:    @soustools/domain-signage#test
+  Time:    4.259s 
+Failed:    @soustools/domain-pos#test
 

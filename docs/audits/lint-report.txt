@@ -3,32 +3,59 @@
    • Running lint in 19 packages
    • Remote caching disabled
 
-::group::@soustools/eslint-config:lint
-cache miss, executing e969fe704007358a
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/config:lint
-cache miss, executing 0d0bc33abc779b53
-$ eslint . --max-warnings 0
-::endgroup::
-::group::@soustools/mcp-server:lint
-cache miss, executing 9eb020de849961c4
-$ eslint . --max-warnings 0
-::endgroup::
 ::group::@soustools/api-types:build
-cache miss, executing f7369844ab6b2d1d
+cache miss, executing a578c84cf967c27c
 $ tsc
 ::endgroup::
-::group::@soustools/api-types:lint
-cache miss, executing b42b1a92c2e1f34e
+::group::@soustools/config:lint
+cache miss, executing f9fae72d607a88a8
 $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
-cache miss, executing a71e8d2a52cb9ae9
+cache miss, executing 01978c106b621e4d
 $ tsc
 ::endgroup::
-[;31m@soustools/api-client:lint[;0m
-cache miss, executing d57eeea97946c666
+::group::@soustools/eslint-config:lint
+cache miss, executing 825ea18fb6377116
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/mcp-server:lint
+cache miss, executing f21e60543e9c09fa
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/api-types:lint
+cache miss, executing b296140551ecc27f
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/logger:lint
+cache miss, executing 633643e152423baf
+$ eslint . --max-warnings 0
+::endgroup::
+::group::@soustools/logger:build
+cache miss, executing 58621578dfdd7ef6
+$ tsc
+::endgroup::
+[;31m@soustools/domain-settings:lint[;0m
+cache miss, executing 3afaab845d87b027
+$ eslint . --max-warnings 0
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-settings/src/components/SettingsPanel/SettingsPanel.container.tsx
+  225:1  error  File has too many lines (281). Maximum allowed is 200  max-lines
+
+✖ 1 problem (1 error, 0 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.
+::group::api:lint
+cache miss, executing b2f15cbe797837ab
+::endgroup::
+::group::web:lint
+cache miss, executing 4dee4529acd26d08
+::endgroup::
+::group::@soustools/setup-portal:lint
+cache miss, executing cf65535d1d158ae4
+::endgroup::
+::group::@soustools/api-client:lint
+cache miss, executing c0a7868a4e45625c
 $ eslint . --max-warnings 0
 
 /home/runner/work/sous.tools/sous.tools/packages/api-client/src/react.tsx
@@ -40,49 +67,47 @@ $ eslint . --max-warnings 0
   3 errors and 0 warnings potentially fixable with the `--fix` option.
 
 [ELIFECYCLE] Command failed with exit code 1.
+::endgroup::
+::group::cli:lint
+cache miss, executing 08ad439aa16de528
+::endgroup::
 ::group::@soustools/domain-recipes:lint
-cache miss, executing 4b5a62b2691bf59e
+cache miss, executing aaa03d49d1f3c069
 $ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
+
+/home/runner/work/sous.tools/sous.tools/packages/domain-recipes/src/utils/scaling.ts
+  270:1  error  File has too many lines (206). Maximum allowed is 200  max-lines
+
+✖ 1 problem (1 error, 0 warnings)
+
+[ELIFECYCLE] Command failed with exit code 1.
 ::endgroup::
-::group::@soustools/logger:build
-cache miss, executing ec82401ff8a831b9
-$ tsc
-[ELIFECYCLE] Command failed.
+::group::pos-simulator:lint
+cache miss, executing c86c30c8a2b2a01f
 ::endgroup::
-::group::@soustools/logger:lint
-cache miss, executing 6b266a30ab40b6c5
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-settings:lint
-cache miss, executing 1b63de642f456bb2
+::group::@soustools/domain-pos:lint
+cache miss, executing 2a4fa7fb099b8d96
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-signage:lint
-cache miss, executing 9b280fd47e254f01
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/design-system:lint
-cache miss, executing d168d23b155780ce
-$ eslint . --max-warnings 0
-[ELIFECYCLE] Command failed.
-::endgroup::
-::group::@soustools/domain-pos:lint
-cache miss, executing 33996bcb883c9976
+cache miss, executing c3012821c8471df0
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-inventory:lint
-cache miss, executing fffa9b9ad3e0129f
+cache miss, executing 1de522ca5a4c6c7f
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/design-system:lint
+cache miss, executing b6de417c17e8aa56
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
- Tasks:    6 successful, 15 total
-Cached:    0 cached, 15 total
-  Time:    16.106s 
-Failed:    @soustools/api-client#lint
+ Tasks:    8 successful, 20 total
+Cached:    0 cached, 20 total
+  Time:    10.768s 
+Failed:    @soustools/domain-settings#lint
 
