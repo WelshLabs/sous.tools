@@ -258,6 +258,22 @@ async function main() {
   const readMatches = commentBody?.match(/\/read\s+([^\s]+)/g) || [];
   const extraFilesToRead = readMatches.map((m) => m.split(" ")[1]).join(" ");
 
+  // Extract files from the new Agent Task template
+  let scopedFiles = "";
+  if (issueBody && issueBody.includes("### Files in Scope")) {
+    const match = issueBody.match(/### Files in Scope\n([\s\S]*?)(?=\n###|$)/);
+    if (match) {
+      const files = match[1]
+        .split("\n")
+        .map((line) => line.replace(/^- /, "").replace(/`/g, "").trim())
+        .filter(Boolean);
+      scopedFiles = files.join(" ");
+    }
+  }
+
+  const allFiles = [extraFilesToRead, scopedFiles].filter(Boolean).join(" ");
+  const fileArg = allFiles ? `${allFiles}` : ""; // Aider takes positional file arguments, not --file
+
   console.log(
     `[ORCHESTRATOR] Querying Qdrant for context related to: ${issueTitle}`,
   );
@@ -298,10 +314,9 @@ async function main() {
     }
 
     fs.writeFileSync(promptFile, promptContent);
-    const fileArg = extraFilesToRead ? `--file ${extraFilesToRead}` : "";
 
     // Run Aider
-    const aiderCmd = `aider --model ${currentModel} --openai-api-base ${LITELLM_URL} --openai-api-key sk-1234 --edit-format diff-fenced --no-auto-commits --yes ${fileArg} --message-file ${promptFile}`;
+    const aiderCmd = `aider --model ${currentModel} --openai-api-base ${LITELLM_URL} --openai-api-key sk-1234 --edit-format diff-fenced --no-auto-commits --yes --map-tokens 0 --message-file ${promptFile} ${fileArg}`;
     const aiderRes = runCommand(aiderCmd);
 
     if (aiderRes.stdout.includes("NEEDS_INPUT:")) {

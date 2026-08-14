@@ -1,0 +1,84 @@
+{
+  "name": "Epic Kanban Pipeline (Sequential)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-webhook",
+        "options": {}
+      },
+      "id": "1",
+      "name": "GitHub Webhook (Ready)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "kanban-orchestrator-hook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.action }}",
+              "value2": "labeled"
+            },
+            {
+              "value1": "={{ $json.body.label.name }}",
+              "value2": "Ready"
+            }
+          ]
+        }
+      },
+      "id": "2",
+      "name": "Is Issue Labeled Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "command": "docker exec -i -e GH_TOKEN=\"{{ $env.GITHUB_TOKEN }}\" -u 1000 agent-runner tini -s -- bash -c 'cd /workspace && head -n 1 > /tmp/webhook.json && ./node_modules/.bin/tsx scripts/kanban-orchestrator.ts /tmp/webhook.json 2>&1 | tee -a /tmp/kanban-orchestrator.log' << 'EOF_WEBHOOK'\n{{ JSON.stringify($json) }}\nEOF_WEBHOOK"
+      },
+      "id": "3",
+      "name": "Execute Kanban Orchestrator",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "GitHub Webhook (Ready)": {
+      "main": [
+        [
+          {
+            "node": "Is Issue Labeled Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Issue Labeled Ready?": {
+      "main": [
+        [
+          {
+            "node": "Execute Kanban Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "queueMode": {
+      "executionMode": "queue",
+      "concurrency": 1
+    }
+  }
+}

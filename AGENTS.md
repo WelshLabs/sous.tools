@@ -46,3 +46,10 @@ You have access to a Qdrant vector database via MCP. This is your long-term memo
 
 3. MEMORY FORMATTING:
    When storing a memory, use clear, searchable tags in the payload (e.g., [INFRASTRUCTURE], [BUGFIX], [SECRETS], [TRAEFIK]). Include the problem, the context, and the exact technical solution.
+
+# ISSUE GENERATION PROTOCOL (PLANNER AGENT)
+
+When planning epics and sub-tasks with the user, you must use the following strict templates when utilizing the GitHub MCP server to create issues:
+
+1. **Epics**: Use the `.github/ISSUE_TEMPLATE/epic.yml` format. Epics must summarize the architecture and list the planned sub-tasks. Label as "Epic".
+2. **Sub-Tasks**: Use the `.github/ISSUE_TEMPLATE/agent-task.yml` format. The sub-task MUST be extremely detailed (Context, Exact Files in Scope, Step-by-Step implementation instructions, and a specific validation command). Label as "Draft" or "Blocked" until they are ready to be executed by the `kanban-orchestrator`. Reference the parent Epic number in the issue.

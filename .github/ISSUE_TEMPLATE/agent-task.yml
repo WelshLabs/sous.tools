@@ -1,0 +1,45 @@
+name: 🤖 Agent Sub-Task
+description: Create an ultra-specific, small task meant for immediate agent execution.
+title: "[Task]: "
+labels: ["agent:ready"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Agent Instructions
+        This issue must be small, scoped, and highly specific so the AI agent can execute it perfectly on the first try.
+  - type: input
+    id: parent_epic
+    attributes:
+      label: Parent Epic Issue Number
+      description: E.g., #103. The orchestrator will use this to branch off the Epic branch.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: 1-2 sentences on why this task exists.
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Files in Scope
+      description: List the EXACT file paths the agent is allowed to create or modify.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Implementation Steps
+      description: A numbered list of explicit, step-by-step instructions. Do not leave room for architectural guessing.
+    validations:
+      required: true
+  - type: input
+    id: validation
+    attributes:
+      label: Validation Command
+      description: The exact pnpm command that proves this works (e.g., pnpm test).
+    validations:
+      required: true

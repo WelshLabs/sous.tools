@@ -1,0 +1,31 @@
+name: 🚀 Epic Planner
+description: Create a large feature or architectural change that will be broken down into agent sub-tasks.
+title: "[Epic]: "
+labels: ["Epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Overview
+        Describe the feature or architectural change. What is the goal?
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide detailed context and requirements.
+    validations:
+      required: true
+  - type: textarea
+    id: architecture
+    attributes:
+      label: Architectural Decisions
+      description: What specific technologies, patterns, or files are involved? (The Planner Agent uses this to create sub-tasks)
+    validations:
+      required: true
+  - type: textarea
+    id: subtasks
+    attributes:
+      label: Sub-Task Plan
+      description: (Leave empty if the Planner Agent is generating this). List the sub-tasks here.
+    validations:
+      required: false
