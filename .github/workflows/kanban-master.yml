@@ -75,6 +75,12 @@ jobs:
                  gh issue edit $ISSUE_URL --add-label "agent:in-progress"
               elif [ "$NEW_STATUS" = "Review" ]; then
                  gh issue edit $ISSUE_URL --add-label "Review"
+              elif [ "$NEW_STATUS" = "Done" ]; then
+                 gh issue edit $ISSUE_URL --add-label "Done"
+                 # Trigger Agent to Auto-Merge PR
+                 curl -s -X POST https://n8n.sous.tools/webhook/kanban-agent \
+                 -H "Content-Type: application/json" \
+                 -d "{ \"body\": { \"issue\": { \"number\": $ISSUE_NUMBER, \"title\": \"$ISSUE_TITLE\", \"state\": \"Done\" } } }"
               fi
             fi
             
