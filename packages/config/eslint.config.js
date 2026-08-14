@@ -11,7 +11,10 @@ export default [
     rules: {
       "no-restricted-syntax": "off",
       // Config files can be longer than 200 lines due to schema definitions
-      "max-lines": ["error", { max: 200, skipBlankLines: true, skipComments: true }],
+      "max-lines": [
+        "error",
+        { max: 200, skipBlankLines: true, skipComments: true },
+      ],
     },
   },
   { ignores: ["dist/**", "node_modules/**"] },

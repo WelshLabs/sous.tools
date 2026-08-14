@@ -54,13 +54,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       return (
         <MotionSlot
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={ref as any}
           whileHover={{ y: -1 }}
           whileTap={{ scale: 0.975, y: 0 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
           className={cn(buttonVariants({ variant: tone, size }), className)}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           {...(props as any)}
         >
           {children}

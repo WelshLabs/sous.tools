@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
 import type { Meta, StoryObj } from "@storybook/react";
 import { RecipeListView } from "./RecipeList.view";
 import type { Recipe } from "@soustools/api-types";
