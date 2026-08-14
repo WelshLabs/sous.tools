@@ -84,7 +84,7 @@ export function QuickAddBar({
       <div className="relative">
         <Search
           size={20}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+          className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 -translate-y-1/2"
         />
         <input
           ref={inputRef}
@@ -93,11 +93,11 @@ export function QuickAddBar({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={[
-            "w-full h-16 pl-14 pr-14",
-            "bg-card border border-border rounded-2xl shadow-xl",
-            "font-bold text-lg uppercase tracking-tight",
+            "h-16 w-full pr-14 pl-14",
+            "bg-card border-border rounded-2xl border shadow-xl",
+            "text-lg font-bold tracking-tight uppercase",
             "text-foreground placeholder:text-muted-foreground",
-            "outline-none focus:border-primary/50 transition-all",
+            "focus:border-primary/50 transition-all outline-none",
             "dark:bg-card dark:border-border",
             "dark:focus:border-primary/50",
           ].join(" ")}
@@ -105,7 +105,7 @@ export function QuickAddBar({
         {value && (
           <button
             onClick={() => onChange("")}
-            className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition-colors"
+            className="hover:bg-muted text-muted-foreground absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full transition-colors"
           >
             <X size={18} />
           </button>
@@ -116,8 +116,8 @@ export function QuickAddBar({
       {suggestions.length > 0 && (
         <div
           className={[
-            "absolute top-[4.5rem] left-0 right-0 p-2",
-            "bg-card border border-border shadow-2xl rounded-2xl overflow-hidden",
+            "absolute top-[4.5rem] right-0 left-0 p-2",
+            "bg-card border-border overflow-hidden rounded-2xl border shadow-2xl",
             "dark:bg-card dark:border-border",
           ].join(" ")}
         >
@@ -125,20 +125,20 @@ export function QuickAddBar({
             <div
               key={s.id}
               onClick={() => onSelectSuggestion(s)}
-              className="flex flex-row items-center justify-between p-4 hover:bg-primary/10 rounded-xl cursor-pointer transition-colors group"
+              className="hover:bg-primary/10 group flex cursor-pointer flex-row items-center justify-between rounded-xl p-4 transition-colors"
             >
               <div className="flex flex-row items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border group-hover:bg-primary/20 transition-colors dark:bg-zinc-800 dark:border-zinc-700">
+                <div className="bg-muted border-border group-hover:bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full border transition-colors dark:border-zinc-700 dark:bg-zinc-800">
                   <Plus
                     size={16}
                     className="text-muted-foreground group-hover:text-primary transition-colors"
                   />
                 </div>
-                <span className="font-black uppercase tracking-tight text-foreground">
+                <span className="text-foreground font-black tracking-tight uppercase">
                   {s.name}
                 </span>
               </div>
-              <span className="text-[10px] font-black uppercase text-muted-foreground bg-muted px-3 py-1 rounded-full dark:bg-zinc-800">
+              <span className="text-muted-foreground bg-muted rounded-full px-3 py-1 text-[10px] font-black uppercase dark:bg-zinc-800">
                 {s.baseUnit}
               </span>
             </div>
@@ -146,7 +146,7 @@ export function QuickAddBar({
 
           {/* Free-text add hint */}
           <div className="px-4 pt-1 pb-2">
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            <p className="text-muted-foreground text-[9px] font-bold tracking-widest uppercase">
               Press Enter to add "{value}" directly
             </p>
           </div>
@@ -171,12 +171,10 @@ export function QuickAddBar({
  * @param ingredientName - Raw ingredient name from the quick-add input.
  * @returns The inferred supplierId, or null when confidence is too low.
  * ─────────────────────────────────────────────────────────────────────────── */
-export function inferVendorForItem(
-  ingredientName: string,
-): string | null {
-    console.info(
+export function inferVendorForItem(ingredientName: string): string | null {
+  console.info(
     `[VendorInference] Stub invoked for "${ingredientName}". ` +
-    "Replace with AI assignment call when engine is ready.",
+      "Replace with AI assignment call when engine is ready.",
   );
   return null;
 }

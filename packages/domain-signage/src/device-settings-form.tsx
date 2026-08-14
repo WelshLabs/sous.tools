@@ -1,6 +1,5 @@
 "use client";
 
-
 interface DeviceSettingsFormProps {
   name: string;
   setName: (v: string) => void;
@@ -21,7 +20,15 @@ const TZs = [
   "America/Denver",
   "America/Los_Angeles",
 ];
-const DAYs = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAYs = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
   name,
@@ -38,21 +45,23 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <label className="block text-xs text-muted-foreground">Device Name</label>
+        <label className="text-muted-foreground block text-xs">
+          Device Name
+        </label>
         <input
           type="text"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
+          className="bg-background border-border text-foreground focus:border-primary w-full rounded-lg border px-3 py-2 text-xs focus:outline-none"
         />
       </div>
       <div className="space-y-1">
-        <label className="block text-xs text-muted-foreground">Timezone</label>
+        <label className="text-muted-foreground block text-xs">Timezone</label>
         <select
           value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
-          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary cursor-pointer"
+          className="bg-background border-border text-foreground focus:border-primary w-full cursor-pointer rounded-lg border px-3 py-2 text-xs focus:outline-none"
         >
           {TZs.map((tz) => (
             <option key={tz} value={tz}>
@@ -62,14 +71,18 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
         </select>
       </div>
       <div className="space-y-1">
-        <label className="block text-xs text-muted-foreground">Maintenance Window</label>
+        <label className="text-muted-foreground block text-xs">
+          Maintenance Window
+        </label>
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="block text-[10px] text-muted-foreground mb-0.5">Hour</label>
+            <label className="text-muted-foreground mb-0.5 block text-[10px]">
+              Hour
+            </label>
             <select
               value={hour}
               onChange={(e) => setHour(parseInt(e.target.value, 10))}
-              className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none cursor-pointer"
+              className="bg-background border-border text-foreground w-full cursor-pointer rounded-lg border px-2 py-1.5 text-xs focus:outline-none"
             >
               {Array.from({ length: 24 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -79,11 +92,13 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-[10px] text-muted-foreground mb-0.5">Minute</label>
+            <label className="text-muted-foreground mb-0.5 block text-[10px]">
+              Minute
+            </label>
             <select
               value={minute}
               onChange={(e) => setMinute(parseInt(e.target.value, 10))}
-              className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none cursor-pointer"
+              className="bg-background border-border text-foreground w-full cursor-pointer rounded-lg border px-2 py-1.5 text-xs focus:outline-none"
             >
               {Array.from({ length: 60 }).map((_, i) => (
                 <option key={i} value={i}>
@@ -93,11 +108,13 @@ export const DeviceSettingsForm: React.FC<DeviceSettingsFormProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-[10px] text-muted-foreground mb-0.5">Day of Week</label>
+            <label className="text-muted-foreground mb-0.5 block text-[10px]">
+              Day of Week
+            </label>
             <select
               value={dayOfWeek}
               onChange={(e) => setDayOfWeek(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none cursor-pointer"
+              className="bg-background border-border text-foreground w-full cursor-pointer rounded-lg border px-2 py-1.5 text-xs focus:outline-none"
             >
               <option value="all">Every Day</option>
               {DAYs.map((d, i) => (

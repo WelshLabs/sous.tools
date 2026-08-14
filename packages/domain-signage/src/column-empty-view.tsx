@@ -9,7 +9,10 @@ interface ColumnEmptyViewProps {
   onOpenEditor?: () => void;
 }
 
-export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({ onUpdate, onOpenEditor }) => {
+export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({
+  onUpdate,
+  onOpenEditor,
+}) => {
   const [isFlashing, setIsFlashing] = useState(false);
 
   const handleSelect = useCallback(() => {
@@ -33,12 +36,12 @@ export const ColumnEmptyView: React.FC<ColumnEmptyViewProps> = ({ onUpdate, onOp
   return (
     <div
       onClick={handleSelect}
-      className={`flex flex-col items-center justify-center w-full h-full min-h-[160px] border-2 border-dashed border-border hover:border-cyan-500/50 hover:bg-cyan-500/5 rounded-xl cursor-pointer transition-all group p-4 ${isFlashing ? "ring-2 ring-cyan-400 ring-offset-1 ring-offset-zinc-950" : ""}`}
+      className={`border-border group flex h-full min-h-[160px] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 transition-all hover:border-cyan-500/50 hover:bg-cyan-500/5 ${isFlashing ? "ring-2 ring-cyan-400 ring-offset-1 ring-offset-zinc-950" : ""}`}
     >
-      <div className="p-3 bg-cyan-500/10 rounded-full group-hover:bg-cyan-500/20 group-hover:scale-110 transition-all">
-        <Plus className="w-6 h-6 text-cyan-400" />
+      <div className="rounded-full bg-cyan-500/10 p-3 transition-all group-hover:scale-110 group-hover:bg-cyan-500/20">
+        <Plus className="h-6 w-6 text-cyan-400" />
       </div>
-      <span className="mt-4 text-xs font-bold text-muted-foreground group-hover:text-cyan-400 uppercase tracking-widest text-center transition-colors">
+      <span className="text-muted-foreground mt-4 text-center text-xs font-bold tracking-widest uppercase transition-colors group-hover:text-cyan-400">
         Click to Add Component
       </span>
     </div>

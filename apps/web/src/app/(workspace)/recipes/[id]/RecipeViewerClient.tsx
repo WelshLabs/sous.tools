@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { RecipeViewer, type CustomWeightOpts, calculateRecipeScale } from "@soustools/domain-recipes";
+import {
+  RecipeViewer,
+  type CustomWeightOpts,
+  calculateRecipeScale,
+} from "@soustools/domain-recipes";
 import { type Recipe, type VesselProfile } from "@soustools/api-types";
 import { toast } from "sonner";
 
@@ -29,14 +33,14 @@ export function RecipeViewerClient({
 
   React.useEffect(() => {
     // Fetch live prices on mount
-    fetch('/api/recipes/ingredients')
-      .then(res => res.json())
-      .then(json => {
+    fetch("/api/recipes/ingredients")
+      .then((res) => res.json())
+      .then((json) => {
         if (json.success && json.data) {
           setLiveIngredients(json.data);
         }
       })
-      .catch(err => console.error('Failed to fetch live ingredients:', err));
+      .catch((err) => console.error("Failed to fetch live ingredients:", err));
   }, []);
 
   const scalingOptions = useMemo(() => {
@@ -51,13 +55,14 @@ export function RecipeViewerClient({
     return {};
   }, [customWeights, multiplier, recipe.yieldCount]);
 
-  const { multiplier: finalMultiplier, items: scaledIngredients } = useMemo(() => {
-    return calculateRecipeScale(
-      recipe.recipeIngredients || [],
-      recipe.yieldCount,
-      scalingOptions
-    );
-  }, [recipe.recipeIngredients, recipe.yieldCount, scalingOptions]);
+  const { multiplier: finalMultiplier, items: scaledIngredients } =
+    useMemo(() => {
+      return calculateRecipeScale(
+        recipe.recipeIngredients || [],
+        recipe.yieldCount,
+        scalingOptions,
+      );
+    }, [recipe.recipeIngredients, recipe.yieldCount, scalingOptions]);
 
   const handleScaleChange = (mult: number, customOpts?: CustomWeightOpts) => {
     if (customOpts && customOpts.mode === "weight") {
@@ -66,7 +71,7 @@ export function RecipeViewerClient({
         recipe.yieldCount,
         {
           targetTotalWeight: customOpts.weight,
-        }
+        },
       );
       setMultiplier(m);
     } else {
@@ -78,7 +83,7 @@ export function RecipeViewerClient({
   const handleIngredientWeightChange = (
     ingId: string,
     amount: number,
-    unit: string
+    unit: string,
   ) => {
     if (amount > 0) {
       setCustomWeights({ [ingId]: { amount, unit } });
@@ -88,9 +93,14 @@ export function RecipeViewerClient({
     }
   };
 
-  const handleCostFactorsChange = async (wastePct: number, portions: number) => {
+  const handleCostFactorsChange = async (
+    wastePct: number,
+    portions: number,
+  ) => {
     try {
-      const res = await fetch(`/api/recipes/${recipe.id}/cost?wastePct=${wastePct}&portions=${portions}`);
+      const res = await fetch(
+        `/api/recipes/${recipe.id}/cost?wastePct=${wastePct}&portions=${portions}`,
+      );
       const json = await res.json();
       if (json.success && json.data) {
         setCostData(json.data);

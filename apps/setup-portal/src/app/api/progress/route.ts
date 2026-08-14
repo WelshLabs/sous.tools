@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
-import { spawn } from 'child_process';
-import { accessSync, constants } from 'fs';
-import { serverConfig as config } from '@soustools/config/server';
+import { NextResponse } from "next/server";
+import { spawn } from "child_process";
+import { accessSync, constants } from "fs";
+import { serverConfig as config } from "@soustools/config/server";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const LOG_FILE = config.SOUS_BOOTSTRAP_LOG;
 
@@ -14,8 +14,10 @@ const LOG_FILE = config.SOUS_BOOTSTRAP_LOG;
  */
 export async function GET(req: Request) {
   // Return early if client doesn't want event-stream
-  if (req.headers.get('accept') !== 'text/event-stream') {
-    return new NextResponse('Expected Accept: text/event-stream', { status: 400 });
+  if (req.headers.get("accept") !== "text/event-stream") {
+    return new NextResponse("Expected Accept: text/event-stream", {
+      status: 400,
+    });
   }
 
   // Ensure log file exists before tailing
@@ -23,33 +25,35 @@ export async function GET(req: Request) {
     accessSync(LOG_FILE, constants.R_OK);
   } catch {
     // If it doesn't exist yet, wait 1s and hope it's created by bootstrap
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000));
     try {
       accessSync(LOG_FILE, constants.R_OK);
     } catch {
-      return new NextResponse('Log file not ready', { status: 503 });
+      return new NextResponse("Log file not ready", { status: 503 });
     }
   }
 
   const stream = new ReadableStream({
     start(controller) {
       // Spawn tail -f on the log file
-      const tail = spawn('tail', ['-n', '100', '-F', LOG_FILE]);
+      const tail = spawn("tail", ["-n", "100", "-F", LOG_FILE]);
 
-      tail.stdout.on('data', (data: Buffer) => {
-        const lines = data.toString('utf8').split('\n');
+      tail.stdout.on("data", (data: Buffer) => {
+        const lines = data.toString("utf8").split("\n");
         for (const line of lines) {
           if (line.trim()) {
-            controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ line })}\n\n`));
+            controller.enqueue(
+              new TextEncoder().encode(`data: ${JSON.stringify({ line })}\n\n`),
+            );
           }
         }
       });
 
-      tail.stderr.on('data', () => {
+      tail.stderr.on("data", () => {
         // Log removed
       });
 
-      tail.on('close', () => {
+      tail.on("close", () => {
         try {
           controller.close();
         } catch {
@@ -58,7 +62,7 @@ export async function GET(req: Request) {
       });
 
       // Cleanup on client disconnect
-      req.signal.addEventListener('abort', () => {
+      req.signal.addEventListener("abort", () => {
         tail.kill();
       });
     },
@@ -66,10 +70,9 @@ export async function GET(req: Request) {
 
   return new NextResponse(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
     },
   });
 }
-

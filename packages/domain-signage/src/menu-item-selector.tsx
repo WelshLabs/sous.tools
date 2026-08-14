@@ -9,7 +9,7 @@ interface MenuItemSelectorProps {
   highlightItems: (string | HighlightItemConfig)[];
   onChange: (
     itemIds: string[],
-    highlightItems: (string | HighlightItemConfig)[]
+    highlightItems: (string | HighlightItemConfig)[],
   ) => void;
 }
 
@@ -59,7 +59,7 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
   };
 
   const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -67,26 +67,30 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full bg-background border border-border hover:border-zinc-500 rounded px-2.5 py-1.5 text-xs text-foreground cursor-pointer"
+        className="bg-background border-border text-foreground flex w-full cursor-pointer items-center justify-between rounded border px-2.5 py-1.5 text-xs hover:border-zinc-500"
       >
         <span>
           {selectedItemIds.length === 0
             ? "No items selected"
             : `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} selected`}
         </span>
-        {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        {isOpen ? (
+          <ChevronUp className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5" />
+        )}
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 mt-1 z-30 bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] rounded-lg shadow-xl p-2 max-h-60 overflow-y-auto space-y-2">
+        <div className="absolute right-0 left-0 z-30 mt-1 max-h-60 space-y-2 overflow-y-auto rounded-lg border border-[oklch(0.26_0.03_180)] bg-[oklch(0.16_0.02_180)] p-2 shadow-xl">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-3.5 w-3.5" />
             <input
               type="text"
               placeholder="Search items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-background border border-border rounded pl-8 pr-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary placeholder-zinc-500"
+              className="bg-background border-border text-foreground focus:border-primary w-full rounded border py-1.5 pr-2 pl-8 text-xs placeholder-zinc-500 focus:outline-none"
             />
           </div>
 
@@ -102,21 +106,31 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
                 <div
                   key={item.id}
                   onClick={() => handleToggleSelect(item.id)}
-                  className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all ${
+                  className={`flex cursor-pointer items-center justify-between rounded p-2 transition-all ${
                     isSelected
                       ? "bg-primary/10 text-foreground"
                       : "hover:bg-card/50 text-muted-foreground"
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
-                      isSelected ? "border-primary bg-primary text-primary-foreground" : "border-zinc-600"
-                    }`}>
-                      {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                  <div className="flex min-w-0 items-center gap-2">
+                    <div
+                      className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${
+                        isSelected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-zinc-600"
+                      }`}
+                    >
+                      {isSelected && (
+                        <Check className="h-2.5 w-2.5 stroke-[3]" />
+                      )}
                     </div>
                     <div className="truncate">
-                      <div className="text-xs font-semibold truncate">{item.name}</div>
-                      <div className="text-[10px] text-muted-foreground font-mono">${Number(item.price).toFixed(2)}</div>
+                      <div className="truncate text-xs font-semibold">
+                        {item.name}
+                      </div>
+                      <div className="text-muted-foreground font-mono text-[10px]">
+                        ${Number(item.price).toFixed(2)}
+                      </div>
                     </div>
                   </div>
 
@@ -124,18 +138,24 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
                     <button
                       type="button"
                       onClick={(e) => handleToggleHighlight(item.id, e)}
-                      className={`p-1 rounded hover:bg-secondary/50 transition-colors shrink-0 ${
-                        isHighlighted ? "text-amber-400" : "text-muted-foreground hover:text-muted-foreground"
+                      className={`hover:bg-secondary/50 shrink-0 rounded p-1 transition-colors ${
+                        isHighlighted
+                          ? "text-amber-400"
+                          : "text-muted-foreground hover:text-muted-foreground"
                       }`}
                     >
-                      <Star className={`w-3.5 h-3.5 ${isHighlighted ? "fill-current" : ""}`} />
+                      <Star
+                        className={`h-3.5 w-3.5 ${isHighlighted ? "fill-current" : ""}`}
+                      />
                     </button>
                   )}
                 </div>
               );
             })}
             {filteredItems.length === 0 && (
-              <div className="text-center text-[10px] text-muted-foreground p-2 font-mono">No items found</div>
+              <div className="text-muted-foreground p-2 text-center font-mono text-[10px]">
+                No items found
+              </div>
             )}
           </div>
         </div>

@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { POSRegisterView } from './pos.view';
+import type { Meta, StoryObj } from "@storybook/react";
+import { POSRegisterView } from "./pos.view";
 
 const meta = {
-  title: 'Domain POS/POSRegister',
+  title: "Domain POS/POSRegister",
   component: POSRegisterView,
   parameters: {
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
 } satisfies Meta<typeof POSRegisterView>;
 
@@ -14,8 +14,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    catalog: <div className="p-4 bg-gray-100 h-full w-full">Catalog Placeholder</div>,
-    ticket: <div className="p-4 bg-gray-200 h-full w-full">Ticket Placeholder</div>,
-    header: <div className="p-2 border-b">Header Placeholder</div>,
+    catalog: (
+      <div className="h-full w-full bg-gray-100 p-4">Catalog Placeholder</div>
+    ),
+    ticket: (
+      <div className="h-full w-full bg-gray-200 p-4">Ticket Placeholder</div>
+    ),
+    header: <div className="border-b p-2">Header Placeholder</div>,
   },
 };

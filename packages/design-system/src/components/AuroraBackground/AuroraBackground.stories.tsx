@@ -1,17 +1,17 @@
-import type { Meta } from '@storybook/react';
-import { AuroraBackground } from './AuroraBackground';
+import type { Meta } from "@storybook/react";
+import { AuroraBackground } from "./AuroraBackground";
 
 const meta: Meta<typeof AuroraBackground> = {
-  title: 'Components/AuroraBackground',
+  title: "Components/AuroraBackground",
   component: AuroraBackground,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 export default meta;
 
 export const Default = () => (
-  <div className="relative w-full h-[400px] overflow-hidden rounded-xl border border-border">
+  <div className="border-border relative h-[400px] w-full overflow-hidden rounded-xl border">
     <AuroraBackground />
-    <div className="relative z-10 flex h-full items-center justify-center text-foreground font-black text-4xl">
+    <div className="text-foreground relative z-10 flex h-full items-center justify-center text-4xl font-black">
       Neon Glass
     </div>
   </div>

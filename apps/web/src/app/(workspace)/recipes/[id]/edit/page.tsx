@@ -8,7 +8,7 @@ interface EditRecipePageProps {
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { id } = await params;
   const baseUrl = config.NEXT_PUBLIC_API_URL;
-  
+
   let recipe = null;
   let vessels = [];
   let masterIngredients = [];
@@ -17,9 +17,9 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
     const [recipeRes, vesselsRes, ingRes] = await Promise.all([
       fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" }),
       fetch(`${baseUrl}/recipes/vessels`, { cache: "no-store" }),
-      fetch(`${baseUrl}/recipes/ingredients`, { cache: "no-store" })
+      fetch(`${baseUrl}/recipes/ingredients`, { cache: "no-store" }),
     ]);
-    
+
     if (recipeRes.ok) {
       const payload = await recipeRes.json();
       recipe = payload.data;
@@ -37,15 +37,19 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   }
 
   if (!recipe) {
-    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
+    return (
+      <div className="text-muted-foreground p-12 text-center">
+        Recipe not found.
+      </div>
+    );
   }
 
   return (
-    <div className="py-6 px-4">
-      <RecipeBuilderClient 
+    <div className="px-4 py-6">
+      <RecipeBuilderClient
         initialData={recipe}
-        vessels={vessels} 
-        masterIngredients={masterIngredients} 
+        vessels={vessels}
+        masterIngredients={masterIngredients}
       />
     </div>
   );

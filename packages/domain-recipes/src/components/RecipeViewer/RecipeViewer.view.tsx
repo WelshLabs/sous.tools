@@ -1,10 +1,35 @@
 /* eslint-disable max-lines */
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, Play, History, Scale, DollarSign, Save, Download, Activity, ShieldAlert, Info, Trash2, X, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Play,
+  History,
+  Scale,
+  DollarSign,
+  Save,
+  Download,
+  Activity,
+  ShieldAlert,
+  Info,
+  Trash2,
+  X,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@soustools/design-system";
-import type { Recipe, VesselProfile, MasterIngredient, RecipeNutritionCache } from "@soustools/api-types";
-import type { ScaledIngredient, RecipeCostData, VersionRow, InventoryItem, WastageReason } from "../../types";
+import type {
+  Recipe,
+  VesselProfile,
+  MasterIngredient,
+  RecipeNutritionCache,
+} from "@soustools/api-types";
+import type {
+  ScaledIngredient,
+  RecipeCostData,
+  VersionRow,
+  InventoryItem,
+  WastageReason,
+} from "../../types";
 import type { ScaleMode } from "./RecipeViewer.container";
 
 export interface RecipeViewerViewProps {
@@ -18,10 +43,14 @@ export interface RecipeViewerViewProps {
   nutritionData: RecipeNutritionCache | null | undefined;
   versionHistory: VersionRow[];
 
-  onIngredientWeightChange: (ingId: string, amount: number, unit: string) => void;
+  onIngredientWeightChange: (
+    ingId: string,
+    amount: number,
+    unit: string,
+  ) => void;
   onRestoreVersion: (version: VersionRow) => void;
   onDownloadLabel: () => void;
-  
+
   backHref?: string;
   loadingCost?: boolean;
   savingCost?: boolean;
@@ -88,28 +117,28 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
   return (
     <>
       <div
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 rounded-2xl shadow-xl max-w-6xl mx-auto glass-panel"
+        className="glass-panel mx-auto grid max-w-6xl grid-cols-1 gap-6 rounded-2xl p-6 shadow-xl lg:grid-cols-3"
         style={{
           backgroundColor: "rgb(30 41 59 / 0.50)",
           border: "1px solid var(--color-border)",
           color: "var(--color-foreground)",
         }}
       >
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           {/* Header */}
           <header
-            className="flex justify-between items-center pb-4"
+            className="flex items-center justify-between pb-4"
             style={{ borderBottom: "1px solid var(--color-border)" }}
           >
             <div className="flex items-center gap-3">
               <Link
                 href={props.backHref || "/recipes"}
-                className="p-2 rounded-lg transition-colors hover:bg-white/5 cursor-pointer"
+                className="cursor-pointer rounded-lg p-2 transition-colors hover:bg-white/5"
                 style={{ color: "var(--color-muted-foreground)" }}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="h-5 w-5" />
               </Link>
-              <h2 className="text-2xl font-extrabold font-brand tracking-wide">
+              <h2 className="font-brand text-2xl font-extrabold tracking-wide">
                 {recipe.title}
               </h2>
             </div>
@@ -120,7 +149,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                 onClick={() => props.setIsHistoryOpen(true)}
                 className="flex items-center gap-1.5 shadow-lg"
               >
-                <History className="w-4 h-4" /> History
+                <History className="h-4 w-4" /> History
               </Button>
               <Link href={`/recipes/${recipe.id}/kitchen`}>
                 <Button
@@ -132,14 +161,17 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                     borderColor: "transparent",
                   }}
                 >
-                  <Play className="w-4 h-4 fill-current" /> Active Kitchen Mode
+                  <Play className="h-4 w-4 fill-current" /> Active Kitchen Mode
                 </Button>
               </Link>
             </div>
           </header>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-bold" style={{ color: "var(--color-foreground)" }}>
+            <h3
+              className="text-sm font-bold"
+              style={{ color: "var(--color-foreground)" }}
+            >
               Ingredients Checklist
             </h3>
             <div
@@ -149,7 +181,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                 border: "1px solid var(--color-border)",
               }}
             >
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full border-collapse text-left text-xs">
                 <thead>
                   <tr
                     style={{
@@ -157,13 +189,13 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       borderBottom: "1px solid var(--color-border)",
                       color: "var(--color-muted-foreground)",
                     }}
-                    className="uppercase font-semibold tracking-wider"
+                    className="font-semibold tracking-wider uppercase"
                   >
                     <th className="p-3">Ingredient</th>
-                    <th className="p-3 w-32">Scaled Weight</th>
-                    <th className="p-3 w-24">Unit</th>
+                    <th className="w-32 p-3">Scaled Weight</th>
+                    <th className="w-24 p-3">Unit</th>
                     <th className="p-3">Type</th>
-                    <th className="p-3 w-24 text-right">Cost</th>
+                    <th className="w-24 p-3 text-right">Cost</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -173,7 +205,10 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       className="transition-colors"
                       style={{ borderBottom: "1px solid var(--color-border)" }}
                     >
-                      <td className="p-3 font-semibold" style={{ color: "var(--color-foreground)" }}>
+                      <td
+                        className="p-3 font-semibold"
+                        style={{ color: "var(--color-foreground)" }}
+                      >
                         {ing.name}
                       </td>
                       <td className="p-3">
@@ -188,7 +223,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                               ing.scaledUnit,
                             )
                           }
-                          className="w-24 rounded px-2 py-1 focus:outline-none text-xs font-bold"
+                          className="w-24 rounded px-2 py-1 text-xs font-bold focus:outline-none"
                           style={{
                             backgroundColor: "var(--color-input)",
                             border: "1px solid var(--color-border)",
@@ -196,12 +231,15 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                           }}
                         />
                       </td>
-                      <td className="p-3 font-medium" style={{ color: "var(--color-muted-foreground)" }}>
+                      <td
+                        className="p-3 font-medium"
+                        style={{ color: "var(--color-muted-foreground)" }}
+                      >
                         {ing.scaledUnit}
                       </td>
                       <td className="p-3">
                         <span
-                          className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                          className="rounded px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
                           style={
                             ing.baseCalculationGroup
                               ? {
@@ -228,9 +266,14 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                               : "Fixed"}
                         </span>
                       </td>
-                      <td className="p-3 text-right font-medium text-[11px]" style={{ color: "var(--color-muted-foreground)" }}>
+                      <td
+                        className="p-3 text-right text-[11px] font-medium"
+                        style={{ color: "var(--color-muted-foreground)" }}
+                      >
                         {(() => {
-                          const masterIng = props.masterIngredients?.find((m) => m.id === ing.ingredientId);
+                          const masterIng = props.masterIngredients?.find(
+                            (m) => m.id === ing.ingredientId,
+                          );
                           if (masterIng && masterIng.currentCostPerG) {
                             return `$${(masterIng.currentCostPerG * ing.weightInGrams).toFixed(2)}`;
                           }
@@ -245,22 +288,28 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
           </div>
 
           {recipe.instructions && recipe.instructions.length > 0 && (
-            <div className="space-y-4 pt-6" style={{ borderTop: "1px solid var(--color-border)" }}>
-              <h3 className="text-sm font-bold" style={{ color: "var(--color-foreground)" }}>
+            <div
+              className="space-y-4 pt-6"
+              style={{ borderTop: "1px solid var(--color-border)" }}
+            >
+              <h3
+                className="text-sm font-bold"
+                style={{ color: "var(--color-foreground)" }}
+              >
                 Instructions
               </h3>
               <div className="space-y-3">
                 {recipe.instructions.map((step, idx) => (
                   <div
                     key={idx}
-                    className="flex gap-4 p-4 rounded-xl shadow-sm"
+                    className="flex gap-4 rounded-xl p-4 shadow-sm"
                     style={{
                       backgroundColor: "var(--color-card)",
                       border: "1px solid var(--color-border)",
                     }}
                   >
                     <div
-                      className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                      className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
                       style={{
                         backgroundColor: "rgb(76 201 240 / 0.15)",
                         color: "var(--color-primary)",
@@ -268,7 +317,10 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                     >
                       {idx + 1}
                     </div>
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--color-muted-foreground)" }}>
+                    <div
+                      className="text-sm leading-relaxed whitespace-pre-wrap"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       {step.text}
                     </div>
                   </div>
@@ -281,23 +333,32 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
         <div className="space-y-6">
           {/* Scaling Panel */}
           <div
-            className="p-4 rounded-2xl space-y-4"
+            className="space-y-4 rounded-2xl p-4"
             style={{
               backgroundColor: "var(--color-card)",
               border: "1px solid var(--color-border)",
             }}
           >
-            <h3 className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--color-foreground)" }}>
-              <Scale className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+            <h3
+              className="flex items-center gap-1.5 text-sm font-bold"
+              style={{ color: "var(--color-foreground)" }}
+            >
+              <Scale
+                className="h-4 w-4"
+                style={{ color: "var(--color-primary)" }}
+              />
               Hybrid Scaling Tool
             </h3>
-            <div className="flex gap-2 p-1 rounded-lg text-xs" style={{ backgroundColor: "var(--color-secondary)" }}>
+            <div
+              className="flex gap-2 rounded-lg p-1 text-xs"
+              style={{ backgroundColor: "var(--color-secondary)" }}
+            >
               {(["yield", "weight", "vessel"] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => props.setScaleMode(mode)}
-                  className="flex-1 py-1.5 rounded-md capitalize font-bold transition-all cursor-pointer"
+                  className="flex-1 cursor-pointer rounded-md py-1.5 font-bold capitalize transition-all"
                   style={
                     props.scaleMode === mode
                       ? {
@@ -316,7 +377,10 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               {props.scaleMode === "yield" && (
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <label className="block text-[10px] font-bold uppercase mb-1" style={labelStyle}>
+                    <label
+                      className="mb-1 block text-[10px] font-bold uppercase"
+                      style={labelStyle}
+                    >
                       Target Yield
                     </label>
                     <input
@@ -324,12 +388,17 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       step="any"
                       min="0.01"
                       value={props.targetYield}
-                      onChange={(e) => props.setTargetYield(parseFloat(e.target.value) || 1)}
+                      onChange={(e) =>
+                        props.setTargetYield(parseFloat(e.target.value) || 1)
+                      }
                       className={inputClass}
                       style={inputStyle}
                     />
                   </div>
-                  <div className="text-xs pt-4 font-semibold" style={labelStyle}>
+                  <div
+                    className="pt-4 text-xs font-semibold"
+                    style={labelStyle}
+                  >
                     Multiplier: {finalMultiplier.toFixed(2)}x
                   </div>
                 </div>
@@ -337,7 +406,10 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               {props.scaleMode === "weight" && (
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <label className="block text-[10px] font-bold uppercase mb-1" style={labelStyle}>
+                    <label
+                      className="mb-1 block text-[10px] font-bold uppercase"
+                      style={labelStyle}
+                    >
                       Target Total Batch Weight (g)
                     </label>
                     <input
@@ -351,7 +423,10 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       style={inputStyle}
                     />
                   </div>
-                  <div className="text-xs pt-4 font-semibold" style={labelStyle}>
+                  <div
+                    className="pt-4 text-xs font-semibold"
+                    style={labelStyle}
+                  >
                     Multiplier: {finalMultiplier.toFixed(2)}x
                   </div>
                 </div>
@@ -359,12 +434,17 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               {props.scaleMode === "vessel" && (
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase mb-1" style={labelStyle}>
+                    <label
+                      className="mb-1 block text-[10px] font-bold uppercase"
+                      style={labelStyle}
+                    >
                       Swap Vessel Profile
                     </label>
                     <select
                       value={props.selectedVesselId}
-                      onChange={(e) => props.setSelectedVesselId(e.target.value)}
+                      onChange={(e) =>
+                        props.setSelectedVesselId(e.target.value)
+                      }
                       className={inputClass}
                       style={inputStyle}
                       disabled={!recipe.vesselId}
@@ -377,7 +457,10 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       ))}
                     </select>
                     {!recipe.vesselId && (
-                      <p className="text-[10px] mt-1 font-semibold" style={{ color: "#f59e0b" }}>
+                      <p
+                        className="mt-1 text-[10px] font-semibold"
+                        style={{ color: "#f59e0b" }}
+                      >
                         * First select a default vessel in the recipe builder.
                       </p>
                     )}
@@ -390,19 +473,28 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
           {/* Cost Panel */}
           {props.loadingCost ? (
             <div
-              className="rounded-2xl p-4 shadow-xl glass-panel animate-pulse space-y-3"
+              className="glass-panel animate-pulse space-y-3 rounded-2xl p-4 shadow-xl"
               style={{
                 backgroundColor: "var(--color-card)",
                 border: "1px solid var(--color-border)",
               }}
             >
-              <div className="h-4 rounded w-1/3" style={{ backgroundColor: "var(--color-secondary)" }} />
-              <div className="h-10 rounded" style={{ backgroundColor: "var(--color-secondary)" }} />
-              <div className="h-20 rounded" style={{ backgroundColor: "var(--color-secondary)" }} />
+              <div
+                className="h-4 w-1/3 rounded"
+                style={{ backgroundColor: "var(--color-secondary)" }}
+              />
+              <div
+                className="h-10 rounded"
+                style={{ backgroundColor: "var(--color-secondary)" }}
+              />
+              <div
+                className="h-20 rounded"
+                style={{ backgroundColor: "var(--color-secondary)" }}
+              />
             </div>
           ) : !costData || costData.ingredients.length === 0 ? (
             <div
-              className="rounded-2xl p-4 shadow-xl glass-panel text-sm text-center"
+              className="glass-panel rounded-2xl p-4 text-center text-sm shadow-xl"
               style={{
                 backgroundColor: "var(--color-card)",
                 border: "1px solid var(--color-border)",
@@ -413,7 +505,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
             </div>
           ) : (
             <div
-              className="rounded-2xl p-4 shadow-xl glass-panel space-y-4"
+              className="glass-panel space-y-4 rounded-2xl p-4 shadow-xl"
               style={{
                 backgroundColor: "var(--color-card)",
                 border: "1px solid var(--color-border)",
@@ -422,13 +514,16 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" style={{ color: "#10b981" }} />
-                  <h3 className="font-semibold text-sm">Cost Breakdown</h3>
+                  <DollarSign
+                    className="h-5 w-5"
+                    style={{ color: "#10b981" }}
+                  />
+                  <h3 className="text-sm font-semibold">Cost Breakdown</h3>
                 </div>
                 <button
                   onClick={props.handleSaveCost}
                   disabled={props.savingCost}
-                  className="flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors cursor-pointer"
+                  className="flex cursor-pointer items-center gap-1 rounded px-2 py-1 text-xs transition-colors"
                   style={{
                     backgroundColor: "var(--color-secondary)",
                     border: "1px solid var(--color-border)",
@@ -439,7 +534,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                     "✓ Saved"
                   ) : (
                     <>
-                      <Save className="w-3.5 h-3.5" />
+                      <Save className="h-3.5 w-3.5" />
                       <span>Save Version</span>
                     </>
                   )}
@@ -448,7 +543,10 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase mb-1" style={{ color: "var(--color-muted-foreground)" }}>
+                  <label
+                    className="mb-1 block text-[10px] font-bold uppercase"
+                    style={{ color: "var(--color-muted-foreground)" }}
+                  >
                     Yield / Waste (%)
                   </label>
                   <input
@@ -461,11 +559,18 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       props.handleCostFactorsChange(val, props.portions);
                     }}
                     className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-                    style={{ backgroundColor: "var(--color-input)", border: "1px solid var(--color-border)", color: "var(--color-foreground)" }}
+                    style={{
+                      backgroundColor: "var(--color-input)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-foreground)",
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase mb-1" style={{ color: "var(--color-muted-foreground)" }}>
+                  <label
+                    className="mb-1 block text-[10px] font-bold uppercase"
+                    style={{ color: "var(--color-muted-foreground)" }}
+                  >
                     Portions
                   </label>
                   <input
@@ -477,25 +582,62 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       props.handleCostFactorsChange(props.wastePct, val);
                     }}
                     className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-                    style={{ backgroundColor: "var(--color-input)", border: "1px solid var(--color-border)", color: "var(--color-foreground)" }}
+                    style={{
+                      backgroundColor: "var(--color-input)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-foreground)",
+                    }}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-2 gap-2 text-center lg:grid-cols-3">
                 {[
-                  { label: "Batch Cost", value: `$${costData.totalCostUsd.toFixed(2)}`, color: "var(--color-foreground)" },
-                  { label: "Plate Cost", value: `$${costData.costPerServingUsd.toFixed(2)}`, color: "var(--color-foreground)" },
-                  { label: "Sug. Sale Price", value: costData.suggestedSalePrice ? `$${costData.suggestedSalePrice.toFixed(2)}` : "—", color: "#4cc9f0" },
-                  { label: "Linked POS", value: costData.linkedSalePrice ? `$${costData.linkedSalePrice.toFixed(2)}` : "—", color: "var(--color-foreground)" },
+                  {
+                    label: "Batch Cost",
+                    value: `$${costData.totalCostUsd.toFixed(2)}`,
+                    color: "var(--color-foreground)",
+                  },
+                  {
+                    label: "Plate Cost",
+                    value: `$${costData.costPerServingUsd.toFixed(2)}`,
+                    color: "var(--color-foreground)",
+                  },
+                  {
+                    label: "Sug. Sale Price",
+                    value: costData.suggestedSalePrice
+                      ? `$${costData.suggestedSalePrice.toFixed(2)}`
+                      : "—",
+                    color: "#4cc9f0",
+                  },
+                  {
+                    label: "Linked POS",
+                    value: costData.linkedSalePrice
+                      ? `$${costData.linkedSalePrice.toFixed(2)}`
+                      : "—",
+                    color: "var(--color-foreground)",
+                  },
                   {
                     label: "Margin",
-                    value: costData.marginPct !== undefined ? `${costData.marginPct.toFixed(1)}%` : "—",
-                    color: costData.marginPct === undefined ? "var(--color-destructive)" : costData.marginPct > 30 ? "#10b981" : costData.marginPct >= 10 ? "#f59e0b" : "var(--color-destructive)"
+                    value:
+                      costData.marginPct !== undefined
+                        ? `${costData.marginPct.toFixed(1)}%`
+                        : "—",
+                    color:
+                      costData.marginPct === undefined
+                        ? "var(--color-destructive)"
+                        : costData.marginPct > 30
+                          ? "#10b981"
+                          : costData.marginPct >= 10
+                            ? "#f59e0b"
+                            : "var(--color-destructive)",
                   },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="p-2 rounded-lg" style={tileStyle}>
-                    <p className="text-xs" style={{ color: "var(--color-muted-foreground)" }}>
+                  <div key={label} className="rounded-lg p-2" style={tileStyle}>
+                    <p
+                      className="text-xs"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       {label}
                     </p>
                     <p className="text-sm font-semibold" style={{ color }}>
@@ -506,9 +648,14 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left" style={{ color: "var(--color-muted-foreground)" }}>
+                <table
+                  className="w-full text-left text-xs"
+                  style={{ color: "var(--color-muted-foreground)" }}
+                >
                   <thead>
-                    <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
+                    <tr
+                      style={{ borderBottom: "1px solid var(--color-border)" }}
+                    >
                       <th className="py-1">Ingredient</th>
                       <th className="py-1 text-right">Weight (g)</th>
                       <th className="py-1 text-right">Cost ($)</th>
@@ -516,10 +663,19 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                   </thead>
                   <tbody>
                     {costData.ingredients.map((ing) => (
-                      <tr key={ing.ingredientId} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                      <tr
+                        key={ing.ingredientId}
+                        style={{
+                          borderBottom: "1px solid var(--color-border)",
+                        }}
+                      >
                         <td className="py-1.5">{ing.name}</td>
-                        <td className="py-1.5 text-right">{ing.weightG.toFixed(0)}</td>
-                        <td className="py-1.5 text-right">${ing.costUsd.toFixed(3)}</td>
+                        <td className="py-1.5 text-right">
+                          {ing.weightG.toFixed(0)}
+                        </td>
+                        <td className="py-1.5 text-right">
+                          ${ing.costUsd.toFixed(3)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -530,59 +686,111 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
 
           {/* Nutrition Panel */}
           {props.loadingNutrition ? (
-            <div className="text-xs animate-pulse" style={{ color: "var(--color-muted-foreground)" }}>
+            <div
+              className="animate-pulse text-xs"
+              style={{ color: "var(--color-muted-foreground)" }}
+            >
               Calculating nutrition profiles...
             </div>
-          ) : !nutritionData || !nutritionData.perServingNutrition || Object.keys(nutritionData.perServingNutrition).length === 0 ? (
+          ) : !nutritionData ||
+            !nutritionData.perServingNutrition ||
+            Object.keys(nutritionData.perServingNutrition).length === 0 ? (
             <div
-              className="p-4 rounded-xl text-xs flex items-center gap-2"
+              className="flex items-center gap-2 rounded-xl p-4 text-xs"
               style={{
                 border: "1px solid var(--color-border)",
                 backgroundColor: "rgb(15 23 42 / 0.20)",
                 color: "var(--color-muted-foreground)",
               }}
             >
-              <ShieldAlert className="w-4 h-4 flex-shrink-0" style={{ color: "#f59e0b" }} />
-              No nutrition facts resolved for this recipe. Ensure ingredients are matched with USDA profiles.
+              <ShieldAlert
+                className="h-4 w-4 flex-shrink-0"
+                style={{ color: "#f59e0b" }}
+              />
+              No nutrition facts resolved for this recipe. Ensure ingredients
+              are matched with USDA profiles.
             </div>
           ) : (
             <div
-              className="p-4 rounded-2xl space-y-4 shadow-xl glass-panel"
+              className="glass-panel space-y-4 rounded-2xl p-4 shadow-xl"
               style={{
                 backgroundColor: "var(--color-card)",
                 border: "1px solid var(--color-border)",
               }}
             >
-              <div className="flex justify-between items-center pb-2" style={{ borderBottom: "1px solid var(--color-border)" }}>
-                <h3 className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--color-foreground)" }}>
-                  <Activity className="w-4 h-4" style={{ color: "#10b981" }} />
+              <div
+                className="flex items-center justify-between pb-2"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
+                <h3
+                  className="flex items-center gap-1.5 text-sm font-bold"
+                  style={{ color: "var(--color-foreground)" }}
+                >
+                  <Activity className="h-4 w-4" style={{ color: "#10b981" }} />
                   Nutrition &amp; Diets
                 </h3>
-                <Button size="sm" variant="secondary" onClick={props.onDownloadLabel} className="flex items-center gap-1">
-                  <Download className="w-3.5 h-3.5" /> FDA Label
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={props.onDownloadLabel}
+                  className="flex items-center gap-1"
+                >
+                  <Download className="h-3.5 w-3.5" /> FDA Label
                 </Button>
               </div>
 
               <div className="grid grid-cols-4 gap-2 text-center">
                 {[
-                  { label: "Calories", value: Math.round(nutritionData.perServingNutrition.calories || 0), suffix: "" },
-                  { label: "Fat", value: Math.round(nutritionData.perServingNutrition.total_fat_g || 0), suffix: "g" },
-                  { label: "Carbs", value: Math.round(nutritionData.perServingNutrition.total_carbohydrate_g || 0), suffix: "g" },
-                  { label: "Protein", value: Math.round(nutritionData.perServingNutrition.protein_g || 0), suffix: "g" },
+                  {
+                    label: "Calories",
+                    value: Math.round(
+                      nutritionData.perServingNutrition.calories || 0,
+                    ),
+                    suffix: "",
+                  },
+                  {
+                    label: "Fat",
+                    value: Math.round(
+                      nutritionData.perServingNutrition.total_fat_g || 0,
+                    ),
+                    suffix: "g",
+                  },
+                  {
+                    label: "Carbs",
+                    value: Math.round(
+                      nutritionData.perServingNutrition.total_carbohydrate_g ||
+                        0,
+                    ),
+                    suffix: "g",
+                  },
+                  {
+                    label: "Protein",
+                    value: Math.round(
+                      nutritionData.perServingNutrition.protein_g || 0,
+                    ),
+                    suffix: "g",
+                  },
                 ].map((macro) => (
                   <div
                     key={macro.label}
-                    className="p-2 rounded-lg"
+                    className="rounded-lg p-2"
                     style={{
                       backgroundColor: "rgb(15 23 42 / 0.40)",
                       border: "1px solid var(--color-border)",
                     }}
                   >
-                    <div className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "var(--color-muted-foreground)" }}>
+                    <div
+                      className="text-[10px] font-semibold tracking-wider uppercase"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       {macro.label}
                     </div>
-                    <div className="text-sm font-bold" style={{ color: "var(--color-foreground)" }}>
-                      {macro.value}{macro.suffix}
+                    <div
+                      className="text-sm font-bold"
+                      style={{ color: "var(--color-foreground)" }}
+                    >
+                      {macro.value}
+                      {macro.suffix}
                     </div>
                   </div>
                 ))}
@@ -594,24 +802,82 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                   {Object.entries(nutritionData.dietaryFlags)
                     .filter(([, active]) => active)
                     .map(([key]) => {
-                      const labels: Record<string, { label: string; bg: string; text: string; border: string }> = {
-                        vegan: { label: "Vegan", bg: "rgb(16 185 129 / 0.12)", text: "#10b981", border: "rgb(16 185 129 / 0.25)" },
-                        vegetarian: { label: "Vegetarian", bg: "rgb(34 197 94 / 0.12)", text: "#22c55e", border: "rgb(34 197 94 / 0.25)" },
-                        pescetarian: { label: "Pescetarian", bg: "rgb(20 184 166 / 0.12)", text: "#14b8a6", border: "rgb(20 184 166 / 0.25)" },
-                        keto: { label: "Keto", bg: "rgb(99 102 241 / 0.12)", text: "#6366f1", border: "rgb(99 102 241 / 0.25)" },
-                        gluten_free: { label: "Gluten Free", bg: "rgb(245 158 11 / 0.12)", text: "#f59e0b", border: "rgb(245 158 11 / 0.25)" },
-                        dairy_free: { label: "Dairy Free", bg: "rgb(14 165 233 / 0.12)", text: "#0ea5e9", border: "rgb(14 165 233 / 0.25)" },
-                        egg_free: { label: "Egg Free", bg: "rgb(234 179 8 / 0.12)", text: "#eab308", border: "rgb(234 179 8 / 0.25)" },
-                        nut_free: { label: "Nut Free", bg: "rgb(244 63 94 / 0.12)", text: "var(--color-destructive)", border: "rgb(244 63 94 / 0.25)" },
-                        low_sodium: { label: "Low Sodium", bg: "rgb(37 99 235 / 0.12)", text: "#2563eb", border: "rgb(37 99 235 / 0.25)" },
-                        high_protein: { label: "High Protein", bg: "rgb(247 37 133 / 0.12)", text: "var(--color-accent)", border: "rgb(247 37 133 / 0.25)" },
+                      const labels: Record<
+                        string,
+                        {
+                          label: string;
+                          bg: string;
+                          text: string;
+                          border: string;
+                        }
+                      > = {
+                        vegan: {
+                          label: "Vegan",
+                          bg: "rgb(16 185 129 / 0.12)",
+                          text: "#10b981",
+                          border: "rgb(16 185 129 / 0.25)",
+                        },
+                        vegetarian: {
+                          label: "Vegetarian",
+                          bg: "rgb(34 197 94 / 0.12)",
+                          text: "#22c55e",
+                          border: "rgb(34 197 94 / 0.25)",
+                        },
+                        pescetarian: {
+                          label: "Pescetarian",
+                          bg: "rgb(20 184 166 / 0.12)",
+                          text: "#14b8a6",
+                          border: "rgb(20 184 166 / 0.25)",
+                        },
+                        keto: {
+                          label: "Keto",
+                          bg: "rgb(99 102 241 / 0.12)",
+                          text: "#6366f1",
+                          border: "rgb(99 102 241 / 0.25)",
+                        },
+                        gluten_free: {
+                          label: "Gluten Free",
+                          bg: "rgb(245 158 11 / 0.12)",
+                          text: "#f59e0b",
+                          border: "rgb(245 158 11 / 0.25)",
+                        },
+                        dairy_free: {
+                          label: "Dairy Free",
+                          bg: "rgb(14 165 233 / 0.12)",
+                          text: "#0ea5e9",
+                          border: "rgb(14 165 233 / 0.25)",
+                        },
+                        egg_free: {
+                          label: "Egg Free",
+                          bg: "rgb(234 179 8 / 0.12)",
+                          text: "#eab308",
+                          border: "rgb(234 179 8 / 0.25)",
+                        },
+                        nut_free: {
+                          label: "Nut Free",
+                          bg: "rgb(244 63 94 / 0.12)",
+                          text: "var(--color-destructive)",
+                          border: "rgb(244 63 94 / 0.25)",
+                        },
+                        low_sodium: {
+                          label: "Low Sodium",
+                          bg: "rgb(37 99 235 / 0.12)",
+                          text: "#2563eb",
+                          border: "rgb(37 99 235 / 0.25)",
+                        },
+                        high_protein: {
+                          label: "High Protein",
+                          bg: "rgb(247 37 133 / 0.12)",
+                          text: "var(--color-accent)",
+                          border: "rgb(247 37 133 / 0.25)",
+                        },
                       };
                       const badge = labels[key];
                       if (!badge) return null;
                       return (
                         <span
                           key={key}
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide uppercase"
+                          className="rounded-full px-2.5 py-1 text-xs font-semibold tracking-wide uppercase"
                           style={{
                             backgroundColor: badge.bg,
                             color: badge.text,
@@ -629,31 +895,63 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
 
           {/* Batch Summary */}
           <div
-            className="p-4 rounded-2xl space-y-4 shadow-xl"
+            className="space-y-4 rounded-2xl p-4 shadow-xl"
             style={{
               backgroundColor: "var(--color-card)",
               border: "1px solid var(--color-border)",
             }}
           >
-            <h3 className="text-sm font-bold flex items-center gap-1" style={{ color: "var(--color-foreground)" }}>
-              <Info className="w-4 h-4" style={{ color: "var(--color-primary)" }} /> Batch Summary
+            <h3
+              className="flex items-center gap-1 text-sm font-bold"
+              style={{ color: "var(--color-foreground)" }}
+            >
+              <Info
+                className="h-4 w-4"
+                style={{ color: "var(--color-primary)" }}
+              />{" "}
+              Batch Summary
             </h3>
-            <div className="space-y-2 text-xs" style={{ color: "var(--color-muted-foreground)" }}>
-              <div className="flex justify-between pb-2" style={{ borderBottom: "1px solid var(--color-border)" }}>
+            <div
+              className="space-y-2 text-xs"
+              style={{ color: "var(--color-muted-foreground)" }}
+            >
+              <div
+                className="flex justify-between pb-2"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
                 <span>Target Yield:</span>
-                <span className="font-bold" style={{ color: "var(--color-foreground)" }}>
-                  {(recipe.yieldCount * finalMultiplier).toFixed(1)} {recipe.yieldUnit}
+                <span
+                  className="font-bold"
+                  style={{ color: "var(--color-foreground)" }}
+                >
+                  {(recipe.yieldCount * finalMultiplier).toFixed(1)}{" "}
+                  {recipe.yieldUnit}
                 </span>
               </div>
-              <div className="flex justify-between pb-2" style={{ borderBottom: "1px solid var(--color-border)" }}>
+              <div
+                className="flex justify-between pb-2"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
                 <span>Total Batch Weight:</span>
-                <span className="font-bold" style={{ color: "var(--color-foreground)" }}>
-                  {props.scaledIngredients.reduce((acc, item) => acc + item.weightInGrams, 0).toFixed(0)} g
+                <span
+                  className="font-bold"
+                  style={{ color: "var(--color-foreground)" }}
+                >
+                  {props.scaledIngredients
+                    .reduce((acc, item) => acc + item.weightInGrams, 0)
+                    .toFixed(0)}{" "}
+                  g
                 </span>
               </div>
-              <div className="flex justify-between pb-2" style={{ borderBottom: "1px solid var(--color-border)" }}>
+              <div
+                className="flex justify-between pb-2"
+                style={{ borderBottom: "1px solid var(--color-border)" }}
+              >
                 <span>Target Pan/Vessel:</span>
-                <span className="font-bold" style={{ color: "var(--color-foreground)" }}>
+                <span
+                  className="font-bold"
+                  style={{ color: "var(--color-foreground)" }}
+                >
                   {recipe.vessel?.name || "Standard Yield"}
                 </span>
               </div>
@@ -661,14 +959,14 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
             <Button
               size="sm"
               onClick={() => props.setIsWastageOpen(true)}
-              className="w-full font-bold flex items-center justify-center gap-1.5"
+              className="flex w-full items-center justify-center gap-1.5 font-bold"
               style={{
                 backgroundColor: "rgb(244 63 94 / 0.15)",
                 color: "var(--color-destructive)",
                 borderColor: "rgb(244 63 94 / 0.3)",
               }}
             >
-              <Trash2 className="w-4 h-4" /> Log Food Waste
+              <Trash2 className="h-4 w-4" /> Log Food Waste
             </Button>
           </div>
         </div>
@@ -677,11 +975,11 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
       {/* Wastage Modal */}
       {props.isWastageOpen && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
           style={{ backgroundColor: "rgb(0 0 0 / 0.60)" }}
         >
           <div
-            className="relative w-96 max-w-full rounded-2xl p-6 shadow-2xl space-y-4"
+            className="relative w-96 max-w-full space-y-4 rounded-2xl p-6 shadow-2xl"
             style={{
               backgroundColor: "var(--color-card)",
               border: "1px solid var(--color-border)",
@@ -690,14 +988,14 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
           >
             <button
               onClick={() => props.setIsWastageOpen(false)}
-              className="absolute top-4 right-4 transition-colors cursor-pointer"
+              className="absolute top-4 right-4 cursor-pointer transition-colors"
               style={{ color: "var(--color-muted-foreground)" }}
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
             <h3 className="text-lg font-semibold">Record Wastage</h3>
             <form onSubmit={props.handleWastageSubmit} className="space-y-4">
-              <div className="space-y-1 relative">
+              <div className="relative space-y-1">
                 <label className="text-xs font-medium" style={labelStyle}>
                   Search Item
                 </label>
@@ -715,7 +1013,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                 />
                 {props.wastageItems.length > 0 && (
                   <div
-                    className="absolute top-full left-0 right-0 rounded-lg mt-1 z-50 max-h-48 overflow-y-auto shadow-xl"
+                    className="absolute top-full right-0 left-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-lg shadow-xl"
                     style={{
                       backgroundColor: "var(--color-card)",
                       border: "1px solid var(--color-border)",
@@ -730,13 +1028,19 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                           props.setWastageSearchQuery(item.name);
                           props.setWastageItems([]);
                         }}
-                        className="w-full text-left px-3 py-2 text-sm transition-colors cursor-pointer"
+                        className="w-full cursor-pointer px-3 py-2 text-left text-sm transition-colors"
                         style={{
                           color: "var(--color-foreground)",
                           borderBottom: "1px solid var(--color-border)",
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--color-secondary)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "var(--color-secondary)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
+                        }
                       >
                         {item.name}
                       </button>
@@ -783,7 +1087,9 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                 </label>
                 <select
                   value={props.wastageReason}
-                  onChange={(e) => props.setWastageReason(e.target.value as WastageReason)}
+                  onChange={(e) =>
+                    props.setWastageReason(e.target.value as WastageReason)
+                  }
                   className={inputClass}
                   style={inputStyle}
                 >
@@ -797,7 +1103,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               <button
                 type="submit"
                 disabled={props.wastageSubmitting || !props.wastageSelectedItem}
-                className="w-full text-sm font-semibold py-2 rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex justify-center items-center gap-2"
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors disabled:opacity-50"
                 style={{
                   backgroundColor: "var(--color-primary)",
                   color: "var(--color-primary-foreground)",
@@ -805,7 +1111,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               >
                 {props.wastageSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Saving...
                   </>
                 ) : (
                   "Record Waste Event"
@@ -818,7 +1124,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
 
       {/* Version History Drawer */}
       <div
-        className={`fixed inset-y-0 right-0 w-80 shadow-2xl z-50 p-4 transition-transform duration-300 transform ${
+        className={`fixed inset-y-0 right-0 z-50 w-80 transform p-4 shadow-2xl transition-transform duration-300 ${
           props.isHistoryOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{
@@ -831,51 +1137,69 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
           className="flex items-center justify-between pb-3"
           style={{ borderBottom: "1px solid var(--color-border)" }}
         >
-          <div className="flex items-center gap-2" style={{ color: "var(--color-foreground)" }}>
-            <History className="w-5 h-5 text-indigo-400" />
-            <h3 className="font-semibold text-sm">Version History</h3>
+          <div
+            className="flex items-center gap-2"
+            style={{ color: "var(--color-foreground)" }}
+          >
+            <History className="h-5 w-5 text-indigo-400" />
+            <h3 className="text-sm font-semibold">Version History</h3>
           </div>
           <button
             onClick={() => props.setIsHistoryOpen(false)}
-            className="transition-colors cursor-pointer"
+            className="cursor-pointer transition-colors"
             style={{ color: "var(--color-muted-foreground)" }}
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="mt-4 space-y-3 overflow-y-auto h-[calc(100vh-80px)]">
+        <div className="mt-4 h-[calc(100vh-80px)] space-y-3 overflow-y-auto">
           {props.loadingHistory ? (
-            <div className="text-center text-xs py-8 animate-pulse" style={{ color: "var(--color-muted-foreground)" }}>
+            <div
+              className="animate-pulse py-8 text-center text-xs"
+              style={{ color: "var(--color-muted-foreground)" }}
+            >
               Loading history...
             </div>
           ) : props.versionHistory.length === 0 ? (
-            <div className="text-center text-xs py-8" style={{ color: "var(--color-muted-foreground)" }}>
+            <div
+              className="py-8 text-center text-xs"
+              style={{ color: "var(--color-muted-foreground)" }}
+            >
               No saved versions yet. Use "Save Version" to snapshot.
             </div>
           ) : (
             props.versionHistory.map((ver) => (
               <div
                 key={ver.id}
-                className="rounded-lg p-3 space-y-2"
+                className="space-y-2 rounded-lg p-3"
                 style={{
                   backgroundColor: "rgb(30 41 59 / 0.5)",
                   border: "1px solid var(--color-border)",
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="bg-indigo-500/10 text-indigo-400 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/20">
+                  <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-400">
                     v{ver.versionNumber}
                   </span>
-                  <span className="text-[10px]" style={{ color: "var(--color-muted-foreground)" }}>
+                  <span
+                    className="text-[10px]"
+                    style={{ color: "var(--color-muted-foreground)" }}
+                  >
                     {new Date(ver.createdAt).toLocaleDateString()}
                   </span>
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold truncate" style={{ color: "var(--color-foreground)" }}>
+                  <h4
+                    className="truncate text-xs font-semibold"
+                    style={{ color: "var(--color-foreground)" }}
+                  >
                     {ver.title}
                   </h4>
-                  <p className="text-[10px]" style={{ color: "var(--color-muted-foreground)" }}>
+                  <p
+                    className="text-[10px]"
+                    style={{ color: "var(--color-muted-foreground)" }}
+                  >
                     Yield: {ver.yieldCount} {ver.yieldUnit}
                   </p>
                 </div>
@@ -884,7 +1208,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                     props.onRestoreVersion(ver);
                     props.setIsHistoryOpen(false);
                   }}
-                  className="w-full text-center text-[10px] text-indigo-400 hover:text-indigo-300 bg-indigo-500/5 hover:bg-indigo-500/10 py-1.5 rounded transition font-semibold cursor-pointer"
+                  className="w-full cursor-pointer rounded bg-indigo-500/5 py-1.5 text-center text-[10px] font-semibold text-indigo-400 transition hover:bg-indigo-500/10 hover:text-indigo-300"
                 >
                   Restore Snapshot
                 </button>

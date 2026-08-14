@@ -187,7 +187,7 @@ export interface POSTransactionUpsert {
 
 export function mapSquareCategories(
   categories: SquareCatalogObject[],
-  orgId: string
+  orgId: string,
 ): POSCategoryUpsert[] {
   return categories.map((cat) => ({
     organization_id: orgId,
@@ -200,16 +200,22 @@ export function mapSquareCategories(
 
 export function mapSquareDiscounts(
   discounts: SquareCatalogObject[],
-  orgId: string
+  orgId: string,
 ): POSDiscountUpsert[] {
   return discounts.map((disc) => {
     let amountOrPercent = 0;
-    if (disc.discount_data?.discount_type === "FIXED_PERCENTAGE" && disc.discount_data.percentage) {
+    if (
+      disc.discount_data?.discount_type === "FIXED_PERCENTAGE" &&
+      disc.discount_data.percentage
+    ) {
       amountOrPercent = parseFloat(disc.discount_data.percentage);
-    } else if (disc.discount_data?.discount_type === "FIXED_AMOUNT" && disc.discount_data.amount_money) {
+    } else if (
+      disc.discount_data?.discount_type === "FIXED_AMOUNT" &&
+      disc.discount_data.amount_money
+    ) {
       amountOrPercent = disc.discount_data.amount_money.amount / 100;
     }
-    
+
     return {
       organization_id: orgId,
       pos_provider: "SQUARE",
@@ -225,7 +231,7 @@ export function mapSquareDiscounts(
 export function mapSquareOrders(
   orders: SquareOrder[],
   orgId: string,
-  feeMap?: Map<string, number>
+  feeMap?: Map<string, number>,
 ): POSOrderUpsert[] {
   return orders.map((order) => ({
     organization_id: orgId,
@@ -246,9 +252,19 @@ export function mapSquareOrders(
     closed_at: (() => {
       // If a fulfillment exists and was completed, use its timestamp
       if (order.fulfillments && order.fulfillments.length > 0) {
-        const completedFulfillment = order.fulfillments.find(f => f.state === "COMPLETED");
-        if (completedFulfillment && (completedFulfillment.completed_at || completedFulfillment.picked_up_at)) {
-          return completedFulfillment.completed_at || completedFulfillment.picked_up_at || null;
+        const completedFulfillment = order.fulfillments.find(
+          (f) => f.state === "COMPLETED",
+        );
+        if (
+          completedFulfillment &&
+          (completedFulfillment.completed_at ||
+            completedFulfillment.picked_up_at)
+        ) {
+          return (
+            completedFulfillment.completed_at ||
+            completedFulfillment.picked_up_at ||
+            null
+          );
         }
       }
       return order.closed_at || null;
@@ -260,15 +276,17 @@ export function mapSquareOrders(
 
 export function mapSquareModifierGroups(
   modifierLists: SquareCatalogObject[],
-  orgId: string
+  orgId: string,
 ): POSModifierGroupUpsert[] {
   return modifierLists.map((ml) => ({
     organization_id: orgId,
     pos_provider: "SQUARE",
     external_id: ml.id,
     name: ml.modifier_list_data?.name || "Unnamed Modifier Group",
-    min_selected_modifiers: ml.modifier_list_data?.selection_type === "SINGLE" ? 1 : 0,
-    max_selected_modifiers: ml.modifier_list_data?.selection_type === "SINGLE" ? 1 : 99,
+    min_selected_modifiers:
+      ml.modifier_list_data?.selection_type === "SINGLE" ? 1 : 0,
+    max_selected_modifiers:
+      ml.modifier_list_data?.selection_type === "SINGLE" ? 1 : 99,
     updated_at: new Date().toISOString(),
   }));
 }
@@ -276,7 +294,7 @@ export function mapSquareModifierGroups(
 export function mapSquareModifierOptions(
   modifierLists: SquareCatalogObject[],
   mgMap: Map<string, string>,
-  orgId: string
+  orgId: string,
 ): POSModifierOptionUpsert[] {
   const result: POSModifierOptionUpsert[] = [];
   modifierLists.forEach((ml) => {
@@ -305,15 +323,17 @@ export function mapSquarePosItems(
   items: SquareCatalogObject[],
   countsMap: Record<string, number>,
   catMap: Map<string, string>,
-  orgId: string
+  orgId: string,
 ): POSItemUpsert[] {
   return items.map((item) => {
     const firstVariation = item.item_data?.variations?.[0];
     const variationId = firstVariation?.id || "";
-    const priceAmount = firstVariation?.item_variation_data?.price_money?.amount || 0;
+    const priceAmount =
+      firstVariation?.item_variation_data?.price_money?.amount || 0;
     const price = priceAmount / 100;
-    const stockQuantity = countsMap[variationId] !== undefined ? countsMap[variationId] : 1;
-    
+    const stockQuantity =
+      countsMap[variationId] !== undefined ? countsMap[variationId] : 1;
+
     let localCategoryId = null;
     const sqCatId =
       item.item_data?.category_id ||
@@ -341,7 +361,7 @@ export function mapSquarePosItems(
 export function mapSquareItemModifierGroups(
   items: SquareCatalogObject[],
   itemMap: Map<string, string>,
-  mgMap: Map<string, string>
+  mgMap: Map<string, string>,
 ): POSItemModifierGroupUpsert[] {
   const result: POSItemModifierGroupUpsert[] = [];
   items.forEach((item) => {
@@ -365,14 +385,16 @@ export function mapSquareItemModifierGroups(
 export function mapSquareTransactions(
   orders: SquareOrder[],
   itemMap: Map<string, string>,
-  orgId: string
+  orgId: string,
 ): POSTransactionUpsert[] {
   const result: POSTransactionUpsert[] = [];
   orders.forEach((order) => {
     const lineItems = order.line_items || [];
     lineItems.forEach((line, idx: number) => {
       const externalItemId = line.catalog_object_id || "";
-      const posItemId = externalItemId ? (itemMap.get(externalItemId) || null) : null;
+      const posItemId = externalItemId
+        ? itemMap.get(externalItemId) || null
+        : null;
 
       const grossRevenue = (line.gross_sales_money?.amount || 0) / 100;
       const discountAmount = (line.total_discount_money?.amount || 0) / 100;
@@ -383,7 +405,8 @@ export function mapSquareTransactions(
         quantity_sold: parseInt(line.quantity || "1", 10),
         gross_revenue: grossRevenue,
         discount_amount: discountAmount,
-        transaction_time: order.closed_at || order.created_at || new Date().toISOString(),
+        transaction_time:
+          order.closed_at || order.created_at || new Date().toISOString(),
         source: "square",
         external_transaction_id: `${order.id}_${line.uid || idx}`,
       });
@@ -396,7 +419,7 @@ export function mapSquareOrderLineItems(
   orders: SquareOrder[],
   orderMap: Map<string, string>,
   itemMap: Map<string, string>,
-  orgId: string
+  orgId: string,
 ): POSOrderLineItemUpsert[] {
   const result: POSOrderLineItemUpsert[] = [];
   orders.forEach((order) => {
@@ -406,7 +429,9 @@ export function mapSquareOrderLineItems(
     const lineItems = order.line_items || [];
     lineItems.forEach((line, idx: number) => {
       const externalItemId = line.catalog_object_id || "";
-      const posItemId = externalItemId ? (itemMap.get(externalItemId) || null) : null;
+      const posItemId = externalItemId
+        ? itemMap.get(externalItemId) || null
+        : null;
 
       const basePrice = (line.base_price_money?.amount || 0) / 100;
       const grossSales = (line.gross_sales_money?.amount || 0) / 100;
@@ -429,5 +454,3 @@ export function mapSquareOrderLineItems(
   });
   return result;
 }
-
-

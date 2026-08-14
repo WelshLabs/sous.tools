@@ -47,10 +47,10 @@ export function PillActions({
         onClick={onMicClick}
         type="button"
         aria-label={isListening ? "Stop listening" : "Start voice input"}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none"
+        className="text-muted-foreground hover:bg-muted hover:text-foreground flex h-10 w-10 items-center justify-center rounded-full transition-colors focus-visible:outline-none"
         disabled={isProcessing}
       >
-        <Mic className={`w-5 h-5 ${isListening ? "text-primary" : ""}`} />
+        <Mic className={`h-5 w-5 ${isListening ? "text-primary" : ""}`} />
       </button>
 
       {/* Attachment flyout */}
@@ -73,7 +73,7 @@ export function PillActions({
             onClick={onSubmit}
             disabled={isProcessing}
             aria-label="Send message"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow-sm focus-visible:outline-none disabled:opacity-50"
+            className="bg-primary text-primary-foreground shadow-glow-sm flex h-10 w-10 items-center justify-center rounded-full focus-visible:outline-none disabled:opacity-50"
           >
             <ArrowUp className="h-5 w-5" />
           </motion.button>
@@ -86,9 +86,9 @@ export function PillActions({
           onClick={onToggle}
           type="button"
           aria-label="Close"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground flex h-10 w-10 items-center justify-center rounded-full transition-colors"
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
       )}
     </div>

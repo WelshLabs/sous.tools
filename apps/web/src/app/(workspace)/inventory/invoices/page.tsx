@@ -3,20 +3,34 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Camera, FileText, HardDrive, PlusCircle, ArrowRight, ChevronDown } from "lucide-react";
+import {
+  Camera,
+  FileText,
+  HardDrive,
+  PlusCircle,
+  ArrowRight,
+  ChevronDown,
+} from "lucide-react";
 import { TwoToneHeader } from "@soustools/design-system";
 // import { GoogleDriveBrowser } from "@soustools/domain-settings";
 import { toast } from "sonner";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "drive") => void }) {
+function ImportDropdown({
+  onSelect,
+}: {
+  onSelect: (type: "upload" | "camera" | "drive") => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -26,27 +40,45 @@ function ImportDropdown({ onSelect }: { onSelect: (type: "upload" | "camera" | "
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-bold hover:bg-primary/90 transition-colors cursor-pointer"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 font-bold transition-colors"
       >
-        <PlusCircle className="w-5 h-5" />
+        <PlusCircle className="h-5 w-5" />
         Import Invoice
-        <ChevronDown className="w-4 h-4" />
+        <ChevronDown className="h-4 w-4" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-          <button onClick={() => { setIsOpen(false); onSelect("upload"); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left cursor-pointer">
-            <FileText className="w-5 h-5 text-blue-500" />
+        <div className="bg-card border-border animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border shadow-lg">
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onSelect("upload");
+            }}
+            className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
+          >
+            <FileText className="h-5 w-5 text-blue-500" />
             <span className="font-medium">Upload an Image</span>
           </button>
-          <button onClick={() => { setIsOpen(false); onSelect("camera"); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left border-t border-border cursor-pointer">
-            <Camera className="w-5 h-5 text-emerald-500" />
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onSelect("camera");
+            }}
+            className="border-border flex w-full cursor-pointer items-center gap-3 border-t px-4 py-3 text-left transition-colors hover:bg-white/5"
+          >
+            <Camera className="h-5 w-5 text-emerald-500" />
             <span className="font-medium">Take Photo</span>
           </button>
-          <button onClick={() => { setIsOpen(false); onSelect("drive"); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left border-t border-border cursor-pointer">
-            <HardDrive className="w-5 h-5 text-amber-500" />
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onSelect("drive");
+            }}
+            className="border-border flex w-full cursor-pointer items-center gap-3 border-t px-4 py-3 text-left transition-colors hover:bg-white/5"
+          >
+            <HardDrive className="h-5 w-5 text-amber-500" />
             <span className="font-medium">Google Drive</span>
           </button>
         </div>
@@ -59,7 +91,7 @@ export default function InvoicesHubPage() {
   // const [showDriveBrowser, setShowDriveBrowser] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,7 +110,7 @@ export default function InvoicesHubPage() {
       const res = await fetch("/api/unified-ingestion/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         const payloadData = await res.json();
@@ -94,7 +126,10 @@ export default function InvoicesHubPage() {
     }
   };
 
-  const processFile = async (e: React.ChangeEvent<HTMLInputElement>, source: "upload" | "camera") => {
+  const processFile = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    source: "upload" | "camera",
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -105,7 +140,7 @@ export default function InvoicesHubPage() {
       await submitIngestionPayload({
         source,
         sourceName: file.name,
-        pagesInput: [{ pageNumber: 1, rawText: base64String }]
+        pagesInput: [{ pageNumber: 1, rawText: base64String }],
       });
     };
     reader.onerror = () => {
@@ -146,7 +181,7 @@ export default function InvoicesHubPage() {
   */
 
   return (
-    <div className="flex-1 bg-background p-8 min-h-screen">
+    <div className="bg-background min-h-screen flex-1 p-8">
       <div className="mb-12">
         <TwoToneHeader
           breadcrumb="Inventory / Invoices"
@@ -154,36 +189,48 @@ export default function InvoicesHubPage() {
           trailing={<ImportDropdown onSelect={handleImportSelect} />}
         />
         <p className="text-muted-foreground mt-2 max-w-2xl">
-          Centralize your purchasing records. Import physical or digital invoices to automatically reconcile purchase orders and update the items ledger.
+          Centralize your purchasing records. Import physical or digital
+          invoices to automatically reconcile purchase orders and update the
+          items ledger.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+      <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Manual Entry */}
-        <Link href="/inventory/invoices/new" className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border">
-          <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <PlusCircle className="w-6 h-6" />
+        <Link
+          href="/inventory/invoices/new"
+          className="glass-panel hover:border-primary/50 group border-border flex h-48 flex-col items-center justify-center rounded-2xl border p-6 text-center transition-colors"
+        >
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-500 transition-transform group-hover:scale-110">
+            <PlusCircle className="h-6 w-6" />
           </div>
-          <h3 className="font-bold text-lg mb-1">Manual Entry</h3>
-          <p className="text-sm text-muted-foreground">Create a blank record</p>
+          <h3 className="mb-1 text-lg font-bold">Manual Entry</h3>
+          <p className="text-muted-foreground text-sm">Create a blank record</p>
         </Link>
-        
+
         {/* Processing Queue Link */}
-        <Link href="/home" className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors group h-48 border border-border bg-card/50">
-          <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <FileText className="w-6 h-6" />
+        <Link
+          href="/home"
+          className="glass-panel hover:border-primary/50 group border-border bg-card/50 flex h-48 flex-col items-center justify-center rounded-2xl border p-6 text-center transition-colors"
+        >
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/10 text-purple-500 transition-transform group-hover:scale-110">
+            <FileText className="h-6 w-6" />
           </div>
-          <h3 className="font-bold text-lg mb-1">Processing Queue</h3>
-          <p className="text-sm text-muted-foreground flex items-center gap-1">
-            Review extracted data <ArrowRight className="w-3 h-3" />
+          <h3 className="mb-1 text-lg font-bold">Processing Queue</h3>
+          <p className="text-muted-foreground flex items-center gap-1 text-sm">
+            Review extracted data <ArrowRight className="h-3 w-3" />
           </p>
         </Link>
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-6">Recent Invoices</h2>
-        <div className="glass-panel p-8 rounded-2xl border border-border text-center text-muted-foreground">
-          <p>The historical invoice view will be implemented in the next sprint.</p>
+        <h2 className="mb-6 text-2xl font-bold tracking-tight">
+          Recent Invoices
+        </h2>
+        <div className="glass-panel border-border text-muted-foreground rounded-2xl border p-8 text-center">
+          <p>
+            The historical invoice view will be implemented in the next sprint.
+          </p>
         </div>
       </div>
 
@@ -205,8 +252,8 @@ export default function InvoicesHubPage() {
 
       {isSubmitting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-card p-6 rounded-2xl border border-border shadow-2xl flex items-center gap-4 text-white">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="bg-card border-border flex items-center gap-4 rounded-2xl border p-6 text-white shadow-2xl">
+            <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
             <span className="font-bold">Starting ingestion process...</span>
           </div>
         </div>

@@ -47,7 +47,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div
           className={cn(
             "group relative flex items-center rounded-[var(--radius-md)] border bg-[var(--ds-glass-fill)] px-3.5 shadow-[inset_0_1px_0_var(--ds-glass-highlight)] transition-[border-color,box-shadow,background-color] duration-[--ds-duration]",
-            "h-14 backdrop-blur-xl focus-within:border-primary focus-within:shadow-[var(--ds-glow-sm)]",
+            "focus-within:border-primary h-14 backdrop-blur-xl focus-within:shadow-[var(--ds-glow-sm)]",
             invalid
               ? "border-destructive"
               : focused
@@ -83,7 +83,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                       : "var(--muted-foreground)",
                 }}
                 transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-                className="pointer-events-none absolute left-0 top-1/2 origin-left -translate-y-1/2 font-medium"
+                className="pointer-events-none absolute top-1/2 left-0 origin-left -translate-y-1/2 font-medium"
               >
                 {label}
               </motion.label>
@@ -103,7 +103,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               }
               aria-invalid={invalid}
               className={cn(
-                "w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground",
+                "text-foreground placeholder:text-muted-foreground w-full bg-transparent outline-none",
                 label ? "pt-4 pb-0.5" : "py-2",
               )}
               onChange={(e) => {
@@ -149,6 +149,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </AnimatePresence>
       </div>
     );
-  }
+  },
 );
 Input.displayName = "Input";

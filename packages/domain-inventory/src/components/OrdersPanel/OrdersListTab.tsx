@@ -1,8 +1,18 @@
 "use client";
 
-import { QuickAddBar, InsightsSidebar, type QuickAddSuggestion } from "@soustools/design-system";
-import { SupplierOrderGroup, EmptyOrderList } from "../Supplier/SupplierOrderGroup";
-import type { OrderLineItem, OrderSupplier } from "../Supplier/SupplierOrderGroup.types";
+import {
+  QuickAddBar,
+  InsightsSidebar,
+  type QuickAddSuggestion,
+} from "@soustools/design-system";
+import {
+  SupplierOrderGroup,
+  EmptyOrderList,
+} from "../Supplier/SupplierOrderGroup";
+import type {
+  OrderLineItem,
+  OrderSupplier,
+} from "../Supplier/SupplierOrderGroup.types";
 
 interface ListTabProps {
   items: OrderLineItem[];
@@ -22,13 +32,24 @@ interface ListTabProps {
 }
 
 export function OrdersListTab({
-  items, searchQuery, suggestions, suppliers, groupedItems, placingOrderId,
-  onSearchChange, onSelectSuggestion, onAddFreeText, onRemoveItem, onChangeQty,
-  onChangeSupplier, onPlaceOrder, onShopOrder,
+  items,
+  searchQuery,
+  suggestions,
+  suppliers,
+  groupedItems,
+  placingOrderId,
+  onSearchChange,
+  onSelectSuggestion,
+  onAddFreeText,
+  onRemoveItem,
+  onChangeQty,
+  onChangeSupplier,
+  onPlaceOrder,
+  onShopOrder,
 }: ListTabProps) {
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start">
-      <div className="flex-[3] flex flex-col gap-8 min-w-0">
+    <div className="flex flex-col items-start gap-8 lg:flex-row">
+      <div className="flex min-w-0 flex-[3] flex-col gap-8">
         <QuickAddBar
           value={searchQuery}
           onChange={onSearchChange}
@@ -59,7 +80,7 @@ export function OrdersListTab({
         )}
       </div>
 
-      <div className="w-full lg:flex-1 lg:min-w-[240px] lg:max-w-[320px] sticky top-8">
+      <div className="sticky top-8 w-full lg:max-w-[320px] lg:min-w-[240px] lg:flex-1">
         <InsightsSidebar suppliers={suppliers} />
       </div>
     </div>

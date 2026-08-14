@@ -8,7 +8,7 @@ interface FullscreenLayoutProps {
 
 export default function FullscreenLayout({ children }: FullscreenLayoutProps) {
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-white dark:bg-black text-zinc-900 dark:text-zinc-100">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100">
       {children}
     </div>
   );

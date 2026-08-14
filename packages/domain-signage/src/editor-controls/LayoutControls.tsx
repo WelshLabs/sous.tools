@@ -67,7 +67,7 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
   }) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+        <label className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
           {label}
         </label>
         <button
@@ -75,9 +75,9 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
           className="text-muted-foreground hover:text-cyan-400"
         >
           {linked ? (
-            <Link2 className="w-3 h-3" />
+            <Link2 className="h-3 w-3" />
           ) : (
-            <Unlink className="w-3 h-3" />
+            <Unlink className="h-3 w-3" />
           )}
         </button>
       </div>
@@ -87,20 +87,20 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
           placeholder="e.g. 10px or 1rem"
           value={values[0]}
           onChange={(e) => onChange(0, e.target.value, true)}
-          className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500"
+          className="bg-card border-border text-foreground w-full rounded border px-2 py-1.5 text-xs placeholder:text-zinc-600 focus:border-cyan-500 focus:outline-none"
         />
       ) : (
         <div className="grid grid-cols-4 gap-1">
           {["T", "R", "B", "L"].map((dir, i) => (
             <div key={dir} className="relative">
-              <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[9px] text-zinc-600 font-bold">
+              <span className="absolute top-1/2 left-1.5 -translate-y-1/2 text-[9px] font-bold text-zinc-600">
                 {dir}
               </span>
               <input
                 type="text"
                 value={values[i]}
                 onChange={(e) => onChange(i, e.target.value, false)}
-                className="w-full bg-card border border-border rounded pl-4 pr-1 py-1.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
+                className="bg-card border-border text-foreground w-full rounded border py-1.5 pr-1 pl-4 text-xs focus:border-cyan-500 focus:outline-none"
               />
             </div>
           ))}
@@ -113,7 +113,7 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
+          <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
             Width
           </label>
           <input
@@ -121,11 +121,11 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
             placeholder="auto"
             value={sizing.width || ""}
             onChange={(e) => updateSizing({ width: e.target.value })}
-            className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
+            className="bg-card border-border text-foreground w-full rounded border px-2 py-1.5 text-xs"
           />
         </div>
         <div>
-          <label className="text-[10px] text-muted-foreground uppercase block mb-1">
+          <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
             Height
           </label>
           <input
@@ -133,7 +133,7 @@ export function LayoutControls({ block, onUpdate }: LayoutControlsProps) {
             placeholder="auto"
             value={sizing.height || ""}
             onChange={(e) => updateSizing({ height: e.target.value })}
-            className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
+            className="bg-card border-border text-foreground w-full rounded border px-2 py-1.5 text-xs"
           />
         </div>
       </div>

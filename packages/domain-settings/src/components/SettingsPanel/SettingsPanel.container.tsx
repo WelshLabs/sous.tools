@@ -6,38 +6,46 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { SettingsPanelView, type DriveFile } from "./SettingsPanel.view";
-import { type IntegrationStatus, type GlobalDesignTokens } from "@soustools/api-types";
+import {
+  type IntegrationStatus,
+  type GlobalDesignTokens,
+} from "@soustools/api-types";
 
-const SettingsSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-  password: z.string().optional(),
-  confirmPassword: z.string().optional(),
-}).refine((data) => {
-  if (data.password && data.password !== data.confirmPassword) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const SettingsSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email"),
+    password: z.string().optional(),
+    confirmPassword: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.password && data.password !== data.confirmPassword) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    },
+  );
 
 export type SettingsFormValues = z.infer<typeof SettingsSchema>;
 
 export interface SettingsPanelProps {
-  initialData: { name: string; email: string; role: string; };
+  initialData: { name: string; email: string; role: string };
   onSaveGeneral: (data: SettingsFormValues) => Promise<void>;
-  
+
   initialTokens: GlobalDesignTokens;
   onSaveTokens: (tokens: GlobalDesignTokens) => Promise<void>;
-  
+
   integrations: IntegrationStatus[];
   onConnectIntegration: (provider: string) => void;
   onDisconnectIntegration: (provider: string) => Promise<void>;
   onSquareAction: (action: "sync") => Promise<void>;
   isDev?: boolean;
-  
+
   isDriveOpen?: boolean;
   onCloseDrive?: () => void;
   driveDocumentType?: "RECIPE" | "INVOICE" | "ORDER";
@@ -59,38 +67,57 @@ export function SettingsPanel({
   onCloseDrive = () => {},
   driveDocumentType = "RECIPE",
   onSearchDrive = async () => [],
-  onImportDrive = async () => {}
+  onImportDrive = async () => {},
 }: SettingsPanelProps) {
-
   // --- General Settings ---
   const [generalSaving, setGeneralSaving] = useState(false);
   const [generalSuccess, setGeneralSuccess] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<SettingsFormValues>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SettingsFormValues>({
     resolver: zodResolver(SettingsSchema),
-    defaultValues: { name: initialData.name, email: initialData.email, password: "", confirmPassword: "" },
+    defaultValues: {
+      name: initialData.name,
+      email: initialData.email,
+      password: "",
+      confirmPassword: "",
+    },
   });
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
 
   const onSubmitGeneral = async (data: SettingsFormValues) => {
-    setGeneralSaving(true); setGeneralSuccess(false); setGeneralError(null);
+    setGeneralSaving(true);
+    setGeneralSuccess(false);
+    setGeneralError(null);
     try {
       await onSaveGeneral(data);
       setGeneralSuccess(true);
       setTimeout(() => setGeneralSuccess(false), 3000);
     } catch (err: any) {
-      setGeneralError(err instanceof Error ? err.message : "Failed to save settings");
+      setGeneralError(
+        err instanceof Error ? err.message : "Failed to save settings",
+      );
     } finally {
       setGeneralSaving(false);
     }
   };
 
   const generalProps = {
-    register, errors, password, confirmPassword, initialData,
-    saving: generalSaving, success: generalSuccess, serverError: generalError,
-    onSubmit: handleSubmit(onSubmitGeneral)
+    register,
+    errors,
+    password,
+    confirmPassword,
+    initialData,
+    saving: generalSaving,
+    success: generalSuccess,
+    serverError: generalError,
+    onSubmit: handleSubmit(onSubmitGeneral),
   };
 
   // --- Global Styling ---
@@ -104,7 +131,8 @@ export function SettingsPanel({
 
   const onSubmitTokens = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTokensSaving(true); setTokensSuccess(false);
+    setTokensSaving(true);
+    setTokensSuccess(false);
     try {
       await onSaveTokens(tokens);
       setTokensSuccess(true);
@@ -117,12 +145,19 @@ export function SettingsPanel({
   };
 
   const stylingProps = {
-    tokens, handleTokenChange, saving: tokensSaving, success: tokensSuccess, onSubmit: onSubmitTokens
+    tokens,
+    handleTokenChange,
+    saving: tokensSaving,
+    success: tokensSuccess,
+    onSubmit: onSubmitTokens,
   };
 
   // --- Integrations ---
   const [actionLoading, setActionLoading] = useState(false);
-  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string; } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -130,8 +165,16 @@ export function SettingsPanel({
       const status = params.get("status");
       const tab = params.get("tab");
       if (tab === "integrations" && status) {
-        if (status === "success") setNotification({ type: "success", message: "Account connected successfully!" });
-        else setNotification({ type: "error", message: params.get("message") || "Failed to connect integration." });
+        if (status === "success")
+          setNotification({
+            type: "success",
+            message: "Account connected successfully!",
+          });
+        else
+          setNotification({
+            type: "error",
+            message: params.get("message") || "Failed to connect integration.",
+          });
         const newUrl = window.location.pathname + (tab ? `?tab=${tab}` : "");
         window.history.replaceState({}, document.title, newUrl);
       }
@@ -139,10 +182,14 @@ export function SettingsPanel({
   }, []);
 
   const handleDisconnect = async (provider: string) => {
-    setActionLoading(true); setNotification(null);
+    setActionLoading(true);
+    setNotification(null);
     try {
       await onDisconnectIntegration(provider);
-      setNotification({ type: "success", message: `${provider} integration disconnected.` });
+      setNotification({
+        type: "success",
+        message: `${provider} integration disconnected.`,
+      });
     } catch (err: any) {
       setNotification({ type: "error", message: err.message || "Error" });
     } finally {
@@ -151,51 +198,75 @@ export function SettingsPanel({
   };
 
   const handleSquareAction = async (action: "sync") => {
-    setActionLoading(true); setNotification(null);
+    setActionLoading(true);
+    setNotification(null);
     try {
       await onSquareAction(action);
-      setNotification({ type: "success", message: "Square menu catalog synchronized successfully!" });
+      setNotification({
+        type: "success",
+        message: "Square menu catalog synchronized successfully!",
+      });
     } catch (err: any) {
-      setNotification({ type: "error", message: err.message || "Failed to sync catalog." });
+      setNotification({
+        type: "error",
+        message: err.message || "Failed to sync catalog.",
+      });
     } finally {
       setActionLoading(false);
     }
   };
 
   const integrationsProps = {
-    integrations, onConnect: onConnectIntegration, onDisconnect: handleDisconnect,
-    onSquareAction: handleSquareAction, isDev, actionLoading, notification
+    integrations,
+    onConnect: onConnectIntegration,
+    onDisconnect: handleDisconnect,
+    onSquareAction: handleSquareAction,
+    isDev,
+    actionLoading,
+    notification,
   };
 
   // --- Drive Browser ---
   const [driveQuery, setDriveQuery] = useState("");
   const [driveFiles, setDriveFiles] = useState<DriveFile[]>([]);
   const [driveLoading, setDriveLoading] = useState(false);
-  const [driveSelectedIds, setDriveSelectedIds] = useState<Set<string>>(new Set());
-  const [driveCurrentFolder, setDriveCurrentFolder] = useState<{ id: string; name: string } | null>(null);
+  const [driveSelectedIds, setDriveSelectedIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [driveCurrentFolder, setDriveCurrentFolder] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
-  const handleSearchDriveInternal = useCallback(async (q: string, folderId?: string) => {
-    setDriveLoading(true);
-    try {
-      const activeFolder = folderId !== undefined ? folderId : driveCurrentFolder?.id;
-      const data = await onSearchDrive(q, activeFolder);
-      setDriveFiles(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setDriveLoading(false);
-    }
-  }, [onSearchDrive, driveCurrentFolder]);
+  const handleSearchDriveInternal = useCallback(
+    async (q: string, folderId?: string) => {
+      setDriveLoading(true);
+      try {
+        const activeFolder =
+          folderId !== undefined ? folderId : driveCurrentFolder?.id;
+        const data = await onSearchDrive(q, activeFolder);
+        setDriveFiles(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setDriveLoading(false);
+      }
+    },
+    [onSearchDrive, driveCurrentFolder],
+  );
 
   useEffect(() => {
     if (isDriveOpen) {
-      setDriveQuery(""); setDriveCurrentFolder(null); handleSearchDriveInternal("", "");
+      setDriveQuery("");
+      setDriveCurrentFolder(null);
+      handleSearchDriveInternal("", "");
     }
   }, [isDriveOpen, handleSearchDriveInternal]);
 
   const driveToggleSelect = (id: string) => {
     const newSet = new Set(driveSelectedIds);
-    if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
     setDriveSelectedIds(newSet);
   };
 
@@ -203,7 +274,10 @@ export function SettingsPanel({
     if (driveSelectedIds.size === 0) return;
     setDriveLoading(true);
     try {
-      await onImportDrive(Array.from(driveSelectedIds), driveDocumentType.toLowerCase());
+      await onImportDrive(
+        Array.from(driveSelectedIds),
+        driveDocumentType.toLowerCase(),
+      );
       onCloseDrive();
     } catch (err) {
       console.error(err);
@@ -213,11 +287,19 @@ export function SettingsPanel({
   };
 
   const driveBrowserProps = {
-    isOpen: isDriveOpen, onClose: onCloseDrive, documentType: driveDocumentType,
-    query: driveQuery, setQuery: setDriveQuery, files: driveFiles, loading: driveLoading,
-    selectedIds: driveSelectedIds, toggleSelect: driveToggleSelect,
-    currentFolder: driveCurrentFolder, setCurrentFolder: setDriveCurrentFolder,
-    handleSearch: handleSearchDriveInternal, handleImport: handleImportDriveInternal
+    isOpen: isDriveOpen,
+    onClose: onCloseDrive,
+    documentType: driveDocumentType,
+    query: driveQuery,
+    setQuery: setDriveQuery,
+    files: driveFiles,
+    loading: driveLoading,
+    selectedIds: driveSelectedIds,
+    toggleSelect: driveToggleSelect,
+    currentFolder: driveCurrentFolder,
+    setCurrentFolder: setDriveCurrentFolder,
+    handleSearch: handleSearchDriveInternal,
+    handleImport: handleImportDriveInternal,
   };
 
   return (

@@ -28,23 +28,23 @@ export function OrderItemRow({
   };
 
   return (
-    <div className="p-4 bg-card/60 border border-border hover:border-primary/30 transition-all flex flex-row items-center justify-between rounded-2xl group/item">
+    <div className="bg-card/60 border-border hover:border-primary/30 group/item flex flex-row items-center justify-between rounded-2xl border p-4 transition-all">
       {/* Left: icon + name */}
-      <div className="flex flex-row items-center gap-4 flex-1 min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center border border-border group-hover/item:bg-primary/5 transition-colors shrink-0">
+      <div className="flex min-w-0 flex-1 flex-row items-center gap-4">
+        <div className="bg-secondary border-border group-hover/item:bg-primary/5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors">
           <Package
             size={16}
             className="text-muted-foreground group-hover/item:text-primary transition-colors"
           />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-black uppercase text-sm tracking-tight text-foreground truncate">
+        <div className="min-w-0 flex-1">
+          <p className="text-foreground truncate text-sm font-black tracking-tight uppercase">
             {item.rawName}
           </p>
           {item.isSystemSuggestion && (
-            <div className="inline-flex flex-row items-center gap-1 text-warning bg-warning/10 px-2 py-0.5 rounded-full border border-warning/20 mt-0.5">
+            <div className="text-warning bg-warning/10 border-warning/20 mt-0.5 inline-flex flex-row items-center gap-1 rounded-full border px-2 py-0.5">
               <Zap size={7} fill="currentColor" />
-              <span className="text-[7px] font-black uppercase tracking-widest">
+              <span className="text-[7px] font-black tracking-widest uppercase">
                 AI Suggested
               </span>
             </div>
@@ -53,8 +53,8 @@ export function OrderItemRow({
       </div>
 
       {/* Right: qty + supplier + remove */}
-      <div className="flex flex-row items-center gap-3 shrink-0">
-        <div className="flex flex-row items-center gap-1 bg-secondary p-1 rounded-xl border border-border">
+      <div className="flex shrink-0 flex-row items-center gap-3">
+        <div className="bg-secondary border-border flex flex-row items-center gap-1 rounded-xl border p-1">
           <input
             type="number"
             value={qty}
@@ -62,19 +62,17 @@ export function OrderItemRow({
             step={0.5}
             onChange={(e) => setQty(e.target.value)}
             onBlur={commitQty}
-            className="w-12 bg-transparent text-center font-black text-sm outline-none text-foreground"
+            className="text-foreground w-12 bg-transparent text-center text-sm font-black outline-none"
           />
-          <span className="text-[10px] font-black uppercase text-muted-foreground pr-3 border-l border-border pl-2">
+          <span className="text-muted-foreground border-border border-l pr-3 pl-2 text-[10px] font-black uppercase">
             {item.unit}
           </span>
         </div>
 
         <select
           value={item.supplier?.id ?? ""}
-          onChange={(e) =>
-            onChangeSupplier(item.id, e.target.value || null)
-          }
-          className="bg-secondary border border-border rounded-xl px-3 h-10 text-[10px] font-black uppercase appearance-none text-foreground min-w-[130px] outline-none focus:border-primary/50 transition-colors"
+          onChange={(e) => onChangeSupplier(item.id, e.target.value || null)}
+          className="bg-secondary border-border text-foreground focus:border-primary/50 h-10 min-w-[130px] appearance-none rounded-xl border px-3 text-[10px] font-black uppercase transition-colors outline-none"
         >
           <option value="">Move to...</option>
           {suppliers.map((s) => (
@@ -87,7 +85,7 @@ export function OrderItemRow({
         <button
           onClick={() => onRemove(item.id)}
           aria-label={`Remove ${item.rawName}`}
-          className="h-10 w-10 p-0 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive text-muted-foreground flex items-center justify-center"
+          className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground flex h-10 w-10 items-center justify-center rounded-full p-0 opacity-0 transition-opacity group-hover/item:opacity-100"
         >
           <Trash2 size={15} />
         </button>

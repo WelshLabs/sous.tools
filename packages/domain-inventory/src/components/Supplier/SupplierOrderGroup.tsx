@@ -40,9 +40,9 @@ export function SupplierOrderGroup({
         onShopOrder={onShopOrder}
       />
       {isPlacingOrder ? (
-        <div className="flex items-center justify-center py-10 text-primary gap-3">
+        <div className="text-primary flex items-center justify-center gap-3 py-10">
           <Loader2 size={26} className="animate-spin" />
-          <span className="text-xs font-black uppercase tracking-widest">
+          <span className="text-xs font-black tracking-widest uppercase">
             Placing Order…
           </span>
         </div>
@@ -66,17 +66,17 @@ export function SupplierOrderGroup({
 
 export function EmptyOrderList() {
   return (
-    <div className="p-20 bg-muted/40 dark:bg-card/40 border border-border border-dashed flex flex-col items-center justify-center rounded-[2.5rem]">
-      <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-6">
+    <div className="bg-muted/40 dark:bg-card/40 border-border flex flex-col items-center justify-center rounded-[2.5rem] border border-dashed p-20">
+      <div className="bg-secondary mb-6 flex h-24 w-24 items-center justify-center rounded-full">
         <ShoppingBag
           size={48}
           className="text-muted-foreground/30 dark:text-muted-foreground/20"
         />
       </div>
-      <p className="text-muted-foreground font-black uppercase text-xs tracking-widest mb-2">
+      <p className="text-muted-foreground mb-2 text-xs font-black tracking-widest uppercase">
         Everything looks good
       </p>
-      <p className="text-muted-foreground/60 text-sm max-w-xs text-center">
+      <p className="text-muted-foreground/60 max-w-xs text-center text-sm">
         Your living order list is empty. Add items as you notice they are low,
         or wait for system suggestions.
       </p>

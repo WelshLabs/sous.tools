@@ -20,7 +20,7 @@ const VOLUME_CONVERSIONS: Record<string, number> = {
   qt: 946.353,
 };
 
-const COUNT_UNITS = new Set(['each', 'case']);
+const COUNT_UNITS = new Set(["each", "case"]);
 
 /**
  * Converts a numeric amount from one unit of measurement to another.
@@ -39,7 +39,7 @@ export function convertUnit(
   toUnit: string,
   densityGMl: number = 1.0,
   eachWeightG?: number,
-  unitsPerCase?: number
+  unitsPerCase?: number,
 ): number {
   const from = fromUnit.toLowerCase();
   const to = toUnit.toLowerCase();
@@ -47,16 +47,20 @@ export function convertUnit(
   // Handle count units (each, case) → grams conversion
   if (COUNT_UNITS.has(from)) {
     if (eachWeightG === undefined || eachWeightG <= 0) {
-      console.warn(`Unit "${fromUnit}" requires eachWeightG to convert to mass/volume. Using fallback.`);
+      console.warn(
+        `Unit "${fromUnit}" requires eachWeightG to convert to mass/volume. Using fallback.`,
+      );
       return amount;
     }
     const totalG =
-      from === 'case'
+      from === "case"
         ? amount * (unitsPerCase ?? 1) * eachWeightG
         : amount * eachWeightG;
-    if (to === 'g') return totalG;
-    if (WEIGHT_CONVERSIONS[to] !== undefined) return totalG / WEIGHT_CONVERSIONS[to];
-    if (VOLUME_CONVERSIONS[to] !== undefined) return (totalG / densityGMl) / VOLUME_CONVERSIONS[to];
+    if (to === "g") return totalG;
+    if (WEIGHT_CONVERSIONS[to] !== undefined)
+      return totalG / WEIGHT_CONVERSIONS[to];
+    if (VOLUME_CONVERSIONS[to] !== undefined)
+      return totalG / densityGMl / VOLUME_CONVERSIONS[to];
     return totalG;
   }
 
@@ -120,7 +124,7 @@ export interface ScaledIngredientResult {
   calculationType: "fixed_weight" | "bakers_percentage";
   baseCalculationGroup: boolean;
   percentageOfBase?: number; // Baker's percentage if applicable
-  weightInGrams: number;      // Calculated final weight in grams
+  weightInGrams: number; // Calculated final weight in grams
 }
 
 /**
@@ -135,7 +139,7 @@ export function calculateRecipeScale(
     targetVesselVolume?: number;
     defaultVesselVolume?: number;
     customIngredientWeights?: Record<string, { amount: number; unit: string }>; // anchor overrides
-  }
+  },
 ): { multiplier: number; items: ScaledIngredientResult[] } {
   if (ingredients.length === 0) {
     return { multiplier: 1, items: [] };
@@ -153,14 +157,18 @@ export function calculateRecipeScale(
       ingredientBaseWeightsG[ing.id] = weightG;
       if (ing.baseCalculationGroup) {
         const comp = ing.component || "Base Recipe";
-        componentBaseFlourWeightsG[comp] = (componentBaseFlourWeightsG[comp] || 0) + weightG;
+        componentBaseFlourWeightsG[comp] =
+          (componentBaseFlourWeightsG[comp] || 0) + weightG;
       }
     }
   });
 
   // Resolve baker's percentage values based on base flour weight
   ingredients.forEach((ing) => {
-    if (ing.calculationType === "bakers_percentage" && !ing.baseCalculationGroup) {
+    if (
+      ing.calculationType === "bakers_percentage" &&
+      !ing.baseCalculationGroup
+    ) {
       const comp = ing.component || "Base Recipe";
       const baseWeightG = componentBaseFlourWeightsG[comp] || 0;
       // Amount represents percentage (e.g. 60%)
@@ -170,18 +178,31 @@ export function calculateRecipeScale(
   });
 
   // Calculate base total weight of the recipe
-  const baseTotalWeightG = Object.values(ingredientBaseWeightsG).reduce((a, b) => a + b, 0);
+  const baseTotalWeightG = Object.values(ingredientBaseWeightsG).reduce(
+    (a, b) => a + b,
+    0,
+  );
 
   // 2. Determine the scaling multiplier
   let multiplier = 1.0;
 
-  if (options.customIngredientWeights && Object.keys(options.customIngredientWeights).length > 0) {
+  if (
+    options.customIngredientWeights &&
+    Object.keys(options.customIngredientWeights).length > 0
+  ) {
     // Scaled relative to a specific ingredient weight override (anchoring)
-    const [anchorId, targetWeight] = Object.entries(options.customIngredientWeights)[0];
+    const [anchorId, targetWeight] = Object.entries(
+      options.customIngredientWeights,
+    )[0];
     const anchorIng = ingredients.find((ing) => ing.id === anchorId);
     if (anchorIng) {
       const density = anchorIng.masterIngredient?.densityGMl ?? 1.0;
-      const targetWeightG = convertUnit(targetWeight.amount, targetWeight.unit, "g", density);
+      const targetWeightG = convertUnit(
+        targetWeight.amount,
+        targetWeight.unit,
+        "g",
+        density,
+      );
       const baseWeightG = ingredientBaseWeightsG[anchorId] ?? 0;
 
       if (baseWeightG > 0) {
@@ -207,7 +228,8 @@ export function calculateRecipeScale(
   // 3. Map ingredients to scaled outputs
   const items = ingredients.map((ing): ScaledIngredientResult => {
     const density = ing.masterIngredient?.densityGMl ?? 1.0;
-    const name = ing.masterIngredient?.name ?? ing.rawName ?? "Unknown Ingredient";
+    const name =
+      ing.masterIngredient?.name ?? ing.rawName ?? "Unknown Ingredient";
 
     let scaledAmount = 0;
     let scaledUnit = ing.unit;
@@ -242,7 +264,8 @@ export function calculateRecipeScale(
       originalUnit: ing.unit,
       scaledAmount,
       scaledUnit,
-      calculationType: ing.calculationType as "fixed_weight" | "bakers_percentage",
+      calculationType: ing.calculationType as
+        "fixed_weight" | "bakers_percentage",
       baseCalculationGroup: ing.baseCalculationGroup,
       percentageOfBase,
       weightInGrams,

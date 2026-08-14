@@ -2,7 +2,10 @@
 
 import React from "react";
 import { useState } from "react";
-import { type SignageLayoutConfig, type ColumnLayoutSlide } from "@soustools/api-types";
+import {
+  type SignageLayoutConfig,
+  type ColumnLayoutSlide,
+} from "@soustools/api-types";
 import { Code2 } from "lucide-react";
 import { CssEditorModal } from "./css-editor-modal";
 import { DisplayPicker } from "./components/DisplayManager/DisplayManager.container";
@@ -16,49 +19,95 @@ export interface StylesPanelProps {
   deckId?: string;
 }
 
-const DIVIDER = <div className="border-t border-border my-3" />;
+const DIVIDER = <div className="border-border my-3 border-t" />;
 
 export const StylesPanel: React.FC<StylesPanelProps> = ({
-  config, activeSlideIndex, onUpdateConfig, onUpdateSlide, deckId,
+  config,
+  activeSlideIndex,
+  onUpdateConfig,
+  onUpdateSlide,
+  deckId,
 }) => {
   const [cssModalOpen, setCssModalOpen] = useState(false);
 
-  const activeSlide = config.slides[activeSlideIndex] as ColumnLayoutSlide | undefined;
+  const activeSlide = config.slides[activeSlideIndex] as
+    ColumnLayoutSlide | undefined;
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1 text-muted-foreground">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Slide Settings</p>
+      <div className="text-muted-foreground flex-1 space-y-1 overflow-y-auto px-4 py-3">
+        <p className="text-muted-foreground mb-1 text-[10px] font-bold tracking-widest uppercase">
+          Slide Settings
+        </p>
         <div className="flex items-center justify-between gap-3">
-          <label className="text-xs text-muted-foreground">Duration (s)</label>
-          <input type="number" min={1} max={600} value={activeSlide?.durationSeconds ?? 10}
-            onChange={(e) => onUpdateSlide(activeSlideIndex, { durationSeconds: Number(e.target.value) })}
-            className="w-20 bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:border-primary/60" />
+          <label className="text-muted-foreground text-xs">Duration (s)</label>
+          <input
+            type="number"
+            min={1}
+            max={600}
+            value={activeSlide?.durationSeconds ?? 10}
+            onChange={(e) =>
+              onUpdateSlide(activeSlideIndex, {
+                durationSeconds: Number(e.target.value),
+              })
+            }
+            className="bg-secondary border-border text-foreground focus:border-primary/60 w-20 rounded-lg border px-2 py-1 text-xs focus:outline-none"
+          />
         </div>
-        <div className="flex items-center justify-between gap-3 mt-2">
-          <label className="text-xs text-muted-foreground">Background Color</label>
-          <input type="color" value={activeSlide?.backgroundColor ?? "#000000"}
-            onChange={(e) => onUpdateSlide(activeSlideIndex, { backgroundColor: e.target.value })}
-            className="w-8 h-7 rounded cursor-pointer border border-border bg-secondary p-0.5" />
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <label className="text-muted-foreground text-xs">
+            Background Color
+          </label>
+          <input
+            type="color"
+            value={activeSlide?.backgroundColor ?? "#000000"}
+            onChange={(e) =>
+              onUpdateSlide(activeSlideIndex, {
+                backgroundColor: e.target.value,
+              })
+            }
+            className="border-border bg-secondary h-7 w-8 cursor-pointer rounded border p-0.5"
+          />
         </div>
         <div className="mt-2">
-          <label className="text-xs text-muted-foreground block mb-1">Background Image URL</label>
-          <input type="url" placeholder="https://example.com/image.jpg" value={activeSlide?.backgroundImageUrl ?? ""}
-            onChange={(e) => onUpdateSlide(activeSlideIndex, { backgroundImageUrl: e.target.value || undefined })}
-            className="w-full bg-secondary border border-border rounded-lg px-2 py-1.5 text-xs text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary/60" />
+          <label className="text-muted-foreground mb-1 block text-xs">
+            Background Image URL
+          </label>
+          <input
+            type="url"
+            placeholder="https://example.com/image.jpg"
+            value={activeSlide?.backgroundImageUrl ?? ""}
+            onChange={(e) =>
+              onUpdateSlide(activeSlideIndex, {
+                backgroundImageUrl: e.target.value || undefined,
+              })
+            }
+            className="bg-secondary border-border text-foreground focus:border-primary/60 w-full rounded-lg border px-2 py-1.5 text-xs placeholder-zinc-600 focus:outline-none"
+          />
         </div>
 
         {DIVIDER}
 
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Layout Sizing</p>
-        <p className="text-[10px] text-muted-foreground leading-tight mb-2">This dictates the targeted display output for hardware players. The editor canvas remains responsive for ease of use.</p>
-        <div className="space-y-2 mt-1">
+        <p className="text-muted-foreground mb-1 text-[10px] font-bold tracking-widest uppercase">
+          Layout Sizing
+        </p>
+        <p className="text-muted-foreground mb-2 text-[10px] leading-tight">
+          This dictates the targeted display output for hardware players. The
+          editor canvas remains responsive for ease of use.
+        </p>
+        <div className="mt-1 space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <label className="text-xs text-muted-foreground">Aspect Ratio</label>
+            <label className="text-muted-foreground text-xs">
+              Aspect Ratio
+            </label>
             <select
               value={config.aspectRatio ?? "16:9"}
-              onChange={(e) => onUpdateConfig({ aspectRatio: e.target.value as "16:9" | "responsive" })}
-              className="bg-secondary border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:border-primary/60"
+              onChange={(e) =>
+                onUpdateConfig({
+                  aspectRatio: e.target.value as "16:9" | "responsive",
+                })
+              }
+              className="bg-secondary border-border text-foreground focus:border-primary/60 rounded-lg border px-2 py-1 text-xs focus:outline-none"
             >
               <option value="16:9">Fixed 16:9 (1920x1080)</option>
               <option value="responsive">Responsive</option>
@@ -66,12 +115,16 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
           </div>
           {config.aspectRatio !== "responsive" && (
             <div className="flex items-center justify-between gap-3">
-              <label className="text-xs text-muted-foreground">Scale to Fit</label>
+              <label className="text-muted-foreground text-xs">
+                Scale to Fit
+              </label>
               <input
                 type="checkbox"
                 checked={config.scaleToFit !== false}
-                onChange={(e) => onUpdateConfig({ scaleToFit: e.target.checked })}
-                className="w-4 h-4 rounded border-border bg-secondary focus:ring-0 cursor-pointer"
+                onChange={(e) =>
+                  onUpdateConfig({ scaleToFit: e.target.checked })
+                }
+                className="border-border bg-secondary h-4 w-4 cursor-pointer rounded focus:ring-0"
               />
             </div>
           )}
@@ -81,19 +134,27 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
 
         {DIVIDER}
 
-        <DisplayPicker deckId={deckId} displays={[]} onToggleDisplay={async () => {}} />
+        <DisplayPicker
+          deckId={deckId}
+          displays={[]}
+          onToggleDisplay={async () => {}}
+        />
 
         {DIVIDER}
 
-
-
-        <button onClick={() => setCssModalOpen(true)}
-          className="flex items-center gap-2 w-full px-3 py-2.5 bg-secondary border border-border rounded-xl hover:border-white/20 transition-all cursor-pointer text-left">
-          <Code2 className="w-4 h-4 text-blue-400 shrink-0" />
+        <button
+          onClick={() => setCssModalOpen(true)}
+          className="bg-secondary border-border flex w-full cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition-all hover:border-white/20"
+        >
+          <Code2 className="h-4 w-4 shrink-0 text-blue-400" />
           <div>
-            <div className="text-xs font-semibold text-foreground">Custom CSS</div>
-            <div className="text-[10px] text-muted-foreground">
-              {config.customCss?.trim() ? "CSS applied — click to edit" : "Click to open CSS editor"}
+            <div className="text-foreground text-xs font-semibold">
+              Custom CSS
+            </div>
+            <div className="text-muted-foreground text-[10px]">
+              {config.customCss?.trim()
+                ? "CSS applied — click to edit"
+                : "Click to open CSS editor"}
             </div>
           </div>
         </button>
@@ -101,10 +162,13 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
 
       {cssModalOpen && (
         <BodyPortal>
-          <CssEditorModal value={config.customCss ?? ""} onChange={(v) => onUpdateConfig({ customCss: v })} onClose={() => setCssModalOpen(false)} />
+          <CssEditorModal
+            value={config.customCss ?? ""}
+            onChange={(v) => onUpdateConfig({ customCss: v })}
+            onClose={() => setCssModalOpen(false)}
+          />
         </BodyPortal>
       )}
-
     </>
   );
 };

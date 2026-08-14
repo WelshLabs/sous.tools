@@ -71,34 +71,56 @@ export function DevicesClientWrapper({
   };
 
   const renderEdgeDevices = () => {
-    const devices = edgeDevices && edgeDevices.length > 0 ? edgeDevices : [
-      { id: "mock-1", name: "Kitchen WearOS", deviceType: "wearos", assignedUser: "Chef Gordon" },
-      { id: "mock-2", name: "Prep RPi", deviceType: "rpi", assignedUser: "Line Cook A" }
-    ];
+    const devices =
+      edgeDevices && edgeDevices.length > 0
+        ? edgeDevices
+        : [
+            {
+              id: "mock-1",
+              name: "Kitchen WearOS",
+              deviceType: "wearos",
+              assignedUser: "Chef Gordon",
+            },
+            {
+              id: "mock-2",
+              name: "Prep RPi",
+              deviceType: "rpi",
+              assignedUser: "Line Cook A",
+            },
+          ];
 
     return (
-      <div className="mt-12 bg-card text-card-foreground border border-black/5 dark:border-white/10 shadow-sm rounded-2xl p-6">
-        <h2 className="text-xl font-bold tracking-wide mb-4">Edge Devices</h2>
+      <div className="bg-card text-card-foreground mt-12 rounded-2xl border border-black/5 p-6 shadow-sm dark:border-white/10">
+        <h2 className="mb-4 text-xl font-bold tracking-wide">Edge Devices</h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-border text-muted-foreground text-sm">
-                <th className="pb-3 px-4 font-medium">Device Name</th>
-                <th className="pb-3 px-4 font-medium">Type</th>
-                <th className="pb-3 px-4 font-medium">Assigned User</th>
-                <th className="pb-3 px-4 font-medium text-right">Actions</th>
+              <tr className="border-border text-muted-foreground border-b text-sm">
+                <th className="px-4 pb-3 font-medium">Device Name</th>
+                <th className="px-4 pb-3 font-medium">Type</th>
+                <th className="px-4 pb-3 font-medium">Assigned User</th>
+                <th className="px-4 pb-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {devices.map((device: any) => (
-                <tr key={device.id} className="border-b border-border hover:bg-muted/50">
-                  <td className="py-4 px-4 font-medium">{device.name || "Unknown Device"}</td>
-                  <td className="py-4 px-4 text-muted-foreground uppercase text-xs tracking-wider">{device.deviceType || "wearos"}</td>
-                  <td className="py-4 px-4 text-muted-foreground">{device.assignedUser || "Unassigned"}</td>
-                  <td className="py-4 px-4 text-right">
-                    <button 
+                <tr
+                  key={device.id}
+                  className="border-border hover:bg-muted/50 border-b"
+                >
+                  <td className="px-4 py-4 font-medium">
+                    {device.name || "Unknown Device"}
+                  </td>
+                  <td className="text-muted-foreground px-4 py-4 text-xs tracking-wider uppercase">
+                    {device.deviceType || "wearos"}
+                  </td>
+                  <td className="text-muted-foreground px-4 py-4">
+                    {device.assignedUser || "Unassigned"}
+                  </td>
+                  <td className="px-4 py-4 text-right">
+                    <button
                       onClick={() => handleRevokeDevice(device.id)}
-                      className="px-3 py-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-sm font-semibold transition-colors"
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors"
                     >
                       Revoke Access
                     </button>
@@ -113,7 +135,7 @@ export function DevicesClientWrapper({
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full h-full pb-20">
+    <div className="flex h-full w-full flex-col gap-8 pb-20">
       <DisplayManager
         displays={displays}
         layouts={layouts}
@@ -129,4 +151,3 @@ export function DevicesClientWrapper({
     </div>
   );
 }
-

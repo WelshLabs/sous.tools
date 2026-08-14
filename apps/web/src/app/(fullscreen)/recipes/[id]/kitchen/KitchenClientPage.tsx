@@ -24,7 +24,7 @@ export function KitchenClientPage({ recipe }: { recipe: Recipe }) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="bg-background flex min-h-screen flex-col">
       <ActiveKitchen
         recipe={recipe}
         activeTimers={timers}

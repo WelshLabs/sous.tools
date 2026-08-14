@@ -11,7 +11,7 @@ export function Card({
     <div
       className={cn(
         "rounded-[var(--radius-lg)] p-6",
-        glass ? "ds-glass" : "border border-border bg-card",
+        glass ? "ds-glass" : "border-border bg-card border",
         glow && "shadow-glow-sm",
         className,
       )}
@@ -36,7 +36,7 @@ export function CardTitle({
   return (
     <h3
       className={cn(
-        "font-display text-lg font-semibold tracking-tight text-foreground",
+        "font-display text-foreground text-lg font-semibold tracking-tight",
         className,
       )}
       {...props}
@@ -49,7 +49,7 @@ export function CardDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+    <p className={cn("text-muted-foreground text-sm", className)} {...props} />
   );
 }
 

@@ -1,7 +1,6 @@
 "use client";
 import * as React from "react";
 
-
 export const PreviewMediaCarousel = ({ block }: { block: any }) => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const slides = block.slides || [];
@@ -38,12 +37,12 @@ export const PreviewMediaCarousel = ({ block }: { block: any }) => {
               key={i}
               src={slide.imageUrl}
               alt={`slide-${i}`}
-              className={`absolute inset-0 w-full h-full ${objectFitClass} transition-opacity duration-700 ease-in-out ${isActive ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+              className={`absolute inset-0 h-full w-full ${objectFitClass} transition-opacity duration-700 ease-in-out ${isActive ? "z-10 opacity-100" : "z-0 opacity-0"}`}
             />
           );
         })
       ) : (
-        <span className="text-muted-foreground italic relative z-20">
+        <span className="text-muted-foreground relative z-20 italic">
           Media Carousel Preview
         </span>
       )}

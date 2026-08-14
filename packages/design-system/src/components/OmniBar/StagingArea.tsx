@@ -4,13 +4,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FileText, X } from "lucide-react";
 import { useOmnibarContext, type StagedFile } from "./OmniBarContext";
 
-const springTransition = { type: "spring" as const, stiffness: 380, damping: 30, mass: 0.8 };
+const springTransition = {
+  type: "spring" as const,
+  stiffness: 380,
+  damping: 30,
+  mass: 0.8,
+};
 
 interface StagingAreaProps {
   files: StagedFile[];
 }
 
-function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number }) {
+function StagedFileThumbnail({
+  file,
+  index,
+}: {
+  file: StagedFile;
+  index: number;
+}) {
   const { setStagedFiles } = useOmnibarContext();
 
   const handleRemove = () => {
@@ -27,11 +38,11 @@ function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number 
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.75, y: 6 }}
       transition={{ ...springTransition, delay: index * 0.04 }}
-      className="relative shrink-0 group"
+      className="group relative shrink-0"
     >
       {/* Thumbnail card */}
       <div
-        className="relative w-16 h-16 rounded-xl overflow-hidden flex items-center justify-center border"
+        className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border"
         style={{
           background: "var(--ds-glass-fill)",
           borderColor: "var(--color-border)",
@@ -41,29 +52,34 @@ function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number 
           <img
             src={file.previewUrl}
             alt={file.file?.name ?? "Staged image"}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         ) : (
           <div className="flex flex-col items-center gap-1 px-1">
             <FileText
-              className="w-6 h-6"
-              style={{ color: isPdf ? "var(--destructive)" : "var(--color-primary)" }}
+              className="h-6 w-6"
+              style={{
+                color: isPdf ? "var(--destructive)" : "var(--color-primary)",
+              }}
             />
             <span
-              className="text-[9px] font-semibold uppercase tracking-wide leading-none text-center truncate w-full px-0.5"
+              className="w-full truncate px-0.5 text-center text-[9px] leading-none font-semibold tracking-wide uppercase"
               style={{ color: "var(--muted-foreground)" }}
             >
-              {isPdf ? "PDF" : file.file?.name?.split(".").pop() ?? "FILE"}
+              {isPdf ? "PDF" : (file.file?.name?.split(".").pop() ?? "FILE")}
             </span>
           </div>
         )}
 
         {/* Filename tooltip on hover */}
         <div
-          className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none rounded-xl"
-          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)" }}
+          className="pointer-events-none absolute inset-0 flex items-end justify-center rounded-xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)",
+          }}
         >
-          <span className="text-[8px] text-white font-medium px-1 pb-1 truncate w-full text-center leading-none">
+          <span className="w-full truncate px-1 pb-1 text-center text-[8px] leading-none font-medium text-white">
             {file.file?.name}
           </span>
         </div>
@@ -79,7 +95,7 @@ function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number 
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.9 }}
         transition={springTransition}
-        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center z-10 border cursor-pointer"
+        className="absolute -top-1.5 -right-1.5 z-10 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border"
         style={{
           background: "var(--color-card)",
           borderColor: "var(--color-border)",
@@ -87,7 +103,7 @@ function StagedFileThumbnail({ file, index }: { file: StagedFile; index: number 
           boxShadow: "0 1px 4px rgba(0,0,0,0.4)",
         }}
       >
-        <X className="w-2.5 h-2.5" />
+        <X className="h-2.5 w-2.5" />
       </motion.button>
     </motion.div>
   );
@@ -110,10 +126,7 @@ export function StagingArea({ files }: StagingAreaProps) {
           transition={springTransition}
           className="overflow-hidden"
         >
-          <motion.div
-            layout
-            className="flex flex-wrap gap-2 pt-1 pb-2 px-1"
-          >
+          <motion.div layout className="flex flex-wrap gap-2 px-1 pt-1 pb-2">
             <AnimatePresence mode="popLayout">
               {files.map((file, index) => (
                 <StagedFileThumbnail key={file.id} file={file} index={index} />

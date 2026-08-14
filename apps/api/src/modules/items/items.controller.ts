@@ -18,7 +18,11 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiBody,
+  ApiResponse as NestjsApiResponse,
+} from "@nestjs/swagger";
 
 @ApiTags("items")
 @Controller("items")
@@ -28,7 +32,11 @@ export class ItemsController {
   constructor(private readonly service: ItemsService) {}
 
   @Get()
-  @NestjsApiResponse({ status: 200, description: "Success", schema: { type: "object", additionalProperties: true } })
+  @NestjsApiResponse({
+    status: 200,
+    description: "Success",
+    schema: { type: "object", additionalProperties: true },
+  })
   async findAll(
     @Query("search") search?: string,
   ): Promise<ApiResponse<unknown>> {
@@ -71,8 +79,8 @@ export class ItemsController {
         density_g_ml: { type: "number", nullable: true },
         shelf_life_days: { type: "number", nullable: true },
       },
-      required: ["name"]
-    }
+      required: ["name"],
+    },
   })
   @NestjsApiResponse({
     status: 201,
@@ -87,11 +95,11 @@ export class ItemsController {
             id: { type: "string" },
             name: { type: "string" },
             category: { type: "string" },
-          }
+          },
         },
-        timestamp: { type: "string" }
-      }
-    }
+        timestamp: { type: "string" },
+      },
+    },
   })
   async create(@Body() dto: CreateItemDto): Promise<ApiResponse<unknown>> {
     try {

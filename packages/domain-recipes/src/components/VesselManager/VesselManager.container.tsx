@@ -12,7 +12,7 @@ export interface VesselManagerProps {
   loading?: boolean;
   onSaveVessel: (
     vessel: Omit<VesselProfile, "id" | "organizationId" | "createdAt">,
-    id?: string
+    id?: string,
   ) => Promise<void>;
   onDeleteVessel: (id: string) => Promise<void>;
 }
@@ -34,14 +34,15 @@ export function VesselManager({
   if (!isOpen) return null;
 
   const handleSaveVesselInternal = async (
-    payload: Omit<VesselProfile, "id" | "organizationId" | "createdAt">
+    payload: Omit<VesselProfile, "id" | "organizationId" | "createdAt">,
   ) => {
     await onSaveVessel(payload, activeVessel?.id);
     setDialogOpen(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this vessel profile?")) return;
+    if (!confirm("Are you sure you want to delete this vessel profile?"))
+      return;
     await onDeleteVessel(id);
   };
 
@@ -69,7 +70,7 @@ export interface VesselDialogContainerProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (
-    vessel: Omit<VesselProfile, "id" | "organizationId" | "createdAt">
+    vessel: Omit<VesselProfile, "id" | "organizationId" | "createdAt">,
   ) => Promise<void>;
   vessel?: VesselProfile | null;
   unitSystem?: "cm" | "in";
@@ -141,7 +142,7 @@ export function VesselDialogContainer({
       const d = toCm(diameter);
       if (d && h) {
         const radius = d / 2;
-        setVolumeMl(Math.round(Math.PI * (radius ** 2) * h).toString());
+        setVolumeMl(Math.round(Math.PI * radius ** 2 * h).toString());
       }
     }
   };
@@ -181,15 +182,23 @@ export function VesselDialogContainer({
   if (!isOpen) return null;
 
   return renderView({
-    name, setName,
-    shape, setShape,
-    length, setLength,
-    width, setWidth,
-    height, setHeight,
-    diameter, setDiameter,
-    volumeMl, setVolumeMl,
+    name,
+    setName,
+    shape,
+    setShape,
+    length,
+    setLength,
+    width,
+    setWidth,
+    height,
+    setHeight,
+    diameter,
+    setDiameter,
+    volumeMl,
+    setVolumeMl,
     loading,
-    unitSystem, volumeUnit,
+    unitSystem,
+    volumeUnit,
     vessel,
     onClose,
     onAutoCalculate: handleAutoCalculate,

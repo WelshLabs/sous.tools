@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
-import { readFileSync } from 'fs';
-import { serverConfig as config } from '@soustools/config/server';
+import { NextResponse } from "next/server";
+import { readFileSync } from "fs";
+import { serverConfig as config } from "@soustools/config/server";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const CONFIG_FILE = config.SOUS_DEVICE_CONFIG;
 
@@ -13,7 +13,7 @@ const CONFIG_FILE = config.SOUS_DEVICE_CONFIG;
  */
 export async function GET() {
   try {
-    const data = readFileSync(CONFIG_FILE, 'utf8');
+    const data = readFileSync(CONFIG_FILE, "utf8");
     const config = JSON.parse(data);
 
     if (config.pairing_code) {
@@ -22,7 +22,10 @@ export async function GET() {
 
     return NextResponse.json({ pairing_code: null });
   } catch (err) {
-    console.error('[/api/pairing] Failed to read config:', err);
-    return NextResponse.json({ pairing_code: null, error: String(err) }, { status: 500 });
+    console.error("[/api/pairing] Failed to read config:", err);
+    return NextResponse.json(
+      { pairing_code: null, error: String(err) },
+      { status: 500 },
+    );
   }
 }

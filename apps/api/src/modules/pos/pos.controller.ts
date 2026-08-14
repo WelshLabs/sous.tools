@@ -1,31 +1,50 @@
-import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
-import { supabase } from '../../lib/supabase';
-import { runControllerAction } from '../signage/response.helper';
-import { ApiResponse } from '@soustools/api-types';
-import { PosTransactionsService } from './pos-transactions.service';
-import { PosGateway } from './pos.gateway';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+} from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
+import { runControllerAction } from "../signage/response.helper";
+import { ApiResponse } from "@soustools/api-types";
+import { PosTransactionsService } from "./pos-transactions.service";
+import { PosGateway } from "./pos.gateway";
 
-@Controller('pos')
+@Controller("pos")
 export class PosController {
   constructor(
     private readonly transactionsService: PosTransactionsService,
     private readonly posGateway: PosGateway,
   ) {}
 
-  @Get('catalog')
-  async getCatalog(@Query('orgId') orgId?: string): Promise<ApiResponse<any>> {
+  @Get("catalog")
+  async getCatalog(@Query("orgId") orgId?: string): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
-      const targetOrgId = orgId || 'd0000000-0000-0000-0000-000000000000';
+      const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
 
       const [items, categories, modifierGroups, discounts] = await Promise.all([
         supabase
-          .from('pos_items')
-          .select('*, pos_item_modifier_groups(modifier_group_id)')
-          .eq('organization_id', targetOrgId)
-          .order('name'),
-        supabase.from('pos_categories').select('*').eq('organization_id', targetOrgId).order('name'),
-        supabase.from('pos_modifier_groups').select('*, pos_modifier_options(*)').eq('organization_id', targetOrgId),
-        supabase.from('pos_discounts').select('*').eq('organization_id', targetOrgId).order('name'),
+          .from("pos_items")
+          .select("*, pos_item_modifier_groups(modifier_group_id)")
+          .eq("organization_id", targetOrgId)
+          .order("name"),
+        supabase
+          .from("pos_categories")
+          .select("*")
+          .eq("organization_id", targetOrgId)
+          .order("name"),
+        supabase
+          .from("pos_modifier_groups")
+          .select("*, pos_modifier_options(*)")
+          .eq("organization_id", targetOrgId),
+        supabase
+          .from("pos_discounts")
+          .select("*")
+          .eq("organization_id", targetOrgId)
+          .order("name"),
       ]);
 
       if (items.error) throw new Error(items.error.message);
@@ -42,57 +61,61 @@ export class PosController {
     });
   }
 
-  @Get('transactions')
-  async getTransactions(@Query('orgId') orgId?: string): Promise<ApiResponse<any>> {
+  @Get("transactions")
+  async getTransactions(
+    @Query("orgId") orgId?: string,
+  ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
-      const targetOrgId = orgId || 'd0000000-0000-0000-0000-000000000000';
+      const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
 
       const { data, error } = await supabase
-        .from('pos_transactions')
-        .select(`
+        .from("pos_transactions")
+        .select(
+          `
           *,
           pos_items (
             name
           )
-        `)
-        .eq('organization_id', targetOrgId)
-        .order('transaction_time', { ascending: false });
+        `,
+        )
+        .eq("organization_id", targetOrgId)
+        .order("transaction_time", { ascending: false });
 
       if (error) throw new Error(error.message);
       return data || [];
     });
   }
 
-  @Get('orders')
-  async getOrders(@Query('orgId') orgId?: string): Promise<ApiResponse<any>> {
+  @Get("orders")
+  async getOrders(@Query("orgId") orgId?: string): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
-      const targetOrgId = orgId || 'd0000000-0000-0000-0000-000000000000';
+      const targetOrgId = orgId || "d0000000-0000-0000-0000-000000000000";
 
       const { data, error } = await supabase
-        .from('pos_orders')
-        .select('*, pos_order_line_items(*)')
-        .eq('organization_id', targetOrgId)
-        .order('created_at', { ascending: false });
+        .from("pos_orders")
+        .select("*, pos_order_line_items(*)")
+        .eq("organization_id", targetOrgId)
+        .order("created_at", { ascending: false });
 
       if (error) throw new Error(error.message);
       return data || [];
     });
   }
 
-  @Patch('orders/:id/status')
+  @Patch("orders/:id/status")
   async updateOrderStatus(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() body: { status: string; orgId?: string },
   ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
-      const orgId = body.orgId || 'd0000000-0000-0000-0000-000000000000';
-      if (body.status === 'COMPLETED') {
+      const orgId = body.orgId || "d0000000-0000-0000-0000-000000000000";
+      if (body.status === "COMPLETED") {
         await this.transactionsService.completeOrder(id, orgId);
       } else {
         const { data, error } = await supabase
-          .from('pos_orders')
+          .from("pos_orders")
           .update({ state: body.status, updated_at: new Date().toISOString() })
-          .eq('id', id)
+          .eq("id", id)
           .select();
         if (error) throw new Error(error.message);
         this.posGateway.broadcastOrdersUpdate(orgId);
@@ -103,22 +126,23 @@ export class PosController {
     });
   }
 
-  @Patch('order-line-items/:id/status')
+  @Patch("order-line-items/:id/status")
   async updateLineItemStatus(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() body: { status: string; orgId?: string },
   ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
-      const orgId = body.orgId || 'd0000000-0000-0000-0000-000000000000';
+      const orgId = body.orgId || "d0000000-0000-0000-0000-000000000000";
       await this.transactionsService.updateLineItemStatus(id, body.status);
       this.posGateway.broadcastOrdersUpdate(orgId);
       return { success: true };
     });
   }
 
-  @Post('transactions/bulk')
+  @Post("transactions/bulk")
   async createTransactionsBulk(
-    @Body() transactions: Array<{
+    @Body()
+    transactions: Array<{
       organization_id: string;
       pos_item_id?: string | null;
       quantity_sold: number;
@@ -129,7 +153,7 @@ export class PosController {
   ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
       const { data, error } = await supabase
-        .from('pos_transactions')
+        .from("pos_transactions")
         .insert(transactions)
         .select();
 
@@ -138,13 +162,13 @@ export class PosController {
     });
   }
 
-  @Get('modifier-groups/:id')
-  async getModifierGroup(@Param('id') id: string): Promise<ApiResponse<any>> {
+  @Get("modifier-groups/:id")
+  async getModifierGroup(@Param("id") id: string): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
       const { data, error } = await supabase
-        .from('pos_modifier_groups')
-        .select('*')
-        .eq('id', id)
+        .from("pos_modifier_groups")
+        .select("*")
+        .eq("id", id)
         .single();
 
       if (error) throw new Error(error.message);
@@ -152,18 +176,19 @@ export class PosController {
     });
   }
 
-  @Get('modifier-groups/:id/options')
-  async getModifierGroupOptions(@Param('id') id: string): Promise<ApiResponse<any>> {
+  @Get("modifier-groups/:id/options")
+  async getModifierGroupOptions(
+    @Param("id") id: string,
+  ): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
       const { data, error } = await supabase
-        .from('pos_modifier_options')
-        .select('*')
-        .eq('modifier_group_id', id)
-        .order('name');
+        .from("pos_modifier_options")
+        .select("*")
+        .eq("modifier_group_id", id)
+        .order("name");
 
       if (error) throw new Error(error.message);
       return data || [];
     });
   }
 }
-

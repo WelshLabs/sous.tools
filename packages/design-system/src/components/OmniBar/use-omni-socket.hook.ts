@@ -82,7 +82,10 @@ export function useOmniSocket(): {
 
     const handleDisconnect = (reason: string) => {
       console.warn("[OmniBar] Socket disconnected:", reason);
-      if (reason !== "io client disconnect" && reason !== "io server disconnect") {
+      if (
+        reason !== "io client disconnect" &&
+        reason !== "io server disconnect"
+      ) {
         setErrorMessage("Lost connection to the server.");
         setIsProcessing(false);
         markLoadingComplete();
@@ -91,7 +94,9 @@ export function useOmniSocket(): {
 
     const handleReauthenticated = () => {
       if (lastPayloadRef.current && wsSocket.connected) {
-        console.log("[OmniBar] Resending pending command after re-authentication.");
+        console.log(
+          "[OmniBar] Resending pending command after re-authentication.",
+        );
         wsSocket.emit("executeCommand", lastPayloadRef.current);
       }
     };

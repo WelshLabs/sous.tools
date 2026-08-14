@@ -1,5 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
-import { type SignageLayoutConfig, type PosItem, type SignageBlock, type SignageSlide } from "@soustools/api-types";
+import {
+  type SignageLayoutConfig,
+  type PosItem,
+  type SignageBlock,
+  type SignageSlide,
+} from "@soustools/api-types";
 import { SignagePreviewView } from "./SignagePreview.view";
 
 export interface SignagePreviewProps {
@@ -25,7 +30,11 @@ export const SignagePreview: React.FC<SignagePreviewProps> = (props) => {
   const [modifierCache, setModifierCache] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
-    if (props.config.aspectRatio === "responsive" || props.config.scaleToFit === false) return;
+    if (
+      props.config.aspectRatio === "responsive" ||
+      props.config.scaleToFit === false
+    )
+      return;
     const parent = containerRef.current?.parentElement;
     if (!parent) return;
     const observer = new ResizeObserver(([entry]) => {
@@ -39,18 +48,18 @@ export const SignagePreview: React.FC<SignagePreviewProps> = (props) => {
     if (modifierCache[groupId]) return modifierCache[groupId];
     if (props.onFetchModifierOptions) {
       const opts = await props.onFetchModifierOptions(groupId);
-      setModifierCache(prev => ({ ...prev, [groupId]: opts }));
+      setModifierCache((prev) => ({ ...prev, [groupId]: opts }));
       return opts;
     }
     return [];
   };
 
   return (
-    <SignagePreviewView 
-      {...props} 
-      containerRef={containerRef} 
-      scale={scale} 
-      fetchModifiers={fetchModifiers} 
+    <SignagePreviewView
+      {...props}
+      containerRef={containerRef}
+      scale={scale}
+      fetchModifiers={fetchModifiers}
     />
   );
 };

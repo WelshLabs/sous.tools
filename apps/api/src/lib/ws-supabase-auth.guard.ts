@@ -10,14 +10,17 @@ import { WsException } from "@nestjs/websockets";
 export class WsSupabaseAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient();
-    let token = client.handshake?.auth?.token || client.handshake?.headers?.authorization;
-    
-    if (token && token.startsWith('Bearer ')) {
-      token = token.split(' ')[1];
+    let token =
+      client.handshake?.auth?.token || client.handshake?.headers?.authorization;
+
+    if (token && token.startsWith("Bearer ")) {
+      token = token.split(" ")[1];
     }
 
     if (!token && client.handshake?.headers?.cookie) {
-      const match = client.handshake.headers.cookie.match(/sb-access-token=([^;]+)/);
+      const match = client.handshake.headers.cookie.match(
+        /sb-access-token=([^;]+)/,
+      );
       if (match) {
         token = match[1];
       }
@@ -26,7 +29,6 @@ export class WsSupabaseAuthGuard implements CanActivate {
     if (!token) {
       throw new WsException("Unauthorized: No token provided");
     }
-
 
     const {
       data: { user },

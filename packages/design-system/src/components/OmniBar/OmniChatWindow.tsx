@@ -63,17 +63,17 @@ export function OmniChatWindow({
   return (
     <section
       aria-label="Conversation with sous chef"
-      className="relative w-full pointer-events-auto"
+      className="pointer-events-auto relative w-full"
     >
       {/* ── Header + clear ── */}
       <div className="mb-2 flex items-center justify-between px-1">
-        <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] font-semibold tracking-[.2em] uppercase">
           Sous chef
         </p>
         <button
           type="button"
           onClick={onClearHistory}
-          className="flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-1.5 rounded-full px-2 py-1 text-xs transition-colors"
           aria-label="Clear conversation"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -84,14 +84,7 @@ export function OmniChatWindow({
       {/* ── Scrollable timeline ── */}
       <div
         ref={scrollRef}
-        className="flex flex-col gap-3 max-h-[min(62vh,520px)] overflow-y-auto px-1 pb-4
-          [mask-image:linear-gradient(to_bottom,transparent_0,black_6%,black_100%)]
-          [&::-webkit-scrollbar]:w-2
-          [&::-webkit-scrollbar-track]:bg-transparent
-          [&::-webkit-scrollbar-thumb]:bg-accent/50
-          [&::-webkit-scrollbar-thumb]:rounded-full
-          hover:[&::-webkit-scrollbar-thumb]:bg-accent/70
-          transition-colors"
+        className="[&::-webkit-scrollbar-thumb]:bg-accent/50 hover:[&::-webkit-scrollbar-thumb]:bg-accent/70 flex max-h-[min(62vh,520px)] flex-col gap-3 overflow-y-auto [mask-image:linear-gradient(to_bottom,transparent_0,black_6%,black_100%)] px-1 pb-4 transition-colors [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent"
       >
         <AnimatePresence initial={false}>
           {chatHistory.map((msg, index) => {
@@ -127,10 +120,10 @@ export function OmniChatWindow({
                 <EventIcon role={msg.role} />
 
                 <div
-                  className={`min-w-0 w-fit flex flex-col gap-1.5 ${msg.recipeData || msg.invoiceData ? "max-w-none" : "max-w-[85%]"}`}
+                  className={`flex w-fit min-w-0 flex-col gap-1.5 ${msg.recipeData || msg.invoiceData ? "max-w-none" : "max-w-[85%]"}`}
                 >
                   {isAgentStep ? (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono rounded-xl px-3 py-1.5 border border-border/70 bg-muted/45">
+                    <div className="text-muted-foreground border-border/70 bg-muted/45 flex items-center gap-2 rounded-xl border px-3 py-1.5 font-mono text-xs">
                       {msg.isLoading !== false && <ActivityIndicator />}
                       {msg.content}
                     </div>
@@ -154,24 +147,28 @@ export function OmniChatWindow({
                     />
                   ) : (
                     <div
-                      className={`px-4 py-3 rounded-xl text-sm leading-6 shadow-sm ${
+                      className={`rounded-xl px-4 py-3 text-sm leading-6 shadow-sm ${
                         isUser
-                          ? "bg-primary/[.08] border border-primary/15 text-foreground rounded-tr-sm"
-                          : "bg-card/78 border border-border text-foreground rounded-tl-sm backdrop-blur-xl"
+                          ? "bg-primary/[.08] border-primary/15 text-foreground rounded-tr-sm border"
+                          : "bg-card/78 border-border text-foreground rounded-tl-sm border backdrop-blur-xl"
                       }`}
                     >
                       {msg.attachments && msg.attachments.length > 0 && (
-                        <div className="flex gap-3 mb-3">
-                          {msg.attachments.map((att: any, i: number) => 
+                        <div className="mb-3 flex gap-3">
+                          {msg.attachments.map((att: any, i: number) =>
                             att.url ? (
                               <motion.div
                                 key={i}
                                 layoutId={`active-task-container-${msg.id}-${i}`}
-                                className="w-32 h-24 rounded-xl overflow-hidden border border-accent/30 shadow-glow-accent relative shrink-0"
+                                className="border-accent/30 shadow-glow-accent relative h-24 w-32 shrink-0 overflow-hidden rounded-xl border"
                               >
-                                <img src={att.url} alt="Attachment thumbnail" className="w-full h-full object-cover" />
+                                <img
+                                  src={att.url}
+                                  alt="Attachment thumbnail"
+                                  className="h-full w-full object-cover"
+                                />
                               </motion.div>
-                            ) : null
+                            ) : null,
                           )}
                         </div>
                       )}
@@ -186,22 +183,21 @@ export function OmniChatWindow({
                                 <Link
                                   key={i}
                                   href={match[2]}
-                                  className="text-accent hover:underline font-medium"
+                                  className="text-accent font-medium hover:underline"
                                 >
                                   {match[1]}
                                 </Link>
                               );
                             }
-                            return (
-                              <span key={i}>
-                                {part}
-                              </span>
-                            );
+                            return <span key={i}>{part}</span>;
                           })}
                       </span>
                       {msg.timestamp && (
-                        <span className="mt-1.5 block text-[10px] uppercase tracking-[.16em] text-muted-foreground">
-                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        <span className="text-muted-foreground mt-1.5 block text-[10px] tracking-[.16em] uppercase">
+                          {new Date(msg.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       )}
                     </div>

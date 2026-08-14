@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@soustools/api-client";
 import { type MenuItemStyles, type PosItem } from "@soustools/api-types";
-import { resolveItemState, buildTitleStyle, buildPriceStyle } from "@/app/display/[id]/menu-item-style-utils";
+import {
+  resolveItemState,
+  buildTitleStyle,
+  buildPriceStyle,
+} from "@/app/display/[id]/menu-item-style-utils";
 
 interface ModifierOption {
   id: string;
@@ -41,16 +45,21 @@ export function ModifierGroupBlock({
 
       try {
         // Resolve group
-        const { data: grpData, error: grpError } = await (api.GET as any)(`/pos/modifier-groups/${modifierGroupId}`);
+        const { data: grpData, error: grpError } = await (api.GET as any)(
+          `/pos/modifier-groups/${modifierGroupId}`,
+        );
         if (grpError) throw new Error();
-        
+
         if (grpData) {
           setGroup((grpData as any).data || grpData);
         }
 
         // Fetch options linked to this group
-        const { data: optsData, error: optsError } = await (api.GET as any)(`/pos/modifier-groups/${modifierGroupId}/options`);
-        const opts = !optsError && optsData ? ((optsData as any).data || optsData) : [];
+        const { data: optsData, error: optsError } = await (api.GET as any)(
+          `/pos/modifier-groups/${modifierGroupId}/options`,
+        );
+        const opts =
+          !optsError && optsData ? (optsData as any).data || optsData : [];
         if (opts) {
           setOptions(opts as ModifierOption[]);
         }
@@ -65,37 +74,42 @@ export function ModifierGroupBlock({
 
   if (loading) {
     return (
-      <div className="p-4 border border-zinc-800 rounded-xl animate-pulse bg-white/5 flex flex-col gap-2">
-        <div className="h-4 bg-zinc-700 w-1/3 rounded" />
-        <div className="h-3 bg-zinc-800 w-1/2 rounded" />
+      <div className="flex animate-pulse flex-col gap-2 rounded-xl border border-zinc-800 bg-white/5 p-4">
+        <div className="h-4 w-1/3 rounded bg-zinc-700" />
+        <div className="h-3 w-1/2 rounded bg-zinc-800" />
       </div>
     );
   }
 
   if (!group) {
     return (
-      <div className="p-4 border border-dashed border-zinc-800 text-zinc-600 text-xs rounded-xl italic font-mono">
+      <div className="rounded-xl border border-dashed border-zinc-800 p-4 font-mono text-xs text-zinc-600 italic">
         Modifier Group not found ({modifierGroupId || "Unconfigured"})
       </div>
     );
   }
 
   return (
-    <div className=" rounded-2xl p-5 flex flex-col gap-3 my-3">
+    <div className="my-3 flex flex-col gap-3 rounded-2xl p-5">
       <div>
-        <h4 className="text-lg font-bold uppercase tracking-tight text-white font-brand">
+        <h4 className="font-brand text-lg font-bold tracking-tight text-white uppercase">
           {group.name}
         </h4>
-        {(group.min_selected_modifiers !== null || group.max_selected_modifiers !== null) && (
-          <p className="text-xs text-zinc-500 font-sans italic mt-0.5">
-            {group.min_selected_modifiers !== null && `Min: ${group.min_selected_modifiers}`}
-            {group.min_selected_modifiers !== null && group.max_selected_modifiers !== null && " | "}
-            {group.max_selected_modifiers !== null && `Max: ${group.max_selected_modifiers}`}
+        {(group.min_selected_modifiers !== null ||
+          group.max_selected_modifiers !== null) && (
+          <p className="mt-0.5 font-sans text-xs text-zinc-500 italic">
+            {group.min_selected_modifiers !== null &&
+              `Min: ${group.min_selected_modifiers}`}
+            {group.min_selected_modifiers !== null &&
+              group.max_selected_modifiers !== null &&
+              " | "}
+            {group.max_selected_modifiers !== null &&
+              `Max: ${group.max_selected_modifiers}`}
           </p>
         )}
       </div>
 
-      <ul className="flex flex-col gap-2 pt-2 border-t border-white/5">
+      <ul className="flex flex-col gap-2 border-t border-white/5 pt-2">
         {options.map((opt) => {
           // Resolve state styling choice for modifier option
           // (mimicking PosItem for state selection properties)
@@ -122,22 +136,30 @@ export function ModifierGroupBlock({
           return (
             <li
               key={opt.id}
-              className="flex justify-between items-center text-sm text-zinc-300 transition-opacity duration-300"
+              className="flex items-center justify-between text-sm text-zinc-300 transition-opacity duration-300"
               style={{
-                opacity: optStyle.dimOpacity !== undefined ? optStyle.dimOpacity : (opt.is_sold_out ? 0.5 : 1),
+                opacity:
+                  optStyle.dimOpacity !== undefined
+                    ? optStyle.dimOpacity
+                    : opt.is_sold_out
+                      ? 0.5
+                      : 1,
                 filter: optStyle.grayscale ? "grayscale(1)" : undefined,
               }}
             >
               <span className="font-semibold" style={textStyle}>
                 + {opt.name}
                 {opt.is_sold_out && menuItemStyles.soldOut.badge && (
-                  <span className="ml-2 text-[8px] px-1 bg-red-500 text-white rounded font-bold uppercase">
+                  <span className="ml-2 rounded bg-red-500 px-1 text-[8px] font-bold text-white uppercase">
                     {menuItemStyles.soldOut.badge.text}
                   </span>
                 )}
               </span>
               {Number(opt.price) > 0 && (
-                <span className="font-extrabold text-muted-foreground" style={priceStyle}>
+                <span
+                  className="text-muted-foreground font-extrabold"
+                  style={priceStyle}
+                >
                   +${Number(opt.price).toFixed(2)}
                 </span>
               )}

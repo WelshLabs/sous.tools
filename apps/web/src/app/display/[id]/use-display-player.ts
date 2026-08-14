@@ -1,7 +1,15 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { type SignageDisplay, type PosItem, type SignageLayoutConfig } from "@soustools/api-types";
+import {
+  type SignageDisplay,
+  type PosItem,
+  type SignageLayoutConfig,
+} from "@soustools/api-types";
 import { type SignageLayout } from "./types";
-import { mapDbItemToPosItem, registerDisplayDevice, type RawDbPosItem } from "./helpers";
+import {
+  mapDbItemToPosItem,
+  registerDisplayDevice,
+  type RawDbPosItem,
+} from "./helpers";
 import { createWebSocketClient } from "@soustools/api-client";
 
 export function useDisplayPlayer(
@@ -9,10 +17,14 @@ export function useDisplayPlayer(
   initialDisplay?: SignageDisplay | null,
   initialLayout?: SignageLayout | null,
   initialItems?: RawDbPosItem[],
-  initialErrorState?: string | null
+  initialErrorState?: string | null,
 ) {
-  const [display, setDisplay] = useState<SignageDisplay | null>(initialDisplay || null);
-  const [layout, setLayout] = useState<SignageLayout | null>(initialLayout || null);
+  const [display, setDisplay] = useState<SignageDisplay | null>(
+    initialDisplay || null,
+  );
+  const [layout, setLayout] = useState<SignageLayout | null>(
+    initialLayout || null,
+  );
   const [items, setItems] = useState<PosItem[]>(() => {
     if (initialItems && initialItems.length > 0) {
       return initialItems.map(mapDbItemToPosItem);
@@ -20,7 +32,9 @@ export function useDisplayPlayer(
     return [];
   });
   const [loading, setLoading] = useState(!initialDisplay && !initialErrorState);
-  const [errorState, setErrorState] = useState<string | null>(initialErrorState || null);
+  const [errorState, setErrorState] = useState<string | null>(
+    initialErrorState || null,
+  );
 
   const CACHE_DISPLAY = useMemo(() => `display_${displayId}`, [displayId]);
   const CACHE_LAYOUT = useMemo(() => `layout_${displayId}`, [displayId]);
@@ -62,7 +76,9 @@ export function useDisplayPlayer(
           localStorage.setItem(CACHE_LAYOUT, JSON.stringify(layoutData.data));
         }
         if (itemsData.success && itemsData.data) {
-          const parsedItems = (itemsData.data as RawDbPosItem[]).map(mapDbItemToPosItem);
+          const parsedItems = (itemsData.data as RawDbPosItem[]).map(
+            mapDbItemToPosItem,
+          );
           setItems(parsedItems);
           localStorage.setItem(CACHE_ITEMS, JSON.stringify(parsedItems));
         }
@@ -87,7 +103,8 @@ export function useDisplayPlayer(
   }, [CACHE_DISPLAY, CACHE_LAYOUT, CACHE_ITEMS, displayId]);
 
   useEffect(() => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(displayId)) {
       registerDisplayDevice(displayId)
         .then((newId) => {
@@ -99,7 +116,9 @@ export function useDisplayPlayer(
           }
         })
         .catch((err) => {
-          setErrorState(`Registration error: ${err instanceof Error ? err.message : String(err)}`);
+          setErrorState(
+            `Registration error: ${err instanceof Error ? err.message : String(err)}`,
+          );
           setLoading(false);
         });
     } else {
@@ -116,13 +135,21 @@ export function useDisplayPlayer(
       socket.emit("join", { displayId, deckId: display?.deckId });
     };
 
-    const handleDeckUpdated = (payload: { deckId: string; config: SignageLayoutConfig }) => {
+    const handleDeckUpdated = (payload: {
+      deckId: string;
+      config: SignageLayoutConfig;
+    }) => {
       if (payload.deckId === display?.deckId) {
-        setLayout((prev) => (prev ? { ...prev, config: payload.config } : null));
+        setLayout((prev) =>
+          prev ? { ...prev, config: payload.config } : null,
+        );
       }
     };
 
-    const handleItemsUpdated = (payload: { deckId: string; items: RawDbPosItem[] }) => {
+    const handleItemsUpdated = (payload: {
+      deckId: string;
+      items: RawDbPosItem[];
+    }) => {
       if (payload.deckId === display?.deckId && payload.items) {
         const parsedItems = payload.items.map(mapDbItemToPosItem);
         setItems(parsedItems);

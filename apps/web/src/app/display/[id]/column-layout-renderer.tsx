@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type PosItem,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { SingleColumn } from "./single-column";
 
 interface ColumnLayoutRendererProps {
@@ -33,7 +37,7 @@ export function ColumnLayoutRenderer({
   menuItemStyles,
 }: ColumnLayoutRendererProps) {
   return (
-    <div className="w-full h-full min-h-screen bg-transparent flex flex-row p-0 gap-0">
+    <div className="flex h-full min-h-screen w-full flex-row gap-0 bg-transparent p-0">
       {columns.map((column, index) => {
         const style = getSplitStyles(splitRatio, index, columns.length);
         return (

@@ -41,8 +41,8 @@ export function ItemsLedgerView({
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full text-left text-sm text-zinc-700 dark:text-muted-foreground">
-        <thead className="bg-card/80 text-zinc-500 dark:text-zinc-400 uppercase font-semibold text-xs border-b border-border dark:border-white/5">
+      <table className="dark:text-muted-foreground w-full text-left text-sm text-zinc-700">
+        <thead className="bg-card/80 border-border border-b text-xs font-semibold text-zinc-500 uppercase dark:border-white/5 dark:text-zinc-400">
           <tr>
             <th className="px-6 py-4">Name</th>
             <th className="px-6 py-4">Category</th>
@@ -52,17 +52,17 @@ export function ItemsLedgerView({
             <th className="px-6 py-4 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+        <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
           {items.map((item: LedgerItem) => (
             <tr
               key={item.id}
-              className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+              className="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
             >
-              <td className="px-6 py-4 font-medium text-zinc-900 dark:text-foreground">
+              <td className="dark:text-foreground px-6 py-4 font-medium text-zinc-900">
                 {item.name}
               </td>
               <td className="px-6 py-4">
-                <span className="px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded-md text-xs">
+                <span className="rounded-md bg-zinc-200 px-2 py-1 text-xs dark:bg-zinc-800">
                   {item.category}
                 </span>
               </td>
@@ -71,28 +71,28 @@ export function ItemsLedgerView({
                 {Number(item.density_g_ml).toFixed(3)}
               </td>
               <td className="px-6 py-4">
-                <div className="flex gap-1 flex-wrap">
+                <div className="flex flex-wrap gap-1">
                   {(item.allergens || []).map((alg) => (
                     <span
                       key={alg}
-                      className="px-2 py-1 bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20 rounded-md text-xs"
+                      className="rounded-md border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-700 dark:text-red-400"
                     >
                       {alg}
                     </span>
                   ))}
                   {(!item.allergens || item.allergens.length === 0) && (
-                    <span className="text-zinc-500 dark:text-zinc-600 italic">
+                    <span className="text-zinc-500 italic dark:text-zinc-600">
                       None
                     </span>
                   )}
                 </div>
               </td>
               <td className="px-6 py-4 text-right">
-                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="w-8 h-8 text-zinc-500 dark:text-zinc-400 hover:text-sky-500 dark:hover:text-sky-400 bg-slate-100 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-sky-900/30 rounded-lg transition-colors"
+                    className="h-8 w-8 rounded-lg bg-slate-100 text-zinc-500 transition-colors hover:bg-sky-100 hover:text-sky-500 dark:bg-slate-800 dark:text-zinc-400 dark:hover:bg-sky-900/30 dark:hover:text-sky-400"
                     onClick={() => onEdit(item)}
                   >
                     <Edit size={16} />
@@ -100,7 +100,7 @@ export function ItemsLedgerView({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="w-8 h-8 text-zinc-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                    className="h-8 w-8 rounded-lg bg-slate-100 text-zinc-500 transition-colors hover:bg-red-100 hover:text-red-500 dark:bg-slate-800 dark:text-zinc-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                     onClick={() => onDelete(item.id)}
                   >
                     <Trash2 size={16} />

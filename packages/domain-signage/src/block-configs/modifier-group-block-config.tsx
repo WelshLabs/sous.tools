@@ -20,13 +20,13 @@ export function ModifierGroupBlockConfig({
 
   return (
     <div className="space-y-3">
-      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">
+      <label className="text-muted-foreground block text-[10px] font-bold tracking-widest uppercase">
         Contextual Modifiers
       </label>
-      {(!parentExplodedItem ||
-        parentExplodedItem.type !== "ExplodedItemBlock" ||
-        !(parentExplodedItem as any).menuItemId) ? (
-        <div className="text-xs text-muted-foreground p-2 italic bg-card rounded border border-border">
+      {!parentExplodedItem ||
+      parentExplodedItem.type !== "ExplodedItemBlock" ||
+      !(parentExplodedItem as any).menuItemId ? (
+        <div className="text-muted-foreground bg-card border-border rounded border p-2 text-xs italic">
           This block must be placed inside an Exploded Item container with a
           Base POS Item selected.
         </div>

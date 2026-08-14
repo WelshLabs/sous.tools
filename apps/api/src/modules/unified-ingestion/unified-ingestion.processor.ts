@@ -58,7 +58,13 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     const inputPages =
       pagesInput && pagesInput.length > 0
         ? pagesInput
-        : [{ pageNumber: 1, rawText: rawText || "", imageUrl: sourceDocumentUrl }];
+        : [
+            {
+              pageNumber: 1,
+              rawText: rawText || "",
+              imageUrl: sourceDocumentUrl,
+            },
+          ];
 
     for (const pInput of inputPages) {
       this.logger.log(`Extracting blocks for page ${pInput.pageNumber}...`);
@@ -150,8 +156,12 @@ Page input: ${rawText.substring(0, 1500)}`;
           if (imageRes.ok) {
             const arrayBuffer = await imageRes.arrayBuffer();
             const base64Image = Buffer.from(arrayBuffer).toString("base64");
-            const mimeType = imageRes.headers.get("content-type") || "image/jpeg";
-            images.push({ type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Image}` } });
+            const mimeType =
+              imageRes.headers.get("content-type") || "image/jpeg";
+            images.push({
+              type: "image_url",
+              image_url: { url: `data:${mimeType};base64,${base64Image}` },
+            });
           }
         } catch (imgErr) {
           this.logger.warn("Failed to fetch image for Vision", imgErr);
@@ -159,32 +169,34 @@ Page input: ${rawText.substring(0, 1500)}`;
       }
 
       // Try LiteLLM
-      const liteLlmRes = await fetch("https://ai.sous.tools/v1/chat/completions", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`
+      const liteLlmRes = await fetch(
+        "https://ai.sous.tools/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`,
+          },
+          body: JSON.stringify({
+            model: "gemini-3.6-flash",
+            messages: [
+              {
+                role: "user",
+                content: [{ type: "text", text: prompt }, ...images],
+              },
+            ],
+            response_format: { type: "json_object" },
+          }),
         },
-        body: JSON.stringify({
-          model: "gemini-3.6-flash",
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                ...images
-              ]
-            }
-          ],
-          response_format: { type: "json_object" }
-        }),
-      });
+      );
 
       if (liteLlmRes.ok) {
         const body = await liteLlmRes.json();
         extractedResponse = JSON.parse(body.choices[0].message.content || "[]");
       } else {
-        throw new Error(`LiteLLM failed: ${liteLlmRes.status} ${await liteLlmRes.text()}`);
+        throw new Error(
+          `LiteLLM failed: ${liteLlmRes.status} ${await liteLlmRes.text()}`,
+        );
       }
     } catch (err) {
       this.logger.error("LiteLLM extraction failed:", err);

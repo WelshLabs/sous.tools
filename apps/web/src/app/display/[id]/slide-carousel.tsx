@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { type SignageSlide, type PosItem, type ColumnLayoutSlide, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type SignageSlide,
+  type PosItem,
+  type ColumnLayoutSlide,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { SlideRenderer } from "./slide-renderer";
 
 interface SlideCarouselProps {
@@ -49,8 +54,8 @@ export function SlideCarousel({
 
   if (!slides || slides.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white font-sans">
-        <p className="text-xl text-zinc-500 dark:text-muted-foreground">
+      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.08_0.01_260)] font-sans text-white">
+        <p className="dark:text-muted-foreground text-xl text-zinc-500">
           No slides configured for this display.
         </p>
       </div>
@@ -58,7 +63,10 @@ export function SlideCarousel({
   }
 
   const activeSlide = slides[visibleIndex];
-  const columnSlide = activeSlide?.type === "COLUMN_LAYOUT" ? (activeSlide as ColumnLayoutSlide) : null;
+  const columnSlide =
+    activeSlide?.type === "COLUMN_LAYOUT"
+      ? (activeSlide as ColumnLayoutSlide)
+      : null;
 
   const bgStyle: React.CSSProperties = {
     opacity,
@@ -72,7 +80,7 @@ export function SlideCarousel({
 
   return (
     <div
-      className="w-full h-full min-h-screen transition-opacity duration-500 ease-in-out"
+      className="h-full min-h-screen w-full transition-opacity duration-500 ease-in-out"
       style={bgStyle}
     >
       <SlideRenderer

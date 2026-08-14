@@ -83,7 +83,7 @@ export function OmniBarPresentation({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-md pointer-events-auto z-[9990] cursor-pointer"
+            className="bg-background/80 pointer-events-auto fixed inset-0 z-[9990] cursor-pointer backdrop-blur-md"
             onClick={onToggle}
           />
         )}
@@ -91,8 +91,8 @@ export function OmniBarPresentation({
 
       {/* ── MODE 1: /home (without chat) — Dead Center Omnibar (NO FAB, NO BACKDROP) ── */}
       {isFocusPage && !isAnswerPage && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center">
-          <div className="w-full flex flex-col justify-center gap-0 pointer-events-auto">
+        <div className="pointer-events-none fixed top-1/2 left-1/2 z-[9999] flex w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center px-4 sm:max-w-2xl">
+          <div className="pointer-events-auto flex w-full flex-col justify-center gap-0">
             <StagingArea files={stagedFiles} />
             <OmniInputPill
               inputText={inputText}
@@ -113,8 +113,8 @@ export function OmniBarPresentation({
 
       {/* ── MODE 2: /home?chat=... — Fixed right below AppBar for continued conversation (NO FAB, NO BACKDROP) ── */}
       {isAnswerPage && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-start">
-          <div className="w-full flex flex-col justify-center gap-0 pointer-events-auto shadow-2xl">
+        <div className="pointer-events-none fixed top-24 left-1/2 z-[9999] flex w-full max-w-2xl -translate-x-1/2 flex-col items-center justify-start px-4">
+          <div className="pointer-events-auto flex w-full flex-col justify-center gap-0 shadow-2xl">
             <StagingArea files={stagedFiles} />
             <OmniInputPill
               inputText={inputText}
@@ -162,7 +162,7 @@ export function OmniBarPresentation({
               whileHover={{ y: -3, scale: 1.06 }}
               whileTap={{ scale: 0.94 }}
               onClick={onToggle}
-              className="fixed bottom-6 right-6 z-[9999] w-16 h-16 rounded-full ds-glass flex items-center justify-center cursor-pointer pointer-events-auto overflow-hidden"
+              className="ds-glass pointer-events-auto fixed right-6 bottom-6 z-[9999] flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full"
               style={{
                 borderRadius: "9999px",
                 borderColor: isProcessing
@@ -173,16 +173,16 @@ export function OmniBarPresentation({
               <OmnibarPerimeterView busy={isProcessing} />
               <Lettermark
                 gradient
-                className={`w-8 h-8 relative z-10 ${isProcessing ? "animate-pulse" : ""}`}
+                className={`relative z-10 h-8 w-8 ${isProcessing ? "animate-pulse" : ""}`}
               />
             </motion.button>
           ) : (
             /* Expanded Modal — Dead center of screen */
             <div
               key="workspace-modal-container"
-              className="fixed top-24 left-1/2 -translate-x-1/2 w-full max-w-lg sm:max-w-2xl px-4 z-[9999] pointer-events-none flex flex-col items-center justify-center"
+              className="pointer-events-none fixed top-24 left-1/2 z-[9999] flex w-full max-w-lg -translate-x-1/2 flex-col items-center justify-center px-4 sm:max-w-2xl"
             >
-              <div className="w-full flex flex-col justify-center gap-0 pointer-events-auto">
+              <div className="pointer-events-auto flex w-full flex-col justify-center gap-0">
                 <StagingArea files={stagedFiles} />
                 <OmniInputPill
                   inputText={inputText}

@@ -21,7 +21,7 @@ export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
 
   if (!slides || slides.length === 0) {
     return (
-      <div className="w-full h-64 bg-card flex items-center justify-center rounded-2xl border border-zinc-800 text-zinc-600 italic">
+      <div className="bg-card flex h-64 w-full items-center justify-center rounded-2xl border border-zinc-800 text-zinc-600 italic">
         Media Carousel: No Slides
       </div>
     );
@@ -31,7 +31,7 @@ export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
   const isKenBurns = style?.imageEffect === "ken-burns";
 
   return (
-    <div className="w-full h-72 relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-card my-3">
+    <div className="bg-card relative my-3 h-72 w-full overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
       <style>{`
         @keyframes st-ken-burns {
           0% { transform: scale(1) translate(0, 0); }
@@ -50,39 +50,42 @@ export function MediaCarouselBlock({ slides, style }: MediaCarouselBlockProps) {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
         />
       ) : activeSlide.imageUrl ? (
-        <div className="w-full h-full overflow-hidden relative">
+        <div className="relative h-full w-full overflow-hidden">
           <img
             src={activeSlide.imageUrl}
             alt="Carousel Slide"
-            className={`w-full h-full object-cover ${isKenBurns ? "animate-ken-burns" : ""}`}
+            className={`h-full w-full object-cover ${isKenBurns ? "animate-ken-burns" : ""}`}
           />
         </div>
       ) : null}
 
-      {(activeSlide.captionTitle || activeSlide.description || activeSlide.captionSubtitle || activeSlide.captionPrice) && (
-        <div className="absolute bottom-4 left-4 p-4 st-glass-pill flex items-center justify-between gap-4 text-white max-w-[85%] z-10 rounded-xl">
+      {(activeSlide.captionTitle ||
+        activeSlide.description ||
+        activeSlide.captionSubtitle ||
+        activeSlide.captionPrice) && (
+        <div className="st-glass-pill absolute bottom-4 left-4 z-10 flex max-w-[85%] items-center justify-between gap-4 rounded-xl p-4 text-white">
           <div className="flex flex-col">
             {activeSlide.captionSubtitle && (
-              <span className="text-[#00f0ff] text-[11px] font-black tracking-widest uppercase mb-1 block">
+              <span className="mb-1 block text-[11px] font-black tracking-widest text-[#00f0ff] uppercase">
                 {activeSlide.captionSubtitle}
               </span>
             )}
             {activeSlide.captionTitle && (
-              <h4 className="text-[20px] font-bold text-white leading-tight font-brand">
+              <h4 className="font-brand text-[20px] leading-tight font-bold text-white">
                 {activeSlide.captionTitle}
               </h4>
             )}
             {activeSlide.description && (
-              <p className="text-xs text-zinc-300 font-sans leading-relaxed mt-0.5">
+              <p className="mt-0.5 font-sans text-xs leading-relaxed text-zinc-300">
                 {activeSlide.description}
               </p>
             )}
           </div>
           {activeSlide.captionPrice && (
-            <span className="bg-[#00f0ff] text-[#030712] px-3.5 py-1.5 rounded-lg font-black text-[16px] flex-shrink-0 shadow-md">
+            <span className="flex-shrink-0 rounded-lg bg-[#00f0ff] px-3.5 py-1.5 text-[16px] font-black text-[#030712] shadow-md">
               {activeSlide.captionPrice}
             </span>
           )}

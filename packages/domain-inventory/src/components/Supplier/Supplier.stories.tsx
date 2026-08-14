@@ -12,7 +12,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    supplier: { id: "test", name: "Test Supplier", cutoffTime: "12:00", deliveryDays: ["Monday"] },
+    supplier: {
+      id: "test",
+      name: "Test Supplier",
+      cutoffTime: "12:00",
+      deliveryDays: ["Monday"],
+    },
     items: [],
     allSuppliers: [],
     isPlacingOrder: false,

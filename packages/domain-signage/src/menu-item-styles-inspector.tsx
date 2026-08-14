@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { type MenuItemStyles, type MenuItemStateStyle } from "@soustools/api-types";
+import {
+  type MenuItemStyles,
+  type MenuItemStateStyle,
+} from "@soustools/api-types";
 import { StateTabBar, type ItemState } from "./state-tab-bar";
 import { MenuItemPreviewCard, type AtomKey } from "./menu-item-preview-card";
 import { AtomEditorPopover } from "./atom-editor-popover";
@@ -30,7 +33,7 @@ export const MenuItemStylesInspector: React.FC<
 
   return (
     <div className="flex flex-col gap-4 py-2">
-      <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+      <div className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
         Menu Item Styles
       </div>
 
@@ -43,7 +46,7 @@ export const MenuItemStylesInspector: React.FC<
         styles={styles}
       />
 
-      <div className="flex justify-center p-4 bg-card/50 rounded-xl border border-border">
+      <div className="bg-card/50 border-border flex justify-center rounded-xl border p-4">
         <div className="w-full max-w-[260px]">
           <MenuItemPreviewCard
             stateStyle={styles[activeState]}
@@ -56,7 +59,7 @@ export const MenuItemStylesInspector: React.FC<
       </div>
 
       {selectedAtom ? (
-        <div className="border border-border rounded-xl bg-card/30 overflow-hidden">
+        <div className="border-border bg-card/30 overflow-hidden rounded-xl border">
           <AtomEditorPopover
             atom={selectedAtom}
             activeState={activeState}
@@ -66,7 +69,7 @@ export const MenuItemStylesInspector: React.FC<
           />
         </div>
       ) : (
-        <div className="text-center p-4 rounded-xl border border-dashed border-border text-[11px] text-muted-foreground">
+        <div className="border-border text-muted-foreground rounded-xl border border-dashed p-4 text-center text-[11px]">
           Click elements on the preview card above to edit colors, sizes,
           borders, and animations.
         </div>

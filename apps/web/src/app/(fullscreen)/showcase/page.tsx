@@ -196,15 +196,15 @@ function Section({
         className="mb-8 flex flex-col gap-2"
       >
         {eyebrow && (
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+          <span className="text-primary font-mono text-xs tracking-[0.2em] uppercase">
             {eyebrow}
           </span>
         )}
-        <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl text-balance">
+        <h2 className="font-display text-foreground text-2xl font-bold tracking-tight text-balance sm:text-3xl">
           {title}
         </h2>
         {description && (
-          <p className="max-w-2xl text-muted-foreground text-pretty">
+          <p className="text-muted-foreground max-w-2xl text-pretty">
             {description}
           </p>
         )}
@@ -216,7 +216,7 @@ function Section({
 
 function SubLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-3 font-mono text-xs uppercase tracking-[0.15em] text-muted-foreground">
+    <p className="text-muted-foreground mb-3 font-mono text-xs tracking-[0.15em] uppercase">
       {children}
     </p>
   );
@@ -269,15 +269,15 @@ export default function Page() {
       <AuroraBackground fixed />
       <div className="relative z-10">
         <main>
-          <section className="relative mx-auto flex max-w-6xl flex-col items-center px-5 pb-16 pt-16 text-center sm:pt-24">
+          <section className="relative mx-auto flex max-w-6xl flex-col items-center px-5 pt-16 pb-16 text-center sm:pt-24">
             <motion.div
               custom={0}
               variants={fade}
               initial="hidden"
               animate="show"
             >
-              <span className="ds-glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm text-muted-foreground">
-                <Sparkles className="h-4 w-4 text-primary" />
+              <span className="ds-glass text-muted-foreground inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm">
+                <Sparkles className="text-primary h-4 w-4" />
                 Neon-glass design system
               </span>
             </motion.div>
@@ -297,7 +297,7 @@ export default function Page() {
               variants={fade}
               initial="hidden"
               animate="show"
-              className="mt-8 max-w-3xl font-display text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-6xl"
+              className="font-display text-foreground mt-8 max-w-3xl text-4xl leading-[1.05] font-bold tracking-tight text-balance sm:text-6xl"
             >
               Where the <span className="ds-text-neon">engineer</span> meets the{" "}
               <span className="ds-text-neon">chef</span>.
@@ -308,7 +308,7 @@ export default function Page() {
               variants={fade}
               initial="hidden"
               animate="show"
-              className="mt-5 max-w-xl text-lg text-muted-foreground text-pretty"
+              className="text-muted-foreground mt-5 max-w-xl text-lg text-pretty"
             >
               A token-driven system with a blue-neon glow, frosted glass
               surfaces, and motion that feels alive — engineered for both light
@@ -343,7 +343,7 @@ export default function Page() {
               {colorRoles.map((role) => (
                 <div
                   key={role.name}
-                  className="flex aspect-[4/3] flex-col justify-between rounded-[var(--radius-md)] border border-border p-3"
+                  className="border-border flex aspect-[4/3] flex-col justify-between rounded-[var(--radius-md)] border p-3"
                   style={{
                     backgroundColor: `var(--${role.name})`,
                     color: `var(--${role.fg})`,
@@ -364,9 +364,9 @@ export default function Page() {
                 {typeScale.map((t) => (
                   <div
                     key={t.label}
-                    className="flex flex-col gap-1 border-b border-border/60 pb-5 last:border-0 last:pb-0"
+                    className="border-border/60 flex flex-col gap-1 border-b pb-5 last:border-0 last:pb-0"
                   >
-                    <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted-foreground">
+                    <span className="text-muted-foreground font-mono text-xs tracking-[0.15em] uppercase">
                       {t.label}
                     </span>
                     <span className={cn("text-foreground", t.cls)}>
@@ -389,11 +389,11 @@ export default function Page() {
                     >
                       <div
                         className={cn(
-                          "h-16 w-16 border border-primary/40 bg-primary/15",
+                          "border-primary/40 bg-primary/15 h-16 w-16 border",
                           r.cls,
                         )}
                       />
-                      <span className="font-mono text-xs text-muted-foreground">
+                      <span className="text-muted-foreground font-mono text-xs">
                         {r.name}
                       </span>
                     </div>
@@ -410,11 +410,11 @@ export default function Page() {
                     >
                       <div
                         className={cn(
-                          "h-16 w-16 rounded-[var(--radius-md)] bg-card",
+                          "bg-card h-16 w-16 rounded-[var(--radius-md)]",
                           g.cls,
                         )}
                       />
-                      <span className="font-mono text-xs text-muted-foreground">
+                      <span className="text-muted-foreground font-mono text-xs">
                         {g.name}
                       </span>
                     </div>
@@ -487,7 +487,7 @@ export default function Page() {
                     </Chip>
                   ))}
                   {tags.length === 0 && (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       All removed — nice.
                     </span>
                   )}
@@ -527,26 +527,26 @@ export default function Page() {
                 <SubLabel>Logo suite — themeable via color</SubLabel>
                 <div className="flex flex-wrap items-center gap-8">
                   <div className="flex flex-col items-center gap-2">
-                    <PrimaryLogo className="h-9 w-auto text-foreground" />
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <PrimaryLogo className="text-foreground h-9 w-auto" />
+                    <span className="text-muted-foreground font-mono text-xs">
                       PrimaryLogo
                     </span>
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <PrimaryLogo gradient className="h-9 w-auto" />
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className="text-muted-foreground font-mono text-xs">
                       gradient
                     </span>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <Lettermark className="h-11 w-11 text-primary" />
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <Lettermark className="text-primary h-11 w-11" />
+                    <span className="text-muted-foreground font-mono text-xs">
                       Lettermark
                     </span>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <MicroIcon className="h-9 w-9 text-accent" />
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <MicroIcon className="text-accent h-9 w-9" />
+                    <span className="text-muted-foreground font-mono text-xs">
                       MicroIcon
                     </span>
                   </div>
@@ -577,11 +577,11 @@ export default function Page() {
           >
             <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
               <Card className="overflow-hidden p-0">
-                <div className="border-b border-border/70 px-6 py-5">
+                <div className="border-border/70 border-b px-6 py-5">
                   <SubLabel>Browser tab legibility</SubLabel>
-                  <div className="mt-4 overflow-hidden rounded-[var(--radius-md)] border border-border/80 bg-[#151821] shadow-2xl">
+                  <div className="border-border/80 mt-4 overflow-hidden rounded-[var(--radius-md)] border bg-[#151821] shadow-2xl">
                     <div className="flex h-11 items-end gap-1 bg-[#0d1017] px-3 pt-2">
-                      <div className="flex h-9 min-w-0 max-w-64 flex-1 items-center gap-2 rounded-t-xl bg-[#20242f] px-3 text-[#f2f4f8]">
+                      <div className="flex h-9 max-w-64 min-w-0 flex-1 items-center gap-2 rounded-t-xl bg-[#20242f] px-3 text-[#f2f4f8]">
                         <Image
                           src="/icons/favicon.svg"
                           alt="ChefOS favicon at browser tab size"
@@ -622,12 +622,12 @@ export default function Page() {
                           height={size}
                         />
                       </div>
-                      <span className="font-mono text-[10px] text-muted-foreground">
+                      <span className="text-muted-foreground font-mono text-[10px]">
                         {size}px
                       </span>
                     </div>
                   ))}
-                  <p className="max-w-xs text-xs leading-5 text-muted-foreground">
+                  <p className="text-muted-foreground max-w-xs text-xs leading-5">
                     The 16–32 px cut uses heavier strokes and less padding,
                     keeping the chef silhouette recognizable instead of
                     shrinking the full app artwork.
@@ -639,14 +639,14 @@ export default function Page() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <SubLabel>Live tab status lab</SubLabel>
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="text-muted-foreground mt-2 text-sm">
                       These controls update the real favicon in this browser
                       tab.
                     </p>
                   </div>
                   <span
                     aria-live="polite"
-                    className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-primary"
+                    className="border-primary/30 bg-primary/10 text-primary rounded-full border px-3 py-1 font-mono text-[10px] tracking-wider uppercase"
                   >
                     {statusLabel(status)}
                   </span>
@@ -686,14 +686,14 @@ export default function Page() {
                     Alert
                   </Button>
                 </div>
-                <div className="mt-6 rounded-[var(--radius-md)] border border-border/70 bg-background/45 p-4">
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <div className="border-border/70 bg-background/45 mt-6 rounded-[var(--radius-md)] border p-4">
+                  <p className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                     Runtime contract
                   </p>
-                  <code className="mt-2 block text-xs text-accent">
+                  <code className="text-accent mt-2 block text-xs">
                     setFaviconStatus({`{ type: "completed" }`})
                   </code>
-                  <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                  <p className="text-muted-foreground mt-3 text-xs leading-5">
                     Counts clamp to 99+. Installed-app badge APIs remain a
                     native runtime concern; this controller intentionally owns
                     browser-tab state only.
@@ -721,18 +721,18 @@ export default function Page() {
                       )}
                     </div>
                   </div>
-                  <div className="border-t border-border/70 px-5 py-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <div className="border-border/70 border-t px-5 py-4">
+                    <div className="text-foreground flex items-center gap-2 text-sm font-medium">
                       {platform.name.includes("macOS") ||
                       platform.name.includes("Windows") ||
                       platform.name.includes("Linux") ? (
-                        <Monitor className="h-4 w-4 text-primary" />
+                        <Monitor className="text-primary h-4 w-4" />
                       ) : (
-                        <Smartphone className="h-4 w-4 text-primary" />
+                        <Smartphone className="text-primary h-4 w-4" />
                       )}
                       {platform.name}
                     </div>
-                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                    <p className="text-muted-foreground mt-1 font-mono text-[10px]">
                       {platform.detail}
                     </p>
                   </div>
@@ -742,21 +742,21 @@ export default function Page() {
 
             <Card className="mt-6">
               <SubLabel>Export inventory</SubLabel>
-              <div className="mt-4 divide-y divide-border/60">
+              <div className="divide-border/60 mt-4 divide-y">
                 {inventory.map(([name, sizes, href]) => (
                   <a
                     key={name}
                     href={href}
                     download
-                    className="flex items-center gap-4 py-3 text-sm transition-colors first:pt-0 last:pb-0 hover:text-primary"
+                    className="hover:text-primary flex items-center gap-4 py-3 text-sm transition-colors first:pt-0 last:pb-0"
                   >
-                    <span className="w-20 font-medium text-foreground">
+                    <span className="text-foreground w-20 font-medium">
                       {name}
                     </span>
-                    <span className="min-w-0 flex-1 font-mono text-[10px] text-muted-foreground">
+                    <span className="text-muted-foreground min-w-0 flex-1 font-mono text-[10px]">
                       {sizes}
                     </span>
-                    <Download className="h-4 w-4 text-muted-foreground" />
+                    <Download className="text-muted-foreground h-4 w-4" />
                   </a>
                 ))}
               </div>
@@ -801,7 +801,7 @@ export default function Page() {
                 <SubLabel>Determinate</SubLabel>
                 <div className="flex flex-col gap-3 pt-2">
                   <ProgressBar value={progress} />
-                  <span className="font-mono text-xs text-muted-foreground">
+                  <span className="text-muted-foreground font-mono text-xs">
                     {progress}%
                   </span>
                 </div>
@@ -820,7 +820,7 @@ export default function Page() {
                 <TopProgress active={routeLoading} absolute />
                 <SubLabel>Top bar (NProgress-style)</SubLabel>
                 <div className="flex flex-col items-start gap-4 pt-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     A slim neon bar that trickles toward the top edge during
                     navigation, then snaps to 100% and fades. Trigger a mock
                     page load to watch it run along the top of this card.
@@ -840,12 +840,12 @@ export default function Page() {
         </main>
         <footer className="mx-auto max-w-6xl px-5 py-12">
           <div className="ds-glass flex flex-col items-center gap-3 rounded-[var(--radius-lg)] px-6 py-8 text-center">
-            <MicroIcon className="h-8 w-8 text-primary" />
-            <p className="font-display text-sm font-medium text-foreground">
+            <MicroIcon className="text-primary h-8 w-8" />
+            <p className="font-display text-foreground text-sm font-medium">
               <span className="font-bold">sous</span>
-              <span className="font-mono text-muted-foreground">.tools</span>
+              <span className="text-muted-foreground font-mono">.tools</span>
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Neon-glass design system — React, Tailwind v4, Framer Motion.
             </p>
           </div>

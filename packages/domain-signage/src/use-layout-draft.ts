@@ -7,7 +7,7 @@ export function useLayoutDraft(
   deckId: string | undefined,
   config: SignageLayoutConfig,
   setConfig: (config: SignageLayoutConfig) => void,
-  savedConfig: SignageLayoutConfig | null
+  savedConfig: SignageLayoutConfig | null,
 ) {
   const [isDraft, setIsDraft] = useState(false);
   const localStorageKey = deckId ? `signage-draft-${deckId}` : "";
@@ -39,7 +39,9 @@ export function useLayoutDraft(
     }
 
     const timer = setTimeout(() => {
-      const isDifferent = savedConfig ? JSON.stringify(config) !== JSON.stringify(savedConfig) : true;
+      const isDifferent = savedConfig
+        ? JSON.stringify(config) !== JSON.stringify(savedConfig)
+        : true;
       if (isDifferent) {
         localStorage.setItem(localStorageKey, JSON.stringify(config));
         setIsDraft(true);

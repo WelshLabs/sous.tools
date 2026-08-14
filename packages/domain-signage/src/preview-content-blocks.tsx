@@ -1,8 +1,11 @@
 "use client";
 
-import { type MenuItemStyles, type PosItem, type SignageBlock } from "@soustools/api-types";
+import {
+  type MenuItemStyles,
+  type PosItem,
+  type SignageBlock,
+} from "@soustools/api-types";
 import { PreviewNestedItem } from "./preview-nested-exploded";
-
 
 import { PreviewCategoryHeader } from "./preview-category-header";
 import { PreviewPosItem } from "./preview-pos-item";
@@ -28,13 +31,16 @@ export function PreviewContentBlocks({
   onFetchModifierOptions,
 }: PreviewContentBlocksProps): React.JSX.Element {
   switch (block.type) {
+    case "CategoryHeaderBlock":
+      return <PreviewCategoryHeader block={block} />;
+    case "PosItemBlock":
+      return <PreviewPosItem block={block} items={items} styles={styles} />;
 
-    case "CategoryHeaderBlock": return <PreviewCategoryHeader block={block} />;
-    case "PosItemBlock": return <PreviewPosItem block={block} items={items} styles={styles} />;
+    case "CalloutBlock":
+      return <PreviewCallout block={block} />;
 
-    case "CalloutBlock": return <PreviewCallout block={block} />;
-
-    case "MenuListBlock": return <PreviewMenuList block={block} items={items} styles={styles} />;
+    case "MenuListBlock":
+      return <PreviewMenuList block={block} items={items} styles={styles} />;
     case "NestedItemBlock":
       return <PreviewNestedItem block={block} items={items} styles={styles} />;
 
@@ -43,7 +49,12 @@ export function PreviewContentBlocks({
     }
 
     case "ModifierGroupBlock":
-      return <PreviewModifierGroup block={block} onFetchModifierOptions={onFetchModifierOptions} />;
+      return (
+        <PreviewModifierGroup
+          block={block}
+          onFetchModifierOptions={onFetchModifierOptions}
+        />
+      );
 
     case "ImageBlock": {
       const b = block as any;
@@ -65,10 +76,10 @@ export function PreviewContentBlocks({
             <img
               src={b.imageUrl}
               alt="preview"
-              className={`w-full h-full ${objectFitClass}`}
+              className={`h-full w-full ${objectFitClass}`}
             />
           ) : (
-            <span className="text-[10px] text-muted-foreground italic">
+            <span className="text-muted-foreground text-[10px] italic">
               Static Image
             </span>
           )}
@@ -95,11 +106,11 @@ export function PreviewContentBlocks({
             loop
             muted
             playsInline
-            className="w-full h-full object-cover st-video-player"
+            className="st-video-player h-full w-full object-cover"
           />
           {!b.videoUrl && (
-            <div className="absolute inset-0 bg-background/5 dark:bg-background/40 flex items-center justify-center pointer-events-none z-10">
-              <span className="text-[10px] text-muted-foreground italic px-3 py-1 bg-background/50 dark:bg-background/60 rounded">
+            <div className="bg-background/5 dark:bg-background/40 pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+              <span className="text-muted-foreground bg-background/50 dark:bg-background/60 rounded px-3 py-1 text-[10px] italic">
                 Placeholder Video
               </span>
             </div>
@@ -108,15 +119,15 @@ export function PreviewContentBlocks({
       );
     }
 
-
-    case "TimelineBlock": return <PreviewTimeline block={block} />;
+    case "TimelineBlock":
+      return <PreviewTimeline block={block} />;
     default:
       return (
         <div
-          className="w-full min-h-[100px] flex items-center justify-center bg-muted/50 border border-dashed border-border rounded"
+          className="bg-muted/50 border-border flex min-h-[100px] w-full items-center justify-center rounded border border-dashed"
           data-unique-id={block.uniqueSelector}
         >
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center">
+          <span className="text-muted-foreground text-center text-[10px] font-bold tracking-widest uppercase">
             Unconfigured Content
           </span>
         </div>

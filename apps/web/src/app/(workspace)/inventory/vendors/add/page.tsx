@@ -18,7 +18,15 @@ export default function AddVendorPage() {
   });
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const DAYS_OF_WEEK = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
 
   const handleSave = async () => {
     if (!form.name) {
@@ -35,7 +43,8 @@ export default function AddVendorPage() {
       });
 
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Failed to save vendor");
+      if (!res.ok || !json.success)
+        throw new Error(json.error || "Failed to save vendor");
 
       toast.success("Vendor created successfully!");
       await navigateToVendors();
@@ -47,31 +56,35 @@ export default function AddVendorPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in p-8">
+    <div className="animate-in fade-in mx-auto max-w-2xl space-y-6 p-8">
       <TwoToneHeader
         title="Add Vendor"
         breadcrumb="Inventory / Vendors / Add"
       />
-      
-      <div className="st-glass-panel p-8 rounded-xl border border-sky-500/30 bg-sky-50/50 dark:bg-sky-500/5 shadow-md flex flex-col gap-6">
+
+      <div className="st-glass-panel flex flex-col gap-6 rounded-xl border border-sky-500/30 bg-sky-50/50 p-8 shadow-md dark:bg-sky-500/5">
         <div>
-          <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Vendor Name</label>
+          <label className="mb-2 block text-xs font-medium text-zinc-400 dark:text-zinc-500">
+            Vendor Name
+          </label>
           <input
             autoFocus
             type="text"
             placeholder="e.g. Sysco, Local Farm"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-border rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="dark:border-border dark:text-foreground w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:ring-2 focus:ring-sky-500 focus:outline-none dark:bg-zinc-950"
           />
         </div>
 
         <div>
-          <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Order Method</label>
+          <label className="mb-2 block text-xs font-medium text-zinc-400 dark:text-zinc-500">
+            Order Method
+          </label>
           <select
             value={form.order_method}
             onChange={(e) => setForm({ ...form, order_method: e.target.value })}
-            className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-border rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="dark:border-border dark:text-foreground w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:ring-2 focus:ring-sky-500 focus:outline-none dark:bg-zinc-950"
           >
             <option value="EMAIL">Email</option>
             <option value="SMS">Text Message</option>
@@ -81,32 +94,38 @@ export default function AddVendorPage() {
 
         {form.order_method === "EMAIL" && (
           <div>
-            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Email Address</label>
+            <label className="mb-2 block text-xs font-medium text-zinc-400 dark:text-zinc-500">
+              Email Address
+            </label>
             <input
               type="email"
               placeholder="vendor@example.com"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-border rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="dark:border-border dark:text-foreground w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:ring-2 focus:ring-sky-500 focus:outline-none dark:bg-zinc-950"
             />
           </div>
         )}
 
         {form.order_method === "SMS" && (
           <div>
-            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Phone Number</label>
+            <label className="mb-2 block text-xs font-medium text-zinc-400 dark:text-zinc-500">
+              Phone Number
+            </label>
             <input
               type="tel"
               placeholder="+1 555-555-5555"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-border rounded-md px-3 py-2 text-sm text-zinc-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="dark:border-border dark:text-foreground w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:ring-2 focus:ring-sky-500 focus:outline-none dark:bg-zinc-950"
             />
           </div>
         )}
 
         <div>
-          <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block mb-2">Select Order Days</span>
+          <span className="mb-2 block text-xs font-medium text-zinc-400 dark:text-zinc-500">
+            Select Order Days
+          </span>
           <div className="flex flex-wrap gap-2">
             {DAYS_OF_WEEK.map((day) => {
               const isSelected = form.order_days.includes(day);
@@ -121,10 +140,10 @@ export default function AddVendorPage() {
                         : [...form.order_days, day],
                     });
                   }}
-                  className={`px-4 py-2 text-sm rounded-lg transition-colors border cursor-pointer ${
+                  className={`cursor-pointer rounded-lg border px-4 py-2 text-sm transition-colors ${
                     isSelected
-                      ? "bg-sky-500 border-sky-500 text-foreground font-semibold"
-                      : "bg-white dark:bg-card border-zinc-200 dark:border-border text-zinc-600 dark:text-zinc-400 hover:border-sky-500"
+                      ? "text-foreground border-sky-500 bg-sky-500 font-semibold"
+                      : "dark:bg-card dark:border-border border-zinc-200 bg-white text-zinc-600 hover:border-sky-500 dark:text-zinc-400"
                   }`}
                 >
                   {day.slice(0, 3)}
@@ -134,18 +153,18 @@ export default function AddVendorPage() {
           </div>
         </div>
 
-        <div className="flex gap-4 mt-6">
+        <div className="mt-6 flex gap-4">
           <button
             onClick={() => router.back()}
             disabled={isSubmitting}
-            className="flex-1 py-3 bg-zinc-200 dark:bg-white/10 hover:bg-zinc-300 dark:hover:bg-white/20 text-zinc-900 dark:text-foreground rounded-xl font-bold transition-colors cursor-pointer disabled:opacity-50"
+            className="dark:text-foreground flex-1 cursor-pointer rounded-xl bg-zinc-200 py-3 font-bold text-zinc-900 transition-colors hover:bg-zinc-300 disabled:opacity-50 dark:bg-white/10 dark:hover:bg-white/20"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSubmitting}
-            className="flex-1 py-3 bg-sky-500 hover:bg-sky-600 text-foreground rounded-xl font-bold transition-colors cursor-pointer disabled:opacity-50"
+            className="text-foreground flex-1 cursor-pointer rounded-xl bg-sky-500 py-3 font-bold transition-colors hover:bg-sky-600 disabled:opacity-50"
           >
             {isSubmitting ? "Saving..." : "Save Vendor"}
           </button>

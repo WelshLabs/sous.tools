@@ -24,20 +24,20 @@ export function PosItemPicker({
   );
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex w-full flex-col gap-2">
       <div className="relative">
-        <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
+        <Search className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
         <input
           type="text"
           placeholder={placeholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-3 py-1.5 bg-card border border-border rounded-lg text-xs focus:outline-none focus:border-cyan-500 text-foreground"
+          className="bg-card border-border text-foreground w-full rounded-lg border py-1.5 pr-3 pl-9 text-xs focus:border-cyan-500 focus:outline-none"
         />
       </div>
-      <div className="max-h-48 overflow-y-auto border border-border rounded-lg bg-background p-1 space-y-0.5 custom-scrollbar">
+      <div className="border-border bg-background custom-scrollbar max-h-48 space-y-0.5 overflow-y-auto rounded-lg border p-1">
         {filtered.length === 0 ? (
-          <div className="text-xs text-muted-foreground italic p-2 text-center">
+          <div className="text-muted-foreground p-2 text-center text-xs italic">
             No items found.
           </div>
         ) : (
@@ -45,14 +45,14 @@ export function PosItemPicker({
             <button
               key={item.id}
               onClick={() => onChange(item.id)}
-              className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors flex justify-between items-center ${
+              className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs transition-colors ${
                 value === item.id
-                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                  ? "border border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
                   : "text-muted-foreground hover:bg-muted/50 border border-transparent"
               }`}
             >
               <span className="truncate">{item.name}</span>
-              <span className="shrink-0 ml-2 font-mono opacity-60">
+              <span className="ml-2 shrink-0 font-mono opacity-60">
                 ${Number(item.price).toFixed(2)}
               </span>
             </button>
@@ -103,21 +103,21 @@ export function PosItemMultiPicker({
   );
 
   return (
-    <div className="flex flex-col gap-2 w-full" ref={containerRef}>
+    <div className="flex w-full flex-col gap-2" ref={containerRef}>
       {/* Selected Items Pills */}
       {selectedItems.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-1">
+        <div className="mb-1 flex flex-wrap gap-1.5">
           {selectedItems.map((item) => (
             <div
               key={item.id}
-              className="flex flex-col gap-1 w-full bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-2"
+              className="flex w-full flex-col gap-1 rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-2"
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-xs font-semibold text-cyan-400 truncate">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="truncate text-xs font-semibold text-cyan-400">
                     {item.name}
                   </span>
-                  <span className="text-[10px] text-cyan-500/70 font-mono">
+                  <span className="font-mono text-[10px] text-cyan-500/70">
                     ${Number(item.price).toFixed(2)}
                   </span>
                 </div>
@@ -126,9 +126,9 @@ export function PosItemMultiPicker({
                     e.stopPropagation();
                     onChange(selectedIds.filter((id) => id !== item.id));
                   }}
-                  className="p-1 hover:bg-cyan-500/20 rounded text-cyan-500 hover:text-cyan-300 transition-colors"
+                  className="rounded p-1 text-cyan-500 transition-colors hover:bg-cyan-500/20 hover:text-cyan-300"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
               {renderExtra && renderExtra(item, true)}
@@ -139,7 +139,7 @@ export function PosItemMultiPicker({
 
       {/* Search Input */}
       <div className="relative">
-        <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5 pointer-events-none" />
+        <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-3 h-4 w-4" />
         <input
           type="text"
           placeholder={placeholder}
@@ -149,14 +149,14 @@ export function PosItemMultiPicker({
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          className="w-full pl-9 pr-3 py-1.5 bg-card border border-border rounded-lg text-xs focus:outline-none focus:border-cyan-500 text-foreground placeholder:text-zinc-600 transition-colors"
+          className="bg-card border-border text-foreground w-full rounded-lg border py-1.5 pr-3 pl-9 text-xs transition-colors placeholder:text-zinc-600 focus:border-cyan-500 focus:outline-none"
         />
 
         {/* Dropdown Options */}
         {isOpen && (
-          <div className="absolute z-50 top-full mt-1.5 w-full bg-card border border-border rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
+          <div className="bg-card border-border custom-scrollbar absolute top-full z-50 mt-1.5 max-h-48 w-full overflow-y-auto rounded-lg border shadow-2xl">
             {filtered.length === 0 ? (
-              <div className="text-xs text-muted-foreground italic p-3 text-center bg-background/50">
+              <div className="text-muted-foreground bg-background/50 p-3 text-center text-xs italic">
                 No available items found.
               </div>
             ) : (
@@ -168,10 +168,10 @@ export function PosItemMultiPicker({
                       onChange([...selectedIds, item.id]);
                       setSearch("");
                     }}
-                    className="flex items-center justify-between w-full text-left px-2 py-2 rounded text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+                    className="text-muted-foreground hover:bg-muted/50 hover:text-foreground flex w-full items-center justify-between rounded px-2 py-2 text-left text-xs transition-colors"
                   >
                     <span className="truncate pr-4">{item.name}</span>
-                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                    <span className="text-muted-foreground shrink-0 font-mono text-[10px]">
                       ${Number(item.price).toFixed(2)}
                     </span>
                   </button>

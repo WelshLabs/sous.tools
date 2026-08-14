@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { type PurchaseOrder, type PurchaseOrderItem, type Vendor } from "@soustools/api-types";
+import {
+  type PurchaseOrder,
+  type PurchaseOrderItem,
+  type Vendor,
+} from "@soustools/api-types";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Circle } from "lucide-react";
 import { api } from "@soustools/api-client";
@@ -21,7 +25,9 @@ export default function SelfShopPage() {
   useEffect(() => {
     const fetchPO = async () => {
       try {
-        const { data, error } = await (api.GET as any)(`/purchase-orders/${id}`);
+        const { data, error } = await (api.GET as any)(
+          `/purchase-orders/${id}`,
+        );
         if (!error && data) {
           const payload = (data as any).data;
           if (payload) {
@@ -39,7 +45,6 @@ export default function SelfShopPage() {
     fetchPO();
   }, [id]);
 
-
   const toggleCheck = (itemId: string) => {
     const next = new Set(checkedItems);
     if (next.has(itemId)) next.delete(itemId);
@@ -54,7 +59,7 @@ export default function SelfShopPage() {
 
   if (loading)
     return (
-      <div className="p-8 text-center text-foreground/50">
+      <div className="text-foreground/50 p-8 text-center">
         Loading Self-Shop Mode...
       </div>
     );
@@ -66,18 +71,18 @@ export default function SelfShopPage() {
     checkedItems.size === po.purchase_order_items.length;
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto min-h-screen flex flex-col animate-in slide-in-from-bottom-4">
+    <div className="animate-in slide-in-from-bottom-4 mx-auto flex min-h-screen max-w-3xl flex-col p-4 md:p-8">
       <Link
         href="/inventory/orders"
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors w-fit"
+        className="text-muted-foreground hover:text-foreground mb-6 flex w-fit items-center gap-2 transition-colors"
       >
         <ArrowLeft size={16} /> Back to Purchasing
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
+        <h1 className="mb-2 flex items-center gap-3 text-3xl font-bold tracking-tight md:text-4xl">
           {po.vendors?.name}
-          <span className="text-sm bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30">
+          <span className="rounded-full border border-blue-500/30 bg-blue-600/20 px-3 py-1 text-sm text-blue-400">
             Self-Shop Mode
           </span>
         </h1>
@@ -94,20 +99,20 @@ export default function SelfShopPage() {
             <div
               key={item.id}
               onClick={() => toggleCheck(item.id)}
-              className={`p-4 md:p-6 rounded-xl border flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] ${
+              className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all active:scale-[0.98] md:p-6 ${
                 isChecked
-                  ? "bg-green-500/10 border-green-500/30 text-gray-300"
-                  : "glass-panel border-black/10 dark:border-border hover:border-white/20 text-foreground"
+                  ? "border-green-500/30 bg-green-500/10 text-gray-300"
+                  : "glass-panel dark:border-border text-foreground border-black/10 hover:border-white/20"
               }`}
             >
               <div className="flex items-center gap-4">
                 {isChecked ? (
-                  <CheckCircle2 className="text-green-500 w-8 h-8 flex-shrink-0" />
+                  <CheckCircle2 className="h-8 w-8 flex-shrink-0 text-green-500" />
                 ) : (
-                  <Circle className="text-foreground/30 w-8 h-8 flex-shrink-0" />
+                  <Circle className="text-foreground/30 h-8 w-8 flex-shrink-0" />
                 )}
                 <span
-                  className={`text-xl md:text-2xl font-medium ${isChecked ? "line-through decoration-green-500/50" : ""}`}
+                  className={`text-xl font-medium md:text-2xl ${isChecked ? "line-through decoration-green-500/50" : ""}`}
                 >
                   {item.raw_name}
                 </span>
@@ -122,42 +127,46 @@ export default function SelfShopPage() {
         })}
       </div>
 
-      <div className="mt-8 sticky bottom-8">
+      <div className="sticky bottom-8 mt-8">
         <div
-          className={`p-6 rounded-xl border backdrop-blur-xl transition-all ${
+          className={`rounded-xl border p-6 backdrop-blur-xl transition-all ${
             allChecked
-              ? "bg-green-600/20 border-green-500/50"
-              : "bg-white/50 dark:bg-black/60 border-black/10 dark:border-border"
+              ? "border-green-500/50 bg-green-600/20"
+              : "dark:border-border border-black/10 bg-white/50 dark:bg-black/60"
           }`}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <span className="text-lg font-medium">Progress</span>
             <span className="text-lg font-bold">
               {checkedItems.size} / {po.purchase_order_items.length} Items
             </span>
           </div>
 
-          {allChecked && po.status !== 'SUBMITTED' && po.status !== 'RECEIVED' && po.status !== 'RECONCILED' && (
-            <div className="text-center animate-in zoom-in">
-              <p className="text-green-400 font-bold text-xl mb-2">
-                Shopping Complete!
-              </p>
-              <p className="text-sm text-muted-foreground">
-                To reconcile pricing, please scan the physical receipt using the
-                Ingestion importer.
-              </p>
-            </div>
-          )}
+          {allChecked &&
+            po.status !== "SUBMITTED" &&
+            po.status !== "RECEIVED" &&
+            po.status !== "RECONCILED" && (
+              <div className="animate-in zoom-in text-center">
+                <p className="mb-2 text-xl font-bold text-green-400">
+                  Shopping Complete!
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  To reconcile pricing, please scan the physical receipt using
+                  the Ingestion importer.
+                </p>
+              </div>
+            )}
 
-          {po.status === 'SUBMITTED' && (
-            <div className="text-center animate-in zoom-in space-y-4">
-              <p className="text-blue-400 font-bold text-xl mb-2">
+          {po.status === "SUBMITTED" && (
+            <div className="animate-in zoom-in space-y-4 text-center">
+              <p className="mb-2 text-xl font-bold text-blue-400">
                 Order Submitted
               </p>
-              <p className="text-sm text-muted-foreground">
-                When you receive the physical invoice, ingest it here to automatically reconcile this purchase order.
+              <p className="text-muted-foreground text-sm">
+                When you receive the physical invoice, ingest it here to
+                automatically reconcile this purchase order.
               </p>
-              <label className="cursor-pointer inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 transition-all">
+              <label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-blue-600 px-6 py-3 font-bold text-white transition-all hover:bg-blue-500">
                 Ingest Invoice
                 <input
                   type="file"
@@ -169,15 +178,17 @@ export default function SelfShopPage() {
                     const formData = new FormData();
                     formData.append("file", file);
                     formData.append("po_id", po.id);
-                    
+
                     try {
                       // Post to the backend ingestion endpoint
                       const res = await fetch("/api/ingestion", {
                         method: "POST",
-                        body: formData
+                        body: formData,
                       });
                       if (res.ok) {
-                        alert("Invoice ingested successfully! It is now processing.");
+                        alert(
+                          "Invoice ingested successfully! It is now processing.",
+                        );
                       } else {
                         alert("Failed to ingest invoice.");
                       }

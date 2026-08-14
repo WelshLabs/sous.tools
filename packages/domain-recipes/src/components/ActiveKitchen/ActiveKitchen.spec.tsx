@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import React from 'react';
+import React from "react";
 import { ActiveKitchenView } from "./ActiveKitchen.view";
 
 describe("ActiveKitchenView", () => {
@@ -36,7 +36,7 @@ describe("ActiveKitchenView", () => {
         onStartPauseTimer={vi.fn()}
         onResetTimer={vi.fn()}
         onRemoveTimer={vi.fn()}
-      />
+      />,
     );
     expect(screen.getByText("Test Recipe")).toBeDefined();
     expect(screen.getByText("Boil water")).toBeDefined();

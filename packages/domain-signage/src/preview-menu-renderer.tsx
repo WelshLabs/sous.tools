@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type MenuItemStyles, type PosItem } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type MenuItemStyles,
+  type PosItem,
+} from "@soustools/api-types";
 import {
   buildCardStyle,
   buildTitleStyle,
@@ -35,26 +39,33 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
 
     const cardClassName = [
       "p-2 rounded-lg text-left text-[10px] transition-all flex flex-col justify-between h-full min-h-[50px] border st-menu-item",
-      item.isSoldOut ? "st-sold-out" : ""
-    ].filter(Boolean).join(" ");
+      item.isSoldOut ? "st-sold-out" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     return (
-      <div
-        key={item.id}
-        className={cardClassName}
-        style={cardStyle}
-      >
+      <div key={item.id} className={cardClassName} style={cardStyle}>
         <div className="space-y-0.5">
-          <div className="flex justify-between items-start gap-1">
-            <h5 className="font-bold truncate max-w-[70%] text-[10px] leading-tight st-menu-item-title" style={titleStyle}>
+          <div className="flex items-start justify-between gap-1">
+            <h5
+              className="st-menu-item-title max-w-[70%] truncate text-[10px] leading-tight font-bold"
+              style={titleStyle}
+            >
               {item.name}
             </h5>
-            <span className="font-semibold text-[9px] whitespace-nowrap st-price-tag" style={priceStyle}>
+            <span
+              className="st-price-tag text-[9px] font-semibold whitespace-nowrap"
+              style={priceStyle}
+            >
               ${Number(item.price).toFixed(2)}
             </span>
           </div>
           {item.description && (
-            <p className="text-[8px] line-clamp-1 leading-normal st-item-description" style={descStyle}>
+            <p
+              className="st-item-description line-clamp-1 text-[8px] leading-normal"
+              style={descStyle}
+            >
               {item.description}
             </p>
           )}
@@ -63,9 +74,11 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
           <div className="mt-1 flex">
             <span
               className={[
-                "text-[7px] px-1 py-0.5 rounded font-black uppercase tracking-wider st-menu-item-badge",
-                item.isSoldOut ? "st-sold-out-badge" : ""
-              ].filter(Boolean).join(" ")}
+                "st-menu-item-badge rounded px-1 py-0.5 text-[7px] font-black tracking-wider uppercase",
+                item.isSoldOut ? "st-sold-out-badge" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               style={{
                 backgroundColor: stateStyle.badge.color,
                 color: stateStyle.badge.textColor,
@@ -83,7 +96,9 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
   let activeItems: PosItem[] = [];
   if (column.itemIds && column.itemIds.length > 0) {
     activeItems = column.itemIds
-      .map((id) => items.find((item) => item.id === id || item.externalId === id))
+      .map((id) =>
+        items.find((item) => item.id === id || item.externalId === id),
+      )
       .filter((item): item is PosItem => !!item);
   }
   activeItems = activeItems.filter((item) => {
@@ -93,16 +108,18 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
 
   if (activeItems.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground text-[10px] italic">
+      <div className="text-muted-foreground flex h-full items-center justify-center text-[10px] italic">
         No menu items selected
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full p-2.5 bg-[oklch(0.08_0.01_260)] flex flex-col rounded-lg overflow-hidden">
-      <h4 className="text-[10px] font-bold text-center mb-1.5 font-brand text-muted-foreground">Menu</h4>
-      <div className="grid grid-cols-3 gap-1.5 overflow-y-auto max-h-[140px] pr-1">
+    <div className="flex h-full w-full flex-col overflow-hidden rounded-lg bg-[oklch(0.08_0.01_260)] p-2.5">
+      <h4 className="font-brand text-muted-foreground mb-1.5 text-center text-[10px] font-bold">
+        Menu
+      </h4>
+      <div className="grid max-h-[140px] grid-cols-3 gap-1.5 overflow-y-auto pr-1">
         {activeItems.map(renderPreviewItem)}
       </div>
     </div>

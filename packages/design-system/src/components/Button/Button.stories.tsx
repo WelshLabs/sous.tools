@@ -1,21 +1,29 @@
-import * as React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from './Button';
+import * as React from "react";
+import type { Meta, StoryObj } from "@storybook/react";
+import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {
-  title: 'Components/Button',
+  title: "Components/Button",
   component: Button,
   argTypes: {
     variant: {
-      control: 'select',
-      options: ['gradient', 'primary', 'secondary', 'outline', 'glass', 'ghost', 'destructive'],
+      control: "select",
+      options: [
+        "gradient",
+        "primary",
+        "secondary",
+        "outline",
+        "glass",
+        "ghost",
+        "destructive",
+      ],
     },
     size: {
-      control: 'select',
-      options: ['sm', 'md', 'lg', 'icon'],
+      control: "select",
+      options: ["sm", "md", "lg", "icon"],
     },
-    disabled: { control: 'boolean' },
-    asChild: { control: 'boolean' },
+    disabled: { control: "boolean" },
+    asChild: { control: "boolean" },
   },
 };
 
@@ -24,8 +32,8 @@ type Story = StoryObj<typeof Button>;
 
 export const Primary: Story = {
   args: {
-    variant: 'primary',
-    children: 'Primary Button',
+    variant: "primary",
+    children: "Primary Button",
   },
 };
 
@@ -57,6 +65,6 @@ export const AllSizes: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
-    children: 'Disabled',
+    children: "Disabled",
   },
 };

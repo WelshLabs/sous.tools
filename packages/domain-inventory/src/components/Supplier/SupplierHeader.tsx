@@ -40,7 +40,7 @@ export function SupplierHeader({
       <div className="flex flex-row items-center gap-4">
         <div
           className={[
-            "w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0 transition-all",
+            "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-all",
             isUnassigned
               ? "bg-muted dark:bg-secondary border-border"
               : "bg-accent/10 border-accent/20 shadow-glow-accent",
@@ -48,28 +48,24 @@ export function SupplierHeader({
         >
           <Truck
             size={22}
-            className={
-              isUnassigned
-                ? "text-muted-foreground"
-                : "text-accent"
-            }
+            className={isUnassigned ? "text-muted-foreground" : "text-accent"}
           />
         </div>
         <div>
-          <p className="font-black uppercase text-xl tracking-tighter text-foreground">
+          <p className="text-foreground text-xl font-black tracking-tighter uppercase">
             {isUnassigned ? "Unassigned Items" : supplier?.name}
           </p>
           {!isUnassigned && supplier && (
-            <div className="flex flex-row items-center gap-3 mt-0.5">
-              <div className="flex flex-row items-center gap-1.5 text-primary">
+            <div className="mt-0.5 flex flex-row items-center gap-3">
+              <div className="text-primary flex flex-row items-center gap-1.5">
                 <Calendar size={11} />
-                <span className="text-[10px] font-black uppercase tracking-widest">
+                <span className="text-[10px] font-black tracking-widest uppercase">
                   Next: {getNextDelivery(supplier.deliveryDays)}
                 </span>
               </div>
               <span className="text-muted-foreground/40 text-[10px]">•</span>
-              <div className="flex flex-row items-center gap-1.5 text-muted-foreground">
-                <span className="text-[10px] font-black uppercase tracking-widest">
+              <div className="text-muted-foreground flex flex-row items-center gap-1.5">
+                <span className="text-[10px] font-black tracking-widest uppercase">
                   Cutoff: {supplier.cutoffTime}
                 </span>
               </div>
@@ -83,13 +79,13 @@ export function SupplierHeader({
           {onShopOrder && (
             <button
               onClick={onShopOrder}
-              className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground h-12 px-6 rounded-2xl flex items-center gap-2 group transition-colors border border-border"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground group border-border flex h-12 items-center gap-2 rounded-2xl border px-6 transition-colors"
             >
               <ShoppingBag
                 size={16}
-                className="group-hover:scale-110 transition-transform"
+                className="transition-transform group-hover:scale-110"
               />
-              <span className="font-black uppercase text-xs tracking-widest">
+              <span className="text-xs font-black tracking-widest uppercase">
                 Shop
               </span>
             </button>
@@ -97,13 +93,13 @@ export function SupplierHeader({
           <button
             onClick={onPlaceOrder}
             disabled={isPlacingOrder}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 h-12 px-8 rounded-2xl shadow-glow-sm flex items-center gap-3 group transition-colors"
+            className="bg-primary hover:bg-primary/90 shadow-glow-sm group flex h-12 items-center gap-3 rounded-2xl px-8 transition-colors disabled:opacity-50"
           >
             <Check
               size={16}
-              className="text-primary-foreground group-hover:scale-110 transition-transform"
+              className="text-primary-foreground transition-transform group-hover:scale-110"
             />
-            <span className="text-primary-foreground font-black uppercase text-xs tracking-widest">
+            <span className="text-primary-foreground text-xs font-black tracking-widest uppercase">
               Place Order ({items.length})
             </span>
           </button>

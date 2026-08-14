@@ -39,30 +39,30 @@ export function ModalShell({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-background/75 backdrop-blur-sm flex items-center justify-center p-4"
+      className="bg-background/75 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
       onClick={close}
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
       <div
-        className={`relative bg-background border border-border rounded-2xl shadow-2xl w-full ${maxWidth} max-h-[90vh] flex flex-col overflow-hidden`}
+        className={`bg-background border-border relative w-full rounded-2xl border shadow-2xl ${maxWidth} flex max-h-[90vh] flex-col overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+        <div className="border-border flex shrink-0 items-center justify-between border-b px-5 py-4">
           <div>
-            <h2 className="text-base font-bold text-foreground">{title}</h2>
+            <h2 className="text-foreground text-base font-bold">{title}</h2>
             {subtitle && (
-              <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+              <p className="text-muted-foreground mt-0.5 text-xs">{subtitle}</p>
             )}
           </div>
           <button
             onClick={close}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer rounded-lg p-1.5 transition"
             aria-label="Close"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -71,7 +71,7 @@ export function ModalShell({
 
         {/* Footer */}
         {footer && (
-          <div className="px-5 py-3 border-t border-border shrink-0 flex items-center justify-end gap-2">
+          <div className="border-border flex shrink-0 items-center justify-end gap-2 border-t px-5 py-3">
             {footer}
           </div>
         )}

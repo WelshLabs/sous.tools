@@ -7,7 +7,10 @@ import { SignageGateway } from "./signage.gateway";
  * @param result - The database query result object.
  * @returns The queried data.
  */
-export function handleDbResult<T>(result: { data: T | null; error: { message: string } | null }): T {
+export function handleDbResult<T>(result: {
+  data: T | null;
+  error: { message: string } | null;
+}): T {
   if (result.error) {
     throw new Error(result.error.message);
   }

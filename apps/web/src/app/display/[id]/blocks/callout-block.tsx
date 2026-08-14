@@ -55,17 +55,17 @@ export function CalloutBlock({
   return (
     <div className={containerClasses} style={bgStyle}>
       {icon && (
-        <span className="text-2xl flex-shrink-0 animate-bounce-slow">
+        <span className="animate-bounce-slow flex-shrink-0 text-2xl">
           {icon}
         </span>
       )}
       <div
-        className="flex flex-col gap-1 items-center justify-center flex-grow"
+        className="flex flex-grow flex-col items-center justify-center gap-1"
         style={{ color: textColor }}
       >
         {title && (
           <span
-            className="font-bold tracking-wide text-lg"
+            className="text-lg font-bold tracking-wide"
             style={{ fontSize }}
           >
             {title}
@@ -85,8 +85,8 @@ export function CalloutBlock({
           <p
             className={`leading-relaxed ${
               isVertical
-                ? "text-[#f8fafc] text-[15px] font-black tracking-widest uppercase leading-snug"
-                : "text-sm font-semibold tracking-wide font-sans"
+                ? "text-[15px] leading-snug font-black tracking-widest text-[#f8fafc] uppercase"
+                : "font-sans text-sm font-semibold tracking-wide"
             }`}
             style={{ fontSize }}
           >
@@ -95,7 +95,7 @@ export function CalloutBlock({
         )}
       </div>
       {!isVertical && icon && (
-        <span className="text-2xl flex-shrink-0 animate-bounce-slow">
+        <span className="animate-bounce-slow flex-shrink-0 text-2xl">
           {icon}
         </span>
       )}

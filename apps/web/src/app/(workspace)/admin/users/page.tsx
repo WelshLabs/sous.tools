@@ -1,47 +1,62 @@
 import React from "react";
 import { TwoToneHeader } from "@soustools/design-system";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function AdminUsersPage() {
   return (
-    <div className="p-8 max-w-6xl mx-auto w-full h-full">
+    <div className="mx-auto h-full w-full max-w-6xl p-8">
       <div className="mb-8">
-        <TwoToneHeader title="Admin Users" breadcrumb="Manage user roles and permissions." />
+        <TwoToneHeader
+          title="Admin Users"
+          breadcrumb="Manage user roles and permissions."
+        />
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-6">
+      <div className="bg-card border-border rounded-2xl border p-6">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-border text-muted-foreground text-sm">
-                <th className="pb-3 px-4 font-medium">Name</th>
-                <th className="pb-3 px-4 font-medium">Email</th>
-                <th className="pb-3 px-4 font-medium">Role</th>
-                <th className="pb-3 px-4 font-medium text-right">Actions</th>
+              <tr className="border-border text-muted-foreground border-b text-sm">
+                <th className="px-4 pb-3 font-medium">Name</th>
+                <th className="px-4 pb-3 font-medium">Email</th>
+                <th className="px-4 pb-3 font-medium">Role</th>
+                <th className="px-4 pb-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border/50 hover:bg-accent/20">
-                <td className="py-4 px-4 text-zinc-300 font-medium">Conar Welsh</td>
-                <td className="py-4 px-4 text-muted-foreground">conar@soustools.com</td>
-                <td className="py-4 px-4 text-muted-foreground">
-                  <span className="px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-semibold uppercase tracking-wider">Superadmin</span>
+              <tr className="border-border/50 hover:bg-accent/20 border-b">
+                <td className="px-4 py-4 font-medium text-zinc-300">
+                  Conar Welsh
                 </td>
-                <td className="py-4 px-4 text-right">
-                  <button className="px-3 py-1.5 bg-accent hover:bg-accent text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-border">
+                <td className="text-muted-foreground px-4 py-4">
+                  conar@soustools.com
+                </td>
+                <td className="text-muted-foreground px-4 py-4">
+                  <span className="rounded-md bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold tracking-wider text-cyan-400 uppercase">
+                    Superadmin
+                  </span>
+                </td>
+                <td className="px-4 py-4 text-right">
+                  <button className="bg-accent hover:bg-accent border-border rounded-lg border px-3 py-1.5 text-sm font-semibold text-zinc-300 transition-colors">
                     Edit
                   </button>
                 </td>
               </tr>
-              <tr className="border-b border-border/50 hover:bg-accent/20">
-                <td className="py-4 px-4 text-zinc-300 font-medium">Demo Chef</td>
-                <td className="py-4 px-4 text-muted-foreground">chef@demo.com</td>
-                <td className="py-4 px-4 text-muted-foreground">
-                  <span className="px-2.5 py-1 rounded-md bg-accent text-muted-foreground text-xs font-semibold uppercase tracking-wider">User</span>
+              <tr className="border-border/50 hover:bg-accent/20 border-b">
+                <td className="px-4 py-4 font-medium text-zinc-300">
+                  Demo Chef
                 </td>
-                <td className="py-4 px-4 text-right">
-                  <button className="px-3 py-1.5 bg-accent hover:bg-accent text-zinc-300 rounded-lg text-sm font-semibold transition-colors border border-border">
+                <td className="text-muted-foreground px-4 py-4">
+                  chef@demo.com
+                </td>
+                <td className="text-muted-foreground px-4 py-4">
+                  <span className="bg-accent text-muted-foreground rounded-md px-2.5 py-1 text-xs font-semibold tracking-wider uppercase">
+                    User
+                  </span>
+                </td>
+                <td className="px-4 py-4 text-right">
+                  <button className="bg-accent hover:bg-accent border-border rounded-lg border px-3 py-1.5 text-sm font-semibold text-zinc-300 transition-colors">
                     Edit
                   </button>
                 </td>

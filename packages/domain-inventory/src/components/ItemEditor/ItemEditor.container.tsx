@@ -37,12 +37,24 @@ export interface ItemEditorProps {
 }
 
 const defaultFormData = (): ItemFormData => ({
-  name: "", category: "INGREDIENT", purchase_unit: "LB", density_g_ml: 1.0,
-  allergens: [], is_animal_product: false, nutrition_macros: {}, fdc_id: null,
-  force_usda_sync: false, usda_query: "",
+  name: "",
+  category: "INGREDIENT",
+  purchase_unit: "LB",
+  density_g_ml: 1.0,
+  allergens: [],
+  is_animal_product: false,
+  nutrition_macros: {},
+  fdc_id: null,
+  force_usda_sync: false,
+  usda_query: "",
 });
 
-export function ItemEditor({ item, onClose, onSave, onSearchUSDA }: ItemEditorProps) {
+export function ItemEditor({
+  item,
+  onClose,
+  onSave,
+  onSearchUSDA,
+}: ItemEditorProps) {
   const [loading, setLoading] = useState(false);
   const [usdaQuery, setUsdaQuery] = useState("");
   const [usdaLoading, setUsdaLoading] = useState(false);
@@ -51,25 +63,46 @@ export function ItemEditor({ item, onClose, onSave, onSearchUSDA }: ItemEditorPr
   useEffect(() => {
     if (item) {
       setFormData({
-        name: item.name ?? "", category: item.category ?? "INGREDIENT", purchase_unit: item.purchase_unit ?? "LB",
-        density_g_ml: item.density_g_ml ?? 1.0, allergens: item.allergens ?? [], is_animal_product: item.is_animal_product ?? false,
-        nutrition_macros: item.nutrition_macros ?? {}, fdc_id: item.fdc_id ?? null, force_usda_sync: false, usda_query: "",
+        name: item.name ?? "",
+        category: item.category ?? "INGREDIENT",
+        purchase_unit: item.purchase_unit ?? "LB",
+        density_g_ml: item.density_g_ml ?? 1.0,
+        allergens: item.allergens ?? [],
+        is_animal_product: item.is_animal_product ?? false,
+        nutrition_macros: item.nutrition_macros ?? {},
+        fdc_id: item.fdc_id ?? null,
+        force_usda_sync: false,
+        usda_query: "",
       });
     }
   }, [item]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: type === "number" ? parseFloat(value) : value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "number" ? parseFloat(value) : value,
+    }));
   };
 
   const handleMacroChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, nutrition_macros: { ...prev.nutrition_macros, [name]: parseFloat(value) || 0 } }));
+    setFormData((prev) => ({
+      ...prev,
+      nutrition_macros: {
+        ...prev.nutrition_macros,
+        [name]: parseFloat(value) || 0,
+      },
+    }));
   };
 
   const handleAllergensChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const algs = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+    const algs = e.target.value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     setFormData((prev) => ({ ...prev, allergens: algs }));
   };
 
@@ -81,9 +114,17 @@ export function ItemEditor({ item, onClose, onSave, onSearchUSDA }: ItemEditorPr
       if (payload.success && payload.data) {
         toast.success("Found match! Backend will calculate allergens on save.");
         setFormData((prev) => ({
-          ...prev, name: prev.name || payload.data!.fdc_food_name, fdc_id: payload.data!.fdc_id,
-          force_usda_sync: true, usda_query: usdaQuery,
-          nutrition_macros: { calories: payload.data!.calories, protein_g: payload.data!.protein_g, total_carbohydrate_g: payload.data!.total_carbohydrate_g, total_fat_g: payload.data!.total_fat_g },
+          ...prev,
+          name: prev.name || payload.data!.fdc_food_name,
+          fdc_id: payload.data!.fdc_id,
+          force_usda_sync: true,
+          usda_query: usdaQuery,
+          nutrition_macros: {
+            calories: payload.data!.calories,
+            protein_g: payload.data!.protein_g,
+            total_carbohydrate_g: payload.data!.total_carbohydrate_g,
+            total_fat_g: payload.data!.total_fat_g,
+          },
         }));
       } else {
         toast.error("No matches found in USDA DB.");

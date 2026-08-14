@@ -11,7 +11,11 @@ export interface DocumentViewerProps {
   hoveredIndex?: number | null;
 }
 
-export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null }: DocumentViewerProps) {
+export function DocumentViewer({
+  sourceUrl,
+  lineItems = [],
+  hoveredIndex = null,
+}: DocumentViewerProps) {
   const [scale, setScale] = useState(1);
   const imgRef = useRef<HTMLImageElement>(null);
   const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
@@ -42,11 +46,13 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
   }, [measureImage]);
 
   return (
-    <div className="flex flex-col gap-3 h-[450px] lg:h-[620px] relative">
-      <div className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase font-semibold">Document Viewer</div>
-      <div className="flex-1 relative rounded-2xl border border-white/10 dark:border-zinc-800/80 overflow-hidden bg-slate-950/80 flex items-center justify-center">
+    <div className="relative flex h-[450px] flex-col gap-3 lg:h-[620px]">
+      <div className="font-mono text-[10px] font-semibold tracking-widest text-cyan-400 uppercase">
+        Document Viewer
+      </div>
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80 dark:border-zinc-800/80">
         {sourceUrl ? (
-          <div className="w-full h-full relative cursor-grab active:cursor-grabbing overflow-hidden flex items-center justify-center">
+          <div className="relative flex h-full w-full cursor-grab items-center justify-center overflow-hidden active:cursor-grabbing">
             <motion.div
               drag
               dragElastic={0.15}
@@ -63,13 +69,14 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
                 src={sourceUrl}
                 alt="Uploaded source document"
                 onLoad={measureImage}
-                className="max-h-[380px] lg:max-h-[530px] w-auto object-contain pointer-events-none select-none rounded-lg block"
+                className="pointer-events-none block max-h-[380px] w-auto rounded-lg object-contain select-none lg:max-h-[530px]"
               />
 
               {/* Bounding Boxes — positioned in image-pixel space */}
               {imgSize &&
                 lineItems.map((item, idx) => {
-                  if (!item.boundingBox || item.boundingBox.length !== 4) return null;
+                  if (!item.boundingBox || item.boundingBox.length !== 4)
+                    return null;
                   // Coordinates are normalised [0,1] in [ymin, xmin, ymax, xmax] order
                   const [ymin, xmin, ymax, xmax] = item.boundingBox;
                   const isHoveredItem = hoveredIndex === idx;
@@ -77,16 +84,16 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
                   return (
                     <div
                       key={idx}
-                      className={`absolute rounded border transition-all duration-150 pointer-events-none ${
+                      className={`pointer-events-none absolute rounded border transition-all duration-150 ${
                         isHoveredItem
-                          ? "border-cyan-400 bg-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.6)] z-30 scale-[1.01]"
-                          : "border-cyan-500 bg-cyan-500/10 z-20"
+                          ? "z-30 scale-[1.01] border-cyan-400 bg-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.6)]"
+                          : "z-20 border-cyan-500 bg-cyan-500/10"
                       }`}
                       style={{
-                        top:    `${ymin * imgSize.h}px`,
-                        left:   `${xmin * imgSize.w}px`,
+                        top: `${ymin * imgSize.h}px`,
+                        left: `${xmin * imgSize.w}px`,
                         height: `${(ymax - ymin) * imgSize.h}px`,
-                        width:  `${(xmax - xmin) * imgSize.w}px`,
+                        width: `${(xmax - xmin) * imgSize.w}px`,
                       }}
                     />
                   );
@@ -94,29 +101,36 @@ export function DocumentViewer({ sourceUrl, lineItems = [], hoveredIndex = null 
             </motion.div>
           </div>
         ) : (
-          <div className="text-xs text-muted-foreground italic text-center p-6">No source document visual available.</div>
+          <div className="text-muted-foreground p-6 text-center text-xs italic">
+            No source document visual available.
+          </div>
         )}
 
         {sourceUrl && (
-          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/80 backdrop-blur border border-white/10 p-1.5 rounded-xl z-10 shadow-lg">
+          <div className="absolute right-4 bottom-4 z-10 flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/80 p-1.5 shadow-lg backdrop-blur">
             <button
               type="button"
               onClick={() => setScale((s) => Math.min(s + 0.25, 4))}
-              className="p-1.5 hover:bg-white/10 rounded-lg text-cyan-400"
+              className="rounded-lg p-1.5 text-cyan-400 hover:bg-white/10"
               title="Zoom In"
             >
-              <ZoomIn className="w-4 h-4" />
+              <ZoomIn className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={() => setScale((s) => Math.max(s - 0.25, 0.5))}
-              className="p-1.5 hover:bg-white/10 rounded-lg text-cyan-400"
+              className="rounded-lg p-1.5 text-cyan-400 hover:bg-white/10"
               title="Zoom Out"
             >
-              <ZoomOut className="w-4 h-4" />
+              <ZoomOut className="h-4 w-4" />
             </button>
-            <button type="button" onClick={() => setScale(1)} className="p-1.5 hover:bg-white/10 rounded-lg text-cyan-400" title="Reset Zoom">
-              <RotateCcw className="w-4 h-4" />
+            <button
+              type="button"
+              onClick={() => setScale(1)}
+              className="rounded-lg p-1.5 text-cyan-400 hover:bg-white/10"
+              title="Reset Zoom"
+            >
+              <RotateCcw className="h-4 w-4" />
             </button>
           </div>
         )}

@@ -7,7 +7,6 @@ import {
 
 export * from "./signage-base.js";
 
-
 export interface ImageSlide extends BaseSlide {
   type: "IMAGE";
   imageUrl: string;
@@ -60,7 +59,8 @@ export interface ColumnLayoutSlide extends BaseSlide {
   backgroundImageUrl?: string;
 }
 
-export type SignageSlide = ImageSlide | VideoSlide | IframeSlide | ColumnLayoutSlide;
+export type SignageSlide =
+  ImageSlide | VideoSlide | IframeSlide | ColumnLayoutSlide;
 
 export interface SignageOverlay {
   id: string;
@@ -112,6 +112,9 @@ export interface LegacyMenuSlide extends Omit<BaseSlide, "type"> {
   highlightItems: (string | HighlightItemConfig)[];
 }
 
-export interface RawSignageLayoutConfig extends Omit<SignageLayoutConfig, "slides"> {
+export interface RawSignageLayoutConfig extends Omit<
+  SignageLayoutConfig,
+  "slides"
+> {
   slides: (SignageSlide | LegacyMenuSlide)[];
 }

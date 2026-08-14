@@ -21,9 +21,9 @@ export function ScaleWrapper({ children }: ScaleWrapperProps) {
   }, []);
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-black flex items-center justify-center relative">
+    <div className="relative flex h-screen w-screen items-center justify-center overflow-hidden bg-black">
       <div
-        className="w-[1920px] h-[1080px] shrink-0 origin-center transform-gpu"
+        className="h-[1080px] w-[1920px] shrink-0 origin-center transform-gpu"
         style={{ transform: `scale(${scale})` }}
       >
         {children}

@@ -8,29 +8,29 @@ interface PairingScreenProps {
 
 export function PairingScreen({ code }: PairingScreenProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
-      <div className="glass-panel p-12 rounded-3xl max-w-lg w-full text-center space-y-8 border-black/10 dark:border-white/10 shadow-2xl relative overflow-hidden">
-        <div className="absolute -top-12 -left-12 w-24 h-24 bg-[oklch(0.60_0.25_250)] rounded-full blur-3xl opacity-20" />
-        <div className="absolute -bottom-12 -right-12 w-24 h-24 bg-[oklch(0.60_0.25_250)] rounded-full blur-3xl opacity-20" />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[oklch(0.08_0.01_260)] p-6 text-white">
+      <div className="glass-panel relative w-full max-w-lg space-y-8 overflow-hidden rounded-3xl border-black/10 p-12 text-center shadow-2xl dark:border-white/10">
+        <div className="absolute -top-12 -left-12 h-24 w-24 rounded-full bg-[oklch(0.60_0.25_250)] opacity-20 blur-3xl" />
+        <div className="absolute -right-12 -bottom-12 h-24 w-24 rounded-full bg-[oklch(0.60_0.25_250)] opacity-20 blur-3xl" />
 
         <div className="space-y-3">
-          <div className="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-[oklch(0.60_0.25_250)]/10 text-[oklch(0.60_0.25_250)]">
+          <div className="inline-block rounded-full bg-[oklch(0.60_0.25_250)]/10 px-4 py-1.5 text-xs font-bold tracking-wider text-[oklch(0.60_0.25_250)] uppercase">
             Setup Mode
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white font-brand">
+          <h1 className="font-brand text-4xl font-extrabold tracking-tight text-white">
             Pair Your Display
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-muted-foreground">
+          <p className="dark:text-muted-foreground text-sm text-zinc-500">
             Enter the code below in your dashboard to connect this screen.
           </p>
         </div>
 
-        <div className="flex justify-center items-center py-4">
+        <div className="flex items-center justify-center py-4">
           <div className="flex gap-3">
             {code.split("").map((char, index) => (
               <div
                 key={index}
-                className="w-16 h-20 flex items-center justify-center text-4xl font-black rounded-2xl bg-black/5 bg-card border border-black/10 dark:border-white/10 text-[oklch(0.60_0.25_250)] shadow-lg shadow-black/30 font-brand"
+                className="bg-card font-brand flex h-20 w-16 items-center justify-center rounded-2xl border border-black/10 bg-black/5 text-4xl font-black text-[oklch(0.60_0.25_250)] shadow-lg shadow-black/30 dark:border-white/10"
               >
                 {char}
               </div>
@@ -38,8 +38,8 @@ export function PairingScreen({ code }: PairingScreenProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-3 text-muted-foreground dark:text-zinc-500 text-xs">
-          <span className="w-2.5 h-2.5 rounded-full bg-[oklch(0.70_0.25_150)] animate-pulse" />
+        <div className="text-muted-foreground flex items-center justify-center gap-3 text-xs dark:text-zinc-500">
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[oklch(0.70_0.25_150)]" />
           <span>Waiting for connection...</span>
         </div>
       </div>

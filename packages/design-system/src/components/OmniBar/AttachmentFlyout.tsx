@@ -14,7 +14,12 @@ export interface AttachmentFlyoutProps {
 }
 
 const GoogleDriveIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 1443 1250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    className={className}
+    viewBox="0 0 1443 1250"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <path d="M481 0h481l481 833H962L481 0z" fill="#0066da" />
     <path d="M241 1250L0 833l481-833 240 417-480 833z" fill="#00a852" />
     <path d="M962 1250l241-417H481l-240 417h721z" fill="#ffcc00" />
@@ -36,7 +41,10 @@ export function AttachmentFlyout({
   const [hasCamera, setHasCamera] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
+    if (
+      typeof window !== "undefined" &&
+      navigator.mediaDevices?.enumerateDevices
+    ) {
       navigator.mediaDevices
         .enumerateDevices()
         .then((devices) => {
@@ -51,7 +59,7 @@ export function AttachmentFlyout({
   // ──────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex items-center gap-1.5 flex-shrink-0">
+    <div className="flex flex-shrink-0 items-center gap-1.5">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -59,7 +67,7 @@ export function AttachmentFlyout({
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="flex items-center gap-1.5 ds-glass px-2 py-1 rounded-full shadow-glow-accent"
+            className="ds-glass shadow-glow-accent flex items-center gap-1.5 rounded-full px-2 py-1"
           >
             <motion.button
               type="button"
@@ -69,7 +77,7 @@ export function AttachmentFlyout({
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
             >
-              <UploadCloud className="w-4 h-4" />
+              <UploadCloud className="h-4 w-4" />
             </motion.button>
 
             {/* Only rendered when device has a camera */}
@@ -82,7 +90,7 @@ export function AttachmentFlyout({
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="h-4 w-4" />
               </motion.button>
             )}
 
@@ -96,7 +104,7 @@ export function AttachmentFlyout({
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <GoogleDriveIcon className="w-4 h-4" />
+                <GoogleDriveIcon className="h-4 w-4" />
               </motion.button>
             )}
           </motion.div>
@@ -106,13 +114,13 @@ export function AttachmentFlyout({
       <button
         type="button"
         onClick={onToggle}
-        className={`p-2 rounded-full transition-colors flex-shrink-0 ${
+        className={`flex-shrink-0 rounded-full p-2 transition-colors ${
           isOpen
             ? "bg-primary/15 text-primary"
             : "text-muted-foreground hover:text-primary hover:bg-muted"
         }`}
       >
-        <Paperclip className="w-5 h-5" />
+        <Paperclip className="h-5 w-5" />
       </button>
     </div>
   );

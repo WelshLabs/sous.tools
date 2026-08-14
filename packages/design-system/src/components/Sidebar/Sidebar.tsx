@@ -98,7 +98,9 @@ export function Sidebar({
         : pathname.startsWith(href);
 
   const navLinkStyle = (href: string): React.CSSProperties => ({
-    color: isActive(href) ? "var(--color-primary)" : "var(--color-muted-foreground)",
+    color: isActive(href)
+      ? "var(--color-primary)"
+      : "var(--color-muted-foreground)",
     backgroundColor: isActive(href) ? "rgb(76 201 240 / 0.08)" : "transparent",
   });
 
@@ -107,7 +109,7 @@ export function Sidebar({
       {/* Mobile backdrop overlay */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 md:hidden transition-opacity"
+          className="fixed inset-0 transition-opacity md:hidden"
           style={{
             zIndex: "calc(var(--z-sidebar) - 10)",
             backgroundColor: "rgb(0 0 0 / 0.50)",
@@ -118,17 +120,12 @@ export function Sidebar({
 
       {/* Sidebar shell */}
       <aside
-        className={`fixed left-0 top-16 flex flex-col h-[calc(100vh-64px)]
-          border-r border-border bg-card
-          transition-all duration-300 ease-in-out w-64 md:w-16
-          ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          ${isDesktopCollapsed ? "md:w-16" : "md:w-16 lg:w-16 xl:w-64"}`}
+        className={`border-border bg-card fixed top-16 left-0 flex h-[calc(100vh-64px)] w-64 flex-col border-r transition-all duration-300 ease-in-out md:w-16 ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} ${isDesktopCollapsed ? "md:w-16" : "md:w-16 lg:w-16 xl:w-64"}`}
         style={{ zIndex: "var(--z-sidebar)" }}
       >
         {/* Header — logo + hamburger */}
         <div
-          className={`h-16 flex items-center transition-all justify-between px-4
-            ${isDesktopCollapsed ? "md:px-0 md:justify-center" : ""}`}
+          className={`flex h-16 items-center justify-between px-4 transition-all ${isDesktopCollapsed ? "md:justify-center md:px-0" : ""}`}
           style={{ borderBottom: "1px solid var(--color-border)" }}
         >
           {/* Logo / icon */}
@@ -160,7 +157,7 @@ export function Sidebar({
         </div>
 
         {/* Navigation list */}
-        <nav className="flex-1 py-4 space-y-1 px-3 overflow-y-auto">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {navItems.map((item) => {
             const Icon = item.icon;
             const external = item.href.startsWith("http");
@@ -170,11 +167,9 @@ export function Sidebar({
 
             const label = (
               <>
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <Icon className="h-5 w-5 flex-shrink-0" />
                 <span
-                  className={`text-sm font-medium transition-all duration-200
-                    whitespace-nowrap md:hidden lg:hidden xl:block
-                    ${isDesktopCollapsed ? "xl:hidden" : "xl:block"}`}
+                  className={`text-sm font-medium whitespace-nowrap transition-all duration-200 md:hidden lg:hidden xl:block ${isDesktopCollapsed ? "xl:hidden" : "xl:block"}`}
                 >
                   {item.label}
                 </span>
@@ -215,15 +210,13 @@ export function Sidebar({
               />
               <Link
                 href="/admin/users"
-                className="flex items-center gap-3 p-3 rounded-lg transition-colors group"
+                className="group flex items-center gap-3 rounded-lg p-3 transition-colors"
                 style={navLinkStyle("/admin/users")}
                 onClick={onCloseMobile}
               >
-                <Users className="w-5 h-5 flex-shrink-0" />
+                <Users className="h-5 w-5 flex-shrink-0" />
                 <span
-                  className={`text-sm font-medium transition-all duration-200
-                    whitespace-nowrap md:hidden lg:hidden xl:block
-                    ${isDesktopCollapsed ? "xl:hidden" : "xl:block"}`}
+                  className={`text-sm font-medium whitespace-nowrap transition-all duration-200 md:hidden lg:hidden xl:block ${isDesktopCollapsed ? "xl:hidden" : "xl:block"}`}
                 >
                   Users Admin
                 </span>

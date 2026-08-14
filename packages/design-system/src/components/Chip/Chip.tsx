@@ -76,7 +76,7 @@ export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(
             event.stopPropagation();
             onRemove();
           }}
-          className="-mr-1 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground -mr-1 rounded p-0.5"
         >
           <X className="h-3 w-3" />
         </span>

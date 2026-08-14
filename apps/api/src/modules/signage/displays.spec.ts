@@ -66,7 +66,11 @@ describe("DisplaysController", () => {
       single: jest.fn().mockResolvedValue({ data: mockDisplay, error: null }),
     });
 
-    const response = await controller.update("display-1", undefined, "deck-abc");
+    const response = await controller.update(
+      "display-1",
+      undefined,
+      "deck-abc",
+    );
     expect(response.success).toBe(true);
     expect(response.data).toEqual(mockDisplay);
   });

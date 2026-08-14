@@ -55,26 +55,26 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div className="bg-background/70 animate-fadeIn fixed inset-0 z-50 flex items-center justify-center p-4">
       <form
         onSubmit={handlePairSubmit}
-        className="w-full max-w-sm bg-card border border-border p-6 rounded-2xl shadow-2xl relative space-y-4 text-foreground"
+        className="bg-card border-border text-foreground relative w-full max-w-sm space-y-4 rounded-2xl border p-6 shadow-2xl"
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer"
+          className="text-muted-foreground hover:text-foreground absolute top-4 right-4 cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
-        <h3 className="text-md font-bold text-foreground">Pair New Display</h3>
+        <h3 className="text-md text-foreground font-bold">Pair New Display</h3>
         {error && (
-          <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 p-2 rounded">
+          <div className="text-destructive bg-destructive/10 border-destructive/20 rounded border p-2 text-xs">
             {error}
           </div>
         )}
         <div className="space-y-1">
-          <label className="block text-xs text-muted-foreground">
+          <label className="text-muted-foreground block text-xs">
             6-Character Pairing Code
           </label>
           <PinInput
@@ -84,14 +84,16 @@ export const PairDisplayDialog: React.FC<PairDisplayDialogProps> = ({
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs text-muted-foreground">Display Name</label>
+          <label className="text-muted-foreground block text-xs">
+            Display Name
+          </label>
           <input
             type="text"
             required
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="E.g. Bar TV Left"
-            className="w-full bg-background border border-input rounded-lg px-3 py-2 text-xs text-foreground focus:ring-ring focus:border-ring"
+            className="bg-background border-input text-foreground focus:ring-ring focus:border-ring w-full rounded-lg border px-3 py-2 text-xs"
           />
         </div>
         <Button type="submit" className="w-full" disabled={submitting}>

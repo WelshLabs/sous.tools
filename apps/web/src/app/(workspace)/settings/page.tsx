@@ -1,12 +1,14 @@
 import { SettingsClient } from "./settings-client";
 import { api } from "@soustools/api-client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   let integrations = [];
   try {
-    const { data, error } = await (api.GET as any)("/integrations/status", { cache: "no-store" });
+    const { data, error } = await (api.GET as any)("/integrations/status", {
+      cache: "no-store",
+    });
     if (!error && data) {
       integrations = (data as any).data || [];
     }

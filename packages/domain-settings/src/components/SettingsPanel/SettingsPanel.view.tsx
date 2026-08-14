@@ -56,81 +56,81 @@ export function GeneralSettingsView({
   onSubmit,
 }: any) {
   return (
-    <form onSubmit={onSubmit} className="space-y-6 max-w-xl animate-in fade-in">
+    <form onSubmit={onSubmit} className="animate-in fade-in max-w-xl space-y-6">
       {success && (
-        <div className="p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/30 text-emerald-400 text-sm">
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 text-sm text-emerald-400">
           General settings saved successfully!
         </div>
       )}
       {serverError && (
-        <div className="p-4 rounded-xl border bg-rose-950/20 border-rose-500/30 text-rose-400 text-sm">
+        <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-4 text-sm text-rose-400">
           {serverError}
         </div>
       )}
       <div className="space-y-4">
         <div className="space-y-1">
-          <label className="text-xs font-semibold text-zinc-400 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5" /> Full Name
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400">
+            <User className="h-3.5 w-3.5" /> Full Name
           </label>
           <input
             type="text"
             {...register("name")}
-            className={`w-full bg-background dark:bg-background border ${errors.name ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all`}
+            className={`bg-background dark:bg-background w-full border ${errors.name ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 text-sm text-zinc-900 transition-all outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:text-zinc-100`}
           />
           {errors.name && (
-            <p className="text-rose-400 text-xs mt-1">{errors.name.message}</p>
+            <p className="mt-1 text-xs text-rose-400">{errors.name.message}</p>
           )}
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-semibold text-zinc-400 flex items-center gap-1.5">
-            <Mail className="w-3.5 h-3.5" /> Email Address
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400">
+            <Mail className="h-3.5 w-3.5" /> Email Address
           </label>
           <input
             type="email"
             {...register("email")}
-            className={`w-full bg-background dark:bg-background border ${errors.email ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all`}
+            className={`bg-background dark:bg-background w-full border ${errors.email ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 text-sm text-zinc-900 transition-all outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:text-zinc-100`}
           />
           {errors.email && (
-            <p className="text-rose-400 text-xs mt-1">{errors.email.message}</p>
+            <p className="mt-1 text-xs text-rose-400">{errors.email.message}</p>
           )}
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-semibold text-zinc-400 flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5" /> Role
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400">
+            <Shield className="h-3.5 w-3.5" /> Role
           </label>
-          <div className="w-full rounded-xl border border-border bg-background dark:bg-background px-4 py-2.5 text-sm text-zinc-200">
+          <div className="border-border bg-background dark:bg-background w-full rounded-xl border px-4 py-2.5 text-sm text-zinc-200">
             {initialData.role === "admin" ? "Admin" : "Member"}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-zinc-400 flex items-center gap-1.5">
-              <Key className="w-3.5 h-3.5" /> New Password
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400">
+              <Key className="h-3.5 w-3.5" /> New Password
             </label>
             <input
               type="password"
               {...register("password")}
               placeholder="Leave blank to keep current password"
-              className={`w-full bg-background dark:bg-background border ${errors.password ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all`}
+              className={`bg-background dark:bg-background w-full border ${errors.password ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 text-sm text-zinc-900 transition-all outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:text-zinc-100`}
             />
             {errors.password && (
-              <p className="text-rose-400 text-xs mt-1">
+              <p className="mt-1 text-xs text-rose-400">
                 {errors.password.message}
               </p>
             )}
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-zinc-400 flex justify-between items-center">
+            <label className="flex items-center justify-between text-xs font-semibold text-zinc-400">
               <span>Confirm Password</span>
               {password &&
                 confirmPassword &&
                 (password === confirmPassword ? (
-                  <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-0.5">
-                    <Check className="w-3 h-3" /> Passwords match
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-400">
+                    <Check className="h-3 w-3" /> Passwords match
                   </span>
                 ) : (
-                  <span className="text-[10px] text-rose-400 font-bold flex items-center gap-0.5">
-                    <X className="w-3 h-3" /> Passwords mismatch
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-rose-400">
+                    <X className="h-3 w-3" /> Passwords mismatch
                   </span>
                 ))}
             </label>
@@ -139,36 +139,36 @@ export function GeneralSettingsView({
                 type="password"
                 {...register("confirmPassword")}
                 placeholder="Confirm new password"
-                className={`w-full bg-background dark:bg-background border ${errors.confirmPassword ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 pr-10 text-sm text-zinc-900 dark:text-zinc-100 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all`}
+                className={`bg-background dark:bg-background w-full border ${errors.confirmPassword ? "border-rose-500" : "border-border"} rounded-xl px-4 py-2.5 pr-10 text-sm text-zinc-900 transition-all outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 dark:text-zinc-100`}
               />
               {password && confirmPassword && (
-                <div className="absolute right-3 top-3 flex items-center pointer-events-none">
+                <div className="pointer-events-none absolute top-3 right-3 flex items-center">
                   {password === confirmPassword ? (
-                    <Check className="w-4 h-4 text-emerald-400" />
+                    <Check className="h-4 w-4 text-emerald-400" />
                   ) : (
-                    <X className="w-4 h-4 text-rose-400" />
+                    <X className="h-4 w-4 text-rose-400" />
                   )}
                 </div>
               )}
             </div>
             {errors.confirmPassword && (
-              <p className="text-rose-400 text-xs mt-1">
+              <p className="mt-1 text-xs text-rose-400">
                 {errors.confirmPassword.message}
               </p>
             )}
           </div>
         </div>
       </div>
-      <div className="pt-4 flex justify-end">
+      <div className="flex justify-end pt-4">
         <Button
           type="submit"
           disabled={saving}
           className="flex items-center gap-1.5"
         >
           {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Save className="w-4 h-4" />
+            <Save className="h-4 w-4" />
           )}
           {saving ? "Saving..." : "Save Settings"}
         </Button>
@@ -179,10 +179,10 @@ export function GeneralSettingsView({
 
 export function DownloadsPanelView() {
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8 duration-500">
       <div className="space-y-2">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-          <Download className="w-5 h-5 text-sky-400" />
+        <h2 className="flex items-center gap-2 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+          <Download className="h-5 w-5 text-sky-400" />
           OS Downloads
         </h2>
         <p className="text-sm text-zinc-400">
@@ -190,72 +190,72 @@ export function DownloadsPanelView() {
           instructions for flashing them to an SD card.
         </p>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="p-6 rounded-2xl bg-card border border-border flex flex-col justify-between">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="bg-card border-border flex flex-col justify-between rounded-2xl border p-6">
           <div>
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-sky-500/10 rounded-xl border border-sky-500/20">
-                  <Monitor className="w-6 h-6 text-sky-400" />
+                <div className="rounded-xl border border-sky-500/20 bg-sky-500/10 p-3">
+                  <Monitor className="h-6 w-6 text-sky-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-lg">
+                  <h3 className="text-foreground text-lg font-semibold">
                     Raspberry Pi 4 / 5 (ARM64)
                   </h3>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Latest Stable Release
                   </p>
                 </div>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-6 text-sm">
               This is a custom-built, lightweight OS image based on Raspberry Pi
               OS Lite (Bookworm). It includes all necessary dependencies,
               hardware acceleration, and the kiosk daemon pre-configured.
             </p>
-            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border border-border mb-6">
-              <Cpu className="w-4 h-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
+            <div className="bg-muted border-border mb-6 flex items-center gap-2 rounded-lg border p-3">
+              <Cpu className="text-muted-foreground h-4 w-4" />
+              <span className="text-muted-foreground text-xs">
                 Architecture:{" "}
                 <strong className="text-foreground">AArch64</strong>
               </span>
               <span className="text-border">|</span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 Size: <strong className="text-foreground">~415 MB (.xz)</strong>
               </span>
             </div>
           </div>
           <a
             href="https://github.com/conarwelsh/signage-os/releases/latest/download/sous-signage-os.img.xz"
-            className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-sky-500 hover:bg-sky-400 text-zinc-950 font-semibold rounded-xl transition-all shadow-lg shadow-sky-500/20 hover:shadow-sky-400/40"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-3 font-semibold text-zinc-950 shadow-lg shadow-sky-500/20 transition-all hover:bg-sky-400 hover:shadow-sky-400/40"
           >
-            <Download className="w-4 h-4" />
+            <Download className="h-4 w-4" />
             Download Latest Image
           </a>
         </div>
-        <div className="p-6 rounded-2xl bg-card border border-border">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
-              <HardDrive className="w-6 h-6 text-amber-400" />
+        <div className="bg-card border-border rounded-2xl border p-6">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3">
+              <HardDrive className="h-6 w-6 text-amber-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground text-lg">
+              <h3 className="text-foreground text-lg font-semibold">
                 Flashing Instructions
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 How to write the OS to your SD card
               </p>
             </div>
           </div>
           <div className="space-y-6">
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-muted text-[10px] text-muted-foreground">
+              <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+                <span className="bg-muted text-muted-foreground flex h-5 w-5 items-center justify-center rounded-full text-[10px]">
                   1
                 </span>
                 Option A: Raspberry Pi Imager (Recommended)
               </h4>
-              <p className="text-xs text-muted-foreground ml-7">
+              <p className="text-muted-foreground ml-7 text-xs">
                 Using{" "}
                 <a
                   href="https://www.raspberrypi.com/software/"
@@ -270,13 +270,13 @@ export function DownloadsPanelView() {
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-muted text-[10px] text-muted-foreground">
+              <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+                <span className="bg-muted text-muted-foreground flex h-5 w-5 items-center justify-center rounded-full text-[10px]">
                   2
                 </span>
                 Option B: Balena Etcher
               </h4>
-              <p className="text-xs text-muted-foreground ml-7">
+              <p className="text-muted-foreground ml-7 text-xs">
                 Download and install{" "}
                 <a
                   href="https://etcher.balena.io/"
@@ -291,9 +291,9 @@ export function DownloadsPanelView() {
                 image.
               </p>
             </div>
-            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl mt-4">
-              <p className="text-xs text-destructive flex gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />
+            <div className="bg-destructive/10 border-destructive/20 mt-4 rounded-xl border p-4">
+              <p className="text-destructive flex gap-2 text-xs">
+                <AlertCircle className="text-destructive h-4 w-4 shrink-0" />
                 <span>
                   <strong>Warning:</strong> Flashing the image will completely
                   erase all data on the target SD card or USB drive. Double
@@ -323,40 +323,40 @@ export function IntegrationCardView({
     : "Connect with Google Drive to auto-ingest culinary invoices, vendor lists, and recipes.";
   return (
     <div
-      className={`p-6 rounded-2xl border transition-all duration-300 backdrop-blur-md relative overflow-hidden flex flex-col justify-between min-h-[280px] ${status.connected ? "bg-emerald-500/5 dark:bg-emerald-950/10 border-emerald-500/20 dark:border-emerald-500/30 shadow-[0_0_15px_-3px_rgba(16,185,129,0.1)]" : "bg-card border-border dark:bg-zinc-950/40 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xl"}`}
+      className={`relative flex min-h-[280px] flex-col justify-between overflow-hidden rounded-2xl border p-6 backdrop-blur-md transition-all duration-300 ${status.connected ? "border-emerald-500/20 bg-emerald-500/5 shadow-[0_0_15px_-3px_rgba(16,185,129,0.1)] dark:border-emerald-500/30 dark:bg-emerald-950/10" : "bg-card border-border shadow-xl hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:border-zinc-700"}`}
     >
       <div className="space-y-4">
-        <div className="flex justify-between items-start">
+        <div className="flex items-start justify-between">
           <div>
             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {displayName}
             </h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-md">
+            <p className="text-muted-foreground mt-1 max-w-md text-xs">
               {desc}
             </p>
           </div>
           {status.connected ? (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-900/50">
-              <CheckCircle className="w-3.5 h-3.5" /> Connected
+            <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-400">
+              <CheckCircle className="h-3.5 w-3.5" /> Connected
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 bg-card px-2.5 py-1 rounded-full border border-border">
-              <AlertCircle className="w-3.5 h-3.5" /> Disconnected
+            <span className="bg-card border-border flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs text-zinc-500 dark:text-zinc-400">
+              <AlertCircle className="h-3.5 w-3.5" /> Disconnected
             </span>
           )}
         </div>
         {status.connected && (
-          <div className="bg-card/50 dark:bg-card/40 border border-border rounded-xl p-3 text-xs">
-            <span className="text-zinc-500 dark:text-zinc-400 block">
+          <div className="bg-card/50 dark:bg-card/40 border-border rounded-xl border p-3 text-xs">
+            <span className="block text-zinc-500 dark:text-zinc-400">
               Connected Account:
             </span>
-            <span className="text-zinc-800 dark:text-zinc-200 font-medium font-mono truncate block">
+            <span className="block truncate font-mono font-medium text-zinc-800 dark:text-zinc-200">
               {status.connectedAs || "Active Session"}
             </span>
           </div>
         )}
       </div>
-      <div className="pt-4 flex flex-wrap gap-2 items-center justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2 pt-4">
         {status.connected ? (
           <>
             {isSquare && onSync && (
@@ -368,9 +368,9 @@ export function IntegrationCardView({
                 className="flex items-center gap-1.5"
               >
                 {isActionLoading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <RefreshCw className="w-3.5 h-3.5" />
+                  <RefreshCw className="h-3.5 w-3.5" />
                 )}
                 Sync Data
               </Button>
@@ -411,12 +411,12 @@ export function IntegrationsPanelView({
     <div className="space-y-6">
       {notification && (
         <div
-          className={`p-4 rounded-xl border text-sm transition-all duration-300 animate-in fade-in ${notification.type === "success" ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-400" : "bg-red-950/20 border-red-500/30 text-red-400"}`}
+          className={`animate-in fade-in rounded-xl border p-4 text-sm transition-all duration-300 ${notification.type === "success" ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-400" : "border-red-500/30 bg-red-950/20 text-red-400"}`}
         >
           {notification.message}
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {["SQUARE", "GOOGLE"].map((provider) => {
           const status = integrations.find(
             (i: any) => i.provider === provider,
@@ -448,8 +448,8 @@ export function StylingColorsSectionView({ tokens, onChange }: any) {
     : "#00f0ff";
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
-        <Palette className="w-4 h-4 text-cyan-400" />
+      <h3 className="flex items-center gap-2 border-b border-black/5 pb-2 text-sm font-bold text-zinc-700 dark:border-white/5 dark:text-zinc-300">
+        <Palette className="h-4 w-4 text-cyan-400" />
         Brand Colors
       </h3>
       <div className="grid grid-cols-2 gap-4">
@@ -465,14 +465,14 @@ export function StylingColorsSectionView({ tokens, onChange }: any) {
               onClick={() => {
                 if (!tokens.primaryColor) onChange("primaryColor", "#00f0ff");
               }}
-              className="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
+              className="h-10 w-10 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
             />
             <input
               type="text"
               placeholder="e.g. oklch(0.7 0.15 200) or #00f0ff"
               value={tokens.primaryColor ?? ""}
               onChange={(e) => onChange("primaryColor", e.target.value)}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all"
+              className="w-full rounded-xl border border-zinc-800 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 transition-all outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 dark:bg-zinc-950 dark:text-zinc-100"
             />
           </div>
         </div>
@@ -488,14 +488,14 @@ export function StylingColorsSectionView({ tokens, onChange }: any) {
               onClick={() => {
                 if (!tokens.accentColor) onChange("accentColor", "#00f0ff");
               }}
-              className="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
+              className="h-10 w-10 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
             />
             <input
               type="text"
               placeholder="e.g. oklch(0.8 0.1 250)"
               value={tokens.accentColor ?? ""}
               onChange={(e) => onChange("accentColor", e.target.value)}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
+              className="w-full rounded-xl border border-zinc-800 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 transition-all outline-none focus:border-cyan-500 dark:bg-zinc-950 dark:text-zinc-100"
             />
           </div>
         </div>
@@ -544,19 +544,19 @@ function FontGroup({
     ? colorValue
     : "#ffffff";
   return (
-    <div className="space-y-2 border border-black/5 dark:border-white/5 rounded-xl p-4 bg-card/30">
+    <div className="bg-card/30 space-y-2 rounded-xl border border-black/5 p-4 dark:border-white/5">
       <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
         {label}
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div className="space-y-1">
-          <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
+          <label className="text-[10px] font-semibold tracking-wider text-zinc-400 uppercase dark:text-zinc-500">
             Font Family
           </label>
           <select
             value={String(tokens[fontKey] ?? "")}
             onChange={(e) => onChange(fontKey, e.target.value)}
-            className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
+            className="w-full rounded-lg border border-zinc-800 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 transition-all outline-none focus:border-cyan-500 dark:bg-zinc-950 dark:text-zinc-100"
           >
             {FONT_OPTIONS.map((f) => (
               <option key={f} value={f}>
@@ -566,7 +566,7 @@ function FontGroup({
           </select>
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
+          <label className="text-[10px] font-semibold tracking-wider text-zinc-400 uppercase dark:text-zinc-500">
             Color
           </label>
           <div className="flex items-center gap-2">
@@ -574,25 +574,25 @@ function FontGroup({
               type="color"
               value={hexColor}
               onChange={(e) => onChange(colorKey, e.target.value)}
-              className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
+              className="h-8 w-8 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
             />
             <input
               type="text"
               placeholder="e.g. #ffffff"
               value={colorValue}
               onChange={(e) => onChange(colorKey, e.target.value)}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 transition-all outline-none focus:border-cyan-500 dark:bg-zinc-950 dark:text-zinc-100"
             />
           </div>
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
+          <label className="text-[10px] font-semibold tracking-wider text-zinc-400 uppercase dark:text-zinc-500">
             Weight
           </label>
           <select
             value={String(tokens[weightKey] ?? "")}
             onChange={(e) => onChange(weightKey, e.target.value)}
-            className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:border-cyan-500 outline-none transition-all"
+            className="w-full rounded-lg border border-zinc-800 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 transition-all outline-none focus:border-cyan-500 dark:bg-zinc-950 dark:text-zinc-100"
           >
             {WEIGHT_OPTIONS.map(({ value, label: wl }) => (
               <option key={value} value={value}>
@@ -647,10 +647,10 @@ export function GlobalStylingSettingsView({
   return (
     <form
       onSubmit={onSubmit}
-      className="space-y-6 max-w-2xl animate-in fade-in"
+      className="animate-in fade-in max-w-2xl space-y-6"
     >
       {success && (
-        <div className="p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/30 text-emerald-400 text-sm">
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 text-sm text-emerald-400">
           Global styling settings saved successfully!
         </div>
       )}
@@ -660,8 +660,8 @@ export function GlobalStylingSettingsView({
           onChange={handleTokenChange}
         />
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
-            <Type className="w-4 h-4 text-cyan-400" />
+          <h3 className="flex items-center gap-2 border-b border-black/5 pb-2 text-sm font-bold text-zinc-700 dark:border-white/5 dark:text-zinc-300">
+            <Type className="h-4 w-4 text-cyan-400" />
             Global Typography
           </h3>
           <StylingTypographySectionView
@@ -670,11 +670,11 @@ export function GlobalStylingSettingsView({
           />
         </div>
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
-            <Code className="w-4 h-4 text-cyan-400" />
+          <h3 className="flex items-center gap-2 border-b border-black/5 pb-2 text-sm font-bold text-zinc-700 dark:border-white/5 dark:text-zinc-300">
+            <Code className="h-4 w-4 text-cyan-400" />
             Global Custom CSS
           </h3>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed">
+          <p className="text-xs leading-relaxed text-zinc-400 dark:text-zinc-500">
             Write raw CSS to define utility classes (e.g., .ambient-wrapper,
             .glass-panel, .menu-glow-text) that can be attached to layout
             containers and blocks in the signage editor.
@@ -685,21 +685,21 @@ export function GlobalStylingSettingsView({
               placeholder=".glass-panel { backdrop-filter: blur(10px); }"
               value={tokens.globalCss ?? ""}
               onChange={(e) => handleTokenChange("globalCss", e.target.value)}
-              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-sky-400 font-mono focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all resize-y"
+              className="w-full resize-y rounded-xl border border-zinc-800 bg-zinc-50 px-4 py-2.5 font-mono text-sm text-sky-400 transition-all outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 dark:bg-zinc-950"
             />
           </div>
         </div>
       </div>
-      <div className="pt-4 flex justify-end">
+      <div className="flex justify-end pt-4">
         <Button
           type="submit"
           disabled={saving}
-          className="flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-zinc-950 font-bold px-6"
+          className="flex items-center gap-1.5 bg-cyan-600 px-6 font-bold text-zinc-950 hover:bg-cyan-500"
         >
           {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Save className="w-4 h-4" />
+            <Save className="h-4 w-4" />
           )}
           {saving ? "Saving..." : "Save Design Tokens"}
         </Button>
@@ -724,20 +724,20 @@ export function GoogleDriveBrowserView({
 }: any) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/50 dark:bg-black/60 backdrop-blur-sm">
-      <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 p-4 backdrop-blur-sm dark:bg-black/60">
+      <div className="dark:bg-card animate-in fade-in zoom-in-95 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-black/10 bg-zinc-100 shadow-2xl duration-200 dark:border-white/10">
+        <div className="flex items-center justify-between border-b border-black/5 p-4 dark:border-white/5">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
             Import from Google Drive
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="cursor-pointer text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-4 border-b border-black/5 dark:border-white/5 bg-card/50">
+        <div className="bg-card/50 border-b border-black/5 p-4 dark:border-white/5">
           {currentFolder && (
             <div className="mb-3 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
               <button
@@ -745,7 +745,7 @@ export function GoogleDriveBrowserView({
                   setCurrentFolder(null);
                   handleSearch(query, "");
                 }}
-                className="text-sky-500 dark:text-sky-400 hover:text-sky-600 cursor-pointer"
+                className="cursor-pointer text-sky-500 hover:text-sky-600 dark:text-sky-400"
               >
                 Root
               </button>
@@ -756,24 +756,24 @@ export function GoogleDriveBrowserView({
             </div>
           )}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
             <input
               type="text"
               placeholder="Search files and folders..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch(query)}
-              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-zinc-900 dark:text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500/50"
+              className="w-full rounded-xl border border-black/10 bg-white py-2 pr-4 pl-10 text-sm text-zinc-900 placeholder-zinc-500 focus:border-sky-500/50 focus:outline-none dark:border-white/10 dark:bg-black/50 dark:text-white"
             />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
             </div>
           ) : files.length === 0 ? (
-            <div className="text-center py-12 text-zinc-400 text-sm">
+            <div className="py-12 text-center text-sm text-zinc-400">
               No files found.
             </div>
           ) : (
@@ -786,16 +786,16 @@ export function GoogleDriveBrowserView({
                   <div
                     key={f.id}
                     onClick={() => toggleSelect(f.id)}
-                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-sky-500/10 border border-sky-500/30" : "hover:bg-black/5 dark:bg-white/5 border border-transparent"}`}
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl p-3 transition-colors ${isSelected ? "border border-sky-500/30 bg-sky-500/10" : "border border-transparent hover:bg-black/5 dark:bg-white/5"}`}
                   >
                     <div className="text-sky-500 dark:text-sky-400">
                       {isFolder ? (
-                        <Folder className="w-5 h-5 fill-current opacity-80" />
+                        <Folder className="h-5 w-5 fill-current opacity-80" />
                       ) : (
-                        <FileText className="w-5 h-5 opacity-80" />
+                        <FileText className="h-5 w-5 opacity-80" />
                       )}
                     </div>
-                    <span className="flex-1 text-sm text-zinc-800 dark:text-zinc-200 truncate">
+                    <span className="flex-1 truncate text-sm text-zinc-800 dark:text-zinc-200">
                       {f.name}
                     </span>
                     {isFolder && (
@@ -806,13 +806,13 @@ export function GoogleDriveBrowserView({
                           setQuery("");
                           handleSearch("", f.id);
                         }}
-                        className="px-3 py-1 text-xs font-medium bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                        className="cursor-pointer rounded-lg bg-zinc-200 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
                       >
                         Open
                       </button>
                     )}
                     {isSelected && (
-                      <CheckCircle className="w-4 h-4 text-sky-500" />
+                      <CheckCircle className="h-4 w-4 text-sky-500" />
                     )}
                   </div>
                 );
@@ -820,23 +820,23 @@ export function GoogleDriveBrowserView({
             </div>
           )}
         </div>
-        <div className="p-4 border-t border-black/5 dark:border-white/5 flex justify-between items-center bg-card/80 rounded-b-2xl">
+        <div className="bg-card/80 flex items-center justify-between rounded-b-2xl border-t border-black/5 p-4 dark:border-white/5">
           <span className="text-xs text-zinc-400">
             {selectedIds.size} file(s) selected
           </span>
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-black/5 cursor-pointer"
+              className="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-black/5 dark:text-zinc-300"
             >
               Cancel
             </button>
             <button
               onClick={handleImport}
               disabled={selectedIds.size === 0 || loading}
-              className="px-4 py-2 rounded-lg text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-white disabled:opacity-50 transition-colors flex items-center gap-2 cursor-pointer"
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-sky-400 disabled:opacity-50"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}Import
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}Import
               Selected
             </button>
           </div>
@@ -866,17 +866,17 @@ export function SettingsPanelView({
   return (
     <div className="space-y-12">
       <section>
-        <h2 className="text-2xl font-bold mb-6">General Settings</h2>
+        <h2 className="mb-6 text-2xl font-bold">General Settings</h2>
         <GeneralSettingsView {...generalProps} />
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-6">Global Styling</h2>
+        <h2 className="mb-6 text-2xl font-bold">Global Styling</h2>
         <GlobalStylingSettingsView {...stylingProps} />
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-6">Integrations</h2>
+        <h2 className="mb-6 text-2xl font-bold">Integrations</h2>
         <IntegrationsPanelView {...integrationsProps} />
       </section>
 

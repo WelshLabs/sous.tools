@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, Eye, EyeOff, Loader2, ShieldCheck, CheckCircle } from "lucide-react";
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+  ShieldCheck,
+  CheckCircle,
+} from "lucide-react";
 import { Button, Input, PrimaryLogo } from "@soustools/design-system";
 import { clientConfig } from "@soustools/config/client";
 import { createApiClient } from "@soustools/api-client";
@@ -20,7 +27,9 @@ function ResetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -70,53 +79,67 @@ function ResetPasswordContent() {
 
   if (status === "success") {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-[#0a0a0a] p-4 font-sans relative overflow-hidden">
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-50 p-4 font-sans dark:bg-[#0a0a0a]">
         <div className="absolute top-8 left-8 flex items-center gap-3 select-none">
-          <PrimaryLogo gradient className="w-8 h-8 md:w-10 md:h-10 text-zinc-950 dark:text-zinc-100" />
-          <span className="font-extrabold tracking-tight text-xl text-zinc-950 dark:text-zinc-100 hidden sm:block">
+          <PrimaryLogo
+            gradient
+            className="h-8 w-8 text-zinc-950 md:h-10 md:w-10 dark:text-zinc-100"
+          />
+          <span className="hidden text-xl font-extrabold tracking-tight text-zinc-950 sm:block dark:text-zinc-100">
             sous.tools
           </span>
         </div>
-        <div className="w-full max-w-[420px] bg-white dark:bg-[#111111] border border-black/10 dark:border-white/10 p-8 rounded-2xl shadow-xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-300">
-          <CheckCircle className="w-16 h-16 text-emerald-500 mb-6" />
-          <h2 className="text-2xl font-bold text-zinc-950 dark:text-zinc-100 tracking-tight">Password Reset!</h2>
-          <p className="text-zinc-500 mt-2">Your password has been successfully updated.</p>
-          <p className="text-sm text-zinc-400 mt-6">Redirecting you to the dashboard...</p>
+        <div className="animate-in fade-in zoom-in flex w-full max-w-[420px] flex-col items-center rounded-2xl border border-black/10 bg-white p-8 text-center shadow-xl duration-300 dark:border-white/10 dark:bg-[#111111]">
+          <CheckCircle className="mb-6 h-16 w-16 text-emerald-500" />
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100">
+            Password Reset!
+          </h2>
+          <p className="mt-2 text-zinc-500">
+            Your password has been successfully updated.
+          </p>
+          <p className="mt-6 text-sm text-zinc-400">
+            Redirecting you to the dashboard...
+          </p>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-[#0a0a0a] p-4 font-sans relative overflow-hidden">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-50 p-4 font-sans dark:bg-[#0a0a0a]">
       <div className="absolute top-8 left-8 flex items-center gap-3 select-none">
-        <PrimaryLogo gradient className="w-8 h-8 md:w-10 md:h-10 text-zinc-950 dark:text-zinc-100" />
-        <span className="font-extrabold tracking-tight text-xl text-zinc-950 dark:text-zinc-100 hidden sm:block">
+        <PrimaryLogo
+          gradient
+          className="h-8 w-8 text-zinc-950 md:h-10 md:w-10 dark:text-zinc-100"
+        />
+        <span className="hidden text-xl font-extrabold tracking-tight text-zinc-950 sm:block dark:text-zinc-100">
           sous.tools
         </span>
       </div>
 
-      <div className="w-full max-w-[420px] relative z-10">
-        <div className="bg-white dark:bg-[#111111] border border-black/10 dark:border-white/10 rounded-[1.5rem] shadow-xl p-8 sm:p-10 relative overflow-hidden">
+      <div className="relative z-10 w-full max-w-[420px]">
+        <div className="relative overflow-hidden rounded-[1.5rem] border border-black/10 bg-white p-8 shadow-xl sm:p-10 dark:border-white/10 dark:bg-[#111111]">
           <div className="mb-8">
-            <h1 className="text-3xl font-black text-zinc-950 dark:text-zinc-100 tracking-tight flex items-center gap-2">
-              <ShieldCheck className="w-8 h-8 text-cyan-500" /> Reset Password
+            <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight text-zinc-950 dark:text-zinc-100">
+              <ShieldCheck className="h-8 w-8 text-cyan-500" /> Reset Password
             </h1>
-            <p className="text-zinc-500 text-sm mt-3 leading-relaxed">
+            <p className="mt-3 text-sm leading-relaxed text-zinc-500">
               Please enter your new password below.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {status === "error" && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                <span className="text-red-500 text-sm font-semibold">{errorMessage}</span>
+              <div className="animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-3">
+                <span className="text-sm font-semibold text-red-500">
+                  {errorMessage}
+                </span>
               </div>
             )}
 
             <div className="space-y-4">
-              <div className="space-y-1.5 relative">
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">
+              <div className="relative space-y-1.5">
+                <label className="ml-1 text-xs font-bold tracking-wider text-zinc-500 uppercase">
                   New Password
                 </label>
                 <div className="relative">
@@ -126,22 +149,26 @@ function ResetPasswordContent() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="pl-10 h-12 w-full text-base bg-zinc-50 dark:bg-[#0a0a0a] border-black/10 dark:border-white/10"
+                    className="h-12 w-full border-black/10 bg-zinc-50 pl-10 text-base dark:border-white/10 dark:bg-[#0a0a0a]"
                   />
-                  <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-4" />
+                  <Lock className="absolute top-4 left-3.5 h-4 w-4 text-zinc-400" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none"
+                    className="absolute top-3.5 right-3.5 p-0.5 text-zinc-400 hover:text-zinc-600 focus:outline-none dark:hover:text-zinc-300"
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-1.5 relative">
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">
+              <div className="relative space-y-1.5">
+                <label className="ml-1 text-xs font-bold tracking-wider text-zinc-500 uppercase">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -151,16 +178,20 @@ function ResetPasswordContent() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="pl-10 h-12 w-full text-base bg-zinc-50 dark:bg-[#0a0a0a] border-black/10 dark:border-white/10"
+                    className="h-12 w-full border-black/10 bg-zinc-50 pl-10 text-base dark:border-white/10 dark:bg-[#0a0a0a]"
                   />
-                  <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-4" />
+                  <Lock className="absolute top-4 left-3.5 h-4 w-4 text-zinc-400" />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-3.5 p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none"
+                    className="absolute top-3.5 right-3.5 p-0.5 text-zinc-400 hover:text-zinc-600 focus:outline-none dark:hover:text-zinc-300"
                     tabIndex={-1}
                   >
-                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirm ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -168,12 +199,12 @@ function ResetPasswordContent() {
 
             <Button
               type="submit"
-              className="w-full h-12 mt-4 text-base font-bold tracking-wide"
+              className="mt-4 h-12 w-full text-base font-bold tracking-wide"
               disabled={status === "loading" || !password || !confirmPassword}
             >
               {status === "loading" ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Updating...
                 </>
               ) : (

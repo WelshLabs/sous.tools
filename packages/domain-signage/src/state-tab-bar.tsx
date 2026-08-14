@@ -22,29 +22,42 @@ const TABS: TabDef[] = [
   { key: "soldOut", label: "Sold Out", sub: "Unavailable items" },
 ];
 
-export const StateTabBar: React.FC<StateTabBarProps> = ({ activeState, onChange, styles }) => (
-  <div className="flex gap-1.5 px-4 py-2 border-b border-border shrink-0">
+export const StateTabBar: React.FC<StateTabBarProps> = ({
+  activeState,
+  onChange,
+  styles,
+}) => (
+  <div className="border-border flex shrink-0 gap-1.5 border-b px-4 py-2">
     {TABS.map(({ key, label, sub }) => {
       const isActive = activeState === key;
-      const bg = styles[key].backgroundColor ?? (key === "highlighted" ? "#3b5" : key === "soldOut" ? "#f55" : "#888");
+      const bg =
+        styles[key].backgroundColor ??
+        (key === "highlighted" ? "#3b5" : key === "soldOut" ? "#f55" : "#888");
       return (
         <button
           key={key}
           onClick={() => onChange(key)}
-          className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl border text-center transition-all cursor-pointer ${
+          className={`flex flex-1 cursor-pointer flex-col items-center gap-0.5 rounded-xl border px-2 py-2 text-center transition-all ${
             isActive
               ? "bg-primary/20 border-primary text-foreground"
-              : "bg-secondary border-border text-muted-foreground hover:border-white/20 hover:text-muted-foreground"
+              : "bg-secondary border-border text-muted-foreground hover:text-muted-foreground hover:border-white/20"
           }`}
         >
           <div className="flex items-center gap-1.5">
             <span
-              className="rounded-sm shrink-0"
-              style={{ width: 12, height: 12, backgroundColor: bg, display: "inline-block" }}
+              className="shrink-0 rounded-sm"
+              style={{
+                width: 12,
+                height: 12,
+                backgroundColor: bg,
+                display: "inline-block",
+              }}
             />
             <span className="text-xs font-semibold">{label}</span>
           </div>
-          <span className="text-[9px] text-muted-foreground leading-none">{sub}</span>
+          <span className="text-muted-foreground text-[9px] leading-none">
+            {sub}
+          </span>
         </button>
       );
     })}

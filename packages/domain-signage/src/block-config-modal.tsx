@@ -14,9 +14,15 @@ interface BlockConfigModalProps {
   onSave: (block: SignageBlock) => void;
 }
 
-export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }: BlockConfigModalProps): React.JSX.Element {
+export function BlockConfigModal({
+  block: initialBlock,
+  items,
+  onClose,
+  onSave,
+}: BlockConfigModalProps): React.JSX.Element {
   const [activeBlock, setActiveBlock] = useState<SignageBlock>(
-    initialBlock ?? ({ id: "block-" + Math.random().toString() } as SignageBlock),
+    initialBlock ??
+      ({ id: "block-" + Math.random().toString() } as SignageBlock),
   );
 
   const handleTypeSelect = (type: string) => {
@@ -34,37 +40,44 @@ export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }
   const isNew = !initialBlock;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
-      <div className="w-full max-w-lg bg-background border border-border rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] transition-all">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card/50">
+    <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+      <div className="bg-background border-border flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border shadow-2xl transition-all">
+        <div className="border-border bg-card/50 flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-2">
             <GokujoKnifeIcon />
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-widest">
+            <h3 className="text-foreground text-sm font-semibold tracking-widest uppercase">
               {isNew ? "Assemble Component" : "Inspect Component"}
             </h3>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors p-1 cursor-pointer">
-            <X className="w-5 h-5" />
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground cursor-pointer p-1 transition-colors"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 space-y-6 overflow-y-auto p-6">
           {isNew && (
             <div className="space-y-3">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select Component Type</span>
+              <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
+                Select Component Type
+              </span>
               <div className="grid grid-cols-3 gap-2">
                 {BLOCK_TYPES.map((bt) => (
                   <button
                     key={bt.type}
                     onClick={() => handleTypeSelect(bt.type)}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition ${
+                    className={`flex flex-col items-center gap-2 rounded-xl border p-3 text-center transition ${
                       activeBlock.type === bt.type
-                        ? "bg-cyan-500/10 border-cyan-400 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)]"
+                        ? "border-cyan-400 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)]"
                         : "bg-card/50 border-border text-muted-foreground hover:border-white/15"
                     }`}
                   >
                     {bt.icon}
-                    <span className="text-[10px] font-semibold">{bt.label}</span>
+                    <span className="text-[10px] font-semibold">
+                      {bt.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -72,24 +85,42 @@ export function BlockConfigModal({ block: initialBlock, items, onClose, onSave }
           )}
 
           {activeBlock.type && (
-            <div className="space-y-4 pt-2 border-t border-border">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Configure Settings</span>
+            <div className="border-border space-y-4 border-t pt-2">
+              <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
+                Configure Settings
+              </span>
               <ContentConfigFields
                 block={activeBlock}
                 items={items}
-                onChange={(updates) => setActiveBlock((prev) => ({ ...prev, ...updates } as SignageBlock))}
+                onChange={(updates) =>
+                  setActiveBlock(
+                    (prev) => ({ ...prev, ...updates }) as SignageBlock,
+                  )
+                }
               />
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-card/30">
-          <button onClick={onClose} className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer">Cancel</button>
+        <div className="border-border bg-card/30 flex items-center justify-end gap-3 border-t px-6 py-4">
           <button
-            onClick={() => { if (activeBlock.type) { onSave(activeBlock); onClose(); } }}
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground cursor-pointer px-4 py-2 text-xs font-semibold transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              if (activeBlock.type) {
+                onSave(activeBlock);
+                onClose();
+              }
+            }}
             disabled={!activeBlock.type}
-            className={`px-5 py-2 text-xs font-semibold rounded-xl transition shadow-[0_4px_12px_rgba(34,211,238,0.2)] ${activeBlock.type ? "text-foreground bg-cyan-400 hover:bg-cyan-300 cursor-pointer" : "text-muted-foreground bg-secondary cursor-not-allowed shadow-none"}`}
-          >Apply Component</button>
+            className={`rounded-xl px-5 py-2 text-xs font-semibold shadow-[0_4px_12px_rgba(34,211,238,0.2)] transition ${activeBlock.type ? "text-foreground cursor-pointer bg-cyan-400 hover:bg-cyan-300" : "text-muted-foreground bg-secondary cursor-not-allowed shadow-none"}`}
+          >
+            Apply Component
+          </button>
         </div>
       </div>
     </div>

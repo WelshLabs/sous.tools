@@ -35,7 +35,7 @@ export function ComplianceSearchView({
       style={{ backgroundColor: "rgb(0 0 0 / 0.75)" }}
     >
       <div
-        className="relative w-full max-w-lg rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh]"
+        className="relative flex max-h-[85vh] w-full max-w-lg flex-col rounded-2xl p-6 shadow-2xl"
         style={{
           backgroundColor: "var(--color-card)",
           border: "1px solid var(--color-border)",
@@ -44,19 +44,22 @@ export function ComplianceSearchView({
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg transition-colors cursor-pointer"
+          className="absolute top-4 right-4 cursor-pointer rounded-lg p-1 transition-colors"
           style={{ color: "var(--color-muted-foreground)" }}
           aria-label="Close compliance search"
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
 
-        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <Search className="w-5 h-5" style={{ color: "var(--color-primary)" }} />
+        <h3 className="mb-4 flex items-center gap-2 text-lg font-bold">
+          <Search
+            className="h-5 w-5"
+            style={{ color: "var(--color-primary)" }}
+          />
           Compliance Search (Open Food Facts)
         </h3>
 
-        <form onSubmit={onSearch} className="flex gap-2 mb-4">
+        <form onSubmit={onSearch} className="mb-4 flex gap-2">
           <input
             type="text"
             value={query}
@@ -73,16 +76,16 @@ export function ComplianceSearchView({
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
             style={{
               backgroundColor: "var(--color-primary)",
               color: "var(--color-primary-foreground)",
             }}
           >
             {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Search className="w-4 h-4" />
+              <Search className="h-4 w-4" />
             )}{" "}
             Search
           </button>
@@ -90,24 +93,24 @@ export function ComplianceSearchView({
 
         {error && (
           <div
-            className="text-xs mb-3"
+            className="mb-3 text-xs"
             style={{ color: "var(--color-destructive)" }}
           >
             {error}
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[250px]">
+        <div className="min-h-[250px] flex-1 space-y-2 overflow-y-auto pr-1">
           {loading ? (
-            <div className="flex justify-center items-center h-full py-16">
+            <div className="flex h-full items-center justify-center py-16">
               <Loader2
-                className="w-8 h-8 animate-spin"
+                className="h-8 w-8 animate-spin"
                 style={{ color: "var(--color-primary)" }}
               />
             </div>
           ) : results.length === 0 ? (
             <div
-              className="text-center py-16 text-xs"
+              className="py-16 text-center text-xs"
               style={{ color: "var(--color-muted-foreground)" }}
             >
               Search for ingredients to auto-fill nutritional values.
@@ -117,7 +120,7 @@ export function ComplianceSearchView({
               <button
                 key={prod.code || Math.random().toString()}
                 onClick={() => onSelectProduct(prod)}
-                className="w-full text-left p-3 rounded-lg transition-all cursor-pointer flex justify-between items-center gap-4"
+                className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-lg p-3 text-left transition-all"
                 style={{
                   backgroundColor: "rgb(30 41 59 / 0.50)",
                   border: "1px solid var(--color-border)",
@@ -125,10 +128,12 @@ export function ComplianceSearchView({
               >
                 <div>
                   <h4
-                    className="text-sm font-bold line-clamp-1"
+                    className="line-clamp-1 text-sm font-bold"
                     style={{ color: "var(--color-foreground)" }}
                   >
-                    {prod.product_name || prod.product_name_en || "Unnamed Product"}
+                    {prod.product_name ||
+                      prod.product_name_en ||
+                      "Unnamed Product"}
                   </h4>
                   <p
                     className="text-xs"
@@ -138,7 +143,7 @@ export function ComplianceSearchView({
                   </p>
                 </div>
                 <div
-                  className="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider whitespace-nowrap"
+                  className="rounded px-2 py-0.5 text-[10px] font-bold tracking-wider whitespace-nowrap uppercase"
                   style={{
                     backgroundColor: "rgb(76 201 240 / 0.10)",
                     border: "1px solid rgb(76 201 240 / 0.20)",

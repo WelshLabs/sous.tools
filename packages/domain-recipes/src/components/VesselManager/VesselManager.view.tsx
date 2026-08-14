@@ -31,7 +31,7 @@ export function VesselManagerHeaderView({
   return (
     <>
       <header
-        className="flex justify-between items-center p-5 border-b"
+        className="flex items-center justify-between border-b p-5"
         style={{
           borderColor: "var(--color-border)",
           backgroundColor: "rgb(15 23 42 / 0.50)",
@@ -39,14 +39,17 @@ export function VesselManagerHeaderView({
       >
         <div>
           <h2
-            className="text-lg font-bold flex items-center gap-2"
+            className="flex items-center gap-2 text-lg font-bold"
             style={{ color: "var(--color-foreground)" }}
           >
-            <Scale className="w-5 h-5" style={{ color: "var(--color-primary)" }} />{" "}
+            <Scale
+              className="h-5 w-5"
+              style={{ color: "var(--color-primary)" }}
+            />{" "}
             Vessels Manager
           </h2>
           <p
-            className="text-xs mt-0.5"
+            className="mt-0.5 text-xs"
             style={{ color: "var(--color-muted-foreground)" }}
           >
             Manage pan capacities for vessel-aware scaling.
@@ -54,15 +57,15 @@ export function VesselManagerHeaderView({
         </div>
         <button
           onClick={onClose}
-          className="p-2 rounded-lg transition-colors cursor-pointer hover:bg-white/5"
+          className="cursor-pointer rounded-lg p-2 transition-colors hover:bg-white/5"
           style={{ color: "var(--color-muted-foreground)" }}
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
       </header>
 
       <div
-        className="flex gap-4 px-5 py-3 border-b text-xs"
+        className="flex gap-4 border-b px-5 py-3 text-xs"
         style={{
           borderColor: "var(--color-border)",
           backgroundColor: "rgb(15 23 42 / 0.30)",
@@ -70,7 +73,7 @@ export function VesselManagerHeaderView({
       >
         <div className="flex items-center gap-2">
           <span
-            className="text-[10px] uppercase font-bold"
+            className="text-[10px] font-bold uppercase"
             style={{ color: "var(--color-muted-foreground)" }}
           >
             Dimensions:
@@ -107,7 +110,7 @@ export function VesselManagerHeaderView({
 
         <div className="flex items-center gap-2">
           <span
-            className="text-[10px] uppercase font-bold"
+            className="text-[10px] font-bold uppercase"
             style={{ color: "var(--color-muted-foreground)" }}
           >
             Volume:
@@ -165,7 +168,7 @@ interface VesselNameInputProps {
 function VesselNameInput({ name, setName }: VesselNameInputProps) {
   return (
     <div>
-      <label className="block text-xs font-medium mb-1" style={labelStyle}>
+      <label className="mb-1 block text-xs font-medium" style={labelStyle}>
         Vessel Name
       </label>
       <input
@@ -188,7 +191,7 @@ interface VesselShapeInputProps {
 function VesselShapeInput({ shape, setShape }: VesselShapeInputProps) {
   return (
     <div>
-      <label className="block text-xs font-medium mb-1" style={labelStyle}>
+      <label className="mb-1 block text-xs font-medium" style={labelStyle}>
         Pan Shape
       </label>
       <select
@@ -233,7 +236,10 @@ function DimensionInputs({
       {shape === "RECTANGULAR" ? (
         <>
           <div>
-            <label className="block text-xs font-medium mb-1" style={labelStyle}>
+            <label
+              className="mb-1 block text-xs font-medium"
+              style={labelStyle}
+            >
               Length ({unitSystem})
             </label>
             <input
@@ -247,7 +253,10 @@ function DimensionInputs({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" style={labelStyle}>
+            <label
+              className="mb-1 block text-xs font-medium"
+              style={labelStyle}
+            >
               Width ({unitSystem})
             </label>
             <input
@@ -263,7 +272,7 @@ function DimensionInputs({
         </>
       ) : (
         <div>
-          <label className="block text-xs font-medium mb-1" style={labelStyle}>
+          <label className="mb-1 block text-xs font-medium" style={labelStyle}>
             Diameter ({unitSystem})
           </label>
           <input
@@ -278,7 +287,7 @@ function DimensionInputs({
         </div>
       )}
       <div>
-        <label className="block text-xs font-medium mb-1" style={labelStyle}>
+        <label className="mb-1 block text-xs font-medium" style={labelStyle}>
           Depth/Height ({unitSystem})
         </label>
         <input
@@ -310,7 +319,7 @@ function VolumeInput({
   return (
     <div className="flex items-end gap-3">
       <div className="flex-1">
-        <label className="block text-xs font-medium mb-1" style={labelStyle}>
+        <label className="mb-1 block text-xs font-medium" style={labelStyle}>
           Volume Capacity ({volumeUnit})
         </label>
         <input
@@ -326,7 +335,7 @@ function VolumeInput({
       <button
         type="button"
         onClick={onAutoCalculate}
-        className="text-xs px-3 py-2.5 rounded-lg transition-colors cursor-pointer font-semibold border"
+        className="cursor-pointer rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors"
         style={{
           backgroundColor: "var(--color-secondary)",
           borderColor: "var(--color-border)",
@@ -342,13 +351,20 @@ function VolumeInput({
 // --- Vessel Dialog View ---
 
 export function VesselDialogView({
-  name, setName,
-  shape, setShape,
-  length, setLength,
-  width, setWidth,
-  height, setHeight,
-  diameter, setDiameter,
-  volumeMl, setVolumeMl,
+  name,
+  setName,
+  shape,
+  setShape,
+  length,
+  setLength,
+  width,
+  setWidth,
+  height,
+  setHeight,
+  diameter,
+  setDiameter,
+  volumeMl,
+  setVolumeMl,
   loading,
   unitSystem,
   volumeUnit,
@@ -372,12 +388,12 @@ export function VesselDialogView({
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg transition-colors cursor-pointer"
+          className="absolute top-4 right-4 cursor-pointer rounded-lg p-1 transition-colors"
           style={{ color: "var(--color-muted-foreground)" }}
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
-        <h3 className="text-lg font-bold mb-4">
+        <h3 className="mb-4 text-lg font-bold">
           {vessel ? "Edit Vessel Profile" : "Add Vessel Profile"}
         </h3>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -405,7 +421,7 @@ export function VesselDialogView({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm rounded-lg transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors"
               style={{
                 backgroundColor: "var(--color-secondary)",
                 color: "var(--color-foreground)",
@@ -468,13 +484,13 @@ export function VesselManagerView({
   return (
     <>
       <div
-        className="fixed inset-0 z-[40] animate-in fade-in cursor-pointer backdrop-blur-sm"
+        className="animate-in fade-in fixed inset-0 z-[40] cursor-pointer backdrop-blur-sm"
         style={{ backgroundColor: "rgb(0 0 0 / 0.60)" }}
         onClick={onClose}
       />
 
       <div
-        className="fixed inset-y-0 right-0 z-[45] w-full max-w-md shadow-2xl flex flex-col animate-in slide-in-from-right-full duration-300 backdrop-blur-md"
+        className="animate-in slide-in-from-right-full fixed inset-y-0 right-0 z-[45] flex w-full max-w-md flex-col shadow-2xl backdrop-blur-md duration-300"
         style={{
           backgroundColor: "rgb(15 23 42 / 0.90)",
           borderLeft: "1px solid var(--color-border)",
@@ -490,25 +506,25 @@ export function VesselManagerView({
 
         <div className="flex-1 overflow-y-auto p-5">
           <Button
-            className="w-full mb-6"
+            className="mb-6 w-full"
             onClick={() => {
               setActiveVessel(null);
               setDialogOpen(true);
             }}
           >
-            <Plus className="w-4 h-4 mr-1 inline" /> Add Vessel Profile
+            <Plus className="mr-1 inline h-4 w-4" /> Add Vessel Profile
           </Button>
 
           {loading ? (
             <div className="flex justify-center py-12">
               <Loader2
-                className="w-8 h-8 animate-spin"
+                className="h-8 w-8 animate-spin"
                 style={{ color: "var(--color-primary)" }}
               />
             </div>
           ) : vessels.length === 0 ? (
             <div
-              className="text-center py-12 text-sm"
+              className="py-12 text-center text-sm"
               style={{ color: "var(--color-muted-foreground)" }}
             >
               No vessels configured. Click 'Add Vessel Profile' to get started.
@@ -518,7 +534,7 @@ export function VesselManagerView({
               {vessels.map((pan) => (
                 <div
                   key={pan.id}
-                  className="p-4 rounded-xl border flex items-center justify-between shadow-lg transition-all"
+                  className="flex items-center justify-between rounded-xl border p-4 shadow-lg transition-all"
                   style={{
                     backgroundColor: "var(--color-card)",
                     borderColor: "var(--color-border)",
@@ -532,22 +548,22 @@ export function VesselManagerView({
                       {pan.name}
                     </h3>
                     <p
-                      className="text-xs mt-1 capitalize"
+                      className="mt-1 text-xs capitalize"
                       style={{ color: "var(--color-muted-foreground)" }}
                     >
                       Shape: {pan.shape.toLowerCase()}
                     </p>
                     <p
-                      className="text-[11px] mt-0.5"
+                      className="mt-0.5 text-[11px]"
                       style={{ color: "var(--color-muted-foreground)" }}
                     >
                       Dimensions:{" "}
                       {pan.shape === "RECTANGULAR"
                         ? `${formatDim(pan.length)} x ${formatDim(
-                            pan.width
+                            pan.width,
                           )} x ${formatDim(pan.height)}`
                         : `d: ${formatDim(pan.diameter)} x h: ${formatDim(
-                            pan.height
+                            pan.height,
                           )}`}
                     </p>
                     <div
@@ -563,23 +579,23 @@ export function VesselManagerView({
                         setActiveVessel(pan);
                         setDialogOpen(true);
                       }}
-                      className="p-2 rounded-lg transition-colors cursor-pointer"
+                      className="cursor-pointer rounded-lg p-2 transition-colors"
                       style={{
                         backgroundColor: "var(--color-secondary)",
                         color: "var(--color-foreground)",
                       }}
                     >
-                      <Edit3 className="w-3.5 h-3.5" />
+                      <Edit3 className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => onDeleteVessel(pan.id)}
-                      className="p-2 rounded-lg transition-colors cursor-pointer"
+                      className="cursor-pointer rounded-lg p-2 transition-colors"
                       style={{
                         backgroundColor: "rgb(244 63 94 / 0.10)",
                         color: "var(--color-destructive)",
                       }}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>

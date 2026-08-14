@@ -4,12 +4,12 @@ Vercel deployments are handled via **native GitHub integration** — no tokens o
 
 ## Project Configuration
 
-| Vercel Project | Root Directory | Branch → Environment |
-|---|---|---|
-| `sous-tools-app` | `apps/app` | `main` → Production, `staging` → Preview |
-| `sous-tools-docs` | `apps/docs` | `main` → Production, `staging` → Preview |
+| Vercel Project             | Root Directory       | Branch → Environment                     |
+| -------------------------- | -------------------- | ---------------------------------------- |
+| `sous-tools-app`           | `apps/app`           | `main` → Production, `staging` → Preview |
+| `sous-tools-docs`          | `apps/docs`          | `main` → Production, `staging` → Preview |
 | `sous-tools-customer-site` | `apps/customer-site` | `main` → Production, `staging` → Preview |
-| `sous-tools-signage` | `apps/signage` | `main` → Production, `staging` → Preview |
+| `sous-tools-signage`       | `apps/signage`       | `main` → Production, `staging` → Preview |
 
 ## One-Time Setup (per project)
 
@@ -23,12 +23,12 @@ Vercel deployments are handled via **native GitHub integration** — no tokens o
 
 All secrets are managed in **Infisical** — not the Vercel dashboard. Each project needs only the four Infisical bootstrap variables:
 
-| Variable | Description |
-|---|---|
-| `INFISICAL_CLIENT_ID` | Infisical machine identity client ID |
-| `INFISICAL_CLIENT_SECRET` | Infisical machine identity client secret |
-| `INFISICAL_PROJECT_ID` | Infisical project ID (`4e40fdc4-358b-4216-b7c4-30e5506f9277`) |
-| `INFISICAL_ENV` | `prod` for Production, `staging` for Preview/Staging |
+| Variable                  | Description                                                   |
+| ------------------------- | ------------------------------------------------------------- |
+| `INFISICAL_CLIENT_ID`     | Infisical machine identity client ID                          |
+| `INFISICAL_CLIENT_SECRET` | Infisical machine identity client secret                      |
+| `INFISICAL_PROJECT_ID`    | Infisical project ID (`4e40fdc4-358b-4216-b7c4-30e5506f9277`) |
+| `INFISICAL_ENV`           | `prod` for Production, `staging` for Preview/Staging          |
 
 > **Where to find these values**: Log into [app.infisical.com](https://app.infisical.com) → Project → Machine Identities.  
 > **Never** paste these into this repository or any file tracked by Git.

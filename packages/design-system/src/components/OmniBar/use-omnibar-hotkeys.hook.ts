@@ -94,7 +94,7 @@ export function useOmniBarHotkeys({
           mimeType: f.file?.type ?? "application/octet-stream",
           url: dataUrl,
         };
-      })
+      }),
     );
 
     const newUserMessage: OmniMessage = {

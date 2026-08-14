@@ -9,7 +9,8 @@ import {
   buildDescriptionStyle,
 } from "./menu-item-style-utils";
 
-export type AtomKey = "card" | "title" | "price" | "description" | "badge" | "icon";
+export type AtomKey =
+  "card" | "title" | "price" | "description" | "badge" | "icon";
 
 export interface MenuItemPreviewCardProps {
   stateStyle: MenuItemStateStyle;
@@ -23,11 +24,12 @@ export interface MenuItemPreviewCardProps {
 const MOCK = {
   name: "Truffle Wagyu Burger",
   price: 28.0,
-  description: "8oz wagyu patty, black truffle aioli, aged gruyère, brioche bun",
+  description:
+    "8oz wagyu patty, black truffle aioli, aged gruyère, brioche bun",
 };
 
 const Tooltip: React.FC<{ label: string }> = ({ label }) => (
-  <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap px-2 py-0.5 bg-secondary border border-border rounded-full text-[9px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+  <span className="bg-secondary border-border text-muted-foreground pointer-events-none absolute -top-6 left-1/2 z-50 -translate-x-1/2 rounded-full border px-2 py-0.5 text-[9px] whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
     {label}
   </span>
 );
@@ -41,14 +43,24 @@ interface AtomWrapProps {
   tooltip: string;
 }
 
-const AtomWrap: React.FC<AtomWrapProps> = ({ atomKey, selected, onSelect, className = "", children, tooltip }) => (
+const AtomWrap: React.FC<AtomWrapProps> = ({
+  atomKey,
+  selected,
+  onSelect,
+  className = "",
+  children,
+  tooltip,
+}) => (
   <div
-    className={`cursor-pointer relative group ring-2 rounded transition-all ${
+    className={`group relative cursor-pointer rounded ring-2 transition-all ${
       selected
         ? "ring-primary ring-offset-1 ring-offset-zinc-900"
-        : "ring-transparent hover:ring-primary/40"
+        : "hover:ring-primary/40 ring-transparent"
     } ${className}`}
-    onClick={(e) => { e.stopPropagation(); onSelect(atomKey); }}
+    onClick={(e) => {
+      e.stopPropagation();
+      onSelect(atomKey);
+    }}
   >
     <Tooltip label={tooltip} />
     {children}
@@ -56,7 +68,12 @@ const AtomWrap: React.FC<AtomWrapProps> = ({ atomKey, selected, onSelect, classN
 );
 
 export const MenuItemPreviewCard: React.FC<MenuItemPreviewCardProps> = ({
-  stateStyle, selectedAtom, onSelectAtom, googleFont, scale = 1, stateLabel,
+  stateStyle,
+  selectedAtom,
+  onSelectAtom,
+  googleFont,
+  scale = 1,
+  stateLabel,
 }) => {
   const s = stateStyle;
   const cardStyle: React.CSSProperties = {
@@ -73,51 +90,120 @@ export const MenuItemPreviewCard: React.FC<MenuItemPreviewCardProps> = ({
 
   return (
     // Extra padding around the card so box-shadows are never clipped
-    <div style={{ transform: `scale(${scale})`, transformOrigin: "top center", padding: "16px", margin: "-16px" }}>
+    <div
+      style={{
+        transform: `scale(${scale})`,
+        transformOrigin: "top center",
+        padding: "16px",
+        margin: "-16px",
+      }}
+    >
       {stateLabel && (
-        <p className="text-center text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-widest">{stateLabel}</p>
+        <p className="text-muted-foreground mb-2 text-center text-[10px] font-medium tracking-widest uppercase">
+          {stateLabel}
+        </p>
       )}
       {/* overflow:visible so box-shadow is never clipped by parent */}
-      <AtomWrap atomKey="card" selected={selectedAtom === "card"} onSelect={onSelectAtom} tooltip="Card">
-        <div className="relative rounded-2xl" style={{ ...cardStyle, overflow: "visible" }}>
+      <AtomWrap
+        atomKey="card"
+        selected={selectedAtom === "card"}
+        onSelect={onSelectAtom}
+        tooltip="Card"
+      >
+        <div
+          className="relative rounded-2xl"
+          style={{ ...cardStyle, overflow: "visible" }}
+        >
           {iconCorner && s.icon && (
-            <AtomWrap atomKey="icon" selected={selectedAtom === "icon"} onSelect={onSelectAtom} className="absolute top-2 right-2" tooltip="Icon">
+            <AtomWrap
+              atomKey="icon"
+              selected={selectedAtom === "icon"}
+              onSelect={onSelectAtom}
+              className="absolute top-2 right-2"
+              tooltip="Icon"
+            >
               <span className="text-xl">{s.icon}</span>
             </AtomWrap>
           )}
-          <div className="flex items-start justify-between gap-2 mb-1.5">
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <div className="mb-1.5 flex items-start justify-between gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5">
               {iconBefore && s.icon && (
-                <AtomWrap atomKey="icon" selected={selectedAtom === "icon"} onSelect={onSelectAtom} tooltip="Icon">
+                <AtomWrap
+                  atomKey="icon"
+                  selected={selectedAtom === "icon"}
+                  onSelect={onSelectAtom}
+                  tooltip="Icon"
+                >
                   <span className="text-lg">{s.icon}</span>
                 </AtomWrap>
               )}
-              <AtomWrap atomKey="title" selected={selectedAtom === "title"} onSelect={onSelectAtom} className="min-w-0 flex-1" tooltip="Title">
-                <span className="text-base font-bold truncate block" style={buildTitleStyle(s)}>
+              <AtomWrap
+                atomKey="title"
+                selected={selectedAtom === "title"}
+                onSelect={onSelectAtom}
+                className="min-w-0 flex-1"
+                tooltip="Title"
+              >
+                <span
+                  className="block truncate text-base font-bold"
+                  style={buildTitleStyle(s)}
+                >
                   {MOCK.name}
                 </span>
               </AtomWrap>
               {iconAfter && s.icon && (
-                <AtomWrap atomKey="icon" selected={selectedAtom === "icon"} onSelect={onSelectAtom} tooltip="Icon">
+                <AtomWrap
+                  atomKey="icon"
+                  selected={selectedAtom === "icon"}
+                  onSelect={onSelectAtom}
+                  tooltip="Icon"
+                >
                   <span className="text-lg">{s.icon}</span>
                 </AtomWrap>
               )}
             </div>
-            <AtomWrap atomKey="price" selected={selectedAtom === "price"} onSelect={onSelectAtom} tooltip="Price">
-              <span className="font-bold text-sm shrink-0" style={buildPriceStyle(s)}>
+            <AtomWrap
+              atomKey="price"
+              selected={selectedAtom === "price"}
+              onSelect={onSelectAtom}
+              tooltip="Price"
+            >
+              <span
+                className="shrink-0 text-sm font-bold"
+                style={buildPriceStyle(s)}
+              >
                 ${MOCK.price.toFixed(2)}
               </span>
             </AtomWrap>
           </div>
-          <AtomWrap atomKey="description" selected={selectedAtom === "description"} onSelect={onSelectAtom} tooltip="Description">
-            <p className="text-xs leading-relaxed" style={buildDescriptionStyle(s)}>{MOCK.description}</p>
+          <AtomWrap
+            atomKey="description"
+            selected={selectedAtom === "description"}
+            onSelect={onSelectAtom}
+            tooltip="Description"
+          >
+            <p
+              className="text-xs leading-relaxed"
+              style={buildDescriptionStyle(s)}
+            >
+              {MOCK.description}
+            </p>
           </AtomWrap>
           {s.badge && (
             <div className="mt-2">
-              <AtomWrap atomKey="badge" selected={selectedAtom === "badge"} onSelect={onSelectAtom} tooltip="Badge">
+              <AtomWrap
+                atomKey="badge"
+                selected={selectedAtom === "badge"}
+                onSelect={onSelectAtom}
+                tooltip="Badge"
+              >
                 <span
                   className="inline-block px-2 py-0.5 text-[10px] font-bold"
-                  style={{ backgroundColor: s.badge.color, color: s.badge.textColor, borderRadius: s.badge.borderRadius ?? "4px" }}
+                  style={{
+                    backgroundColor: s.badge.color,
+                    color: s.badge.textColor,
+                    borderRadius: s.badge.borderRadius ?? "4px",
+                  }}
                 >
                   {s.badge.text}
                 </span>

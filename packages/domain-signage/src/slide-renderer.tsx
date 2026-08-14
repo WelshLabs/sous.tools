@@ -35,15 +35,15 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 }) => {
   if (slide.type === "IMAGE") {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-card">
+      <div className="bg-card flex h-full w-full items-center justify-center">
         {slide.imageUrl ? (
           <img
             src={slide.imageUrl}
             alt="Slide"
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <p className="text-xs text-blue-400 italic font-mono">
+          <p className="font-mono text-xs text-blue-400 italic">
             Image: (no URL set)
           </p>
         )}
@@ -52,17 +52,17 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
   }
   if (slide.type === "VIDEO") {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-card">
+      <div className="bg-card flex h-full w-full items-center justify-center">
         {slide.videoUrl ? (
           <video
             src={slide.videoUrl}
             autoPlay
             loop={slide.loop}
             muted={slide.mute}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <p className="text-xs text-purple-400 italic font-mono">
+          <p className="font-mono text-xs text-purple-400 italic">
             Video: (no URL set)
           </p>
         )}
@@ -71,16 +71,16 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
   }
   if (slide.type === "IFRAME") {
     return (
-      <div className="w-full h-full">
+      <div className="h-full w-full">
         {slide.url ? (
           <iframe
             src={slide.url}
-            className="w-full h-full border-none"
+            className="h-full w-full border-none"
             title="Iframe slide"
           />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-xs text-yellow-400 italic font-mono">
+          <div className="flex h-full items-center justify-center">
+            <p className="font-mono text-xs text-yellow-400 italic">
               Iframe: (no URL set)
             </p>
           </div>
@@ -95,7 +95,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 
     if (isPreviewing) {
       return (
-        <div className="relative w-full h-full flex flex-col bg-background dark:bg-background">
+        <div className="bg-background dark:bg-background relative flex h-full w-full flex-col">
           {blocks.map((block) => (
             <PreviewBlockRenderer
               key={block.id}
@@ -112,7 +112,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 
     return (
       <div
-        className="relative w-full h-full flex flex-col p-4"
+        className="relative flex h-full w-full flex-col p-4"
         onClick={(e) => {
           e.stopPropagation();
           onSelectBlock?.(null);
@@ -133,7 +133,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
             />
           ))
         ) : (
-          <div className="flex-1 border border-dashed border-border rounded-xl flex items-center justify-center text-muted-foreground text-sm cursor-pointer hover:border-cyan-400 hover:text-cyan-400 transition-colors">
+          <div className="border-border text-muted-foreground flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed text-sm transition-colors hover:border-cyan-400 hover:text-cyan-400">
             Empty Canvas
           </div>
         )}

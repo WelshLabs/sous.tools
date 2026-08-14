@@ -6,7 +6,11 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import type { SignageSlide, PosItem, SignageLayoutConfig } from "@soustools/api-types";
+import type {
+  SignageSlide,
+  PosItem,
+  SignageLayoutConfig,
+} from "@soustools/api-types";
 import { GripVertical, Plus } from "lucide-react";
 import { SlideCard } from "./slide-filmstrip-card";
 
@@ -53,45 +57,47 @@ export const SlideFilmstrip: React.FC<SlideFilmstripProps> = ({
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex flex-row gap-3 overflow-x-auto p-3 bg-card border-t border-border"
+            className="bg-card border-border flex flex-row gap-3 overflow-x-auto border-t p-3"
           >
             {slides.map((slide, index) => {
               const slideId = slide.id || `slide-fallback-${index}`;
               return (
-              <Draggable key={slideId} draggableId={slideId} index={index}>
-                {(drag) => (
-                  <div
-                    ref={drag.innerRef}
-                    {...drag.draggableProps}
-                    className="flex items-center gap-1 flex-shrink-0"
-                  >
+                <Draggable key={slideId} draggableId={slideId} index={index}>
+                  {(drag) => (
                     <div
-                      {...drag.dragHandleProps}
-                      className="text-foreground/30 hover:text-foreground/70 cursor-grab active:cursor-grabbing"
+                      ref={drag.innerRef}
+                      {...drag.draggableProps}
+                      className="flex flex-shrink-0 items-center gap-1"
                     >
-                      <GripVertical className="w-4 h-4" />
+                      <div
+                        {...drag.dragHandleProps}
+                        className="text-foreground/30 hover:text-foreground/70 cursor-grab active:cursor-grabbing"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </div>
+                      <SlideCard
+                        slide={slide}
+                        isActive={index === activeSlideIndex}
+                        onSelect={() => onSelectSlide(index)}
+                        onRemove={(e) => {
+                          e.stopPropagation();
+                          onRemoveSlide(index);
+                        }}
+                      />
                     </div>
-                    <SlideCard
-                      slide={slide}
-                      isActive={index === activeSlideIndex}
-                      onSelect={() => onSelectSlide(index)}
-                      onRemove={(e) => { e.stopPropagation(); onRemoveSlide(index); }}
-                    />
-                  </div>
-                )}
-              </Draggable>
-            )})}
+                  )}
+                </Draggable>
+              );
+            })}
             {provided.placeholder}
 
             {/* Add Slide card */}
             <button
               onClick={onAddSlide}
-              className="w-40 h-[90px] flex-shrink-0 flex flex-col items-center justify-center gap-1
-                         rounded-lg border-2 border-dashed border-white/20 text-foreground/40
-                         hover:border-primary/60 hover:text-primary/80 transition-colors cursor-pointer"
+              className="text-foreground/40 hover:border-primary/60 hover:text-primary/80 flex h-[90px] w-40 flex-shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-white/20 transition-colors"
               aria-label="Add slide"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="h-5 w-5" />
               <span className="text-xs font-medium">Add Slide</span>
             </button>
           </div>

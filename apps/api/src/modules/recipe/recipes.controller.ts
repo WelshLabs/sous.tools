@@ -10,10 +10,13 @@ import {
 } from "@nestjs/common";
 import { RecipesService } from "./recipes.service";
 import { RecipeCostService } from "./recipe-cost.service";
-import { ApiResponse, Recipe, RecipeIngredient,
-} from "@soustools/api-types";
+import { ApiResponse, Recipe, RecipeIngredient } from "@soustools/api-types";
 
-import { ApiTags, ApiBody, ApiResponse as NestjsApiResponse } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiBody,
+  ApiResponse as NestjsApiResponse,
+} from "@nestjs/swagger";
 
 @ApiTags("recipes")
 @Controller("recipes")
@@ -86,19 +89,19 @@ export class RecipesController {
             title: { type: "string" },
             yieldCount: { type: "number" },
             yieldUnit: { type: "string" },
-            instructions: { 
+            instructions: {
               type: "array",
               items: {
                 type: "object",
                 properties: {
                   text: { type: "string" },
                   stepNumber: { type: "number" },
-                  timerDurationSeconds: { type: "number", nullable: true }
-                }
-              }
+                  timerDurationSeconds: { type: "number", nullable: true },
+                },
+              },
             },
-            status: { type: "string" }
-          }
+            status: { type: "string" },
+          },
         },
         recipeIngredients: {
           type: "array",
@@ -111,15 +114,19 @@ export class RecipesController {
               amount: { type: "number" },
               unit: { type: "string" },
               rawName: { type: "string" },
-              prepNotes: { type: "string", nullable: true }
-            }
-          }
-        }
+              prepNotes: { type: "string", nullable: true },
+            },
+          },
+        },
       },
-      required: ["recipe", "recipeIngredients"]
-    }
+      required: ["recipe", "recipeIngredients"],
+    },
   })
-  @NestjsApiResponse({ status: 201, description: "Success", schema: { type: "object", additionalProperties: true } })
+  @NestjsApiResponse({
+    status: 201,
+    description: "Success",
+    schema: { type: "object", additionalProperties: true },
+  })
   async create(
     @Body("recipe")
     recipe: Omit<

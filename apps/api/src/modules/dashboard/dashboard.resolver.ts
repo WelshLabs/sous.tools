@@ -8,7 +8,7 @@ export class DashboardResolver {
 
   @Query(() => DashboardStatsPayload, { name: "dashboardStats" })
   async getDashboardStats(
-    @Args("orgId", { type: () => String, nullable: true }) orgId?: string
+    @Args("orgId", { type: () => String, nullable: true }) orgId?: string,
   ): Promise<DashboardStatsPayload> {
     return this.dashboardService.getAggregatedStats(orgId);
   }

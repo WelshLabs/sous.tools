@@ -37,7 +37,12 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
       if (!error && responseData?.data?.id) {
         router.push(`/signage/${responseData.data.id}`);
       } else {
-        const errMsg = typeof error === "string" ? error : (error as any)?.message || responseData?.error || "Failed to create deck";
+        const errMsg =
+          typeof error === "string"
+            ? error
+            : (error as any)?.message ||
+              responseData?.error ||
+              "Failed to create deck";
         alert(errMsg);
       }
     } catch (err) {
@@ -91,45 +96,45 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="mx-auto max-w-7xl p-6">
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white font-brand">
+          <h1 className="font-brand text-2xl font-bold text-white">
             My Slide Decks
           </h1>
-          <p className="text-sm text-muted-foreground font-sans mt-1">
+          <p className="text-muted-foreground mt-1 font-sans text-sm">
             Manage and assign layout decks for digital signage screens.
           </p>
         </div>
         <button
           onClick={handleCreate}
           disabled={creating}
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
+          className="bg-primary hover:bg-primary/90 flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50"
         >
           {creating ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
+            <RefreshCw className="h-4 w-4 animate-spin" />
           ) : (
-            <Plus className="w-4 h-4" />
+            <Plus className="h-4 w-4" />
           )}
           New Deck
         </button>
       </div>
 
       {initialDecks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-black/5 dark:border-white/5 rounded-2xl p-16 text-center">
-          <p className="text-muted-foreground font-sans mb-4">
+        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black/5 p-16 text-center dark:border-white/5">
+          <p className="text-muted-foreground mb-4 font-sans">
             No slide decks created yet.
           </p>
           <button
             onClick={handleCreate}
             disabled={creating}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold rounded-lg transition-all cursor-pointer"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-zinc-700"
           >
             Create Your First Deck
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {initialDecks.map((deck) => (
             <DeckCard
               key={deck.id}
@@ -142,26 +147,26 @@ export function DecksListClient({ initialDecks }: DecksListClientProps) {
       )}
 
       {deckToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-card backdrop-blur-sm p-4">
-          <div className="bg-zinc-100 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-2">Delete Deck</h3>
-            <p className="text-sm text-muted-foreground mb-6">
+        <div className="bg-card fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="dark:bg-card w-full max-w-sm rounded-2xl border border-black/10 bg-zinc-100 p-6 shadow-2xl dark:border-white/10">
+            <h3 className="mb-2 text-lg font-bold text-white">Delete Deck</h3>
+            <p className="text-muted-foreground mb-6 text-sm">
               Are you sure you want to delete this deck? This cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeckToDelete(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
+                className="cursor-pointer px-4 py-2 text-sm font-semibold text-zinc-300 transition-colors hover:text-white disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={isDeleting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-all disabled:opacity-50 cursor-pointer"
+                className="flex cursor-pointer items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-red-500 disabled:opacity-50"
               >
-                {isDeleting && <RefreshCw className="w-4 h-4 animate-spin" />}
+                {isDeleting && <RefreshCw className="h-4 w-4 animate-spin" />}
                 Delete
               </button>
             </div>

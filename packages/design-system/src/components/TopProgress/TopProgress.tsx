@@ -53,7 +53,7 @@ export function TopProgress({
     }
 
     return clearTrickle;
-      }, [active, visible]);
+  }, [active, visible]);
 
   return (
     <AnimatePresence>
@@ -69,13 +69,13 @@ export function TopProgress({
           aria-valuemin={0}
           aria-valuemax={100}
           className={cn(
-            "left-0 top-0 z-[100] h-[3px] w-full",
+            "top-0 left-0 z-[100] h-[3px] w-full",
             absolute ? "absolute" : "fixed",
             className,
           )}
         >
           <motion.div
-            className="relative h-full ds-gradient-pan"
+            className="ds-gradient-pan relative h-full"
             style={{ boxShadow: "var(--ds-glow-md)", filter: "blur(0.35px)" }}
             initial={false}
             animate={{ width: `${progress}%` }}
@@ -84,7 +84,7 @@ export function TopProgress({
             {/* Leading peg glow */}
             <span
               aria-hidden="true"
-              className="absolute right-0 top-1/2 h-2 w-24 -translate-y-1/2 translate-x-1/3 rounded-full"
+              className="absolute top-1/2 right-0 h-2 w-24 translate-x-1/3 -translate-y-1/2 rounded-full"
               style={{
                 background:
                   "linear-gradient(90deg, transparent, var(--accent))",

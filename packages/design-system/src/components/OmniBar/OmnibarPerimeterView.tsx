@@ -19,7 +19,9 @@ export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
   const reducedMotion = useReducedMotion();
   const gradientId = useId();
   const frameRef = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(
+    null,
+  );
 
   useLayoutEffect(() => {
     const frame = frameRef.current;
@@ -37,7 +39,7 @@ export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
       <span
         ref={frameRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border/90"
+        className="border-border/90 pointer-events-none absolute inset-0 rounded-[inherit] border"
       />
     );
   }
@@ -52,7 +54,7 @@ export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
     <span
       ref={frameRef}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 rounded-[inherit] border border-border/90"
+      className="border-border/90 pointer-events-none absolute inset-0 rounded-[inherit] border"
     >
       <svg
         className="absolute inset-0 h-full w-full overflow-visible"

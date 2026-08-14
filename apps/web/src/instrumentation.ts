@@ -1,4 +1,4 @@
-import initializeServerLogger from '@soustools/logger/server';
+import initializeServerLogger from "@soustools/logger/server";
 
 export function register() {
   initializeServerLogger();

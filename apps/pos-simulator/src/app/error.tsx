@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export default function Error({
   error,
@@ -14,11 +14,13 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] p-4 text-center">
-      <h2 className="text-xl font-bold text-rose-500 mb-4">Something went wrong in POS Simulator!</h2>
+    <div className="flex min-h-[50vh] flex-col items-center justify-center p-4 text-center">
+      <h2 className="mb-4 text-xl font-bold text-rose-500">
+        Something went wrong in POS Simulator!
+      </h2>
       <button
         onClick={() => reset()}
-        className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium transition-colors cursor-pointer"
+        className="cursor-pointer rounded bg-rose-600 px-4 py-2 font-medium text-white transition-colors hover:bg-rose-500"
       >
         Try again
       </button>

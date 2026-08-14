@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 // TopProgress is in its own file to stay within the 200-line architectural limit.
 export { TopProgress } from "../TopProgress/TopProgress";
 
-
 const loaderSize = cva("", {
   variants: {
     size: {
@@ -88,7 +87,7 @@ export function DotsLoader({
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="h-2.5 w-2.5 rounded-full bg-primary shadow-glow-sm"
+          className="bg-primary shadow-glow-sm h-2.5 w-2.5 rounded-full"
           animate={{ scale: [1, 1.5, 1], opacity: [0.4, 1, 0.4] }}
           transition={{
             duration: 1,
@@ -122,13 +121,13 @@ export function ProgressBar({
       aria-valuemin={0}
       aria-valuemax={100}
       className={cn(
-        "relative h-2 w-full overflow-hidden rounded-full bg-muted",
+        "bg-muted relative h-2 w-full overflow-hidden rounded-full",
         className,
       )}
     >
       {indeterminate ? (
         <motion.span
-          className="absolute inset-y-0 w-1/3 rounded-full bg-gradient-to-r from-primary via-accent to-violet shadow-glow-sm"
+          className="from-primary via-accent to-violet shadow-glow-sm absolute inset-y-0 w-1/3 rounded-full bg-gradient-to-r"
           animate={{ x: ["-100%", "320%"] }}
           transition={{
             duration: 1.3,
@@ -138,7 +137,7 @@ export function ProgressBar({
         />
       ) : (
         <motion.span
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary via-accent to-violet shadow-glow-sm"
+          className="from-primary via-accent to-violet shadow-glow-sm absolute inset-y-0 left-0 rounded-full bg-gradient-to-r"
           initial={{ width: 0 }}
           animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}

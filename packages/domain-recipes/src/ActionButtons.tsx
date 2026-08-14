@@ -15,7 +15,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       <button
         type="button"
         onClick={onCancel}
-        className="px-4 py-2 text-sm rounded-lg transition-colors cursor-pointer"
+        className="cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors"
         style={{
           backgroundColor: "var(--color-secondary)",
           color: "var(--color-foreground)",

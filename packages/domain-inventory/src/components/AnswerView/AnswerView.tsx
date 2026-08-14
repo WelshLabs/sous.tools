@@ -97,7 +97,9 @@ export function AnswerView({
             setChatHistory(messages);
           }
         })
-        .catch((err: any) => console.error("Failed to fetch chat history:", err))
+        .catch((err: any) =>
+          console.error("Failed to fetch chat history:", err),
+        )
         .finally(() => setHasFetchedHistory(true));
     } else {
       setHasFetchedHistory(true);
@@ -178,8 +180,6 @@ export function AnswerView({
     return userMsgs[userMsgs.length - 1]?.content || initialQuery;
   }, [chatHistory, initialQuery]);
 
-
-
   // Detect component render directive from tool execution
   const componentDirective = useMemo(() => {
     const renderMsg = chatHistory.find(
@@ -202,7 +202,6 @@ export function AnswerView({
     }
     const q = (latestUserMessage || "").toLowerCase().trim();
     if (!q) return null;
-
 
     if (q.includes("revenue") || q.includes("sales") || q.includes("chart")) {
       return "REVENUE_CHART";
@@ -236,73 +235,88 @@ export function AnswerView({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-6 pt-32 pb-64">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 pt-32 pb-64 md:p-6">
       {/* ── Conversational Answer Card ── */}
-      <Card className="w-full border-border bg-card/80 backdrop-blur-xl shadow-2xl p-6">
+      <Card className="border-border bg-card/80 w-full p-6 shadow-2xl backdrop-blur-xl">
         <div className="flex flex-col gap-6">
-          {chatHistory.length > 0 ? (
-            chatHistory
-              .filter(
-                (m) =>
-                  m.role === "model" ||
-                  m.role === "user" ||
-                  m.role === "agent_step" ||
-                  m.role === ("render_component" as any),
-              )
-              .map((m) => (
-                <div key={m.id} className="flex items-start gap-4">
-                  <div
-                    className={`p-2.5 rounded-2xl shrink-0 ${
-                      m.role === "user"
-                        ? "bg-secondary/10 text-secondary border border-secondary/20"
-                        : "bg-primary/10 text-primary border border-primary/20"
-                    }`}
-                  >
-                    {m.role === "user" ? (
-                      <span className="font-bold">You</span>
-                    ) : (
-                      <Sparkles className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div className="flex-1 flex flex-col pt-1">
-                    {m.role === ("render_component" as any) ? (
-                      (() => {
-                        try {
-                          const directive = JSON.parse(m.content);
-                          if (directive.componentName === "INGESTION_REVIEW") {
-                            return <div className="mt-2"><UniversalReviewComponent reviewId={directive.props.reviewId} /></div>;
+          {chatHistory.length > 0
+            ? chatHistory
+                .filter(
+                  (m) =>
+                    m.role === "model" ||
+                    m.role === "user" ||
+                    m.role === "agent_step" ||
+                    m.role === ("render_component" as any),
+                )
+                .map((m) => (
+                  <div key={m.id} className="flex items-start gap-4">
+                    <div
+                      className={`shrink-0 rounded-2xl p-2.5 ${
+                        m.role === "user"
+                          ? "bg-secondary/10 text-secondary border-secondary/20 border"
+                          : "bg-primary/10 text-primary border-primary/20 border"
+                      }`}
+                    >
+                      {m.role === "user" ? (
+                        <span className="font-bold">You</span>
+                      ) : (
+                        <Sparkles className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col pt-1">
+                      {m.role === ("render_component" as any) ? (
+                        (() => {
+                          try {
+                            const directive = JSON.parse(m.content);
+                            if (
+                              directive.componentName === "INGESTION_REVIEW"
+                            ) {
+                              return (
+                                <div className="mt-2">
+                                  <UniversalReviewComponent
+                                    reviewId={directive.props.reviewId}
+                                  />
+                                </div>
+                              );
+                            }
+                            return null;
+                          } catch (err) {
+                            return null;
                           }
-                          return null;
-                        } catch (err) {
-                          return null;
-                        }
-                      })()
-                    ) : (
-                      <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
-                        {m.attachments && m.attachments.length > 0 && (
-                          <div className="flex gap-3 mb-3">
-                            {m.attachments.map((att: any, i: number) => 
-                              att.url ? (
-                                <img key={i} src={att.url} alt="Attachment thumbnail" className="w-20 h-20 rounded-lg object-cover border border-border shadow-sm" />
-                              ) : null
-                            )}
-                          </div>
-                        )}
-                        <p className="whitespace-pre-wrap m-0">{m.content.replace(/^\[\d+ attachments?\]\s*/, "")}</p>
-                      </div>
-                    )}
+                        })()
+                      ) : (
+                        <div className="prose prose-invert text-foreground max-w-none font-sans text-base leading-relaxed">
+                          {m.attachments && m.attachments.length > 0 && (
+                            <div className="mb-3 flex gap-3">
+                              {m.attachments.map((att: any, i: number) =>
+                                att.url ? (
+                                  <img
+                                    key={i}
+                                    src={att.url}
+                                    alt="Attachment thumbnail"
+                                    className="border-border h-20 w-20 rounded-lg border object-cover shadow-sm"
+                                  />
+                                ) : null,
+                              )}
+                            </div>
+                          )}
+                          <p className="m-0 whitespace-pre-wrap">
+                            {m.content.replace(/^\[\d+ attachments?\]\s*/, "")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
-          ) : null}
-          
+                ))
+            : null}
+
           {isProcessing && (
             <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
-                <Bot className="w-5 h-5 animate-bounce" />
+              <div className="bg-primary/10 text-primary border-primary/20 shrink-0 rounded-2xl border p-2.5">
+                <Bot className="h-5 w-5 animate-bounce" />
               </div>
-              <div className="flex-1 flex flex-col pt-2">
-                <span className="text-sm text-primary font-mono">
+              <div className="flex flex-1 flex-col pt-2">
+                <span className="text-primary font-mono text-sm">
                   Heard, Chef. Systems online and processing your prompt...
                 </span>
               </div>
@@ -311,11 +325,11 @@ export function AnswerView({
 
           {!isProcessing && chatHistory.length === 0 && (
             <div className="flex items-start gap-4">
-              <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
-                <Sparkles className="w-5 h-5 animate-pulse" />
+              <div className="bg-primary/10 text-primary border-primary/20 shrink-0 rounded-2xl border p-2.5">
+                <Sparkles className="h-5 w-5 animate-pulse" />
               </div>
-              <div className="flex-1 flex flex-col pt-1">
-                <div className="prose prose-invert max-w-none text-foreground text-base leading-relaxed font-sans">
+              <div className="flex flex-1 flex-col pt-1">
+                <div className="prose prose-invert text-foreground max-w-none font-sans text-base leading-relaxed">
                   <p className="m-0">
                     Heard, Chef. Systems are online and ready. What&apos;s the
                     move — prepping, ordering, or digging into data?
@@ -330,12 +344,12 @@ export function AnswerView({
       {/* ── Polymorphic Data Views (ONLY rendered when real matched data exists) ── */}
 
       {track2Type === "REVENUE_CHART" && (
-        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl">
+        <Card className="border-border bg-card/80 w-full p-6 shadow-2xl backdrop-blur-xl">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold">
               Weekly Revenue & Sales Metrics
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Real-time Square & POS aggregate sales trends from database
             </p>
           </CardHeader>
@@ -344,12 +358,12 @@ export function AnswerView({
       )}
 
       {track2Type === "TICKET_TIME_CHART" && (
-        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl">
+        <Card className="border-border bg-card/80 w-full p-6 shadow-2xl backdrop-blur-xl">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold">
               Kitchen Ticket Fulfillment Times
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               KDS throttle metrics and station turnaround speeds from database
             </p>
           </CardHeader>
@@ -358,14 +372,14 @@ export function AnswerView({
       )}
 
       {track2Type === "PREP_LIST" && (
-        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl flex flex-col gap-4">
-          <CardHeader className="px-0 pt-0 pb-2 flex flex-row items-center justify-between">
+        <Card className="border-border bg-card/80 flex w-full flex-col gap-4 p-6 shadow-2xl backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between px-0 pt-0 pb-2">
             <div>
-              <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                <CheckSquare className="w-5 h-5 text-primary" />
+              <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold">
+                <CheckSquare className="text-primary h-5 w-5" />
                 Kitchen Prep Checklist
               </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Interactive prep list — speak to Omnibar to alter items
               </p>
             </div>
@@ -375,7 +389,7 @@ export function AnswerView({
               <div
                 key={item.id}
                 onClick={() => togglePrepItem(item.id)}
-                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all ${
                   item.done
                     ? "bg-primary/10 border-primary/30 text-primary line-through opacity-75"
                     : "bg-muted/60 border-border text-foreground hover:border-primary/40"
@@ -385,7 +399,7 @@ export function AnswerView({
                   type="checkbox"
                   checked={item.done}
                   onChange={() => {}}
-                  className="w-4 h-4 rounded accent-primary cursor-pointer"
+                  className="accent-primary h-4 w-4 cursor-pointer rounded"
                 />
                 <span className="text-sm font-medium">{item.text}</span>
               </div>
@@ -395,10 +409,10 @@ export function AnswerView({
       )}
 
       {track2Type === "INGREDIENT_TABLE" && (
-        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl">
+        <Card className="border-border bg-card/80 w-full p-6 shadow-2xl backdrop-blur-xl">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary" />
+            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold">
+              <BookOpen className="text-primary h-5 w-5" />
               Inventory Master Items Ledger
             </CardTitle>
           </CardHeader>
@@ -413,7 +427,7 @@ export function AnswerView({
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="font-semibold text-foreground">
+                <TableCell className="text-foreground font-semibold">
                   Yellow Onions 5lb
                 </TableCell>
                 <TableCell>Produce</TableCell>
@@ -425,7 +439,7 @@ export function AnswerView({
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-semibold text-foreground">
+                <TableCell className="text-foreground font-semibold">
                   Beef Ribeye Lip On
                 </TableCell>
                 <TableCell>Meat</TableCell>
@@ -437,7 +451,7 @@ export function AnswerView({
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-semibold text-foreground">
+                <TableCell className="text-foreground font-semibold">
                   Heavy Cream 40%
                 </TableCell>
                 <TableCell>Dairy</TableCell>
@@ -454,25 +468,25 @@ export function AnswerView({
       )}
 
       {track2Type === "SEARCH_RESULTS" && (
-        <Card className="w-full border-border bg-card/80 p-6 backdrop-blur-xl shadow-2xl flex flex-col gap-4">
+        <Card className="border-border bg-card/80 flex w-full flex-col gap-4 p-6 shadow-2xl backdrop-blur-xl">
           <CardHeader className="px-0 pt-0 pb-2">
-            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-              <Search className="w-5 h-5 text-primary" />
+            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold">
+              <Search className="text-primary h-5 w-5" />
               Web & Culinary Knowledge Search Results
             </CardTitle>
           </CardHeader>
           <div className="flex flex-col gap-3">
-            <div className="p-4 rounded-xl border border-border bg-muted/60 flex flex-col gap-1">
+            <div className="border-border bg-muted/60 flex flex-col gap-1 rounded-xl border p-4">
               <a
                 href="https://fdc.nal.usda.gov"
                 target="_blank"
                 rel="noreferrer"
-                className="text-sm font-bold text-primary hover:underline flex items-center gap-1.5"
+                className="text-primary flex items-center gap-1.5 text-sm font-bold hover:underline"
               >
                 USDA FoodData Central — Yellow Onions Raw{" "}
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="h-3.5 w-3.5" />
               </a>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 FDC ID #170000. Contains 40 kcal per 100g. Standard culinary raw
                 yellow onion nutritional vector data.
               </p>

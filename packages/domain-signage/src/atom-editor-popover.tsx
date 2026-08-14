@@ -2,10 +2,7 @@
 
 import { X } from "lucide-react";
 import { type MenuItemStateStyle } from "@soustools/api-types";
-import {
-  BadgeControls,
-  IconControls,
-} from "./atom-editor-controls";
+import { BadgeControls, IconControls } from "./atom-editor-controls";
 import {
   AtomEditorCardSettings,
   AtomEditorTitleSettings,
@@ -32,7 +29,6 @@ const ATOM_LABELS: Record<AtomKey, string> = {
   icon: "Icon",
 };
 
-
 export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({
   atom,
   activeState,
@@ -43,13 +39,21 @@ export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({
   const inner = (() => {
     switch (atom) {
       case "card":
-        return <AtomEditorCardSettings style={style} activeState={activeState} onChange={onChange} />;
+        return (
+          <AtomEditorCardSettings
+            style={style}
+            activeState={activeState}
+            onChange={onChange}
+          />
+        );
       case "title":
         return <AtomEditorTitleSettings style={style} onChange={onChange} />;
       case "price":
         return <AtomEditorPriceSettings style={style} onChange={onChange} />;
       case "description":
-        return <AtomEditorDescriptionSettings style={style} onChange={onChange} />;
+        return (
+          <AtomEditorDescriptionSettings style={style} onChange={onChange} />
+        );
       case "badge":
         return (
           <BadgeControls badge={style.badge} onChange={(u) => onChange(u)} />
@@ -60,17 +64,17 @@ export const AtomEditorPopover: React.FC<AtomEditorPopoverProps> = ({
   })();
 
   return (
-    <div className="bg-card border border-border rounded-2xl shadow-2xl p-4 w-72">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
+    <div className="bg-card border-border w-72 rounded-2xl border p-4 shadow-2xl">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-foreground text-xs font-semibold tracking-wider uppercase">
           {ATOM_LABELS[atom]}
         </span>
         <button
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer"
+          className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5 transition-colors"
           aria-label="Close"
         >
-          <X className="w-4 h-4" />
+          <X className="h-4 w-4" />
         </button>
       </div>
       {inner}

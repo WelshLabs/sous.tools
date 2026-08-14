@@ -28,17 +28,30 @@ describe("Recipe Module Controllers", () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [RecipesController, IngredientsController, VesselsController],
-      providers: [RecipesService, RecipeCostService, IngredientsService, VesselsService],
+      controllers: [
+        RecipesController,
+        IngredientsController,
+        VesselsController,
+      ],
+      providers: [
+        RecipesService,
+        RecipeCostService,
+        IngredientsService,
+        VesselsService,
+      ],
     }).compile();
 
     recipesController = module.get<RecipesController>(RecipesController);
-    ingredientsController = module.get<IngredientsController>(IngredientsController);
+    ingredientsController = module.get<IngredientsController>(
+      IngredientsController,
+    );
     vesselsController = module.get<VesselsController>(VesselsController);
   });
 
   it("should list vessels successfully", async () => {
-    const mockVessels = [{ id: "v-1", name: "Pullman Pan", shape: "RECTANGULAR", volume_ml: 2300 }];
+    const mockVessels = [
+      { id: "v-1", name: "Pullman Pan", shape: "RECTANGULAR", volume_ml: 2300 },
+    ];
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
@@ -51,11 +64,15 @@ describe("Recipe Module Controllers", () => {
   });
 
   it("should list ingredients successfully", async () => {
-    const mockIngredients = [{ id: "i-1", name: "Bread Flour", density_g_ml: 0.57 }];
+    const mockIngredients = [
+      { id: "i-1", name: "Bread Flour", density_g_ml: 0.57 },
+    ];
     (supabase.from as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockResolvedValue({ data: mockIngredients, error: null }),
+      order: jest
+        .fn()
+        .mockResolvedValue({ data: mockIngredients, error: null }),
     });
 
     const response = await ingredientsController.findAll();
@@ -71,7 +88,9 @@ describe("Recipe Module Controllers", () => {
       yield_unit: "loaves",
     };
 
-    const singleMock = jest.fn().mockResolvedValue({ data: mockRecipe, error: null });
+    const singleMock = jest
+      .fn()
+      .mockResolvedValue({ data: mockRecipe, error: null });
     (supabase.from as jest.Mock).mockReturnValue({
       insert: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
@@ -80,8 +99,14 @@ describe("Recipe Module Controllers", () => {
     });
 
     const response = await recipesController.create(
-      { title: "Sourdough", yieldCount: 2, yieldUnit: "loaves", vesselId: null, instructions: [] },
-      []
+      {
+        title: "Sourdough",
+        yieldCount: 2,
+        yieldUnit: "loaves",
+        vesselId: null,
+        instructions: [],
+      },
+      [],
     );
     expect(response.success).toBe(true);
     expect(response.data?.title).toBe("Sourdough");

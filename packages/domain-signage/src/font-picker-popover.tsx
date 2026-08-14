@@ -64,24 +64,24 @@ export const FontPickerPopover: React.FC<FontPickerPopoverProps> = ({
   return (
     <div
       ref={ref}
-      className="absolute z-50 bg-card border border-border rounded-2xl shadow-2xl p-4 w-72"
+      className="bg-card border-border absolute z-50 w-72 rounded-2xl border p-4 shadow-2xl"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
           {label}
         </span>
         <button
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer"
+          className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5 transition-colors"
           aria-label="Close font picker"
         >
-          <X className="w-4 h-4" />
+          <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Font grid — 3 per row */}
-      <div className="grid grid-cols-3 gap-1.5 mb-3">
+      <div className="mb-3 grid grid-cols-3 gap-1.5">
         {FONTS.map((font) => {
           const isActive = currentFont === font;
           return (
@@ -92,9 +92,9 @@ export const FontPickerPopover: React.FC<FontPickerPopoverProps> = ({
                 onClose();
               }}
               style={{ fontFamily: font }}
-              className={`px-2 py-2 text-[11px] rounded-lg border text-center truncate transition-all cursor-pointer ${
+              className={`cursor-pointer truncate rounded-lg border px-2 py-2 text-center text-[11px] transition-all ${
                 isActive
-                  ? "ring-2 ring-primary border-primary bg-primary/10 text-foreground"
+                  ? "ring-primary border-primary bg-primary/10 text-foreground ring-2"
                   : "border-border bg-secondary text-muted-foreground hover:border-white/25 hover:bg-zinc-700"
               }`}
             >
@@ -112,7 +112,7 @@ export const FontPickerPopover: React.FC<FontPickerPopoverProps> = ({
         onBlur={commitCustomFont}
         onKeyDown={handleKeyDown}
         placeholder="Or type any Google Font name..."
-        className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-zinc-500 focus:outline-none focus:border-primary/60 transition-colors"
+        className="bg-secondary border-border text-foreground focus:border-primary/60 w-full rounded-lg border px-3 py-2 text-xs placeholder-zinc-500 transition-colors focus:outline-none"
       />
     </div>
   );

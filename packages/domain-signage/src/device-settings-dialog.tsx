@@ -41,13 +41,14 @@ export const DeviceSettingsDialog: React.FC<DeviceSettingsDialogProps> = ({
         if (result) {
           setName(result.name || "");
           setTimezone(result.timezone || "UTC");
-          const mw = result.maintenance_window || result.maintenanceWindow || {};
+          const mw =
+            result.maintenance_window || result.maintenanceWindow || {};
           setHour(mw.hour !== undefined ? mw.hour : 2);
           setMinute(mw.minute !== undefined ? mw.minute : 0);
           setDayOfWeek(
             mw.dayOfWeek !== null && mw.dayOfWeek !== undefined
               ? String(mw.dayOfWeek)
-              : "all"
+              : "all",
           );
         } else {
           setError("Failed to load settings.");
@@ -89,27 +90,27 @@ export const DeviceSettingsDialog: React.FC<DeviceSettingsDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/70 flex items-center justify-center p-4 z-50 animate-fadeIn">
+    <div className="bg-background/70 animate-fadeIn fixed inset-0 z-50 flex items-center justify-center p-4">
       <form
         onSubmit={handleSave}
-        className="w-full max-w-md bg-card border border-border p-6 rounded-2xl shadow-2xl relative space-y-4 text-foreground"
+        className="bg-card border-border text-foreground relative w-full max-w-md space-y-4 rounded-2xl border p-6 shadow-2xl"
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground cursor-pointer"
+          className="text-muted-foreground hover:text-foreground absolute top-4 right-4 cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
-        <h3 className="text-md font-bold text-foreground">Device Settings</h3>
+        <h3 className="text-md text-foreground font-bold">Device Settings</h3>
         {error && (
-          <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 p-2 rounded">
+          <div className="text-destructive bg-destructive/10 border-destructive/20 rounded border p-2 text-xs">
             {error}
           </div>
         )}
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <Loader2 className="text-primary h-6 w-6 animate-spin" />
           </div>
         ) : (
           <div className="space-y-4">

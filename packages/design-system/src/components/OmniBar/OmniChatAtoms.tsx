@@ -29,7 +29,7 @@ export function ActivityIndicator() {
       {[0, 1, 2].map((dot) => (
         <motion.span
           key={dot}
-          className="h-1.5 w-1.5 rounded-full bg-primary"
+          className="bg-primary h-1.5 w-1.5 rounded-full"
           animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
           transition={{
             duration: 1.1,
@@ -60,7 +60,7 @@ export function EventIcon({ role }: { role: OmniMessage["role"] | "metrics" }) {
   const isAgent = role === "model" || role === "agent_step";
   return (
     <span
-      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground ${isAgent ? "border-primary/25 text-primary" : ""}`}
+      className={`border-border bg-card text-muted-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${isAgent ? "border-primary/25 text-primary" : ""}`}
     >
       <Icon className="h-3.5 w-3.5" />
     </span>
@@ -71,11 +71,11 @@ export function EventIcon({ role }: { role: OmniMessage["role"] | "metrics" }) {
 
 export function MetricCard({ metric }: { metric: OmniMetric }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-muted/35 p-3">
-      <p className="text-[10px] font-medium uppercase tracking-[.14em] text-muted-foreground">
+    <div className="border-border/70 bg-muted/35 rounded-xl border p-3">
+      <p className="text-muted-foreground text-[10px] font-medium tracking-[.14em] uppercase">
         {metric.label}
       </p>
-      <p className="mt-1 font-display text-lg font-bold text-foreground">
+      <p className="font-display text-foreground mt-1 text-lg font-bold">
         {metric.value}
       </p>
       {metric.change && (
@@ -94,12 +94,12 @@ export function MetricCard({ metric }: { metric: OmniMetric }) {
 
 export function MetricEventCard({ metrics }: { metrics: OmniMetric[] }) {
   return (
-    <article className="flex gap-3 w-full">
+    <article className="flex w-full gap-3">
       <EventIcon role="metrics" />
-      <div className="min-w-0 flex-1 rounded-xl border border-border bg-card/82 p-4 backdrop-blur-xl">
-        <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-[.14em]">
+      <div className="border-border bg-card/82 min-w-0 flex-1 rounded-xl border p-4 backdrop-blur-xl">
+        <div className="text-muted-foreground mb-3 flex items-center gap-2">
+          <TrendingUp className="text-primary h-4 w-4" />
+          <span className="text-xs font-semibold tracking-[.14em] uppercase">
             Metrics snapshot
           </span>
         </div>

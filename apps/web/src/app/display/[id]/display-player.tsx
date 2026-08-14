@@ -16,9 +16,20 @@ interface DisplayPlayerProps {
   initialErrorState?: string | null;
 }
 
-export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initialItems, initialErrorState }: DisplayPlayerProps) {
-  const { display, layout, items, loading, errorState } =
-    useDisplayPlayer(displayId, initialDisplay, initialLayout, initialItems, initialErrorState);
+export function DisplayPlayer({
+  displayId,
+  initialDisplay,
+  initialLayout,
+  initialItems,
+  initialErrorState,
+}: DisplayPlayerProps) {
+  const { display, layout, items, loading, errorState } = useDisplayPlayer(
+    displayId,
+    initialDisplay,
+    initialLayout,
+    initialItems,
+    initialErrorState,
+  );
 
   useEffect(() => {
     const config = layout?.config;
@@ -29,7 +40,9 @@ export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initia
     if (config.googleFont) fontsToLoad.add(config.googleFont);
 
     // Clean up existing dynamic font links
-    document.querySelectorAll("[id^='signage-dynamic-font']").forEach((el) => el.remove());
+    document
+      .querySelectorAll("[id^='signage-dynamic-font']")
+      .forEach((el) => el.remove());
     Array.from(fontsToLoad).forEach((font, idx) => {
       const link = document.createElement("link");
       link.id = `signage-dynamic-font-${idx}`;
@@ -62,19 +75,21 @@ export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initia
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white">
-        <div className="w-8 h-8 border-4 border-t-transparent border-[oklch(0.60_0.25_250)] rounded-full animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.08_0.01_260)] text-white">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[oklch(0.60_0.25_250)] border-t-transparent" />
       </div>
     );
   }
 
   if (errorState && !display) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[oklch(0.08_0.01_260)] text-white p-6">
-        <h2 className="text-2xl font-bold text-[oklch(0.60_0.25_25)] mb-2 font-brand">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[oklch(0.08_0.01_260)] p-6 text-white">
+        <h2 className="font-brand mb-2 text-2xl font-bold text-[oklch(0.60_0.25_25)]">
           Display Load Failed
         </h2>
-        <p className="text-zinc-500 dark:text-muted-foreground font-sans">{errorState}</p>
+        <p className="dark:text-muted-foreground font-sans text-zinc-500">
+          {errorState}
+        </p>
       </div>
     );
   }
@@ -92,14 +107,22 @@ export function DisplayPlayer({ displayId, initialDisplay, initialLayout, initia
       style={{
         fontFamily: layout?.config?.googleFont || "inherit",
         // CSS variables for typography overrides
-        ["--menu-title-font" as any]: layout?.config?.typography?.menuItemTitle || "inherit",
-        ["--menu-price-font" as any]: layout?.config?.typography?.menuItemPrice || "inherit",
-        ["--menu-description-font" as any]: layout?.config?.typography?.menuItemDescription || "inherit",
-        ["--marketing-text-font" as any]: layout?.config?.typography?.marketingText || "inherit",
-        ["--menu-title-color" as any]: layout?.config?.typography?.menuItemTitleColor || "inherit",
-        ["--menu-price-color" as any]: layout?.config?.typography?.menuItemPriceColor || "inherit",
-        ["--menu-desc-color" as any]: layout?.config?.typography?.menuItemDescriptionColor || "inherit",
-        ["--marketing-text-color" as any]: layout?.config?.typography?.marketingTextColor || "inherit",
+        ["--menu-title-font" as any]:
+          layout?.config?.typography?.menuItemTitle || "inherit",
+        ["--menu-price-font" as any]:
+          layout?.config?.typography?.menuItemPrice || "inherit",
+        ["--menu-description-font" as any]:
+          layout?.config?.typography?.menuItemDescription || "inherit",
+        ["--marketing-text-font" as any]:
+          layout?.config?.typography?.marketingText || "inherit",
+        ["--menu-title-color" as any]:
+          layout?.config?.typography?.menuItemTitleColor || "inherit",
+        ["--menu-price-color" as any]:
+          layout?.config?.typography?.menuItemPriceColor || "inherit",
+        ["--menu-desc-color" as any]:
+          layout?.config?.typography?.menuItemDescriptionColor || "inherit",
+        ["--marketing-text-color" as any]:
+          layout?.config?.typography?.marketingTextColor || "inherit",
       }}
     >
       <SlideCarousel

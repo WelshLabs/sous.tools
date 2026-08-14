@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 interface Network {
   ssid: string;
@@ -31,27 +31,33 @@ export function WifiStep({
 }: WifiStepProps) {
   return (
     <div className="p-8">
-      <h2 className="text-xl font-semibold mb-6">Connect to Network</h2>
+      <h2 className="mb-6 text-xl font-semibold">Connect to Network</h2>
       <form onSubmit={onConnect} className="space-y-6">
-        
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-300">Network Name (SSID)</label>
+          <label className="text-sm font-medium text-zinc-300">
+            Network Name (SSID)
+          </label>
           <div className="relative">
-            <select 
+            <select
               value={selectedSsid}
               onChange={(e) => setSelectedSsid(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF] appearance-none"
+              className="w-full appearance-none rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-white focus:border-[#00FFFF] focus:outline-none focus:ring-1 focus:ring-[#00FFFF]"
               required
             >
-              <option value="" disabled>Select a network...</option>
-              {networks.map(n => (
+              <option value="" disabled>
+                Select a network...
+              </option>
+              {networks.map((n) => (
                 <option key={n.ssid} value={n.ssid}>
-                  {n.ssid} ({n.signal}%) {n.security.includes('WPA') ? '🔒' : ''}
+                  {n.ssid} ({n.signal}%){" "}
+                  {n.security.includes("WPA") ? "🔒" : ""}
                 </option>
               ))}
             </select>
             {isScanning && (
-              <div className="absolute right-3 top-3 text-zinc-500 text-sm animate-pulse">Scanning...</div>
+              <div className="absolute right-3 top-3 animate-pulse text-sm text-zinc-500">
+                Scanning...
+              </div>
             )}
           </div>
         </div>
@@ -62,14 +68,14 @@ export function WifiStep({
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:outline-none focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF]"
+            className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-white focus:border-[#00FFFF] focus:outline-none focus:ring-1 focus:ring-[#00FFFF]"
             placeholder="Enter WiFi password"
             required
           />
         </div>
 
         {wifiError && (
-          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
             {wifiError}
           </div>
         )}
@@ -77,9 +83,9 @@ export function WifiStep({
         <button
           type="submit"
           disabled={!selectedSsid || !password || isConnecting}
-          className="w-full bg-[#00FFFF] text-zinc-950 font-semibold rounded-lg p-3 hover:bg-[#00cccc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-[#00FFFF] p-3 font-semibold text-zinc-950 transition-colors hover:bg-[#00cccc] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isConnecting ? 'Connecting...' : 'Connect'}
+          {isConnecting ? "Connecting..." : "Connect"}
         </button>
       </form>
     </div>

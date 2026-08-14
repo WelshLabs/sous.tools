@@ -1,9 +1,23 @@
 /* eslint-disable max-lines */
 "use client";
 
-import { ArrowLeft, Sun, CheckCircle2, Play, Pause, RotateCcw, X, Bell, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  Sun,
+  CheckCircle2,
+  Play,
+  Pause,
+  RotateCcw,
+  X,
+  Bell,
+  Clock,
+} from "lucide-react";
 import Link from "next/link";
-import { type Recipe, type RecipeInstruction, type KitchenTimerState } from "@soustools/api-types";
+import {
+  type Recipe,
+  type RecipeInstruction,
+  type KitchenTimerState,
+} from "@soustools/api-types";
 
 export interface ActiveKitchenViewProps {
   recipe: Recipe;
@@ -32,27 +46,27 @@ export function ActiveKitchenView({
 }: ActiveKitchenViewProps) {
   return (
     <div
-      className="min-h-screen p-6 flex flex-col justify-between w-full kitchen-touch"
+      className="kitchen-touch flex min-h-screen w-full flex-col justify-between p-6"
       style={{
         backgroundColor: "var(--color-background)",
         color: "var(--color-foreground)",
       }}
     >
       <header
-        className="flex justify-between items-center pb-4"
+        className="flex items-center justify-between pb-4"
         style={{ borderBottom: "1px solid var(--color-border)" }}
       >
         <div className="flex items-center gap-3">
           <Link
             href={backHref}
-            className="p-2 rounded-lg transition-colors cursor-pointer hover:bg-white/5 min-h-[48px] flex items-center justify-center"
+            className="flex min-h-[48px] cursor-pointer items-center justify-center rounded-lg p-2 transition-colors hover:bg-white/5"
             style={{ color: "var(--color-muted-foreground)" }}
             aria-label="Back"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h2 className="text-xl font-black uppercase tracking-wide">
+            <h2 className="text-xl font-black tracking-wide uppercase">
               {recipe.title}
             </h2>
             <p
@@ -66,31 +80,31 @@ export function ActiveKitchenView({
         <div className="flex items-center gap-2">
           {wakeLockActive ? (
             <span
-              className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider"
+              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase"
               style={{
                 backgroundColor: "rgb(16 185 129 / 0.15)",
                 color: "#10b981",
                 border: "1px solid rgb(16 185 129 / 0.30)",
               }}
             >
-              <Sun className="w-3.5 h-3.5" /> Wake Lock Active
+              <Sun className="h-3.5 w-3.5" /> Wake Lock Active
             </span>
           ) : (
             <span
-              className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider"
+              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase"
               style={{
                 backgroundColor: "var(--color-secondary)",
                 color: "var(--color-muted-foreground)",
                 border: "1px solid var(--color-border)",
               }}
             >
-              <Sun className="w-3.5 h-3.5 opacity-40" /> Wake Lock Offline
+              <Sun className="h-3.5 w-3.5 opacity-40" /> Wake Lock Offline
             </span>
           )}
         </div>
       </header>
 
-      <main className="flex-1 py-8 space-y-6">
+      <main className="flex-1 space-y-6 py-8">
         {recipe.instructions.map((step) => {
           const isChecked = checkedSteps[step.stepNumber] || false;
           return (
@@ -107,22 +121,23 @@ export function ActiveKitchenView({
 
       {tickedTimers.length > 0 && (
         <div
-          className="fixed bottom-6 right-6 z-40 w-80 rounded-2xl shadow-2xl p-4
-            backdrop-blur-md max-h-[400px] overflow-y-auto space-y-3 bg-card"
+          className="bg-card fixed right-6 bottom-6 z-40 max-h-[400px] w-80 space-y-3 overflow-y-auto rounded-2xl p-4 shadow-2xl backdrop-blur-md"
           style={{
             border: "1px solid var(--color-border)",
             color: "var(--color-foreground)",
           }}
         >
           <h4
-            className="text-xs font-bold flex items-center gap-1.5 uppercase
-              tracking-wider pb-2"
+            className="flex items-center gap-1.5 pb-2 text-xs font-bold tracking-wider uppercase"
             style={{
               color: "var(--color-muted-foreground)",
               borderBottom: "1px solid var(--color-border)",
             }}
           >
-            <Clock className="w-4 h-4 animate-pulse" style={{ color: "#10b981" }} />
+            <Clock
+              className="h-4 w-4 animate-pulse"
+              style={{ color: "#10b981" }}
+            />
             Active Timers ({tickedTimers.length})
           </h4>
 
@@ -157,16 +172,18 @@ function ActiveKitchenStepView({
 }) {
   return (
     <div
-      className={`p-6 rounded-2xl border transition-all flex items-start gap-4 cursor-pointer select-none min-h-[56px]`}
+      className={`flex min-h-[56px] cursor-pointer items-start gap-4 rounded-2xl border p-6 transition-all select-none`}
       style={{
-        backgroundColor: isChecked ? "rgb(15 23 42 / 0.40)" : "var(--color-card)",
+        backgroundColor: isChecked
+          ? "rgb(15 23 42 / 0.40)"
+          : "var(--color-card)",
         borderColor: isChecked ? "transparent" : "var(--color-border)",
         opacity: isChecked ? 0.5 : 1,
       }}
       onClick={() => onToggleCheck(step.stepNumber)}
     >
       <button
-        className="mt-1 min-h-[48px] min-w-[48px] flex items-center justify-center focus:outline-none transition-colors"
+        className="mt-1 flex min-h-[48px] min-w-[48px] items-center justify-center transition-colors focus:outline-none"
         style={{
           color: isChecked ? "#10b981" : "var(--color-muted-foreground)",
         }}
@@ -176,19 +193,19 @@ function ActiveKitchenStepView({
         }}
       >
         <CheckCircle2
-          className={`w-8 h-8 transition-all ${isChecked ? "fill-emerald-500/20" : "hover:scale-110"}`}
+          className={`h-8 w-8 transition-all ${isChecked ? "fill-emerald-500/20" : "hover:scale-110"}`}
         />
       </button>
 
       <div className="flex-1 py-2">
         <span
-          className="text-[10px] font-bold uppercase tracking-wider"
+          className="text-[10px] font-bold tracking-wider uppercase"
           style={{ color: "var(--color-muted-foreground)" }}
         >
           Step {step.stepNumber}
         </span>
         <p
-          className={`text-lg font-medium mt-1 leading-relaxed ${isChecked ? "line-through" : ""}`}
+          className={`mt-1 text-lg leading-relaxed font-medium ${isChecked ? "line-through" : ""}`}
           style={{ color: "var(--color-foreground)" }}
         >
           {step.text}
@@ -202,14 +219,15 @@ function ActiveKitchenStepView({
             e.stopPropagation();
             onStartTimer(step.stepNumber, step.timerDurationSeconds!);
           }}
-          className="px-4 py-3 rounded-xl text-sm font-black flex items-center gap-2 transition-all cursor-pointer min-h-[48px]"
+          className="flex min-h-[48px] cursor-pointer items-center gap-2 rounded-xl px-4 py-3 text-sm font-black transition-all"
           style={{
             backgroundColor: "rgb(16 185 129 / 0.15)",
             color: "#10b981",
             border: "1px solid rgb(16 185 129 / 0.30)",
           }}
         >
-          <Play className="w-4 h-4 fill-current" /> {Math.floor(step.timerDurationSeconds / 60)}m
+          <Play className="h-4 w-4 fill-current" />{" "}
+          {Math.floor(step.timerDurationSeconds / 60)}m
         </button>
       )}
     </div>
@@ -242,12 +260,12 @@ function ActiveKitchenTimerRowView({
   const seconds = remaining % 60;
   const progressPercent = Math.min(
     100,
-    (totalElapsed / timer.durationSeconds) * 100
+    (totalElapsed / timer.durationSeconds) * 100,
   );
 
   return (
     <div
-      className={`p-3 rounded-xl transition-all ${isDone ? "animate-pulse" : ""}`}
+      className={`rounded-xl p-3 transition-all ${isDone ? "animate-pulse" : ""}`}
       style={{
         backgroundColor: isDone ? "rgb(244 63 94 / 0.10)" : "var(--color-card)",
         border: isDone
@@ -255,31 +273,35 @@ function ActiveKitchenTimerRowView({
           : "1px solid var(--color-border)",
       }}
     >
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-xs font-bold" style={{ color: "var(--color-foreground)" }}>
+      <div className="mb-1 flex items-center justify-between">
+        <span
+          className="text-xs font-bold"
+          style={{ color: "var(--color-foreground)" }}
+        >
           Step {timer.stepIndex} Timer
         </span>
         <button
           onClick={() => onRemove(idx)}
-          className="p-1 rounded transition-colors cursor-pointer"
+          className="cursor-pointer rounded p-1 transition-colors"
           style={{ color: "var(--color-muted-foreground)" }}
           aria-label="Remove timer"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
 
-      <div className="flex items-center justify-between mt-1.5">
+      <div className="mt-1.5 flex items-center justify-between">
         <div className="flex items-baseline gap-1">
           <span
-            className="text-2xl font-black font-mono tracking-tight"
+            className="font-mono text-2xl font-black tracking-tight"
             style={{ color: "var(--color-foreground)" }}
           >
-            {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
+            {minutes.toString().padStart(2, "0")}:
+            {seconds.toString().padStart(2, "0")}
           </span>
           {isDone && (
             <Bell
-              className="w-4 h-4 animate-bounce inline"
+              className="inline h-4 w-4 animate-bounce"
               style={{ color: "var(--color-destructive)" }}
             />
           )}
@@ -288,36 +310,42 @@ function ActiveKitchenTimerRowView({
         <div className="flex gap-2">
           <button
             onClick={() => onStartPause(idx)}
-            className="p-1.5 rounded-lg transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 transition-colors"
             style={
               timer.isActive
-                ? { backgroundColor: "rgb(245 158 11 / 0.15)", color: "#f59e0b" }
-                : { backgroundColor: "rgb(16 185 129 / 0.15)", color: "#10b981" }
+                ? {
+                    backgroundColor: "rgb(245 158 11 / 0.15)",
+                    color: "#f59e0b",
+                  }
+                : {
+                    backgroundColor: "rgb(16 185 129 / 0.15)",
+                    color: "#10b981",
+                  }
             }
             aria-label={timer.isActive ? "Pause timer" : "Start timer"}
           >
             {timer.isActive ? (
-              <Pause className="w-3.5 h-3.5" />
+              <Pause className="h-3.5 w-3.5" />
             ) : (
-              <Play className="w-3.5 h-3.5" />
+              <Play className="h-3.5 w-3.5" />
             )}
           </button>
           <button
             onClick={() => onReset(idx)}
-            className="p-1.5 rounded-lg transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 transition-colors"
             style={{
               backgroundColor: "var(--color-secondary)",
               color: "var(--color-muted-foreground)",
             }}
             aria-label="Reset timer"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
       <div
-        className="w-full h-1.5 rounded-full overflow-hidden mt-3"
+        className="mt-3 h-1.5 w-full overflow-hidden rounded-full"
         style={{ backgroundColor: "var(--color-secondary)" }}
       >
         <div

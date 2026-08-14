@@ -1,6 +1,14 @@
 "use client";
 
-import { Settings, Volume2, VolumeX, Search, PackageX, Eye, EyeOff } from "lucide-react";
+import {
+  Settings,
+  Volume2,
+  VolumeX,
+  Search,
+  PackageX,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 export interface POSItem {
   id: string;
@@ -45,47 +53,49 @@ export function KDSSettingsModal({
   if (!isOpen) return null;
 
   const filteredItems = posItems.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl bg-zinc-50 dark:bg-card border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-black/5 dark:border-white/5">
-          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Settings className="w-5 h-5 text-sky-400" /> KDS Display Settings
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
+      <div className="dark:bg-card relative flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-black/10 bg-zinc-50 text-zinc-900 shadow-2xl dark:border-white/10 dark:text-zinc-100">
+        <div className="flex items-center justify-between border-b border-black/5 px-6 py-4 dark:border-white/5">
+          <h3 className="text-foreground flex items-center gap-2 text-lg font-bold">
+            <Settings className="h-5 w-5 text-sky-400" /> KDS Display Settings
           </h3>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-black/5 bg-card rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="bg-card text-muted-foreground hover:text-foreground cursor-pointer rounded-lg p-1 transition-colors hover:bg-black/5"
           >
             Close
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 space-y-6 overflow-y-auto p-6">
           <div className="space-y-3">
-            <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider">
+            <h4 className="text-xs font-extrabold tracking-wider text-sky-400 uppercase">
               Audio & Sound Controls
             </h4>
-            <div className="flex items-center justify-between p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl">
+            <div className="bg-card flex items-center justify-between rounded-xl border border-black/5 bg-black/5 p-4 dark:border-white/5">
               <div className="flex items-center gap-3">
                 {soundsEnabled ? (
-                  <Volume2 className="w-5 h-5 text-green-400 animate-pulse" />
+                  <Volume2 className="h-5 w-5 animate-pulse text-green-400" />
                 ) : (
-                  <VolumeX className="w-5 h-5 text-muted-foreground" />
+                  <VolumeX className="text-muted-foreground h-5 w-5" />
                 )}
                 <div>
                   <p className="text-sm font-semibold">Chime Alerts</p>
-                  <p className="text-xs text-muted-foreground">Play chiming sounds on ticket updates</p>
+                  <p className="text-muted-foreground text-xs">
+                    Play chiming sounds on ticket updates
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => onToggleSounds(!soundsEnabled)}
-                className={`text-xs px-4 py-2 font-bold rounded-lg border transition-all cursor-pointer ${
+                className={`cursor-pointer rounded-lg border px-4 py-2 text-xs font-bold transition-all ${
                   soundsEnabled
-                    ? "bg-green-500/10 text-green-400 border-green-500/20"
-                    : "bg-zinc-800 text-zinc-500 border-zinc-700"
+                    ? "border-green-500/20 bg-green-500/10 text-green-400"
+                    : "border-zinc-700 bg-zinc-800 text-zinc-500"
                 }`}
               >
                 {soundsEnabled ? "Enabled" : "Disabled"}
@@ -93,8 +103,8 @@ export function KDSSettingsModal({
             </div>
 
             {soundsEnabled && (
-              <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                <label className="text-xs font-semibold block text-foreground">
+              <div className="bg-card space-y-2 rounded-xl border border-black/5 bg-black/5 p-4 dark:border-white/5">
+                <label className="text-foreground block text-xs font-semibold">
                   Chime Volume: {Math.round(soundVolume * 100)}%
                 </label>
                 <input
@@ -111,19 +121,23 @@ export function KDSSettingsModal({
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider">
+            <h4 className="text-xs font-extrabold tracking-wider text-sky-400 uppercase">
               Sizing & Density
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                <p className="text-xs font-semibold text-foreground">Text Size</p>
-                <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="bg-card space-y-2 rounded-xl border border-black/5 bg-black/5 p-4 dark:border-white/5">
+                <p className="text-foreground text-xs font-semibold">
+                  Text Size
+                </p>
+                <div className="flex rounded-lg border border-black/5 bg-black/5 p-1 text-xs dark:border-white/5 dark:bg-black/40">
                   {(["sm", "md", "lg"] as const).map((sz) => (
                     <button
                       key={sz}
                       onClick={() => onChangeTextSize(sz)}
-                      className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                        textSize === sz ? "bg-black/10 dark:bg-white/10 text-foreground" : "text-muted-foreground"
+                      className={`flex-1 cursor-pointer rounded-md py-2 text-center font-bold transition-all ${
+                        textSize === sz
+                          ? "text-foreground bg-black/10 dark:bg-white/10"
+                          : "text-muted-foreground"
                       }`}
                     >
                       {sz === "sm" ? "Small" : sz === "md" ? "Medium" : "Large"}
@@ -132,18 +146,26 @@ export function KDSSettingsModal({
                 </div>
               </div>
 
-              <div className="p-4 bg-black/5 bg-card border border-black/5 dark:border-white/5 rounded-xl space-y-2">
-                <p className="text-xs font-semibold text-foreground">Grid Layout Density</p>
-                <div className="flex bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 rounded-lg p-1 text-xs">
+              <div className="bg-card space-y-2 rounded-xl border border-black/5 bg-black/5 p-4 dark:border-white/5">
+                <p className="text-foreground text-xs font-semibold">
+                  Grid Layout Density
+                </p>
+                <div className="flex rounded-lg border border-black/5 bg-black/5 p-1 text-xs dark:border-white/5 dark:bg-black/40">
                   {(["compact", "standard", "spacious"] as const).map((den) => (
                     <button
                       key={den}
                       onClick={() => onChangeDensity(den)}
-                      className={`flex-1 text-center py-2 rounded-md font-bold transition-all cursor-pointer ${
-                        density === den ? "bg-black/10 dark:bg-white/10 text-foreground" : "text-muted-foreground"
+                      className={`flex-1 cursor-pointer rounded-md py-2 text-center font-bold transition-all ${
+                        density === den
+                          ? "text-foreground bg-black/10 dark:bg-white/10"
+                          : "text-muted-foreground"
                       }`}
                     >
-                      {den === "compact" ? "Compact" : den === "standard" ? "Standard" : "Spacious"}
+                      {den === "compact"
+                        ? "Compact"
+                        : den === "standard"
+                          ? "Standard"
+                          : "Spacious"}
                     </button>
                   ))}
                 </div>
@@ -151,9 +173,10 @@ export function KDSSettingsModal({
             </div>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5">
-            <h4 className="text-xs uppercase font-extrabold text-sky-400 tracking-wider flex items-center gap-1.5">
-              <PackageX className="w-4 h-4 text-sky-400" /> Manage Unavailable (86'd) Items
+          <div className="space-y-4 border-t border-black/5 pt-4 dark:border-white/5">
+            <h4 className="flex items-center gap-1.5 text-xs font-extrabold tracking-wider text-sky-400 uppercase">
+              <PackageX className="h-4 w-4 text-sky-400" /> Manage Unavailable
+              (86'd) Items
             </h4>
 
             <div className="relative">
@@ -162,35 +185,44 @@ export function KDSSettingsModal({
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Search menu items to 86..."
-                className="w-full bg-white/50 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 pl-10 text-sm text-foreground focus:outline-none focus:border-sky-500 transition-colors"
+                className="text-foreground w-full rounded-xl border border-black/10 bg-white/50 px-4 py-3 pl-10 text-sm transition-colors focus:border-sky-500 focus:outline-none dark:border-white/10 dark:bg-black/60"
               />
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
+              <Search className="text-muted-foreground absolute top-3.5 left-3.5 h-4 w-4" />
             </div>
 
-            <div className="border border-black/5 dark:border-white/5 rounded-xl max-h-48 overflow-y-auto p-2 bg-black/20 divide-y divide-white/5">
+            <div className="max-h-48 divide-y divide-white/5 overflow-y-auto rounded-xl border border-black/5 bg-black/20 p-2 dark:border-white/5">
               {filteredItems.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground text-xs">No matching POS items.</div>
+                <div className="text-muted-foreground py-6 text-center text-xs">
+                  No matching POS items.
+                </div>
               ) : (
                 filteredItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center py-2.5 px-2 hover:bg-black/5 bg-card transition-colors">
-                    <span className={`text-sm font-semibold ${item.is_sold_out ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  <div
+                    key={item.id}
+                    className="bg-card flex items-center justify-between px-2 py-2.5 transition-colors hover:bg-black/5"
+                  >
+                    <span
+                      className={`text-sm font-semibold ${item.is_sold_out ? "text-muted-foreground line-through" : "text-foreground"}`}
+                    >
                       {item.name}
                     </span>
                     <button
-                      onClick={() => onToggleSoldOut(item.id, item.is_sold_out ?? false)}
-                      className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                      onClick={() =>
+                        onToggleSoldOut(item.id, item.is_sold_out ?? false)
+                      }
+                      className={`flex cursor-pointer items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all ${
                         item.is_sold_out
-                          ? "bg-red-500/10 text-red-400 border-red-500/20"
-                          : "bg-black/5 bg-card text-muted-foreground border-black/10 dark:border-white/10 hover:bg-black/10"
+                          ? "border-red-500/20 bg-red-500/10 text-red-400"
+                          : "bg-card text-muted-foreground border-black/10 bg-black/5 hover:bg-black/10 dark:border-white/10"
                       }`}
                     >
                       {item.is_sold_out ? (
                         <>
-                          <EyeOff className="w-3.5 h-3.5" /> Sold Out (86'd)
+                          <EyeOff className="h-3.5 w-3.5" /> Sold Out (86'd)
                         </>
                       ) : (
                         <>
-                          <Eye className="w-3.5 h-3.5" /> Available
+                          <Eye className="h-3.5 w-3.5" /> Available
                         </>
                       )}
                     </button>

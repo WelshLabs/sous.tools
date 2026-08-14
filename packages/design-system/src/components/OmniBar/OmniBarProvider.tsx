@@ -130,7 +130,7 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
             animate={{ width: "80%", opacity: 1 }}
             exit={{ width: "100%", opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="fixed top-0 left-0 h-[2px] bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-pulse z-[100000]"
+            className="from-primary via-accent to-primary fixed top-0 left-0 z-[100000] h-[2px] animate-pulse bg-gradient-to-r bg-[length:200%_auto]"
             style={{
               boxShadow:
                 "0 0 10px var(--color-primary), 0 0 20px var(--color-accent)",

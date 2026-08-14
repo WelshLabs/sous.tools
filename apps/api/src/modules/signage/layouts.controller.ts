@@ -8,8 +8,7 @@ import {
   Param,
 } from "@nestjs/common";
 import { LayoutsService } from "./layouts.service";
-import { ApiResponse, type SignageLayoutConfig,
-} from "@soustools/api-types";
+import { ApiResponse, type SignageLayoutConfig } from "@soustools/api-types";
 import { runControllerAction } from "./response.helper";
 
 /**

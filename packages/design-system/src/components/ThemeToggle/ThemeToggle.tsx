@@ -37,7 +37,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     // Identical dimensions to the real button to prevent layout shift
-    return <div className="w-9 h-9 flex-shrink-0" aria-hidden="true" />;
+    return <div className="h-9 w-9 flex-shrink-0" aria-hidden="true" />;
   }
 
   const cycleTheme = () => {
@@ -60,9 +60,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={cycleTheme}
-      className="w-9 h-9 flex items-center justify-center rounded-full
-        transition-colors duration-150 focus-visible:outline-none
-        focus-visible:ring-2 cursor-pointer"
+      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
       title={`Theme: ${themeLabel}`}
       aria-label={`Toggle theme (currently ${themeLabel})`}
       style={{

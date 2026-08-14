@@ -34,7 +34,12 @@ export const DEFAULT_SOLD_OUT_STYLE: MenuItemStateStyle = {
   dimOpacity: 0.45,
   strikethrough: false,
   grayscale: false,
-  badge: { text: "SOLD OUT", color: "oklch(0.60 0.25 25)", textColor: "#ffffff", borderRadius: "4px" },
+  badge: {
+    text: "SOLD OUT",
+    color: "oklch(0.60 0.25 25)",
+    textColor: "#ffffff",
+    borderRadius: "4px",
+  },
 };
 
 export const DEFAULT_MENU_ITEM_STYLES: MenuItemStyles = {
@@ -75,7 +80,7 @@ export const DEFAULT_CONFIG: SignageLayoutConfig = {
 function migrateBlockStyles(block: any): SignageBlock {
   if (!block) return block;
   const migrated = { ...block };
-  
+
   if (!migrated.visuals) migrated.visuals = {};
   if (!migrated.visuals.typography) migrated.visuals.typography = {};
   if (!migrated.visuals.background) migrated.visuals.background = {};
@@ -108,7 +113,8 @@ function migrateBlockStyles(block: any): SignageBlock {
   }
 
   // Recursively process children
-  if (migrated.blocks) migrated.blocks = migrated.blocks.map(migrateBlockStyles);
+  if (migrated.blocks)
+    migrated.blocks = migrated.blocks.map(migrateBlockStyles);
   if (migrated.cells) migrated.cells = migrated.cells.map(migrateBlockStyles);
 
   return migrated as SignageBlock;
@@ -119,8 +125,11 @@ function migrateBlockStyles(block: any): SignageBlock {
  * or old typography/soldOutBehavior fields) into the current
  * SignageLayoutConfig shape.
  */
-export function migrateConfig(rawConfig: RawSignageLayoutConfig): SignageLayoutConfig {
-  const slidesToMigrate = rawConfig.slides.length > 0 ? rawConfig.slides : DEFAULT_CONFIG.slides;
+export function migrateConfig(
+  rawConfig: RawSignageLayoutConfig,
+): SignageLayoutConfig {
+  const slidesToMigrate =
+    rawConfig.slides.length > 0 ? rawConfig.slides : DEFAULT_CONFIG.slides;
   const migratedSlides: SignageSlide[] = slidesToMigrate.map((slide) => {
     if (slide.type === "MENU") {
       const legacy = slide as LegacyMenuSlide & { blocks?: SignageBlock[] };
@@ -133,25 +142,27 @@ export function migrateConfig(rawConfig: RawSignageLayoutConfig): SignageLayoutC
             type: "MENU",
             itemIds: legacy.itemIds ?? [],
             highlightItems: legacy.highlightItems ?? [],
-            blocks: legacy.blocks ? legacy.blocks.map(migrateBlockStyles) : undefined,
+            blocks: legacy.blocks
+              ? legacy.blocks.map(migrateBlockStyles)
+              : undefined,
           },
         ],
       };
       return converted;
     }
-    
+
     // Process layout blocks
     if (slide.type === "COLUMN_LAYOUT") {
       const colSlide = slide as ColumnLayoutSlide;
       return {
         ...colSlide,
-        columns: colSlide.columns.map(col => ({
+        columns: colSlide.columns.map((col) => ({
           ...col,
           blocks: col.blocks ? col.blocks.map(migrateBlockStyles) : undefined,
-        }))
+        })),
       };
     }
-    
+
     return slide as SignageSlide;
   });
 
@@ -163,11 +174,19 @@ export function migrateConfig(rawConfig: RawSignageLayoutConfig): SignageLayoutC
     const regular: MenuItemStateStyle = {
       ...DEFAULT_REGULAR_STYLE,
       ...(typo.menuItemTitle ? { titleFont: typo.menuItemTitle } : {}),
-      ...(typo.menuItemTitleColor ? { titleColor: typo.menuItemTitleColor } : {}),
+      ...(typo.menuItemTitleColor
+        ? { titleColor: typo.menuItemTitleColor }
+        : {}),
       ...(typo.menuItemPrice ? { priceFont: typo.menuItemPrice } : {}),
-      ...(typo.menuItemPriceColor ? { priceColor: typo.menuItemPriceColor } : {}),
-      ...(typo.menuItemDescription ? { descriptionFont: typo.menuItemDescription } : {}),
-      ...(typo.menuItemDescriptionColor ? { descriptionColor: typo.menuItemDescriptionColor } : {}),
+      ...(typo.menuItemPriceColor
+        ? { priceColor: typo.menuItemPriceColor }
+        : {}),
+      ...(typo.menuItemDescription
+        ? { descriptionFont: typo.menuItemDescription }
+        : {}),
+      ...(typo.menuItemDescriptionColor
+        ? { descriptionColor: typo.menuItemDescriptionColor }
+        : {}),
     };
     const soldOut: MenuItemStateStyle = {
       ...DEFAULT_SOLD_OUT_STYLE,
@@ -177,7 +196,11 @@ export function migrateConfig(rawConfig: RawSignageLayoutConfig): SignageLayoutC
       dimOpacity: sob === "GRAY_OUT" || sob === "STRIKE" ? 0.45 : undefined,
       badge: sob === "LABEL" ? DEFAULT_SOLD_OUT_STYLE.badge : undefined,
     };
-    menuItemStyles = { regular, highlighted: DEFAULT_HIGHLIGHTED_STYLE, soldOut };
+    menuItemStyles = {
+      regular,
+      highlighted: DEFAULT_HIGHLIGHTED_STYLE,
+      soldOut,
+    };
   }
 
   return {

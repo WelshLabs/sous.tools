@@ -1,7 +1,7 @@
 import { clientConfig as config } from "@soustools/config/client";
 import { RecipesClientPage } from "./RecipesClientPage";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function RecipesPage() {
   const baseUrl = config.NEXT_PUBLIC_API_URL;
@@ -19,7 +19,7 @@ export default async function RecipesPage() {
   }
 
   return (
-    <div className="py-6 px-4">
+    <div className="px-4 py-6">
       <RecipesClientPage initialRecipes={recipes} />
     </div>
   );

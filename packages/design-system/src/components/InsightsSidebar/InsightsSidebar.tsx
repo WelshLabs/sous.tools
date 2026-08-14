@@ -47,8 +47,8 @@ export function InsightsSidebar({
   return (
     <div className="flex flex-col gap-8">
       {/* ── Insights Card ─────────────────────────────────────────────── */}
-      <div className="p-6 bg-card dark:bg-card/60 border border-border dark:border-border rounded-3xl shadow-2xl">
-        <p className="text-foreground font-black uppercase text-xs tracking-[0.2em] mb-6 flex flex-row items-center gap-2">
+      <div className="bg-card dark:bg-card/60 border-border dark:border-border rounded-3xl border p-6 shadow-2xl">
+        <p className="text-foreground mb-6 flex flex-row items-center gap-2 text-xs font-black tracking-[0.2em] uppercase">
           <Zap size={13} className="text-amber-500" fill="currentColor" />
           Insights
         </p>
@@ -56,15 +56,15 @@ export function InsightsSidebar({
         <div className="flex flex-col gap-6">
           {/* Cutoff Reminders */}
           <div className="flex flex-col gap-2">
-            <p className="text-[10px] font-black uppercase text-muted-foreground leading-tight">
+            <p className="text-muted-foreground text-[10px] leading-tight font-black uppercase">
               Cutoff Reminders
             </p>
-            <div className="p-4 bg-muted/40 dark:bg-zinc-800/40 border border-border dark:border-zinc-700 border-dashed rounded-2xl flex flex-col items-center justify-center">
+            <div className="bg-muted/40 border-border flex flex-col items-center justify-center rounded-2xl border border-dashed p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
               <Clock
                 size={22}
-                className="text-muted-foreground/30 dark:text-zinc-700 mb-2"
+                className="text-muted-foreground/30 mb-2 dark:text-zinc-700"
               />
-              <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest text-center">
+              <p className="text-muted-foreground text-center text-[9px] font-black tracking-widest uppercase">
                 No orders reaching cutoff in next 4h
               </p>
             </div>
@@ -73,19 +73,19 @@ export function InsightsSidebar({
           {/* Supplier Schedule */}
           {suppliers.length > 0 && (
             <div className="flex flex-col gap-2">
-              <p className="text-[10px] font-black uppercase text-muted-foreground leading-tight">
+              <p className="text-muted-foreground text-[10px] leading-tight font-black uppercase">
                 Supplier Schedule
               </p>
               <div className="flex flex-col gap-2">
                 {suppliers.map((s) => (
                   <div
                     key={s.id}
-                    className="flex flex-row items-center justify-between p-3 bg-muted/30 dark:bg-zinc-800/30 border border-border/40 dark:border-zinc-700/40 rounded-xl"
+                    className="bg-muted/30 border-border/40 flex flex-row items-center justify-between rounded-xl border p-3 dark:border-zinc-700/40 dark:bg-zinc-800/30"
                   >
-                    <span className="text-[9px] font-black uppercase text-foreground/70 truncate pr-2">
+                    <span className="text-foreground/70 truncate pr-2 text-[9px] font-black uppercase">
                       {s.name}
                     </span>
-                    <span className="text-[8px] font-black uppercase text-primary shrink-0">
+                    <span className="text-primary shrink-0 text-[8px] font-black uppercase">
                       {getNextDelivery(s.deliveryDays)}
                     </span>
                   </div>
@@ -97,21 +97,21 @@ export function InsightsSidebar({
       </div>
 
       {/* ── New Supplier CTA Card ──────────────────────────────────────── */}
-      <div className="p-6 bg-primary border border-primary/80 rounded-3xl shadow-2xl shadow-primary/20">
-        <div className="flex flex-row items-center gap-3 mb-4">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+      <div className="bg-primary border-primary/80 shadow-primary/20 rounded-3xl border p-6 shadow-2xl">
+        <div className="mb-4 flex flex-row items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
             <Plus size={15} className="text-foreground" />
           </div>
-          <span className="text-foreground font-black uppercase text-[10px] tracking-widest">
+          <span className="text-foreground text-[10px] font-black tracking-widest uppercase">
             New Supplier
           </span>
         </div>
-        <p className="text-foreground/80 text-xs mb-6 font-medium leading-relaxed">
+        <p className="text-foreground/80 mb-6 text-xs leading-relaxed font-medium">
           Expand your network to optimize pricing and availability.
         </p>
         <button
           onClick={onAddVendor}
-          className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-foreground rounded-xl h-10 font-black uppercase text-[10px] tracking-widest transition-colors"
+          className="text-foreground h-10 w-full rounded-xl border border-white/20 bg-white/10 text-[10px] font-black tracking-widest uppercase transition-colors hover:bg-white/20"
         >
           Add Vendor
         </button>
@@ -119,4 +119,3 @@ export function InsightsSidebar({
     </div>
   );
 }
-

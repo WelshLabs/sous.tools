@@ -19,13 +19,13 @@ export function POSRegisterView({
   return (
     <div
       className={cn(
-        "flex h-screen w-full flex-col overflow-hidden bg-background font-sans text-foreground",
-        className
+        "bg-background text-foreground flex h-screen w-full flex-col overflow-hidden font-sans",
+        className,
       )}
     >
       {/* Top Navigation / Header slot if provided */}
       {header && (
-        <header className="flex shrink-0 items-center border-b border-border bg-card/40 backdrop-blur-md">
+        <header className="border-border bg-card/40 flex shrink-0 items-center border-b backdrop-blur-md">
           {header}
         </header>
       )}
@@ -33,12 +33,12 @@ export function POSRegisterView({
       {/* Main Grid: Catalog vs Ticket */}
       <main className="flex flex-1 overflow-hidden">
         {/* Left/Main Side: Catalog Area */}
-        <section className="flex flex-1 flex-col overflow-y-auto bg-background p-6">
+        <section className="bg-background flex flex-1 flex-col overflow-y-auto p-6">
           {catalog}
         </section>
 
         {/* Right Side: Ticket Area */}
-        <aside className="w-100 shrink-0 border-l border-border bg-card/35 backdrop-blur-xl flex flex-col h-full overflow-hidden">
+        <aside className="border-border bg-card/35 flex h-full w-100 shrink-0 flex-col overflow-hidden border-l backdrop-blur-xl">
           {ticket}
         </aside>
       </main>

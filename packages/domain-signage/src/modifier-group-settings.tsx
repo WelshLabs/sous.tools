@@ -8,7 +8,9 @@ interface ModifierGroupSettingsProps {
   selectedBlock: SignageBlock;
   selectedBlockId: string;
   onUpdateBlock: (id: string, updates: Partial<SignageBlock>) => void;
-  onFetchModifierGroups?: (posItemId: string) => Promise<Array<{ id: string; name: string }>>;
+  onFetchModifierGroups?: (
+    posItemId: string,
+  ) => Promise<Array<{ id: string; name: string }>>;
 }
 
 /** Organism: Modifier group radio selector for ModifierGroupBlock config. */
@@ -19,7 +21,9 @@ export function ModifierGroupSettings({
   onUpdateBlock,
   onFetchModifierGroups,
 }: ModifierGroupSettingsProps) {
-  const [groups, setGroups] = React.useState<Array<{ id: string; name: string }>>([]);
+  const [groups, setGroups] = React.useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -30,7 +34,9 @@ export function ModifierGroupSettings({
           const data = await onFetchModifierGroups(posItemId);
           setGroups(data || []);
         }
-      } catch (_err) { /* intentional silent fail */ }
+      } catch (_err) {
+        /* intentional silent fail */
+      }
       setLoading(false);
     }
     load();
@@ -38,13 +44,13 @@ export function ModifierGroupSettings({
 
   if (loading)
     return (
-      <div className="text-xs text-muted-foreground italic p-2 bg-card rounded border border-border animate-pulse">
+      <div className="text-muted-foreground bg-card border-border animate-pulse rounded border p-2 text-xs italic">
         Loading modifier groups...
       </div>
     );
   if (groups.length === 0)
     return (
-      <div className="text-xs text-muted-foreground italic p-2 bg-card rounded border border-border">
+      <div className="text-muted-foreground bg-card border-border rounded border p-2 text-xs italic">
         This item has no modifier groups configured.
       </div>
     );
@@ -52,12 +58,14 @@ export function ModifierGroupSettings({
   return (
     <div className="flex flex-col gap-2">
       {groups.map((g) => {
-        const isSelected = (selectedBlock as unknown as Record<string, any>).modifierGroupId === g.id;
-        
+        const isSelected =
+          (selectedBlock as unknown as Record<string, any>).modifierGroupId ===
+          g.id;
+
         return (
           <label
             key={g.id}
-            className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors ${isSelected ? "bg-cyan-900/30 border-cyan-500/50" : "bg-card border-border hover:border-cyan-500/30"}`}
+            className={`flex cursor-pointer items-center gap-3 rounded-lg border p-2 transition-colors ${isSelected ? "border-cyan-500/50 bg-cyan-900/30" : "bg-card border-border hover:border-cyan-500/30"}`}
           >
             <input
               type="radio"
@@ -65,12 +73,16 @@ export function ModifierGroupSettings({
               checked={isSelected}
               onChange={(e) => {
                 if (e.target.checked)
-                  onUpdateBlock(selectedBlockId, { modifierGroupId: g.id } as Partial<SignageBlock>);
+                  onUpdateBlock(selectedBlockId, {
+                    modifierGroupId: g.id,
+                  } as Partial<SignageBlock>);
               }}
-              className="w-4 h-4 text-cyan-500 bg-card border-border"
+              className="bg-card border-border h-4 w-4 text-cyan-500"
             />
             <div className="flex flex-col">
-              <span className="text-xs text-foreground font-medium">{g.name}</span>
+              <span className="text-foreground text-xs font-medium">
+                {g.name}
+              </span>
             </div>
           </label>
         );

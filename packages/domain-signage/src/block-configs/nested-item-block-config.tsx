@@ -3,105 +3,108 @@
 import type { SignageBlock, PosItem } from "@soustools/api-types";
 import { PosItemPicker, PosItemMultiPicker } from "../pos-item-picker";
 
-
-export function NestedItemBlockConfig({ selectedBlock, selectedBlockId, onUpdateBlock, items }: { selectedBlock: SignageBlock, selectedBlockId: string, onUpdateBlock: (id: string, updates: any) => void, items: PosItem[] }) {
+export function NestedItemBlockConfig({
+  selectedBlock,
+  selectedBlockId,
+  onUpdateBlock,
+  items,
+}: {
+  selectedBlock: SignageBlock;
+  selectedBlockId: string;
+  onUpdateBlock: (id: string, updates: any) => void;
+  items: PosItem[];
+}) {
   return (
-<>
-                {selectedBlock.type === "NestedItemBlock" && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">
-                        Base POS Item
-                      </label>
-                      <PosItemPicker
-                        items={items}
-                        value={(selectedBlock as any).basePosItemId}
-                        onChange={(id) =>
-                          onUpdateBlock(selectedBlockId, {
-                            basePosItemId: id,
-                          } as any)
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">
-                        Base Description Override
-                      </label>
-                      <input
-                        type="text"
-                        value={
-                          (selectedBlock as any).baseDescriptionOverride || ""
-                        }
-                        placeholder="Custom description..."
-                        onChange={(e) =>
-                          onUpdateBlock(selectedBlockId, {
-                            baseDescriptionOverride: e.target.value,
-                          } as any)
-                        }
-                        className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">
-                        Child Upgrades (Multiselect)
-                      </label>
-                      <PosItemMultiPicker
-                        items={items}
-                        selectedIds={(
-                          (selectedBlock as any).upgradeItems || []
-                        ).map((u: any) => u.posItemId)}
-                        onChange={(ids) => {
-                          const current = ((selectedBlock as any)
-                            .upgradeItems || []) as any[];
-                          const newItems = ids.map((id) => {
-                            const existing = current.find(
-                              (c) => c.posItemId === id,
-                            );
-                            return existing ? existing : { posItemId: id };
-                          });
-                          onUpdateBlock(selectedBlockId, {
-                            upgradeItems: newItems,
-                          } as any);
-                        }}
-                        renderExtra={(item, isSelected) =>
-                          isSelected ? (
-                            <input
-                              type="text"
-                              placeholder="Upgrade description override..."
-                              value={
-                                (
-                                  (selectedBlock as any).upgradeItems || []
-                                ).find((u: any) => u.posItemId === item.id)
-                                  ?.overrideDescription || ""
-                              }
-                              onChange={(e) => {
-                                const current = [
-                                  ...((selectedBlock as any).upgradeItems ||
-                                    []),
-                                ];
-                                const idx = current.findIndex(
-                                  (u: any) => u.posItemId === item.id,
-                                );
-                                if (idx !== -1) {
-                                  current[idx] = {
-                                    ...current[idx],
-                                    overrideDescription: e.target.value,
-                                  };
-                                  onUpdateBlock(selectedBlockId, {
-                                    upgradeItems: current,
-                                  } as any);
-                                }
-                              }}
-                              className="ml-6 mt-1 bg-background border border-border rounded px-2 py-1 text-[10px] text-foreground"
-                            />
-                          ) : null
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
+    <>
+      {selectedBlock.type === "NestedItemBlock" && (
+        <div className="space-y-4">
+          <div>
+            <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-widest uppercase">
+              Base POS Item
+            </label>
+            <PosItemPicker
+              items={items}
+              value={(selectedBlock as any).basePosItemId}
+              onChange={(id) =>
+                onUpdateBlock(selectedBlockId, {
+                  basePosItemId: id,
+                } as any)
+              }
+            />
+          </div>
+          <div>
+            <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-widest uppercase">
+              Base Description Override
+            </label>
+            <input
+              type="text"
+              value={(selectedBlock as any).baseDescriptionOverride || ""}
+              placeholder="Custom description..."
+              onChange={(e) =>
+                onUpdateBlock(selectedBlockId, {
+                  baseDescriptionOverride: e.target.value,
+                } as any)
+              }
+              className="bg-card border-border text-foreground w-full rounded-lg border px-2.5 py-1.5 text-xs"
+            />
+          </div>
+          <div>
+            <label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-widest uppercase">
+              Child Upgrades (Multiselect)
+            </label>
+            <PosItemMultiPicker
+              items={items}
+              selectedIds={((selectedBlock as any).upgradeItems || []).map(
+                (u: any) => u.posItemId,
+              )}
+              onChange={(ids) => {
+                const current = ((selectedBlock as any).upgradeItems ||
+                  []) as any[];
+                const newItems = ids.map((id) => {
+                  const existing = current.find((c) => c.posItemId === id);
+                  return existing ? existing : { posItemId: id };
+                });
+                onUpdateBlock(selectedBlockId, {
+                  upgradeItems: newItems,
+                } as any);
+              }}
+              renderExtra={(item, isSelected) =>
+                isSelected ? (
+                  <input
+                    type="text"
+                    placeholder="Upgrade description override..."
+                    value={
+                      ((selectedBlock as any).upgradeItems || []).find(
+                        (u: any) => u.posItemId === item.id,
+                      )?.overrideDescription || ""
+                    }
+                    onChange={(e) => {
+                      const current = [
+                        ...((selectedBlock as any).upgradeItems || []),
+                      ];
+                      const idx = current.findIndex(
+                        (u: any) => u.posItemId === item.id,
+                      );
+                      if (idx !== -1) {
+                        current[idx] = {
+                          ...current[idx],
+                          overrideDescription: e.target.value,
+                        };
+                        onUpdateBlock(selectedBlockId, {
+                          upgradeItems: current,
+                        } as any);
+                      }
+                    }}
+                    className="bg-background border-border text-foreground mt-1 ml-6 rounded border px-2 py-1 text-[10px]"
+                  />
+                ) : null
+              }
+            />
+          </div>
+        </div>
+      )}
 
-                {/* Media Carousel */}
-  </>
+      {/* Media Carousel */}
+    </>
   );
 }

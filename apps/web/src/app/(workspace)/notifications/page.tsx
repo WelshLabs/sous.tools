@@ -18,7 +18,7 @@ export default async function NotificationsPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto w-full">
+    <div className="animate-in fade-in mx-auto w-full max-w-5xl space-y-8 p-6 duration-500 md:p-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight">
           All Notifications
@@ -30,7 +30,7 @@ export default async function NotificationsPage() {
 
       <div className="space-y-4">
         {notifications.length === 0 ? (
-          <p className="text-muted-foreground text-center py-10">
+          <p className="text-muted-foreground py-10 text-center">
             No notifications found.
           </p>
         ) : (
@@ -39,16 +39,16 @@ export default async function NotificationsPage() {
               key={n.id}
               className={`w-full ${!n.readAt ? "border-primary" : "border-border"}`}
             >
-              <CardContent className="p-4 flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-semibold text-lg">{n.title}</h3>
-                  <span className="text-xs text-muted-foreground">
+              <CardContent className="flex flex-col gap-2 p-4">
+                <div className="flex items-start justify-between">
+                  <h3 className="text-lg font-semibold">{n.title}</h3>
+                  <span className="text-muted-foreground text-xs">
                     {new Date(n.createdAt).toLocaleString()}
                   </span>
                 </div>
-                <p className="text-sm text-foreground">{n.message}</p>
+                <p className="text-foreground text-sm">{n.message}</p>
                 {!n.readAt && (
-                  <div className="text-xs text-primary font-medium">Unread</div>
+                  <div className="text-primary text-xs font-medium">Unread</div>
                 )}
               </CardContent>
             </Card>

@@ -2,10 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-export function useGlobalDrag(
-  onDragStart: () => void,
-  onDragEnd: () => void,
-) {
+export function useGlobalDrag(onDragStart: () => void, onDragEnd: () => void) {
   const dragCounter = useRef(0);
 
   useEffect(() => {

@@ -18,33 +18,33 @@ export const PosItemCard: React.FC<PosItemCardProps> = ({
   return (
     <div
       onClick={onToggle}
-      className={`p-4 flex items-center justify-between cursor-pointer select-none bg-white/90 dark:bg-card backdrop-blur-2xl rounded-3xl border border-black/5 dark:border-white/10 shadow-sm transition-transform active:scale-[0.98] ${
+      className={`dark:bg-card flex cursor-pointer items-center justify-between rounded-3xl border border-black/5 bg-white/90 p-4 shadow-sm backdrop-blur-2xl transition-transform select-none active:scale-[0.98] dark:border-white/10 ${
         item.isSoldOut ? "opacity-60" : ""
       }`}
     >
       <div className="min-w-0 pr-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-foreground truncate">
+          <span className="text-foreground truncate text-sm font-bold">
             {item.name}
           </span>
-          <span className="text-xs text-success font-mono font-medium">
+          <span className="text-success font-mono text-xs font-medium">
             ${item.price.toFixed(2)}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-1 truncate">
+        <p className="text-muted-foreground mt-1 truncate text-xs">
           {item.description}
         </p>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex shrink-0 items-center gap-2">
         {isUpdating ? (
-          <RotateCw className="w-5 h-5 text-muted-foreground animate-spin" />
+          <RotateCw className="text-muted-foreground h-5 w-5 animate-spin" />
         ) : item.isSoldOut ? (
-          <div className="flex items-center gap-1.5 text-xs text-destructive font-bold bg-destructive/20 px-2.5 py-1 rounded-full border border-destructive/50">
-            <CheckSquare className="w-4 h-4" /> SOLD OUT
+          <div className="text-destructive bg-destructive/20 border-destructive/50 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold">
+            <CheckSquare className="h-4 w-4" /> SOLD OUT
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary px-2.5 py-1 rounded-full border border-border">
-            <Square className="w-4 h-4" /> IN STOCK
+          <div className="text-muted-foreground bg-secondary border-border flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
+            <Square className="h-4 w-4" /> IN STOCK
           </div>
         )}
       </div>

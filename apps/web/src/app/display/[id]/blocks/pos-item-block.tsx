@@ -13,18 +13,15 @@ export function PosItemBlock({
   items,
   menuItemStyles,
 }: PosItemBlockProps) {
-  const item = items.find((i) => i.id === posItemId || i.externalId === posItemId);
+  const item = items.find(
+    (i) => i.id === posItemId || i.externalId === posItemId,
+  );
   if (!item) {
     return (
-      <div className="p-4 border border-dashed border-zinc-800 text-zinc-600 text-xs rounded-xl italic font-mono">
+      <div className="rounded-xl border border-dashed border-zinc-800 p-4 font-mono text-xs text-zinc-600 italic">
         POS Item not found ({posItemId})
       </div>
     );
   }
-  return (
-    <MenuItemCard
-      item={item}
-      menuItemStyles={menuItemStyles}
-    />
-  );
+  return <MenuItemCard item={item} menuItemStyles={menuItemStyles} />;
 }

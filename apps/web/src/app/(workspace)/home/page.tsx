@@ -1,7 +1,6 @@
 import React from "react";
 import { AnswerView } from "@soustools/domain-inventory";
 
-
 export const dynamic = "force-dynamic";
 
 export default async function HomePage({
@@ -13,7 +12,7 @@ export default async function HomePage({
 
   if (resolvedParams?.chat) {
     return (
-      <div className="w-full min-h-screen pt-28 px-4 md:px-8">
+      <div className="min-h-screen w-full px-4 pt-28 md:px-8">
         <AnswerView
           initialQuery={resolvedParams?.prompt}
           initialReviewId={resolvedParams?.chat}
@@ -23,6 +22,6 @@ export default async function HomePage({
   }
 
   return (
-    <div className="w-full min-h-[calc(100vh-64px)] flex items-center justify-center pointer-events-none" />
+    <div className="pointer-events-none flex min-h-[calc(100vh-64px)] w-full items-center justify-center" />
   );
 }

@@ -37,8 +37,8 @@ export interface BottomNavProps {
 
 const DEFAULT_ITEMS: BottomNavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Recipes",   href: "/recipes",   icon: ChefHat },
-  { label: "Orders",    href: "/inventory/orders", icon: ShoppingBag },
+  { label: "Recipes", href: "/recipes", icon: ChefHat },
+  { label: "Orders", href: "/inventory/orders", icon: ShoppingBag },
 ];
 
 /**
@@ -75,28 +75,32 @@ export function BottomNav({
   const rightItems = items.slice(midpoint);
 
   const navItemClass = (href: string) => {
-    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
-    return [
-      "flex flex-col items-center justify-center min-w-[64px] min-h-[64px]",
-      "transition-transform active:scale-90 touch-manipulation",
-      "text-xs font-medium gap-1",
-    ].join(" ") + " " + (isActive
-      ? ""
-      : "");
+    const isActive =
+      href === "/" ? pathname === "/" : pathname.startsWith(href);
+    return (
+      [
+        "flex flex-col items-center justify-center min-w-[64px] min-h-[64px]",
+        "transition-transform active:scale-90 touch-manipulation",
+        "text-xs font-medium gap-1",
+      ].join(" ") +
+      " " +
+      (isActive ? "" : "")
+    );
   };
 
   const navItemStyle = (href: string): React.CSSProperties => {
-    const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+    const isActive =
+      href === "/" ? pathname === "/" : pathname.startsWith(href);
     return {
-      color: isActive ? "var(--color-primary)" : "var(--color-muted-foreground)",
+      color: isActive
+        ? "var(--color-primary)"
+        : "var(--color-muted-foreground)",
     };
   };
 
   return (
     <nav
-      className="md:hidden  fixed bottom-0 left-0 right-0 h-20
-        flex items-center justify-around px-2 pb-safe
-        overflow-x-auto flex-nowrap min-w-0 select-none scrollbar-none"
+      className="pb-safe fixed right-0 bottom-0 left-0 flex h-20 min-w-0 scrollbar-none flex-nowrap items-center justify-around overflow-x-auto px-2 select-none md:hidden"
       style={{
         zIndex: "var(--z-bottom-nav)",
         borderTop: "1px solid var(--color-border)",
@@ -112,7 +116,7 @@ export function BottomNav({
             className={navItemClass(item.href)}
             style={navItemStyle(item.href)}
           >
-            <Icon className="w-6 h-6" />
+            <Icon className="h-6 w-6" />
             <span>{item.label}</span>
           </Link>
         );
@@ -122,8 +126,7 @@ export function BottomNav({
       {centerIcon && (
         <Link
           href="/"
-          className="flex flex-col items-center justify-center p-2 rounded-full
-            active:scale-95 transition-transform touch-manipulation flex-shrink-0"
+          className="flex flex-shrink-0 touch-manipulation flex-col items-center justify-center rounded-full p-2 transition-transform active:scale-95"
           style={{
             backgroundColor: "var(--color-card)",
             border: "1px solid var(--color-border)",
@@ -144,7 +147,7 @@ export function BottomNav({
             className={navItemClass(item.href)}
             style={navItemStyle(item.href)}
           >
-            <Icon className="w-6 h-6" />
+            <Icon className="h-6 w-6" />
             <span>{item.label}</span>
           </Link>
         );
@@ -153,12 +156,11 @@ export function BottomNav({
       {/* More button */}
       <button
         onClick={onToggleMobile}
-        className="flex flex-col items-center justify-center min-w-[64px] min-h-[64px]
-          transition-transform active:scale-90 touch-manipulation gap-1 text-xs font-medium"
+        className="flex min-h-[64px] min-w-[64px] touch-manipulation flex-col items-center justify-center gap-1 text-xs font-medium transition-transform active:scale-90"
         style={{ color: "var(--color-muted-foreground)" }}
         aria-label="Open navigation menu"
       >
-        <Menu className="w-6 h-6" />
+        <Menu className="h-6 w-6" />
         <span>More</span>
       </button>
     </nav>

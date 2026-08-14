@@ -8,7 +8,7 @@ interface KitchenPageProps {
 export default async function KitchenPage({ params }: KitchenPageProps) {
   const { id } = await params;
   const baseUrl = config.NEXT_PUBLIC_API_URL;
-  
+
   let recipe = null;
   try {
     const res = await fetch(`${baseUrl}/recipes/${id}`, { cache: "no-store" });
@@ -21,7 +21,11 @@ export default async function KitchenPage({ params }: KitchenPageProps) {
   }
 
   if (!recipe) {
-    return <div className="p-12 text-center text-muted-foreground">Recipe not found.</div>;
+    return (
+      <div className="text-muted-foreground p-12 text-center">
+        Recipe not found.
+      </div>
+    );
   }
 
   return (

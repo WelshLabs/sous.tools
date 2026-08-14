@@ -37,18 +37,24 @@ function ConfidenceBadge({
   matchColor: "green" | "yellow" | "orange";
 }) {
   const colors = {
-    green:  "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    green: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
     yellow: "bg-amber-500/15   text-amber-400   border-amber-500/30",
     orange: "bg-orange-500/15  text-orange-400  border-orange-500/30",
   }[matchColor];
   const dot = {
-    green: "bg-emerald-400", yellow: "bg-amber-400", orange: "bg-orange-400",
+    green: "bg-emerald-400",
+    yellow: "bg-amber-400",
+    orange: "bg-orange-400",
   }[matchColor];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${colors}`}>
-      <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${dot}`} />
-      <span className="truncate max-w-[160px]">{name}</span>
-      <span className="font-mono text-[10px] opacity-70">{Math.round(similarity * 100)}%</span>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${colors}`}
+    >
+      <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${dot}`} />
+      <span className="max-w-[160px] truncate">{name}</span>
+      <span className="font-mono text-[10px] opacity-70">
+        {Math.round(similarity * 100)}%
+      </span>
     </span>
   );
 }
@@ -57,9 +63,9 @@ function ConfidenceBadge({
 
 function UsdaBadge({ name, fdcId }: { name: string; fdcId: number }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium bg-violet-500/15 text-violet-400 border-violet-500/30">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/15 px-2.5 py-0.5 text-xs font-medium text-violet-400">
       <FlaskConical className="h-3 w-3 flex-shrink-0" />
-      <span className="truncate max-w-[160px]">{name}</span>
+      <span className="max-w-[160px] truncate">{name}</span>
       <span className="font-mono text-[10px] opacity-60">#{fdcId}</span>
     </span>
   );
@@ -86,25 +92,25 @@ function InlineDropdown({
     c === "green"
       ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
       : c === "yellow"
-      ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-      : "bg-orange-500/10 text-orange-400 border-orange-500/20";
+        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+        : "bg-orange-500/10 text-orange-400 border-orange-500/20";
 
   const hasSuggestions = !!suggestions?.length && !search;
   const hasFiltered = filteredItems.length > 0;
   const canCreate =
     !!search.trim() &&
     !filteredItems.some(
-      (o) => o.name.toLowerCase() === search.trim().toLowerCase()
+      (o) => o.name.toLowerCase() === search.trim().toLowerCase(),
     );
 
   if (!hasSuggestions && !hasFiltered && !canCreate) return null;
 
   return (
-    <div className="absolute z-50 top-full left-0 mt-1.5 w-full min-w-[220px] max-w-xs bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden max-h-52 flex flex-col">
-      <div className="overflow-y-auto flex-1 py-1 text-xs">
+    <div className="absolute top-full left-0 z-50 mt-1.5 flex max-h-52 w-full max-w-xs min-w-[220px] flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+      <div className="flex-1 overflow-y-auto py-1 text-xs">
         {hasSuggestions && (
-          <div className="border-b border-zinc-900 pb-1 mb-1">
-            <div className="px-3 py-1 text-[9px] font-bold text-zinc-500 uppercase tracking-wider font-mono">
+          <div className="mb-1 border-b border-zinc-900 pb-1">
+            <div className="px-3 py-1 font-mono text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
               AI Suggestions
             </div>
             {suggestions!.map((sug) => (
@@ -112,11 +118,13 @@ function InlineDropdown({
                 key={sug.itemId}
                 type="button"
                 onClick={() => onSelectItem(sug.itemId, sug.similarity)}
-                className="w-full text-left px-3 py-1.5 hover:bg-cyan-500/10 flex items-center justify-between gap-2"
+                className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left hover:bg-cyan-500/10"
               >
-                <span className="truncate font-medium text-zinc-200">{sug.name}</span>
+                <span className="truncate font-medium text-zinc-200">
+                  {sug.name}
+                </span>
                 <span
-                  className={`text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded border flex-shrink-0 ${getMatchColors(sug.matchColor)}`}
+                  className={`flex-shrink-0 rounded border px-1.5 py-0.5 font-mono text-[9px] font-semibold ${getMatchColors(sug.matchColor)}`}
                 >
                   {Math.round(sug.similarity * 100)}%
                 </span>
@@ -127,7 +135,7 @@ function InlineDropdown({
 
         {hasFiltered && (
           <>
-            <div className="px-3 py-1 text-[9px] font-bold text-zinc-500 uppercase tracking-wider font-mono">
+            <div className="px-3 py-1 font-mono text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
               {hasSuggestions ? "Other Items" : "Items"}
             </div>
             {filteredItems.map((opt) => (
@@ -135,8 +143,10 @@ function InlineDropdown({
                 key={opt.id}
                 type="button"
                 onClick={() => onSelectItem(opt.id, 1.0)}
-                className={`w-full text-left px-3 py-1.5 hover:bg-cyan-500/10 flex items-center ${
-                  opt.id === currentItemId ? "text-emerald-400 font-semibold" : "text-zinc-300"
+                className={`flex w-full items-center px-3 py-1.5 text-left hover:bg-cyan-500/10 ${
+                  opt.id === currentItemId
+                    ? "font-semibold text-emerald-400"
+                    : "text-zinc-300"
                 }`}
               >
                 <span className="truncate">{opt.name}</span>
@@ -149,7 +159,7 @@ function InlineDropdown({
           <button
             type="button"
             onClick={() => onCreateItem(search.trim())}
-            className="w-full text-left px-3 py-2 text-cyan-400 hover:bg-cyan-500/10 font-semibold border-t border-zinc-900 flex items-center gap-1.5"
+            className="flex w-full items-center gap-1.5 border-t border-zinc-900 px-3 py-2 text-left font-semibold text-cyan-400 hover:bg-cyan-500/10"
           >
             <Plus className="h-3 w-3" />
             Create &ldquo;{search.trim()}&rdquo;
@@ -177,7 +187,9 @@ export function UnifiedItemRow({
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isLinkingUsda, setIsLinkingUsda] = useState(false);
-  const [localItems, setLocalItems] = useState<Array<{ id: string; name: string }>>([]);
+  const [localItems, setLocalItems] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -206,7 +218,9 @@ export function UnifiedItemRow({
   }, [masterIngredients, localItems]);
 
   const currentSelected = mergedIngredients.find((o) => o.id === item.itemId);
-  const selectedSuggestion = item.suggestions?.find((s) => s.itemId === item.itemId);
+  const selectedSuggestion = item.suggestions?.find(
+    (s) => s.itemId === item.itemId,
+  );
 
   // Open the inline override editor, pre-filling the input with the best available name
   const openOverride = (prefill?: string) => {
@@ -227,13 +241,26 @@ export function UnifiedItemRow({
 
   // Auto-select top suggestion if confidence ≥ 0.90 and nothing is mapped yet
   useEffect(() => {
-    if (!item.itemId && !item.isNonInventoryExpense && item.suggestions?.length) {
+    if (
+      !item.itemId &&
+      !item.isNonInventoryExpense &&
+      item.suggestions?.length
+    ) {
       const top = item.suggestions[0];
       if (top.similarity >= 0.9) {
-        onUpdateItem?.(index, { itemId: top.itemId, confidence: top.similarity });
+        onUpdateItem?.(index, {
+          itemId: top.itemId,
+          confidence: top.similarity,
+        });
       }
     }
-  }, [item.itemId, item.isNonInventoryExpense, item.suggestions, index, onUpdateItem]);
+  }, [
+    item.itemId,
+    item.isNonInventoryExpense,
+    item.suggestions,
+    index,
+    onUpdateItem,
+  ]);
 
   // Close inline edit on outside click
   useEffect(() => {
@@ -252,7 +279,7 @@ export function UnifiedItemRow({
   const filtered = mergedIngredients.filter(
     (opt) =>
       opt.name.toLowerCase().includes(search.toLowerCase()) &&
-      !item.suggestions?.some((s) => s.itemId === opt.id)
+      !item.suggestions?.some((s) => s.itemId === opt.id),
   );
 
   // Selecting a tenant item — persists alias to vendor_item_aliases
@@ -324,66 +351,76 @@ export function UnifiedItemRow({
     <div
       onMouseEnter={() => onHoverChange?.(true)}
       onMouseLeave={() => onHoverChange?.(false)}
-      className={`flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-150 ${
+      className={`flex flex-col gap-2 rounded-xl border p-3 text-left transition-all duration-150 ${
         isHovered
-          ? "bg-cyan-500/5 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
-          : "bg-white/5 dark:bg-black/20 border-white/10 dark:border-zinc-800/80"
+          ? "border-cyan-500/40 bg-cyan-500/5 shadow-[0_0_12px_rgba(6,182,212,0.1)]"
+          : "border-white/10 bg-white/5 dark:border-zinc-800/80 dark:bg-black/20"
       }`}
     >
       {/* ── Raw name + completion indicator ── */}
       <div className="flex items-start justify-between gap-2">
-        <span className="font-semibold text-sm text-foreground leading-snug">
+        <span className="text-foreground text-sm leading-snug font-semibold">
           {item.rawName}
         </span>
         {isComplete && (
-          <span className="flex-shrink-0 flex items-center justify-center bg-emerald-500/10 text-emerald-500 p-1 rounded-lg border border-emerald-500/20 mt-0.5">
-            <Check className="w-3 h-3" />
+          <span className="mt-0.5 flex flex-shrink-0 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-1 text-emerald-500">
+            <Check className="h-3 w-3" />
           </span>
         )}
       </div>
 
       {/* ── AI Suggestion label — preserved from original design ── */}
       {item.suggestedInternalName && (
-        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 italic">
+        <span className="text-[11px] text-zinc-500 italic dark:text-zinc-400">
           AI Suggestion:{" "}
-          <strong className="text-cyan-400/80 font-medium not-italic">
+          <strong className="font-medium text-cyan-400/80 not-italic">
             &ldquo;{item.suggestedInternalName}&rdquo;
           </strong>
           {item.category && (
-            <span className="text-zinc-600 ml-1 not-italic">({item.category})</span>
+            <span className="ml-1 text-zinc-600 not-italic">
+              ({item.category})
+            </span>
           )}
         </span>
       )}
 
       {/* ── Quantity / unit / price row ── */}
-      <div className="flex items-center gap-3 text-[11px] text-zinc-500 font-mono">
+      <div className="flex items-center gap-3 font-mono text-[11px] text-zinc-500">
         {item.amount != null && (
-          <span>qty: <span className="text-zinc-300">{item.amount}</span></span>
+          <span>
+            qty: <span className="text-zinc-300">{item.amount}</span>
+          </span>
         )}
         {item.unit && (
-          <span>unit: <span className="text-zinc-300">{item.unit}</span></span>
+          <span>
+            unit: <span className="text-zinc-300">{item.unit}</span>
+          </span>
         )}
         {item.price != null && (
-          <span>price: <span className="text-zinc-300">${Number(item.price).toFixed(2)}</span></span>
+          <span>
+            price:{" "}
+            <span className="text-zinc-300">
+              ${Number(item.price).toFixed(2)}
+            </span>
+          </span>
         )}
       </div>
 
       {/* ── Mapping chain ── */}
       {!isExpense ? (
         <div className="flex flex-col gap-1.5">
-
           {/* Step 1 — Tenant mapping row */}
           <div
             ref={containerRef}
-            className="flex items-center gap-2 flex-wrap relative"
+            className="relative flex flex-wrap items-center gap-2"
           >
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+            <span className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase">
               →
             </span>
 
             {isOverrideOpen ? (
               /* ── Inline edit mode: badge swaps to an input ── */
-              <div className="relative flex items-center gap-1.5 flex-1 min-w-0">
+              <div className="relative flex min-w-0 flex-1 items-center gap-1.5">
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -400,12 +437,12 @@ export function UnifiedItemRow({
                       ? `e.g. "${item.suggestedInternalName}"`
                       : "Search or type a name…"
                   }
-                  className="flex-1 min-w-0 text-xs rounded-full border border-cyan-500/40 bg-zinc-900 px-3 py-1 text-white outline-none focus:border-cyan-500 transition-colors placeholder:text-zinc-600"
+                  className="min-w-0 flex-1 rounded-full border border-cyan-500/40 bg-zinc-900 px-3 py-1 text-xs text-white transition-colors outline-none placeholder:text-zinc-600 focus:border-cyan-500"
                 />
                 <button
                   type="button"
                   onClick={closeOverride}
-                  className="flex-shrink-0 text-zinc-500 hover:text-zinc-300 p-0.5 rounded transition-colors"
+                  className="flex-shrink-0 rounded p-0.5 text-zinc-500 transition-colors hover:text-zinc-300"
                   title="Cancel"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -439,7 +476,7 @@ export function UnifiedItemRow({
                     />
                   )
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium bg-red-500/10 text-red-400 border-red-500/20">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-400">
                     <AlertTriangle className="h-3 w-3" />
                     Unmapped
                   </span>
@@ -449,7 +486,7 @@ export function UnifiedItemRow({
                   <button
                     type="button"
                     onClick={() => openOverride()}
-                    className="flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-900/60 px-2 py-0.5 text-[10px] text-zinc-400 hover:border-cyan-500/50 hover:text-cyan-400 transition-colors"
+                    className="flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-900/60 px-2 py-0.5 text-[10px] text-zinc-400 transition-colors hover:border-cyan-500/50 hover:text-cyan-400"
                     title="Override mapping"
                   >
                     <Pencil className="h-2.5 w-2.5" />
@@ -462,8 +499,8 @@ export function UnifiedItemRow({
 
           {/* Step 2 — USDA Double Match (only when needsUsdaVerification is set) */}
           {needsUsdaStep && (
-            <div className="flex items-center gap-2 flex-wrap pl-4">
-              <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
+            <div className="flex flex-wrap items-center gap-2 pl-4">
+              <span className="font-mono text-[10px] tracking-widest text-zinc-600 uppercase">
                 →
               </span>
 
@@ -475,7 +512,7 @@ export function UnifiedItemRow({
                       type="button"
                       onClick={handleApproveUsda}
                       disabled={isLinkingUsda}
-                      className="flex items-center gap-1 rounded-full border border-emerald-700 bg-emerald-950/40 px-2.5 py-0.5 text-[10px] text-emerald-400 hover:border-emerald-500 hover:text-emerald-300 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-full border border-emerald-700 bg-emerald-950/40 px-2.5 py-0.5 text-[10px] text-emerald-400 transition-colors hover:border-emerald-500 hover:text-emerald-300 disabled:opacity-50"
                     >
                       {isLinkingUsda ? (
                         <Loader2 className="h-2.5 w-2.5 animate-spin" />
@@ -487,7 +524,7 @@ export function UnifiedItemRow({
                   )}
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium bg-zinc-800 text-zinc-500 border-zinc-700 italic">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-zinc-500 italic">
                   <FlaskConical className="h-3 w-3" />
                   Searching USDA…
                 </span>
@@ -497,7 +534,7 @@ export function UnifiedItemRow({
 
           {/* Create New fallback — when no mapping and no high-confidence suggestion */}
           {!hasTenantMapping && !isOverrideOpen && noHighConf && (
-            <div className="pl-5 mt-0.5">
+            <div className="mt-0.5 pl-5">
               <button
                 type="button"
                 disabled={disabled || isCreating}
@@ -505,14 +542,15 @@ export function UnifiedItemRow({
                   // Pre-fill with AI suggestion so user doesn't type from scratch
                   openOverride(item.suggestedInternalName || "")
                 }
-                className="flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-700 bg-zinc-900/40 px-3 py-1.5 text-xs text-zinc-400 hover:border-cyan-500/50 hover:text-cyan-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-700 bg-zinc-900/40 px-3 py-1.5 text-xs text-zinc-400 transition-colors hover:border-cyan-500/50 hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isCreating ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <Plus className="h-3 w-3" />
                 )}
-                Create &ldquo;{item.suggestedInternalName || item.rawName}&rdquo;
+                Create &ldquo;{item.suggestedInternalName || item.rawName}
+                &rdquo;
               </button>
             </div>
           )}

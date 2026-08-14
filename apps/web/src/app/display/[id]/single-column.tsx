@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type ColumnConfig, type PosItem, type MenuItemStyles } from "@soustools/api-types";
+import {
+  type ColumnConfig,
+  type PosItem,
+  type MenuItemStyles,
+} from "@soustools/api-types";
 import { MenuItemCard } from "./menu-item-card";
 import { DEFAULT_MENU_ITEM_STYLES } from "@soustools/domain-signage";
 
@@ -25,17 +29,19 @@ export function SingleColumn({
       let columnItems = items;
       if (column.itemIds && column.itemIds.length > 0) {
         columnItems = column.itemIds
-          .map((id) => items.find((item) => item.id === id || item.externalId === id))
+          .map((id) =>
+            items.find((item) => item.id === id || item.externalId === id),
+          )
           .filter((item): item is PosItem => !!item);
       }
       columnItems = columnItems.filter(
-        (item) => !(item.isSoldOut && (menuItemStyles.soldOut.hidden ?? false))
+        (item) => !(item.isSoldOut && (menuItemStyles.soldOut.hidden ?? false)),
       );
       return (
         <div
           key={index}
           style={style}
-          className="flex flex-col gap-4 overflow-y-auto overflow-x-hidden w-full h-full p-6"
+          className="flex h-full w-full flex-col gap-4 overflow-x-hidden overflow-y-auto p-6"
         >
           {columnItems.length > 0 ? (
             columnItems.map((item) => (
@@ -47,7 +53,7 @@ export function SingleColumn({
               />
             ))
           ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground dark:text-zinc-500 text-sm">
+            <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm dark:text-zinc-500">
               No Menu Items Selected
             </div>
           )}
@@ -59,16 +65,18 @@ export function SingleColumn({
         <div
           key={index}
           style={style}
-          className="w-full h-full overflow-hidden relative bg-transparent flex items-center justify-center"
+          className="relative flex h-full w-full items-center justify-center overflow-hidden bg-transparent"
         >
           {column.imageUrl ? (
             <img
               src={column.imageUrl}
               alt="Column Media"
-              className={`w-full h-full object-${column.fit || "cover"}`}
+              className={`h-full w-full object-${column.fit || "cover"}`}
             />
           ) : (
-            <div className="text-muted-foreground dark:text-zinc-500 text-sm">No Image Selected</div>
+            <div className="text-muted-foreground text-sm dark:text-zinc-500">
+              No Image Selected
+            </div>
           )}
         </div>
       );
@@ -77,7 +85,7 @@ export function SingleColumn({
         <div
           key={index}
           style={style}
-          className="w-full h-full overflow-hidden relative bg-transparent"
+          className="relative h-full w-full overflow-hidden bg-transparent"
         >
           {column.videoUrl ? (
             <video
@@ -86,10 +94,10 @@ export function SingleColumn({
               loop={column.loop !== false}
               muted={column.mute !== false}
               playsInline
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground dark:text-zinc-500 text-sm">
+            <div className="text-muted-foreground flex h-full items-center justify-center text-sm dark:text-zinc-500">
               No Video Selected
             </div>
           )}
@@ -100,17 +108,17 @@ export function SingleColumn({
         <div
           key={index}
           style={style}
-          className="w-full h-full overflow-hidden relative bg-transparent"
+          className="relative h-full w-full overflow-hidden bg-transparent"
         >
           {column.iframeUrl ? (
             <iframe
               src={column.iframeUrl}
               title="Embedded Content"
-              className="w-full h-full border-none"
+              className="h-full w-full border-none"
               allow="autoplay; encrypted-media"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground dark:text-zinc-500 text-sm">
+            <div className="text-muted-foreground flex h-full items-center justify-center text-sm dark:text-zinc-500">
               No URL Configured
             </div>
           )}
@@ -121,26 +129,34 @@ export function SingleColumn({
         <div
           key={index}
           style={style}
-          className="w-full h-full flex flex-col justify-center items-center text-center p-8"
+          className="flex h-full w-full flex-col items-center justify-center p-8 text-center"
         >
           {column.title && (
             <h2
-              className="text-3xl font-extrabold tracking-tight mb-4 text-white"
-              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+              className="mb-4 text-3xl font-extrabold tracking-tight text-white"
+              style={{
+                fontFamily: "var(--marketing-text-font)",
+                color: "var(--marketing-text-color)",
+              }}
             >
               {column.title}
             </h2>
           )}
           {column.content && (
             <p
-              className="text-lg text-zinc-700 dark:text-zinc-300 whitespace-pre-line"
-              style={{ fontFamily: "var(--marketing-text-font)", color: "var(--marketing-text-color)" }}
+              className="text-lg whitespace-pre-line text-zinc-700 dark:text-zinc-300"
+              style={{
+                fontFamily: "var(--marketing-text-font)",
+                color: "var(--marketing-text-color)",
+              }}
             >
               {column.content}
             </p>
           )}
           {!column.title && !column.content && (
-            <div className="text-muted-foreground dark:text-zinc-500 text-sm">No Text Configured</div>
+            <div className="text-muted-foreground text-sm dark:text-zinc-500">
+              No Text Configured
+            </div>
           )}
         </div>
       );
@@ -150,7 +166,7 @@ export function SingleColumn({
         <div
           key={index}
           style={style}
-          className="w-full h-full bg-transparent"
+          className="h-full w-full bg-transparent"
         />
       );
   }

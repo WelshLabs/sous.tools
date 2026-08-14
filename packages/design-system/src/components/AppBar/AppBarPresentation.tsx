@@ -46,54 +46,51 @@ export function AppBarPresentation({
   const isAnyMenuOpen = isProfileOpen || isNotificationsOpen || isWaffleOpen;
 
   return (
-    <header className="sticky top-0 z-[100000] w-full bg-background/80 backdrop-blur-md border-b border-border h-16 px-4 md:px-6 flex items-center justify-between">
+    <header className="bg-background/80 border-border sticky top-0 z-[100000] flex h-16 w-full items-center justify-between border-b px-4 backdrop-blur-md md:px-6">
       {/* Click-Outside Overlay - Rendered INSIDE the header stacking context so it covers the header itself */}
       {isAnyMenuOpen && (
-        <div
-          className="fixed inset-0 z-[100001]"
-          onClick={onCloseMenus}
-        />
+        <div className="fixed inset-0 z-[100001]" onClick={onCloseMenus} />
       )}
 
       {/* Left: Brand Logo & Hamburger */}
-      <div className="flex items-center gap-2 relative z-[100002]">
+      <div className="relative z-[100002] flex items-center gap-2">
         {hasSidebar && (
           <Hamburger
             isOpen={isExpanded}
             onClick={toggleExpanded}
-            className="md:hidden text-zinc-300 hover:text-white"
+            className="text-zinc-300 hover:text-white md:hidden"
           />
         )}
         {hasSidebar ? (
           <button
             onClick={toggleExpanded}
-            className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity focus:outline-none"
+            className="flex cursor-pointer items-center gap-2 text-sky-500 transition-opacity hover:opacity-80 focus:outline-none"
           >
             <PrimaryLogo
               gradient
-              className="hidden md:block h-12 w-auto text-foreground"
+              className="text-foreground hidden h-12 w-auto md:block"
             />
-            <Lettermark className="block md:hidden h-10 w-10 text-foreground" />
+            <Lettermark className="text-foreground block h-10 w-10 md:hidden" />
           </button>
         ) : (
           <Link
             href="/home"
-            className="flex items-center gap-2 text-sky-500 cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex cursor-pointer items-center gap-2 text-sky-500 transition-opacity hover:opacity-80"
           >
             <PrimaryLogo
               gradient
-              className="hidden md:block h-12 w-auto text-foreground"
+              className="text-foreground hidden h-12 w-auto md:block"
             />
-            <Lettermark className="block md:hidden h-10 w-10 text-foreground" />
+            <Lettermark className="text-foreground block h-10 w-10 md:hidden" />
           </Link>
         )}
       </div>
 
       {/* Center/Right-Align: OmniBar mounts at the layout level */}
-      <div className="flex-1 flex justify-end mr-4 relative z-10"></div>
+      <div className="relative z-10 mr-4 flex flex-1 justify-end"></div>
 
       {/* Right: Action Group — Elevated above Omnibar */}
-      <div className="flex items-center gap-2 md:gap-4 relative z-[100002]">
+      <div className="relative z-[100002] flex items-center gap-2 md:gap-4">
         <ThemeToggle />
 
         {/* Notifications */}
@@ -101,28 +98,28 @@ export function AppBarPresentation({
           <button
             onClick={onToggleNotifications}
             aria-label="Notifications"
-            className={`relative p-2 transition-colors rounded-full focus:outline-none outline-none ${isNotificationsOpen ? "bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-card"}`}
+            className={`relative rounded-full p-2 transition-colors outline-none focus:outline-none ${isNotificationsOpen ? "text-foreground bg-white/10" : "text-muted-foreground hover:text-foreground hover:bg-card"}`}
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="h-5 w-5" />
             {notifications.length > 0 && (
-              <span className="absolute top-1 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-destructive)] px-1 text-[10px] font-bold text-foreground">
+              <span className="text-foreground absolute top-1 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-destructive)] px-1 text-[10px] font-bold">
                 {notifications.length}
               </span>
             )}
           </button>
 
           {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-2 z-[100003]">
-              <div className="px-4 py-2 border-b border-border flex justify-between items-center">
-                <span className="text-sm font-semibold text-foreground">
+            <div className="border-border absolute right-0 z-[100003] mt-2 w-80 overflow-hidden rounded-xl border bg-[var(--color-card)] py-2 shadow-xl">
+              <div className="border-border flex items-center justify-between border-b px-4 py-2">
+                <span className="text-foreground text-sm font-semibold">
                   Notifications
                 </span>
                 {notifications.length > 0 && (
                   <button
                     onClick={onMarkAllAsRead}
-                    className="text-xs text-[var(--color-primary)] flex items-center gap-1 cursor-pointer hover:underline focus:outline-none transition-colors"
+                    className="flex cursor-pointer items-center gap-1 text-xs text-[var(--color-primary)] transition-colors hover:underline focus:outline-none"
                   >
-                    <Check className="w-3 h-3" />
+                    <Check className="h-3 w-3" />
                     Mark all read
                   </button>
                 )}
@@ -136,23 +133,23 @@ export function AppBarPresentation({
                   notifications.map((n) => (
                     <div
                       key={n.id}
-                      className="p-4 border-b border-border hover:bg-zinc-800/50 transition-colors cursor-pointer text-left"
+                      className="border-border cursor-pointer border-b p-4 text-left transition-colors hover:bg-zinc-800/50"
                     >
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-foreground text-sm font-medium">
                         {n.title}
                       </p>
-                      <p className="text-xs text-[var(--color-muted-foreground)] mt-1 line-clamp-2">
+                      <p className="mt-1 line-clamp-2 text-xs text-[var(--color-muted-foreground)]">
                         {n.message}
                       </p>
                     </div>
                   ))
                 )}
               </div>
-              <div className="px-4 py-2 border-t border-border bg-black/20 text-center">
-                <Link 
-                  href="/notifications" 
+              <div className="border-border border-t bg-black/20 px-4 py-2 text-center">
+                <Link
+                  href="/notifications"
                   onClick={onCloseMenus}
-                  className="text-xs text-[var(--color-primary)] font-medium hover:underline transition-colors"
+                  className="text-xs font-medium text-[var(--color-primary)] transition-colors hover:underline"
                 >
                   View All Notifications
                 </Link>
@@ -166,9 +163,9 @@ export function AppBarPresentation({
           <button
             onClick={onToggleWaffle}
             aria-label="App launcher"
-            className={`p-2 transition-colors rounded-full focus:outline-none outline-none ${isWaffleOpen ? "bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-card"}`}
+            className={`rounded-full p-2 transition-colors outline-none focus:outline-none ${isWaffleOpen ? "text-foreground bg-white/10" : "text-muted-foreground hover:text-foreground hover:bg-card"}`}
           >
-            <LayoutGrid className="w-5 h-5" />
+            <LayoutGrid className="h-5 w-5" />
           </button>
 
           {isWaffleOpen && (
@@ -181,19 +178,19 @@ export function AppBarPresentation({
           <button
             onClick={onToggleProfile}
             aria-label="User profile"
-            className={`w-8 h-8 rounded-full bg-[var(--color-primary)] text-zinc-950 font-bold flex items-center justify-center ml-2 transition-transform focus:outline-none outline-none ${isProfileOpen ? "scale-110 ring-2 ring-[var(--color-primary)] ring-offset-2 ring-offset-zinc-950" : "hover:scale-105"}`}
+            className={`ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] font-bold text-zinc-950 transition-transform outline-none focus:outline-none ${isProfileOpen ? "scale-110 ring-2 ring-[var(--color-primary)] ring-offset-2 ring-offset-zinc-950" : "hover:scale-105"}`}
           >
             CW
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-[var(--color-card)] border border-border rounded-xl shadow-xl overflow-hidden py-1 z-[100003]">
+            <div className="border-border absolute right-0 z-[100003] mt-2 w-48 overflow-hidden rounded-xl border bg-[var(--color-card)] py-1 shadow-xl">
               <Link
                 href="/settings"
                 onClick={onCloseMenus}
-                className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-muted-foreground hover:bg-card transition-colors"
+                className="text-muted-foreground hover:bg-card flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="h-4 w-4" />
                 Settings
               </Link>
               <button
@@ -201,9 +198,9 @@ export function AppBarPresentation({
                   onCloseMenus();
                   onLogout();
                 }}
-                className="w-full px-4 py-2 text-sm text-left flex items-center gap-2 text-[var(--color-destructive)] hover:bg-[var(--color-destructive)]/10 transition-colors"
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[var(--color-destructive)] transition-colors hover:bg-[var(--color-destructive)]/10"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="h-4 w-4" />
                 Logout
               </button>
             </div>

@@ -41,13 +41,13 @@ export const CssHelper: React.FC<CssHelperProps> = ({ value, onChange }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[400px]">
-      <div className="lg:col-span-2 flex flex-col h-full bg-background border border-zinc-900 rounded-xl overflow-hidden">
-        <div className="bg-card px-4 py-2 border-b border-border flex justify-between items-center">
-          <span className="text-xs font-semibold text-muted-foreground">
+    <div className="grid h-[400px] grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="bg-background flex h-full flex-col overflow-hidden rounded-xl border border-zinc-900 lg:col-span-2">
+        <div className="bg-card border-border flex items-center justify-between border-b px-4 py-2">
+          <span className="text-muted-foreground text-xs font-semibold">
             Custom CSS Editor
           </span>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-muted-foreground text-[10px]">
             Auto-injects styles
           </span>
         </div>
@@ -56,44 +56,44 @@ export const CssHelper: React.FC<CssHelperProps> = ({ value, onChange }) => {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="/* Write custom CSS here */"
-          className="flex-1 p-3 bg-background text-foreground font-mono text-xs resize-none focus:outline-none"
+          className="bg-background text-foreground flex-1 resize-none p-3 font-mono text-xs focus:outline-none"
         />
       </div>
 
       <div className="space-y-4 overflow-y-auto pr-1">
         {/* Class Dictionary Accordion */}
-        <div className="bg-background/50 border border-border rounded-xl p-3">
-          <h3 className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1.5">
-            <BookOpen className="w-3.5 h-3.5" /> Class Dictionary
+        <div className="bg-background/50 border-border rounded-xl border p-3">
+          <h3 className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-bold">
+            <BookOpen className="h-3.5 w-3.5" /> Class Dictionary
           </h3>
           <div className="space-y-2">
             {Object.entries(CSS_DICTIONARY).map(([category, classes]) => (
               <details
                 key={category}
-                className="group border border-border bg-card rounded-lg overflow-hidden"
+                className="group border-border bg-card overflow-hidden rounded-lg border"
               >
-                <summary className="flex items-center justify-between px-3 py-2 text-[11px] font-bold text-muted-foreground cursor-pointer hover:bg-secondary transition-colors list-none">
+                <summary className="text-muted-foreground hover:bg-secondary flex cursor-pointer list-none items-center justify-between px-3 py-2 text-[11px] font-bold transition-colors">
                   {category}
-                  <span className="group-open:rotate-180 transition-transform">
-                    <ChevronDown className="w-3.5 h-3.5 opacity-50" />
+                  <span className="transition-transform group-open:rotate-180">
+                    <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                   </span>
                 </summary>
-                <div className="px-2 pb-2 space-y-1.5 pt-1 border-t border-border bg-background/30">
+                <div className="border-border bg-background/30 space-y-1.5 border-t px-2 pt-1 pb-2">
                   {classes.map((d) => (
                     <div
                       key={d.className}
-                      className="flex flex-col gap-0.5 p-1.5 rounded hover:bg-secondary text-[11px]"
+                      className="hover:bg-secondary flex flex-col gap-0.5 rounded p-1.5 text-[11px]"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-blue-400 font-semibold">
+                        <span className="font-mono font-semibold text-blue-400">
                           {d.className}
                         </span>
-                        <div className="flex gap-1 shrink-0">
+                        <div className="flex shrink-0 gap-1">
                           <button
                             onClick={() =>
                               insertText(`${d.className} {\n  \n}`)
                             }
-                            className="text-[10px] bg-secondary text-muted-foreground hover:bg-zinc-700 px-1.5 py-0.5 rounded cursor-pointer"
+                            className="bg-secondary text-muted-foreground cursor-pointer rounded px-1.5 py-0.5 text-[10px] hover:bg-zinc-700"
                           >
                             Insert
                           </button>
@@ -101,7 +101,7 @@ export const CssHelper: React.FC<CssHelperProps> = ({ value, onChange }) => {
                             onClick={() => copyToClipboard(d.className)}
                             className="text-muted-foreground hover:text-muted-foreground cursor-pointer p-0.5"
                           >
-                            <Copy className="w-3 h-3" />
+                            <Copy className="h-3 w-3" />
                           </button>
                         </div>
                       </div>
@@ -116,21 +116,21 @@ export const CssHelper: React.FC<CssHelperProps> = ({ value, onChange }) => {
           </div>
         </div>
 
-        <div className="bg-[oklch(0.16_0.02_180)] border border-[oklch(0.26_0.03_180)] rounded-xl p-3">
-          <h3 className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" /> Preset Recipes
+        <div className="rounded-xl border border-[oklch(0.26_0.03_180)] bg-[oklch(0.16_0.02_180)] p-3">
+          <h3 className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-bold">
+            <Sparkles className="h-3.5 w-3.5" /> Preset Recipes
           </h3>
           <div className="space-y-2">
             {CSS_PRESETS.map((p) => (
               <button
                 key={p.name}
                 onClick={() => insertText(p.css)}
-                className="w-full text-left p-2 rounded hover:bg-card border border-border bg-background transition-colors cursor-pointer"
+                className="hover:bg-card border-border bg-background w-full cursor-pointer rounded border p-2 text-left transition-colors"
               >
-                <div className="text-[11px] font-bold text-foreground">
+                <div className="text-foreground text-[11px] font-bold">
                   {p.name}
                 </div>
-                <div className="text-[9px] text-muted-foreground truncate font-mono mt-0.5">
+                <div className="text-muted-foreground mt-0.5 truncate font-mono text-[9px]">
                   {p.css.split("\n")[0]}...
                 </div>
               </button>

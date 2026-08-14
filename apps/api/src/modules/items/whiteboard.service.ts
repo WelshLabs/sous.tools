@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { supabase } from '../../lib/supabase';
+import { Injectable } from "@nestjs/common";
+import { supabase } from "../../lib/supabase";
 
 export interface CreateWhiteboardItemDto {
   raw_name: string;
@@ -7,14 +7,14 @@ export interface CreateWhiteboardItemDto {
 
 @Injectable()
 export class WhiteboardService {
-  private readonly defaultOrgId = 'd0000000-0000-0000-0000-000000000000';
+  private readonly defaultOrgId = "d0000000-0000-0000-0000-000000000000";
 
   async findAllActive(): Promise<Record<string, unknown>[]> {
     const { data, error } = await supabase
-      .from('whiteboard_items')
-      .select('*')
-      .eq('is_active', true)
-      .order('created_at', { ascending: true });
+      .from("whiteboard_items")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -24,15 +24,15 @@ export class WhiteboardService {
 
   async create(dto: CreateWhiteboardItemDto): Promise<Record<string, unknown>> {
     const { data: orgData } = await supabase
-      .from('organizations')
-      .select('id')
+      .from("organizations")
+      .select("id")
       .limit(1)
       .single();
-      
+
     const orgId = orgData?.id || this.defaultOrgId;
 
     const { data, error } = await supabase
-      .from('whiteboard_items')
+      .from("whiteboard_items")
       .insert([
         {
           organization_id: orgId,
@@ -50,9 +50,9 @@ export class WhiteboardService {
 
   async remove(id: string): Promise<Record<string, unknown>> {
     const { data, error } = await supabase
-      .from('whiteboard_items')
+      .from("whiteboard_items")
       .update({ is_active: false })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 

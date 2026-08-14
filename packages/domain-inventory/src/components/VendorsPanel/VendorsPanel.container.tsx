@@ -11,7 +11,12 @@ export interface VendorsPanelProps {
   onAddVendorClick?: () => void;
 }
 
-export function VendorsPanel({ vendors, onSave, onDelete, onAddVendorClick }: VendorsPanelProps) {
+export function VendorsPanel({
+  vendors,
+  onSave,
+  onDelete,
+  onAddVendorClick,
+}: VendorsPanelProps) {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Vendor>>({});
 

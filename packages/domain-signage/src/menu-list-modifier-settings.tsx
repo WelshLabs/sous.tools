@@ -55,17 +55,17 @@ export const MenuListModifierSettings: React.FC<
   };
 
   return (
-    <div className="space-y-4 pt-4 border-t border-border mt-4">
+    <div className="border-border mt-4 space-y-4 border-t pt-4">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5" /> Modifier Overrides
+        <label className="text-muted-foreground flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase">
+          <Layers className="h-3.5 w-3.5" /> Modifier Overrides
         </label>
         <select
           value={modifierLayout || "stacked"}
           onChange={(e) =>
             onChangeLayout(e.target.value as "stacked" | "inline")
           }
-          className="bg-card border border-border rounded px-2 py-1 text-[10px] text-muted-foreground"
+          className="bg-card border-border text-muted-foreground rounded border px-2 py-1 text-[10px]"
         >
           <option value="stacked">Stacked List</option>
           <option value="inline">Inline (Side-by-Side)</option>
@@ -81,15 +81,15 @@ export const MenuListModifierSettings: React.FC<
           return (
             <div
               key={item.id}
-              className="bg-background border border-border rounded-lg p-3 space-y-2"
+              className="bg-background border-border space-y-2 rounded-lg border p-3"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">
+                <span className="text-foreground text-xs font-semibold">
                   {item.name}
                 </span>
                 <button
                   onClick={() => handleAddOverride(item.id)}
-                  className="text-[9px] font-bold uppercase px-2 py-1 bg-cyan-900/30 text-cyan-400 hover:bg-cyan-900/50 rounded"
+                  className="rounded bg-cyan-900/30 px-2 py-1 text-[9px] font-bold text-cyan-400 uppercase hover:bg-cyan-900/50"
                 >
                   + Add Mod Override
                 </button>
@@ -98,10 +98,10 @@ export const MenuListModifierSettings: React.FC<
               {overrides.map((override, idx) => (
                 <div
                   key={idx}
-                  className="space-y-2 bg-card/50 border border-border rounded p-2"
+                  className="bg-card/50 border-border space-y-2 rounded border p-2"
                 >
-                  <div className="flex justify-between items-center">
-                    <label className="text-[10px] text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <label className="text-muted-foreground text-[10px]">
                       Modifier Display Rule
                     </label>
                     <button
@@ -123,7 +123,7 @@ export const MenuListModifierSettings: React.FC<
                           .filter(Boolean),
                       })
                     }
-                    className="w-full bg-background border border-border rounded px-2 py-1 text-xs text-muted-foreground"
+                    className="bg-background border-border text-muted-foreground w-full rounded border px-2 py-1 text-xs"
                   />
                   <input
                     type="text"
@@ -134,7 +134,7 @@ export const MenuListModifierSettings: React.FC<
                         displayNameOverride: e.target.value,
                       })
                     }
-                    className="w-full bg-background border border-border rounded px-2 py-1 text-xs text-cyan-400"
+                    className="bg-background border-border w-full rounded border px-2 py-1 text-xs text-cyan-400"
                   />
                 </div>
               ))}
@@ -142,7 +142,7 @@ export const MenuListModifierSettings: React.FC<
           );
         })}
         {selectedItems.length === 0 && (
-          <p className="text-xs text-muted-foreground italic">
+          <p className="text-muted-foreground text-xs italic">
             Select items above to configure modifiers.
           </p>
         )}

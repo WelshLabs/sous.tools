@@ -11,24 +11,32 @@ import {
   DownloadsPanel,
 } from "@soustools/domain-settings";
 import { Settings, Sliders, Cable, Paintbrush } from "lucide-react";
-import type { IntegrationStatus, GlobalDesignTokens } from "@soustools/api-types";
+import type {
+  IntegrationStatus,
+  GlobalDesignTokens,
+} from "@soustools/api-types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-const SettingsSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-  password: z.string().optional(),
-  confirmPassword: z.string().optional(),
-}).refine((data) => {
-  if (data.password && data.password !== data.confirmPassword) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const SettingsSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email"),
+    password: z.string().optional(),
+    confirmPassword: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.password && data.password !== data.confirmPassword) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    },
+  );
 
 type SettingsFormValues = z.infer<typeof SettingsSchema>;
 
@@ -59,9 +67,19 @@ export function SettingsClient({
   const [generalSuccess, setGeneralSuccess] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<SettingsFormValues>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SettingsFormValues>({
     resolver: zodResolver(SettingsSchema),
-    defaultValues: { name: userProfile.name, email: userProfile.email, password: "", confirmPassword: "" },
+    defaultValues: {
+      name: userProfile.name,
+      email: userProfile.email,
+      password: "",
+      confirmPassword: "",
+    },
   });
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
@@ -73,7 +91,10 @@ export function SettingsClient({
 
   // --- Integrations State ---
   const [actionLoading, setActionLoading] = useState(false);
-  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string; } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -103,7 +124,9 @@ export function SettingsClient({
       setGeneralSuccess(true);
       setTimeout(() => setGeneralSuccess(false), 3000);
     } catch (err: any) {
-      setGeneralError(err instanceof Error ? err.message : "Failed to save settings");
+      setGeneralError(
+        err instanceof Error ? err.message : "Failed to save settings",
+      );
     } finally {
       setGeneralSaving(false);
     }
@@ -133,16 +156,20 @@ export function SettingsClient({
     }
   };
 
-  const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const getApiBase = () =>
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   const handleConnectIntegration = (provider: string) => {
     window.location.href = `${getApiBase()}/integrations/connect/${provider.toLowerCase()}?orgId=default`;
   };
 
   const handleDisconnectIntegration = async (provider: string) => {
-    const res = await fetch(`${getApiBase()}/integrations/disconnect/${provider.toLowerCase()}?orgId=default`, {
-      method: "DELETE",
-    });
+    const res = await fetch(
+      `${getApiBase()}/integrations/disconnect/${provider.toLowerCase()}?orgId=default`,
+      {
+        method: "DELETE",
+      },
+    );
     if (!res.ok) throw new Error("Failed to disconnect");
     router.refresh();
   };
@@ -152,7 +179,10 @@ export function SettingsClient({
     setNotification(null);
     try {
       await handleDisconnectIntegration(provider);
-      setNotification({ type: "success", message: `${provider} integration disconnected.` });
+      setNotification({
+        type: "success",
+        message: `${provider} integration disconnected.`,
+      });
     } catch (err: any) {
       setNotification({ type: "error", message: err.message || "Error" });
     } finally {
@@ -161,9 +191,12 @@ export function SettingsClient({
   };
 
   const handleSquareAction = async (action: "sync") => {
-    const res = await fetch(`${getApiBase()}/integrations/square/${action}?orgId=default`, {
-      method: "POST",
-    });
+    const res = await fetch(
+      `${getApiBase()}/integrations/square/${action}?orgId=default`,
+      {
+        method: "POST",
+      },
+    );
     if (!res.ok) throw new Error("Failed to sync catalog");
   };
 
@@ -177,31 +210,36 @@ export function SettingsClient({
         message: "Square menu catalog synchronized successfully!",
       });
     } catch (err: any) {
-      setNotification({ type: "error", message: err.message || "Failed to sync catalog." });
+      setNotification({
+        type: "error",
+        message: err.message || "Failed to sync catalog.",
+      });
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleTabChange = (tab: "general" | "integrations" | "styling" | "downloads") => {
+  const handleTabChange = (
+    tab: "general" | "integrations" | "styling" | "downloads",
+  ) => {
     setActiveTab(tab);
     router.replace(`/settings?tab=${tab}`);
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 text-zinc-900 dark:text-zinc-100 animate-in fade-in">
+    <div className="animate-in fade-in mx-auto max-w-6xl space-y-6 text-zinc-900 dark:text-zinc-100">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-          <Settings className="w-6 h-6 text-sky-500 animate-pulse" />
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          <Settings className="h-6 w-6 animate-pulse text-sky-500" />
           Settings Panel
         </h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Configure global kitchen parameters, system integration profiles, and
           tenant design tokens.
         </p>
       </header>
 
-      <div className="flex border-b border-border dark:border-border gap-1">
+      <div className="border-border dark:border-border flex gap-1 border-b">
         {(["general", "integrations", "styling", "downloads"] as const).map(
           (tab) => {
             const icons = {
@@ -210,7 +248,7 @@ export function SettingsClient({
               styling: Paintbrush,
               downloads: () => (
                 <svg
-                  className="w-4 h-4"
+                  className="h-4 w-4"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -230,21 +268,21 @@ export function SettingsClient({
               <button
                 key={tab}
                 onClick={() => handleTabChange(tab)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all cursor-pointer capitalize ${
+                className={`flex cursor-pointer items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium capitalize transition-all ${
                   activeTab === tab
-                    ? "border-sky-500 text-sky-500 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/5"
-                    : "border-transparent text-zinc-500 dark:text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-card dark:hover:bg-card/40"
+                    ? "border-sky-500 bg-sky-50 text-sky-500 dark:bg-sky-500/5 dark:text-sky-400"
+                    : "dark:text-muted-foreground hover:bg-card dark:hover:bg-card/40 border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="h-4 w-4" />
                 {tab === "styling" ? "Global Styling" : tab}
               </button>
             );
-          }
+          },
         )}
       </div>
 
-      <div className="p-6 rounded-2xl bg-card dark:bg-card/40 border border-border dark:border-border shadow-2xl backdrop-blur-2xl">
+      <div className="bg-card dark:bg-card/40 border-border dark:border-border rounded-2xl border p-6 shadow-2xl backdrop-blur-2xl">
         {activeTab === "general" && (
           <GeneralSettings
             register={register}

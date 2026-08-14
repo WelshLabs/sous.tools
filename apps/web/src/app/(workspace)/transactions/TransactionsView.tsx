@@ -1,21 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Search, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
   ArrowUpDown,
   Filter,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
-  TableCell 
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
 } from "@soustools/design-system";
 
 export interface Transaction {
@@ -31,11 +31,17 @@ export interface Transaction {
   } | null;
 }
 
-export function TransactionsView({ initialTransactions }: { initialTransactions: Transaction[] }) {
+export function TransactionsView({
+  initialTransactions,
+}: {
+  initialTransactions: Transaction[];
+}) {
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [minVolume, setMinVolume] = useState("");
-  const [sortBy, setSortBy] = useState<"transaction_time" | "gross_revenue">("transaction_time");
+  const [sortBy, setSortBy] = useState<"transaction_time" | "gross_revenue">(
+    "transaction_time",
+  );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Pagination
@@ -46,17 +52,20 @@ export function TransactionsView({ initialTransactions }: { initialTransactions:
   let filtered = [...initialTransactions];
 
   if (sourceFilter !== "all") {
-    filtered = filtered.filter(t => t.source.toLowerCase() === sourceFilter.toLowerCase());
+    filtered = filtered.filter(
+      (t) => t.source.toLowerCase() === sourceFilter.toLowerCase(),
+    );
   }
   if (minVolume) {
     const min = parseFloat(minVolume);
-    filtered = filtered.filter(t => t.gross_revenue >= min);
+    filtered = filtered.filter((t) => t.gross_revenue >= min);
   }
   if (search) {
     const s = search.toLowerCase();
-    filtered = filtered.filter(t => 
-      t.external_transaction_id?.toLowerCase().includes(s) || 
-      t.pos_items?.name?.toLowerCase().includes(s)
+    filtered = filtered.filter(
+      (t) =>
+        t.external_transaction_id?.toLowerCase().includes(s) ||
+        t.pos_items?.name?.toLowerCase().includes(s),
     );
   }
 
@@ -73,7 +82,10 @@ export function TransactionsView({ initialTransactions }: { initialTransactions:
   });
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const paginated = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const paginated = filtered.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage,
+  );
 
   const toggleSort = (field: "transaction_time" | "gross_revenue") => {
     if (sortBy === field) {
@@ -86,33 +98,43 @@ export function TransactionsView({ initialTransactions }: { initialTransactions:
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fadeIn">
+    <div className="animate-fadeIn mx-auto max-w-7xl space-y-6 pb-12">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">Transactions</h1>
-        <p className="text-sm text-zinc-500 dark:text-muted-foreground mt-1">Audit synced Square sales logs and volume metrics.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+          Transactions
+        </h1>
+        <p className="dark:text-muted-foreground mt-1 text-sm text-zinc-500">
+          Audit synced Square sales logs and volume metrics.
+        </p>
       </div>
 
-      <div className="glass-panel p-4 rounded-2xl border border-black/5 dark:border-white/5 flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex gap-2 w-full md:w-auto">
+      <div className="glass-panel flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-black/5 p-4 dark:border-white/5">
+        <div className="flex w-full gap-2 md:w-auto">
           <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground dark:text-zinc-500 w-4 h-4" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform dark:text-zinc-500" />
             <input
               type="text"
               placeholder="Search Event/Txn ID..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="bg-zinc-50 dark:bg-card border border-zinc-800 rounded-xl pl-9 pr-4 py-2 w-full text-xs text-white outline-none focus:border-sky-500 transition-all"
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="dark:bg-card w-full rounded-xl border border-zinc-800 bg-zinc-50 py-2 pr-4 pl-9 text-xs text-white transition-all outline-none focus:border-sky-500"
             />
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
+        <div className="flex w-full flex-wrap items-center gap-4 md:w-auto">
           <div className="flex items-center gap-2">
-            <Filter className="text-muted-foreground dark:text-zinc-500 w-3.5 h-3.5" />
+            <Filter className="text-muted-foreground h-3.5 w-3.5 dark:text-zinc-500" />
             <select
               value={sourceFilter}
-              onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }}
-              className="bg-zinc-50 dark:bg-card border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300 outline-none"
+              onChange={(e) => {
+                setSourceFilter(e.target.value);
+                setPage(1);
+              }}
+              className="dark:bg-card rounded-xl border border-zinc-800 bg-zinc-50 px-3 py-2 text-xs text-zinc-700 outline-none dark:text-zinc-300"
             >
               <option value="all">All Sources</option>
               <option value="square">Square</option>
@@ -121,13 +143,16 @@ export function TransactionsView({ initialTransactions }: { initialTransactions:
           </div>
 
           <div className="flex items-center gap-2">
-            <DollarSign className="text-muted-foreground dark:text-zinc-500 w-3.5 h-3.5" />
+            <DollarSign className="text-muted-foreground h-3.5 w-3.5 dark:text-zinc-500" />
             <input
               type="number"
               placeholder="Min $ Vol"
               value={minVolume}
-              onChange={(e) => { setMinVolume(e.target.value); setPage(1); }}
-              className="bg-zinc-50 dark:bg-card border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white w-24 outline-none focus:border-sky-500 transition-all"
+              onChange={(e) => {
+                setMinVolume(e.target.value);
+                setPage(1);
+              }}
+              className="dark:bg-card w-24 rounded-xl border border-zinc-800 bg-zinc-50 px-3 py-2 text-xs text-white transition-all outline-none focus:border-sky-500"
             />
           </div>
         </div>
@@ -139,12 +164,18 @@ export function TransactionsView({ initialTransactions }: { initialTransactions:
             <TableHead>Transaction ID</TableHead>
             <TableHead>POS Item</TableHead>
             <TableHead>Quantity</TableHead>
-            <TableHead className="cursor-pointer hover:text-white transition-all" onClick={() => toggleSort("gross_revenue")}>
-              Gross Revenue <ArrowUpDown className="inline w-3 h-3 ml-1" />
+            <TableHead
+              className="cursor-pointer transition-all hover:text-white"
+              onClick={() => toggleSort("gross_revenue")}
+            >
+              Gross Revenue <ArrowUpDown className="ml-1 inline h-3 w-3" />
             </TableHead>
             <TableHead>Discount</TableHead>
-            <TableHead className="cursor-pointer hover:text-white transition-all" onClick={() => toggleSort("transaction_time")}>
-              Transaction Time <ArrowUpDown className="inline w-3 h-3 ml-1" />
+            <TableHead
+              className="cursor-pointer transition-all hover:text-white"
+              onClick={() => toggleSort("transaction_time")}
+            >
+              Transaction Time <ArrowUpDown className="ml-1 inline h-3 w-3" />
             </TableHead>
             <TableHead>Source</TableHead>
           </TableRow>
@@ -152,25 +183,42 @@ export function TransactionsView({ initialTransactions }: { initialTransactions:
         <TableBody>
           {paginated.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center p-8 text-xs text-muted-foreground dark:text-zinc-500">
+              <TableCell
+                colSpan={7}
+                className="text-muted-foreground p-8 text-center text-xs dark:text-zinc-500"
+              >
                 No matching sales records found.
               </TableCell>
             </TableRow>
           ) : (
             paginated.map((txn) => (
               <TableRow key={txn.id}>
-                <TableCell className="font-mono text-zinc-500 dark:text-muted-foreground select-all">{txn.external_transaction_id}</TableCell>
-                <TableCell className="font-bold text-zinc-200">{txn.pos_items?.name || "Unnamed POS Item"}</TableCell>
-                <TableCell className="font-semibold text-zinc-500 dark:text-muted-foreground">{txn.quantity_sold}</TableCell>
-                <TableCell className="font-bold text-emerald-400">${txn.gross_revenue.toFixed(2)}</TableCell>
-                <TableCell className="text-muted-foreground dark:text-zinc-500">${txn.discount_amount.toFixed(2)}</TableCell>
-                <TableCell className="text-zinc-500 dark:text-muted-foreground">{new Date(txn.transaction_time).toLocaleString()}</TableCell>
+                <TableCell className="dark:text-muted-foreground font-mono text-zinc-500 select-all">
+                  {txn.external_transaction_id}
+                </TableCell>
+                <TableCell className="font-bold text-zinc-200">
+                  {txn.pos_items?.name || "Unnamed POS Item"}
+                </TableCell>
+                <TableCell className="dark:text-muted-foreground font-semibold text-zinc-500">
+                  {txn.quantity_sold}
+                </TableCell>
+                <TableCell className="font-bold text-emerald-400">
+                  ${txn.gross_revenue.toFixed(2)}
+                </TableCell>
+                <TableCell className="text-muted-foreground dark:text-zinc-500">
+                  ${txn.discount_amount.toFixed(2)}
+                </TableCell>
+                <TableCell className="dark:text-muted-foreground text-zinc-500">
+                  {new Date(txn.transaction_time).toLocaleString()}
+                </TableCell>
                 <TableCell>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase border ${
-                    txn.source === "square" 
-                      ? "bg-sky-500/10 text-sky-400 border-sky-500/20"
-                      : "bg-zinc-800 text-zinc-500 dark:text-muted-foreground border-zinc-700"
-                  }`}>
+                  <span
+                    className={`rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase ${
+                      txn.source === "square"
+                        ? "border-sky-500/20 bg-sky-500/10 text-sky-400"
+                        : "dark:text-muted-foreground border-zinc-700 bg-zinc-800 text-zinc-500"
+                    }`}
+                  >
                     {txn.source}
                   </span>
                 </TableCell>
@@ -181,22 +229,24 @@ export function TransactionsView({ initialTransactions }: { initialTransactions:
       </Table>
 
       {totalPages > 1 && (
-        <div className="p-4 flex justify-between items-center text-xs">
-          <span className="text-muted-foreground dark:text-zinc-500">Showing page {page} of {totalPages}</span>
+        <div className="flex items-center justify-between p-4 text-xs">
+          <span className="text-muted-foreground dark:text-zinc-500">
+            Showing page {page} of {totalPages}
+          </span>
           <div className="flex gap-2">
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
-              className="p-2 border border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-black/5 bg-card transition-all"
+              className="bg-card rounded-xl border border-zinc-800 p-2 transition-all hover:bg-black/5 disabled:opacity-50"
             >
-              <ChevronLeft className="w-4 h-4 text-white" />
+              <ChevronLeft className="h-4 w-4 text-white" />
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
-              className="p-2 border border-zinc-800 rounded-xl disabled:opacity-50 hover:bg-black/5 bg-card transition-all"
+              className="bg-card rounded-xl border border-zinc-800 p-2 transition-all hover:bg-black/5 disabled:opacity-50"
             >
-              <ChevronRight className="w-4 h-4 text-white" />
+              <ChevronRight className="h-4 w-4 text-white" />
             </button>
           </div>
         </div>

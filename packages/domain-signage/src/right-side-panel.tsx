@@ -1,7 +1,13 @@
 "use client";
 import * as React from "react";
 
-import { X, Settings, LayoutTemplate, Layers, SlidersHorizontal } from "lucide-react";
+import {
+  X,
+  Settings,
+  LayoutTemplate,
+  Layers,
+  SlidersHorizontal,
+} from "lucide-react";
 import {
   type SignageLayoutConfig,
   type ColumnLayoutSlide,
@@ -27,7 +33,9 @@ export interface RightSidePanelProps {
   onSelectBlock: (id: string | null) => void;
   onUpdateBlock?: (blockId: string, updates: Partial<SignageBlock>) => void;
   items?: PosItem[];
-  onFetchModifierGroups?: (posItemId: string) => Promise<Array<{ id: string; name: string }>>;
+  onFetchModifierGroups?: (
+    posItemId: string,
+  ) => Promise<Array<{ id: string; name: string }>>;
 }
 
 const TABS = [
@@ -37,13 +45,23 @@ const TABS = [
   { id: "block-settings", label: "Config", icon: SlidersHorizontal },
 ] as const;
 
-type TabId = typeof TABS[number]["id"];
+type TabId = (typeof TABS)[number]["id"];
 
 /** Container: Collapsible right sidebar for the signage layout editor. */
 export const RightSidePanel: React.FC<RightSidePanelProps> = ({
-  isOpen, config, activeSlideIndex, onUpdateConfig, onUpdateSlide,
-  onClose, deckId, selectedBlockId, selectedBlock, onSelectBlock,
-  onUpdateBlock, items, onFetchModifierGroups,
+  isOpen,
+  config,
+  activeSlideIndex,
+  onUpdateConfig,
+  onUpdateSlide,
+  onClose,
+  deckId,
+  selectedBlockId,
+  selectedBlock,
+  onSelectBlock,
+  onUpdateBlock,
+  items,
+  onFetchModifierGroups,
 }) => {
   const [activeTab, setActiveTab] = React.useState<TabId>("settings");
 
@@ -59,7 +77,9 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
     const newCols = (activeSlide as ColumnLayoutSlide).columns.map((col) => ({
       ...col,
       blocks: col.blocks
-        ? col.blocks.filter((b) => b.id !== selectedBlockId).map((b) => removeBlockFromTree(b, selectedBlockId))
+        ? col.blocks
+            .filter((b) => b.id !== selectedBlockId)
+            .map((b) => removeBlockFromTree(b, selectedBlockId))
         : [],
     }));
     onUpdateSlide(activeSlideIndex, { columns: newCols });
@@ -67,39 +87,65 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
   };
 
   return (
-    <div className={`absolute right-0 top-0 bottom-0 z-30 w-96 flex flex-col bg-card border-l border-border shadow-2xl h-full overflow-hidden transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0 bg-muted/40">
-        <span className="text-sm font-semibold text-foreground tracking-wide">Workspace Inspector</span>
-        <button onClick={onClose} aria-label="Close panel" className="text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer">
-          <X className="w-4 h-4" />
+    <div
+      className={`bg-card border-border absolute top-0 right-0 bottom-0 z-30 flex h-full w-96 flex-col overflow-hidden border-l shadow-2xl transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+    >
+      <div className="border-border bg-muted/40 flex shrink-0 items-center justify-between border-b px-4 py-3">
+        <span className="text-foreground text-sm font-semibold tracking-wide">
+          Workspace Inspector
+        </span>
+        <button
+          onClick={onClose}
+          aria-label="Close panel"
+          className="text-muted-foreground hover:text-foreground cursor-pointer p-0.5 transition-colors"
+        >
+          <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="flex border-b border-border shrink-0">
+      <div className="border-border flex shrink-0 border-b">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-1 border-b-2 transition-colors ${activeTab === tab.id ? "border-primary text-primary bg-muted/50" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"}`}
+            className={`flex flex-1 flex-col items-center justify-center gap-1 border-b-2 py-2.5 transition-colors ${activeTab === tab.id ? "border-primary text-primary bg-muted/50" : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border-transparent"}`}
           >
-            <tab.icon className="w-4 h-4" />
-            <span className="text-[9px] font-bold uppercase tracking-wider">{tab.label}</span>
+            <tab.icon className="h-4 w-4" />
+            <span className="text-[9px] font-bold tracking-wider uppercase">
+              {tab.label}
+            </span>
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col min-h-0 relative">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto">
         {activeTab === "settings" && (
-          <StylesPanel config={config} activeSlideIndex={activeSlideIndex} onUpdateConfig={onUpdateConfig} onUpdateSlide={onUpdateSlide} deckId={deckId} />
+          <StylesPanel
+            config={config}
+            activeSlideIndex={activeSlideIndex}
+            onUpdateConfig={onUpdateConfig}
+            onUpdateSlide={onUpdateSlide}
+            deckId={deckId}
+          />
         )}
         {activeTab === "blocks" && (
-          <AddBlocksPalette selectedBlockId={selectedBlockId} selectedBlock={selectedBlock} onUpdateSlide={onUpdateSlide} activeSlideIndex={activeSlideIndex} config={config} />
+          <AddBlocksPalette
+            selectedBlockId={selectedBlockId}
+            selectedBlock={selectedBlock}
+            onUpdateSlide={onUpdateSlide}
+            activeSlideIndex={activeSlideIndex}
+            config={config}
+          />
         )}
         {activeTab === "layers" && (
-          <LayersTree activeSlide={config.slides[activeSlideIndex] as ColumnLayoutSlide} selectedBlockId={selectedBlockId} onSelectBlock={onSelectBlock} />
+          <LayersTree
+            activeSlide={config.slides[activeSlideIndex] as ColumnLayoutSlide}
+            selectedBlockId={selectedBlockId}
+            onSelectBlock={onSelectBlock}
+          />
         )}
-        {activeTab === "block-settings" && (
-          selectedBlockId && selectedBlock && onUpdateBlock ? (
+        {activeTab === "block-settings" &&
+          (selectedBlockId && selectedBlock && onUpdateBlock ? (
             <BlockSettingsPanel
               selectedBlockId={selectedBlockId}
               selectedBlock={selectedBlock}
@@ -111,11 +157,10 @@ export const RightSidePanel: React.FC<RightSidePanelProps> = ({
               onFetchModifierGroups={onFetchModifierGroups}
             />
           ) : (
-            <div className="flex flex-1 items-center justify-center p-6 text-center text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex flex-1 items-center justify-center p-6 text-center text-xs">
               Select a block to configure
             </div>
-          )
-        )}
+          ))}
       </div>
     </div>
   );

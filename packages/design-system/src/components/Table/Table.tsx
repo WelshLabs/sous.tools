@@ -5,7 +5,7 @@ const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto rounded-xl border border-cyan-500/20 bg-slate-950/40 backdrop-blur-md shadow-[0_0_15px_rgba(76,201,240,0.05)]">
+  <div className="relative w-full overflow-auto rounded-xl border border-cyan-500/20 bg-slate-950/40 shadow-[0_0_15px_rgba(76,201,240,0.05)] backdrop-blur-md">
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", className)}
@@ -19,7 +19,11 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b border-cyan-500/20", className)} {...props} />
+  <thead
+    ref={ref}
+    className={cn("border-cyan-500/20 [&_tr]:border-b", className)}
+    {...props}
+  />
 ));
 TableHeader.displayName = "TableHeader";
 
@@ -43,7 +47,7 @@ const TableFooter = React.forwardRef<
     ref={ref}
     className={cn(
       "border-t border-cyan-500/20 bg-slate-900/50 font-medium [&>tr]:last:border-b-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -58,7 +62,7 @@ const TableRow = React.forwardRef<
     ref={ref}
     className={cn(
       "border-b border-cyan-500/10 transition-colors hover:bg-cyan-950/30 data-[state=selected]:bg-cyan-900/20",
-      className
+      className,
     )}
     {...props}
   />
@@ -73,7 +77,7 @@ const TableHead = React.forwardRef<
     ref={ref}
     className={cn(
       "h-12 px-4 text-left align-middle font-medium text-slate-400 [&:has([role=checkbox])]:pr-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -86,7 +90,10 @@ const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-4 align-middle text-slate-200 [&:has([role=checkbox])]:pr-0", className)}
+    className={cn(
+      "p-4 align-middle text-slate-200 [&:has([role=checkbox])]:pr-0",
+      className,
+    )}
     {...props}
   />
 ));

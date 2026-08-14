@@ -19,7 +19,7 @@ export function ContentConfigFields({
       (block as any).posItemId || (block as any).basePosItemId || "";
     return (
       <div className="space-y-3">
-        <label className="text-xs font-semibold text-muted-foreground block">
+        <label className="text-muted-foreground block text-xs font-semibold">
           POS Item Selection
         </label>
         <PosItemPicker
@@ -39,12 +39,12 @@ export function ContentConfigFields({
   const renderKenBurnsParams = () => {
     return (
       <div className="space-y-3">
-        <label className="text-xs font-semibold text-muted-foreground block">
+        <label className="text-muted-foreground block text-xs font-semibold">
           Ken Burns Settings
         </label>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+            <label className="text-muted-foreground mb-1 block text-[10px] font-bold uppercase">
               Zoom Speed (s)
             </label>
             <input
@@ -52,7 +52,7 @@ export function ContentConfigFields({
               min={1}
               max={60}
               placeholder="10"
-              className="w-full bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
+              className="bg-card border-border text-foreground w-full rounded-lg border px-2 py-1.5 text-xs focus:border-cyan-500 focus:outline-none"
               onChange={(e) =>
                 onChange({
                   carouselSettings: {
@@ -64,7 +64,7 @@ export function ContentConfigFields({
             />
           </div>
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+            <label className="text-muted-foreground mb-1 block text-[10px] font-bold uppercase">
               Max Zoom Scale
             </label>
             <input
@@ -73,7 +73,7 @@ export function ContentConfigFields({
               min="1.0"
               max="2.0"
               placeholder="1.2"
-              className="w-full bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-cyan-500"
+              className="bg-card border-border text-foreground w-full rounded-lg border px-2 py-1.5 text-xs focus:border-cyan-500 focus:outline-none"
               onChange={(e) =>
                 onChange({
                   carouselSettings: {
@@ -93,7 +93,7 @@ export function ContentConfigFields({
     const oosBehavior = (block as any).oosBehavior || "GrayOut";
     return (
       <div className="space-y-3">
-        <label className="text-xs font-semibold text-muted-foreground block">
+        <label className="text-muted-foreground block text-xs font-semibold">
           Out-of-Stock Modifier Behavior
         </label>
         <div className="grid grid-cols-3 gap-2">
@@ -101,9 +101,9 @@ export function ContentConfigFields({
             <button
               key={mode}
               onClick={() => onChange({ oosBehavior: mode } as any)}
-              className={`py-2 px-1 text-center rounded-lg text-xs font-bold transition border ${
+              className={`rounded-lg border px-1 py-2 text-center text-xs font-bold transition ${
                 oosBehavior === mode
-                  ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
+                  ? "border-purple-500/30 bg-purple-500/20 text-purple-400"
                   : "bg-card text-muted-foreground border-border hover:border-white/20"
               }`}
             >

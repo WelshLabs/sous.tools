@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { type PosItem, type MenuItemStyles, type HighlightItemConfig } from "@soustools/api-types";
+import {
+  type PosItem,
+  type MenuItemStyles,
+  type HighlightItemConfig,
+} from "@soustools/api-types";
 import {
   buildCardStyle,
   buildTitleStyle,
@@ -17,7 +21,11 @@ export interface MenuItemCardProps {
   menuItemStyles: MenuItemStyles;
 }
 
-export function MenuItemCard({ item, highlightItems, menuItemStyles }: MenuItemCardProps) {
+export function MenuItemCard({
+  item,
+  highlightItems,
+  menuItemStyles,
+}: MenuItemCardProps) {
   const highlighted = isItemHighlighted(item, highlightItems);
   const stateStyle = resolveItemState(item, highlighted, menuItemStyles);
 
@@ -30,14 +38,20 @@ export function MenuItemCard({ item, highlightItems, menuItemStyles }: MenuItemC
 
   return (
     <div
-      className="rounded-2xl transition-all duration-300 flex flex-col justify-between border relative"
-      style={{ ...cardStyle, overflow: "visible", padding: cardStyle.padding ?? "24px" }}
+      className="relative flex flex-col justify-between rounded-2xl border transition-all duration-300"
+      style={{
+        ...cardStyle,
+        overflow: "visible",
+        padding: cardStyle.padding ?? "24px",
+      }}
     >
       {stateStyle.icon && stateStyle.iconPosition === "top-right-corner" && (
-        <span className="absolute top-2 right-3 text-xl">{stateStyle.icon}</span>
+        <span className="absolute top-2 right-3 text-xl">
+          {stateStyle.icon}
+        </span>
       )}
       <div className="space-y-2">
-        <div className="flex justify-between items-start gap-4">
+        <div className="flex items-start justify-between gap-4">
           <h3 className="text-xl font-bold tracking-tight" style={titleStyle}>
             {stateStyle.icon && stateStyle.iconPosition === "before-title" && (
               <span className="mr-1">{stateStyle.icon}</span>
@@ -47,12 +61,15 @@ export function MenuItemCard({ item, highlightItems, menuItemStyles }: MenuItemC
               <span className="ml-1">{stateStyle.icon}</span>
             )}
           </h3>
-          <span className="text-lg font-extrabold whitespace-nowrap" style={priceStyle}>
+          <span
+            className="text-lg font-extrabold whitespace-nowrap"
+            style={priceStyle}
+          >
             ${Number(item.price).toFixed(2)}
           </span>
         </div>
         {item.description && (
-          <p className="text-sm line-clamp-2" style={descStyle}>
+          <p className="line-clamp-2 text-sm" style={descStyle}>
             {item.description}
           </p>
         )}
@@ -60,7 +77,7 @@ export function MenuItemCard({ item, highlightItems, menuItemStyles }: MenuItemC
       {stateStyle.badge && (
         <div className="mt-4 flex">
           <span
-            className="text-[10px] px-2.5 py-1 font-black uppercase tracking-wider"
+            className="px-2.5 py-1 text-[10px] font-black tracking-wider uppercase"
             style={{
               backgroundColor: stateStyle.badge.color,
               color: stateStyle.badge.textColor,

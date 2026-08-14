@@ -21,7 +21,7 @@ export function BackgroundControls({
   return (
     <div className="space-y-3">
       <div>
-        <label className="text-[10px] text-muted-foreground uppercase block mb-1">
+        <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
           Background Color
         </label>
         <div className="flex items-center gap-2">
@@ -31,20 +31,20 @@ export function BackgroundControls({
               /^#[0-9A-Fa-f]{6}$/i.test(bg.color || "") ? bg.color : "#ffffff"
             }
             onChange={(e) => updateBg({ color: e.target.value })}
-            className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent shrink-0"
+            className="h-6 w-6 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
           />
           <input
             type="text"
             placeholder="Transparent"
             value={bg.color || ""}
             onChange={(e) => updateBg({ color: e.target.value })}
-            className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground placeholder:text-zinc-600"
+            className="bg-card border-border text-foreground w-full rounded border px-2 py-1 text-xs placeholder:text-zinc-600"
           />
         </div>
       </div>
 
       <div>
-        <label className="text-[10px] text-muted-foreground uppercase block mb-1">
+        <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
           Backdrop Blur
         </label>
         <input
@@ -52,12 +52,12 @@ export function BackgroundControls({
           placeholder="e.g. 10px (Glass effect)"
           value={bg.blur || ""}
           onChange={(e) => updateBg({ blur: e.target.value })}
-          className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-zinc-600"
+          className="bg-card border-border text-foreground w-full rounded border px-2 py-1.5 text-xs placeholder:text-zinc-600"
         />
       </div>
 
       <div>
-        <label className="text-[10px] text-muted-foreground uppercase block mb-1">
+        <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
           Image URL
         </label>
         <input
@@ -65,7 +65,7 @@ export function BackgroundControls({
           placeholder="https://"
           value={bg.image || ""}
           onChange={(e) => updateBg({ image: e.target.value })}
-          className="w-full bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-zinc-600"
+          className="bg-card border-border text-foreground w-full rounded border px-2 py-1.5 text-xs placeholder:text-zinc-600"
         />
       </div>
     </div>

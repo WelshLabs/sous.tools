@@ -34,11 +34,12 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: { variant: "primary", size: "md" },
-  }
+  },
 );
 
 export interface ButtonProps
-  extends Omit<HTMLMotionProps<"button">, "ref" | "children">,
+  extends
+    Omit<HTMLMotionProps<"button">, "ref" | "children">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   children?: React.ReactNode;
@@ -49,7 +50,7 @@ const MotionSlot = motion.create(Slot);
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const tone = variant ?? "primary";
-    
+
     if (asChild) {
       return (
         <MotionSlot
@@ -81,7 +82,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         </span>
       </motion.button>
     );
-  }
+  },
 );
 Button.displayName = "Button";
 

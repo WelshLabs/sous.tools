@@ -70,9 +70,9 @@ export function ConfirmModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-sm">
-        <DialogHeader className="flex flex-col items-center text-center sm:text-center space-y-4">
+        <DialogHeader className="flex flex-col items-center space-y-4 text-center sm:text-center">
           <div
-            className="p-3 rounded-full flex items-center justify-center mx-auto"
+            className="mx-auto flex items-center justify-center rounded-full p-3"
             style={{
               backgroundColor: isDestructive
                 ? "rgb(244 63 94 / 0.15)"
@@ -80,14 +80,14 @@ export function ConfirmModal({
               color: isDestructive ? "var(--color-destructive)" : "#f59e0b",
             }}
           >
-            <AlertTriangle className="w-8 h-8" />
+            <AlertTriangle className="h-8 w-8" />
           </div>
 
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{message}</DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="flex sm:justify-center gap-3 mt-8">
+        <DialogFooter className="mt-8 flex gap-3 sm:justify-center">
           <Button
             variant="outline"
             className="flex-1"

@@ -20,10 +20,38 @@ export function drawBase(ctx: CanvasRenderingContext2D, size: number) {
   ctx.lineJoin = "round";
   ctx.beginPath();
   ctx.moveTo(14 * scale, 43 * scale);
-  ctx.bezierCurveTo(5 * scale, 42 * scale, 7 * scale, 27 * scale, 17 * scale, 22 * scale);
-  ctx.bezierCurveTo(15 * scale, 10 * scale, 29 * scale, 8 * scale, 32 * scale, 19 * scale);
-  ctx.bezierCurveTo(35 * scale, 8 * scale, 49 * scale, 10 * scale, 47 * scale, 22 * scale);
-  ctx.bezierCurveTo(57 * scale, 27 * scale, 59 * scale, 42 * scale, 50 * scale, 43 * scale);
+  ctx.bezierCurveTo(
+    5 * scale,
+    42 * scale,
+    7 * scale,
+    27 * scale,
+    17 * scale,
+    22 * scale,
+  );
+  ctx.bezierCurveTo(
+    15 * scale,
+    10 * scale,
+    29 * scale,
+    8 * scale,
+    32 * scale,
+    19 * scale,
+  );
+  ctx.bezierCurveTo(
+    35 * scale,
+    8 * scale,
+    49 * scale,
+    10 * scale,
+    47 * scale,
+    22 * scale,
+  );
+  ctx.bezierCurveTo(
+    57 * scale,
+    27 * scale,
+    59 * scale,
+    42 * scale,
+    50 * scale,
+    43 * scale,
+  );
   ctx.closePath();
   ctx.stroke();
   ctx.fillRect(15 * scale, 49 * scale, 34 * scale, 7 * scale);
@@ -47,7 +75,12 @@ export function drawLoadingFrame(
   const start = -Math.PI / 2;
   const sweep = Math.PI * 2 * 0.28;
   const angle = start + progress * Math.PI * 2;
-  const gradient = ctx.createLinearGradient(8 * scale, 8 * scale, 56 * scale, 56 * scale);
+  const gradient = ctx.createLinearGradient(
+    8 * scale,
+    8 * scale,
+    56 * scale,
+    56 * scale,
+  );
   gradient.addColorStop(0, "#3867ff");
   gradient.addColorStop(1, "#48dfff");
   ctx.strokeStyle = gradient;
@@ -61,10 +94,38 @@ export function drawLoadingFrame(
   ctx.lineWidth = 4.5 * scale;
   ctx.beginPath();
   ctx.moveTo(16 * scale, 42 * scale);
-  ctx.bezierCurveTo(8 * scale, 40 * scale, 10 * scale, 29 * scale, 19 * scale, 24 * scale);
-  ctx.bezierCurveTo(18 * scale, 15 * scale, 28 * scale, 14 * scale, 32 * scale, 22 * scale);
-  ctx.bezierCurveTo(36 * scale, 14 * scale, 46 * scale, 15 * scale, 45 * scale, 24 * scale);
-  ctx.bezierCurveTo(54 * scale, 29 * scale, 56 * scale, 40 * scale, 48 * scale, 42 * scale);
+  ctx.bezierCurveTo(
+    8 * scale,
+    40 * scale,
+    10 * scale,
+    29 * scale,
+    19 * scale,
+    24 * scale,
+  );
+  ctx.bezierCurveTo(
+    18 * scale,
+    15 * scale,
+    28 * scale,
+    14 * scale,
+    32 * scale,
+    22 * scale,
+  );
+  ctx.bezierCurveTo(
+    36 * scale,
+    14 * scale,
+    46 * scale,
+    15 * scale,
+    45 * scale,
+    24 * scale,
+  );
+  ctx.bezierCurveTo(
+    54 * scale,
+    29 * scale,
+    56 * scale,
+    40 * scale,
+    48 * scale,
+    42 * scale,
+  );
   ctx.stroke();
   ctx.fillStyle = "#48dfff";
   ctx.fillRect(18 * scale, 47 * scale, 28 * scale, 5 * scale);

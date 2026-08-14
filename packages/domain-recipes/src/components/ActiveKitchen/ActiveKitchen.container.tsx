@@ -25,7 +25,11 @@ export function ActiveKitchen({
     async function requestWakeLock() {
       if ("wakeLock" in navigator) {
         try {
-          const wl = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<unknown> } }).wakeLock.request("screen");
+          const wl = await (
+            navigator as unknown as {
+              wakeLock: { request: (type: string) => Promise<unknown> };
+            }
+          ).wakeLock.request("screen");
           setWakeLock(wl as WakeLockSentinel);
           setWakeLockActive(true);
         } catch (err) {
@@ -64,8 +68,9 @@ export function ActiveKitchen({
       [stepNumber]: !prev[stepNumber],
     }));
   };
-  
-  const [tickedTimers, setTickedTimers] = useState<KitchenTimerState[]>(activeTimers);
+
+  const [tickedTimers, setTickedTimers] =
+    useState<KitchenTimerState[]>(activeTimers);
 
   useEffect(() => {
     setTickedTimers(activeTimers);
@@ -91,9 +96,7 @@ export function ActiveKitchen({
     const updated = [...tickedTimers];
     if (timer.isActive) {
       const now = Date.now();
-      const start = timer.startedAt
-        ? new Date(timer.startedAt).getTime()
-        : now;
+      const start = timer.startedAt ? new Date(timer.startedAt).getTime() : now;
       const elapsed = timer.elapsedSeconds + Math.floor((now - start) / 1000);
       updated[idx] = {
         ...timer,

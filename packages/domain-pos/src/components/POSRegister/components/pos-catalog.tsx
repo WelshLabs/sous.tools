@@ -33,7 +33,7 @@ export function POSCatalog({
   // Deduplicate and filter out empty or non-string categories
   const sanitizedCategories = useMemo(() => {
     const validCats = (categories || []).filter(
-      (cat): cat is string => typeof cat === "string" && cat.trim().length > 0
+      (cat): cat is string => typeof cat === "string" && cat.trim().length > 0,
     );
     return Array.from(new Set(validCats));
   }, [categories]);
@@ -63,7 +63,7 @@ export function POSCatalog({
           placeholder="Search items..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          icon={<Search className="h-5 w-5 text-muted-foreground" />}
+          icon={<Search className="text-muted-foreground h-5 w-5" />}
         />
       </div>
 
@@ -96,11 +96,11 @@ export function POSCatalog({
               key={compositeKey}
               disabled={isSoldOut}
               onClick={() => onItemClick(item)}
-              className="group text-left transition-transform duration-100 hover:scale-[1.01] active:scale-95 disabled:pointer-events-none disabled:opacity-50 animate-in fade-in zoom-in-95"
+              className="group animate-in fade-in zoom-in-95 text-left transition-transform duration-100 hover:scale-[1.01] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
             >
-              <Card className="relative flex h-full flex-col overflow-hidden border border-border bg-card p-4 transition-colors group-hover:border-primary/50">
+              <Card className="border-border bg-card group-hover:border-primary/50 relative flex h-full flex-col overflow-hidden border p-4 transition-colors">
                 {item.image && (
-                  <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-[var(--radius-sm)] bg-muted">
+                  <div className="bg-muted relative mb-3 aspect-video w-full overflow-hidden rounded-[var(--radius-sm)]">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -109,24 +109,24 @@ export function POSCatalog({
                   </div>
                 )}
                 <CardContent className="flex flex-1 flex-col gap-1 p-0">
-                  <CardTitle className="line-clamp-2 text-base font-semibold text-foreground">
+                  <CardTitle className="text-foreground line-clamp-2 text-base font-semibold">
                     {item.name}
                   </CardTitle>
                   {item.description && (
-                    <p className="line-clamp-2 text-xs text-muted-foreground">
+                    <p className="text-muted-foreground line-clamp-2 text-xs">
                       {item.description}
                     </p>
                   )}
-                  <div className="mt-auto pt-2 flex items-center justify-between">
-                    <span className="text-sm font-bold text-accent">
+                  <div className="mt-auto flex items-center justify-between pt-2">
+                    <span className="text-accent text-sm font-bold">
                       ${item.price.toFixed(2)}
                     </span>
                     {isSoldOut ? (
-                      <span className="rounded-[var(--radius-sm)] border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                      <span className="border-destructive/30 bg-destructive/10 text-destructive rounded-[var(--radius-sm)] border px-2 py-0.5 text-xs font-medium">
                         Sold Out
                       </span>
                     ) : (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {item.category}
                       </span>
                     )}

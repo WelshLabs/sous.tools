@@ -1,8 +1,10 @@
 export function SystemHealth() {
   return (
-    <div className="bg-card p-6 rounded-lg border">
-      <h2 className="text-xl font-semibold mb-4">System Health</h2>
-      <p className="text-muted-foreground">System health information will be displayed here.</p>
+    <div className="bg-card rounded-lg border p-6">
+      <h2 className="mb-4 text-xl font-semibold">System Health</h2>
+      <p className="text-muted-foreground">
+        System health information will be displayed here.
+      </p>
     </div>
   );
 }

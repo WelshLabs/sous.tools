@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 
-
 /**
  * Props for the Root GlobalError component.
  */
@@ -23,26 +22,31 @@ export interface GlobalErrorProps {
  */
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
-    console.error("Root kitchen app global layout error caught", { err: error, digest: error.digest });
+    console.error("Root kitchen app global layout error caught", {
+      err: error,
+      digest: error.digest,
+    });
   }, [error]);
-
 
   return (
     <html lang="en">
-      <body className="antialiased min-h-screen bg-card text-zinc-50 font-sans flex items-center justify-center p-4">
-        <div className="glass-panel p-8 rounded-lg max-w-md border border-zinc-900 text-center">
-          <h2 className="text-xl font-semibold text-rose-500 mb-4">Critical System Error</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            A critical system error occurred. The technical team has been notified.
+      <body className="bg-card flex min-h-screen items-center justify-center p-4 font-sans text-zinc-50 antialiased">
+        <div className="glass-panel max-w-md rounded-lg border border-zinc-900 p-8 text-center">
+          <h2 className="mb-4 text-xl font-semibold text-rose-500">
+            Critical System Error
+          </h2>
+          <p className="text-muted-foreground mb-4 text-sm">
+            A critical system error occurred. The technical team has been
+            notified.
           </p>
           {error?.message && (
-            <pre className="text-xs text-left bg-zinc-950 p-3 rounded mb-6 overflow-auto max-h-40 text-rose-400 font-mono">
+            <pre className="mb-6 max-h-40 overflow-auto rounded bg-zinc-950 p-3 text-left font-mono text-xs text-rose-400">
               {error.message}
             </pre>
           )}
           <button
             onClick={() => reset()}
-            className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium transition-colors cursor-pointer"
+            className="cursor-pointer rounded bg-rose-600 px-4 py-2 font-medium text-white transition-colors hover:bg-rose-500"
           >
             Refresh Application
           </button>
