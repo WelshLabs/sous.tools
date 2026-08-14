@@ -11,17 +11,17 @@ $ eslint . --max-warnings 0
 cache miss, executing f21e60543e9c09fa
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/config:lint
-cache miss, executing f9fae72d607a88a8
-$ eslint . --max-warnings 0
+::group::@soustools/api-types:build
+cache miss, executing a578c84cf967c27c
+$ tsc
 ::endgroup::
 ::group::@soustools/api-types:lint
 cache miss, executing b296140551ecc27f
 $ eslint . --max-warnings 0
 ::endgroup::
-::group::@soustools/api-types:build
-cache miss, executing a578c84cf967c27c
-$ tsc
+::group::@soustools/config:lint
+cache miss, executing f9fae72d607a88a8
+$ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/config:build
 cache miss, executing 01978c106b621e4d
@@ -40,18 +40,14 @@ $ eslint . --max-warnings 0
   3 errors and 0 warnings potentially fixable with the `--fix` option.
 
 [ELIFECYCLE] Command failed with exit code 1.
-::group::@soustools/logger:build
-cache miss, executing 58621578dfdd7ef6
-$ tsc
-::endgroup::
 ::group::@soustools/domain-inventory:lint
 cache miss, executing 1de522ca5a4c6c7f
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-recipes:lint
-cache miss, executing aaa03d49d1f3c069
-$ eslint . --max-warnings 0
+::group::@soustools/logger:build
+cache miss, executing 58621578dfdd7ef6
+$ tsc
 [ELIFECYCLE] Command failed.
 ::endgroup::
 ::group::@soustools/domain-settings:lint
@@ -61,6 +57,11 @@ $ eslint . --max-warnings 0
 ::endgroup::
 ::group::@soustools/domain-pos:lint
 cache miss, executing 2a4fa7fb099b8d96
+$ eslint . --max-warnings 0
+[ELIFECYCLE] Command failed.
+::endgroup::
+::group::@soustools/domain-signage:lint
+cache miss, executing c3012821c8471df0
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
@@ -74,14 +75,14 @@ cache miss, executing b6de417c17e8aa56
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/domain-signage:lint
-cache miss, executing c3012821c8471df0
+::group::@soustools/domain-recipes:lint
+cache miss, executing aaa03d49d1f3c069
 $ eslint . --max-warnings 0
 [ELIFECYCLE] Command failed.
 ::endgroup::
 
  Tasks:    6 successful, 15 total
 Cached:    0 cached, 15 total
-  Time:    17.665s 
+  Time:    14.099s 
 Failed:    @soustools/api-client#lint
 
