@@ -12,7 +12,7 @@ LOG_FILE="/var/log/sous-ota.log"
 CONFIG_FILE="/etc/sous/device-config.json"
 REPO_DIR="/opt/sous.tools"
 ANSIBLE_VAULT_PASS="/etc/sous/secrets/ansible-vault-pass"
-REPO_SSH="git@github.com:conarwelsh/sous.tools.git"
+REPO_SSH="git@github.com:WelshLabs/sous.tools.git"
 API_URL="${SOUS_API_URL:-https://api.sous.tools}"
 DEVICE_ID="$(jq -r '.device_id // ""' "${CONFIG_FILE}" 2>/dev/null)"
 

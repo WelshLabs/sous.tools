@@ -20,7 +20,7 @@ vault_infisical_project_id: "4e40fdc4-358b-4216-b7c4-30e5506f9277"
 vault_infisical_env: "prod"
 vault_signage_image_tag: "production"
 
-# GitHub fine-grained PAT with read-only access to conarwelsh/sous.tools
+# GitHub fine-grained PAT with read-only access to WelshLabs/sous.tools
 # Used by ansible-pull on the Pi during maintenance window self-updates
 vault_github_pat: ""
 

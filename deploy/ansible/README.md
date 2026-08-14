@@ -79,7 +79,7 @@ Manual trigger on Pi:
 
 ```bash
 sudo ansible-pull \
-  -U "https://$(cat /etc/sous-github-pat)@github.com/conarwelsh/sous.tools.git" \
+  -U "https://$(cat /etc/sous-github-pat)@github.com/WelshLabs/sous.tools.git" \
   deploy/ansible/playbook.yml \
   --vault-password-file /etc/sous-ansible-vault-pass \
   --accept-host-key

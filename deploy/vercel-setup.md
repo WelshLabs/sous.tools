@@ -15,7 +15,7 @@ Vercel deployments are handled via **native GitHub integration** — no tokens o
 
 1. Go to [vercel.com/dashboard](https://vercel.com/dashboard) → select team **sous-tools**
 2. Open the project → **Settings → Git**
-3. Confirm the GitHub repository `conarwelsh/sous.tools` is connected
+3. Confirm the GitHub repository `WelshLabs/sous.tools` is connected
 4. Set **Root Directory** to the value in the table above
 5. Enable **"Include source files outside of the Root Directory in the Build Step"**
 

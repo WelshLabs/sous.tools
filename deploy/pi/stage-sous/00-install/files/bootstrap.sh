@@ -13,7 +13,7 @@ set -euo pipefail
 LOG_FILE="/var/log/sous-bootstrap.log"
 CONFIG_FILE="/etc/sous/device-config.json"
 REPO_DIR="/opt/sous.tools"
-REPO_SSH="git@github.com:conarwelsh/sous.tools.git"
+REPO_SSH="git@github.com:WelshLabs/sous.tools.git"
 ANSIBLE_VAULT_PASS="/etc/sous/secrets/ansible-vault-pass"
 API_URL="${SOUS_API_URL:-https://api.sous.tools}"
 
