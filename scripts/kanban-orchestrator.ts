@@ -260,14 +260,27 @@ async function main() {
 
   // Extract files from the new Agent Task template
   let scopedFiles = "";
-  if (issueBody && issueBody.includes("### Files in Scope")) {
-    const match = issueBody.match(/### Files in Scope\n([\s\S]*?)(?=\n###|$)/);
-    if (match) {
-      const files = match[1]
+  let validationCommand =
+    "pnpm turbo typecheck 2>&1 && pnpm turbo lint 2>&1 && INFISICAL_MOCK=true pnpm turbo test 2>&1"; // default
+
+  if (issueBody) {
+    const filesMatch = issueBody.match(
+      /### Files in Scope\n([\s\S]*?)(?=\n###|$)/,
+    );
+    if (filesMatch) {
+      const files = filesMatch[1]
         .split("\n")
         .map((line) => line.replace(/^- /, "").replace(/`/g, "").trim())
         .filter(Boolean);
       scopedFiles = files.join(" ");
+    }
+
+    const validationMatch = issueBody.match(
+      /### Validation Command\n([\s\S]*?)(?=\n###|$)/,
+    );
+    if (validationMatch) {
+      const rawCmd = validationMatch[1].trim().replace(/^`+|`+$/g, ""); // strip backticks
+      if (rawCmd) validationCommand = rawCmd;
     }
   }
 
@@ -361,10 +374,10 @@ async function main() {
     );
 
     // Run Tests securely
-    console.log("[ORCHESTRATOR] Running test suite...");
-    const testRes = runCommand(
-      `pnpm turbo typecheck 2>&1 && pnpm turbo lint 2>&1 && INFISICAL_MOCK=true pnpm turbo test 2>&1`,
+    console.log(
+      `[ORCHESTRATOR] Running validation command: ${validationCommand}`,
     );
+    const testRes = runCommand(validationCommand);
 
     if (testRes.exitCode === 0) {
       testOutput = "Tests passed successfully.";
