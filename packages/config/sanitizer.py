@@ -9,7 +9,7 @@ and passwords from user prompt payloads and LLM logging pipelines.
 SECRET_PATTERNS = [
     # Generic API Keys & Tokens
     (r"sk-[a-zA-Z0-9]{20,}", "[REDACTED_OPENAI_KEY]"),
-    (r"ghp_[a-zA-Z0-9]{36}", "[REDACTED_GITHUB_PAT]"),
+    (r"ghp_[a-zA-Z0-9]{36}", "[REDACTED_GITHUB_TOKEN]"),
     (r"gho_[a-zA-Z0-9]{36}", "[REDACTED_GITHUB_OAUTH]"),
     (r"inf_[a-zA-Z0-9_-]+", "[REDACTED_INFISICAL_TOKEN]"),
     (r"eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]+", "[REDACTED_JWT_TOKEN]"),

@@ -10,7 +10,7 @@
 #   ansible-playbook -i inventory.ini playbook.yml --check --ask-vault-pass
 #
 # Self-update on Pi (ansible-pull):
-#   ansible-pull -U https://<GITHUB_PAT>@github.com/WelshLabs/sous.tools.git \
+#   ansible-pull -U https://<GITHUB_TOKEN>@github.com/WelshLabs/sous.tools.git \
 #     deploy/ansible/playbook.yml \
 #     --vault-password-file /etc/sous-ansible-vault-pass
 
