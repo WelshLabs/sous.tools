@@ -146,4 +146,7 @@ jobs:
 
           echo "Wiping temporary staging directory..."
           sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/stage-sous || true
+          
+          echo "Wiping pi-gen work directory to prevent permission errors on next run..."
+          sudo rm -rf ${{ github.workspace }}/deploy/pi/pi-gen/work || true
 
