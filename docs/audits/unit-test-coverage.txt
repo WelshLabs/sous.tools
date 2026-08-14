@@ -25,18 +25,29 @@ $ vitest run --coverage --passWithNoTests
 [ELIFECYCLE] Test failed. See above for more details.
 [39m
 ::endgroup::
+::group::@soustools/domain-inventory:test
+cache miss, executing 5023ea5518a925e4
+$ vitest run --coverage --passWithNoTests
+[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
+
+[39m
+[ELIFECYCLE] Test failed. See above for more details.
+::endgroup::
 ::group::@soustools/domain-recipes:test
 cache miss, executing c001e23836fd4e7a
 $ vitest run --coverage --passWithNoTests
+[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
+
 [ELIFECYCLE] Test failed. See above for more details.
+[39m
 ::endgroup::
 ::group::@soustools/logger:build
 cache miss, executing 1a31e43e2beb4b09
 $ tsc
 [ELIFECYCLE] Command failed.
 ::endgroup::
-::group::@soustools/design-system:test
-cache miss, executing 19b72077cd20b905
+::group::@soustools/api-client:test
+cache miss, executing 45fd870ebf103809
 $ vitest run --coverage --passWithNoTests
 [1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
@@ -51,16 +62,8 @@ $ vitest run --coverage --passWithNoTests
 [ELIFECYCLE] Test failed. See above for more details.
 [39m
 ::endgroup::
-::group::@soustools/api-client:test
-cache miss, executing 45fd870ebf103809
-$ vitest run --coverage --passWithNoTests
-[1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
-
-[ELIFECYCLE] Test failed. See above for more details.
-[39m
-::endgroup::
-::group::@soustools/domain-inventory:test
-cache miss, executing 5023ea5518a925e4
+::group::@soustools/design-system:test
+cache miss, executing 19b72077cd20b905
 $ vitest run --coverage --passWithNoTests
 [1m[30m[41m MISSING DEPENDENCY [49m[39m[22m [31mCannot find dependency '@vitest/coverage-v8'
 
@@ -70,6 +73,6 @@ $ vitest run --coverage --passWithNoTests
 
  Tasks:    2 successful, 10 total
 Cached:    0 cached, 10 total
-  Time:    6.736s 
+  Time:    6.834s 
 Failed:    @soustools/domain-signage#test
 
