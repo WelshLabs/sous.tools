@@ -8,6 +8,35 @@
 @source "../domain-recipes/src";
 @source "../domain-pos/src";
 
+@font-face {
+  font-family: 'Archivo';
+  src: url('./fonts/archivo-regular.woff2') format('woff2'),
+       url('./fonts/archivo-bold.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('./fonts/satoshi-regular.woff2') format('woff2'),
+       url('./fonts/satoshi-bold.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('./fonts/inter-regular.woff2') format('woff2'),
+       url('./fonts/inter-bold.woff2') format('woff2');
+  font-feature-settings: 'ss01' on, 'ss02' on;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./fonts/jetbrains-mono-regular.woff2') format('woff2'),
+       url('./fonts/jetbrains-mono-bold.woff2') format('woff2');
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /*
