@@ -200,7 +200,7 @@ async function main() {
 
   const COMMENT_FETCH_LIMIT = 5;
   const LITELLM_URL = "http://litellm:4000/v1";
-  const MODELS = { fast: "openai/light", heavy: "openai/heavy" };
+  const MODELS = { fast: "openai/coder", heavy: "openai/planner" };
 
   const workspacePath = `/tmp/agent-workspace-${issueNumber}`;
   console.log(`[ORCHESTRATOR] Creating isolated workspace at ${workspacePath}`);
@@ -313,10 +313,10 @@ async function main() {
         `gh issue comment ${issueNumber} --repo ${repo} --body "[NEEDS_INPUT] The autonomous agent requires additional information:\n\n> ${question}\n\nPlease reply to this comment to unblock the agent."`,
       );
 
-      // Move to In Progress (or Blocked if you had a column) to signify waiting
+      // Move to Needs Input column to signify waiting
       if (issueUrl)
         runCommand(
-          `gh project item-edit ${PROJECT_NUMBER} --owner ${PROJECT_OWNER} --url "${issueUrl}" --field "Status" --value "In Progress" || true`,
+          `gh project item-edit ${PROJECT_NUMBER} --owner ${PROJECT_OWNER} --url "${issueUrl}" --field "Status" --value "Needs Input" || true`,
         );
 
       process.chdir("/");

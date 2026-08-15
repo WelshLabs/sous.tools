@@ -1,0 +1,12 @@
+{
+  "github": {
+    "kanbanProjectNumber": 1,
+    "owner": "WelshLabs"
+  },
+  "testing": {
+    "validationCommand": "pnpm turbo typecheck 2>&1 && pnpm turbo lint 2>&1 && INFISICAL_MOCK=true pnpm turbo test 2>&1"
+  },
+  "qdrant": {
+    "memoryFile": "docs/agent-memory.json"
+  }
+}

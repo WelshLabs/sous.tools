@@ -109,3 +109,5 @@ gauto() {
 
 # MCP Config Sync (keeps AGY + cptr in sync with repo SSOT)
 alias mcp-sync='mkdir -p $HOME/.gemini/config && ln -sf $SOUS_ROOT/mcp_config.json $HOME/.gemini/config/mcp_config.json && echo "✅ MCP config symlinked to repo SSOT"'
+
+alias tailAgent='sudo docker exec agent-runner tail -f /tmp/kanban-orchestrator.log'

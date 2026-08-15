@@ -78,7 +78,7 @@ services:
 
   qdrant:
     image: qdrant/qdrant:latest
-    profiles: ["dev", "prod"]
+    profiles: ["dev"]
     container_name: qdrant
     restart: unless-stopped
     ports:
@@ -102,7 +102,7 @@ services:
 
   qdrant-sync:
     image: python:3.11-slim
-    profiles: ["prod"]
+    profiles: ["dev"]
     container_name: qdrant-sync
     depends_on:
       - qdrant
@@ -121,12 +121,12 @@ services:
       - traefik_public
 
   # =========================================================================
-  # 3. LLM GATEWAY TIER (PROD ONLY — runs on Oracle Cloud)
-  #    Dev environments connect to ai.sous.tools externally via Tailscale/DNS
+  # 3. LLM GATEWAY TIER (PROD & DEV — runs on Home Desktop with AMD GPU)
+  #    Other devices connect to ai.sous.tools externally via Tailscale/DNS
   # =========================================================================
   ollama:
     image: ollama/ollama:latest
-    profiles: ["prod"]
+    profiles: ["dev"]
     container_name: ollama
     volumes:
       - ollama_data:/root/.ollama
@@ -140,7 +140,7 @@ services:
 
   ollama-pull:
     image: ollama/ollama:latest
-    profiles: ["prod"]
+    profiles: ["dev"]
     container_name: ollama-pull
     depends_on:
       - ollama
@@ -152,18 +152,20 @@ services:
       - |
         echo "Waiting for Ollama service to respond..."
         sleep 10
-        MODELS="qwen2.5-coder:7b nomic-embed-text llama3.2-vision"
+        MODELS="qwen2.5-coder:14b nomic-embed-text llama3.2-vision"
         for model in $$MODELS; do
           echo "Verifying/Pulling model $$model..."
           ollama pull $$model
         done
+        echo "Cleaning up old models..."
+        ollama rm qwen2.5-coder:7b || true
         echo "Ollama model synchronization complete!"
     networks:
       - traefik_public
 
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
-    profiles: ["prod"]
+    profiles: ["dev"]
     container_name: litellm
     restart: unless-stopped
     command: [
@@ -265,10 +267,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.agent-runner
-    profiles: ["prod"]
+    profiles: ["dev"]
     container_name: agent-runner
     restart: unless-stopped
     environment:
+      - OPENAI_API_BASE=https://ai.sous.tools/v1
+      - OPENAI_API_KEY=sk-1234
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
@@ -374,6 +378,12 @@ services:
       INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
       INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID}
       INFISICAL_ENV: ${INFISICAL_ENV}
+      AUDIO_STT_ENGINE: openai
+      AUDIO_STT_OPENAI_API_BASE: http://whisper-stt:8000/v1
+      AUDIO_TTS_ENGINE: openai
+      AUDIO_TTS_OPENAI_API_BASE: http://openedai-tts:8000/v1
+      IMAGE_GENERATION_ENGINE: comfyui
+      IMAGE_GENERATION_COMFYUI_API_BASE: http://comfyui:8188
     restart: unless-stopped
     networks:
       - traefik_public
@@ -462,23 +472,23 @@ services:
     networks:
       - traefik_public
 
-  #comfyui:
-  #  image: rocm/comfyui:latest
-  #  profiles: ["dev"]
-  #  container_name: comfyui
-  # restart: unless-stopped
-  # ports:
-  #  - "8188:8188"
-  # volumes:
-  #  - sd_data:/app/ComfyUI/models
-  #networks:
-  #  - traefik_public
-  # devices:
-  #  - "/dev/kfd:/dev/kfd"
-  #  - "/dev/dri:/dev/dri"
-  #group_add:
-  #  - video
-  # ipc: host
+  # comfyui:
+  #   image: rocm/comfyui:latest
+  #   profiles: ["dev"]
+  #   container_name: comfyui
+  #   restart: unless-stopped
+  #   ports:
+  #    - "8188:8188"
+  #   volumes:
+  #    - sd_data:/app/ComfyUI/models
+  #   networks:
+  #    - traefik_public
+  #   devices:
+  #    - "/dev/kfd:/dev/kfd"
+  #    - "/dev/dri:/dev/dri"
+  #   group_add:
+  #    - video
+  #   ipc: host
 
 volumes:
   letsencrypt:

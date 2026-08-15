@@ -4,42 +4,34 @@ model_list:
   # =========================================================================
   - model_name: planner
     litellm_params:
-      model: gemini/gemini-3.6-flash
+      model: gemini/gemini-3.1-pro
       api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: planner-pro
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
 
   # =========================================================================
   # 2. LOCAL OLLAMA DEVOPS & CODER EXECUTION AGENTS
   # =========================================================================
-  - model_name: light
+  - model_name: coder
     litellm_params:
-      model: openai/qwen2.5-coder:7b
+      model: openai/qwen2.5-coder:14b
       api_base: http://ollama:11434/v1
-      drop_params: true
+      # drop_params: true (Left commented out to allow tool calls)
 
-  - model_name: heavy
-    litellm_params:
-      model: gemini/gemini-3.6-flash
-      api_key: os.environ/GEMINI_API_KEY
 
   # =========================================================================
   # 3. OMNIBAR AI COMMANDS MODEL
   # =========================================================================
   - model_name: omnibar
     litellm_params:
-      model: gemini/gemini-3.5-flash-lite
+      model: gemini/gemini-3.5-flash
       api_key: os.environ/GEMINI_API_KEY
 
   # =========================================================================
-  # 4. DIRECT ENDPOINTS & BASE MODELS
-  # =========================================================================
-  - model_name: coder
-    litellm_params:
-      model: openai/qwen2.5-coder:7b
-      api_base: http://ollama:11434/v1
-      # drop_params: true (Left commented out to allow tool calls)
-
-  # =========================================================================
-  # 5. ACTUAL MODELS (Distinct aliases)
+  # 4. ACTUAL MODELS (Distinct aliases)
   # =========================================================================
   - model_name: nomic-embed-text
     litellm_params:
@@ -53,11 +45,6 @@ model_list:
       api_base: http://ollama:11434/v1
       drop_params: true
 
-  - model_name: studio-3.6-flash
-    litellm_params:
-      model: gemini/gemini-3.6-flash
-      api_key: os.environ/GEMINI_API_KEY
-
   - model_name: studio-3.5-flash
     litellm_params:
       model: gemini/gemini-3.5-flash
@@ -68,15 +55,15 @@ model_list:
       model: gemini/gemini-3.5-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
-  - model_name: studio-3.1-flash-lite
+  - model_name: studio-3.1-pro
     litellm_params:
-      model: gemini/gemini-3.1-flash-lite
+      model: gemini/gemini-3.1-pro
       api_key: os.environ/GEMINI_API_KEY
 
-  - model_name: studio-gemma-4-31b
+  - model_name: claude-sonnet
     litellm_params:
-      model: gemini/gemma-4-31b
-      api_key: os.environ/GEMINI_API_KEY
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
 
 general_settings:
   master_key: sk-1234
@@ -95,29 +82,17 @@ router_settings:
     - {
         "planner":
           [
-            "studio-3.5-flash",
-            "studio-gemma-4-31b",
-            "studio-3.5-flash-lite",
+            "planner-pro",
             "coder",
+            "studio-3.5-flash",
           ],
       }
     - {
-        "light":
+        "planner-pro":
           [
-            "studio-3.1-flash-lite",
-            "studio-3.5-flash-lite",
-            "studio-gemma-4-31b",
+            "planner",
             "coder",
           ],
       }
-    - {
-        "heavy":
-          [
-            "studio-3.5-flash",
-            "studio-gemma-4-31b",
-            "studio-3.5-flash-lite",
-            "coder",
-          ],
-      }
-    - { "omnibar": ["studio-3.1-flash-lite", "studio-gemma-4-31b", "coder"] }
-    - { "coder": ["studio-gemma-4-31b", "studio-3.5-flash-lite"] }
+    - { "omnibar": ["studio-3.5-flash-lite", "coder"] }
+    - { "coder": ["studio-3.5-flash-lite", "planner"] }
