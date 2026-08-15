@@ -44,7 +44,7 @@
     },
     "qdrant": {
       "command": "uvx",
-      "args": ["mcp-server-qdrant", "--qdrant-url", "https://qdrant.sous.tools"]
+      "args": ["mcp-server-qdrant", "--qdrant-url", "http://qdrant:6333"]
     }
   }
 }

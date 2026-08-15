@@ -9,7 +9,7 @@ if [ -d "/sous.tools" ]; then
 elif [ -d "/workspace" ]; then
   export SOUS_ROOT="/workspace"           # code-server container
 else
-  export SOUS_ROOT="$HOME/code/sous.tools" # WSL native
+  export SOUS_ROOT="$HOME/welshlabs/sous.tools" # WSL native
 fi
 
 # Context Engine Shortcut
@@ -28,7 +28,12 @@ alias sous="cd $SOUS_ROOT"
 
 # Infrastructure as Code Stack Management (Single docker-compose.yml)
 alias dco='docker compose'
-alias up='docker compose --profile dev up -d'
+up() {
+  if [ -f .env ]; then
+    set -a; source .env; set +a
+  fi
+  infisical run --env=$INFISICAL_ENV --projectId=$INFISICAL_PROJECT_ID -- docker compose up -d
+}
 alias prod-up='docker compose --profile prod up -d'
 alias down='docker compose down'
 alias dlogs='docker compose logs -f'
@@ -110,4 +115,4 @@ gauto() {
 # MCP Config Sync (keeps AGY + cptr in sync with repo SSOT)
 alias mcp-sync='mkdir -p $HOME/.gemini/config && ln -sf $SOUS_ROOT/mcp_config.json $HOME/.gemini/config/mcp_config.json && echo "✅ MCP config symlinked to repo SSOT"'
 
-alias tailAgent='sudo docker exec agent-runner tail -f /tmp/kanban-orchestrator.log'
+alias tailAgent='docker exec agent-runner tail -f /tmp/kanban-orchestrator.log'

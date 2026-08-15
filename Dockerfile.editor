@@ -27,7 +27,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Force root user layer context workspace rules
-WORKDIR /workspace
+WORKDIR /home/conar/code/sous.tools
 
 # 4. Install global node packages — identical to cptr
 RUN npm install -g pnpm pm2 @anthropic-ai/claude-code @modelcontextprotocol/server-github @infisical/cli vercel
@@ -43,14 +43,14 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # 8. Initialize terminal environment — identical config to cptr
 RUN mkdir -p /config && \
-    echo 'export STARSHIP_CONFIG=/workspace/.config/terminal/starship.toml' >> /config/.zshrc && \
+    echo 'export STARSHIP_CONFIG=/home/conar/code/sous.tools/.config/terminal/starship.toml' >> /config/.zshrc && \
     echo 'eval "$(starship init zsh)"' >> /config/.zshrc && \
-    echo 'if [ -f /workspace/.config/terminal/.zsh_aliases ]; then source /workspace/.config/terminal/.zsh_aliases; fi' >> /config/.zshrc && \
+    echo 'if [ -f /home/conar/code/sous.tools/.config/terminal/.zsh_aliases ]; then source /home/conar/code/sous.tools/.config/terminal/.zsh_aliases; fi' >> /config/.zshrc && \
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> /config/.zshrc
 
 # 9. Symlink AGY MCP config to repo SSOT (auto-sync on every container start)
 RUN mkdir -p /config/.gemini/config && \
-    ln -sf /workspace/mcp_config.json /config/.gemini/config/mcp_config.json
+    ln -sf /home/conar/code/sous.tools/mcp_config.json /config/.gemini/config/mcp_config.json
 
 # 10. Configure permissions and shell (linuxserver s6-overlay processes PUID at runtime)
 RUN chown -R abc:abc /config && usermod -s /bin/zsh abc

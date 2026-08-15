@@ -100,6 +100,12 @@ def main():
         },
         {
             "id": 4,
+            "tag": "[INFRASTRUCTURE]",
+            "title": "Local Development Server Hardware Specifications",
+            "description": "The local development machine features an AMD Ryzen 9 5900x 12-core processor, 32GB RAM, and a 16GB AMD Radeon RX 6800XT GPU. It runs local models and media generation tools (Ollama, ComfyUI, Whisper STT, OpenedAI TTS) taking advantage of AMD ROCm and fast CPU inference."
+        },
+        {
+            "id": 5,
             "tag": "[QDRANT_PROD_ONLY]",
             "title": "Qdrant Production-Only Vector Store Architecture",
             "description": "Qdrant container is strictly deployed in production (profiles: ['prod']). All dev environments, agent runners (cptr), and CLI instances (antigravity-cli) connect directly to production Qdrant at http://qdrant.sous.tools (or http://qdrant:6333 internally)."
@@ -192,7 +198,7 @@ def main():
             "id": 19,
             "tag": "[AI_GATEWAY][INFRASTRUCTURE]",
             "title": "LiteLLM & Qdrant Connection URLs for Dev Environments",
-            "description": "Dev environments (WSL, cptr container, code-server/editor) must NEVER reference internal Docker service names like 'litellm:4000' or 'qdrant:6333'. These services are prod-only on Oracle Cloud. Always use external URLs: LiteLLM AI Gateway -> https://ai.sous.tools/v1 (api_key: sk-1234), Qdrant Vector DB -> http://qdrant.sous.tools or https://qdrant.sous.tools. Configure mcp_config.json and .cptr/config.toml with the external URLs."
+            "description": "Dev environments (WSL, cptr container, code-server/editor) use local Docker service names for Qdrant ('http://qdrant:6333') since the container was moved to the dev environment. Qdrant is no longer exposed publicly. LiteLLM AI Gateway -> https://ai.sous.tools/v1 (api_key: sk-1234) which points to the Tailscale IP of the dev machine."
         },
         {
             "id": 20,
@@ -205,9 +211,14 @@ def main():
             "tag": "[MCP][INFRASTRUCTURE]",
             "title": "Qdrant MCP Collection Schema",
             "description": "Two Qdrant collections: 'sous_tools_memory' (architecture, stack info, constraints, bugfixes, memories — IDs 1-99) and 'sous_tools_adrs' (Architectural Decision Records — IDs 101+). Vector embeddings via nomic-embed-text (768-dim) from Ollama when available, or deterministic fallback (1536-dim). Agents should search BOTH collections before making architectural decisions or infrastructure changes."
+        },
+        {
+            "id": 22,
+            "tag": "[INFRASTRUCTURE][SSH]",
+            "title": "Production Server SSH Access",
+            "description": "The production server (Oracle Cloud) can be accessed natively via the `prod-ssh` alias defined in `.config/terminal/.zsh_aliases`. The connection uses the `ubuntu` user, the workspace `ssh-key.key`, and connects to `129.158.244.62`. The workspace directory on prod is `~/prod.sous.tools`."
         }
     ]
-
     print(f"Upserting {len(memories)} memories into 'sous_tools_memory'...")
     memory_points = []
     for item in memories:

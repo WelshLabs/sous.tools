@@ -1,4 +1,5 @@
-import { Controller, Get, Res } from "@nestjs/common";
+import { Controller, Get, Res, Query } from "@nestjs/common";
+import { ApiQuery, ApiOperation } from "@nestjs/swagger";
 import type { Response } from "express";
 import { AppService } from "./app.service";
 import { type ApiResponse, type HelloResponse } from "@soustools/api-types";
@@ -44,11 +45,31 @@ export class AppController {
     res.type("image/png").send(pixel);
   }
 
-  @Get("notifications/unread")
-  getUnreadNotifications(): ApiResponse<any[]> {
+  @Get("notifications")
+  @ApiOperation({ summary: "Get paginated notifications" })
+  @ApiQuery({ name: "page", required: false, type: String })
+  @ApiQuery({ name: "limit", required: false, type: String })
+  getNotifications(
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 10;
+    
+    const paginatedResult = this.appService.getNotifications(pageNum, limitNum);
     return {
       success: true,
-      data: [],
+      data: paginatedResult,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get("notifications/unread")
+  getUnreadNotifications(): ApiResponse<any[]> {
+    const data = this.appService.getUnreadNotifications();
+    return {
+      success: true,
+      data,
       timestamp: new Date().toISOString(),
     };
   }

@@ -21,16 +21,6 @@ module.exports = {
       watch: false,
     },
     {
-      name: "pos",
-      script: "pnpm",
-      args: "run --filter pos-simulator dev",
-      env: {
-        NODE_ENV: "development",
-      },
-      autorestart: true,
-      watch: false,
-    },
-    {
       name: "setup-portal",
       script: "pnpm",
       args: "run --filter @soustools/setup-portal dev",

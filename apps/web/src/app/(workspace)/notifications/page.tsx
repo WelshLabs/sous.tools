@@ -1,17 +1,39 @@
 import React from "react";
 import { api } from "@soustools/api-client";
 import { Card, CardContent } from "@soustools/design-system";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const pageParam = typeof params.page === "string" ? params.page : "1";
+  const page = parseInt(pageParam, 10) || 1;
+  const limit = 10;
+
   let notifications = [];
+  let totalPages = 1;
+  
   try {
-    const { data, error } = await (api.GET as any)("/notifications", {
+    const { data, error } = await api.GET("/notifications", {
+      params: {
+        query: {
+          page: page.toString(),
+          limit: limit.toString(),
+        },
+      },
       cache: "no-store",
     });
-    if (!error && data) {
-      notifications = data.data || [];
+    
+    if (!error && data?.data) {
+      // The API returns paginatedResult under data.data
+      const paginatedData = data.data as any;
+      notifications = paginatedData.data || [];
+      totalPages = paginatedData.totalPages || 1;
     }
   } catch (error) {
     console.error("Failed to fetch all notifications:", error);
@@ -55,6 +77,38 @@ export default async function NotificationsPage() {
           ))
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-4 mt-8">
+          {page > 1 ? (
+            <Link
+              href={`/notifications?page=${page - 1}`}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:bg-secondary/80"
+            >
+              Previous
+            </Link>
+          ) : (
+            <div className="px-4 py-2 bg-secondary/50 text-secondary-foreground/50 rounded-md text-sm font-medium cursor-not-allowed">
+              Previous
+            </div>
+          )}
+          <span className="flex items-center text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          {page < totalPages ? (
+            <Link
+              href={`/notifications?page=${page + 1}`}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:bg-secondary/80"
+            >
+              Next
+            </Link>
+          ) : (
+            <div className="px-4 py-2 bg-secondary/50 text-secondary-foreground/50 rounded-md text-sm font-medium cursor-not-allowed">
+              Next
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -37,8 +37,23 @@ async function bootstrap(): Promise<void> {
     .getInstance() as import("express").Express;
   expressApp.set("trust proxy", 1);
 
-  app.use(express.json({ limit: "2mb" }));
-  app.use(express.urlencoded({ limit: "2mb", extended: true }));
+  app.use(
+    express.json({
+      limit: "2mb",
+      verify: (req: any, _res: any, buf: Buffer) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
+  app.use(
+    express.urlencoded({
+      limit: "2mb",
+      extended: true,
+      verify: (req: any, _res: any, buf: Buffer) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
 
   // Parse cookies so guards can read HttpOnly session tokens
   app.use(cookieParser());
@@ -83,8 +98,10 @@ async function bootstrap(): Promise<void> {
     .setVersion("1.0")
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  if (config.NODE_ENV !== "production") {
-    fs.writeFileSync("openapi.json", JSON.stringify(document));
+  fs.writeFileSync("openapi.json", JSON.stringify(document, null, 2));
+
+  if (process.env.GENERATE_OPENAPI_ONLY === 'true') {
+    process.exit(0);
   }
 
   const port = config.PORT;

@@ -28,7 +28,8 @@
     "report:knip": "knip > docs/audits/knip-report.txt || true",
     "report:db": "test -f packages/supabase/schema.sql && cp packages/supabase/schema.sql docs/context/db-schema.sql || true",
     "report:summary": "echo '# CTO Executive Summary & Codebase Audit Report\nAuto-generated locally.\n\n## System Status\n- Build Status: Success\n- Last Updated: '$(date -u)'\n\n## Code Quality & Audit Results\n- Lint Report: docs/audits/lint-report.txt\n- Typecheck Report: docs/audits/typecheck-report.txt\n- Unit Test Coverage: docs/audits/unit-test-coverage.txt\n- Knip Report: docs/audits/knip-report.txt\n\n## System Rules Core\nRefer to `AGENTS.md` at repository root for complete Domain-Driven Design guidelines and security rules.' > docs/context/cto_summary.md",
-    "report:all": "mkdir -p docs/audits docs/context docs/wiki && pnpm run report:lint && pnpm run report:typecheck && pnpm run report:test && pnpm run report:deps && pnpm run report:knip && pnpm run report:db && pnpm run report:summary"
+    "report:all": "mkdir -p docs/audits docs/context docs/wiki && pnpm run report:lint && pnpm run report:typecheck && pnpm run report:test && pnpm run report:deps && pnpm run report:knip && pnpm run report:db && pnpm run report:summary",
+    "dc-up": "infisical run --env=$INFISICAL_ENV --projectId=$INFISICAL_PROJECT_ID -- docker compose up -d"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

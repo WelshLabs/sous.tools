@@ -15,6 +15,9 @@ allowBuilds:
   protobufjs: true
   sharp: true
   "@welshlabs/automated-kanban-agent": true
+minimumReleaseAgeExclude:
+  - '@swc/core-linux-arm64-gnu@1.16.0'
+  - '@welshlabs/automated-kanban-agent@1.0.8'
 overrides:
   react: "19.2.7"
   react-dom: "19.2.7"

@@ -49,7 +49,7 @@
       "command": "uvx",
       "args": ["mcp-server-qdrant"],
       "env": {
-        "QDRANT_URL": "https://qdrant.sous.tools",
+        "QDRANT_URL": "http://qdrant:6333",
         "UV_TOOL_DIR": "/home/cptruser/.gemini/antigravity-cli/scratch/uv"
       }
     }

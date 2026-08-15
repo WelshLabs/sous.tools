@@ -32,6 +32,6 @@ USER 1000
 ENV HOME=/home/agentuser
 ENV PATH="$HOME/.local/bin:$PATH"
 
-WORKDIR /workspace
+WORKDIR /home/conar/code/sous.tools
 
 ENTRYPOINT ["/usr/bin/tini", "--"]

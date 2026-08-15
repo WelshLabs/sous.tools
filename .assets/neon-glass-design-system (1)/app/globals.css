@@ -1,0 +1,429 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  sous.tools — Neon-Glass Design System
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  Independent design system. Dependencies: react, tailwind v4, framer-motion.
+ *
+ *  RULES
+ *  - Components NEVER hardcode colors, radii, blur, or glow. They reference the
+ *    semantic tokens below only (via Tailwind classes like `bg-primary` or the
+ *    `--ds-*` custom properties).
+ *  - Light scheme = :root, dark scheme = .dark. Every color role is paired with
+ *    its `-foreground` counterpart so both themes always have legible contrast.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ── Base surfaces ──────────────────────────────────────────────────── */
+  --background: #eef1f7;
+  --foreground: #0f1729;
+
+  --card: #f7f9fcdd;
+  --card-foreground: #0f1729;
+  --popover: #ffffff;
+  --popover-foreground: #0f1729;
+
+  /* ── Brand color roles (blue neon) ──────────────────────────────────── */
+  --primary: #1648ff; /* deep neon blue */
+  --primary-foreground: #ffffff;
+
+  --secondary: #e6ebf5; /* soft neutral chip surface */
+  --secondary-foreground: #1b2540;
+
+  --accent: #06b6d4; /* neon cyan */
+  --accent-foreground: #002a30;
+
+  --violet: #0ea5b0; /* greenish-blue (teal) — gradient partner */
+  --violet-foreground: #ffffff;
+
+  --muted: #e2e8f3;
+  --muted-foreground: #55617d;
+
+  --destructive: #e5484d;
+  --destructive-foreground: #ffffff;
+
+  --success: #12a150;
+  --success-foreground: #ffffff;
+
+  --warning: #d98a00;
+  --warning-foreground: #ffffff;
+
+  /* ── Lines & focus ──────────────────────────────────────────────────── */
+  --border: #d3dbea;
+  --input: #cfd8e8;
+  --ring: #1648ff;
+
+  /* ── Neon RGB triplets (for glow/alpha compositing) ─────────────────── */
+  --ds-neon-primary-rgb: 22 72 255;
+  --ds-neon-accent-rgb: 6 182 212;
+  --ds-neon-violet-rgb: 14 165 176;
+
+  /* ── Frosted glass recipe ───────────────────────────────────────────── */
+  --ds-glass-fill: rgba(255, 255, 255, 0.55);
+  --ds-glass-fill-strong: rgba(255, 255, 255, 0.74);
+  --ds-glass-border: rgba(22, 72, 255, 0.2);
+  --ds-glass-highlight: rgba(255, 255, 255, 0.9);
+  --ds-glass-blur: 16px;
+
+  /* ── Glow presets ───────────────────────────────────────────────────── */
+  --ds-glow-sm: 0 0 12px -2px rgb(var(--ds-neon-primary-rgb) / 0.35);
+  --ds-glow-md: 0 0 22px -4px rgb(var(--ds-neon-primary-rgb) / 0.45),
+    0 0 8px -3px rgb(var(--ds-neon-primary-rgb) / 0.3);
+  --ds-glow-lg: 0 0 44px -6px rgb(var(--ds-neon-primary-rgb) / 0.5),
+    0 0 16px -4px rgb(var(--ds-neon-primary-rgb) / 0.32);
+  --ds-glow-accent: 0 0 22px -4px rgb(var(--ds-neon-accent-rgb) / 0.5),
+    0 0 8px -3px rgb(var(--ds-neon-accent-rgb) / 0.35);
+
+  /* ── Shape ──────────────────────────────────────────────────────────── */
+  --radius: 0.9rem;
+
+  /* ── Motion ─────────────────────────────────────────────────────────── */
+  --ds-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ds-duration-fast: 160ms;
+  --ds-duration: 260ms;
+  --ds-duration-slow: 420ms;
+
+  /* Aurora field intensity */
+  --ds-aurora-opacity: 0.55;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: #05070e;
+  --foreground: #e7ecf6;
+
+  --card: #0c101c99;
+  --card-foreground: #e7ecf6;
+  --popover: #0c101c;
+  --popover-foreground: #e7ecf6;
+
+  --primary: #3867ff; /* deep neon blue for dark */
+  --primary-foreground: #ffffff;
+
+  --secondary: #161c2c;
+  --secondary-foreground: #cdd6ea;
+
+  --accent: #22d3ee; /* neon cyan */
+  --accent-foreground: #00252b;
+
+  --violet: #2dd4bf; /* greenish-blue (teal) */
+  --violet-foreground: #022d2b;
+
+  --muted: #131a29;
+  --muted-foreground: #93a1bd;
+
+  --destructive: #ff6169;
+  --destructive-foreground: #2a0004;
+
+  --success: #3ddc84;
+  --success-foreground: #052e16;
+
+  --warning: #ffb020;
+  --warning-foreground: #2a1a00;
+
+  --border: #1e2740;
+  --input: #232d47;
+  --ring: #3867ff;
+
+  --ds-neon-primary-rgb: 56 103 255;
+  --ds-neon-accent-rgb: 34 211 238;
+  --ds-neon-violet-rgb: 45 212 191;
+
+  --ds-glass-fill: rgba(14, 19, 33, 0.55);
+  --ds-glass-fill-strong: rgba(16, 22, 38, 0.74);
+  --ds-glass-border: rgba(56, 103, 255, 0.2);
+  --ds-glass-highlight: rgba(255, 255, 255, 0.08);
+  --ds-glass-blur: 16px;
+
+  --ds-glow-sm: 0 0 14px -2px rgb(var(--ds-neon-primary-rgb) / 0.5);
+  --ds-glow-md: 0 0 26px -4px rgb(var(--ds-neon-primary-rgb) / 0.6),
+    0 0 10px -3px rgb(var(--ds-neon-primary-rgb) / 0.42);
+  --ds-glow-lg: 0 0 52px -6px rgb(var(--ds-neon-primary-rgb) / 0.6),
+    0 0 20px -4px rgb(var(--ds-neon-primary-rgb) / 0.42);
+  --ds-glow-accent: 0 0 26px -4px rgb(var(--ds-neon-accent-rgb) / 0.6),
+    0 0 10px -3px rgb(var(--ds-neon-accent-rgb) / 0.42);
+
+  --ds-aurora-opacity: 0.85;
+}
+
+/* ── Tailwind theme mapping ───────────────────────────────────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-violet: var(--violet);
+  --color-violet-foreground: var(--violet-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 0.4rem);
+  --radius-md: calc(var(--radius) - 0.2rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.4rem);
+  --radius-2xl: calc(var(--radius) + 0.9rem);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --shadow-glow-sm: var(--ds-glow-sm);
+  --shadow-glow: var(--ds-glow-md);
+  --shadow-glow-lg: var(--ds-glow-lg);
+  --shadow-glow-accent: var(--ds-glow-accent);
+}
+
+/* ── Base layer ─────��─────�������───────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    position: relative;
+    min-height: 100dvh;
+    margin: 0;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    transition: background-color var(--ds-duration) var(--ds-ease),
+      color var(--ds-duration) var(--ds-ease);
+  }
+
+  ::selection {
+    background: rgb(var(--ds-neon-primary-rgb) / 0.25);
+  }
+
+  /* Slim neon scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary);
+  }
+}
+
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  REUSABLE HELPERS (use anywhere in the app)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/* ── Aurora orb field ─────────────────────────────────────────────────────
+ * Drop `.aurora-field` on any positioned container (or use <AuroraBackground/>).
+ * Renders multiple colored neon orbs that continuously, gently drift.
+ * Fully theme-driven; honors prefers-reduced-motion.
+ */
+.aurora-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--ds-aurora-opacity);
+}
+
+.aurora-field .aurora-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  will-change: transform;
+  mix-blend-mode: screen;
+}
+
+.dark .aurora-field .aurora-orb {
+  filter: blur(72px);
+}
+
+.aurora-orb--primary {
+  width: 46vw;
+  height: 46vw;
+  top: -12%;
+  left: -8%;
+  background: radial-gradient(
+    circle at center,
+    rgb(var(--ds-neon-primary-rgb) / 0.55),
+    transparent 68%
+  );
+  animation: aurora-drift-1 22s var(--ds-ease) infinite alternate;
+}
+
+.aurora-orb--accent {
+  width: 40vw;
+  height: 40vw;
+  top: -6%;
+  right: -10%;
+  background: radial-gradient(
+    circle at center,
+    rgb(var(--ds-neon-accent-rgb) / 0.5),
+    transparent 66%
+  );
+  animation: aurora-drift-2 26s var(--ds-ease) infinite alternate;
+}
+
+.aurora-orb--violet {
+  width: 48vw;
+  height: 48vw;
+  bottom: -20%;
+  left: 28%;
+  background: radial-gradient(
+    circle at center,
+    rgb(var(--ds-neon-violet-rgb) / 0.5),
+    transparent 68%
+  );
+  animation: aurora-drift-3 30s var(--ds-ease) infinite alternate;
+}
+
+@keyframes aurora-drift-1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(14%, 12%, 0) scale(1.18);
+  }
+}
+@keyframes aurora-drift-2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-16%, 18%, 0) scale(0.9);
+  }
+}
+@keyframes aurora-drift-3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  100% {
+    transform: translate3d(10%, -14%, 0) scale(1.2);
+  }
+}
+
+/* ── Glass panel ──────────────────────────────────────────────────────── */
+.ds-glass {
+  background: var(--ds-glass-fill);
+  border: 1px solid var(--ds-glass-border);
+  backdrop-filter: blur(var(--ds-glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--ds-glass-blur)) saturate(140%);
+  box-shadow: inset 0 1px 0 var(--ds-glass-highlight),
+    0 8px 32px -12px rgb(0 0 0 / 0.5);
+}
+.ds-glass-strong {
+  background: var(--ds-glass-fill-strong);
+  border: 1px solid var(--ds-glass-border);
+  backdrop-filter: blur(var(--ds-glass-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--ds-glass-blur)) saturate(150%);
+  box-shadow: inset 0 1px 0 var(--ds-glass-highlight),
+    0 24px 64px -24px rgb(0 0 0 / 0.6);
+}
+
+/* ── Animated neon gradient fill (buttons, chips, accents) ────────────────
+ * Pans a multi-stop neon gradient horizontally for a subtle "alive" surface.
+ * Pair with `color: var(--primary-foreground)` for legible text.
+ */
+.ds-gradient-pan {
+  /* Stops stay within the blue→teal range so the single foreground color
+   * (white in light, deep navy in dark) always keeps a legible contrast ratio.
+   * The lighter cyan accent is intentionally excluded here — it washed out text. */
+  background-image: linear-gradient(
+    110deg,
+    var(--primary),
+    var(--violet) 50%,
+    var(--primary)
+  );
+  background-size: 220% auto;
+  animation: ds-gradient-pan 6s linear infinite;
+}
+/* Text protection for content sitting on a gradient/solid neon surface. */
+.ds-on-gradient {
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
+}
+.dark .ds-on-gradient {
+  text-shadow: 0 1px 2px rgb(255 255 255 / 0.18);
+}
+@keyframes ds-gradient-pan {
+  to {
+    background-position: 220% center;
+  }
+}
+
+/* Soft inner top highlight — gives solid surfaces a lit, glassy edge. */
+.ds-lit {
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.28),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.12);
+}
+
+/* ── Neon gradient text ───────────────────────────────────────────────── */
+.ds-text-neon {
+  background: linear-gradient(
+    100deg,
+    var(--primary),
+    var(--accent),
+    var(--violet),
+    var(--primary)
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: ds-shimmer 7s linear infinite;
+}
+
+@keyframes ds-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 220% 50%;
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

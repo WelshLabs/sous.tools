@@ -89,12 +89,7 @@ services:
     networks:
       - traefik_public
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.qdrant-secure.rule=Host(`qdrant.sous.tools`)"
-      - "traefik.http.routers.qdrant-secure.entrypoints=web,websecure"
-      - "traefik.http.routers.qdrant-secure.tls=true"
-      - "traefik.http.routers.qdrant-secure.tls.certresolver=letsencrypt"
-      - "traefik.http.services.qdrant-service.loadbalancer.server.port=6333"
+      - "traefik.enable=false"
     deploy:
       resources:
         limits:
@@ -107,7 +102,7 @@ services:
     depends_on:
       - qdrant
     volumes:
-      - ./scripts/populate_qdrant.py:/app/populate_qdrant.py
+      - ./scripts:/app/scripts
     entrypoint: /bin/sh
     command:
       - "-c"
@@ -115,7 +110,7 @@ services:
         pip install --no-cache-dir qdrant-client
         echo "Waiting for Qdrant database service to initialize..."
         sleep 5
-        python3 /app/populate_qdrant.py
+        python3 /app/scripts/populate_qdrant.py
         echo "Qdrant initial synchronization complete!"
     networks:
       - traefik_public
@@ -170,7 +165,7 @@ services:
     restart: unless-stopped
     command: [
         "--config",
-        "/app/config.yaml",
+        "/workspace/litellm_config.yaml",
         "--port",
         "4000",
         # "--detailed_debug"
@@ -178,7 +173,7 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - ./litellm_config.yaml:/app/config.yaml
+      - ./:/workspace:ro
     environment:
       # - LITELLM_LOG=DEBUG
       - LITELLM_LOG=INFO
@@ -294,7 +289,7 @@ services:
         export INFISICAL_TOKEN=$$(infisical login --method=universal-auth --client-id=$${INFISICAL_CLIENT_ID} --client-secret=$${INFISICAL_CLIENT_SECRET} --silent --plain)
         exec infisical run --log-level info --projectId $${INFISICAL_PROJECT_ID} --env $${INFISICAL_ENV:-dev} -- sh -c 'sleep infinity'
     volumes:
-      - .:/workspace
+      - /home/conar/code/sous.tools:/home/conar/code/sous.tools
       - ${HOME}/.gemini:/home/cptruser/.gemini
       - ${HOME}/.config:/home/cptruser/.config
       - ${HOME}/.ssh:/home/cptruser/.ssh
@@ -347,21 +342,22 @@ services:
     container_name: cptr
     user: "1000:1000"
     volumes:
+      # config
       - ./.cptr:/home/cptruser/.cptr
       - cptr_data:/data
       - /home/conar/.gemini:/home/cptruser/.gemini
       - /home/conar/.config:/home/cptruser/.config
       - /home/conar/.ssh:/home/cptruser/.ssh
       - /home/conar/.gitconfig:/home/cptruser/.gitconfig
-      - /home/conar/projects:/wsl_projects
-      - /mnt/c/Users/conar/projects:/win_projects
       - /var/run/docker.sock:/var/run/docker.sock
-      - /home/conar/code/sous.tools:/sous.tools
       # Shared pnpm store — all three envs (WSL/cptr/editor) use UID 1000, no permission conflicts
       - /home/conar/.local/share/pnpm:/home/cptruser/.local/share/pnpm
+      # Mounts
+      - ~:/home/conar
+      - /mnt/c/Users/conar:/conar
       # readonly
-      - /home/conar:/wsl_root:ro
-      - /mnt/c/Users/conar:/win_root:ro
+      - /:/wsl:ro
+      - /mnt/:/win:ro
     environment:
       PYTHONUNBUFFERED: 1
       LOG_LEVEL: INFO
@@ -371,7 +367,7 @@ services:
       SHELL: "/bin/zsh"
       DEFAULT_MODELS: "planner"
       ENV: /home/cptruser/.zshrc
-      SOUS_TOOLS_ROOT: "/sous.tools"
+      SOUS_TOOLS_ROOT: "/home/conar/code/sous.tools"
       INFISICAL_CLIENT_ID: ${INFISICAL_CLIENT_ID}
       INFISICAL_CLIENT_SECRET: ${INFISICAL_CLIENT_SECRET}
       INFISICAL_UNIVERSAL_AUTH_CLIENT_ID: ${INFISICAL_CLIENT_ID}
@@ -411,10 +407,10 @@ services:
       - PASSWORD=sousToolsPassword
       - SUDO_PASSWORD=sousToolsPassword
       - PROXY_DOMAIN=*
-      - DEFAULT_WORKSPACE=/workspace
+      - DEFAULT_WORKSPACE=/home/conar/code/sous.tools
       - OPENAI_API_BASE=https://ai.sous.tools/v1
       - OPENAI_API_KEY=sk-1234
-      - SOUS_TOOLS_ROOT=/workspace
+      - SOUS_TOOLS_ROOT=/home/conar/code/sous.tools
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=${INFISICAL_CLIENT_ID}
@@ -422,7 +418,7 @@ services:
       - INFISICAL_PROJECT_ID=${INFISICAL_PROJECT_ID}
       - INFISICAL_ENV=${INFISICAL_ENV}
     volumes:
-      - /home/conar/code/sous.tools:/workspace
+      - /home/conar/code/sous.tools:/home/conar/code/sous.tools
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/conar/.gemini:/config/.gemini
       - /home/conar/.config:/config/.config
@@ -472,23 +468,23 @@ services:
     networks:
       - traefik_public
 
-  # comfyui:
-  #   image: rocm/comfyui:latest
-  #   profiles: ["dev"]
-  #   container_name: comfyui
-  #   restart: unless-stopped
-  #   ports:
-  #    - "8188:8188"
-  #   volumes:
-  #    - sd_data:/app/ComfyUI/models
-  #   networks:
-  #    - traefik_public
-  #   devices:
-  #    - "/dev/kfd:/dev/kfd"
-  #    - "/dev/dri:/dev/dri"
-  #   group_add:
-  #    - video
-  #   ipc: host
+  comfyui:
+    image: yanwk/comfyui-boot:rocm
+    profiles: ["dev"]
+    container_name: comfyui
+    restart: unless-stopped
+    ports:
+     - "8188:8188"
+    volumes:
+     - sd_data:/app/ComfyUI/models
+    networks:
+     - traefik_public
+    devices:
+     - "/dev/kfd:/dev/kfd"
+     - "/dev/dri:/dev/dri"
+    group_add:
+     - video
+    ipc: host
 
 volumes:
   letsencrypt:

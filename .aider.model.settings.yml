@@ -9,3 +9,6 @@
 
 - name: gemini/gemini-2.5-flash
   edit_format: diff-fenced
+
+- name: openai/coder
+  edit_format: diff
