@@ -13,7 +13,7 @@ export function useOmniActions() {
 
   const handleConfirmAlias = async (rawName: string, itemId: string) => {
     try {
-      const { error } = await api.POST("/ingestion/alias", {
+      const { error } = await (api.POST as any)("/ingestion/alias", {
         body: {
           organizationId,
           vendorName: "Internal Ingredients",
@@ -77,7 +77,7 @@ export function useOmniActions() {
     }>;
   }) => {
     try {
-      const { error } = await api.POST("/ingestion/invoice/commit", {
+      const { error } = await (api.POST as any)("/ingestion/invoice/commit", {
         body: {
           organizationId,
           invoice: {
