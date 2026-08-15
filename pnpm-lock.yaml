@@ -14,9 +14,6 @@ importers:
 
   .:
     dependencies:
-      '@welshlabs/automated-kanban-agent':
-        specifier: 1.0.8
-        version: 1.0.8
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
@@ -5711,10 +5708,6 @@ packages:
 
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
-
-  '@welshlabs/automated-kanban-agent@1.0.8':
-    resolution: {integrity: sha512-wqyRKUqc/wAjcBb6DCyLpHQbg2TZ3PwK7FvnvsI1eYqScEuVEO9a5OxfFlSxIBuMH/7D5OWWuAHegGarcxJUug==, tarball: https://npm.pkg.github.com/download/@welshlabs/automated-kanban-agent/1.0.8/43f0901690c60d69455f766a7247bf3b36ba3b91}
-    hasBin: true
 
   '@xhmikosr/archive-type@8.1.0':
     resolution: {integrity: sha512-EXOjEbnZFE5c/nFMf4FOrEURVanzHpnkPYmnmr78u02/8hAhE0FMq8p9TK1IM0/bFr5VcyBUY0gfLm8f7dKy+Q==}
@@ -16356,8 +16349,6 @@ snapshots:
     dependencies:
       '@webassemblyjs/ast': 1.14.1
       '@xtuc/long': 4.2.2
-
-  '@welshlabs/automated-kanban-agent@1.0.8': {}
 
   '@xhmikosr/archive-type@8.1.0(supports-color@10.2.2)':
     dependencies:
