@@ -10,34 +10,71 @@
 
 @font-face {
   font-family: 'Archivo';
-  src: url('./fonts/archivo-regular.woff2') format('woff2'),
-       url('./fonts/archivo-bold.woff2') format('woff2');
+  src: url('./fonts/archivo-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Archivo';
+  src: url('./fonts/archivo-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Satoshi';
-  src: url('./fonts/satoshi-regular.woff2') format('woff2'),
-       url('./fonts/satoshi-bold.woff2') format('woff2');
+  src: url('./fonts/satoshi-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('./fonts/satoshi-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Inter';
-  src: url('./fonts/inter-regular.woff2') format('woff2'),
-       url('./fonts/inter-bold.woff2') format('woff2');
+  src: url('./fonts/inter-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-feature-settings: 'ss01' on, 'ss02' on;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('./fonts/inter-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
   font-feature-settings: 'ss01' on, 'ss02' on;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url('./fonts/jetbrains-mono-regular.woff2') format('woff2'),
-       url('./fonts/jetbrains-mono-bold.woff2') format('woff2');
+  src: url('./fonts/jetbrains-mono-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
-@custom-variant dark (&:is(.dark *));
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./fonts/jetbrains-mono-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@custom-variant dark (&:is(.dark, .dark *));
 
 /*
  * ═══════════════════════════════════════════════════════════════════════════
@@ -283,9 +320,11 @@
   --radius-xl: calc(var(--radius) + 0.4rem);
   --radius-2xl: calc(var(--radius) + 0.9rem);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-sans: 'Inter', var(--font-inter, ui-sans-serif), system-ui, sans-serif;
+  --font-display: 'Archivo', var(--font-archivo, 'Inter'), sans-serif;
+  --font-archivo: 'Archivo', sans-serif;
+  --font-satoshi: 'Satoshi', sans-serif;
+  --font-mono: 'JetBrains Mono', var(--font-jetbrains-mono, ui-monospace), monospace;
 
   --shadow-glow-sm: var(--ds-glow-sm);
   --shadow-glow: var(--ds-glow-md);
