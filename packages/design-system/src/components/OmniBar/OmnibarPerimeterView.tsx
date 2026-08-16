@@ -14,12 +14,15 @@ const ringMask = {
   maskComposite: "exclude",
 } as const;
 
+const brandGradient =
+  "conic-gradient(from 0deg, var(--primary), var(--accent), var(--violet), var(--primary))";
+
 /**
- * A single motion language for the OmniBar perimeter.
+ * The OmniBar's shared motion language.
  *
- * Idle keeps a diffused gradient glow breathing behind the physical border,
- * with one restrained presence pass per cycle. Processing tightens and
- * brightens that glow into a continuously travelling brand-gradient ring.
+ * Idle feels alive through a near-imperceptible inner tint and exterior breath,
+ * then gives one restrained perimeter pass. Processing keeps the tint visible
+ * while tightening the perimeter into a prominent travelling brand-gradient.
  */
 export function OmnibarPerimeterView({ busy }: OmnibarPerimeterViewProps) {
   const reducedMotion = useReducedMotion();
@@ -29,67 +32,87 @@ export function OmnibarPerimeterView({ busy }: OmnibarPerimeterViewProps) {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 rounded-[inherit]"
     >
-      {/* The ambient layer lives outside the edge, never on top of the border. */}
+      {/* Controlled inner color wash — visible, but never compromises copy. */}
       <motion.span
-        className="absolute -inset-1 rounded-[inherit]"
+        className="absolute inset-px rounded-[inherit]"
         style={{
-          ...ringMask,
-          padding: busy ? "5px" : "4px",
           background:
-            "conic-gradient(from 0deg, var(--primary), var(--accent), var(--violet), var(--primary))",
-          filter: busy ? "blur(6px)" : "blur(11px)",
+            "linear-gradient(105deg, rgb(var(--ds-neon-primary-rgb) / 0.18), rgb(var(--ds-neon-accent-rgb) / 0.1) 48%, rgb(var(--ds-neon-violet-rgb) / 0.15))",
         }}
         initial={false}
         animate={
           reducedMotion
-            ? { opacity: busy ? 0.42 : 0.1, scale: 1 }
+            ? { opacity: busy ? 0.32 : 0.1 }
             : busy
-              ? { opacity: [0.62, 0.9, 0.62], rotate: 360, scale: 1.015 }
-              : { opacity: [0.08, 0.14, 0.1, 0.16, 0.08], scale: [1, 1.012, 1] }
+              ? { opacity: [0.24, 0.4, 0.24], scale: [1, 1.008, 1] }
+              : { opacity: [0.05, 0.12, 0.06], scale: [1, 1.004, 1] }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : busy
+              ? { duration: 2.4, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 7.5, repeat: Infinity, ease: "easeInOut" }
+        }
+      />
+
+      {/* Exterior breathing halo. Overflow remains visible on both pill shells. */}
+      <motion.span
+        className="absolute -inset-2 rounded-[inherit]"
+        style={{
+          ...ringMask,
+          padding: busy ? "7px" : "6px",
+          background: brandGradient,
+          filter: busy ? "blur(8px)" : "blur(12px)",
+        }}
+        initial={false}
+        animate={
+          reducedMotion
+            ? { opacity: busy ? 0.58 : 0.14, scale: 1 }
+            : busy
+              ? { opacity: [0.58, 0.95, 0.58], rotate: 360, scale: 1.025 }
+              : { opacity: [0.1, 0.25, 0.12], scale: [1, 1.025, 1] }
         }
         transition={
           reducedMotion
             ? { duration: 0 }
             : busy
               ? {
-                  rotate: { duration: 2.2, repeat: Infinity, ease: "linear" },
+                  rotate: { duration: 2.35, repeat: Infinity, ease: "linear" },
                   opacity: {
                     duration: 1.8,
                     repeat: Infinity,
                     ease: "easeInOut",
                   },
                 }
-              : {
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  times: [0, 0.35, 0.62, 0.82, 1],
-                }
+              : { duration: 7.5, repeat: Infinity, ease: "easeInOut" }
         }
       />
 
-      {/* A masked ring aligns exactly with the inherited pill radius. */}
+      {/* Radius-aligned crisp runner: constant in processing, sparse when idle. */}
       <motion.span
         className="absolute -inset-px rounded-[inherit]"
         style={{
           ...ringMask,
           background:
-            "conic-gradient(from 0deg, transparent 0 42%, var(--primary) 54%, var(--accent) 66%, var(--violet) 78%, transparent 90%)",
-          filter: busy ? "blur(0.2px)" : "blur(1.5px)",
+            "conic-gradient(from 0deg, transparent 0 34%, var(--primary) 48%, var(--accent) 62%, var(--violet) 76%, transparent 90%)",
+          filter: busy
+            ? "drop-shadow(0 0 4px rgb(var(--ds-neon-accent-rgb) / 0.65))"
+            : "blur(1px)",
         }}
         initial={false}
         animate={
           reducedMotion
-            ? { opacity: busy ? 0.78 : 0.08 }
+            ? { opacity: busy ? 0.9 : 0.12 }
             : busy
-              ? { opacity: 0.9, rotate: 360 }
-              : { opacity: [0, 0, 0.14, 0.08, 0], rotate: [0, 0, 90, 250, 360] }
+              ? { opacity: 1, rotate: 360 }
+              : { opacity: [0, 0, 0.2, 0.12, 0], rotate: [0, 0, 100, 260, 360] }
         }
         transition={
           reducedMotion
             ? { duration: 0 }
             : busy
-              ? { duration: 1.65, repeat: Infinity, ease: "linear" }
+              ? { duration: 1.8, repeat: Infinity, ease: "linear" }
               : {
                   duration: 12,
                   repeat: Infinity,
