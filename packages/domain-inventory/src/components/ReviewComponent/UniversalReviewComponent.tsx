@@ -359,60 +359,8 @@ export function UniversalReviewComponent({
 
   // ── Main Polymorphic Review Interface ──
   return (
-    <Card className="w-full border-zinc-800/80 bg-zinc-950/80 text-zinc-100 shadow-2xl backdrop-blur-xl">
-      <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/80 pb-4">
-        <div>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight text-white">
-            <span>Review</span>
-          </CardTitle>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/90 p-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="text-xs"
-              >
-                <ChevronLeft className="mr-1 h-3.5 w-3.5" /> Prev
-              </Button>
-              <span className="px-3 font-mono text-xs text-cyan-400">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="text-xs"
-              >
-                Next <ChevronRight className="ml-1 h-3.5 w-3.5" />
-              </Button>
-            </div>
-          )}
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleCommit}
-            disabled={isSubmitting}
-            className="font-bold"
-          >
-            {isSubmitting ? (
-              "Saving..."
-            ) : (
-              <>
-                <Save className="mr-1.5 h-4 w-4" /> Save
-              </>
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-
-      {/* ── Animated Image Lightbox Modal ── */}
+    <>
+      {/* ── Animated Image Lightbox Modal — rendered outside Card for true viewport centering ── */}
       <AnimatePresence>
         {imageModalOpen && currentPData?.imageUrl && (
           <motion.div
@@ -487,130 +435,183 @@ export function UniversalReviewComponent({
         )}
       </AnimatePresence>
 
-      <CardContent className="flex flex-col gap-4 p-6">
-        {statusMessage && (
-          <div className="flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3 text-xs text-cyan-300">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" />
-            <span>{statusMessage}</span>
-          </div>
-        )}
+      <Card className="w-full border-zinc-800/80 bg-zinc-950/80 text-zinc-100 shadow-2xl backdrop-blur-xl">
+        {/* ── Appbar: thumbnail + title + pagination + save ── */}
+        <CardHeader className="flex items-center gap-3 border-b border-zinc-800/60 pb-3">
+          {/* Thumbnail — click to expand */}
+          {currentPData?.imageUrl && (
+            <button
+              type="button"
+              aria-label="View document page full size"
+              onClick={() => setImageModalOpen(true)}
+              className="group relative h-10 w-7 shrink-0 overflow-hidden rounded border border-zinc-700 bg-zinc-900 transition-all hover:border-zinc-500"
+            >
+              <img
+                src={currentPData.imageUrl}
+                alt={`Page ${currentPage} thumbnail`}
+                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+              />
+              <div className="pointer-events-none absolute inset-0">
+                {currentPData?.blocks?.map((box: any) => {
+                  if (!box.bbox) return null;
+                  const [ymin, xmin, ymax, xmax] = box.bbox;
+                  const colorClass =
+                    box.type === "RECIPE"
+                      ? "border-amber-400"
+                      : box.type === "INVOICE"
+                        ? "border-blue-400"
+                        : "border-emerald-400";
+                  return (
+                    <div
+                      key={box.id}
+                      style={{
+                        top: `${ymin / 10}%`,
+                        left: `${xmin / 10}%`,
+                        width: `${(xmax - xmin) / 10}%`,
+                        height: `${(ymax - ymin) / 10}%`,
+                      }}
+                      className={`absolute border ${colorClass} opacity-70`}
+                    />
+                  );
+                })}
+              </div>
+            </button>
+          )}
 
-        {/* Thumbnail strip — click to open lightbox */}
-        {currentPData?.imageUrl && (
-          <button
-            type="button"
-            aria-label="View document page full size"
-            onClick={() => setImageModalOpen(true)}
-            className="group relative h-20 w-14 shrink-0 self-start overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 transition-all hover:border-zinc-500 hover:shadow-lg hover:shadow-black/40"
-          >
-            <img
-              src={currentPData.imageUrl}
-              alt={`Page ${currentPage} thumbnail`}
-              className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-            />
-            {/* Bounding boxes on thumbnail */}
-            <div className="pointer-events-none absolute inset-0">
-              {currentPData?.blocks?.map((box: any) => {
-                if (!box.bbox) return null;
-                const [ymin, xmin, ymax, xmax] = box.bbox;
-                const colorClass =
-                  box.type === "RECIPE"
-                    ? "border-amber-400"
-                    : box.type === "INVOICE"
-                      ? "border-blue-400"
-                      : "border-emerald-400";
+          {/* Title */}
+          <CardTitle className="flex-1 text-base font-semibold text-white">
+            Review
+          </CardTitle>
+
+          {/* Pagination + Save */}
+          <div className="flex items-center gap-2">
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/80 p-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="h-7 px-2 text-xs"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                <span className="min-w-[3rem] text-center font-mono text-xs text-zinc-400">
+                  {currentPage}/{totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="h-7 px-2 text-xs"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleCommit}
+              disabled={isSubmitting}
+              className="h-8 font-semibold"
+            >
+              {isSubmitting ? (
+                "Saving…"
+              ) : (
+                <>
+                  <Save className="mr-1.5 h-3.5 w-3.5" /> Save
+                </>
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="flex flex-col gap-0 divide-y divide-zinc-800/50 p-0">
+          {statusMessage && (
+            <div className="flex items-center gap-2 px-5 py-3 text-xs text-cyan-400">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              <span>{statusMessage}</span>
+            </div>
+          )}
+
+          {currentPData?.blocks?.map((block: any) => {
+            const inner = (() => {
+              if (block.type === "PROSE") {
                 return (
-                  <div
-                    key={box.id}
-                    style={{
-                      top: `${ymin / 10}%`,
-                      left: `${xmin / 10}%`,
-                      width: `${(xmax - xmin) / 10}%`,
-                      height: `${(ymax - ymin) / 10}%`,
-                    }}
-                    className={`absolute border ${colorClass} opacity-80`}
+                  <ReviewProseBlock
+                    key={block.id}
+                    content={block.content || ""}
+                    onChange={(val) =>
+                      handleUpdateBlock(block.id, { content: val })
+                    }
                   />
                 );
-              })}
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-              <span className="rounded bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold text-white uppercase tracking-wider">
-                Expand
-              </span>
-            </div>
-          </button>
-        )}
+              }
+              if (block.type === "INVOICE") {
+                return (
+                  <ReviewInvoiceBlock
+                    key={block.id}
+                    vendorName={block.vendorName}
+                    totals={block.totals}
+                    lineItems={block.lineItems}
+                    onVendorChange={(v) =>
+                      handleUpdateBlock(block.id, { vendorName: v })
+                    }
+                    onLineItemMappingChange={(idx, tId, uId) => {
+                      const items = [...(block.lineItems || [])];
+                      items[idx] = {
+                        ...items[idx],
+                        selectedTenantId: tId,
+                        selectedUsdaId: uId,
+                      };
+                      handleUpdateBlock(block.id, { lineItems: items });
+                    }}
+                  />
+                );
+              }
+              if (block.type === "RECIPE") {
+                return (
+                  <ReviewRecipeBlock
+                    key={block.id}
+                    title={block.title}
+                    yieldCount={block.yieldCount}
+                    yieldUnit={block.yieldUnit}
+                    instructions={block.instructions}
+                    ingredients={block.ingredients}
+                    onTitleChange={(t) =>
+                      handleUpdateBlock(block.id, { title: t })
+                    }
+                    onYieldChange={(c, u) =>
+                      handleUpdateBlock(block.id, {
+                        yieldCount: c,
+                        yieldUnit: u,
+                      })
+                    }
+                    onIngredientMappingChange={(idx, tId, uId) => {
+                      const ings = [...(block.ingredients || [])];
+                      ings[idx] = {
+                        ...ings[idx],
+                        selectedTenantId: tId,
+                        selectedUsdaId: uId,
+                      };
+                      handleUpdateBlock(block.id, { ingredients: ings });
+                    }}
+                  />
+                );
+              }
+              return null;
+            })();
 
-        {/* Block list — no height cap, no internal scroll */}
-        <div className="flex flex-col gap-4">
-          {currentPData?.blocks?.map((block: any) => {
-            if (block.type === "PROSE") {
-              return (
-                <ReviewProseBlock
-                  key={block.id}
-                  content={block.content || ""}
-                  onChange={(val) =>
-                    handleUpdateBlock(block.id, { content: val })
-                  }
-                />
-              );
-            }
-            if (block.type === "INVOICE") {
-              return (
-                <ReviewInvoiceBlock
-                  key={block.id}
-                  vendorName={block.vendorName}
-                  totals={block.totals}
-                  lineItems={block.lineItems}
-                  onVendorChange={(v) =>
-                    handleUpdateBlock(block.id, { vendorName: v })
-                  }
-                  onLineItemMappingChange={(idx, tId, uId) => {
-                    const items = [...(block.lineItems || [])];
-                    items[idx] = {
-                      ...items[idx],
-                      selectedTenantId: tId,
-                      selectedUsdaId: uId,
-                    };
-                    handleUpdateBlock(block.id, { lineItems: items });
-                  }}
-                />
-              );
-            }
-            if (block.type === "RECIPE") {
-              return (
-                <ReviewRecipeBlock
-                  key={block.id}
-                  title={block.title}
-                  yieldCount={block.yieldCount}
-                  yieldUnit={block.yieldUnit}
-                  instructions={block.instructions}
-                  ingredients={block.ingredients}
-                  onTitleChange={(t) =>
-                    handleUpdateBlock(block.id, { title: t })
-                  }
-                  onYieldChange={(c, u) =>
-                    handleUpdateBlock(block.id, {
-                      yieldCount: c,
-                      yieldUnit: u,
-                    })
-                  }
-                  onIngredientMappingChange={(idx, tId, uId) => {
-                    const ings = [...(block.ingredients || [])];
-                    ings[idx] = {
-                      ...ings[idx],
-                      selectedTenantId: tId,
-                      selectedUsdaId: uId,
-                    };
-                    handleUpdateBlock(block.id, { ingredients: ings });
-                  }}
-                />
-              );
-            }
-            return null;
+            return inner ? (
+              <div key={block.id} className="px-5 py-4">
+                {inner}
+              </div>
+            ) : null;
           })}
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 }

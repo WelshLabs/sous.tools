@@ -32,101 +32,103 @@ export function ReviewInvoiceBlock({
   onLineItemMappingChange,
 }: ReviewInvoiceBlockProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-800 bg-zinc-950/60 p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-wider text-blue-400 uppercase">
-          Invoice Metadata & Financials
-        </span>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-xs text-zinc-400">Vendor / Supplier</label>
+    <div className="flex flex-col gap-0 divide-y divide-zinc-800/60">
+      {/* ── Vendor + totals row ── */}
+      <div className="flex flex-col gap-3 pb-4 sm:flex-row sm:items-end sm:gap-4">
+        <div className="flex-1">
+          <label className="mb-1 block text-[11px] font-medium tracking-wide text-zinc-500 uppercase">
+            Vendor
+          </label>
           <input
             type="text"
             value={vendorName || ""}
             onChange={(e) => onVendorChange(e.target.value)}
-            className="mt-1 w-full rounded border border-zinc-800 bg-zinc-900 p-2 text-sm text-zinc-100"
+            placeholder="Supplier name"
+            className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm font-medium text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
           />
         </div>
-        <div className="flex items-center justify-between rounded border border-zinc-800 bg-zinc-900 p-2 text-xs">
-          <div>Subtotal: ${totals?.subtotal?.toFixed(2) || "0.00"}</div>
-          <div>Tax: ${totals?.tax?.toFixed(2) || "0.00"}</div>
-          <div className="font-bold text-emerald-400">
-            Total: ${totals?.total?.toFixed(2) || "0.00"}
-          </div>
+        <div className="flex shrink-0 items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs tabular-nums text-zinc-400">
+          <span>${totals?.subtotal?.toFixed(2) ?? "0.00"} sub</span>
+          <span className="text-zinc-700">·</span>
+          <span>${totals?.tax?.toFixed(2) ?? "0.00"} tax</span>
+          <span className="text-zinc-700">·</span>
+          <span className="font-semibold text-zinc-200">
+            ${totals?.total?.toFixed(2) ?? "0.00"}
+          </span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-zinc-300">
-          Line Items & 3-Way Waterfall Mapping
-        </span>
-        {lineItems.map((item, idx) => (
-          <div
-            key={idx}
-            className="flex flex-col gap-2 rounded border border-zinc-800 bg-zinc-900/80 p-3"
-          >
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-zinc-200">{item.rawName}</span>
-              <span className="text-zinc-400">
-                Qty: {item.quantity || 1} | $
-                {item.unitPrice?.toFixed(2) || "0.00"} ea | Total: $
-                {item.extendedPrice?.toFixed(2) || "0.00"}
-              </span>
-            </div>
+      {/* ── Line items ── */}
+      {lineItems.length > 0 && (
+        <div className="flex flex-col gap-0 divide-y divide-zinc-800/40 pt-4">
+          {lineItems.map((item, idx) => (
+            <div key={idx} className="flex flex-col gap-2.5 py-3 first:pt-0">
+              {/* Name + price */}
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-sm font-medium text-zinc-100 leading-snug">
+                  {item.rawName}
+                </span>
+                <span className="shrink-0 text-xs tabular-nums text-zinc-500">
+                  {item.quantity ?? 1}× ${item.unitPrice?.toFixed(2) ?? "0.00"}
+                  {item.extendedPrice
+                    ? ` = $${item.extendedPrice.toFixed(2)}`
+                    : ""}
+                </span>
+              </div>
 
-            <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-2">
-              <div>
-                <label className="text-[10px] text-zinc-400">
-                  Tenant master_items (Top 5)
-                </label>
-                <select
-                  value={item.selectedTenantId || ""}
-                  onChange={(e) =>
-                    onLineItemMappingChange(
-                      idx,
-                      e.target.value,
-                      item.selectedUsdaId,
-                    )
-                  }
-                  className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-1.5 text-xs text-zinc-100"
-                >
-                  <option value="">-- Select Master Item --</option>
-                  {item.tenantMatches?.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] text-zinc-400">
-                  USDA FDC Matches (Top 5)
-                </label>
-                <select
-                  value={item.selectedUsdaId || ""}
-                  onChange={(e) =>
-                    onLineItemMappingChange(
-                      idx,
-                      item.selectedTenantId || "",
-                      Number(e.target.value),
-                    )
-                  }
-                  className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-950 p-1.5 text-xs text-zinc-100"
-                >
-                  <option value="">-- Select USDA Item --</option>
-                  {item.usdaMatches?.map((u) => (
-                    <option key={u.fdcId} value={u.fdcId}>
-                      {u.description} (FDC #{u.fdcId})
-                    </option>
-                  ))}
-                </select>
+              {/* Mapping selects */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium tracking-wide text-zinc-600 uppercase">
+                    Ingredient
+                  </label>
+                  <select
+                    value={item.selectedTenantId || ""}
+                    onChange={(e) =>
+                      onLineItemMappingChange(
+                        idx,
+                        e.target.value,
+                        item.selectedUsdaId,
+                      )
+                    }
+                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5 text-xs text-zinc-200 outline-none transition focus:border-zinc-600"
+                  >
+                    <option value="">Select ingredient</option>
+                    {item.tenantMatches?.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium tracking-wide text-zinc-600 uppercase">
+                    USDA
+                  </label>
+                  <select
+                    value={item.selectedUsdaId || ""}
+                    onChange={(e) =>
+                      onLineItemMappingChange(
+                        idx,
+                        item.selectedTenantId || "",
+                        Number(e.target.value),
+                      )
+                    }
+                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5 text-xs text-zinc-200 outline-none transition focus:border-zinc-600"
+                  >
+                    <option value="">Select USDA</option>
+                    {item.usdaMatches?.map((u) => (
+                      <option key={u.fdcId} value={u.fdcId}>
+                        {u.description}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
