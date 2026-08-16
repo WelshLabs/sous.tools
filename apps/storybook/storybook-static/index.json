@@ -1,0 +1,971 @@
+{
+  "v": 5,
+  "entries": {
+    "components-appbar--docs": {
+      "id": "components-appbar--docs",
+      "title": "Components/AppBar",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/AppBar/AppBar.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-appbar--default": {
+      "type": "story",
+      "id": "components-appbar--default",
+      "name": "Default",
+      "title": "Components/AppBar",
+      "importPath": "../../packages/design-system/src/components/AppBar/AppBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/AppBar/AppBar.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-appbar--with-notifications": {
+      "type": "story",
+      "id": "components-appbar--with-notifications",
+      "name": "With Notifications",
+      "title": "Components/AppBar",
+      "importPath": "../../packages/design-system/src/components/AppBar/AppBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/AppBar/AppBar.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-appbar--admin-mode": {
+      "type": "story",
+      "id": "components-appbar--admin-mode",
+      "name": "Admin Mode",
+      "title": "Components/AppBar",
+      "importPath": "../../packages/design-system/src/components/AppBar/AppBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/AppBar/AppBar.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-aurorabackground--docs": {
+      "id": "components-aurorabackground--docs",
+      "title": "Components/AuroraBackground",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/AuroraBackground/AuroraBackground.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-aurorabackground--default": {
+      "type": "story",
+      "id": "components-aurorabackground--default",
+      "name": "Default",
+      "title": "Components/AuroraBackground",
+      "importPath": "../../packages/design-system/src/components/AuroraBackground/AuroraBackground.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/AuroraBackground/AuroraBackground.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-bottomnav--docs": {
+      "id": "components-bottomnav--docs",
+      "title": "Components/BottomNav",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/BottomNav/BottomNav.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-bottomnav--default": {
+      "type": "story",
+      "id": "components-bottomnav--default",
+      "name": "Default",
+      "title": "Components/BottomNav",
+      "importPath": "../../packages/design-system/src/components/BottomNav/BottomNav.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/BottomNav/BottomNav.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-brandicons--docs": {
+      "id": "components-brandicons--docs",
+      "title": "Components/BrandIcons",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/BrandIcons/BrandIcons.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-brandicons--default": {
+      "type": "story",
+      "id": "components-brandicons--default",
+      "name": "Default",
+      "title": "Components/BrandIcons",
+      "importPath": "../../packages/design-system/src/components/BrandIcons/BrandIcons.stories.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-button--primary": {
+      "type": "story",
+      "id": "components-button--primary",
+      "name": "Primary",
+      "title": "Components/Button",
+      "importPath": "../../packages/design-system/src/components/Button/Button.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Button/Button.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-button--all-variants": {
+      "type": "story",
+      "id": "components-button--all-variants",
+      "name": "All Variants",
+      "title": "Components/Button",
+      "importPath": "../../packages/design-system/src/components/Button/Button.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Button/Button.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-button--all-sizes": {
+      "type": "story",
+      "id": "components-button--all-sizes",
+      "name": "All Sizes",
+      "title": "Components/Button",
+      "importPath": "../../packages/design-system/src/components/Button/Button.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Button/Button.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-button--disabled": {
+      "type": "story",
+      "id": "components-button--disabled",
+      "name": "Disabled",
+      "title": "Components/Button",
+      "importPath": "../../packages/design-system/src/components/Button/Button.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Button/Button.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-card--default": {
+      "type": "story",
+      "id": "components-card--default",
+      "name": "Default",
+      "title": "Components/Card",
+      "importPath": "../../packages/design-system/src/components/Card/Card.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Card/Card.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-card--solid-no-glass": {
+      "type": "story",
+      "id": "components-card--solid-no-glass",
+      "name": "Solid No Glass",
+      "title": "Components/Card",
+      "importPath": "../../packages/design-system/src/components/Card/Card.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Card/Card.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-card--glowing": {
+      "type": "story",
+      "id": "components-card--glowing",
+      "name": "Glowing",
+      "title": "Components/Card",
+      "importPath": "../../packages/design-system/src/components/Card/Card.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Card/Card.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-chip--docs": {
+      "id": "components-chip--docs",
+      "title": "Components/Chip",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/Chip/Chip.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-chip--default": {
+      "type": "story",
+      "id": "components-chip--default",
+      "name": "Default",
+      "title": "Components/Chip",
+      "importPath": "../../packages/design-system/src/components/Chip/Chip.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Chip/Chip.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-chip--selected": {
+      "type": "story",
+      "id": "components-chip--selected",
+      "name": "Selected",
+      "title": "Components/Chip",
+      "importPath": "../../packages/design-system/src/components/Chip/Chip.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Chip/Chip.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-chip--with-icon": {
+      "type": "story",
+      "id": "components-chip--with-icon",
+      "name": "With Icon",
+      "title": "Components/Chip",
+      "importPath": "../../packages/design-system/src/components/Chip/Chip.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Chip/Chip.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-chip--removable": {
+      "type": "story",
+      "id": "components-chip--removable",
+      "name": "Removable",
+      "title": "Components/Chip",
+      "importPath": "../../packages/design-system/src/components/Chip/Chip.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Chip/Chip.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-chip--disabled": {
+      "type": "story",
+      "id": "components-chip--disabled",
+      "name": "Disabled",
+      "title": "Components/Chip",
+      "importPath": "../../packages/design-system/src/components/Chip/Chip.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Chip/Chip.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-chip--sizes": {
+      "type": "story",
+      "id": "components-chip--sizes",
+      "name": "Sizes",
+      "title": "Components/Chip",
+      "importPath": "../../packages/design-system/src/components/Chip/Chip.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Chip/Chip.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-confirmmodal--docs": {
+      "id": "components-confirmmodal--docs",
+      "title": "Components/ConfirmModal",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/ConfirmModal/ConfirmModal.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-confirmmodal--default": {
+      "type": "story",
+      "id": "components-confirmmodal--default",
+      "name": "Default",
+      "title": "Components/ConfirmModal",
+      "importPath": "../../packages/design-system/src/components/ConfirmModal/ConfirmModal.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/ConfirmModal/ConfirmModal.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-confirmmodal--destructive": {
+      "type": "story",
+      "id": "components-confirmmodal--destructive",
+      "name": "Destructive",
+      "title": "Components/ConfirmModal",
+      "importPath": "../../packages/design-system/src/components/ConfirmModal/ConfirmModal.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/ConfirmModal/ConfirmModal.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-dashboardcharts--docs": {
+      "id": "components-dashboardcharts--docs",
+      "title": "Components/DashboardCharts",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/DashboardCharts/DashboardCharts.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-dashboardcharts--default": {
+      "type": "story",
+      "id": "components-dashboardcharts--default",
+      "name": "Default",
+      "title": "Components/DashboardCharts",
+      "importPath": "../../packages/design-system/src/components/DashboardCharts/DashboardCharts.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/DashboardCharts/DashboardCharts.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-dialog--default": {
+      "type": "story",
+      "id": "components-dialog--default",
+      "name": "Default",
+      "title": "Components/Dialog",
+      "importPath": "../../packages/design-system/src/components/Dialog/Dialog.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Dialog/Dialog.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-hamburger--docs": {
+      "id": "components-hamburger--docs",
+      "title": "Components/Hamburger",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/Hamburger/Hamburger.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-hamburger--interactive": {
+      "type": "story",
+      "id": "components-hamburger--interactive",
+      "name": "Interactive",
+      "title": "Components/Hamburger",
+      "importPath": "../../packages/design-system/src/components/Hamburger/Hamburger.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Hamburger/Hamburger.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-hamburger--open": {
+      "type": "story",
+      "id": "components-hamburger--open",
+      "name": "Open",
+      "title": "Components/Hamburger",
+      "importPath": "../../packages/design-system/src/components/Hamburger/Hamburger.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Hamburger/Hamburger.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-hamburger--closed": {
+      "type": "story",
+      "id": "components-hamburger--closed",
+      "name": "Closed",
+      "title": "Components/Hamburger",
+      "importPath": "../../packages/design-system/src/components/Hamburger/Hamburger.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Hamburger/Hamburger.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-input--default": {
+      "type": "story",
+      "id": "components-input--default",
+      "name": "Default",
+      "title": "Components/Input",
+      "importPath": "../../packages/design-system/src/components/Input/Input.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Input/Input.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-input--with-label": {
+      "type": "story",
+      "id": "components-input--with-label",
+      "name": "With Label",
+      "title": "Components/Input",
+      "importPath": "../../packages/design-system/src/components/Input/Input.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Input/Input.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-input--with-error": {
+      "type": "story",
+      "id": "components-input--with-error",
+      "name": "With Error",
+      "title": "Components/Input",
+      "importPath": "../../packages/design-system/src/components/Input/Input.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Input/Input.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-input--with-hint": {
+      "type": "story",
+      "id": "components-input--with-hint",
+      "name": "With Hint",
+      "title": "Components/Input",
+      "importPath": "../../packages/design-system/src/components/Input/Input.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Input/Input.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-input--with-icon-and-trailing": {
+      "type": "story",
+      "id": "components-input--with-icon-and-trailing",
+      "name": "With Icon And Trailing",
+      "title": "Components/Input",
+      "importPath": "../../packages/design-system/src/components/Input/Input.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Input/Input.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-insightssidebar--docs": {
+      "id": "components-insightssidebar--docs",
+      "title": "Components/InsightsSidebar",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/InsightsSidebar/InsightsSidebar.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-insightssidebar--default": {
+      "type": "story",
+      "id": "components-insightssidebar--default",
+      "name": "Default",
+      "title": "Components/InsightsSidebar",
+      "importPath": "../../packages/design-system/src/components/InsightsSidebar/InsightsSidebar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/InsightsSidebar/InsightsSidebar.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-insightssidebar--no-suppliers": {
+      "type": "story",
+      "id": "components-insightssidebar--no-suppliers",
+      "name": "No Suppliers",
+      "title": "Components/InsightsSidebar",
+      "importPath": "../../packages/design-system/src/components/InsightsSidebar/InsightsSidebar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/InsightsSidebar/InsightsSidebar.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-label--default": {
+      "type": "story",
+      "id": "components-label--default",
+      "name": "Default",
+      "title": "Components/Label",
+      "importPath": "../../packages/design-system/src/components/Label/Label.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Label/Label.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-label--required": {
+      "type": "story",
+      "id": "components-label--required",
+      "name": "Required",
+      "title": "Components/Label",
+      "importPath": "../../packages/design-system/src/components/Label/Label.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Label/Label.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-loader--docs": {
+      "id": "components-loader--docs",
+      "title": "Components/Loader",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/Loader/Loader.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-loader--brand-loader-variants": {
+      "type": "story",
+      "id": "components-loader--brand-loader-variants",
+      "name": "Brand Loader Variants",
+      "title": "Components/Loader",
+      "importPath": "../../packages/design-system/src/components/Loader/Loader.stories.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-loader--spinner-variants": {
+      "type": "story",
+      "id": "components-loader--spinner-variants",
+      "name": "Spinner Variants",
+      "title": "Components/Loader",
+      "importPath": "../../packages/design-system/src/components/Loader/Loader.stories.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-loader--dots": {
+      "type": "story",
+      "id": "components-loader--dots",
+      "name": "Dots",
+      "title": "Components/Loader",
+      "importPath": "../../packages/design-system/src/components/Loader/Loader.stories.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-loader--progress": {
+      "type": "story",
+      "id": "components-loader--progress",
+      "name": "Progress",
+      "title": "Components/Loader",
+      "importPath": "../../packages/design-system/src/components/Loader/Loader.stories.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-loginbutton--docs": {
+      "id": "components-loginbutton--docs",
+      "title": "Components/LoginButton",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/LoginButton/LoginButton.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-loginbutton--states": {
+      "type": "story",
+      "id": "components-loginbutton--states",
+      "name": "States",
+      "title": "Components/LoginButton",
+      "importPath": "../../packages/design-system/src/components/LoginButton/LoginButton.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/LoginButton/LoginButton.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-logos--docs": {
+      "id": "components-logos--docs",
+      "title": "Components/Logos",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/Logos/Logos.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-logos--all-logos": {
+      "type": "story",
+      "id": "components-logos--all-logos",
+      "name": "All Logos",
+      "title": "Components/Logos",
+      "importPath": "../../packages/design-system/src/components/Logos/Logos.stories.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--docs": {
+      "id": "components-omnibar--docs",
+      "title": "Components/OmniBar",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-omnibar--workspace-collapsed": {
+      "type": "story",
+      "id": "components-omnibar--workspace-collapsed",
+      "name": "Workspace Collapsed",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--workspace-expanded": {
+      "type": "story",
+      "id": "components-omnibar--workspace-expanded",
+      "name": "Workspace Expanded",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--with-draft-prompt": {
+      "type": "story",
+      "id": "components-omnibar--with-draft-prompt",
+      "name": "With Draft Prompt",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--processing": {
+      "type": "story",
+      "id": "components-omnibar--processing",
+      "name": "Processing",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--listening": {
+      "type": "story",
+      "id": "components-omnibar--listening",
+      "name": "Listening",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--with-error": {
+      "type": "story",
+      "id": "components-omnibar--with-error",
+      "name": "With Error",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--drag-and-drop": {
+      "type": "story",
+      "id": "components-omnibar--drag-and-drop",
+      "name": "Drag And Drop",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--with-staged-files": {
+      "type": "story",
+      "id": "components-omnibar--with-staged-files",
+      "name": "With Staged Files",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--home-focus": {
+      "type": "story",
+      "id": "components-omnibar--home-focus",
+      "name": "Home Focus",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--home-with-prompt": {
+      "type": "story",
+      "id": "components-omnibar--home-with-prompt",
+      "name": "Home With Prompt",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--answer-composer": {
+      "type": "story",
+      "id": "components-omnibar--answer-composer",
+      "name": "Answer Composer",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-omnibar--answer-composer-with-files": {
+      "type": "story",
+      "id": "components-omnibar--answer-composer-with-files",
+      "name": "Answer Composer With Files",
+      "title": "Components/OmniBar",
+      "importPath": "../../packages/design-system/src/components/OmniBar/OmniBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/OmniBar/OmniBarPresentation.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-pininput--docs": {
+      "id": "components-pininput--docs",
+      "title": "Components/PinInput",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/PinInput/PinInput.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-pininput--default": {
+      "type": "story",
+      "id": "components-pininput--default",
+      "name": "Default",
+      "title": "Components/PinInput",
+      "importPath": "../../packages/design-system/src/components/PinInput/PinInput.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/PinInput/PinInput.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-pininput--custom-length": {
+      "type": "story",
+      "id": "components-pininput--custom-length",
+      "name": "Custom Length",
+      "title": "Components/PinInput",
+      "importPath": "../../packages/design-system/src/components/PinInput/PinInput.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/PinInput/PinInput.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-popover--default": {
+      "type": "story",
+      "id": "components-popover--default",
+      "name": "Default",
+      "title": "Components/Popover",
+      "importPath": "../../packages/design-system/src/components/Popover/Popover.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Popover/Popover.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-quickaddbar--docs": {
+      "id": "components-quickaddbar--docs",
+      "title": "Components/QuickAddBar",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/QuickAddBar/QuickAddBar.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-quickaddbar--default": {
+      "type": "story",
+      "id": "components-quickaddbar--default",
+      "name": "Default",
+      "title": "Components/QuickAddBar",
+      "importPath": "../../packages/design-system/src/components/QuickAddBar/QuickAddBar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/QuickAddBar/QuickAddBar.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-sidebar--default": {
+      "type": "story",
+      "id": "components-sidebar--default",
+      "name": "Default",
+      "title": "Components/Sidebar",
+      "importPath": "../../packages/design-system/src/components/Sidebar/Sidebar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Sidebar/Sidebar.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-sidebar--layout-story": {
+      "type": "story",
+      "id": "components-sidebar--layout-story",
+      "name": "Layout Story",
+      "title": "Components/Sidebar",
+      "importPath": "../../packages/design-system/src/components/Sidebar/Sidebar.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Sidebar/Sidebar.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-table--default": {
+      "type": "story",
+      "id": "components-table--default",
+      "name": "Default",
+      "title": "Components/Table",
+      "importPath": "../../packages/design-system/src/components/Table/Table.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/Table/Table.tsx",
+      "tags": ["dev", "test"]
+    },
+    "components-themetoggle--docs": {
+      "id": "components-themetoggle--docs",
+      "title": "Components/ThemeToggle",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/ThemeToggle/ThemeToggle.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-themetoggle--default": {
+      "type": "story",
+      "id": "components-themetoggle--default",
+      "name": "Default",
+      "title": "Components/ThemeToggle",
+      "importPath": "../../packages/design-system/src/components/ThemeToggle/ThemeToggle.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/ThemeToggle/ThemeToggle.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-topprogress--docs": {
+      "id": "components-topprogress--docs",
+      "title": "Components/TopProgress",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/TopProgress/TopProgress.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-topprogress--interactive": {
+      "type": "story",
+      "id": "components-topprogress--interactive",
+      "name": "Interactive",
+      "title": "Components/TopProgress",
+      "importPath": "../../packages/design-system/src/components/TopProgress/TopProgress.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/TopProgress/TopProgress.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-twotoneheader--docs": {
+      "id": "components-twotoneheader--docs",
+      "title": "Components/TwoToneHeader",
+      "name": "Docs",
+      "importPath": "../../packages/design-system/src/components/TwoToneHeader/TwoToneHeader.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "components-twotoneheader--default": {
+      "type": "story",
+      "id": "components-twotoneheader--default",
+      "name": "Default",
+      "title": "Components/TwoToneHeader",
+      "importPath": "../../packages/design-system/src/components/TwoToneHeader/TwoToneHeader.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/TwoToneHeader/TwoToneHeader.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-twotoneheader--with-breadcrumb": {
+      "type": "story",
+      "id": "components-twotoneheader--with-breadcrumb",
+      "name": "With Breadcrumb",
+      "title": "Components/TwoToneHeader",
+      "importPath": "../../packages/design-system/src/components/TwoToneHeader/TwoToneHeader.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/TwoToneHeader/TwoToneHeader.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "components-twotoneheader--with-trailing": {
+      "type": "story",
+      "id": "components-twotoneheader--with-trailing",
+      "name": "With Trailing",
+      "title": "Components/TwoToneHeader",
+      "importPath": "../../packages/design-system/src/components/TwoToneHeader/TwoToneHeader.stories.tsx",
+      "componentPath": "../../packages/design-system/src/components/TwoToneHeader/TwoToneHeader.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "domain-inventory-itemeditor--default": {
+      "type": "story",
+      "id": "domain-inventory-itemeditor--default",
+      "name": "Default",
+      "title": "Domain Inventory/ItemEditor",
+      "importPath": "../../packages/domain-inventory/src/components/ItemEditor/ItemEditor.stories.tsx",
+      "componentPath": "../../packages/domain-inventory/src/components/ItemEditor/ItemEditor.container.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-inventory-itemsledger--default": {
+      "type": "story",
+      "id": "domain-inventory-itemsledger--default",
+      "name": "Default",
+      "title": "Domain Inventory/ItemsLedger",
+      "importPath": "../../packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.stories.tsx",
+      "componentPath": "../../packages/domain-inventory/src/components/ItemsLedger/ItemsLedger.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-inventory-orderspanel--default": {
+      "type": "story",
+      "id": "domain-inventory-orderspanel--default",
+      "name": "Default",
+      "title": "Domain Inventory/OrdersPanel",
+      "importPath": "../../packages/domain-inventory/src/components/OrdersPanel/OrdersPanel.stories.tsx",
+      "componentPath": "../../packages/domain-inventory/src/components/OrdersPanel/OrdersPanel.container.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-inventory-supplierordergroup--default": {
+      "type": "story",
+      "id": "domain-inventory-supplierordergroup--default",
+      "name": "Default",
+      "title": "Domain Inventory/SupplierOrderGroup",
+      "importPath": "../../packages/domain-inventory/src/components/Supplier/Supplier.stories.tsx",
+      "componentPath": "../../packages/domain-inventory/src/components/Supplier/SupplierOrderGroup.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-inventory-vendorspanel--default": {
+      "type": "story",
+      "id": "domain-inventory-vendorspanel--default",
+      "name": "Default",
+      "title": "Domain Inventory/VendorsPanel",
+      "importPath": "../../packages/domain-inventory/src/components/VendorsPanel/VendorsPanel.stories.tsx",
+      "componentPath": "../../packages/domain-inventory/src/components/VendorsPanel/VendorsPanel.container.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-pos-posregister--default": {
+      "type": "story",
+      "id": "domain-pos-posregister--default",
+      "name": "Default",
+      "title": "Domain POS/POSRegister",
+      "importPath": "../../packages/domain-pos/src/components/POSRegister/POSRegister.stories.tsx",
+      "componentPath": "../../packages/domain-pos/src/components/POSRegister/pos.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-recipes-activekitchenview--default": {
+      "type": "story",
+      "id": "domain-recipes-activekitchenview--default",
+      "name": "Default",
+      "title": "Domain Recipes/ActiveKitchenView",
+      "importPath": "../../packages/domain-recipes/src/components/ActiveKitchen/ActiveKitchen.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/ActiveKitchen/ActiveKitchen.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-recipes-compliancesearch--default": {
+      "type": "story",
+      "id": "domain-recipes-compliancesearch--default",
+      "name": "Default",
+      "title": "Domain Recipes/ComplianceSearch",
+      "importPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-recipes-compliancesearch--with-results": {
+      "type": "story",
+      "id": "domain-recipes-compliancesearch--with-results",
+      "name": "With Results",
+      "title": "Domain Recipes/ComplianceSearch",
+      "importPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-recipes-compliancesearch--loading": {
+      "type": "story",
+      "id": "domain-recipes-compliancesearch--loading",
+      "name": "Loading",
+      "title": "Domain Recipes/ComplianceSearch",
+      "importPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-recipes-compliancesearch--error-state": {
+      "type": "story",
+      "id": "domain-recipes-compliancesearch--error-state",
+      "name": "Error State",
+      "title": "Domain Recipes/ComplianceSearch",
+      "importPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/ComplianceSearch/ComplianceSearch.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-recipes-recipebuilder--default": {
+      "type": "story",
+      "id": "domain-recipes-recipebuilder--default",
+      "name": "Default",
+      "title": "Domain/Recipes/RecipeBuilder",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeBuilder/RecipeBuilder.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/RecipeBuilder/RecipeBuilder.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-recipes-recipelist--docs": {
+      "id": "domain-recipes-recipelist--docs",
+      "title": "Domain Recipes/RecipeList",
+      "name": "Docs",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "domain-recipes-recipelist--default": {
+      "type": "story",
+      "id": "domain-recipes-recipelist--default",
+      "name": "Default",
+      "title": "Domain Recipes/RecipeList",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.view.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "domain-recipes-recipelist--loading": {
+      "type": "story",
+      "id": "domain-recipes-recipelist--loading",
+      "name": "Loading",
+      "title": "Domain Recipes/RecipeList",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.view.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "domain-recipes-recipelist--empty": {
+      "type": "story",
+      "id": "domain-recipes-recipelist--empty",
+      "name": "Empty",
+      "title": "Domain Recipes/RecipeList",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.view.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "domain-recipes-recipelist--with-filter": {
+      "type": "story",
+      "id": "domain-recipes-recipelist--with-filter",
+      "name": "With Filter",
+      "title": "Domain Recipes/RecipeList",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/RecipeList/RecipeList.view.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "domain-recipes-recipeviewer--docs": {
+      "id": "domain-recipes-recipeviewer--docs",
+      "title": "domain-recipes/RecipeViewer",
+      "name": "Docs",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeViewer/RecipeViewer.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "domain-recipes-recipeviewer--default": {
+      "type": "story",
+      "id": "domain-recipes-recipeviewer--default",
+      "name": "Default",
+      "title": "domain-recipes/RecipeViewer",
+      "importPath": "../../packages/domain-recipes/src/components/RecipeViewer/RecipeViewer.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/RecipeViewer/RecipeViewer.view.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "domain-recipes-vesselmanager--default": {
+      "type": "story",
+      "id": "domain-recipes-vesselmanager--default",
+      "name": "Default",
+      "title": "Domain/Recipes/VesselManager",
+      "importPath": "../../packages/domain-recipes/src/components/VesselManager/VesselManager.stories.tsx",
+      "componentPath": "../../packages/domain-recipes/src/components/VesselManager/VesselManager.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-settings-settingspanel--default": {
+      "type": "story",
+      "id": "domain-settings-settingspanel--default",
+      "name": "Default",
+      "title": "Domain Settings/SettingsPanel",
+      "importPath": "../../packages/domain-settings/src/components/SettingsPanel/SettingsPanel.stories.tsx",
+      "componentPath": "../../packages/domain-settings/src/components/SettingsPanel/SettingsPanel.container.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domainsignage-displaymanager--docs": {
+      "id": "domainsignage-displaymanager--docs",
+      "title": "DomainSignage/DisplayManager",
+      "name": "Docs",
+      "importPath": "../../packages/domain-signage/src/components/DisplayManager/DisplayManager.stories.tsx",
+      "type": "docs",
+      "tags": ["dev", "test", "autodocs"],
+      "storiesImports": []
+    },
+    "domainsignage-displaymanager--default": {
+      "type": "story",
+      "id": "domainsignage-displaymanager--default",
+      "name": "Default",
+      "title": "DomainSignage/DisplayManager",
+      "importPath": "../../packages/domain-signage/src/components/DisplayManager/DisplayManager.stories.tsx",
+      "componentPath": "../../packages/domain-signage/src/components/DisplayManager/DisplayManager.view.tsx",
+      "tags": ["dev", "test", "autodocs"]
+    },
+    "signageeditorview--default": {
+      "type": "story",
+      "id": "signageeditorview--default",
+      "name": "Default",
+      "title": "SignageEditorView",
+      "importPath": "../../packages/domain-signage/src/components/SignageEditor/SignageEditor.stories.tsx",
+      "componentPath": "../../packages/domain-signage/src/components/SignageEditor/SignageEditor.view.tsx",
+      "tags": ["dev", "test"]
+    },
+    "domain-signage-signagepreview--default": {
+      "type": "story",
+      "id": "domain-signage-signagepreview--default",
+      "name": "Default",
+      "title": "domain-signage/SignagePreview",
+      "importPath": "../../packages/domain-signage/src/components/SignagePreview/SignagePreview.stories.tsx",
+      "componentPath": "../../packages/domain-signage/src/components/SignagePreview/SignagePreview.view.tsx",
+      "tags": ["dev", "test"]
+    }
+  }
+}
