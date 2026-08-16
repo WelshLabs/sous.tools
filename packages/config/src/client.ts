@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+if (typeof process === "undefined") {
+  (globalThis as any).process = { env: {} };
+}
+
 export const clientSchema = z.object({
   NODE_ENV: z.string().default("development"),
   IS_MOCK_ENV: z.boolean().default(false),

@@ -29,7 +29,7 @@ import { CommandsGateway } from "../commands/commands.gateway";
 import { ChatPersistenceService } from "../commands/chat-persistence.service";
 import { randomUUID } from "crypto";
 
-@Processor("unified-ingestion")
+@Processor("unified-ingestion", { lockDuration: 120000 })
 export class UnifiedIngestionProcessor extends WorkerHost {
   private readonly logger = new Logger(UnifiedIngestionProcessor.name);
 
@@ -381,33 +381,38 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
             userId,
           });
         }
-        const ingredients = [];
-        for (const ing of b.ingredients || [{ rawName: "Sample Ingredient" }]) {
-          const guessName = ing.rawName || "Ingredient";
-          const queryEmbedding =
-            await this.ingestionService.getEmbedding(guessName);
-          const tenantMatches =
-            await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
-              orgId: organizationId,
-              rawItemName: ing.rawName || guessName,
-            });
-          const usdaMatches = await this.usdaResolver.searchTop5(guessName);
+        const rawIngredients =
+          b.ingredients || [{ rawName: "Sample Ingredient" }];
+        const ingredients = await Promise.all(
+          rawIngredients.map(async (ing: any) => {
+            const guessName = ing.rawName || "Ingredient";
+            const [queryEmbedding, usdaMatches] = await Promise.all([
+              this.ingestionService.getEmbedding(guessName),
+              this.usdaResolver.searchTop5(guessName),
+            ]);
+            const tenantMatches =
+              await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
+                orgId: organizationId,
+                rawItemName: ing.rawName || guessName,
+              });
 
-          const topTenantScore = tenantMatches[0]?.score ?? 0;
-          const autoAccepted = topTenantScore >= 0.85 || topTenantScore === 1.0;
+            const topTenantScore = tenantMatches[0]?.score ?? 0;
+            const autoAccepted =
+              topTenantScore >= 0.85 || topTenantScore === 1.0;
 
-          ingredients.push({
-            rawName: ing.rawName || guessName,
-            guessName,
-            quantity: ing.quantity || 1,
-            unit: ing.unit || "lb",
-            tenantMatches,
-            usdaMatches,
-            selectedTenantId: tenantMatches[0]?.id,
-            selectedUsdaId: usdaMatches[0]?.fdcId,
-            autoAccepted,
-          });
-        }
+            return {
+              rawName: ing.rawName || guessName,
+              guessName,
+              quantity: ing.quantity || 1,
+              unit: ing.unit || "lb",
+              tenantMatches,
+              usdaMatches,
+              selectedTenantId: tenantMatches[0]?.id,
+              selectedUsdaId: usdaMatches[0]?.fdcId,
+              autoAccepted,
+            };
+          }),
+        );
 
         processedBlocks.push({
           id: blockId,
@@ -437,37 +442,41 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
           }
         }
 
-        const lineItems = [];
-        for (const item of b.lineItems || [
+        const rawLineItems = b.lineItems || [
           { rawName: "Sample Line Item", unitPrice: 10, extendedPrice: 10 },
-        ]) {
-          const guessName = item.rawName || "Item";
-          const queryEmbedding =
-            await this.ingestionService.getEmbedding(guessName);
-          const tenantMatches =
-            await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
-              orgId: organizationId,
-              vendorId,
-              rawItemName: item.rawName || guessName,
-            });
-          const usdaMatches = await this.usdaResolver.searchTop5(guessName);
+        ];
+        const lineItems = await Promise.all(
+          rawLineItems.map(async (item: any) => {
+            const guessName = item.rawName || "Item";
+            const [queryEmbedding, usdaMatches] = await Promise.all([
+              this.ingestionService.getEmbedding(guessName),
+              this.usdaResolver.searchTop5(guessName),
+            ]);
+            const tenantMatches =
+              await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
+                orgId: organizationId,
+                vendorId,
+                rawItemName: item.rawName || guessName,
+              });
 
-          const topTenantScore = tenantMatches[0]?.score ?? 0;
-          const autoAccepted = topTenantScore >= 0.85 || topTenantScore === 1.0;
+            const topTenantScore = tenantMatches[0]?.score ?? 0;
+            const autoAccepted =
+              topTenantScore >= 0.85 || topTenantScore === 1.0;
 
-          lineItems.push({
-            rawName: item.rawName || guessName,
-            guessName,
-            quantity: item.quantity || 1,
-            unitPrice: item.unitPrice || 0,
-            extendedPrice: item.extendedPrice || 0,
-            tenantMatches,
-            usdaMatches,
-            selectedTenantId: tenantMatches[0]?.id,
-            selectedUsdaId: usdaMatches[0]?.fdcId,
-            autoAccepted,
-          });
-        }
+            return {
+              rawName: item.rawName || guessName,
+              guessName,
+              quantity: item.quantity || 1,
+              unitPrice: item.unitPrice || 0,
+              extendedPrice: item.extendedPrice || 0,
+              tenantMatches,
+              usdaMatches,
+              selectedTenantId: tenantMatches[0]?.id,
+              selectedUsdaId: usdaMatches[0]?.fdcId,
+              autoAccepted,
+            };
+          }),
+        );
 
         processedBlocks.push({
           id: blockId,
