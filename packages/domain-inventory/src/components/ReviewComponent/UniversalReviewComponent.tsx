@@ -63,7 +63,9 @@ export function UniversalReviewComponent({
         const record = data as any;
         if (record && record.id) {
           setActiveReviewId(record.id);
-          if (record.status === "PENDING" && record.parsed_data?.processing) {
+          const pages = record.parsed_data?.pages;
+          const hasParsedPages = Array.isArray(pages) && pages.length > 0;
+          if (record.parsed_data?.processing || !hasParsedPages) {
             setIsProcessingState(true);
             setPayload(null);
           } else {

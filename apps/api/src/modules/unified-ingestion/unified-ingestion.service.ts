@@ -248,7 +248,6 @@ export class UnifiedIngestionService {
       .from("ingestion_reviews")
       .update({
         parsed_data: parsedData as any,
-        status: "COMPLETED",
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
