@@ -294,11 +294,11 @@
   --radius-xl: calc(var(--radius) + 0.4rem);
   --radius-2xl: calc(var(--radius) + 0.9rem);
 
-  --font-archivo: var(--font-archivo), "Archivo", sans-serif;
-  --font-display: var(--font-archivo), "Archivo", sans-serif;
-  --font-satoshi: var(--font-satoshi), "Satoshi", sans-serif;
-  --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-archivo: var(--next-font-archivo, "Archivo"), sans-serif;
+  --font-display: var(--next-font-archivo, "Archivo"), sans-serif;
+  --font-satoshi: var(--next-font-satoshi, "Satoshi"), sans-serif;
+  --font-sans: var(--next-font-inter, "Inter"), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--next-font-jetbrains-mono, "JetBrains Mono"), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* ── Fluid Typography Scale (clamp) ────────────────────────────────────── */
   --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
@@ -512,7 +512,7 @@
       0 24px 64px -24px rgb(0 0 0 / 0.6);
   }
 
-  /* ── Animated neon gradient fill (buttons, chips, accents) ────────────────
+  /* ── Animated neon gradient fill (buttons, chips, accents) ──────────��─────
     * Pans a multi-stop neon gradient horizontally for a subtle "alive" surface.
     * Pair with `color: var(--primary-foreground)` for legible text.
     */

@@ -8,7 +8,7 @@ import localFont from "next/font/local";
 
 const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-archivo",
+  variable: "--next-font-archivo",
   display: "swap",
 });
 
@@ -25,19 +25,19 @@ const satoshi = localFont({
       style: "normal",
     },
   ],
-  variable: "--font-satoshi",
+  variable: "--next-font-satoshi",
   display: "swap",
 });
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--next-font-inter",
   display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  variable: "--next-font-jetbrains-mono",
   display: "swap",
 });
 
