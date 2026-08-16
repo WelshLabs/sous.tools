@@ -7,14 +7,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/cn";
 
 const buttonVariants = cva(
-  "ds-living-control ds-focus-ring group relative inline-flex min-h-10 select-none items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] border font-medium tracking-tight outline-none disabled:pointer-events-none disabled:opacity-45",
+  "ds-living-control ds-action-button ds-focus-ring group relative inline-flex min-h-10 select-none items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] border font-medium tracking-tight outline-none disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       variant: {
         gradient:
-          "border-primary/65 bg-[linear-gradient(125deg,var(--primary),color-mix(in_srgb,var(--primary)_64%,var(--accent)),color-mix(in_srgb,var(--primary)_76%,var(--violet)))] text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_12px_30px_-18px_var(--primary)] hover:border-accent/60 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.22),0_14px_34px_-16px_var(--primary)]",
+          "border-primary/55 bg-[linear-gradient(118deg,color-mix(in_srgb,var(--primary)_82%,var(--background)),var(--primary)_48%,color-mix(in_srgb,var(--violet)_70%,var(--primary)))] text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.22),inset_0_-1px_0_rgb(3_19_28/0.22),0_14px_32px_-18px_var(--primary)] hover:border-accent/70 hover:saturate-125 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.28),0_16px_38px_-15px_var(--primary)]",
         primary:
-          "border-primary/55 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--primary)_88%,white),var(--primary))] text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.16),0_12px_28px_-18px_var(--primary)] hover:border-accent/45 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.2),0_14px_32px_-16px_var(--primary)]",
+          "border-primary/55 bg-[linear-gradient(155deg,color-mix(in_srgb,var(--primary)_78%,white),var(--primary)_44%,color-mix(in_srgb,var(--primary)_78%,var(--background)))] text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.24),inset_0_-1px_0_rgb(3_19_28/0.2),0_13px_30px_-18px_var(--primary)] hover:border-accent/65 hover:saturate-125 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_16px_36px_-15px_var(--primary)]",
         secondary:
           "border-[var(--ds-glass-border)] bg-secondary/55 text-secondary-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] backdrop-blur-xl hover:border-primary/40 hover:bg-secondary/80",
         outline:

@@ -79,19 +79,7 @@ export function TopProgress({
             initial={false}
             animate={{ width: `${progress}%` }}
             transition={{ ease: [0.22, 1, 0.36, 1], duration: 0.4 }}
-          >
-            {/* Leading peg glow */}
-            <span
-              aria-hidden="true"
-              className="absolute top-1/2 right-0 h-2 w-24 translate-x-1/3 -translate-y-1/2 rounded-full"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, var(--accent))",
-                filter: "blur(4px)",
-                opacity: 0.9,
-              }}
-            />
-          </motion.div>
+          />
         </motion.div>
       )}
     </AnimatePresence>

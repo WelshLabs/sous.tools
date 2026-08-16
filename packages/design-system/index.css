@@ -77,8 +77,8 @@
   --popover: #0c101c;
   --popover-foreground: #e7ecf6;
 
-  --primary: #14b8a6; /* luminous cool teal */
-  --primary-foreground: #031b18;
+  --primary: #38bdf8; /* vivid sky blue */
+  --primary-foreground: #03131c;
 
   --secondary: #161c2c;
   --secondary-foreground: #cdd6ea;
@@ -86,8 +86,8 @@
   --accent: #22d3ee; /* neon cyan */
   --accent-foreground: #00252b;
 
-  --violet: #2dd4bf; /* greenish-blue (teal) */
-  --violet-foreground: #022d2b;
+  --violet: #818cf8; /* cool periwinkle */
+  --violet-foreground: #080d2d;
 
   --muted: #131a29;
   --muted-foreground: #93a1bd;
@@ -103,15 +103,15 @@
 
   --border: #1e2740;
   --input: #232d47;
-  --ring: #2dd4bf;
+  --ring: #38bdf8;
 
-  --ds-neon-primary-rgb: 20 184 166;
+  --ds-neon-primary-rgb: 56 189 248;
   --ds-neon-accent-rgb: 34 211 238;
-  --ds-neon-violet-rgb: 45 212 191;
+  --ds-neon-violet-rgb: 129 140 248;
 
   --ds-glass-fill: rgba(14, 19, 33, 0.55);
   --ds-glass-fill-strong: rgba(16, 22, 38, 0.74);
-  --ds-glass-border: rgba(45, 212, 191, 0.2);
+  --ds-glass-border: rgba(56, 189, 248, 0.22);
   --ds-glass-highlight: rgba(255, 255, 255, 0.08);
   --ds-glass-blur: 16px;
 
@@ -147,7 +147,7 @@
   --popover: #ffffff;
   --popover-foreground: #0f1729;
 
-  --primary: #0f766e;
+  --primary: #0284c7;
   --primary-foreground: #ffffff;
 
   --secondary: #e6ebf5;
@@ -156,7 +156,7 @@
   --accent: #06b6d4;
   --accent-foreground: #002a30;
 
-  --violet: #0ea5b0;
+  --violet: #6366f1;
   --violet-foreground: #ffffff;
 
   --muted: #e2e8f3;
@@ -173,15 +173,15 @@
 
   --border: #d3dbea;
   --input: #cfd8e8;
-  --ring: #0f766e;
+  --ring: #0284c7;
 
-  --ds-neon-primary-rgb: 15 118 110;
+  --ds-neon-primary-rgb: 2 132 199;
   --ds-neon-accent-rgb: 6 182 212;
-  --ds-neon-violet-rgb: 14 165 176;
+  --ds-neon-violet-rgb: 99 102 241;
 
   --ds-glass-fill: rgba(255, 255, 255, 0.55);
   --ds-glass-fill-strong: rgba(255, 255, 255, 0.74);
-  --ds-glass-border: rgba(15, 118, 110, 0.2);
+  --ds-glass-border: rgba(2, 132, 199, 0.2);
   --ds-glass-highlight: rgba(255, 255, 255, 0.9);
 
   --ds-glow-sm: 0 0 12px -2px rgb(var(--ds-neon-primary-rgb) / 0.35);
@@ -209,8 +209,8 @@
   --popover: #0c101c;
   --popover-foreground: #e7ecf6;
 
-  --primary: #14b8a6;
-  --primary-foreground: #031b18;
+  --primary: #38bdf8;
+  --primary-foreground: #03131c;
 
   --secondary: #161c2c;
   --secondary-foreground: #cdd6ea;
@@ -235,15 +235,15 @@
 
   --border: #1e2740;
   --input: #232d47;
-  --ring: #2dd4bf;
+  --ring: #38bdf8;
 
-  --ds-neon-primary-rgb: 20 184 166;
+  --ds-neon-primary-rgb: 56 189 248;
   --ds-neon-accent-rgb: 34 211 238;
-  --ds-neon-violet-rgb: 45 212 191;
+  --ds-neon-violet-rgb: 129 140 248;
 
   --ds-glass-fill: rgba(14, 19, 33, 0.55);
   --ds-glass-fill-strong: rgba(16, 22, 38, 0.74);
-  --ds-glass-border: rgba(45, 212, 191, 0.2);
+  --ds-glass-border: rgba(56, 189, 248, 0.22);
   --ds-glass-highlight: rgba(255, 255, 255, 0.08);
 
   --ds-glow-sm: 0 0 14px -2px rgb(var(--ds-neon-primary-rgb) / 0.5);
@@ -483,6 +483,33 @@
     transform: translateY(1px) scale(0.985);
   }
 
+  .ds-action-button::before {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from 210deg, transparent 0deg, transparent 205deg, rgb(var(--ds-neon-accent-rgb) / 0.9) 245deg, rgb(var(--ds-neon-violet-rgb) / 0.72) 280deg, transparent 318deg);
+    opacity: 0.34;
+    transform: rotate(-18deg);
+    transition:
+      opacity var(--ds-duration) var(--ds-ease),
+      transform 720ms var(--ds-ease);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    content: "";
+  }
+
+  .ds-action-button:hover::before,
+  .ds-action-button:focus-visible::before {
+    opacity: 0.88;
+    transform: rotate(16deg);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .ds-living-control,
     .ds-living-control::after,
@@ -506,7 +533,11 @@
     background-image: linear-gradient(90deg, var(--primary), var(--accent), var(--violet), var(--primary));
     background-size: 240% 100%;
     animation: ds-progress-travel 1.65s linear infinite;
-    box-shadow: 0 0 16px -2px rgb(var(--ds-neon-accent-rgb) / 0.72);
+    box-shadow:
+      0 0 10px rgb(var(--ds-neon-primary-rgb) / 0.42),
+      0 0 18px -3px rgb(var(--ds-neon-accent-rgb) / 0.72);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 14px), rgb(0 0 0 / 0.86) calc(100% - 6px), transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 14px), rgb(0 0 0 / 0.86) calc(100% - 6px), transparent 100%);
   }
 
   .omnibar-perimeter-spin {

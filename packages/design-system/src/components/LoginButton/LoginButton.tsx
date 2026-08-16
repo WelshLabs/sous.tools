@@ -54,7 +54,7 @@ export function LoginButton({
       animate={state === "error" ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
       transition={{ duration: 0.4 }}
       className={cn(
-        "ds-living-control ds-focus-ring relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border font-medium tracking-tight shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_14px_34px_-18px_var(--primary)] outline-none hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.22),0_16px_38px_-16px_var(--primary)] disabled:cursor-progress",
+        "ds-living-control ds-action-button ds-focus-ring relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border font-medium tracking-tight shadow-[inset_0_1px_0_rgb(255_255_255/0.22),inset_0_-1px_0_rgb(3_19_28/0.2),0_14px_34px_-18px_var(--primary)] outline-none hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.28),0_16px_38px_-15px_var(--primary)] hover:saturate-125 disabled:cursor-progress",
         bg,
         className,
       )}

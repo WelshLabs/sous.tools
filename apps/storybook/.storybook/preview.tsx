@@ -1,6 +1,5 @@
 import type { Preview } from "@storybook/react";
 import React from "react";
-import { ThemeProvider } from "next-themes";
 import "@soustools/design-system/index.css";
 
 const preview: Preview = {
@@ -58,18 +57,16 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      const theme = context.globals.theme || "dark";
+      const selectedTheme = context.globals.theme || "dark";
+      const theme = selectedTheme === "light" ? "light" : "dark";
+
       return (
-        <ThemeProvider
-          key={theme}
-          attribute="class"
-          defaultTheme={theme}
-          enableSystem
+        <div
+          className={`${theme} bg-background text-foreground min-h-screen p-4 antialiased`}
+          data-theme={theme}
         >
-          <div className="bg-background text-foreground min-h-screen p-4 antialiased">
-            <Story />
-          </div>
-        </ThemeProvider>
+          <Story />
+        </div>
       );
     },
   ],
