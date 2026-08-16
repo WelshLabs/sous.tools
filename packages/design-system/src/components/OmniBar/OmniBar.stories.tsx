@@ -124,8 +124,16 @@ export const WithDraftPrompt: Story = {
   },
 };
 
-/** The assistant is actively handling a request. */
-export const Processing: Story = {
+/** Processing while collapsed: a compact loading mark and prominent travelling glow. */
+export const ProcessingCollapsed: Story = {
+  args: {
+    isOpen: false,
+    isProcessing: true,
+  },
+};
+
+/** Processing while expanded: the same motion language around the full composer. */
+export const ProcessingExpanded: Story = {
   args: {
     isOpen: true,
     isProcessing: true,

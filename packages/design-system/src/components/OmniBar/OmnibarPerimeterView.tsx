@@ -1,128 +1,103 @@
 "use client";
 
-import { useId, useLayoutEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
+interface OmnibarPerimeterViewProps {
+  busy: boolean;
+}
+
+const ringMask = {
+  padding: "2px",
+  WebkitMask:
+    "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+  WebkitMaskComposite: "xor",
+  maskComposite: "exclude",
+} as const;
+
 /**
- * OmnibarPerimeterView
+ * A single motion language for the OmniBar perimeter.
  *
- * Animated SVG border that traces a neon gradient around its parent
- * container. Uses a ResizeObserver to stay in sync with any layout
- * changes (idle pill ↔ active pill ↔ droplet morph).
- *
- * - `busy=false` → subtle idle shimmer that fires on a slow repeat cycle
- * - `busy=true`  → continuous gradient chase (processing state)
- *
- * Ported from the v0 Neon-Glass design system. All tokens are semantic.
+ * Idle keeps a diffused gradient glow breathing behind the physical border,
+ * with one restrained presence pass per cycle. Processing tightens and
+ * brightens that glow into a continuously travelling brand-gradient ring.
  */
-export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
+export function OmnibarPerimeterView({ busy }: OmnibarPerimeterViewProps) {
   const reducedMotion = useReducedMotion();
-  const gradientId = useId();
-  const frameRef = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(
-    null,
-  );
-
-  useLayoutEffect(() => {
-    const frame = frameRef.current;
-    if (!frame) return;
-    const update = () =>
-      setSize({ width: frame.clientWidth, height: frame.clientHeight });
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(frame);
-    return () => observer.disconnect();
-  }, []);
-
-  if (!size || size.width === 0 || size.height === 0) {
-    return (
-      <span
-        ref={frameRef}
-        aria-hidden="true"
-        className="border-border/90 pointer-events-none absolute inset-0 rounded-[inherit] border"
-      />
-    );
-  }
-
-  const inset = 1;
-  const width = Math.max(1, size.width - inset * 2);
-  const height = Math.max(1, size.height - inset * 2);
-  const radius = height / 2;
-  const perimeter = 2 * (width - 2 * radius) + 2 * Math.PI * radius;
 
   return (
     <span
-      ref={frameRef}
       aria-hidden="true"
-      className="border-border/90 pointer-events-none absolute inset-0 rounded-[inherit] border"
+      className="pointer-events-none absolute inset-0 rounded-[inherit]"
     >
-      <svg
-        className="absolute inset-0 h-full w-full overflow-visible"
-        viewBox={`0 0 ${size.width} ${size.height}`}
-      >
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="var(--primary)" />
-            <stop offset="0.55" stopColor="var(--accent)" />
-            <stop offset="1" stopColor="var(--primary)" />
-          </linearGradient>
-        </defs>
-        <motion.g
-          initial={{ opacity: 0 }}
-          animate={
-            reducedMotion
-              ? { opacity: busy ? 1 : 0, strokeDashoffset: 0 }
-              : busy
-                ? { opacity: 1, strokeDashoffset: -perimeter }
-                : {
-                    opacity: [0, 0, 1, 1, 0],
-                    strokeDashoffset: [0, 0, -perimeter * 0.12, -perimeter],
-                  }
-          }
-          transition={
-            reducedMotion
-              ? { duration: 0 }
-              : busy
-                ? {
-                    strokeDashoffset: {
-                      duration: 2.8,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "linear",
-                    },
-                    opacity: { duration: 0.15 },
-                  }
-                : {
-                    opacity: {
-                      duration: 6.2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      times: [0, 0.55, 0.63, 0.89, 1],
-                      ease: "linear",
-                    },
-                    strokeDashoffset: {
-                      duration: 6.2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      times: [0, 0.55, 0.63, 1],
-                      ease: "linear",
-                    },
-                  }
-          }
-        >
-          <rect
-            x={inset}
-            y={inset}
-            width={width}
-            height={height}
-            rx={radius}
-            fill="none"
-            stroke={`url(#${gradientId})`}
-            strokeLinecap="round"
-            strokeWidth="1.5"
-            vectorEffect="non-scaling-stroke"
-            style={{ filter: "blur(0.35px)" }}
-            strokeDasharray={`${perimeter * 0.18} ${perimeter * 0.82}`}
-          />
-        </motion.g>
-      </svg>
+      {/* The ambient layer lives outside the edge, never on top of the border. */}
+      <motion.span
+        className="absolute -inset-1 rounded-[inherit]"
+        style={{
+          ...ringMask,
+          padding: busy ? "5px" : "4px",
+          background:
+            "conic-gradient(from 0deg, var(--primary), var(--accent), var(--violet), var(--primary))",
+          filter: busy ? "blur(6px)" : "blur(11px)",
+        }}
+        initial={false}
+        animate={
+          reducedMotion
+            ? { opacity: busy ? 0.42 : 0.1, scale: 1 }
+            : busy
+              ? { opacity: [0.62, 0.9, 0.62], rotate: 360, scale: 1.015 }
+              : { opacity: [0.08, 0.14, 0.1, 0.16, 0.08], scale: [1, 1.012, 1] }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : busy
+              ? {
+                  rotate: { duration: 2.2, repeat: Infinity, ease: "linear" },
+                  opacity: {
+                    duration: 1.8,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  },
+                }
+              : {
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.35, 0.62, 0.82, 1],
+                }
+        }
+      />
+
+      {/* A masked ring aligns exactly with the inherited pill radius. */}
+      <motion.span
+        className="absolute -inset-px rounded-[inherit]"
+        style={{
+          ...ringMask,
+          background:
+            "conic-gradient(from 0deg, transparent 0 42%, var(--primary) 54%, var(--accent) 66%, var(--violet) 78%, transparent 90%)",
+          filter: busy ? "blur(0.2px)" : "blur(1.5px)",
+        }}
+        initial={false}
+        animate={
+          reducedMotion
+            ? { opacity: busy ? 0.78 : 0.08 }
+            : busy
+              ? { opacity: 0.9, rotate: 360 }
+              : { opacity: [0, 0, 0.14, 0.08, 0], rotate: [0, 0, 90, 250, 360] }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : busy
+              ? { duration: 1.65, repeat: Infinity, ease: "linear" }
+              : {
+                  duration: 12,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.68, 0.76, 0.9, 1],
+                }
+        }
+      />
     </span>
   );
 }

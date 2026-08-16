@@ -8,7 +8,7 @@ import { OmniInputPill } from "./OmniInputPill";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { StagingArea } from "./StagingArea";
 import { useOmnibarContext } from "./OmniBarContext";
-import { Lettermark } from "../Logos/Logo";
+import { AnimatedLettermark, Lettermark } from "../Logos/Logo";
 
 export interface OmniBarPresentationProps {
   isOpen: boolean;
@@ -31,15 +31,6 @@ const springTransition = {
   stiffness: 300,
   damping: 30,
   mass: 0.9,
-};
-
-const glowLoopTransition = {
-  boxShadow: {
-    type: "tween" as const,
-    ease: "linear" as const,
-    repeat: Infinity,
-    duration: 2.4,
-  },
 };
 
 export function OmniBarPresentation({
@@ -112,7 +103,7 @@ export function OmniBarPresentation({
 
       {/* ── MODE 2: /home?chat=... — Sticky bottom composer (Claude Code layout) ── */}
       {isAnswerPage && (
-        <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-[9999] flex justify-center px-4 pb-4">
+        <div className="pointer-events-none fixed right-0 bottom-0 left-0 z-[9999] flex justify-center px-4 pb-4">
           <div className="pointer-events-auto flex w-full max-w-2xl flex-col justify-center gap-0 shadow-2xl">
             <StagingArea files={stagedFiles} />
             <OmniInputPill
@@ -142,22 +133,9 @@ export function OmniBarPresentation({
               type="button"
               aria-label="Open sous chef"
               initial={{ opacity: 0, scale: 0.85 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                boxShadow: isProcessing
-                  ? "var(--ds-glow-md)"
-                  : [
-                      "var(--ds-glow-sm)",
-                      "var(--ds-glow-accent)",
-                      "var(--ds-glow-sm)",
-                    ],
-              }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }}
-              transition={{
-                ...springTransition,
-                ...glowLoopTransition,
-              }}
+              transition={springTransition}
               whileHover={{ y: -3, scale: 1.06 }}
               whileTap={{ scale: 0.94 }}
               onClick={onToggle}
@@ -170,10 +148,15 @@ export function OmniBarPresentation({
               }}
             >
               <OmnibarPerimeterView busy={isProcessing} />
-              <Lettermark
-                gradient
-                className={`relative z-10 h-8 w-8 ${isProcessing ? "animate-pulse" : ""}`}
-              />
+              {isProcessing ? (
+                <AnimatedLettermark
+                  gradient
+                  duration={1.65}
+                  className="relative z-10 h-9 w-9"
+                />
+              ) : (
+                <Lettermark gradient className="relative z-10 h-8 w-8" />
+              )}
             </motion.button>
           ) : (
             /* Expanded Modal — Dead center of screen */
