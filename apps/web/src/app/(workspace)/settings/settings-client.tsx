@@ -17,6 +17,7 @@ import type {
 } from "@soustools/api-types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { clientConfig } from "@soustools/config/client";
 
 const SettingsSchema = z
   .object({
@@ -157,7 +158,7 @@ export function SettingsClient({
   };
 
   const getApiBase = () =>
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    clientConfig.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   const handleConnectIntegration = (provider: string) => {
     window.location.href = `${getApiBase()}/integrations/connect/${provider.toLowerCase()}?orgId=default`;

@@ -29,6 +29,38 @@
         ]
       }
     },
+    "/notifications": {
+      "get": {
+        "operationId": "AppController_getNotifications",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get paginated notifications",
+        "tags": [
+          "App"
+        ]
+      }
+    },
     "/notifications/unread": {
       "get": {
         "operationId": "AppController_getUnreadNotifications",
@@ -645,6 +677,194 @@
         },
         "tags": [
           "PosWebhook"
+        ]
+      }
+    },
+    "/pos/catalog": {
+      "get": {
+        "operationId": "PosController_getCatalog",
+        "parameters": [
+          {
+            "name": "orgId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
+        ]
+      }
+    },
+    "/pos/transactions": {
+      "get": {
+        "operationId": "PosController_getTransactions",
+        "parameters": [
+          {
+            "name": "orgId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
+        ]
+      }
+    },
+    "/pos/orders": {
+      "get": {
+        "operationId": "PosController_getOrders",
+        "parameters": [
+          {
+            "name": "orgId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
+        ]
+      }
+    },
+    "/pos/orders/{id}/status": {
+      "patch": {
+        "operationId": "PosController_updateOrderStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
+        ]
+      }
+    },
+    "/pos/order-line-items/{id}/status": {
+      "patch": {
+        "operationId": "PosController_updateLineItemStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
+        ]
+      }
+    },
+    "/pos/transactions/bulk": {
+      "post": {
+        "operationId": "PosController_createTransactionsBulk",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
+        ]
+      }
+    },
+    "/pos/modifier-groups/{id}": {
+      "get": {
+        "operationId": "PosController_getModifierGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
+        ]
+      }
+    },
+    "/pos/modifier-groups/{id}/options": {
+      "get": {
+        "operationId": "PosController_getModifierGroupOptions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pos"
         ]
       }
     },
@@ -1335,6 +1555,43 @@
         ]
       }
     },
+    "/commands/conversations": {
+      "get": {
+        "operationId": "CommandsController_listConversations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Commands"
+        ]
+      }
+    },
+    "/commands/conversations/{id}/messages": {
+      "get": {
+        "operationId": "CommandsController_getConversationMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Commands"
+        ]
+      }
+    },
     "/items": {
       "get": {
         "operationId": "ItemsController_findAll",
@@ -1914,194 +2171,6 @@
         ]
       }
     },
-    "/pos/catalog": {
-      "get": {
-        "operationId": "PosController_getCatalog",
-        "parameters": [
-          {
-            "name": "orgId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
-    "/pos/transactions": {
-      "get": {
-        "operationId": "PosController_getTransactions",
-        "parameters": [
-          {
-            "name": "orgId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
-    "/pos/orders": {
-      "get": {
-        "operationId": "PosController_getOrders",
-        "parameters": [
-          {
-            "name": "orgId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
-    "/pos/orders/{id}/status": {
-      "patch": {
-        "operationId": "PosController_updateOrderStatus",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
-    "/pos/order-line-items/{id}/status": {
-      "patch": {
-        "operationId": "PosController_updateLineItemStatus",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
-    "/pos/transactions/bulk": {
-      "post": {
-        "operationId": "PosController_createTransactionsBulk",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
-    "/pos/modifier-groups/{id}": {
-      "get": {
-        "operationId": "PosController_getModifierGroup",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
-    "/pos/modifier-groups/{id}/options": {
-      "get": {
-        "operationId": "PosController_getModifierGroupOptions",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Pos"
-        ]
-      }
-    },
     "/users": {
       "post": {
         "operationId": "UsersController_createUser",
@@ -2539,6 +2608,28 @@
         ]
       }
     },
+    "/auth/ws-ticket": {
+      "post": {
+        "operationId": "AuthController_getWsTicket",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/auth/forgot-password": {
       "post": {
         "operationId": "AuthController_forgotPassword",
@@ -2628,73 +2719,6 @@
         "tags": [
           "auth"
         ]
-      }
-    },
-    "/notifications": {
-      "get": {
-        "operationId": "AppController_getNotifications",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": true
-                          }
-                        },
-                        "total": {
-                          "type": "number"
-                        },
-                        "page": {
-                          "type": "number"
-                        },
-                        "limit": {
-                          "type": "number"
-                        },
-                        "totalPages": {
-                          "type": "number"
-                        }
-                      }
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   },

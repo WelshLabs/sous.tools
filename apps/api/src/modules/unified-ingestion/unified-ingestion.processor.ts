@@ -26,8 +26,10 @@ export interface UnifiedIngestionJobData {
 }
 
 import { CommandsGateway } from "../commands/commands.gateway";
+import { ChatPersistenceService } from "../commands/chat-persistence.service";
+import { randomUUID } from "crypto";
 
-@Processor("unified-ingestion")
+@Processor("unified-ingestion", { lockDuration: 120000 })
 export class UnifiedIngestionProcessor extends WorkerHost {
   private readonly logger = new Logger(UnifiedIngestionProcessor.name);
 
@@ -35,6 +37,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     private readonly ingestionService: UnifiedIngestionService,
     private readonly usdaResolver: UsdaResolverService,
     private readonly commandsGateway: CommandsGateway,
+    private readonly chatPersistence: ChatPersistenceService,
   ) {
     super();
   }
@@ -178,6 +181,67 @@ export class UnifiedIngestionProcessor extends WorkerHost {
         orgId: organizationId,
         userId,
       });
+
+      if (conversationId) {
+        // Ensure render_component directive is saved and emitted
+        const renderDirectiveMsg = {
+          id: randomUUID(),
+          role: "render_component" as const,
+          content: JSON.stringify({
+            componentName: "INGESTION_REVIEW",
+            props: { reviewId: reviewRecord.id },
+          }),
+          timestamp: new Date(),
+        };
+
+        this.commandsGateway.emitChatMessageToConversation(
+          conversationId,
+          renderDirectiveMsg,
+        );
+        await this.chatPersistence.appendMessage(
+          conversationId,
+          organizationId,
+          userId,
+          renderDirectiveMsg,
+        );
+
+        // Generate and persist rich summary message
+        const firstBlock = pagesData[0]?.blocks?.[0];
+        let summaryContent = `Heard, Chef! Document ingestion is complete. The review canvas is ready below.`;
+
+        if (firstBlock?.type === "RECIPE" && firstBlock.title) {
+          const ingCount = firstBlock.ingredients?.length || 0;
+          const stepCount = firstBlock.instructions?.length || 0;
+          const yieldInfo = firstBlock.yieldCount
+            ? ` (Yield: ${firstBlock.yieldCount} ${firstBlock.yieldUnit || "servings"})`
+            : "";
+          summaryContent = `Heard, Chef! I've extracted the recipe **${firstBlock.title}**${yieldInfo} with **${ingCount} ingredients** and **${stepCount} instructions**.\n\nThe review canvas is ready below for your inspection and graph commit.`;
+        } else if (firstBlock?.type === "INVOICE" && firstBlock.vendorName) {
+          const itemCount = firstBlock.lineItems?.length || 0;
+          const totalVal = firstBlock.totals?.total
+            ? ` · Total: $${Number(firstBlock.totals.total).toFixed(2)}`
+            : "";
+          summaryContent = `Heard, Chef! I've extracted the invoice for **${firstBlock.vendorName}** (${itemCount} line items${totalVal}).\n\nThe review canvas is ready below for your inspection.`;
+        }
+
+        const summaryMsg = {
+          id: randomUUID(),
+          role: "model" as const,
+          content: summaryContent,
+          timestamp: new Date(),
+        };
+
+        this.commandsGateway.emitChatMessageToConversation(
+          conversationId,
+          summaryMsg,
+        );
+        await this.chatPersistence.appendMessage(
+          conversationId,
+          organizationId,
+          userId,
+          summaryMsg,
+        );
+      }
     } catch (wsErr) {
       this.logger.warn("Failed to emit WebSocket ingestion update:", wsErr);
     }
@@ -317,33 +381,38 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
             userId,
           });
         }
-        const ingredients = [];
-        for (const ing of b.ingredients || [{ rawName: "Sample Ingredient" }]) {
-          const guessName = ing.rawName || "Ingredient";
-          const queryEmbedding =
-            await this.ingestionService.getEmbedding(guessName);
-          const tenantMatches =
-            await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
-              orgId: organizationId,
-              rawItemName: ing.rawName || guessName,
-            });
-          const usdaMatches = await this.usdaResolver.searchTop5(guessName);
+        const rawIngredients =
+          b.ingredients || [{ rawName: "Sample Ingredient" }];
+        const ingredients = await Promise.all(
+          rawIngredients.map(async (ing: any) => {
+            const guessName = ing.rawName || "Ingredient";
+            const [queryEmbedding, usdaMatches] = await Promise.all([
+              this.ingestionService.getEmbedding(guessName),
+              this.usdaResolver.searchTop5(guessName),
+            ]);
+            const tenantMatches =
+              await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
+                orgId: organizationId,
+                rawItemName: ing.rawName || guessName,
+              });
 
-          const topTenantScore = tenantMatches[0]?.score ?? 0;
-          const autoAccepted = topTenantScore >= 0.85 || topTenantScore === 1.0;
+            const topTenantScore = tenantMatches[0]?.score ?? 0;
+            const autoAccepted =
+              topTenantScore >= 0.85 || topTenantScore === 1.0;
 
-          ingredients.push({
-            rawName: ing.rawName || guessName,
-            guessName,
-            quantity: ing.quantity || 1,
-            unit: ing.unit || "lb",
-            tenantMatches,
-            usdaMatches,
-            selectedTenantId: tenantMatches[0]?.id,
-            selectedUsdaId: usdaMatches[0]?.fdcId,
-            autoAccepted,
-          });
-        }
+            return {
+              rawName: ing.rawName || guessName,
+              guessName,
+              quantity: ing.quantity || 1,
+              unit: ing.unit || "lb",
+              tenantMatches,
+              usdaMatches,
+              selectedTenantId: tenantMatches[0]?.id,
+              selectedUsdaId: usdaMatches[0]?.fdcId,
+              autoAccepted,
+            };
+          }),
+        );
 
         processedBlocks.push({
           id: blockId,
@@ -373,37 +442,41 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
           }
         }
 
-        const lineItems = [];
-        for (const item of b.lineItems || [
+        const rawLineItems = b.lineItems || [
           { rawName: "Sample Line Item", unitPrice: 10, extendedPrice: 10 },
-        ]) {
-          const guessName = item.rawName || "Item";
-          const queryEmbedding =
-            await this.ingestionService.getEmbedding(guessName);
-          const tenantMatches =
-            await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
-              orgId: organizationId,
-              vendorId,
-              rawItemName: item.rawName || guessName,
-            });
-          const usdaMatches = await this.usdaResolver.searchTop5(guessName);
+        ];
+        const lineItems = await Promise.all(
+          rawLineItems.map(async (item: any) => {
+            const guessName = item.rawName || "Item";
+            const [queryEmbedding, usdaMatches] = await Promise.all([
+              this.ingestionService.getEmbedding(guessName),
+              this.usdaResolver.searchTop5(guessName),
+            ]);
+            const tenantMatches =
+              await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
+                orgId: organizationId,
+                vendorId,
+                rawItemName: item.rawName || guessName,
+              });
 
-          const topTenantScore = tenantMatches[0]?.score ?? 0;
-          const autoAccepted = topTenantScore >= 0.85 || topTenantScore === 1.0;
+            const topTenantScore = tenantMatches[0]?.score ?? 0;
+            const autoAccepted =
+              topTenantScore >= 0.85 || topTenantScore === 1.0;
 
-          lineItems.push({
-            rawName: item.rawName || guessName,
-            guessName,
-            quantity: item.quantity || 1,
-            unitPrice: item.unitPrice || 0,
-            extendedPrice: item.extendedPrice || 0,
-            tenantMatches,
-            usdaMatches,
-            selectedTenantId: tenantMatches[0]?.id,
-            selectedUsdaId: usdaMatches[0]?.fdcId,
-            autoAccepted,
-          });
-        }
+            return {
+              rawName: item.rawName || guessName,
+              guessName,
+              quantity: item.quantity || 1,
+              unitPrice: item.unitPrice || 0,
+              extendedPrice: item.extendedPrice || 0,
+              tenantMatches,
+              usdaMatches,
+              selectedTenantId: tenantMatches[0]?.id,
+              selectedUsdaId: usdaMatches[0]?.fdcId,
+              autoAccepted,
+            };
+          }),
+        );
 
         processedBlocks.push({
           id: blockId,

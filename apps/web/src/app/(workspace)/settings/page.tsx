@@ -1,5 +1,6 @@
 import { SettingsClient } from "./settings-client";
 import { api } from "@soustools/api-client";
+import { serverConfig } from "@soustools/config/server";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function SettingsPage() {
     role: "admin",
   };
 
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = serverConfig.NODE_ENV === "development";
 
   return (
     <SettingsClient

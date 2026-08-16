@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -156,7 +156,7 @@ export function AnswerViewContainer({
   }, [chatHistory, initialQuery]);
 
   const componentDirective = useMemo(() => {
-    const renderMsg = chatHistory.find(
+    const renderMsg = chatHistory.findLast(
       (m) => m.role === ("render_component" as any),
     );
     if (renderMsg?.content) {
@@ -190,7 +190,9 @@ export function AnswerViewContainer({
 
   const handleTogglePrepItem = (id: string) => {
     setPrepListItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)),
+      prev.map((item) =>
+        item.id === id ? { ...item, done: !item.done } : item,
+      ),
     );
   };
 

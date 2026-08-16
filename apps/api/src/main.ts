@@ -39,7 +39,7 @@ async function bootstrap(): Promise<void> {
 
   app.use(
     express.json({
-      limit: "2mb",
+      limit: "50mb",
       verify: (req: any, _res: any, buf: Buffer) => {
         req.rawBody = buf;
       },
@@ -47,7 +47,7 @@ async function bootstrap(): Promise<void> {
   );
   app.use(
     express.urlencoded({
-      limit: "2mb",
+      limit: "50mb",
       extended: true,
       verify: (req: any, _res: any, buf: Buffer) => {
         req.rawBody = buf;
@@ -100,7 +100,7 @@ async function bootstrap(): Promise<void> {
   const document = SwaggerModule.createDocument(app, options);
   fs.writeFileSync("openapi.json", JSON.stringify(document, null, 2));
 
-  if (process.env.GENERATE_OPENAPI_ONLY === 'true') {
+  if (process.env.GENERATE_OPENAPI_ONLY === "true") {
     process.exit(0);
   }
 
