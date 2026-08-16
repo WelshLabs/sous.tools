@@ -82,7 +82,14 @@ export function UniversalReviewComponent({
     }
   }, [activeReviewId]);
 
-  // Real-time WebSocket listener for zero-latency event-driven updates (NO HTTP polling)
+  // Keep activeReviewId in sync with reviewId prop
+  useEffect(() => {
+    if (reviewId && reviewId !== activeReviewId) {
+      setActiveReviewId(reviewId);
+    }
+  }, [reviewId, activeReviewId]);
+
+  // Real-time WebSocket listener for zero-latency event-driven updates
   useEffect(() => {
     fetchReview();
     if (!socket) return;
@@ -120,20 +127,32 @@ export function UniversalReviewComponent({
     };
   }, [socket, activeReviewId, fetchReview]);
 
+  // Safety interval fallback while document is actively processing
+  useEffect(() => {
+    if (!isProcessing) return;
+    const interval = setInterval(() => {
+      fetchReview();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isProcessing, fetchReview]);
+
   // Persist updated payload state to Postgres backend
-  const persistPayloadToBackend = async (newPayload: any) => {
-    if (!activeReviewId) return;
-    try {
-      await api.PATCH(`/unified-ingestion/review/${activeReviewId}` as any, {
-        body: { parsedData: newPayload } as any,
-      });
-    } catch (err) {
-      console.error(
-        "Failed to persist updated review payload to Postgres:",
-        err,
-      );
-    }
-  };
+  const persistPayloadToBackend = useCallback(
+    async (newPayload: any) => {
+      if (!activeReviewId) return;
+      try {
+        await api.PATCH(`/unified-ingestion/review/${activeReviewId}` as any, {
+          body: { parsedData: newPayload } as any,
+        });
+      } catch (err) {
+        console.error(
+          "Failed to persist updated review payload to Postgres:",
+          err,
+        );
+      }
+    },
+    [activeReviewId],
+  );
 
   // ReAct Tool listener: Intercept uiAction from Omnibar commands (update_review_state)
   useEffect(() => {

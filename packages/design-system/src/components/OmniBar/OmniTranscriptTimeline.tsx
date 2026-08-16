@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useRef, useEffect } from "react";
@@ -62,13 +61,21 @@ export function OmniTranscriptTimeline({
 
           return (
             <div key={m.id} className="group">
-              <ChatMessageBubble message={m} isLastMessage={isLast} />
+              <ChatMessageBubble
+                message={m}
+                isLastMessage={isLast}
+                isProcessing={isProcessing}
+              />
             </div>
           );
         })
       )}
 
-      {isProcessing && <ProcessingBubble />}
+      {isProcessing &&
+        (visibleMessages.length === 0 ||
+          visibleMessages[visibleMessages.length - 1]?.role === "user") && (
+          <ProcessingBubble />
+        )}
 
       {/* Sentinel for auto-scroll */}
       <div ref={bottomRef} aria-hidden="true" />

@@ -1,13 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-  Card,
-  OmniTranscriptTimeline,
-} from "@soustools/design-system";
+import { Card, OmniTranscriptTimeline } from "@soustools/design-system";
 import { type OmniMessage } from "@soustools/api-types";
+import { FileText } from "lucide-react";
 import { ArtifactColumnContainer } from "../ArtifactColumn/ArtifactColumn.container";
-
 
 export interface AnswerViewViewProps {
   chatHistory: OmniMessage[];
@@ -30,9 +26,7 @@ export function AnswerViewView({
 }: AnswerViewViewProps) {
   // Derive the latest render_component directive (for artifact column)
   const renderDirectiveMessage =
-    chatHistory.findLast(
-      (m) => m.role === ("render_component" as any),
-    ) ?? null;
+    chatHistory.findLast((m) => m.role === ("render_component" as any)) ?? null;
 
   const hasArtifact = !!renderDirectiveMessage || !!track2Type;
 
@@ -55,8 +49,23 @@ export function AnswerViewView({
                 const directive = JSON.parse(m.content);
                 if (directive.componentName === "INGESTION_REVIEW") {
                   return (
-                    <div className="border-border bg-muted/40 rounded-xl border px-4 py-3 text-sm text-zinc-400 italic">
-                      📋 Ingestion review ready — see panel →
+                    <div className="border-border bg-card/90 flex items-center justify-between rounded-xl border p-3.5 shadow-md backdrop-blur-md">
+                      <div className="flex items-center gap-3">
+                        <div className="border-primary/30 bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-lg border">
+                          <FileText className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-foreground text-xs font-semibold">
+                            Polymorphic Ingestion Review
+                          </p>
+                          <p className="text-muted-foreground text-[11px]">
+                            Canvas active in the secondary column
+                          </p>
+                        </div>
+                      </div>
+                      <span className="bg-primary/10 text-primary border-primary/20 rounded-md border px-2 py-0.5 font-mono text-[10px] font-medium">
+                        Active
+                      </span>
                     </div>
                   );
                 }

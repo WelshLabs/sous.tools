@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { Injectable, Logger } from "@nestjs/common";
 import { OmnibarCommandPayload, OmniMessage } from "@soustools/api-types";
 import { ALL_COMMAND_TOOLS } from "./commands-tools";

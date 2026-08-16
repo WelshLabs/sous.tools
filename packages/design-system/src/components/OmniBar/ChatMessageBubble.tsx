@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Sparkles, User, Bot, Loader2 } from "lucide-react";
+import { Sparkles, User, Bot, Loader2, CheckCircle2 } from "lucide-react";
 import { type OmniMessage } from "@soustools/api-types";
 import { MarkdownMessageContent } from "./MarkdownContent";
 
 export interface ChatMessageBubbleProps {
   message: OmniMessage;
   isLastMessage?: boolean;
+  isProcessing?: boolean;
 }
 
 function formatTimestamp(ts: Date | string | undefined): string {
@@ -19,12 +19,15 @@ function formatTimestamp(ts: Date | string | undefined): string {
 export function ChatMessageBubble({
   message,
   isLastMessage = false,
+  isProcessing = false,
 }: ChatMessageBubbleProps) {
   const isUser = message.role === "user";
   const isAgentStep = message.role === "agent_step";
   const isRenderComponent = message.role === ("render_component" as any);
 
   if (isRenderComponent) return null; // Handled by the parent transcript layer
+
+  const isStepActive = isAgentStep && isLastMessage && isProcessing;
 
   return (
     <div
@@ -36,14 +39,20 @@ export function ChatMessageBubble({
           isUser
             ? "border-secondary/30 bg-secondary/10 text-secondary"
             : isAgentStep
-              ? "border-border bg-muted text-muted-foreground"
+              ? isStepActive
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
               : "border-primary/30 bg-primary/10 text-primary"
         }`}
       >
         {isUser ? (
           <User className="h-4 w-4" />
         ) : isAgentStep ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          isStepActive ? (
+            <Loader2 className="text-primary h-4 w-4 animate-spin" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+          )
         ) : (
           <Sparkles className="h-4 w-4" />
         )}
@@ -56,10 +65,12 @@ export function ChatMessageBubble({
         <div
           className={`relative rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
             isUser
-              ? "bg-secondary/25 text-foreground border-secondary/30 border rounded-tr-xs"
+              ? "bg-secondary/25 text-foreground border-secondary/30 rounded-tr-xs border"
               : isAgentStep
-                ? "bg-muted/50 text-muted-foreground border-border border rounded-tl-xs font-mono text-xs"
-                : "bg-card/90 text-foreground border-border border rounded-tl-xs backdrop-blur-md"
+                ? isStepActive
+                  ? "bg-muted/60 text-foreground border-primary/40 rounded-tl-xs border font-mono text-xs"
+                  : "bg-muted/30 text-muted-foreground border-border rounded-tl-xs border font-mono text-xs"
+                : "bg-card/90 text-foreground border-border rounded-tl-xs border backdrop-blur-md"
           }`}
           style={{
             boxShadow: isUser
@@ -84,13 +95,11 @@ export function ChatMessageBubble({
           )}
 
           {isUser ? (
-            <p className="m-0 whitespace-pre-wrap font-sans text-sm">
+            <p className="m-0 font-sans text-sm whitespace-pre-wrap">
               {message.content.replace(/^\[\d+ attachments?\]\s*/, "")}
             </p>
           ) : isAgentStep ? (
-            <p className="m-0 font-mono text-xs">
-              {message.content}
-            </p>
+            <p className="m-0 font-mono text-xs">{message.content}</p>
           ) : (
             <MarkdownMessageContent content={message.content} />
           )}
@@ -119,7 +128,7 @@ export function ProcessingBubble({
       <div className="border-primary/30 bg-primary/10 text-primary mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border">
         <Bot className="h-4 w-4 animate-bounce" />
       </div>
-      <div className="border-border bg-card text-primary rounded-2xl rounded-tl-xs border px-4 py-3 text-sm font-mono shadow-sm">
+      <div className="border-border bg-card text-primary rounded-2xl rounded-tl-xs border px-4 py-3 font-mono text-sm shadow-sm">
         {label}
       </div>
     </div>

@@ -90,4 +90,10 @@ export default [
       ],
     },
   },
+  {
+    files: ["apps/api/**/*.ts"],
+    rules: {
+      "max-lines": "off",
+    },
+  },
 ];

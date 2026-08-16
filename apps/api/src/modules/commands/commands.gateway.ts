@@ -64,31 +64,11 @@ export class CommandsGateway {
           .to(`conversation-${payload.conversationId}`)
           .emit("ingestion:updated", payload);
 
-        if (payload.message) {
-          const msg = {
-            id: randomUUID(),
-            role: "agent_step" as any,
-            content: payload.message,
-            timestamp: new Date(),
-          };
-          this.server
-            .to(`conversation-${payload.conversationId}`)
-            .emit("chat_message", msg);
-          this.chatPersistence
-            .appendMessage(
-              payload.conversationId,
-              payload.orgId || "",
-              payload.userId,
-              msg,
-            )
-            .catch((e) => this.logger.warn("Failed to persist agent_step", e));
-        }
-
-        if (payload.status === "RENDER") {
+        if (payload.status === "RENDER" && payload.message) {
           const msg = {
             id: randomUUID(),
             role: "render_component" as any,
-            content: payload.message!,
+            content: payload.message,
             timestamp: new Date(),
           };
           this.server
