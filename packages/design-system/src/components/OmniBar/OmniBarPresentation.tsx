@@ -139,7 +139,7 @@ export function OmniBarPresentation({
               whileHover={{ y: -3, scale: 1.06 }}
               whileTap={{ scale: 0.94 }}
               onClick={onToggle}
-              className="ds-glass pointer-events-auto fixed right-6 bottom-6 z-[9999] flex h-16 w-16 cursor-pointer items-center justify-center overflow-visible rounded-full"
+              className="ds-glass pointer-events-auto fixed right-6 bottom-6 z-[9999] flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full"
               style={{
                 borderRadius: "9999px",
                 borderColor: isProcessing
