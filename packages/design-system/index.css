@@ -396,12 +396,34 @@
   }
 }
 
+@property --omnibar-perimeter-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes omnibar-perimeter-spin {
+  to {
+    --omnibar-perimeter-angle: 360deg;
+  }
+}
+
 /*
  * ═══════════════════════════════════════════════════════════════════════════
  *  REUSABLE HELPERS (use anywhere in the app)
  * ═══════════════════════════════════════════════════════════════════════════
  */
 @layer utilities {
+  .omnibar-perimeter-spin {
+    animation: omnibar-perimeter-spin 2.2s linear infinite;
+  }
+  .omnibar-perimeter-spin--ambient {
+    animation-duration: 18s;
+  }
+  .omnibar-perimeter-spin--presence {
+    animation-duration: 12s;
+  }
+
   /* ── Aurora orb field ─────────────────────────────────────────────────────
     * Drop `.aurora-field` on any positioned container (or use <AuroraBackground/>).
     * Renders multiple colored neon orbs that continuously, gently drift.
@@ -512,7 +534,7 @@
       0 24px 64px -24px rgb(0 0 0 / 0.6);
   }
 
-  /* ── Animated neon gradient fill (buttons, chips, accents) ──────────��─────
+  /* ── Animated neon gradient fill (buttons, chips, accents) ──���───────��─────
     * Pans a multi-stop neon gradient horizontally for a subtle "alive" surface.
     * Pair with `color: var(--primary-foreground)` for legible text.
     */
