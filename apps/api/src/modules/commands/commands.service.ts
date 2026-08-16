@@ -113,13 +113,19 @@ export class CommandsService {
       while (!isDone && iterations < 5) {
         iterations++;
 
-        const llmPayload = {
+        const hasAttachments =
+          (lastUserMessage?.attachments &&
+            lastUserMessage.attachments.length > 0) ||
+          ((payload as any).attachments &&
+            (payload as any).attachments.length > 0);
+
+        const llmPayload: any = {
           model: "omnibar",
           messages: [
             {
               role: "system",
               content:
-                "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains '[1 attachment]', or indicates they are uploading a file, invoice, or recipe, you MUST immediately call the ingest_document tool with the attachment url.",
+                "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains attachments, files, invoices, or recipes, you MUST call the ingest_document tool with the attachment url.",
             },
             ...contents,
           ],
@@ -132,6 +138,13 @@ export class CommandsService {
             },
           })),
         };
+
+        if (hasAttachments && iterations === 1) {
+          llmPayload.tool_choice = {
+            type: "function",
+            function: { name: "ingest_document" },
+          };
+        }
 
         const res = await fetch("https://ai.sous.tools/v1/chat/completions", {
           method: "POST",
@@ -293,15 +306,14 @@ export class CommandsService {
               payload.context?.userId || "d0000000-0000-0000-0000-000000000000";
 
             const fileUrlToIngest =
-              args.fileUrl &&
+              typeof args?.fileUrl === "string" &&
               (args.fileUrl.startsWith("data:") ||
                 args.fileUrl.startsWith("http://") ||
                 args.fileUrl.startsWith("https://"))
                 ? args.fileUrl
                 : lastUserMessage?.attachments?.[0]?.url ||
                   (payload as any).attachments?.[0]?.url ||
-                  args.fileUrl ||
-                  "";
+                  (typeof args?.fileUrl === "string" ? args.fileUrl : "");
 
             const { data: review, error } = await supabase
               .from("ingestion_reviews")
@@ -349,18 +361,26 @@ export class CommandsService {
                 );
               }
 
-              // Emit render_component message so /answer UI switches to UniversalReviewComponent skeleton loader
+              // Emit and persist render_component message so /home and /answer UI switches to UniversalReviewComponent
+              const renderMsg: OmniMessage = {
+                id: randomUUID(),
+                role: "render_component" as any,
+                content: JSON.stringify({
+                  componentName: "INGESTION_REVIEW",
+                  props: { reviewId: review.id },
+                }),
+                timestamp: new Date(),
+              };
+
               if (emitMessage) {
-                emitMessage({
-                  id: randomUUID(),
-                  role: "render_component" as any,
-                  content: JSON.stringify({
-                    componentName: "INGESTION_REVIEW",
-                    props: { reviewId: review.id },
-                  }),
-                  timestamp: new Date(),
-                });
+                emitMessage(renderMsg);
               }
+              await this.chatPersistence.appendMessage(
+                conversationId,
+                orgId,
+                userId,
+                renderMsg,
+              );
 
               toolResponseData = {
                 success: true,

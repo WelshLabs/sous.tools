@@ -26,6 +26,8 @@ export interface UnifiedIngestionJobData {
 }
 
 import { CommandsGateway } from "../commands/commands.gateway";
+import { ChatPersistenceService } from "../commands/chat-persistence.service";
+import { randomUUID } from "crypto";
 
 @Processor("unified-ingestion")
 export class UnifiedIngestionProcessor extends WorkerHost {
@@ -35,6 +37,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     private readonly ingestionService: UnifiedIngestionService,
     private readonly usdaResolver: UsdaResolverService,
     private readonly commandsGateway: CommandsGateway,
+    private readonly chatPersistence: ChatPersistenceService,
   ) {
     super();
   }
@@ -178,6 +181,67 @@ export class UnifiedIngestionProcessor extends WorkerHost {
         orgId: organizationId,
         userId,
       });
+
+      if (conversationId) {
+        // Ensure render_component directive is saved and emitted
+        const renderDirectiveMsg = {
+          id: randomUUID(),
+          role: "render_component" as const,
+          content: JSON.stringify({
+            componentName: "INGESTION_REVIEW",
+            props: { reviewId: reviewRecord.id },
+          }),
+          timestamp: new Date(),
+        };
+
+        this.commandsGateway.emitChatMessageToConversation(
+          conversationId,
+          renderDirectiveMsg,
+        );
+        await this.chatPersistence.appendMessage(
+          conversationId,
+          organizationId,
+          userId,
+          renderDirectiveMsg,
+        );
+
+        // Generate and persist rich summary message
+        const firstBlock = pagesData[0]?.blocks?.[0];
+        let summaryContent = `Heard, Chef! Document ingestion is complete. The review canvas is ready below.`;
+
+        if (firstBlock?.type === "RECIPE" && firstBlock.title) {
+          const ingCount = firstBlock.ingredients?.length || 0;
+          const stepCount = firstBlock.instructions?.length || 0;
+          const yieldInfo = firstBlock.yieldCount
+            ? ` (Yield: ${firstBlock.yieldCount} ${firstBlock.yieldUnit || "servings"})`
+            : "";
+          summaryContent = `Heard, Chef! I've extracted the recipe **${firstBlock.title}**${yieldInfo} with **${ingCount} ingredients** and **${stepCount} instructions**.\n\nThe review canvas is ready below for your inspection and graph commit.`;
+        } else if (firstBlock?.type === "INVOICE" && firstBlock.vendorName) {
+          const itemCount = firstBlock.lineItems?.length || 0;
+          const totalVal = firstBlock.totals?.total
+            ? ` · Total: $${Number(firstBlock.totals.total).toFixed(2)}`
+            : "";
+          summaryContent = `Heard, Chef! I've extracted the invoice for **${firstBlock.vendorName}** (${itemCount} line items${totalVal}).\n\nThe review canvas is ready below for your inspection.`;
+        }
+
+        const summaryMsg = {
+          id: randomUUID(),
+          role: "model" as const,
+          content: summaryContent,
+          timestamp: new Date(),
+        };
+
+        this.commandsGateway.emitChatMessageToConversation(
+          conversationId,
+          summaryMsg,
+        );
+        await this.chatPersistence.appendMessage(
+          conversationId,
+          organizationId,
+          userId,
+          summaryMsg,
+        );
+      }
     } catch (wsErr) {
       this.logger.warn("Failed to emit WebSocket ingestion update:", wsErr);
     }

@@ -133,7 +133,11 @@ export class UnifiedIngestionService {
         .from("master_items")
         .select("id, name")
         .limit(5);
-      return (data || []).map((d) => ({ id: d.id, name: d.name, score: undefined }));
+      return (data || []).map((d) => ({
+        id: d.id,
+        name: d.name,
+        score: undefined,
+      }));
     }
     try {
       const { data: matches, error } = await supabase.rpc(
@@ -163,7 +167,11 @@ export class UnifiedIngestionService {
       .from("master_items")
       .select("id, name")
       .limit(5);
-    return (data || []).map((d) => ({ id: d.id, name: d.name, score: undefined }));
+    return (data || []).map((d) => ({
+      id: d.id,
+      name: d.name,
+      score: undefined,
+    }));
   }
 
   async createReviewRecord(params: {
@@ -240,6 +248,7 @@ export class UnifiedIngestionService {
       .from("ingestion_reviews")
       .update({
         parsed_data: parsedData as any,
+        status: "COMPLETED",
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)

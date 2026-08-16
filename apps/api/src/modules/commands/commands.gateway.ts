@@ -31,6 +31,7 @@ import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter"
     ],
     credentials: true,
   },
+  maxHttpBufferSize: 5e7, // 50MB for image & PDF uploads
 })
 export class CommandsGateway {
   @WebSocketServer()
@@ -101,6 +102,14 @@ export class CommandsGateway {
           },
         });
       }
+    }
+  }
+
+  emitChatMessageToConversation(conversationId: string, message: any) {
+    if (this.server && conversationId) {
+      this.server
+        .to(`conversation-${conversationId}`)
+        .emit("chat_message", message);
     }
   }
 
