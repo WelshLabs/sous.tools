@@ -1,5 +1,7 @@
 "use client";
 
+import { IngredientMappingRow } from "./IngredientMappingRow";
+
 export interface LineItemData {
   rawName: string;
   guessName: string;
@@ -7,7 +9,7 @@ export interface LineItemData {
   unitPrice?: number;
   extendedPrice?: number;
   tenantMatches: Array<{ id: string; name: string }>;
-  usdaMatches: Array<{ fdcId: number; description: string }>;
+  usdaMatches: Array<{ fdcId: number; description: string; score?: number }>;
   selectedTenantId?: string;
   selectedUsdaId?: number;
 }
@@ -60,72 +62,28 @@ export function ReviewInvoiceBlock({
 
       {/* ── Line items ── */}
       {lineItems.length > 0 && (
-        <div className="flex flex-col gap-0 divide-y divide-zinc-800/40 pt-4">
+        <div className="flex flex-col divide-y divide-zinc-800/40 pt-1">
           {lineItems.map((item, idx) => (
-            <div key={idx} className="flex flex-col gap-2.5 py-3 first:pt-0">
-              {/* Name + price */}
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-medium text-zinc-100 leading-snug">
-                  {item.rawName}
-                </span>
-                <span className="shrink-0 text-xs tabular-nums text-zinc-500">
-                  {item.quantity ?? 1}× ${item.unitPrice?.toFixed(2) ?? "0.00"}
-                  {item.extendedPrice
-                    ? ` = $${item.extendedPrice.toFixed(2)}`
-                    : ""}
-                </span>
-              </div>
-
-              {/* Mapping selects */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="mb-1 block text-[10px] font-medium tracking-wide text-zinc-600 uppercase">
-                    Ingredient
-                  </label>
-                  <select
-                    value={item.selectedTenantId || ""}
-                    onChange={(e) =>
-                      onLineItemMappingChange(
-                        idx,
-                        e.target.value,
-                        item.selectedUsdaId,
-                      )
-                    }
-                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5 text-xs text-zinc-200 outline-none transition focus:border-zinc-600"
-                  >
-                    <option value="">Select ingredient</option>
-                    {item.tenantMatches?.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-[10px] font-medium tracking-wide text-zinc-600 uppercase">
-                    USDA
-                  </label>
-                  <select
-                    value={item.selectedUsdaId || ""}
-                    onChange={(e) =>
-                      onLineItemMappingChange(
-                        idx,
-                        item.selectedTenantId || "",
-                        Number(e.target.value),
-                      )
-                    }
-                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5 text-xs text-zinc-200 outline-none transition focus:border-zinc-600"
-                  >
-                    <option value="">Select USDA</option>
-                    {item.usdaMatches?.map((u) => (
-                      <option key={u.fdcId} value={u.fdcId}>
-                        {u.description}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
+            <IngredientMappingRow
+              key={idx}
+              rawName={item.rawName}
+              guessName={item.guessName}
+              quantity={item.quantity}
+              tenantMatches={item.tenantMatches}
+              usdaMatches={item.usdaMatches}
+              selectedTenantId={item.selectedTenantId}
+              selectedUsdaId={item.selectedUsdaId}
+              onMappingChange={(tId, uId) =>
+                onLineItemMappingChange(idx, tId, uId)
+              }
+              metaRight={
+                item.extendedPrice ? (
+                  <span className="text-xs tabular-nums text-zinc-500">
+                    {item.quantity ?? 1}× ${item.unitPrice?.toFixed(2) ?? "0.00"} = ${item.extendedPrice.toFixed(2)}
+                  </span>
+                ) : undefined
+              }
+            />
           ))}
         </div>
       )}
