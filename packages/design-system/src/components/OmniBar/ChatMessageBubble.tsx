@@ -23,7 +23,7 @@ export function ChatMessageBubble({
 }: ChatMessageBubbleProps) {
   const isUser = message.role === "user";
   const isAgentStep = message.role === "agent_step";
-  const isRenderComponent = message.role === ("render_component" as any);
+  const isRenderComponent = (message.role as string) === "render_component";
 
   if (isRenderComponent) return null; // Handled by the parent transcript layer
 
@@ -81,7 +81,7 @@ export function ChatMessageBubble({
           {/* Attachments */}
           {message.attachments && message.attachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
-              {message.attachments.map((att: any, i: number) =>
+              {message.attachments.map((att: { url?: string }, i: number) =>
                 att.url ? (
                   <img
                     key={i}

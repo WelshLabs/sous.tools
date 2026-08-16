@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 if (typeof process === "undefined") {
-  (globalThis as any).process = { env: {} };
+  (
+    globalThis as unknown as {
+      process: { env: Record<string, string | undefined> };
+    }
+  ).process = { env: {} };
 }
 
 export const clientSchema = z.object({
