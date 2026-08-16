@@ -59,19 +59,23 @@ export function LoginButton({
         className,
       )}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={state}
-          initial={{ opacity: 0, y: 8, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -8, scale: 0.9 }}
-          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center gap-2"
-        >
-          {icon}
-          {label}
-        </motion.span>
-      </AnimatePresence>
+      {/* #15 "Button Change" — content swaps with a vertical slot slide:
+          the current state rises out the top as the next rises in from below. */}
+      <span className="relative inline-flex h-full items-center justify-center overflow-hidden">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={state}
+            initial={{ y: "120%", opacity: 0 }}
+            animate={{ y: "0%", opacity: 1 }}
+            exit={{ y: "-120%", opacity: 0 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex items-center gap-2"
+          >
+            {label}
+            {icon}
+          </motion.span>
+        </AnimatePresence>
+      </span>
     </motion.button>
   );
 }

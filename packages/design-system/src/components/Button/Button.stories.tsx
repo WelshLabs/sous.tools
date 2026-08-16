@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { AuroraBackground } from "../AuroraBackground/AuroraBackground";
 import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {
@@ -39,14 +40,17 @@ export const Primary: Story = {
 
 export const AllVariants: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-4">
-      <Button variant="gradient">Gradient</Button>
-      <Button variant="primary">Primary</Button>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="outline">Outline</Button>
-      <Button variant="glass">Glass</Button>
-      <Button variant="ghost">Ghost</Button>
-      <Button variant="destructive">Destructive</Button>
+    <div className="bg-background relative min-h-80 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--ds-glass-border)] p-10">
+      <AuroraBackground />
+      <div className="relative z-10 flex flex-wrap gap-4">
+        <Button variant="gradient">Gradient</Button>
+        <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="glass">Glass</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="destructive">Destructive</Button>
+      </div>
     </div>
   ),
 };

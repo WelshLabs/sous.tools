@@ -414,6 +414,18 @@
   }
 }
 
+@keyframes ds-glow-travel {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 300% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
 /*
  * ═══════════════════════════════════════════════════════════════════════════
  *  REUSABLE HELPERS (use anywhere in the app)
@@ -483,31 +495,49 @@
     transform: translateY(1px) scale(0.985);
   }
 
+  /* #1 Hover Glow Effect — animated blurred gradient aura in our palette.
+     Sits behind the (glass) button body and fades in on hover/focus.
+     overflow must stay visible so the blurred halo can escape the body. */
+  .ds-action-button {
+    overflow: visible;
+  }
+
   .ds-action-button::before {
     position: absolute;
-    inset: 0;
-    z-index: 2;
+    inset: -2px;
+    z-index: -1;
     border-radius: inherit;
-    padding: 1px;
-    background: conic-gradient(from 210deg, transparent 0deg, transparent 205deg, rgb(var(--ds-neon-accent-rgb) / 0.9) 245deg, rgb(var(--ds-neon-violet-rgb) / 0.72) 280deg, transparent 318deg);
-    opacity: 0.34;
-    transform: rotate(-18deg);
-    transition:
-      opacity var(--ds-duration) var(--ds-ease),
-      transform 720ms var(--ds-ease);
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    background: linear-gradient(
+      90deg,
+      var(--primary),
+      var(--accent),
+      var(--violet),
+      var(--accent),
+      var(--primary)
+    );
+    background-size: 300% 100%;
+    filter: blur(9px);
+    opacity: 0;
+    transition: opacity var(--ds-duration) var(--ds-ease);
     pointer-events: none;
     content: "";
   }
 
   .ds-action-button:hover::before,
   .ds-action-button:focus-visible::before {
-    opacity: 0.88;
-    transform: rotate(16deg);
+    opacity: 0.85;
+    animation: ds-glow-travel 6s linear infinite;
+  }
+
+  /* Danger-toned aura for destructive actions. */
+  .ds-action-danger::before {
+    background: linear-gradient(
+      90deg,
+      var(--destructive),
+      color-mix(in srgb, var(--destructive) 60%, #ff8a5c),
+      var(--destructive)
+    );
+    background-size: 300% 100%;
   }
 
   @media (prefers-reduced-motion: reduce) {

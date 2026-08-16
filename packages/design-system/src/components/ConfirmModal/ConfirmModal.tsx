@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "../Button/Button";
 import {
@@ -69,43 +70,57 @@ export function ConfirmModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader className="flex flex-col items-center space-y-4 text-center sm:text-center">
-          <div
-            className="mx-auto flex items-center justify-center rounded-full p-3"
-            style={{
-              backgroundColor: isDestructive
-                ? "rgb(244 63 94 / 0.15)"
-                : "rgb(245 158 11 / 0.15)",
-              color: isDestructive ? "var(--color-destructive)" : "#f59e0b",
-            }}
-          >
-            <AlertTriangle className="h-8 w-8" />
-          </div>
+      <DialogContent className="max-w-sm overflow-visible bg-transparent p-0 shadow-none [perspective:1200px] [&>button]:hidden">
+        <motion.div
+          initial={{ opacity: 0, rotateX: -92, scale: 0.88 }}
+          animate={{ opacity: 1, rotateX: 0, scale: 1 }}
+          exit={{ opacity: 0, rotateX: 92, scale: 0.88 }}
+          transition={{ duration: 0.64, ease: [0.23, 1, 0.32, 1] }}
+          className="ds-glass-strong [transform-origin:center_bottom] rounded-[var(--radius-xl)] border border-[var(--ds-glass-border)] p-6 shadow-[0_30px_80px_-32px_var(--primary)] [transform-style:preserve-3d]"
+        >
+          <DialogHeader className="flex flex-col items-center gap-4 text-center sm:text-center">
+            <motion.div
+              initial={{ scale: 0.6, rotate: -12 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{
+                delay: 0.2,
+                type: "spring",
+                stiffness: 320,
+                damping: 20,
+              }}
+              className={
+                isDestructive
+                  ? "bg-destructive/15 text-destructive flex rounded-full p-3"
+                  : "bg-warning/15 text-warning flex rounded-full p-3"
+              }
+            >
+              <AlertTriangle className="h-8 w-8" />
+            </motion.div>
 
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{message}</DialogDescription>
-        </DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{message}</DialogDescription>
+          </DialogHeader>
 
-        <DialogFooter className="mt-8 flex gap-3 sm:justify-center">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={onCancel}
-            disabled={loading}
-          >
-            {cancelText}
-          </Button>
+          <DialogFooter className="mt-8 flex gap-3 sm:justify-center">
+            <Button
+              variant="glass"
+              className="flex-1"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              {cancelText}
+            </Button>
 
-          <Button
-            variant={isDestructive ? "destructive" : "primary"}
-            className="flex-1"
-            onClick={handleConfirm}
-            disabled={loading}
-          >
-            {loading ? "Working…" : confirmText}
-          </Button>
-        </DialogFooter>
+            <Button
+              variant={isDestructive ? "destructive" : "primary"}
+              className="flex-1"
+              onClick={handleConfirm}
+              disabled={loading}
+            >
+              {loading ? "Working…" : confirmText}
+            </Button>
+          </DialogFooter>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
