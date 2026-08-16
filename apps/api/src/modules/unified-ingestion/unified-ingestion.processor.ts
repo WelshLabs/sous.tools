@@ -243,7 +243,7 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
         }
       }
 
-      // Try LiteLLM with studio-3.5-flash-lite
+      // Try LiteLLM with omnibar model alias (configured with fallbacks)
       const liteLlmRes = await fetch(
         "https://ai.sous.tools/v1/chat/completions",
         {
@@ -253,7 +253,7 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
             Authorization: `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`,
           },
           body: JSON.stringify({
-            model: "studio-3.5-flash-lite",
+            model: "omnibar",
             messages: [
               {
                 role: "user",

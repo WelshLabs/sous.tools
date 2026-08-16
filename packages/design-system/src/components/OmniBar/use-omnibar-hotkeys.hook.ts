@@ -44,42 +44,15 @@ export function useOmniBarHotkeys({
     // Allow submit if there is text OR staged files (or both)
     if (!textToSubmit && !hasFiles) return;
 
+    const filesToSubmit = [...stagedFiles];
     setInputText("");
     setStagedFiles([]);
     setIsProcessing(true);
     setErrorMessage(null);
 
-    // Always route to /home with chat session when submitting a query
-    const searchParams = new URLSearchParams(window.location.search);
-    const existingChatId = searchParams.get("chat");
-    let currentChatId = existingChatId;
-
-    if (pathname !== "/home" || !existingChatId) {
-      currentChatId = existingChatId || crypto.randomUUID();
-      const params = new URLSearchParams();
-      params.set("chat", currentChatId);
-      if (textToSubmit) params.set("prompt", textToSubmit);
-      router.push(`/home?${params.toString()}`);
-
-      if (pathname !== "/home") {
-        setIsProcessing(false);
-        setIsOpen(false);
-        return;
-      }
-    }
-    setIsOpen(true);
-
-    // Build a human-readable user message that reflects what was submitted
-    const attachmentSummary = hasFiles
-      ? `[${stagedFiles.length} attachment${stagedFiles.length > 1 ? "s" : ""}]`
-      : "";
-    const userContent = [attachmentSummary, textToSubmit]
-      .filter(Boolean)
-      .join(" ");
-
     // Build attachments array from staged files for the backend
     const attachments = await Promise.all(
-      stagedFiles.map(async (f) => {
+      filesToSubmit.map(async (f) => {
         let dataUrl = f.url ?? f.previewUrl ?? null;
         if (f.file) {
           dataUrl = await new Promise<string>((resolve) => {
@@ -97,10 +70,31 @@ export function useOmniBarHotkeys({
       }),
     );
 
+    // Always route to /home with chat session when submitting a query
+    const searchParams = new URLSearchParams(window.location.search);
+    const existingChatId = searchParams.get("chat");
+    let currentChatId = existingChatId;
+
+    if (pathname !== "/home" || !existingChatId) {
+      currentChatId = existingChatId || crypto.randomUUID();
+      const params = new URLSearchParams();
+      params.set("chat", currentChatId);
+      router.push(`/home?${params.toString()}`);
+    }
+    setIsOpen(true);
+
+    // Build a human-readable user message that reflects what was submitted
+    const attachmentSummary = hasFiles
+      ? `[${filesToSubmit.length} attachment${filesToSubmit.length > 1 ? "s" : ""}]`
+      : "";
+    const userContent = [attachmentSummary, textToSubmit]
+      .filter(Boolean)
+      .join(" ");
+
     const newUserMessage: OmniMessage = {
       id: crypto.randomUUID(),
       role: "user",
-      content: userContent,
+      content: userContent || "[1 attachment]",
       timestamp: new Date(),
       attachments,
     };
@@ -110,13 +104,11 @@ export function useOmniBarHotkeys({
 
     try {
       if (!socket || !socket.connected) {
-        setErrorMessage("WebSocket not connected. Attempting reconnect...");
+        setErrorMessage("Connecting to stream...");
         socket?.connect();
-        setIsProcessing(false);
-        return;
       }
 
-      socket.emit("executeCommand", {
+      socket?.emit("executeCommand", {
         chatHistory: updatedHistory,
         source: "omnibar",
         path: pathname,

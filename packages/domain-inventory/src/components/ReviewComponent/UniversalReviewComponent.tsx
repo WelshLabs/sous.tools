@@ -258,7 +258,7 @@ export function UniversalReviewComponent({
         `Mapped item via Omnibar command: ${action.targetName || `item #${action.itemIndex}`}`,
       );
     }
-  }, [chatHistory, currentPage]);
+  }, [chatHistory, currentPage, persistPayloadToBackend]);
 
   const pages = payload?.pages || [];
   const totalPages = Math.max(pages.length, 1);
