@@ -116,7 +116,7 @@ export const PreviewMenuRenderer: React.FC<PreviewMenuRendererProps> = ({
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden rounded-lg bg-[oklch(0.08_0.01_260)] p-2.5">
-      <h4 className="font-brand text-muted-foreground mb-1.5 text-center text-[10px] font-bold">
+      <h4 className="font-archivo text-muted-foreground mb-1.5 text-center text-[10px] font-bold">
         Menu
       </h4>
       <div className="grid max-h-[140px] grid-cols-3 gap-1.5 overflow-y-auto pr-1">

@@ -138,7 +138,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              <h2 className="font-brand text-2xl font-extrabold tracking-wide">
+              <h2 className="font-archivo text-2xl font-extrabold tracking-wide">
                 {recipe.title}
               </h2>
             </div>

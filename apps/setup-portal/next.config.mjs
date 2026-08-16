@@ -1,3 +1,5 @@
+import { URL } from "node:url";
+
 const remotePatterns = [];
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,7 +12,7 @@ if (supabaseUrl) {
       port: url.port || "",
       pathname: "/**",
     });
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
@@ -25,7 +27,7 @@ if (apiUrl) {
       port: url.port || "",
       pathname: "/**",
     });
-  } catch (e) {
+  } catch {
     // ignore
   }
 }

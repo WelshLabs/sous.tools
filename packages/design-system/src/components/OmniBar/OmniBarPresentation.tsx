@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 "use client";
 
 import React, { useRef, useEffect } from "react";
@@ -111,10 +110,10 @@ export function OmniBarPresentation({
         </div>
       )}
 
-      {/* ── MODE 2: /home?chat=... — Fixed right below AppBar for continued conversation (NO FAB, NO BACKDROP) ── */}
+      {/* ── MODE 2: /home?chat=... — Sticky bottom composer (Claude Code layout) ── */}
       {isAnswerPage && (
-        <div className="pointer-events-none fixed top-24 left-1/2 z-[9999] flex w-full max-w-2xl -translate-x-1/2 flex-col items-center justify-start px-4">
-          <div className="pointer-events-auto flex w-full flex-col justify-center gap-0 shadow-2xl">
+        <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-[9999] flex justify-center px-4 pb-4">
+          <div className="pointer-events-auto flex w-full max-w-2xl flex-col justify-center gap-0 shadow-2xl">
             <StagingArea files={stagedFiles} />
             <OmniInputPill
               inputText={inputText}

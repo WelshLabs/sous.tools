@@ -1,0 +1,9 @@
+# Labwc environment configuration for Raspberry Pi 5 RP1 DRM
+WLR_BACKENDS=drm
+WLR_DRM_NO_ATOMIC=1
+WLR_LIBINPUT_NO_DEVICES=0
+GDK_BACKEND=wayland
+MOZ_ENABLE_WAYLAND=1
+QT_QPA_PLATFORM=wayland
+XDG_SESSION_TYPE=wayland
+XDG_CURRENT_DESKTOP=labwc

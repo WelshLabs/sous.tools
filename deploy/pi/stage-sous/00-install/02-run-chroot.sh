@@ -60,10 +60,10 @@ cat > /etc/sudoers.d/99-sous-kiosk <<'EOSUDO'
 # Allow the sous user (running the setup-portal Node server) to perform
 # compositor mode switches and hostapd toggling without a password prompt.
 Defaults:sous !requiretty
-sous ALL=(ALL) NOPASSWD: /usr/local/bin/sous-sway-config-select.sh
-sous ALL=(ALL) NOPASSWD: /bin/systemctl restart sous-sway.service
-sous ALL=(ALL) NOPASSWD: /bin/systemctl start   sous-sway.service
-sous ALL=(ALL) NOPASSWD: /bin/systemctl stop    sous-sway.service
+sous ALL=(ALL) NOPASSWD: /usr/local/bin/sous-labwc-config-select.sh
+sous ALL=(ALL) NOPASSWD: /bin/systemctl restart sous-labwc.service
+sous ALL=(ALL) NOPASSWD: /bin/systemctl start   sous-labwc.service
+sous ALL=(ALL) NOPASSWD: /bin/systemctl stop    sous-labwc.service
 sous ALL=(ALL) NOPASSWD: /usr/bin/pkill -x wl-mirror
 sous ALL=(ALL) NOPASSWD: /usr/bin/tee /etc/sous/kiosk-mode
 sous ALL=(ALL) NOPASSWD: /bin/nmcli connection up   Sous-Signage-Setup
@@ -93,7 +93,7 @@ loginctl enable-linger sous 2>/dev/null || true
 
 # ── Enable required systemd services ─────────────────────────────────────────
 echo "--- Enabling systemd services..."
-systemctl enable sous-sway.service
+systemctl enable sous-labwc.service
 systemctl enable sous-setup-portal.service
 systemctl enable sous-ota.timer
 systemctl enable NetworkManager.service

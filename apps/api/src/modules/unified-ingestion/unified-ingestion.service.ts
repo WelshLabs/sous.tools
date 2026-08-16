@@ -18,10 +18,11 @@ export interface ExtractedBlock {
     guessName: string;
     quantity?: number;
     unit?: string;
-    tenantMatches: Array<{ id: string; name: string }>;
-    usdaMatches: Array<{ fdcId: number; description: string }>;
+    tenantMatches: Array<{ id: string; name: string; score?: number }>;
+    usdaMatches: Array<{ fdcId: number; description: string; score?: number }>;
     selectedTenantId?: string;
     selectedUsdaId?: number;
+    autoAccepted?: boolean;
   }>;
   // Invoice fields
   vendorName?: string;
@@ -33,10 +34,11 @@ export interface ExtractedBlock {
     quantity?: number;
     unitPrice?: number;
     extendedPrice?: number;
-    tenantMatches: Array<{ id: string; name: string }>;
-    usdaMatches: Array<{ fdcId: number; description: string }>;
+    tenantMatches: Array<{ id: string; name: string; score?: number }>;
+    usdaMatches: Array<{ fdcId: number; description: string; score?: number }>;
     selectedTenantId?: string;
     selectedUsdaId?: number;
+    autoAccepted?: boolean;
   }>;
 }
 
@@ -48,6 +50,8 @@ export interface IngestionPage {
 
 export interface IngestionReviewPayload {
   pages: IngestionPage[];
+  fallbackUsed?: boolean;
+  extractionError?: string;
 }
 
 @Injectable()
@@ -88,13 +92,48 @@ export class UnifiedIngestionService {
 
   async searchMasterItemsTop5(
     queryEmbedding: number[],
-  ): Promise<Array<{ id: string; name: string }>> {
+    options?: {
+      orgId?: string;
+      vendorId?: string;
+      rawItemName?: string;
+    },
+  ): Promise<Array<{ id: string; name: string; score?: number }>> {
+    // 1. Check vendor_item_aliases first for confirmed alias mappings
+    if (options?.orgId && options?.vendorId && options?.rawItemName) {
+      try {
+        const { data: alias } = await supabase
+          .from("vendor_item_aliases")
+          .select("item_id, vendor_item_string")
+          .eq("organization_id", options.orgId)
+          .eq("vendor_id", options.vendorId)
+          .ilike("vendor_item_string", options.rawItemName.trim())
+          .maybeSingle();
+
+        if (alias && alias.item_id) {
+          const { data: masterItem } = await supabase
+            .from("master_items")
+            .select("id, name")
+            .eq("id", alias.item_id)
+            .maybeSingle();
+
+          if (masterItem) {
+            this.logger.log(
+              `Matched vendor_item_alias for "${options.rawItemName}" -> ${masterItem.name} (${masterItem.id})`,
+            );
+            return [{ id: masterItem.id, name: masterItem.name, score: 1.0 }];
+          }
+        }
+      } catch (err) {
+        this.logger.warn("Error querying vendor_item_aliases:", err);
+      }
+    }
+
     if (!queryEmbedding || queryEmbedding.length === 0) {
       const { data } = await supabase
         .from("master_items")
         .select("id, name")
         .limit(5);
-      return data || [];
+      return (data || []).map((d) => ({ id: d.id, name: d.name, score: undefined }));
     }
     try {
       const { data: matches, error } = await supabase.rpc(
@@ -106,7 +145,16 @@ export class UnifiedIngestionService {
         },
       );
       if (!error && matches && matches.length > 0) {
-        return matches.map((m: any) => ({ id: m.id, name: m.name }));
+        return matches.map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          score:
+            typeof m.similarity === "number"
+              ? m.similarity
+              : typeof m.score === "number"
+                ? m.score
+                : undefined,
+        }));
       }
     } catch (err) {
       this.logger.warn("match_master_items RPC fallback:", err);
@@ -115,7 +163,7 @@ export class UnifiedIngestionService {
       .from("master_items")
       .select("id, name")
       .limit(5);
-    return data || [];
+    return (data || []).map((d) => ({ id: d.id, name: d.name, score: undefined }));
   }
 
   async createReviewRecord(params: {
@@ -278,10 +326,22 @@ export class UnifiedIngestionService {
     if (block.lineItems) {
       for (const item of block.lineItems) {
         if (item.selectedTenantId && item.unitPrice) {
-          await supabase
+          const { data: updatedItem } = await supabase
             .from("master_items")
             .update({ updated_at: new Date().toISOString() })
-            .eq("id", item.selectedTenantId);
+            .eq("id", item.selectedTenantId)
+            .select()
+            .single();
+
+          if (updatedItem) {
+            await this.neo4jSync.handleWebhook({
+              type: "UPDATE",
+              table: "master_items",
+              schema: "public",
+              record: updatedItem,
+              old_record: null,
+            });
+          }
         }
       }
     }

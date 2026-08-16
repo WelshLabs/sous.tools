@@ -1,3 +1,4 @@
+/* eslint-disable max-lines, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import { Job } from "bullmq";
@@ -55,6 +54,9 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     } = job.data as any;
 
     const pagesData: IngestionPage[] = [];
+    let overallFallbackUsed = false;
+    let overallError: string | undefined;
+
     const inputPages =
       pagesInput && pagesInput.length > 0
         ? pagesInput
@@ -74,13 +76,23 @@ export class UnifiedIngestionProcessor extends WorkerHost {
           conversationId,
           status: "IN_PROGRESS",
           message: "Analyzing recipe image...",
+          orgId: organizationId,
+          userId,
         });
       }
-      const blocks = await this.extractPageBlocks(
+      const { blocks, fallbackUsed, error } = await this.extractPageBlocks(
         pInput.rawText || "",
         pInput.imageUrl,
         conversationId,
+        organizationId,
+        userId,
       );
+      if (fallbackUsed) {
+        overallFallbackUsed = true;
+        if (error && !overallError) {
+          overallError = error;
+        }
+      }
       pagesData.push({
         pageNumber: pInput.pageNumber,
         imageUrl: pInput.imageUrl,
@@ -94,8 +106,24 @@ export class UnifiedIngestionProcessor extends WorkerHost {
       source: source || "upload",
       sourceName: sourceName || "Uploaded Document",
       sourceDocumentUrl,
-      parsedData: { pages: pagesData },
+      parsedData: {
+        pages: pagesData,
+        fallbackUsed: overallFallbackUsed,
+        extractionError: overallError,
+      },
     });
+
+    if (overallFallbackUsed && conversationId) {
+      this.commandsGateway.emitIngestionUpdate({
+        reviewId: reviewRecord.id,
+        conversationId,
+        status: "IN_PROGRESS",
+        message:
+          "⚠️ Note: Vision OCR extraction failed or was unavailable; fallback document structure generated.",
+        orgId: organizationId,
+        userId,
+      });
+    }
 
     // Real-time UI notification trigger in Postgres
     try {
@@ -122,9 +150,15 @@ export class UnifiedIngestionProcessor extends WorkerHost {
       this.commandsGateway.emitIngestionUpdate({
         reviewId: reviewRecord.id,
         conversationId,
-        parsedData: { pages: pagesData },
+        parsedData: {
+          pages: pagesData,
+          fallbackUsed: overallFallbackUsed,
+          extractionError: overallError,
+        },
         status: "COMPLETED",
         message: "Done!",
+        orgId: organizationId,
+        userId,
       });
     } catch (wsErr) {
       this.logger.warn("Failed to emit WebSocket ingestion update:", wsErr);
@@ -137,8 +171,16 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     rawText: string,
     _imageUrl?: string,
     conversationId?: string,
-  ): Promise<ExtractedBlock[]> {
+    organizationId?: string,
+    userId?: string,
+  ): Promise<{
+    blocks: ExtractedBlock[];
+    fallbackUsed: boolean;
+    error?: string;
+  }> {
     let extractedResponse: any = null;
+    let fallbackUsed = false;
+    let extractionError: string | undefined;
 
     try {
       const prompt = `Analyze this page content and classify into content blocks. Return ONLY a valid JSON array of objects with fields:
@@ -198,8 +240,14 @@ Page input: ${rawText.substring(0, 1500)}`;
           `LiteLLM failed: ${liteLlmRes.status} ${await liteLlmRes.text()}`,
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error("LiteLLM extraction failed:", err);
+      fallbackUsed = true;
+      extractionError = err?.message || "Vision extraction failed";
+    }
+
+    if (!Array.isArray(extractedResponse) || extractedResponse.length === 0) {
+      fallbackUsed = true;
     }
 
     const rawBlocks: any[] =
@@ -224,6 +272,8 @@ Page input: ${rawText.substring(0, 1500)}`;
             conversationId,
             status: "IN_PROGRESS",
             message: "Extracting ingredients...",
+            orgId: organizationId,
+            userId,
           });
         }
         const ingredients = [];
@@ -232,8 +282,15 @@ Page input: ${rawText.substring(0, 1500)}`;
           const queryEmbedding =
             await this.ingestionService.getEmbedding(guessName);
           const tenantMatches =
-            await this.ingestionService.searchMasterItemsTop5(queryEmbedding);
+            await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
+              orgId: organizationId,
+              rawItemName: ing.rawName || guessName,
+            });
           const usdaMatches = await this.usdaResolver.searchTop5(guessName);
+
+          const topTenantScore = tenantMatches[0]?.score ?? 0;
+          const autoAccepted =
+            topTenantScore >= 0.85 || topTenantScore === 1.0;
 
           ingredients.push({
             rawName: ing.rawName || guessName,
@@ -244,6 +301,7 @@ Page input: ${rawText.substring(0, 1500)}`;
             usdaMatches,
             selectedTenantId: tenantMatches[0]?.id,
             selectedUsdaId: usdaMatches[0]?.fdcId,
+            autoAccepted,
           });
         }
 
@@ -258,6 +316,23 @@ Page input: ${rawText.substring(0, 1500)}`;
           ingredients,
         });
       } else if (blockType === "INVOICE") {
+        let vendorId: string | undefined;
+        if (b.vendorName && organizationId) {
+          try {
+            const { data: vendorRecord } = await supabase
+              .from("vendors")
+              .select("id")
+              .eq("organization_id", organizationId)
+              .ilike("name", b.vendorName)
+              .maybeSingle();
+            if (vendorRecord) {
+              vendorId = vendorRecord.id;
+            }
+          } catch {
+            // non-fatal
+          }
+        }
+
         const lineItems = [];
         for (const item of b.lineItems || [
           { rawName: "Sample Line Item", unitPrice: 10, extendedPrice: 10 },
@@ -266,8 +341,16 @@ Page input: ${rawText.substring(0, 1500)}`;
           const queryEmbedding =
             await this.ingestionService.getEmbedding(guessName);
           const tenantMatches =
-            await this.ingestionService.searchMasterItemsTop5(queryEmbedding);
+            await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
+              orgId: organizationId,
+              vendorId,
+              rawItemName: item.rawName || guessName,
+            });
           const usdaMatches = await this.usdaResolver.searchTop5(guessName);
+
+          const topTenantScore = tenantMatches[0]?.score ?? 0;
+          const autoAccepted =
+            topTenantScore >= 0.85 || topTenantScore === 1.0;
 
           lineItems.push({
             rawName: item.rawName || guessName,
@@ -279,6 +362,7 @@ Page input: ${rawText.substring(0, 1500)}`;
             usdaMatches,
             selectedTenantId: tenantMatches[0]?.id,
             selectedUsdaId: usdaMatches[0]?.fdcId,
+            autoAccepted,
           });
         }
 
@@ -301,7 +385,7 @@ Page input: ${rawText.substring(0, 1500)}`;
       }
     }
 
-    return processedBlocks;
+    return { blocks: processedBlocks, fallbackUsed, error: extractionError };
   }
 
   private buildFallbackBlocks(rawText: string): any[] {

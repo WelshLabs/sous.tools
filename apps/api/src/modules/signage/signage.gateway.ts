@@ -13,6 +13,7 @@ interface JoinPayload {
   deckId?: string;
   id?: string;
   pairingDeviceId?: string;
+  deviceId?: string;
 }
 
 @WebSocketGateway({ cors: { origin: "*" } })
@@ -23,7 +24,8 @@ export class SignageGateway
   server!: Server;
 
   handleConnection(client: Socket): void {
-    const { displayId, deckId, pairingDeviceId } = client.handshake.query;
+    const { displayId, deckId, pairingDeviceId, deviceId } =
+      client.handshake.query;
     if (displayId && typeof displayId === "string") {
       client.join(`display:${displayId}`);
     }
@@ -32,6 +34,9 @@ export class SignageGateway
     }
     if (pairingDeviceId && typeof pairingDeviceId === "string") {
       client.join(`pairing:${pairingDeviceId}`);
+    }
+    if (deviceId && typeof deviceId === "string") {
+      client.join(`device:${deviceId}`);
     }
   }
 
@@ -48,6 +53,7 @@ export class SignageGateway
     const displayId = payload?.displayId ?? payload?.id;
     const deckId = payload?.deckId;
     const pairingDeviceId = payload?.pairingDeviceId;
+    const deviceId = payload?.deviceId;
 
     if (displayId) {
       client.join(`display:${displayId}`);
@@ -60,6 +66,10 @@ export class SignageGateway
     if (pairingDeviceId) {
       client.join(`pairing:${pairingDeviceId}`);
       joined.push(`pairing:${pairingDeviceId}`);
+    }
+    if (deviceId) {
+      client.join(`device:${deviceId}`);
+      joined.push(`device:${deviceId}`);
     }
     return joined.length ? { status: "success", joined } : { status: "error" };
   }
@@ -104,6 +114,18 @@ export class SignageGateway
         });
       }
     });
+  }
+
+  /**
+   * Broadcasts an immediate remote OTA trigger command to a hardware device.
+   */
+  broadcastDeviceOtaTrigger(deviceId: string): void {
+    if (this.server) {
+      this.server.to(`device:${deviceId}`).emit("ota_trigger", {
+        deviceId,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 
   isDisplayOnline(displayId: string): boolean {

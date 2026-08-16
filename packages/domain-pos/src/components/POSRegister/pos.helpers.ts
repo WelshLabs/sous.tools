@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import {
   type ModifierGroup,
   type ModifierOption,

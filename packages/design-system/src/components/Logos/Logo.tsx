@@ -135,7 +135,7 @@ export function PrimaryLogo({
       <text x="92" y="64" fill="currentColor" dominantBaseline="alphabetic">
         <tspan
           style={{
-            fontFamily: "var(--font-space-grotesk), system-ui, sans-serif",
+            fontFamily: "var(--font-archivo), var(--font-display), system-ui, sans-serif",
           }}
           fontWeight={700}
           fontSize={48}

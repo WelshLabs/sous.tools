@@ -41,6 +41,8 @@ Thumbs.db
 ssh-key.key
 ssh-key.pub
 signage_deploy_key*
+*id_rsa*
+tmp_issues/
 
 # Docker Volume & Runtime Data Directories
 n8n_data/
@@ -104,3 +106,5 @@ apps/web/public/sw.js
 apps/web/public/sw.js.map
 
 kanban-orchestrator.log
+
+.assets/

@@ -1,7 +1,6 @@
 export { OmniBarProvider, OmniBarProvider as OmniBar } from "./OmniBarProvider";
 export { OmniBarPresentation } from "./OmniBarPresentation";
 export type { OmniBarPresentationProps } from "./OmniBarPresentation";
-export type { OmniMetric, OmniChatWindowProps } from "./OmniChatWindow";
 export { FloatingOmniTrigger } from "./FloatingOmniTrigger";
 export { useOmnibarContext } from "./OmniBarContext";
 export { AttachmentFlyout } from "./AttachmentFlyout";
@@ -17,3 +16,15 @@ export type {
 export { UnifiedReviewPanel } from "./UnifiedReviewPanel";
 export type { UnifiedReviewPanelProps } from "./UnifiedReviewPanel";
 export { OmnibarPerimeterView } from "./OmnibarPerimeterView";
+export {
+  ChatMessageBubble,
+  ProcessingBubble,
+  EmptyStateBubble,
+} from "./ChatMessageBubble";
+export type {
+  ChatMessageBubbleProps,
+  ProcessingBubbleProps,
+  EmptyStateBubbleProps,
+} from "./ChatMessageBubble";
+export { OmniTranscriptTimeline } from "./OmniTranscriptTimeline";
+export type { OmniTranscriptTimelineProps } from "./OmniTranscriptTimeline";

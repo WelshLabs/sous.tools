@@ -290,6 +290,7 @@ services:
         exec infisical run --log-level info --projectId $${INFISICAL_PROJECT_ID} --env $${INFISICAL_ENV:-dev} -- sh -c 'sleep infinity'
     volumes:
       - /home/conar/code/sous.tools:/home/conar/code/sous.tools
+      - /home/conar/welshlabs/automated-kanban-agent:/kanban-agent
       - ${HOME}/.gemini:/home/cptruser/.gemini
       - ${HOME}/.config:/home/cptruser/.config
       - ${HOME}/.ssh:/home/cptruser/.ssh

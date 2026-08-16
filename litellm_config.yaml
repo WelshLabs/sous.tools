@@ -17,6 +17,11 @@ model_list:
   # =========================================================================
   - model_name: coder
     litellm_params:
+      model: gemini/gemini-3.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: ollama-coder
+    litellm_params:
       model: openai/qwen2.5-coder:14b
       api_base: http://ollama:11434/v1
       drop_params: true
@@ -26,7 +31,7 @@ model_list:
   # =========================================================================
   - model_name: omnibar
     litellm_params:
-      model: gemini/gemini-3.5-flash
+      model: gemini/gemini-3.5-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
   # =========================================================================
@@ -62,6 +67,11 @@ model_list:
   - model_name: studio-3.5-flash-lite
     litellm_params:
       model: gemini/gemini-3.5-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: studio-3.1-flash-lite
+    litellm_params:
+      model: gemini/gemini-3.1-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
   - model_name: studio-2.5-flash
@@ -103,6 +113,7 @@ general_settings:
 
 litellm_settings:
   turn_off_message_logging: true
+  enable_cache_control: true
 
 router_settings:
   num_retries: 2
@@ -112,15 +123,14 @@ router_settings:
     # planner pro is STRICTLY for user planning and is not to be used in any other part of the system
     - {
         "planner-pro":
-          ["planner", "studio-3.7-flash", "studio-3.6-flash", "coder"],
+          ["planner", "studio-3.7-flash", "studio-3.6-flash", "studio-3.5-flash-lite", "studio-3.1-flash-lite", "coder"],
       }
     - {
         "omnibar":
           [
-            "studio-3.7-flash",
-            "studio-3.5-flash",
             "studio-3.5-flash-lite",
-            "coder",
+            "studio-3.1-flash-lite",
+            "ollama-coder",
           ],
       }
-    - { "coder": ["studio-3.7-flash", "studio-3.5-flash", "planner"] }
+    - { "coder": ["studio-3.1-flash-lite", "ollama-coder"] }

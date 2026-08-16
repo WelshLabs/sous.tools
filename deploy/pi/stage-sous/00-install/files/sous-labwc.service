@@ -1,0 +1,38 @@
+[Unit]
+Description=Sous Signage Wayland Compositor (Labwc)
+Documentation=https://github.com/labwc/labwc
+After=systemd-logind.service dbus.socket graphical.target
+Requires=dbus.socket
+Wants=graphical.target
+
+[Service]
+Type=simple
+User=sous
+Group=sous
+
+PAMName=login
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+
+Environment=WAYLAND_DISPLAY=wayland-1
+Environment=XDG_SESSION_TYPE=wayland
+Environment=XDG_SESSION_CLASS=user
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=XDG_CONFIG_DIRS=/etc/xdg
+
+# Raspberry Pi 5 RP1 DRM specifics
+Environment=WLR_BACKENDS=drm
+Environment=WLR_DRM_NO_ATOMIC=1
+Environment=WLR_LIBINPUT_NO_DEVICES=0
+
+ExecStartPre=/usr/local/bin/sous-labwc-config-select.sh
+ExecStart=/usr/bin/labwc -s /etc/xdg/labwc/autostart
+
+Restart=always
+RestartSec=5s
+TimeoutStopSec=10s
+
+[Install]
+WantedBy=graphical.target

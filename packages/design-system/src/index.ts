@@ -85,6 +85,11 @@ export {
   VerificationPanel,
   CreatableSelect,
   UnifiedReviewPanel,
+  OmnibarPerimeterView,
+  ChatMessageBubble,
+  ProcessingBubble,
+  EmptyStateBubble,
+  OmniTranscriptTimeline,
 } from "./components/OmniBar";
 export type {
   OmniBarPresentationProps,
@@ -94,6 +99,10 @@ export type {
   CreatableSelectProps,
   CreatableSelectOption,
   UnifiedReviewPanelProps,
+  ChatMessageBubbleProps,
+  ProcessingBubbleProps,
+  EmptyStateBubbleProps,
+  OmniTranscriptTimelineProps,
 } from "./components/OmniBar";
 
 export { AppBar, AppBarPresentation } from "./components/AppBar";

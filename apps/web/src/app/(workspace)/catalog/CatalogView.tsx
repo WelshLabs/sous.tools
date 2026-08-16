@@ -77,7 +77,7 @@ export function CatalogView({
 
     setSaving(true);
     try {
-      const { error } = await api.PUT("/pos-simulator/items/{id}", {
+      const { error } = await (api.PUT as any)("/pos-simulator/items/{id}", {
         params: { path: { id: editingItem.id } },
         body: {
           name: editName,

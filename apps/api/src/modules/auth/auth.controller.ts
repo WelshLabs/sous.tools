@@ -9,6 +9,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import type { Response, Request } from "express";
 import {
@@ -23,6 +24,7 @@ import {
   ForgotPasswordSchema,
 } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
+import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
 import { serverConfig as config } from "@soustools/config/server";
 
 const ACCESS_TOKEN_COOKIE = "sb-access-token";
@@ -232,6 +234,27 @@ export class AuthController {
     return {
       success: true,
       data: { user: data.user as unknown as Record<string, unknown> },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post("ws-ticket")
+  @UseGuards(SupabaseAuthGuard)
+  @HttpCode(200)
+  @NestjsApiResponse({
+    status: 200,
+    description: "Success",
+    schema: { type: "object", additionalProperties: true },
+  })
+  async getWsTicket(
+    @Req() req: Request,
+  ): Promise<ApiResponse<{ token: string | null }>> {
+    const token = (req.cookies as Record<string, string>)?.[
+      ACCESS_TOKEN_COOKIE
+    ];
+    return {
+      success: true,
+      data: { token: token || null },
       timestamp: new Date().toISOString(),
     };
   }

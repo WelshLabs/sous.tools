@@ -11,6 +11,7 @@ import { serverConfig as config } from "@soustools/config/server";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { supabase } from "../../lib/supabase";
+import { ChatPersistenceService } from "./chat-persistence.service";
 
 @Injectable()
 export class CommandsService {
@@ -23,7 +24,46 @@ export class CommandsService {
     private readonly recipeCostService: RecipeCostService,
     private readonly neo4jService: Neo4jService,
     @InjectQueue("unified-ingestion") private ingestionQueue: Queue,
+    private readonly chatPersistence: ChatPersistenceService,
   ) {}
+
+  private formatJsonSchema(schema: any): any {
+    if (!schema || typeof schema !== "object") return schema;
+
+    const result: Record<string, any> = {};
+
+    if (schema.type) {
+      result.type =
+        typeof schema.type === "string"
+          ? schema.type.toLowerCase()
+          : schema.type;
+    }
+    if (schema.description) {
+      result.description = schema.description;
+    }
+    if (schema.enum && Array.isArray(schema.enum)) {
+      result.enum = schema.enum;
+    }
+    if (schema.required && Array.isArray(schema.required)) {
+      result.required = schema.required;
+    }
+    if (schema.additionalProperties !== undefined) {
+      result.additionalProperties = schema.additionalProperties;
+    }
+    if (schema.items) {
+      result.items = this.formatJsonSchema(schema.items);
+    }
+    if (schema.properties && typeof schema.properties === "object") {
+      result.properties = Object.fromEntries(
+        Object.entries(schema.properties).map(([k, v]) => [
+          k,
+          this.formatJsonSchema(v),
+        ]),
+      );
+    }
+
+    return result;
+  }
 
   private mapToGeminiContent(chatHistory: OmniMessage[]): any[] {
     return chatHistory.map((msg) => {
@@ -56,6 +96,16 @@ export class CommandsService {
     const history = payload.chatHistory || [];
     const conversationId = payload.context?.conversationId || randomUUID();
 
+    const userId = payload.context?.userId;
+    const lastUserMessage = history[history.length - 1];
+    if (lastUserMessage && lastUserMessage.role === "user") {
+      this.chatPersistence
+        .appendMessage(conversationId, orgId, userId, lastUserMessage)
+        .catch((e) =>
+          this.logger.warn("Failed to persist user message", e),
+        );
+    }
+
     try {
       const contents = this.mapToGeminiContent(history);
 
@@ -67,7 +117,6 @@ export class CommandsService {
       while (!isDone && iterations < 5) {
         iterations++;
 
-        let response;
         const llmPayload = {
           model: "omnibar",
           messages: [
@@ -83,23 +132,7 @@ export class CommandsService {
             function: {
               name: t.name,
               description: t.description,
-              parameters: {
-                type: "object",
-                // @TODO: If any tool takes an array (e.g. items: { type: "string" }) or an enum (e.g. enum: ["invoice", "recipe"]), Gemini or LiteLLM will receive an incomplete schema and fail parameter validation.
-                // Pass t.parameters directly or strip only unnecessary keys while keeping nested structures intact
-                properties: Object.fromEntries(
-                  Object.entries(t.parameters.properties).map(
-                    ([k, v]: [string, any]) => [
-                      k,
-                      {
-                        type: v.type.toLowerCase(),
-                        description: v.description,
-                      },
-                    ],
-                  ),
-                ),
-                required: t.parameters.required || [],
-              },
+              parameters: this.formatJsonSchema(t.parameters),
             },
           })),
         };
@@ -131,7 +164,7 @@ export class CommandsService {
           throw new Error(`LiteLLM Error: ${res.status} ${errBody}`);
         }
         const body = await res.json();
-        response = body.choices[0].message;
+        const response = body.choices[0].message;
 
         if (response.tool_calls && response.tool_calls.length > 0) {
           const call = response.tool_calls[0].function;
@@ -570,14 +603,21 @@ export class CommandsService {
           isDone = true;
           finalResult = { action: "SUCCESS", message: response.content };
 
+          const modelMsg: OmniMessage = {
+            id: randomUUID(),
+            role: "model",
+            content: response.content,
+            timestamp: new Date(),
+          };
+
           if (emitMessage) {
-            emitMessage({
-              id: randomUUID(),
-              role: "model",
-              content: response.content,
-              timestamp: new Date(),
-            });
+            emitMessage(modelMsg);
           }
+          this.chatPersistence
+            .appendMessage(conversationId, orgId, userId, modelMsg)
+            .catch((e) =>
+              this.logger.warn("Failed to persist model message", e),
+            );
         } else {
           isDone = true;
           finalResult = {
@@ -729,6 +769,26 @@ export class CommandsService {
       );
       return [];
     }
+  }
+
+  async listConversationsForUser(
+    userId: string,
+  ): Promise<
+    Array<{ id: string; title: string | null; updated_at: string }>
+  > {
+    const { data, error } = await supabase
+      .from("chat_conversations")
+      .select("id, title, updated_at")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      this.logger.error("Failed to list conversations for user", error);
+      throw new Error("Failed to list conversations");
+    }
+
+    return data || [];
   }
 
   async getConversationMessages(

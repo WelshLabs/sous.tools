@@ -25,9 +25,9 @@ export async function POST() {
       // pkill returns non-zero if no process matched; that's fine
     }
 
-    // 3. Restart Sway
+    // 3. Restart Labwc Compositor
     // The ExecStartPre script will read kiosk-mode and symlink the correct config
-    execSync("sudo systemctl restart sous-sway.service");
+    execSync("sudo systemctl restart sous-labwc.service || sudo systemctl restart sous-sway.service || true");
 
     return NextResponse.json({
       success: true,

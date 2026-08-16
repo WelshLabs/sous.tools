@@ -9,6 +9,7 @@ import { UseGuards, Logger } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
 import { WsSupabaseAuthGuard } from "../../lib/ws-supabase-auth.guard";
 import { CommandsService } from "./commands.service";
+import { ChatPersistenceService } from "./chat-persistence.service";
 import {
   type OmnibarCommandPayload,
   OmnibarCommandPayloadSchema,
@@ -37,7 +38,10 @@ export class CommandsGateway {
 
   private readonly logger = new Logger(CommandsGateway.name);
 
-  constructor(private readonly commandsService: CommandsService) {}
+  constructor(
+    private readonly commandsService: CommandsService,
+    private readonly chatPersistence: ChatPersistenceService,
+  ) {}
 
   /**
    * Broadcast real-time ingestion events to connected WebSocket clients
@@ -48,6 +52,8 @@ export class CommandsGateway {
     parsedData?: any;
     status: string;
     message?: string;
+    orgId?: string;
+    userId?: string;
   }) {
     this.logger.log(
       `Emitting WebSocket ingestion:updated for review ${payload.reviewId}`,
@@ -68,8 +74,13 @@ export class CommandsGateway {
           this.server
             .to(`conversation-${payload.conversationId}`)
             .emit("chat_message", msg);
-          this.commandsService
-            .persistMessage(payload.conversationId, "unknown", undefined, msg)
+          this.chatPersistence
+            .appendMessage(
+              payload.conversationId,
+              payload.orgId || "",
+              payload.userId,
+              msg,
+            )
             .catch((e) => this.logger.warn("Failed to persist agent_step", e));
         }
 
@@ -83,8 +94,13 @@ export class CommandsGateway {
           this.server
             .to(`conversation-${payload.conversationId}`)
             .emit("chat_message", msg);
-          this.commandsService
-            .persistMessage(payload.conversationId, "unknown", undefined, msg)
+          this.chatPersistence
+            .appendMessage(
+              payload.conversationId,
+              payload.orgId || "",
+              payload.userId,
+              msg,
+            )
             .catch((e) =>
               this.logger.warn("Failed to persist render_component", e),
             );
@@ -121,6 +137,7 @@ export class CommandsGateway {
 
     const orgId =
       client.user?.user_metadata?.organization_id ||
+      client.user?.app_metadata?.organization_id ||
       "d0000000-0000-0000-0000-000000000000";
 
     payload.context = payload.context || {};

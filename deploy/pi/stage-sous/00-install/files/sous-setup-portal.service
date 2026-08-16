@@ -1,7 +1,7 @@
 [Unit]
 Description=Sous Signage Setup Portal (Next.js standalone, port 3100)
 Documentation=https://sous.tools
-After=network.target sous-sway.service
+After=network.target sous-labwc.service
 Wants=network.target
 
 [Service]

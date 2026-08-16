@@ -7,3 +7,6 @@ export * from "./components/Supplier/SupplierOrderGroup.types";
 export * from "./components/ReviewComponent/UniversalReviewComponent";
 export * from "./components/ReviewComponent/SearchReviewLayout";
 export * from "./components/AnswerView/AnswerView";
+export * from "./components/ConversationHistory";
+export * from "./components/ArtifactColumn";
+

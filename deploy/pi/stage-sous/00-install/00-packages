@@ -1,7 +1,9 @@
-sway
-swaybg
-swayidle
-foot
+labwc
+wlr-randr
+wayland-protocols
+wl-mirror
+seatd
+wlopm
 network-manager
 jq
 curl

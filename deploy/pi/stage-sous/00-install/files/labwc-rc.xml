@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<labwc_config>
+  <core>
+    <decoration>none</decoration>
+    <gap>0</gap>
+    <reuseOutputMode>yes</reuseOutputMode>
+  </core>
+
+  <windowRules>
+    <windowRule identifier="*" serverDecoration="no" isFullscreen="yes" />
+    <windowRule identifier="chromium" serverDecoration="no" isFullscreen="yes" />
+  </windowRules>
+
+  <!-- Lock down all keyboard shortcuts for touchless/kiosk security -->
+  <keyboard>
+    <default />
+  </keyboard>
+
+  <mouse>
+    <default />
+  </mouse>
+</labwc_config>

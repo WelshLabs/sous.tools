@@ -3,7 +3,6 @@ import { PosWebhookController } from "./pos-webhook.controller";
 import { Queue } from "bullmq";
 import { getQueueToken } from "@nestjs/bullmq";
 import { supabase } from "../../lib/supabase";
-import { UnauthorizedException, NotFoundException } from "@nestjs/common";
 import { Request } from "express";
 import { SquareDriver } from "./drivers/square/square.driver";
 
@@ -58,17 +57,16 @@ describe("PosWebhookController", () => {
     expect(controller).toBeDefined();
   });
 
-  it("should throw UnauthorizedException if event_id is missing", async () => {
+  it("should return status ignored if event_id is missing", async () => {
     const mockReq = {
       rawBody: Buffer.from(JSON.stringify({ type: "catalog.version.updated" })),
     } as unknown as Request;
 
-    await expect(
-      controller.handleWebhook("square", "sig", "", mockReq),
-    ).rejects.toThrow(UnauthorizedException);
+    const res = await controller.handleWebhook("square", "sig", "", mockReq);
+    expect(res).toEqual({ status: "ignored" });
   });
 
-  it("should throw NotFoundException if no integration matches the merchant_id", async () => {
+  it("should return status ignored if no integration matches the merchant_id", async () => {
     const mockReq = {
       rawBody: Buffer.from(
         JSON.stringify({
@@ -95,9 +93,8 @@ describe("PosWebhookController", () => {
       };
     });
 
-    await expect(
-      controller.handleWebhook("square", "sig", "", mockReq),
-    ).rejects.toThrow(NotFoundException);
+    const res = await controller.handleWebhook("square", "sig", "", mockReq);
+    expect(res).toEqual({ status: "ignored" });
   });
 
   it("should queue the sync job and return status queued when integration exists", async () => {

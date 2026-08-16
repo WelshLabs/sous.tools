@@ -76,7 +76,7 @@ export function PreviewNestedItem({
           style={buildTitleStyle(optStyle)}
           className={
             isGroupHeader
-              ? "font-brand st-menu-glow-text st-category-header text-[10px] tracking-widest text-[#00f0ff] uppercase"
+              ? "font-archivo st-menu-glow-text st-category-header text-[10px] tracking-widest text-[#00f0ff] uppercase"
               : "st-menu-item-title"
           }
         >

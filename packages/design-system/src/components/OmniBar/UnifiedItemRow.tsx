@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -172,6 +173,71 @@ function InlineDropdown({
 
 // ── UnifiedItemRow ─────────────────────────────────────────────────────────
 
+/** Click-to-edit inline field: shows static text by default, swaps to an input on click */
+function EditableField({
+  label,
+  value,
+  onCommit,
+  disabled,
+  type = "text",
+}: {
+  label: string;
+  value: string | number;
+  onCommit: (v: string) => void;
+  disabled?: boolean;
+  type?: "text" | "number";
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(value));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const open = () => {
+    if (disabled) return;
+    setDraft(String(value));
+    setEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 30);
+  };
+  const commit = () => {
+    setEditing(false);
+    if (draft !== String(value)) onCommit(draft);
+  };
+
+  if (editing) {
+    return (
+      <span className="inline-flex items-center gap-1">
+        <span className="font-mono text-[10px] text-zinc-500">{label}:</span>
+        <input
+          ref={inputRef}
+          type={type}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          className="w-16 rounded border border-cyan-500/40 bg-zinc-900 px-1.5 py-0.5 font-mono text-[11px] text-white outline-none focus:border-cyan-500"
+        />
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={open}
+      disabled={disabled}
+      title={disabled ? undefined : `Click to edit ${label}`}
+      className={`inline-flex items-center gap-1 group ${disabled ? "cursor-default" : "cursor-text"}`}
+    >
+      <span className="font-mono text-[10px] text-zinc-500">{label}:</span>
+      <span className={`font-mono text-[11px] text-zinc-300 ${!disabled ? "group-hover:underline group-hover:decoration-dotted group-hover:text-zinc-100" : ""}`}>
+        {value}
+      </span>
+    </button>
+  );
+}
+
 export function UnifiedItemRow({
   item,
   index,
@@ -190,6 +256,7 @@ export function UnifiedItemRow({
   const [localItems, setLocalItems] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [showAllCandidates, setShowAllCandidates] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -230,7 +297,6 @@ export function UnifiedItemRow({
         : (currentSelected?.name ?? item.suggestedInternalName ?? "");
     setSearch(initial);
     setIsOverrideOpen(true);
-    // Focus on next tick after state settles
     setTimeout(() => searchInputRef.current?.focus(), 50);
   };
 
@@ -326,7 +392,6 @@ export function UnifiedItemRow({
         body: { itemId: item.itemId, fdcId: item.usdaFdcId },
       });
       if (error) throw new Error("Failed to persist USDA link");
-      // Mark verified in local state so the approve button disappears
       onUpdateItem?.(index, { needsUsdaVerification: false });
     } catch (err) {
       console.error(err);
@@ -344,6 +409,11 @@ export function UnifiedItemRow({
   const noHighConf = !item.suggestions?.some((s) => s.similarity >= 0.9);
   const isComplete =
     isExpense || (hasTenantMapping && (!needsUsdaStep || !item.usdaFdcId));
+
+  // Candidate chips: show top 1 inline, rest behind "expand" toggle
+  const allCandidates = item.suggestions ?? [];
+  const primaryCandidate = allCandidates[0];
+  const extraCandidates = allCandidates.slice(1);
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -369,7 +439,7 @@ export function UnifiedItemRow({
         )}
       </div>
 
-      {/* ── AI Suggestion label — preserved from original design ── */}
+      {/* ── AI Suggestion label ── */}
       {item.suggestedInternalName && (
         <span className="text-[11px] text-zinc-500 italic dark:text-zinc-400">
           AI Suggestion:{" "}
@@ -384,25 +454,36 @@ export function UnifiedItemRow({
         </span>
       )}
 
-      {/* ── Quantity / unit / price row ── */}
-      <div className="flex items-center gap-3 font-mono text-[11px] text-zinc-500">
+      {/* ── Click-to-edit quantity / unit / price row ── */}
+      <div className="flex flex-wrap items-center gap-3">
         {item.amount != null && (
-          <span>
-            qty: <span className="text-zinc-300">{item.amount}</span>
-          </span>
+          <EditableField
+            label="qty"
+            value={item.amount}
+            type="number"
+            disabled={disabled}
+            onCommit={(v) => onUpdateItem?.(index, { amount: Number(v) })}
+          />
         )}
         {item.unit && (
-          <span>
-            unit: <span className="text-zinc-300">{item.unit}</span>
-          </span>
+          <EditableField
+            label="unit"
+            value={item.unit}
+            disabled={disabled}
+            onCommit={(v) => onUpdateItem?.(index, { unit: v })}
+          />
         )}
         {item.price != null && (
-          <span>
-            price:{" "}
-            <span className="text-zinc-300">
-              ${Number(item.price).toFixed(2)}
-            </span>
-          </span>
+          <EditableField
+            label="price"
+            value={`$${Number(item.price).toFixed(2)}`}
+            disabled={disabled}
+            onCommit={(v) =>
+              onUpdateItem?.(index, {
+                price: parseFloat(v.replace(/^\$/, "")) || item.price,
+              })
+            }
+          />
         )}
       </div>
 
@@ -493,11 +574,68 @@ export function UnifiedItemRow({
                     override
                   </button>
                 )}
+
+                {/* ── Collapsed candidate chips — top 1 shown, rest behind toggle ── */}
+                {!hasTenantMapping && allCandidates.length > 0 && (
+                  <div className="mt-0.5 flex w-full flex-wrap items-center gap-1.5">
+                    {primaryCandidate && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          selectItem(
+                            primaryCandidate.itemId,
+                            primaryCandidate.similarity,
+                          )
+                        }
+                        disabled={disabled}
+                        className="transition-opacity hover:opacity-80 disabled:cursor-not-allowed"
+                        title="Accept this suggestion"
+                      >
+                        <ConfidenceBadge
+                          name={primaryCandidate.name}
+                          similarity={primaryCandidate.similarity}
+                          matchColor={primaryCandidate.matchColor}
+                        />
+                      </button>
+                    )}
+
+                    {extraCandidates.length > 0 && (
+                      <>
+                        {showAllCandidates &&
+                          extraCandidates.map((c) => (
+                            <button
+                              key={c.itemId}
+                              type="button"
+                              onClick={() => selectItem(c.itemId, c.similarity)}
+                              disabled={disabled}
+                              className="transition-opacity hover:opacity-80 disabled:cursor-not-allowed"
+                              title="Accept this suggestion"
+                            >
+                              <ConfidenceBadge
+                                name={c.name}
+                                similarity={c.similarity}
+                                matchColor={c.matchColor}
+                              />
+                            </button>
+                          ))}
+                        <button
+                          type="button"
+                          onClick={() => setShowAllCandidates((v) => !v)}
+                          className="rounded-full border border-zinc-700 bg-zinc-900/40 px-2 py-0.5 font-mono text-[9px] text-zinc-500 transition-colors hover:border-zinc-500 hover:text-zinc-300"
+                        >
+                          {showAllCandidates
+                            ? "▲ less"
+                            : `+${extraCandidates.length} more`}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
 
-          {/* Step 2 — USDA Double Match (only when needsUsdaVerification is set) */}
+          {/* Step 2 — USDA Double Match */}
           {needsUsdaStep && (
             <div className="flex flex-wrap items-center gap-2 pl-4">
               <span className="font-mono text-[10px] tracking-widest text-zinc-600 uppercase">
@@ -532,14 +670,13 @@ export function UnifiedItemRow({
             </div>
           )}
 
-          {/* Create New fallback — when no mapping and no high-confidence suggestion */}
+          {/* Create New fallback */}
           {!hasTenantMapping && !isOverrideOpen && noHighConf && (
             <div className="mt-0.5 pl-5">
               <button
                 type="button"
                 disabled={disabled || isCreating}
                 onClick={() =>
-                  // Pre-fill with AI suggestion so user doesn't type from scratch
                   openOverride(item.suggestedInternalName || "")
                 }
                 className="flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-700 bg-zinc-900/40 px-3 py-1.5 text-xs text-zinc-400 transition-colors hover:border-cyan-500/50 hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"

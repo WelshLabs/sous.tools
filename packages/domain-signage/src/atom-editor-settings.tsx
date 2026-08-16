@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import { type MenuItemStateStyle } from "@soustools/api-types";

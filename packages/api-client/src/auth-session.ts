@@ -26,7 +26,8 @@ export async function refreshAuthSession(): Promise<boolean> {
       if (!response.ok) {
         if (
           typeof window !== "undefined" &&
-          (response.status === 401 || response.status === 403)
+          (response.status === 401 || response.status === 403) &&
+          window.location.pathname !== "/login"
         ) {
           window.location.href = "/login";
         }

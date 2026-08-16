@@ -33,7 +33,8 @@ export function createRestClient(
       if (
         response.status === 401 &&
         !request.url.includes("/auth/refresh") &&
-        !request.url.includes("/auth/login")
+        !request.url.includes("/auth/login") &&
+        !request.url.includes("/auth/session")
       ) {
         try {
           const refreshed = await refreshAuthSession();

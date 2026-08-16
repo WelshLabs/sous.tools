@@ -10,7 +10,7 @@ FILES_DIR="${STAGE_DIR}/files"
 
 # ── Create required directories in the rootfs ─────────────────────────────────
 install -d -m 755 "${ROOTFS_DIR}/usr/local/bin"
-install -d -m 755 "${ROOTFS_DIR}/etc/sway"
+install -d -m 755 "${ROOTFS_DIR}/etc/xdg/labwc"
 install -d -m 755 "${ROOTFS_DIR}/etc/sous"
 install -d -m 700 "${ROOTFS_DIR}/etc/sous/secrets"
 install -d -m 755 "${ROOTFS_DIR}/etc/NetworkManager/dispatcher.d"
@@ -18,23 +18,24 @@ install -d -m 700 "${ROOTFS_DIR}/etc/NetworkManager/system-connections"
 install -d -m 700 "${ROOTFS_DIR}/home/sous/.ssh"
 install -d -m 755 "${ROOTFS_DIR}/var/log"
 
-# ── Sway compositor configs ───────────────────────────────────────────────────
-install -m 644 "${FILES_DIR}/sway-base.conf"  "${ROOTFS_DIR}/etc/sway/sway-base.conf"
-install -m 644 "${FILES_DIR}/sway-setup.conf" "${ROOTFS_DIR}/etc/sway/sway-setup.conf"
-install -m 644 "${FILES_DIR}/sway-kiosk.conf" "${ROOTFS_DIR}/etc/sway/sway-kiosk.conf"
+# ── Labwc compositor configs ───────────────────────────────────────────────────
+install -m 644 "${FILES_DIR}/labwc-rc.xml"             "${ROOTFS_DIR}/etc/xdg/labwc/rc.xml"
+install -m 644 "${FILES_DIR}/labwc-environment"        "${ROOTFS_DIR}/etc/xdg/labwc/environment"
+install -m 755 "${FILES_DIR}/labwc-autostart-setup.sh" "${ROOTFS_DIR}/etc/xdg/labwc/autostart-setup.sh"
+install -m 755 "${FILES_DIR}/labwc-autostart-kiosk.sh" "${ROOTFS_DIR}/etc/xdg/labwc/autostart-kiosk.sh"
 
 # Default symlink → setup mode on first boot
-ln -sf /etc/sway/sway-setup.conf "${ROOTFS_DIR}/etc/sway/config"
+ln -sf /etc/xdg/labwc/autostart-setup.sh "${ROOTFS_DIR}/etc/xdg/labwc/autostart"
 
 # ── systemd unit files ────────────────────────────────────────────────────────
-install -m 644 "${FILES_DIR}/sous-sway.service"          "${ROOTFS_DIR}/etc/systemd/system/sous-sway.service"
+install -m 644 "${FILES_DIR}/sous-labwc.service"          "${ROOTFS_DIR}/etc/systemd/system/sous-labwc.service"
 install -m 644 "${FILES_DIR}/sous-setup-portal.service"  "${ROOTFS_DIR}/etc/systemd/system/sous-setup-portal.service"
 install -m 644 "${FILES_DIR}/sous-ota.service"           "${ROOTFS_DIR}/etc/systemd/system/sous-ota.service"
 install -m 644 "${FILES_DIR}/sous-ota.timer"             "${ROOTFS_DIR}/etc/systemd/system/sous-ota.timer"
-install -m 644"${FILES_DIR}/chromium-kiosk@.service"    "${ROOTFS_DIR}/etc/systemd/system/chromium-kiosk@.service"
+install -m 644 "${FILES_DIR}/chromium-kiosk@.service"    "${ROOTFS_DIR}/etc/systemd/system/chromium-kiosk@.service"
 
 # ── Executable helper scripts ─────────────────────────────────────────────────
-install -m 755 "${FILES_DIR}/sous-sway-config-select.sh"  "${ROOTFS_DIR}/usr/local/bin/sous-sway-config-select.sh"
+install -m 755 "${FILES_DIR}/sous-labwc-config-select.sh" "${ROOTFS_DIR}/usr/local/bin/sous-labwc-config-select.sh"
 install -m 755 "${FILES_DIR}/sous-ota-scheduler.sh"       "${ROOTFS_DIR}/usr/local/bin/sous-ota-scheduler.sh"
 install -m 755 "${FILES_DIR}/maintenance-ota.sh"          "${ROOTFS_DIR}/usr/local/bin/maintenance-ota.sh"
 install -m 755 "${FILES_DIR}/bootstrap.sh"                "${ROOTFS_DIR}/usr/local/bin/bootstrap.sh"

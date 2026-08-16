@@ -57,13 +57,17 @@ export type ServerConfig = z.infer<typeof serverSchema>;
 
 const isProd = process.env.NODE_ENV === "production";
 const isMock =
-  process.env.IS_MOCK_ENV === "true" || process.env.INFISICAL_MOCK === "true";
+  process.env.IS_MOCK_ENV === "true" ||
+  process.env.INFISICAL_MOCK === "true" ||
+  process.env.NODE_ENV === "test" ||
+  process.env.JEST_WORKER_ID !== undefined ||
+  process.env.VITEST !== undefined;
 const isSecure = isProd || process.env.ENVIRONMENT === "staging";
 
 let parsedConfig: ServerConfig;
 
 try {
-  const isMockRun = process.env.INFISICAL_MOCK === "true";
+  const isMockRun = isMock;
   parsedConfig = serverSchema.parse({
     NODE_ENV: process.env.NODE_ENV ?? (isMockRun ? "test" : undefined),
     IS_PRODUCTION: isProd,

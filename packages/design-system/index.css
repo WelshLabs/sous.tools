@@ -10,30 +10,41 @@
 
 @font-face {
   font-family: 'Archivo';
-  src: url('./fonts/archivo-regular.woff2') format('woff2'),
-       url('./fonts/archivo-bold.woff2') format('woff2');
+  src: url('./fonts/archivo-regular.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Satoshi';
-  src: url('./fonts/satoshi-regular.woff2') format('woff2'),
-       url('./fonts/satoshi-bold.woff2') format('woff2');
+  src: url('./fonts/satoshi-regular.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('./fonts/satoshi-bold.woff2') format('woff2');
+  font-weight: 600 900;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Inter';
-  src: url('./fonts/inter-regular.woff2') format('woff2'),
-       url('./fonts/inter-bold.woff2') format('woff2');
-  font-feature-settings: 'ss01' on, 'ss02' on;
+  src: url('./fonts/inter-regular.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url('./fonts/jetbrains-mono-regular.woff2') format('woff2'),
-       url('./fonts/jetbrains-mono-bold.woff2') format('woff2');
+  src: url('./fonts/jetbrains-mono-regular.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -283,9 +294,22 @@
   --radius-xl: calc(var(--radius) + 0.4rem);
   --radius-2xl: calc(var(--radius) + 0.9rem);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-archivo: var(--font-archivo), "Archivo", sans-serif;
+  --font-display: var(--font-archivo), "Archivo", sans-serif;
+  --font-satoshi: var(--font-satoshi), "Satoshi", sans-serif;
+  --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* ── Fluid Typography Scale (clamp) ────────────────────────────────────── */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
+  --text-sm: clamp(0.8125rem, 0.77rem + 0.2vw, 0.875rem);
+  --text-base: clamp(0.9375rem, 0.88rem + 0.3vw, 1rem);
+  --text-lg: clamp(1.0625rem, 1rem + 0.4vw, 1.125rem);
+  --text-xl: clamp(1.1875rem, 1.1rem + 0.6vw, 1.25rem);
+  --text-2xl: clamp(1.35rem, 1.2rem + 0.85vw, 1.5rem);
+  --text-3xl: clamp(1.65rem, 1.45rem + 1.2vw, 1.875rem);
+  --text-4xl: clamp(2rem, 1.75rem + 1.6vw, 2.25rem);
+  --text-5xl: clamp(2.5rem, 2.1rem + 2.2vw, 3rem);
 
   --shadow-glow-sm: var(--ds-glow-sm);
   --shadow-glow: var(--ds-glow-md);
@@ -302,7 +326,7 @@
   --z-toast: 150;
 }
 
-/* ── Base layer ─────��─────�������───────────────────────────────────────────── */
+/* ── Base layer ───────────────────────────────────────────────────────────── */
 @layer base {
   *,
   *::before,
@@ -315,6 +339,9 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01', 'ss02', 'tnum';
+    letter-spacing: -0.011em;
   }
 
   body {
@@ -324,6 +351,25 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading, .font-display {
+    font-family: var(--font-archivo);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    color: var(--color-foreground);
+  }
+
+  h1, .font-hero {
+    font-family: var(--font-satoshi);
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+
+  code, kbd, samp, pre, .font-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum', 'zero';
   }
 
   ::selection {

@@ -56,7 +56,7 @@ export class UsdaResolverService {
 
   async searchTop5(
     query: string,
-  ): Promise<Array<{ fdcId: number; description: string }>> {
+  ): Promise<Array<{ fdcId: number; description: string; score?: number }>> {
     try {
       const url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&pageSize=5&api_key=${this.apiKey}`;
       const response = await fetch(url);
@@ -66,6 +66,7 @@ export class UsdaResolverService {
       return data.foods.slice(0, 5).map((f: any) => ({
         fdcId: f.fdcId,
         description: f.description,
+        score: typeof f.score === "number" ? f.score : undefined,
       }));
     } catch (err) {
       this.logger.error(`USDA searchTop5 failed for "${query}":`, err);

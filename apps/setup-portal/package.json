@@ -11,19 +11,21 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@soustools/config": "workspace:*",
     "@soustools/design-system": "workspace:*",
+    "@soustools/logger": "workspace:*",
     "@vercel/analytics": "^1.2.2",
     "@vercel/speed-insights": "^2.0.0",
     "next": "^15.5.18",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "@soustools/logger": "workspace:*",
-    "@soustools/config": "workspace:*"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@soustools/eslint-config": "workspace:*",
     "@soustools/tsconfig": "workspace:*",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",

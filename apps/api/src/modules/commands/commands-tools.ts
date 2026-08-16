@@ -66,6 +66,7 @@ export const updateItemStatusTool = {
       itemId: { type: "string", description: "The ID or name of the item" },
       status: {
         type: "string",
+        enum: ["in_stock", "out_of_stock", "low_stock"],
         description: "The new status (e.g., out_of_stock)",
       },
     },
@@ -190,6 +191,7 @@ export const ingestKnowledgeSourceTool = {
       },
       scope: {
         type: "string",
+        enum: ["tenant", "global"],
         description:
           'Routing scope: "tenant" (organization-specific) or "global" (shared across all tenants)',
       },
@@ -238,6 +240,7 @@ export const updateReviewStateTool = {
     properties: {
       action: {
         type: "string",
+        enum: ["TURN_PAGE", "ACCEPT_ALL_PAGE", "MAP_ITEM"],
         description:
           'The action type: "TURN_PAGE", "ACCEPT_ALL_PAGE", or "MAP_ITEM"',
       },

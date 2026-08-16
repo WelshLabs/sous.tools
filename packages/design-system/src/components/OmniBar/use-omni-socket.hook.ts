@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -6,7 +7,7 @@ import { type Socket } from "socket.io-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { useOmnibarContext } from "./OmniBarContext";
 import { usePathname } from "next/navigation";
-import { createWebSocketClient } from "@soustools/api-client";
+import { api, createWebSocketClient } from "@soustools/api-client";
 
 export function useOmniSocket(): {
   socket: Socket | null;
@@ -33,8 +34,20 @@ export function useOmniSocket(): {
 
   // Initialize WebSocket connection & manage listeners cleanly
   useEffect(() => {
+    const fetchWsTicket = async (): Promise<string> => {
+      try {
+        const { data } = await api.POST("/auth/ws-ticket" as any, {});
+        const token = (data as any)?.data?.token;
+        return token || "";
+      } catch (err) {
+        console.error("[OmniBar] Failed to fetch WS ticket:", err);
+        return "";
+      }
+    };
+
     const wsSocket = createWebSocketClient({
       namespace: "/commands",
+      getToken: fetchWsTicket,
     });
 
     const handleChatMessage = (message: OmniMessage) => {
@@ -93,12 +106,16 @@ export function useOmniSocket(): {
     };
 
     const handleReauthenticated = () => {
-      if (lastPayloadRef.current && wsSocket.connected) {
-        console.log(
-          "[OmniBar] Resending pending command after re-authentication.",
-        );
-        wsSocket.emit("executeCommand", lastPayloadRef.current);
-      }
+      // Deliberately does NOT re-emit the last payload. Blindly replaying a
+      // full executeCommand after a reconnect causes the AI tool-calling loop
+      // to reprocess the entire request from scratch, duplicating every
+      // agent_step and the final reply if the server had already processed
+      // part of the original request before the auth blip. If the original
+      // request is still pending, the user must manually resubmit; a fully
+      // idempotent retry-with-requestId mechanism is tracked as future work.
+      console.log(
+        "[OmniBar] Re-authenticated. Not replaying prior command (see comment).",
+      );
     };
 
     wsSocket.on("chat_message", handleChatMessage);

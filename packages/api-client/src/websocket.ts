@@ -40,9 +40,16 @@ export function createWebSocketClient(
     // },
     auth: async (cb) => {
       // This function runs every single time socket.connect() fires
-      const token = options.token;
+      let token = options.token;
+      if (options.getToken) {
+        try {
+          token = await options.getToken();
+        } catch (err) {
+          console.error("[api-client] Failed to retrieve token via getToken():", err);
+        }
+      }
 
-      cb({ token });
+      cb({ token: token || "" });
     },
     query: options.query,
     transports: ["websocket"],
