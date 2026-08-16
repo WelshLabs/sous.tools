@@ -1,4 +1,4 @@
-/* eslint-disable max-lines, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -97,6 +97,9 @@ export function UniversalReviewComponent({
         if (data.reviewId) setActiveReviewId(data.reviewId);
         if (data.status === "IN_PROGRESS") {
           setIsProcessingState(true);
+          if (data.message) {
+            setStatusMessage(data.message);
+          }
         } else if (data.status === "COMPLETED") {
           setIsProcessingState(false);
           setIsLoading(false);

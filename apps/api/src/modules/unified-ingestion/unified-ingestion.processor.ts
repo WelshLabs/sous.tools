@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import { Job } from "bullmq";
@@ -5,6 +6,7 @@ import {
   UnifiedIngestionService,
   IngestionPage,
   ExtractedBlock,
+  IngestionReviewPayload,
 } from "./unified-ingestion.service";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 import { serverConfig as config } from "@soustools/config/server";
@@ -72,7 +74,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
       this.logger.log(`Extracting blocks for page ${pInput.pageNumber}...`);
       if (conversationId) {
         this.commandsGateway.emitIngestionUpdate({
-          reviewId: "pending",
+          reviewId: (job.data as any).reviewId || "pending",
           conversationId,
           status: "IN_PROGRESS",
           message: "Analyzing recipe image...",
@@ -100,18 +102,35 @@ export class UnifiedIngestionProcessor extends WorkerHost {
       });
     }
 
-    const reviewRecord = await this.ingestionService.createReviewRecord({
-      organizationId,
-      userId,
-      source: source || "upload",
-      sourceName: sourceName || "Uploaded Document",
-      sourceDocumentUrl,
-      parsedData: {
-        pages: pagesData,
-        fallbackUsed: overallFallbackUsed,
-        extractionError: overallError,
-      },
-    });
+    const reviewId = (job.data as any).reviewId;
+    const parsedDataPayload: IngestionReviewPayload = {
+      pages: pagesData,
+      fallbackUsed: overallFallbackUsed,
+      extractionError: overallError,
+    };
+
+    let reviewRecord: any;
+    if (reviewId) {
+      try {
+        reviewRecord = await this.ingestionService.updateReviewRecordState(
+          reviewId,
+          parsedDataPayload,
+        );
+      } catch (e) {
+        this.logger.warn(`Failed to update review record ${reviewId}:`, e);
+      }
+    }
+
+    if (!reviewRecord) {
+      reviewRecord = await this.ingestionService.createReviewRecord({
+        organizationId,
+        userId,
+        source: source || "upload",
+        sourceName: sourceName || "Uploaded Document",
+        sourceDocumentUrl,
+        parsedData: parsedDataPayload,
+      });
+    }
 
     if (overallFallbackUsed && conversationId) {
       this.commandsGateway.emitIngestionUpdate({
@@ -183,34 +202,48 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     let extractionError: string | undefined;
 
     try {
-      const prompt = `Analyze this page content and classify into content blocks. Return ONLY a valid JSON array of objects with fields:
+      const prompt = `Analyze this document/image content and classify into content blocks. Return a JSON object with a 'blocks' array where each item has fields:
 - type: 'PROSE' | 'RECIPE' | 'INVOICE'
 - bbox: [ymin, xmin, ymax, xmax] (normalized 0-1000)
-- content: (string for PROSE)
-- title, yieldCount, yieldUnit, instructions (string array), ingredients (array of { rawName, quantity, unit }) for RECIPE
+- title: string (for RECIPE)
+- yieldCount: number (for RECIPE)
+- yieldUnit: string (for RECIPE)
+- instructions: string[] (for RECIPE)
+- ingredients: Array<{ rawName: string, quantity: number, unit: string }> (for RECIPE)
 - vendorName, totals ({ subtotal, tax, total }), lineItems (array of { rawName, unitPrice, extendedPrice, quantity }) for INVOICE
-Page input: ${rawText.substring(0, 1500)}`;
+- content: string (for PROSE)
+${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
 
       const images = [];
       if (_imageUrl) {
-        try {
-          const imageRes = await fetch(_imageUrl);
-          if (imageRes.ok) {
-            const arrayBuffer = await imageRes.arrayBuffer();
-            const base64Image = Buffer.from(arrayBuffer).toString("base64");
-            const mimeType =
-              imageRes.headers.get("content-type") || "image/jpeg";
-            images.push({
-              type: "image_url",
-              image_url: { url: `data:${mimeType};base64,${base64Image}` },
-            });
+        if (_imageUrl.startsWith("data:")) {
+          images.push({
+            type: "image_url",
+            image_url: { url: _imageUrl },
+          });
+        } else if (
+          _imageUrl.startsWith("http://") ||
+          _imageUrl.startsWith("https://")
+        ) {
+          try {
+            const imageRes = await fetch(_imageUrl);
+            if (imageRes.ok) {
+              const arrayBuffer = await imageRes.arrayBuffer();
+              const base64Image = Buffer.from(arrayBuffer).toString("base64");
+              const mimeType =
+                imageRes.headers.get("content-type") || "image/jpeg";
+              images.push({
+                type: "image_url",
+                image_url: { url: `data:${mimeType};base64,${base64Image}` },
+              });
+            }
+          } catch (imgErr) {
+            this.logger.warn("Failed to fetch image for Vision", imgErr);
           }
-        } catch (imgErr) {
-          this.logger.warn("Failed to fetch image for Vision", imgErr);
         }
       }
 
-      // Try LiteLLM
+      // Try LiteLLM with studio-3.5-flash-lite
       const liteLlmRes = await fetch(
         "https://ai.sous.tools/v1/chat/completions",
         {
@@ -220,7 +253,7 @@ Page input: ${rawText.substring(0, 1500)}`;
             Authorization: `Bearer ${config.OPENAI_API_KEY || "sk-1234"}`,
           },
           body: JSON.stringify({
-            model: "gemini-3.6-flash",
+            model: "studio-3.5-flash-lite",
             messages: [
               {
                 role: "user",
@@ -234,7 +267,16 @@ Page input: ${rawText.substring(0, 1500)}`;
 
       if (liteLlmRes.ok) {
         const body = await liteLlmRes.json();
-        extractedResponse = JSON.parse(body.choices[0].message.content || "[]");
+        const parsed = JSON.parse(body.choices[0].message.content || "{}");
+        if (Array.isArray(parsed)) {
+          extractedResponse = parsed;
+        } else if (Array.isArray(parsed.blocks)) {
+          extractedResponse = parsed.blocks;
+        } else if (Array.isArray(parsed.pages)) {
+          extractedResponse = parsed.pages[0]?.blocks || parsed.pages;
+        } else if (parsed.type) {
+          extractedResponse = [parsed];
+        }
       } else {
         throw new Error(
           `LiteLLM failed: ${liteLlmRes.status} ${await liteLlmRes.text()}`,
@@ -289,8 +331,7 @@ Page input: ${rawText.substring(0, 1500)}`;
           const usdaMatches = await this.usdaResolver.searchTop5(guessName);
 
           const topTenantScore = tenantMatches[0]?.score ?? 0;
-          const autoAccepted =
-            topTenantScore >= 0.85 || topTenantScore === 1.0;
+          const autoAccepted = topTenantScore >= 0.85 || topTenantScore === 1.0;
 
           ingredients.push({
             rawName: ing.rawName || guessName,
@@ -349,8 +390,7 @@ Page input: ${rawText.substring(0, 1500)}`;
           const usdaMatches = await this.usdaResolver.searchTop5(guessName);
 
           const topTenantScore = tenantMatches[0]?.score ?? 0;
-          const autoAccepted =
-            topTenantScore >= 0.85 || topTenantScore === 1.0;
+          const autoAccepted = topTenantScore >= 0.85 || topTenantScore === 1.0;
 
           lineItems.push({
             rawName: item.rawName || guessName,

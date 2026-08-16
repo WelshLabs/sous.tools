@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { Injectable, Logger } from "@nestjs/common";
 import { OmnibarCommandPayload, OmniMessage } from "@soustools/api-types";
 import { ALL_COMMAND_TOOLS } from "./commands-tools";
@@ -69,12 +70,10 @@ export class CommandsService {
     return chatHistory.map((msg) => {
       let textContent = msg.content || "";
       if (msg.attachments && msg.attachments.length > 0) {
-        const urls = msg.attachments
-          .map((a: any) => a.url || a.publicUrl || a.fileUrl)
-          .filter(Boolean);
-        if (urls.length > 0) {
-          textContent += `\n[Attached File URLs: ${urls.join(", ")}]`;
-        }
+        const fileNames = msg.attachments
+          .map((a: any) => a.name || "uploaded file")
+          .join(", ");
+        textContent += `\n[Attached Files: ${fileNames}]`;
       }
       return {
         role:
@@ -101,9 +100,7 @@ export class CommandsService {
     if (lastUserMessage && lastUserMessage.role === "user") {
       this.chatPersistence
         .appendMessage(conversationId, orgId, userId, lastUserMessage)
-        .catch((e) =>
-          this.logger.warn("Failed to persist user message", e),
-        );
+        .catch((e) => this.logger.warn("Failed to persist user message", e));
     }
 
     try {
@@ -296,13 +293,24 @@ export class CommandsService {
             const userId =
               payload.context?.userId || "d0000000-0000-0000-0000-000000000000";
 
+            const fileUrlToIngest =
+              args.fileUrl &&
+              (args.fileUrl.startsWith("data:") ||
+                args.fileUrl.startsWith("http://") ||
+                args.fileUrl.startsWith("https://"))
+                ? args.fileUrl
+                : lastUserMessage?.attachments?.[0]?.url ||
+                  (payload as any).attachments?.[0]?.url ||
+                  args.fileUrl ||
+                  "";
+
             const { data: review, error } = await supabase
               .from("ingestion_reviews")
               .insert({
                 organization_id: orgId,
                 user_id: userId,
                 source: "omnibar",
-                source_document_url: args.fileUrl,
+                source_document_url: fileUrlToIngest,
                 raw_text: "",
                 parsed_data: { processing: true },
                 status: "PENDING",
@@ -317,8 +325,8 @@ export class CommandsService {
                   organizationId: orgId,
                   userId: userId,
                   source: "omnibar",
-                  documentType: "invoice",
-                  sourceDocumentUrl: args.fileUrl,
+                  documentType: "recipe",
+                  sourceDocumentUrl: fileUrlToIngest,
                   reviewId: review.id,
                   conversationId: conversationId,
                 },
@@ -331,7 +339,7 @@ export class CommandsService {
                   organization_id: orgId,
                   user_id: userId,
                   title: "Document Ingestion Started",
-                  message: `Invoice file processing queued (${review.id.substring(0, 8)}).`,
+                  message: `Document processing queued (${review.id.substring(0, 8)}).`,
                   link: `/home?chat=${conversationId}`,
                   is_read: false,
                 });
@@ -358,7 +366,7 @@ export class CommandsService {
               toolResponseData = {
                 success: true,
                 reviewId: review.id,
-                message: `Successfully queued invoice for ingestion.`,
+                message: `Successfully queued document for ingestion. Review panel opened.`,
               };
             } else {
               toolResponseData = {
@@ -773,9 +781,7 @@ export class CommandsService {
 
   async listConversationsForUser(
     userId: string,
-  ): Promise<
-    Array<{ id: string; title: string | null; updated_at: string }>
-  > {
+  ): Promise<Array<{ id: string; title: string | null; updated_at: string }>> {
     const { data, error } = await supabase
       .from("chat_conversations")
       .select("id, title, updated_at")

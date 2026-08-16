@@ -102,4 +102,26 @@ describe("UnifiedIngestionService", () => {
       { id: "item-456", name: "Red Onions", score: 0.88 },
     ]);
   });
+
+  it("should update review record state when reviewId is present", async () => {
+    const mockUpdateSingle = jest.fn().mockResolvedValue({
+      data: { id: "rev-123", status: "PENDING", parsed_data: { pages: [] } },
+      error: null,
+    });
+
+    (supabase.from as jest.Mock).mockReturnValue({
+      update: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      single: mockUpdateSingle,
+    });
+
+    const result = await service.updateReviewRecordState("rev-123", {
+      pages: [],
+      fallbackUsed: false,
+    });
+
+    expect(result.id).toBe("rev-123");
+    expect(supabase.from).toHaveBeenCalledWith("ingestion_reviews");
+  });
 });
