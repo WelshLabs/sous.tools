@@ -9,7 +9,7 @@ import { useOmniFileUpload } from "./use-omni-file-upload.hook";
 import { useOmnibarContext } from "./OmniBarContext";
 import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { PillActions } from "./PillActions";
-import { AnimatedLettermark, Lettermark } from "../Logos/Logo";
+import { Lettermark } from "../Logos/Logo";
 import type { StagedFile } from "./OmniBarContext";
 
 export interface OmniInputPillProps {
@@ -103,9 +103,10 @@ export function OmniInputPill({
       onDrop={handleDrop}
       className="border-border pointer-events-auto relative mx-auto flex max-w-[92vw] flex-col justify-center overflow-hidden border p-2 backdrop-blur-xl sm:max-w-full"
       style={{
-        borderColor: isDragging
-          ? "var(--color-primary)"
-          : "var(--color-border)",
+        borderColor:
+          isDragging || isProcessing
+            ? "var(--color-primary)"
+            : "var(--color-border)",
       }}
     >
       <OmnibarPerimeterView busy={isProcessing} />
@@ -140,20 +141,15 @@ export function OmniInputPill({
       >
         {/* ── Main row ── */}
         <div className="flex items-center gap-2">
-          {/* The drawing mark makes active work legible without pulsing the shell. */}
+          {/* Lettermark — pulses while processing */}
           <span
             aria-hidden="true"
             className="flex h-9 w-9 shrink-0 items-center justify-center"
           >
-            {isProcessing ? (
-              <AnimatedLettermark
-                gradient
-                duration={1.65}
-                className="h-8 w-8"
-              />
-            ) : (
-              <Lettermark gradient className="h-7 w-7" />
-            )}
+            <Lettermark
+              gradient
+              className={`h-7 w-7 transition-opacity ${isProcessing ? "animate-pulse opacity-60" : "opacity-100"}`}
+            />
           </span>
 
           {/* Textarea */}
