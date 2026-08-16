@@ -32,12 +32,12 @@ export default async function HomePage({
 
   if (resolvedParams?.chat) {
     return (
-      <div className="flex min-h-screen w-full">
+      <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden">
         {/* Conversation history sidebar */}
         <ConversationHistoryContainer activeId={resolvedParams.chat} />
 
         {/* Main chat column */}
-        <main className="flex min-h-screen flex-1 flex-col overflow-y-auto">
+        <main className="flex h-full flex-1 flex-col">
           <AnswerView
             initialQuery={derivedPrompt}
             initialReviewId={resolvedParams.chat}

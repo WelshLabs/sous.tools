@@ -31,7 +31,7 @@ export function AnswerViewView({
   const hasArtifact = !!renderDirectiveMessage || !!track2Type;
 
   return (
-    <div className="flex min-h-screen w-full flex-1 overflow-hidden">
+    <div className="flex h-full w-full flex-1 overflow-hidden">
       {/* ── Primary: Conversation Transcript Column ── */}
       <div
         className={`flex flex-1 flex-col overflow-y-auto px-4 pt-16 pb-32 ${
