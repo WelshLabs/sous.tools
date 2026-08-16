@@ -77,8 +77,8 @@
   --popover: #0c101c;
   --popover-foreground: #e7ecf6;
 
-  --primary: #3867ff; /* deep neon blue */
-  --primary-foreground: #ffffff;
+  --primary: #14b8a6; /* luminous cool teal */
+  --primary-foreground: #031b18;
 
   --secondary: #161c2c;
   --secondary-foreground: #cdd6ea;
@@ -103,15 +103,15 @@
 
   --border: #1e2740;
   --input: #232d47;
-  --ring: #3867ff;
+  --ring: #2dd4bf;
 
-  --ds-neon-primary-rgb: 56 103 255;
+  --ds-neon-primary-rgb: 20 184 166;
   --ds-neon-accent-rgb: 34 211 238;
   --ds-neon-violet-rgb: 45 212 191;
 
   --ds-glass-fill: rgba(14, 19, 33, 0.55);
   --ds-glass-fill-strong: rgba(16, 22, 38, 0.74);
-  --ds-glass-border: rgba(56, 103, 255, 0.2);
+  --ds-glass-border: rgba(45, 212, 191, 0.2);
   --ds-glass-highlight: rgba(255, 255, 255, 0.08);
   --ds-glass-blur: 16px;
 
@@ -147,7 +147,7 @@
   --popover: #ffffff;
   --popover-foreground: #0f1729;
 
-  --primary: #1648ff;
+  --primary: #0f766e;
   --primary-foreground: #ffffff;
 
   --secondary: #e6ebf5;
@@ -173,15 +173,15 @@
 
   --border: #d3dbea;
   --input: #cfd8e8;
-  --ring: #1648ff;
+  --ring: #0f766e;
 
-  --ds-neon-primary-rgb: 22 72 255;
+  --ds-neon-primary-rgb: 15 118 110;
   --ds-neon-accent-rgb: 6 182 212;
   --ds-neon-violet-rgb: 14 165 176;
 
   --ds-glass-fill: rgba(255, 255, 255, 0.55);
   --ds-glass-fill-strong: rgba(255, 255, 255, 0.74);
-  --ds-glass-border: rgba(22, 72, 255, 0.2);
+  --ds-glass-border: rgba(15, 118, 110, 0.2);
   --ds-glass-highlight: rgba(255, 255, 255, 0.9);
 
   --ds-glow-sm: 0 0 12px -2px rgb(var(--ds-neon-primary-rgb) / 0.35);
@@ -209,8 +209,8 @@
   --popover: #0c101c;
   --popover-foreground: #e7ecf6;
 
-  --primary: #3867ff;
-  --primary-foreground: #ffffff;
+  --primary: #14b8a6;
+  --primary-foreground: #031b18;
 
   --secondary: #161c2c;
   --secondary-foreground: #cdd6ea;
@@ -235,15 +235,15 @@
 
   --border: #1e2740;
   --input: #232d47;
-  --ring: #3867ff;
+  --ring: #2dd4bf;
 
-  --ds-neon-primary-rgb: 56 103 255;
+  --ds-neon-primary-rgb: 20 184 166;
   --ds-neon-accent-rgb: 34 211 238;
   --ds-neon-violet-rgb: 45 212 191;
 
   --ds-glass-fill: rgba(14, 19, 33, 0.55);
   --ds-glass-fill-strong: rgba(16, 22, 38, 0.74);
-  --ds-glass-border: rgba(56, 103, 255, 0.2);
+  --ds-glass-border: rgba(45, 212, 191, 0.2);
   --ds-glass-highlight: rgba(255, 255, 255, 0.08);
 
   --ds-glow-sm: 0 0 14px -2px rgb(var(--ds-neon-primary-rgb) / 0.5);
@@ -408,12 +408,107 @@
   }
 }
 
+@keyframes ds-progress-travel {
+  to {
+    background-position: -240% 0;
+  }
+}
+
 /*
  * ═══════════════════════════════════════════════════════════════════════════
  *  REUSABLE HELPERS (use anywhere in the app)
  * ═══════════════════════════════════════════════════════════════════════════
  */
 @layer utilities {
+  .ds-living-surface {
+    position: relative;
+    isolation: isolate;
+    background:
+      linear-gradient(var(--ds-glass-fill-strong), var(--ds-glass-fill-strong)) padding-box,
+      linear-gradient(120deg, rgb(var(--ds-neon-primary-rgb) / 0.34), rgb(var(--ds-neon-accent-rgb) / 0.16), rgb(var(--ds-neon-violet-rgb) / 0.28)) border-box;
+    border: 1px solid transparent;
+    box-shadow:
+      inset 0 1px 0 var(--ds-glass-highlight),
+      0 10px 32px -24px rgb(var(--ds-neon-primary-rgb) / 0.7);
+    backdrop-filter: blur(var(--ds-glass-blur));
+    transition:
+      transform var(--ds-duration-fast) var(--ds-ease),
+      box-shadow var(--ds-duration) var(--ds-ease),
+      background var(--ds-duration) var(--ds-ease),
+      border-color var(--ds-duration) var(--ds-ease);
+  }
+
+  .ds-living-surface:hover {
+    box-shadow:
+      inset 0 1px 0 var(--ds-glass-highlight),
+      0 14px 38px -22px rgb(var(--ds-neon-primary-rgb) / 0.78),
+      0 0 20px -12px rgb(var(--ds-neon-accent-rgb) / 0.46);
+  }
+
+  .ds-living-control {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition:
+      color var(--ds-duration-fast) var(--ds-ease),
+      background-color var(--ds-duration) var(--ds-ease),
+      border-color var(--ds-duration) var(--ds-ease),
+      box-shadow var(--ds-duration) var(--ds-ease),
+      transform var(--ds-duration-fast) var(--ds-ease);
+  }
+
+  .ds-living-control::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(110deg, transparent 12%, rgb(var(--ds-neon-accent-rgb) / 0.12), rgb(var(--ds-neon-primary-rgb) / 0.16), transparent 88%);
+    opacity: 0;
+    transform: translateX(-24%);
+    transition:
+      opacity var(--ds-duration) var(--ds-ease),
+      transform var(--ds-duration-slow) var(--ds-ease);
+    content: "";
+  }
+
+  .ds-living-control:hover::after,
+  .ds-living-control:focus-visible::after,
+  .ds-living-control[data-state="active"]::after,
+  .ds-living-control[aria-pressed="true"]::after {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .ds-living-control:active {
+    transform: translateY(1px) scale(0.985);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ds-living-control,
+    .ds-living-control::after,
+    .ds-living-surface,
+    .ds-progress-travel {
+      animation: none;
+      transition-duration: 1ms;
+    }
+  }
+
+  .ds-focus-ring:focus-visible,
+  .ds-focus-within:focus-within {
+    outline: none;
+    border-color: rgb(var(--ds-neon-primary-rgb) / 0.7);
+    box-shadow:
+      0 0 0 3px rgb(var(--ds-neon-primary-rgb) / 0.13),
+      0 0 22px -8px rgb(var(--ds-neon-accent-rgb) / 0.48);
+  }
+
+  .ds-progress-travel {
+    background-image: linear-gradient(90deg, var(--primary), var(--accent), var(--violet), var(--primary));
+    background-size: 240% 100%;
+    animation: ds-progress-travel 1.65s linear infinite;
+    box-shadow: 0 0 16px -2px rgb(var(--ds-neon-accent-rgb) / 0.72);
+  }
+
   .omnibar-perimeter-spin {
     animation: omnibar-perimeter-spin 2.2s linear infinite;
   }

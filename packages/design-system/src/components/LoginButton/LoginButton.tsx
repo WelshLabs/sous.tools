@@ -43,7 +43,7 @@ export function LoginButton({
       ? "bg-success text-success-foreground"
       : state === "error"
         ? "bg-destructive text-destructive-foreground"
-        : "text-primary-foreground bg-[linear-gradient(120deg,var(--primary),color-mix(in_srgb,var(--primary)_55%,var(--violet)))]";
+        : "border-primary/55 text-primary-foreground bg-[linear-gradient(125deg,var(--primary),color-mix(in_srgb,var(--primary)_62%,var(--accent)),color-mix(in_srgb,var(--primary)_78%,var(--violet)))]";
 
   return (
     <motion.button
@@ -54,7 +54,7 @@ export function LoginButton({
       animate={state === "error" ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
       transition={{ duration: 0.4 }}
       className={cn(
-        "shadow-glow-sm hover:shadow-glow focus-visible:ring-ring focus-visible:ring-offset-background relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full font-medium tracking-tight transition-[background-color,box-shadow] duration-[--ds-duration] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-progress",
+        "ds-living-control ds-focus-ring relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border font-medium tracking-tight shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_14px_34px_-18px_var(--primary)] outline-none hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.22),0_16px_38px_-16px_var(--primary)] disabled:cursor-progress",
         bg,
         className,
       )}

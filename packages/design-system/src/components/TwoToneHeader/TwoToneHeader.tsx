@@ -68,9 +68,15 @@ export function TwoToneHeader({
         <h1 className="text-4xl leading-none font-black tracking-tighter uppercase">
           <span style={{ color: "var(--color-foreground)" }}>{firstWord}</span>
           {rest && (
-            <span style={{ color: "var(--color-primary)" }}>{rest}</span>
+            <span className="bg-[linear-gradient(110deg,var(--primary),var(--accent),var(--violet))] bg-clip-text text-transparent">
+              {rest}
+            </span>
           )}
         </h1>
+        <span
+          aria-hidden="true"
+          className="mt-3 block h-px w-16 bg-[linear-gradient(90deg,var(--primary),var(--accent),transparent)] shadow-[0_0_14px_rgb(var(--ds-neon-accent-rgb)/0.45)]"
+        />
       </div>
       {trailing && (
         <div className="mt-1 flex shrink-0 items-center gap-2">{trailing}</div>

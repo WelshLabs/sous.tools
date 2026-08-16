@@ -7,22 +7,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/cn";
 
 const buttonVariants = cva(
-  "group relative inline-flex min-h-10 select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-[var(--radius-md)] border font-medium tracking-tight outline-none transition-[color,background-color,border-color,box-shadow] duration-[--ds-duration] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45",
+  "ds-living-control ds-focus-ring group relative inline-flex min-h-10 select-none items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] border font-medium tracking-tight outline-none disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       variant: {
         gradient:
-          "border-primary/70 bg-[linear-gradient(135deg,var(--primary),color-mix(in_srgb,var(--primary)_76%,var(--accent)))] text-primary-foreground shadow-[0_10px_26px_-18px_var(--primary)] hover:border-primary hover:brightness-110",
+          "border-primary/65 bg-[linear-gradient(125deg,var(--primary),color-mix(in_srgb,var(--primary)_64%,var(--accent)),color-mix(in_srgb,var(--primary)_76%,var(--violet)))] text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_12px_30px_-18px_var(--primary)] hover:border-accent/60 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.22),0_14px_34px_-16px_var(--primary)]",
         primary:
-          "border-primary/65 bg-primary text-primary-foreground shadow-[0_10px_26px_-18px_var(--primary)] hover:border-primary hover:bg-[color-mix(in_srgb,var(--primary)_90%,white)]",
+          "border-primary/55 bg-[linear-gradient(145deg,color-mix(in_srgb,var(--primary)_88%,white),var(--primary))] text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.16),0_12px_28px_-18px_var(--primary)] hover:border-accent/45 hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.2),0_14px_32px_-16px_var(--primary)]",
         secondary:
-          "border-border/80 bg-secondary/70 text-secondary-foreground backdrop-blur-xl hover:border-primary/30 hover:bg-secondary",
+          "border-[var(--ds-glass-border)] bg-secondary/55 text-secondary-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] backdrop-blur-xl hover:border-primary/40 hover:bg-secondary/80",
         outline:
-          "border-border/80 bg-card/35 text-foreground backdrop-blur-xl hover:border-primary/40 hover:bg-card/65",
+          "border-border/75 bg-card/25 text-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] backdrop-blur-xl hover:border-primary/45 hover:bg-card/55",
         glass:
-          "border-[var(--ds-glass-border)] bg-[var(--ds-glass-fill)] text-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] backdrop-blur-xl hover:border-primary/35 hover:bg-[var(--ds-glass-fill-strong)]",
+          "border-[var(--ds-glass-border)] bg-[var(--ds-glass-fill)] text-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] backdrop-blur-xl hover:border-primary/45 hover:bg-[var(--ds-glass-fill-strong)]",
         ghost:
-          "border-transparent bg-transparent text-muted-foreground hover:bg-card/55 hover:text-foreground",
+          "border-transparent bg-transparent text-muted-foreground hover:border-primary/15 hover:bg-primary/[0.07] hover:text-foreground",
         destructive:
           "border-destructive/55 bg-destructive/90 text-destructive-foreground shadow-[0_10px_26px_-18px_var(--destructive)] hover:bg-destructive",
       },
@@ -54,13 +54,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       return (
         <MotionSlot
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={ref as any}
           whileHover={{ y: -1 }}
           whileTap={{ scale: 0.975, y: 0 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
           className={cn(buttonVariants({ variant: tone, size }), className)}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           {...(props as any)}
         >
           {children}

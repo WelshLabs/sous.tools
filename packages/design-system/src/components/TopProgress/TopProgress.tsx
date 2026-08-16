@@ -69,14 +69,13 @@ export function TopProgress({
           aria-valuemin={0}
           aria-valuemax={100}
           className={cn(
-            "top-0 left-0 z-[100] h-[3px] w-full",
+            "bg-primary/10 top-0 left-0 z-[100] h-1 w-full overflow-hidden shadow-[0_1px_0_rgb(var(--ds-neon-primary-rgb)/0.12)]",
             absolute ? "absolute" : "fixed",
             className,
           )}
         >
           <motion.div
-            className="ds-gradient-pan relative h-full"
-            style={{ boxShadow: "var(--ds-glow-md)", filter: "blur(0.35px)" }}
+            className="ds-progress-travel relative h-full rounded-r-full"
             initial={false}
             animate={{ width: `${progress}%` }}
             transition={{ ease: [0.22, 1, 0.36, 1], duration: 0.4 }}

@@ -101,7 +101,7 @@ export function OmniInputPill({
       animate={isDragging ? "dragging" : "idle"}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       onDrop={handleDrop}
-      className="border-border pointer-events-auto relative mx-auto flex max-w-[92vw] flex-col justify-center overflow-hidden border p-2 backdrop-blur-xl sm:max-w-full"
+      className="ds-living-surface border-border pointer-events-auto relative mx-auto flex max-w-[92vw] flex-col justify-center overflow-hidden p-2 sm:max-w-full"
       style={{
         borderColor: isDragging
           ? "var(--color-primary)"
