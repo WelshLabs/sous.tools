@@ -24,7 +24,7 @@ export function PinInput({
       maxLength={length}
       value={value}
       onChange={onChange}
-      containerClassName={cn("flex space-x-2 justify-center", className)}
+      containerClassName={cn("flex justify-center gap-2", className)}
       render={({ slots }) => (
         <>
           {slots.map((slot, index) => (
@@ -44,14 +44,15 @@ function Slot(props: {
   return (
     <div
       className={cn(
-        "bg-card border-border relative flex h-14 w-12 items-center justify-center rounded-xl border text-3xl font-semibold text-zinc-100 shadow-inner backdrop-blur-md transition-all sm:h-20 sm:w-16 sm:text-4xl",
-        props.isActive && "z-10 border-cyan-400 ring-2 ring-cyan-400/50",
+        "ds-living-control text-foreground relative flex h-14 w-12 items-center justify-center rounded-xl border border-[var(--ds-glass-border)] bg-[var(--ds-glass-fill)] text-3xl font-semibold shadow-[inset_0_1px_0_var(--ds-glass-highlight),0_10px_28px_-24px_rgb(var(--ds-neon-primary-rgb)/0.65)] backdrop-blur-xl sm:h-20 sm:w-16 sm:text-4xl",
+        props.isActive &&
+          "border-primary/70 z-10 bg-[var(--ds-glass-fill-strong)] shadow-[0_0_0_3px_rgb(var(--ds-neon-primary-rgb)/0.12),0_0_26px_-8px_rgb(var(--ds-neon-accent-rgb)/0.62)]",
       )}
     >
       {props.char !== null ? (
         props.char
       ) : (
-        <span className="text-zinc-700">-</span>
+        <span className="text-muted-foreground/45">-</span>
       )}
       {props.hasFakeCaret && (
         <div className="animate-caret-blink pointer-events-none absolute inset-0 flex items-center justify-center">

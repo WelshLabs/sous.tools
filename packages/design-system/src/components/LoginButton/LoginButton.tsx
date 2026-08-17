@@ -43,7 +43,7 @@ export function LoginButton({
       ? "bg-success text-success-foreground"
       : state === "error"
         ? "bg-destructive text-destructive-foreground"
-        : "text-primary-foreground bg-[linear-gradient(120deg,var(--primary),color-mix(in_srgb,var(--primary)_55%,var(--violet)))]";
+        : "border-primary/55 text-primary-foreground bg-[linear-gradient(125deg,var(--primary),color-mix(in_srgb,var(--primary)_62%,var(--accent)),color-mix(in_srgb,var(--primary)_78%,var(--violet)))]";
 
   return (
     <motion.button
@@ -54,24 +54,28 @@ export function LoginButton({
       animate={state === "error" ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
       transition={{ duration: 0.4 }}
       className={cn(
-        "shadow-glow-sm hover:shadow-glow focus-visible:ring-ring focus-visible:ring-offset-background relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full font-medium tracking-tight transition-[background-color,box-shadow] duration-[--ds-duration] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-progress",
+        "ds-living-control ds-action-button ds-focus-ring relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border font-medium tracking-tight shadow-[inset_0_1px_0_rgb(255_255_255/0.22),inset_0_-1px_0_rgb(3_19_28/0.2),0_14px_34px_-18px_var(--primary)] outline-none hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.28),0_16px_38px_-15px_var(--primary)] hover:saturate-125 disabled:cursor-progress",
         bg,
         className,
       )}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={state}
-          initial={{ opacity: 0, y: 8, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -8, scale: 0.9 }}
-          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center gap-2"
-        >
-          {icon}
-          {label}
-        </motion.span>
-      </AnimatePresence>
+      {/* #15 "Button Change" — content swaps with a vertical slot slide:
+          the current state rises out the top as the next rises in from below. */}
+      <span className="relative inline-flex h-full items-center justify-center overflow-hidden">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={state}
+            initial={{ y: "120%", opacity: 0 }}
+            animate={{ y: "0%", opacity: 1 }}
+            exit={{ y: "-120%", opacity: 0 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex items-center gap-2"
+          >
+            {label}
+            {icon}
+          </motion.span>
+        </AnimatePresence>
+      </span>
     </motion.button>
   );
 }

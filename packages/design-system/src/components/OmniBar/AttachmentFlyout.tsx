@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UploadCloud, Camera, Paperclip } from "lucide-react";
 import { useOmnibarContext } from "./OmniBarContext";
@@ -38,24 +37,9 @@ export function AttachmentFlyout({
 }: AttachmentFlyoutProps) {
   // ── Capability checks (preserved — DO NOT REMOVE) ──────────────────────
   const { isGoogleDriveConnected } = useOmnibarContext();
-  const [hasCamera, setHasCamera] = useState(false);
-
-  useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      navigator.mediaDevices?.enumerateDevices
-    ) {
-      navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) => {
-          const videoDevices = devices.filter((d) => d.kind === "videoinput");
-          setHasCamera(videoDevices.length > 0);
-        })
-        .catch(() => {
-          setHasCamera(false);
-        });
-    }
-  }, []);
+  const hasCamera =
+    typeof navigator !== "undefined" &&
+    typeof navigator.mediaDevices?.getUserMedia === "function";
   // ──────────────────────────────────────────────────────────────────────
 
   return (

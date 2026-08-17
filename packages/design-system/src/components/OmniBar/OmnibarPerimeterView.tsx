@@ -1,128 +1,138 @@
 "use client";
 
-import { useId, useLayoutEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
+const ringMask: CSSProperties = {
+  WebkitMask:
+    "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+  WebkitMaskComposite: "xor",
+  maskComposite: "exclude",
+};
+
 /**
- * OmnibarPerimeterView
- *
- * Animated SVG border that traces a neon gradient around its parent
- * container. Uses a ResizeObserver to stay in sync with any layout
- * changes (idle pill ↔ active pill ↔ droplet morph).
- *
- * - `busy=false` → subtle idle shimmer that fires on a slow repeat cycle
- * - `busy=true`  → continuous gradient chase (processing state)
- *
- * Ported from the v0 Neon-Glass design system. All tokens are semantic.
+ * Radius-aligned perimeter light shared by every OmniBar shape.
+ * Idle motion is intentionally quiet; processing is crisp and continuous.
  */
 export function OmnibarPerimeterView({ busy }: { busy: boolean }) {
   const reducedMotion = useReducedMotion();
-  const gradientId = useId();
-  const frameRef = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(
-    null,
-  );
-
-  useLayoutEffect(() => {
-    const frame = frameRef.current;
-    if (!frame) return;
-    const update = () =>
-      setSize({ width: frame.clientWidth, height: frame.clientHeight });
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(frame);
-    return () => observer.disconnect();
-  }, []);
-
-  if (!size || size.width === 0 || size.height === 0) {
-    return (
-      <span
-        ref={frameRef}
-        aria-hidden="true"
-        className="border-border/90 pointer-events-none absolute inset-0 rounded-[inherit] border"
-      />
-    );
-  }
-
-  const inset = 1;
-  const width = Math.max(1, size.width - inset * 2);
-  const height = Math.max(1, size.height - inset * 2);
-  const radius = height / 2;
-  const perimeter = 2 * (width - 2 * radius) + 2 * Math.PI * radius;
 
   return (
     <span
-      ref={frameRef}
       aria-hidden="true"
-      className="border-border/90 pointer-events-none absolute inset-0 rounded-[inherit] border"
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
     >
-      <svg
-        className="absolute inset-0 h-full w-full overflow-visible"
-        viewBox={`0 0 ${size.width} ${size.height}`}
-      >
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="var(--primary)" />
-            <stop offset="0.55" stopColor="var(--accent)" />
-            <stop offset="1" stopColor="var(--primary)" />
-          </linearGradient>
-        </defs>
-        <motion.g
-          initial={{ opacity: 0 }}
-          animate={
-            reducedMotion
-              ? { opacity: busy ? 1 : 0, strokeDashoffset: 0 }
-              : busy
-                ? { opacity: 1, strokeDashoffset: -perimeter }
-                : {
-                    opacity: [0, 0, 1, 1, 0],
-                    strokeDashoffset: [0, 0, -perimeter * 0.12, -perimeter],
-                  }
-          }
-          transition={
-            reducedMotion
-              ? { duration: 0 }
-              : busy
-                ? {
-                    strokeDashoffset: {
-                      duration: 2.8,
-                      repeat: Number.POSITIVE_INFINITY,
-                      ease: "linear",
-                    },
-                    opacity: { duration: 0.15 },
-                  }
-                : {
-                    opacity: {
-                      duration: 6.2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      times: [0, 0.55, 0.63, 0.89, 1],
-                      ease: "linear",
-                    },
-                    strokeDashoffset: {
-                      duration: 6.2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      times: [0, 0.55, 0.63, 1],
-                      ease: "linear",
-                    },
-                  }
-          }
-        >
-          <rect
-            x={inset}
-            y={inset}
-            width={width}
-            height={height}
-            rx={radius}
-            fill="none"
-            stroke={`url(#${gradientId})`}
-            strokeLinecap="round"
-            strokeWidth="1.5"
-            vectorEffect="non-scaling-stroke"
-            style={{ filter: "blur(0.35px)" }}
-            strokeDasharray={`${perimeter * 0.18} ${perimeter * 0.82}`}
-          />
-        </motion.g>
-      </svg>
+      {/* A broad masked halo sits behind the edge without tinting the center. */}
+      <motion.span
+        className={
+          reducedMotion
+            ? "absolute -inset-1 rounded-[inherit]"
+            : `omnibar-perimeter-spin absolute -inset-1 rounded-[inherit] ${busy ? "" : "omnibar-perimeter-spin--ambient"}`
+        }
+        style={{
+          ...ringMask,
+          padding: busy ? "5px" : "4px",
+          background:
+            "conic-gradient(from var(--omnibar-perimeter-angle), var(--primary), var(--accent), var(--violet), var(--primary))",
+          filter: busy ? "blur(6px)" : "blur(11px)",
+        }}
+        initial={false}
+        animate={
+          reducedMotion
+            ? { opacity: busy ? 0.72 : 0.12 }
+            : busy
+              ? { opacity: [0.62, 0.9, 0.62], rotate: 360, scale: 1.015 }
+              : {
+                  opacity: [0.08, 0.16, 0.08],
+                  rotate: 360,
+                  scale: [0.995, 1.008, 0.995],
+                }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : busy
+              ? {
+                  rotate: {
+                    duration: 2.2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  },
+                  opacity: {
+                    duration: 2.2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  },
+                  scale: { duration: 0.3 },
+                }
+              : {
+                  rotate: {
+                    duration: 18,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  },
+                  opacity: {
+                    duration: 5.8,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  },
+                  scale: {
+                    duration: 5.8,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  },
+                }
+        }
+      />
+
+      {/* The processing edge is intentionally sharper than the ambient halo. */}
+      <motion.span
+        className={
+          reducedMotion
+            ? "absolute inset-0 rounded-[inherit]"
+            : `omnibar-perimeter-spin absolute inset-0 rounded-[inherit] ${busy ? "" : "omnibar-perimeter-spin--presence"}`
+        }
+        style={{
+          ...ringMask,
+          padding: busy ? "2px" : "1px",
+          background:
+            "conic-gradient(from var(--omnibar-perimeter-angle), transparent 0deg, var(--primary) 48deg, var(--accent) 112deg, var(--violet) 168deg, transparent 226deg, transparent 360deg)",
+          filter: busy ? "blur(0.25px)" : "blur(0.7px)",
+        }}
+        initial={false}
+        animate={
+          reducedMotion
+            ? { opacity: busy ? 0.9 : 0 }
+            : busy
+              ? { opacity: 0.92, rotate: 360 }
+              : { opacity: [0, 0, 0.18, 0.08, 0], rotate: 360 }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : busy
+              ? {
+                  rotate: {
+                    duration: 2.2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  },
+                }
+              : {
+                  rotate: {
+                    duration: 12,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  },
+                  opacity: {
+                    duration: 12,
+                    repeat: Number.POSITIVE_INFINITY,
+                    times: [0, 0.72, 0.8, 0.9, 1],
+                    ease: "easeInOut",
+                  },
+                }
+        }
+      />
     </span>
   );
 }

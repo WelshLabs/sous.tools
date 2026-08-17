@@ -11,8 +11,9 @@ export function Card({
     <div
       className={cn(
         "rounded-[var(--radius-lg)] p-6",
-        glass ? "ds-glass" : "border-border bg-card border",
-        glow && "shadow-glow-sm",
+        glass ? "ds-living-surface" : "border-border bg-card border",
+        glow &&
+          "shadow-glow-sm shadow-[inset_0_1px_0_var(--ds-glass-highlight),0_18px_44px_-24px_rgb(var(--ds-neon-primary-rgb)/0.8),0_0_28px_-18px_rgb(var(--ds-neon-accent-rgb)/0.65)]",
         className,
       )}
       {...props}

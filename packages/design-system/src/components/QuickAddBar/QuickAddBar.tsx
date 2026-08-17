@@ -93,13 +93,9 @@ export function QuickAddBar({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={[
-            "h-16 w-full pr-14 pl-14",
-            "bg-card border-border rounded-2xl border shadow-xl",
+            "ds-living-surface ds-focus-ring h-16 w-full rounded-2xl pr-14 pl-14",
             "text-lg font-bold tracking-tight uppercase",
-            "text-foreground placeholder:text-muted-foreground",
-            "focus:border-primary/50 transition-all outline-none",
-            "dark:bg-card dark:border-border",
-            "dark:focus:border-primary/50",
+            "text-foreground placeholder:text-muted-foreground outline-none",
           ].join(" ")}
         />
         {value && (
@@ -114,21 +110,15 @@ export function QuickAddBar({
 
       {/* Autocomplete dropdown */}
       {suggestions.length > 0 && (
-        <div
-          className={[
-            "absolute top-[4.5rem] right-0 left-0 p-2",
-            "bg-card border-border overflow-hidden rounded-2xl border shadow-2xl",
-            "dark:bg-card dark:border-border",
-          ].join(" ")}
-        >
+        <div className="ds-living-surface absolute top-[4.5rem] right-0 left-0 overflow-hidden rounded-2xl p-2">
           {suggestions.map((s) => (
             <div
               key={s.id}
               onClick={() => onSelectSuggestion(s)}
-              className="hover:bg-primary/10 group flex cursor-pointer flex-row items-center justify-between rounded-xl p-4 transition-colors"
+              className="ds-living-control group hover:border-primary/20 hover:bg-primary/[0.07] flex cursor-pointer flex-row items-center justify-between rounded-xl border border-transparent p-4"
             >
               <div className="flex flex-row items-center gap-4">
-                <div className="bg-muted border-border group-hover:bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full border transition-colors dark:border-zinc-700 dark:bg-zinc-800">
+                <div className="bg-muted/70 border-border group-hover:bg-primary/15 flex h-10 w-10 items-center justify-center rounded-full border transition-colors">
                   <Plus
                     size={16}
                     className="text-muted-foreground group-hover:text-primary transition-colors"
@@ -138,7 +128,7 @@ export function QuickAddBar({
                   {s.name}
                 </span>
               </div>
-              <span className="text-muted-foreground bg-muted rounded-full px-3 py-1 text-[10px] font-black uppercase dark:bg-zinc-800">
+              <span className="text-muted-foreground border-primary/15 bg-primary/[0.07] rounded-full border px-3 py-1 text-[10px] font-black uppercase">
                 {s.baseUnit}
               </span>
             </div>

@@ -30,6 +30,6 @@ describe("Button", () => {
   it("applies variant classes", () => {
     render(<Button variant="destructive">Delete</Button>);
     const btn = screen.getByText("Delete").closest("button");
-    expect(btn).toHaveClass("bg-destructive/90");
+    expect(btn).toHaveClass("bg-destructive/15");
   });
 });

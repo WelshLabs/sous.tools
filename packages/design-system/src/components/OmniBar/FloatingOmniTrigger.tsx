@@ -17,14 +17,6 @@ export function FloatingOmniTrigger() {
       whileHover={{ y: -2, scale: 1.025 }}
       whileTap={{ scale: 0.96 }}
       transition={shellTransition}
-      animate={{
-        boxShadow: [
-          "var(--ds-glow-sm)",
-          "var(--ds-glow-accent)",
-          "var(--ds-glow-sm)",
-        ],
-      }}
-      style={{ animationTimingFunction: "var(--ds-ease)" }}
     >
       <OmniBar />
     </motion.div>

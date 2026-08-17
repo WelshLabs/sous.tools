@@ -46,12 +46,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <div className="flex w-full flex-col gap-1.5">
         <div
           className={cn(
-            "group relative flex items-center rounded-[var(--radius-md)] border bg-[var(--ds-glass-fill)] px-3.5 shadow-[inset_0_1px_0_var(--ds-glass-highlight)] transition-[border-color,box-shadow,background-color] duration-[--ds-duration]",
-            "focus-within:border-primary h-14 backdrop-blur-xl focus-within:shadow-[var(--ds-glow-sm)]",
+            "ds-living-control ds-focus-within group relative flex h-14 items-center rounded-[var(--radius-md)] border bg-[var(--ds-glass-fill)] px-3.5 shadow-[inset_0_1px_0_var(--ds-glass-highlight),0_10px_28px_-24px_rgb(var(--ds-neon-primary-rgb)/0.55)] backdrop-blur-xl",
             invalid
               ? "border-destructive"
               : focused
-                ? "border-primary shadow-[var(--ds-glow-sm)]"
+                ? "border-primary/70 bg-[var(--ds-glass-fill-strong)] shadow-[0_0_0_3px_rgb(var(--ds-neon-primary-rgb)/0.1),0_0_24px_-10px_rgb(var(--ds-neon-accent-rgb)/0.55)]"
                 : "border-input hover:border-[color-mix(in_srgb,var(--primary)_45%,var(--border))]",
             disabled && "pointer-events-none opacity-50",
             className,

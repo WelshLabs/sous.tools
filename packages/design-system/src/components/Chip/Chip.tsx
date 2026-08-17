@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { cn } from "../../utils/cn";
 
 const chipVariants = cva(
-  "group relative inline-flex select-none items-center gap-2 rounded-full border font-medium outline-none backdrop-blur-xl transition-[color,background-color,border-color,box-shadow] duration-[--ds-duration] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "ds-living-control ds-focus-ring group relative inline-flex select-none items-center gap-2 rounded-full border font-medium outline-none backdrop-blur-xl",
   {
     variants: {
       size: {
@@ -16,9 +16,9 @@ const chipVariants = cva(
         lg: "h-11 px-4 text-sm",
       },
       selected: {
-        true: "border-primary/45 bg-primary/14 text-primary shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_8px_22px_-18px_var(--primary)]",
+        true: "border-primary/50 bg-[linear-gradient(115deg,rgb(var(--ds-neon-primary-rgb)/0.2),rgb(var(--ds-neon-accent-rgb)/0.08))] text-primary shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_10px_24px_-18px_var(--primary)]",
         false:
-          "border-border/80 bg-card/40 text-muted-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] hover:border-primary/30 hover:bg-card/70 hover:text-foreground",
+          "border-[var(--ds-glass-border)] bg-[var(--ds-glass-fill)] text-muted-foreground shadow-[inset_0_1px_0_var(--ds-glass-highlight)] hover:border-primary/35 hover:bg-[var(--ds-glass-fill-strong)] hover:text-foreground",
       },
     },
     defaultVariants: { size: "md", selected: false },
