@@ -90,16 +90,57 @@ export class PosWebhookController {
       return { status: "ignored" };
     }
 
-    // Resolve organization associated with this Provider Merchant
+    // Resolve organization associated with this Provider Merchant.
+    // Try canonical metadata->>'merchantId' first, then fall back to
+    // settings->>'merchant_id' for rows created before the metadata fix.
     const providerKey = provider.toUpperCase();
-    const { data: integration, error } = await supabase
+
+    type IntegrationRow = {
+      organization_id: string;
+      settings: Record<string, unknown>;
+      metadata: Record<string, unknown>;
+    };
+
+    let integration: IntegrationRow | null = null;
+
+    const { data: byMetadata, error: metaErr } = await supabase
       .from("integrations")
       .select("organization_id, settings, metadata")
       .eq("provider", providerKey)
       .eq("metadata->>merchantId", normalized.merchantId)
       .maybeSingle();
 
-    if (error || !integration) {
+    if (!metaErr && byMetadata) {
+      integration = byMetadata as IntegrationRow;
+    } else {
+      // Fallback: legacy rows may have stored merchant_id in settings only
+      const { data: bySettings, error: settingsErr } = await supabase
+        .from("integrations")
+        .select("organization_id, settings, metadata")
+        .eq("provider", providerKey)
+        .eq("settings->>merchant_id", normalized.merchantId)
+        .maybeSingle();
+
+      if (!settingsErr && bySettings) {
+        integration = bySettings as IntegrationRow;
+        // Backfill metadata.merchantId so future lookups hit the fast path
+        await supabase
+          .from("integrations")
+          .update({
+            metadata: {
+              ...(bySettings.metadata as Record<string, unknown>),
+              merchantId: normalized.merchantId,
+            },
+          })
+          .eq("organization_id", bySettings.organization_id)
+          .eq("provider", providerKey);
+        this.logger.log(
+          `Backfilled metadata.merchantId for org ${bySettings.organization_id}`,
+        );
+      }
+    }
+
+    if (!integration) {
       this.logger.warn(
         `No integration found for ${provider} merchant ID ${normalized.merchantId}. Returning 200 to satisfy provider verification.`,
       );

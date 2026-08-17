@@ -97,6 +97,9 @@ export class SquareDriver extends BaseIntegrationDriver implements IPosDriver {
         settings: {
           merchant_id: data.merchant_id,
         },
+        metadata: {
+          merchantId: data.merchant_id,
+        },
       },
       { onConflict: "organization_id,provider" },
     );
