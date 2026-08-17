@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -60,7 +59,9 @@ describe("AnswerViewView", () => {
     );
 
     expect(screen.getAllByText("Revenue Chart").length).toBeGreaterThan(0);
-    expect(screen.getByText("Weekly Revenue & Sales Metrics")).toBeInTheDocument();
+    expect(
+      screen.getByText("Weekly Revenue & Sales Metrics"),
+    ).toBeInTheDocument();
   });
 
   it("renders ArtifactColumn when a render_component directive message is in chatHistory", () => {
