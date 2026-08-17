@@ -33,7 +33,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 # Copy built files from installer
-COPY --from=installer /app .
+COPY --from=installer --chown=nestjs:nodejs /app .
 
 USER nestjs
 

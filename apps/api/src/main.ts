@@ -96,7 +96,12 @@ async function bootstrap(): Promise<void> {
     .setVersion("1.0")
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  fs.writeFileSync("openapi.json", JSON.stringify(document, null, 2));
+  SwaggerModule.setup("api/docs", app, document);
+  try {
+    fs.writeFileSync("openapi.json", JSON.stringify(document, null, 2));
+  } catch {
+    // Non-fatal in read-only environments
+  }
 
   if (process.env.GENERATE_OPENAPI_ONLY === "true") {
     process.exit(0);
