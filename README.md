@@ -12,3 +12,5 @@ This repository uses GitHub Issues as the central nervous system for autonomous 
 6. **`agent:test`** - _The QA._ Mocks data and writes Playwright/Jest tests to achieve 100% coverage.
 7. **`agent:review`** - _The Gatekeeper._ Reviews PRs specifically looking for architectural boundary or Tailwind token violations.
 8. **`agent:audit`** - _The Janitor._ A cron-friendly agent that fixes exactly one tech-debt item (dead code/lint error) and opens a PR.
+
+&nbsp;
