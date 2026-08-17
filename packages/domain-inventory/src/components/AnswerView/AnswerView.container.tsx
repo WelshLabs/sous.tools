@@ -1,9 +1,9 @@
-/* eslint-disable max-lines */
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { useOmnibarContext } from "@soustools/design-system";
 import { api } from "@soustools/api-client";
+import { type OmniMessage } from "@soustools/api-types";
 import { AnswerViewView } from "./AnswerView.view";
 
 export interface AnswerViewContainerProps {
@@ -18,18 +18,14 @@ export function AnswerViewContainer({
   const { chatHistory, setChatHistory, isProcessing, setIsProcessing, socket } =
     useOmnibarContext();
 
-  const [prepListItems, setPrepListItems] = useState<
-    Array<{ id: string; text: string; done: boolean }>
-  >([
+  const [prepListItems, setPrepListItems] = useState([
     { id: "1", text: "Dice 10lbs yellow onions for soup base", done: false },
     { id: "2", text: "Trim & portion ribeye loins (12oz steaks)", done: false },
     { id: "3", text: "Simmer beef bone broth (8 hours low heat)", done: true },
     { id: "4", text: "Grate Gruyère cheese for crock topping", done: false },
   ]);
 
-  const [realRevenueData, setRealRevenueData] = useState<
-    Array<{ name: string; value: number }>
-  >([
+  const [realRevenueData, setRealRevenueData] = useState([
     { name: "Mon", value: 193 },
     { name: "Tue", value: 213 },
     { name: "Wed", value: 130 },
@@ -42,105 +38,99 @@ export function AnswerViewContainer({
     Array<{ time: string; minutes: number }>
   >([]);
 
-  // Fetch real dashboard metrics
   useEffect(() => {
     api
-      .GET("/dashboard/stats" as any, {
-        params: {
-          query: { orgId: "d0000000-0000-0000-0000-000000000000" },
-        } as any,
-      })
-      .then(({ data }: any) => {
-        if (data?.revenue && Array.isArray(data.revenue)) {
-          setRealRevenueData(data.revenue);
-        }
-        if (data?.ticketTimes && Array.isArray(data.ticketTimes)) {
-          setRealTicketTimeData(data.ticketTimes);
-        }
-      })
-      .catch((err: any) =>
-        console.error("Failed to fetch real dashboard metrics:", err),
+      .GET("/dashboard/stats" as never, {
+        params: { query: { orgId: "d0000000-0000-0000-0000-000000000000" } },
+      } as any)
+      .then(
+        (res: {
+          data?: {
+            revenue?: Array<{ name: string; value: number }>;
+            ticketTimes?: Array<{ time: string; minutes: number }>;
+          };
+        }) => {
+          if (Array.isArray(res.data?.revenue))
+            setRealRevenueData(res.data.revenue);
+          if (Array.isArray(res.data?.ticketTimes))
+            setRealTicketTimeData(res.data.ticketTimes);
+        },
+      )
+      .catch((err: unknown) =>
+        console.error("Failed to fetch dashboard stats:", err),
       );
   }, []);
 
   const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
 
-  // Fetch chat history from DB on load
   useEffect(() => {
-    if (initialReviewId) {
-      api
-        .GET(`/commands/conversations/${initialReviewId}/messages` as any, {})
-        .then(({ data }: any) => {
-          const messages = data?.data || data;
-          if (messages && Array.isArray(messages) && messages.length > 0) {
-            setChatHistory(messages);
-          }
-        })
-        .catch((err: any) =>
-          console.error("Failed to fetch chat history:", err),
-        )
-        .finally(() => setHasFetchedHistory(true));
-    } else {
+    if (!initialReviewId) {
       setHasFetchedHistory(true);
+      return;
     }
+    api
+      .GET(`/commands/conversations/${initialReviewId}/messages` as never, {} as any)
+      .then((res: { data?: { data?: OmniMessage[] } | OmniMessage[] }) => {
+        const msgs = (
+          res.data && "data" in res.data ? res.data.data : res.data
+        ) as OmniMessage[] | undefined;
+        if (Array.isArray(msgs) && msgs.length > 0) setChatHistory(msgs);
+      })
+      .catch((err: unknown) =>
+        console.error("Failed to fetch chat history:", err),
+      )
+      .finally(() => setHasFetchedHistory(true));
   }, [initialReviewId, setChatHistory]);
 
-  // Handle URL query prompt when visiting /home?chat=...&prompt=... directly
   useEffect(() => {
-    if (!hasFetchedHistory) return;
-    if (initialQuery && initialQuery.trim().length > 0) {
-      const hasUserMsg = chatHistory.some(
-        (m) => m.role === "user" && m.content.includes(initialQuery),
-      );
-      if (!hasUserMsg) {
-        setIsProcessing(true);
-        const newMsg = {
-          id: crypto.randomUUID(),
-          role: "user" as const,
-          content: initialQuery,
-          timestamp: new Date(),
-        };
+    if (!hasFetchedHistory || !initialQuery || !initialQuery.trim()) return;
+    const exists = chatHistory.some(
+      (m) => m.role === "user" && m.content.includes(initialQuery),
+    );
+    if (exists) return;
 
-        if (socket && socket.connected) {
-          socket.emit("executeCommand", {
-            chatHistory: [...chatHistory, newMsg],
-            source: "omnibar",
-            path: "/home",
-            context: { conversationId: initialReviewId },
-          });
-        } else {
-          api
-            .POST("/commands/execute" as any, {
-              body: {
-                command: initialQuery,
-                history: [...chatHistory, newMsg],
-              } as any,
-            })
-            .then(({ data }: any) => {
-              setIsProcessing(false);
-              if (data?.response) {
-                setChatHistory([
-                  ...chatHistory,
-                  newMsg,
-                  {
-                    id: crypto.randomUUID(),
-                    role: "model" as const,
-                    content: data.response,
-                    timestamp: new Date(),
-                  },
-                ]);
-              }
-            })
-            .catch((err: any) => {
-              console.error("Failed to execute answer query:", err);
-              setIsProcessing(false);
-            });
-        }
-      }
+    setIsProcessing(true);
+    const newMsg: OmniMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: initialQuery,
+      timestamp: new Date(),
+    };
+
+    if (socket?.connected) {
+      socket.emit("executeCommand", {
+        chatHistory: [...chatHistory, newMsg],
+        source: "omnibar",
+        path: "/home",
+        context: { conversationId: initialReviewId },
+      });
+    } else {
+      api
+        .POST("/commands/execute" as never, {
+          body: { command: initialQuery, history: [...chatHistory, newMsg] },
+        } as any)
+        .then((res: { data?: { response?: string } }) => {
+          setIsProcessing(false);
+          if (res.data?.response) {
+            setChatHistory([
+              ...chatHistory,
+              newMsg,
+              {
+                id: crypto.randomUUID(),
+                role: "model",
+                content: res.data.response,
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        })
+        .catch((err: unknown) => {
+          console.error("Failed to execute answer query:", err);
+          setIsProcessing(false);
+        });
     }
   }, [initialQuery, hasFetchedHistory]);
 
-  // Auto-scroll the page
   useEffect(() => {
     const main = document.getElementById("workspace-main");
     if (main) {
@@ -157,11 +147,11 @@ export function AnswerViewContainer({
 
   const componentDirective = useMemo(() => {
     const renderMsg = chatHistory.findLast(
-      (m) => m.role === ("render_component" as any),
+      (m) => (m.role as string) === "render_component",
     );
     if (renderMsg?.content) {
       try {
-        return JSON.parse(renderMsg.content);
+        return JSON.parse(renderMsg.content) as { componentName?: string };
       } catch {
         // no-op
       }
@@ -170,9 +160,8 @@ export function AnswerViewContainer({
   }, [chatHistory]);
 
   const track2Type = useMemo(() => {
-    if (componentDirective?.componentName) {
+    if (componentDirective?.componentName)
       return componentDirective.componentName;
-    }
     const q = (latestUserMessage || "").toLowerCase().trim();
     if (!q) return null;
     if (q.includes("revenue") || q.includes("sales") || q.includes("chart"))
@@ -186,7 +175,7 @@ export function AnswerViewContainer({
     if (q.includes("item") || q.includes("inventory") || q.includes("supplier"))
       return "INGREDIENT_TABLE";
     return null;
-  }, [initialReviewId, componentDirective, latestUserMessage]);
+  }, [componentDirective, latestUserMessage]);
 
   const handleTogglePrepItem = (id: string) => {
     setPrepListItems((prev) =>

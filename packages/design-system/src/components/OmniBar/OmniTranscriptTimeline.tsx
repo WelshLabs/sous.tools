@@ -34,7 +34,7 @@ export function OmniTranscriptTimeline({
       m.role === "user" ||
       m.role === "model" ||
       m.role === "agent_step" ||
-      m.role === ("render_component" as any),
+      (m.role as string) === "render_component",
   );
 
   return (
@@ -45,7 +45,7 @@ export function OmniTranscriptTimeline({
         visibleMessages.map((m, idx) => {
           const isLast = idx === visibleMessages.length - 1;
 
-          if (m.role === ("render_component" as any)) {
+          if ((m.role as string) === "render_component") {
             if (renderComponentDirective) {
               const node = renderComponentDirective(m);
               if (node) {

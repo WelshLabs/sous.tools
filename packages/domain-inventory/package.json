@@ -33,9 +33,10 @@
     "vitest": "^4.1.9"
   },
   "dependencies": {
-    "@soustools/api-types": "workspace:*",
     "@soustools/api-client": "workspace:*",
+    "@soustools/api-types": "workspace:*",
     "@soustools/design-system": "workspace:*",
+    "framer-motion": "^12.43.0",
     "lucide-react": "^0.300.0",
     "sonner": "^2.0.7"
   },

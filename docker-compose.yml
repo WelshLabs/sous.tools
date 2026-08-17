@@ -50,7 +50,7 @@ services:
     image: redis:alpine
     profiles: ["dev", "prod"]
     container_name: redis
-    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy noeviction
     ports:
       - "6379:6379"
     volumes:
@@ -66,6 +66,8 @@ services:
     restart: unless-stopped
     ports:
       - "7687:7687"
+      - "7688:7687"
+      - "7474:7474"
     environment:
       - NEO4J_AUTH=neo4j/sousToolsPassword
       - NEO4J_server_memory_pagecache_size=1G

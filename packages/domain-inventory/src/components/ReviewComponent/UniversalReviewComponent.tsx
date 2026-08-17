@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ReviewDocumentCanvas } from "./ReviewDocumentCanvas";
 import { ReviewProseBlock } from "./ReviewProseBlock";
 import { ReviewInvoiceBlock } from "./ReviewInvoiceBlock";
 import { ReviewRecipeBlock } from "./ReviewRecipeBlock";
@@ -13,7 +12,6 @@ import {
   CardTitle,
   CardContent,
   Button,
-  Chip,
   useOmnibarContext,
 } from "@soustools/design-system";
 import {
@@ -23,8 +21,10 @@ import {
   ChevronRight,
   Save,
   Sparkles,
+  X,
 } from "lucide-react";
 import { api } from "@soustools/api-client";
+import { motion, AnimatePresence } from "framer-motion";
 
 export interface UniversalReviewComponentProps {
   reviewId?: string;
@@ -44,9 +44,10 @@ export function UniversalReviewComponent({
   const [payload, setPayload] = useState<any>(initialPayload || null);
   const [isLoading, setIsLoading] = useState<boolean>(!initialPayload);
   const [isProcessing, setIsProcessingState] = useState<boolean>(false);
-  const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
+  const [activeBlockId, _setActiveBlockId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const { chatHistory, socket } = useOmnibarContext();
 
@@ -63,7 +64,9 @@ export function UniversalReviewComponent({
         const record = data as any;
         if (record && record.id) {
           setActiveReviewId(record.id);
-          if (record.status === "PENDING" && record.parsed_data?.processing) {
+          const pages = record.parsed_data?.pages;
+          const hasParsedPages = Array.isArray(pages) && pages.length > 0;
+          if (record.parsed_data?.processing || !hasParsedPages) {
             setIsProcessingState(true);
             setPayload(null);
           } else {
@@ -111,9 +114,6 @@ export function UniversalReviewComponent({
           setIsProcessingState(false);
           setIsLoading(false);
           setPayload(data.parsedData);
-          setStatusMessage(
-            "Ingestion processing complete — updated via real-time WebSocket!",
-          );
         }
       }
     };
@@ -359,91 +359,185 @@ export function UniversalReviewComponent({
 
   // ── Main Polymorphic Review Interface ──
   return (
-    <Card className="w-full border-zinc-800/80 bg-zinc-950/80 text-zinc-100 shadow-2xl backdrop-blur-xl">
-      <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/80 pb-4">
-        <div>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight text-white">
-            <span>Polymorphic Ingestion Review</span>
-            <Chip
-              selected={true}
-              size="sm"
-              className="font-mono text-[10px] tracking-wider uppercase"
-            >
-              Real Data
-            </Chip>
-          </CardTitle>
-          <p className="mt-0.5 text-xs text-zinc-400">
-            Omnibar Master Controller active • Real-time 3-Way pgvector & USDA
-            Mapping
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/90 p-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="text-xs"
-            >
-              <ChevronLeft className="mr-1 h-3.5 w-3.5" /> Prev
-            </Button>
-            <span className="px-3 font-mono text-xs text-cyan-400">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="text-xs"
-            >
-              Next <ChevronRight className="ml-1 h-3.5 w-3.5" />
-            </Button>
-          </div>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleCommit}
-            disabled={isSubmitting}
-            className="font-bold"
+    <>
+      {/* ── Animated Image Lightbox Modal — rendered outside Card for true viewport centering ── */}
+      <AnimatePresence>
+        {imageModalOpen && currentPData?.imageUrl && (
+          <motion.div
+            key="image-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={() => setImageModalOpen(false)}
           >
-            {isSubmitting ? (
-              "Committing..."
-            ) : (
-              <>
-                <Save className="mr-1.5 h-4 w-4" /> Commit to Postgres & Neo4j
-              </>
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent className="flex flex-col gap-6 p-6">
-        {statusMessage && (
-          <div className="flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3 text-xs text-cyan-300">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" />
-            <span>{statusMessage}</span>
-          </div>
+            <motion.div
+              key="image-modal-panel"
+              initial={{ scale: 0.88, opacity: 0, y: 24 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.88, opacity: 0, y: 24 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              className="relative max-h-[90vh] max-w-5xl overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                aria-label="Close image preview"
+                onClick={() => setImageModalOpen(false)}
+                className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800/80 text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="relative">
+                <img
+                  src={currentPData.imageUrl}
+                  alt={`Document page ${currentPage}`}
+                  className="block max-h-[88vh] w-auto object-contain"
+                />
+                {/* Bounding boxes overlay on modal */}
+                <div className="pointer-events-none absolute inset-0">
+                  {currentPData?.blocks?.map((box: any) => {
+                    if (!box.bbox) return null;
+                    const [ymin, xmin, ymax, xmax] = box.bbox;
+                    const isActive = box.id === activeBlockId;
+                    const colorClass =
+                      box.type === "RECIPE"
+                        ? "border-amber-400/80 bg-amber-400/10"
+                        : box.type === "INVOICE"
+                          ? "border-blue-400/80 bg-blue-400/10"
+                          : "border-emerald-400/80 bg-emerald-400/10";
+                    return (
+                      <div
+                        key={box.id}
+                        style={{
+                          top: `${ymin / 10}%`,
+                          left: `${xmin / 10}%`,
+                          width: `${(xmax - xmin) / 10}%`,
+                          height: `${(ymax - ymin) / 10}%`,
+                        }}
+                        className={`absolute rounded border-2 transition-all ${colorClass} ${
+                          isActive
+                            ? "z-20 ring-2 ring-white"
+                            : "z-10 opacity-75"
+                        }`}
+                      >
+                        <span className="absolute -top-5 left-0 rounded border border-zinc-800 bg-zinc-950 px-1.5 py-0.5 text-[9px] font-bold uppercase text-zinc-100">
+                          {box.type}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Split View Canvas & Block Inspector */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <ReviewDocumentCanvas
-              pageNumber={currentPage}
-              totalPages={totalPages}
-              imageUrl={currentPData?.imageUrl}
-              boxes={currentPData?.blocks}
-              activeBlockId={activeBlockId}
-              onSelectBlock={(id) => setActiveBlockId(id)}
-            />
+      <Card className="w-full border-zinc-800/80 bg-zinc-950/80 text-zinc-100 shadow-2xl backdrop-blur-xl">
+        {/* ── Appbar: thumbnail + title + pagination + save ── */}
+        <CardHeader className="flex items-center gap-3 border-b border-zinc-800/60 pb-3">
+          {/* Thumbnail — click to expand */}
+          {currentPData?.imageUrl && (
+            <button
+              type="button"
+              aria-label="View document page full size"
+              onClick={() => setImageModalOpen(true)}
+              className="group relative h-10 w-7 shrink-0 overflow-hidden rounded border border-zinc-700 bg-zinc-900 transition-all hover:border-zinc-500"
+            >
+              <img
+                src={currentPData.imageUrl}
+                alt={`Page ${currentPage} thumbnail`}
+                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+              />
+              <div className="pointer-events-none absolute inset-0">
+                {currentPData?.blocks?.map((box: any) => {
+                  if (!box.bbox) return null;
+                  const [ymin, xmin, ymax, xmax] = box.bbox;
+                  const colorClass =
+                    box.type === "RECIPE"
+                      ? "border-amber-400"
+                      : box.type === "INVOICE"
+                        ? "border-blue-400"
+                        : "border-emerald-400";
+                  return (
+                    <div
+                      key={box.id}
+                      style={{
+                        top: `${ymin / 10}%`,
+                        left: `${xmin / 10}%`,
+                        width: `${(xmax - xmin) / 10}%`,
+                        height: `${(ymax - ymin) / 10}%`,
+                      }}
+                      className={`absolute border ${colorClass} opacity-70`}
+                    />
+                  );
+                })}
+              </div>
+            </button>
+          )}
+
+          {/* Title */}
+          <CardTitle className="flex-1 text-base font-semibold text-white">
+            Review
+          </CardTitle>
+
+          {/* Pagination + Save */}
+          <div className="flex items-center gap-2">
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/80 p-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="h-7 px-2 text-xs"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                <span className="min-w-[3rem] text-center font-mono text-xs text-zinc-400">
+                  {currentPage}/{totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="h-7 px-2 text-xs"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleCommit}
+              disabled={isSubmitting}
+              className="h-8 font-semibold"
+            >
+              {isSubmitting ? (
+                "Saving…"
+              ) : (
+                <>
+                  <Save className="mr-1.5 h-3.5 w-3.5" /> Save
+                </>
+              )}
+            </Button>
           </div>
+        </CardHeader>
 
-          <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto pr-1 lg:col-span-7">
-            {currentPData?.blocks?.map((block: any) => {
+        <CardContent className="flex flex-col gap-0 divide-y divide-zinc-800/50 p-0">
+          {statusMessage && (
+            <div className="flex items-center gap-2 px-5 py-3 text-xs text-cyan-400">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              <span>{statusMessage}</span>
+            </div>
+          )}
+
+          {currentPData?.blocks?.map((block: any) => {
+            const inner = (() => {
               if (block.type === "PROSE") {
                 return (
                   <ReviewProseBlock
@@ -508,10 +602,16 @@ export function UniversalReviewComponent({
                 );
               }
               return null;
-            })}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+            })();
+
+            return inner ? (
+              <div key={block.id} className="px-5 py-4">
+                {inner}
+              </div>
+            ) : null;
+          })}
+        </CardContent>
+      </Card>
+    </>
   );
 }
