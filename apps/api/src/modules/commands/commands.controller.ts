@@ -43,10 +43,13 @@ export class CommandsController {
   async listConversations(@Req() req: any): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
       const userId = req.user?.id;
+      const orgId =
+        req.user?.user_metadata?.organization_id ||
+        req.user?.app_metadata?.organization_id;
       if (!userId) {
         throw new Error("Authenticated user has no id");
       }
-      return this.commandsService.listConversationsForUser(userId);
+      return this.commandsService.listConversationsForUser(userId, orgId);
     });
   }
 

@@ -30,26 +30,18 @@ export default async function HomePage({
 
   const derivedPrompt = resolvedParams.prompt || sharePrompt || undefined;
 
-  if (resolvedParams?.chat) {
-    return (
-      <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden">
-        {/* Conversation history sidebar */}
-        <ConversationHistoryContainer activeId={resolvedParams.chat} />
-
-        {/* Main chat column */}
-        <main className="flex h-full flex-1 flex-col">
-          <AnswerView
-            initialQuery={derivedPrompt}
-            initialReviewId={resolvedParams.chat}
-          />
-        </main>
-      </div>
-    );
-  }
-
-  // If share-target arrives without a chat ID, render the omnibar empty page
-  // The OmniBarProvider will auto-seed the input from the prompt via context
   return (
-    <div className="pointer-events-none flex min-h-[calc(100vh-64px)] w-full items-center justify-center" />
+    <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden">
+      {/* Conversation history sidebar */}
+      <ConversationHistoryContainer activeId={resolvedParams?.chat} />
+
+      {/* Main chat column */}
+      <main className="flex h-full flex-1 flex-col overflow-hidden">
+        <AnswerView
+          initialQuery={derivedPrompt}
+          initialReviewId={resolvedParams?.chat}
+        />
+      </main>
+    </div>
   );
 }

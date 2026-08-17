@@ -79,7 +79,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       return (
         <MotionSlot
-          ref={ref as any}
+          ref={ref as never}
           whileHover={{ y: -1 }}
           whileTap={{ scale: 0.975, y: 0 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -89,7 +89,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             className,
           )}
           onClick={onClick}
-          {...(props as any)}
+          {...(props as Record<string, unknown>)}
         >
           {children}
         </MotionSlot>

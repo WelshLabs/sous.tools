@@ -9,7 +9,6 @@ import {
   UnauthorizedException,
   BadRequestException,
   Query,
-  UseGuards,
 } from "@nestjs/common";
 import type { Response, Request } from "express";
 import {
@@ -24,7 +23,6 @@ import {
   ForgotPasswordSchema,
 } from "@soustools/api-types";
 import { supabase } from "../../lib/supabase";
-import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
 import { serverConfig as config } from "@soustools/config/server";
 
 const ACCESS_TOKEN_COOKIE = "sb-access-token";
@@ -41,17 +39,26 @@ const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
  * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
  * In development we omit `domain` so the cookie is scoped to localhost.
  */
-const getCookieOptions = () => {
+const getCookieOptions = (req?: Request) => {
   const isSecureEnv =
     config.IS_PRODUCTION ||
     config.IS_SECURE_ENV ||
     config.NODE_ENV === "staging";
+
+  let domain: string | undefined = undefined;
+  if (isSecureEnv && req) {
+    const host = req.get("host") || req.hostname || "";
+    if (host.includes("sous.tools")) {
+      domain = ".sous.tools";
+    }
+  }
+
   return {
     httpOnly: true,
     secure: isSecureEnv,
     sameSite: "lax" as const,
     path: "/",
-    ...(isSecureEnv ? { domain: ".sous.tools" } : {}),
+    ...(domain ? { domain } : {}),
   };
 };
 
@@ -59,8 +66,9 @@ const getCookieOptions = () => {
 const setSessionCookies = (
   res: Response,
   session: { access_token: string; refresh_token: string; expires_in: number },
+  req?: Request,
 ) => {
-  const options = getCookieOptions();
+  const options = getCookieOptions(req);
   res.cookie(ACCESS_TOKEN_COOKIE, session.access_token, {
     ...options,
     maxAge: session.expires_in * 1000,
@@ -102,6 +110,7 @@ export class AuthController {
   })
   async login(
     @Body() body: Record<string, unknown>,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<{ user: Record<string, unknown> }>> {
     const parsed = LoginSchema.safeParse(body);
@@ -120,7 +129,7 @@ export class AuthController {
       throw new UnauthorizedException("Invalid email or password");
     }
 
-    setSessionCookies(res, data.session);
+    setSessionCookies(res, data.session, req);
 
     return {
       success: true,
@@ -155,7 +164,7 @@ export class AuthController {
       throw new UnauthorizedException("Session refresh failed");
     }
 
-    setSessionCookies(res, data.session);
+    setSessionCookies(res, data.session, req);
 
     return {
       success: true,
@@ -175,8 +184,6 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<null>> {
-    // Attempt to invalidate the Supabase session server-side using the
-    // access token stored in the HttpOnly cookie.
     const accessToken = (req.cookies as Record<string, string>)?.[
       ACCESS_TOKEN_COOKIE
     ];
@@ -184,14 +191,11 @@ export class AuthController {
       try {
         await supabase.auth.admin.signOut(accessToken);
       } catch {
-        // Non-fatal: the tokens may already be expired. We still clear the cookies.
+        // Non-fatal
       }
     }
 
-    // IMPORTANT: clearCookie MUST receive the exact same domain, path, secure,
-    // and sameSite attributes as the original Set-Cookie call. If any attribute
-    // differs, the browser will not find a matching cookie to delete.
-    const options = getCookieOptions();
+    const options = getCookieOptions(req);
     res.clearCookie(ACCESS_TOKEN_COOKIE, options);
     res.clearCookie(REFRESH_TOKEN_COOKIE, options);
 
@@ -239,7 +243,6 @@ export class AuthController {
   }
 
   @Post("ws-ticket")
-  @UseGuards(SupabaseAuthGuard)
   @HttpCode(200)
   @NestjsApiResponse({
     status: 200,
@@ -344,6 +347,7 @@ export class AuthController {
   async oauthCallback(
     @Query("code") code: string,
     @Query("error") oauthError: string,
+    @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
     // Surface provider-level errors back to the login page.
@@ -365,7 +369,7 @@ export class AuthController {
       return;
     }
 
-    setSessionCookies(res, data.session);
+    setSessionCookies(res, data.session, req);
 
     // Redirect the browser to the main app — the HttpOnly session cookies are
     // now set and the Next.js app will detect the active session on the next

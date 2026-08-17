@@ -19,16 +19,21 @@ export class ChatPersistenceService {
     userId: string | undefined,
     msg: OmniMessage,
   ): Promise<void> {
-    if (!conversationId || !orgId) {
+    if (!conversationId) {
       this.logger.warn(
-        `appendMessage called without conversationId or orgId (conversationId=${conversationId}, orgId=${orgId}); skipping write.`,
+        "appendMessage called without conversationId; skipping write.",
       );
       return;
     }
 
+    const effectiveOrgId =
+      orgId && orgId !== "unknown"
+        ? orgId
+        : "d0000000-0000-0000-0000-000000000000";
+
     const { data: existingConv } = await supabase
       .from("chat_conversations")
-      .select("id")
+      .select("id, user_id, title")
       .eq("id", conversationId)
       .maybeSingle();
 
@@ -39,14 +44,27 @@ export class ChatPersistenceService {
           : "New Conversation";
       await supabase.from("chat_conversations").insert({
         id: conversationId,
-        organization_id: orgId,
+        organization_id: effectiveOrgId,
         user_id: userId || null,
         title,
       });
     } else {
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (userId && !existingConv.user_id) {
+        updates.user_id = userId;
+      }
+      if (
+        (!existingConv.title || existingConv.title === "New Conversation") &&
+        msg.role === "user" &&
+        msg.content
+      ) {
+        updates.title = msg.content.slice(0, 80);
+      }
       await supabase
         .from("chat_conversations")
-        .update({ updated_at: new Date().toISOString() })
+        .update(updates)
         .eq("id", conversationId);
     }
 

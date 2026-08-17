@@ -42,7 +42,7 @@ export function AnswerViewContainer({
     api
       .GET("/dashboard/stats" as never, {
         params: { query: { orgId: "d0000000-0000-0000-0000-000000000000" } },
-      } as any)
+      })
       .then(
         (res: {
           data?: {
@@ -69,7 +69,7 @@ export function AnswerViewContainer({
       return;
     }
     api
-      .GET(`/commands/conversations/${initialReviewId}/messages` as never, {} as any)
+      .GET(`/commands/conversations/${initialReviewId}/messages` as never, {})
       .then((res: { data?: { data?: OmniMessage[] } | OmniMessage[] }) => {
         const msgs = (
           res.data && "data" in res.data ? res.data.data : res.data
@@ -108,7 +108,7 @@ export function AnswerViewContainer({
       api
         .POST("/commands/execute" as never, {
           body: { command: initialQuery, history: [...chatHistory, newMsg] },
-        } as any)
+        })
         .then((res: { data?: { response?: string } }) => {
           setIsProcessing(false);
           if (res.data?.response) {
@@ -129,14 +129,23 @@ export function AnswerViewContainer({
           setIsProcessing(false);
         });
     }
-  }, [initialQuery, hasFetchedHistory]);
+  }, [
+    initialQuery,
+    hasFetchedHistory,
+    chatHistory,
+    initialReviewId,
+    setChatHistory,
+    setIsProcessing,
+    socket,
+  ]);
 
   useEffect(() => {
     const main = document.getElementById("workspace-main");
     if (main) {
-      setTimeout(() => {
-        main.scrollTo({ top: main.scrollHeight, behavior: "smooth" });
-      }, 50);
+      setTimeout(
+        () => main.scrollTo({ top: main.scrollHeight, behavior: "smooth" }),
+        50,
+      );
     }
   }, [chatHistory.length, isProcessing]);
 

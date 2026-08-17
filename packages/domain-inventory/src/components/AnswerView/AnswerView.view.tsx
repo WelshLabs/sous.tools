@@ -26,7 +26,8 @@ export function AnswerViewView({
 }: AnswerViewViewProps) {
   // Derive the latest render_component directive (for artifact column)
   const renderDirectiveMessage =
-    chatHistory.findLast((m) => m.role === ("render_component" as any)) ?? null;
+    chatHistory.findLast((m) => (m.role as string) === "render_component") ??
+    null;
 
   const hasArtifact = !!renderDirectiveMessage || !!track2Type;
 

@@ -422,7 +422,7 @@ export function UniversalReviewComponent({
                             : "z-10 opacity-75"
                         }`}
                       >
-                        <span className="absolute -top-5 left-0 rounded border border-zinc-800 bg-zinc-950 px-1.5 py-0.5 text-[9px] font-bold uppercase text-zinc-100">
+                        <span className="absolute -top-5 left-0 rounded border border-zinc-800 bg-zinc-950 px-1.5 py-0.5 text-[9px] font-bold text-zinc-100 uppercase">
                           {box.type}
                         </span>
                       </div>
@@ -503,7 +503,9 @@ export function UniversalReviewComponent({
                   variant="outline"
                   size="sm"
                   disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   className="h-7 px-2 text-xs"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />

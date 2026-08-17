@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@soustools/api-client";
+import { useOmnibarContext } from "@soustools/design-system";
 import {
   ConversationHistoryView,
   type ConversationItem,
@@ -17,11 +17,11 @@ export function ConversationHistoryContainer({
   activeId,
 }: ConversationHistoryContainerProps) {
   const router = useRouter();
+  const { socket } = useOmnibarContext();
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setIsLoading(true);
+  const fetchConversations = useCallback(() => {
     api
       .GET("/commands/conversations" as any, {})
       .then(({ data }: any) => {
@@ -39,6 +39,23 @@ export function ConversationHistoryContainer({
       )
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations, activeId]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleUpdate = () => {
+      fetchConversations();
+    };
+    socket.on("chat_message", handleUpdate);
+    socket.on("ingestion:updated", handleUpdate);
+    return () => {
+      socket.off("chat_message", handleUpdate);
+      socket.off("ingestion:updated", handleUpdate);
+    };
+  }, [socket, fetchConversations]);
 
   const handleSelect = (id: string) => {
     router.push(`/home?chat=${id}`);

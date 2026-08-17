@@ -61,30 +61,28 @@ async function bootstrap(): Promise<void> {
   // Use global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Allow credentials for cookie-based auth.
-  // In production we restrict origins to known frontends; in dev we reflect
-  // the request origin so any localhost port works.
-  const allowedOrigins = config.IS_PRODUCTION
-    ? [
-        "https://sous.tools",
-        "https://app.sous.tools",
-        "https://pos.sous.tools",
-        "https://tv.sous.tools",
-        "https://setup.sous.tools",
-        "https://editor.sous.tools",
-        "https://dev.sous.tools",
-        "https://dev-api.sous.tools",
-        "https://dev-pos.sous.tools",
-        "https://dev-setup.sous.tools",
-        "android-app://com.sous.wearos",
-        "app://com.sous.wearos",
-      ]
-    : (
-        origin: string | undefined,
-        callback: (err: Error | null, allow?: any) => void,
-      ) => {
-        callback(null, origin || "*");
-      };
+  const allowedOrigins = (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean | string) => void,
+  ) => {
+    if (!origin) return callback(null, true);
+    if (!config.IS_PRODUCTION) return callback(null, origin);
+    try {
+      const url = new URL(origin);
+      if (
+        url.hostname === "sous.tools" ||
+        url.hostname.endsWith(".sous.tools") ||
+        url.hostname.endsWith(".vercel.app") ||
+        origin === "android-app://com.sous.wearos" ||
+        origin === "app://com.sous.wearos"
+      ) {
+        return callback(null, origin);
+      }
+    } catch {
+      // invalid url
+    }
+    return callback(new Error("CORS origin not allowed"), false);
+  };
 
   app.enableCors({
     origin: allowedOrigins,

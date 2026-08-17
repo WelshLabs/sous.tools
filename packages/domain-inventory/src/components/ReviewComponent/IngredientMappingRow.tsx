@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -59,9 +60,7 @@ function IngredientCombobox({
   const selectedName = matches.find((m) => m.id === value)?.name;
 
   const filtered = query.trim()
-    ? matches.filter((m) =>
-        m.name.toLowerCase().includes(query.toLowerCase()),
-      )
+    ? matches.filter((m) => m.name.toLowerCase().includes(query.toLowerCase()))
     : matches;
 
   // Close on outside click
@@ -111,11 +110,10 @@ function IngredientCombobox({
         className="flex w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1.5 text-left text-xs transition hover:border-zinc-600"
       >
         <span
-          className={
-            selectedName ? "text-zinc-200" : "text-zinc-600 italic"
-          }
+          className={selectedName ? "text-zinc-200" : "text-zinc-600 italic"}
         >
-          {selectedName ?? (guessName ? `Suggested: ${guessName}` : "Select ingredient")}
+          {selectedName ??
+            (guessName ? `Suggested: ${guessName}` : "Select ingredient")}
         </span>
         <ChevronDown className="ml-1 h-3 w-3 shrink-0 text-zinc-600" />
       </button>
@@ -146,13 +144,15 @@ function IngredientCombobox({
           {/* AI suggestion chip */}
           {guessName && !value && (
             <div className="border-b border-zinc-800 px-3 py-1.5">
-              <span className="text-[10px] text-zinc-600 uppercase tracking-wide">AI suggestion</span>
+              <span className="text-[10px] tracking-wide text-zinc-600 uppercase">
+                AI suggestion
+              </span>
               <button
                 type="button"
                 onClick={() => {
                   // try to match against existing, else prompt create
-                  const match = matches.find((m) =>
-                    m.name.toLowerCase() === guessName.toLowerCase(),
+                  const match = matches.find(
+                    (m) => m.name.toLowerCase() === guessName.toLowerCase(),
                   );
                   if (match) {
                     handleSelect(match.id);
@@ -162,7 +162,7 @@ function IngredientCombobox({
                 }}
                 className="mt-0.5 flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-xs text-zinc-300 hover:bg-zinc-800"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0" />
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
                 {guessName}
               </button>
             </div>
@@ -176,13 +176,11 @@ function IngredientCombobox({
                   type="button"
                   onClick={() => handleSelect(m.id)}
                   className={`flex w-full items-center px-3 py-2 text-left text-xs transition hover:bg-zinc-800 ${
-                    m.id === value
-                      ? "text-white font-medium"
-                      : "text-zinc-300"
+                    m.id === value ? "font-medium text-white" : "text-zinc-300"
                   }`}
                 >
                   {m.id === value && (
-                    <span className="mr-2 h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="mr-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
                   )}
                   {m.name}
                 </button>
@@ -250,9 +248,12 @@ function UsdaSearchField({
     if (!q) return;
     setSearching(true);
     try {
-      const { data } = await api.GET("/nutrition/usda/search" as never, {
-        params: { query: { query: q } },
-      } as any);
+      const { data } = await api.GET(
+        "/nutrition/usda/search" as never,
+        {
+          params: { query: { query: q } },
+        } as any,
+      );
       const results: UsdaMatch[] = (data as any)?.data
         ? [
             {
@@ -279,7 +280,7 @@ function UsdaSearchField({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           placeholder={`Search USDA… (e.g. "${initialQuery}")`}
-          className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 outline-none transition focus:border-zinc-600"
+          className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 transition outline-none focus:border-zinc-600"
         />
         <button
           type="button"
@@ -300,7 +301,7 @@ function UsdaSearchField({
       <select
         value={value || ""}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5 text-xs text-zinc-200 outline-none transition focus:border-zinc-600"
+        className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 py-1.5 text-xs text-zinc-200 transition outline-none focus:border-zinc-600"
       >
         <option value="">Select USDA</option>
         {localMatches.map((u) => (
@@ -356,13 +357,13 @@ export function IngredientMappingRow({
     <div className="flex flex-col gap-2.5 py-3">
       {/* Name + quantity */}
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium text-zinc-100 leading-snug">
+        <span className="text-sm leading-snug font-medium text-zinc-100">
           {rawName}
         </span>
         <div className="flex shrink-0 items-center gap-2">
           {metaRight}
           {(quantity || unit) && (
-            <span className="text-xs tabular-nums text-zinc-500">
+            <span className="text-xs text-zinc-500 tabular-nums">
               {quantity} {unit}
             </span>
           )}

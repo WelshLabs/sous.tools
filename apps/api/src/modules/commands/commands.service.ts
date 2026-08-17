@@ -800,11 +800,21 @@ export class CommandsService {
 
   async listConversationsForUser(
     userId: string,
+    orgId?: string,
   ): Promise<Array<{ id: string; title: string | null; updated_at: string }>> {
-    const { data, error } = await supabase
+    let query = supabase
       .from("chat_conversations")
-      .select("id, title, updated_at")
-      .eq("user_id", userId)
+      .select("id, title, updated_at");
+
+    if (orgId && orgId !== "d0000000-0000-0000-0000-000000000000") {
+      query = query.or(
+        `user_id.eq.${userId},and(user_id.is.null,organization_id.eq.${orgId})`,
+      );
+    } else {
+      query = query.or(`user_id.eq.${userId},user_id.is.null`);
+    }
+
+    const { data, error } = await query
       .order("updated_at", { ascending: false })
       .limit(50);
 
