@@ -39,23 +39,16 @@ export function AnswerViewContainer({
   >([]);
 
   useEffect(() => {
-    api
-      .GET("/dashboard/stats" as never, {
+    (api as any)
+      .GET("/dashboard/stats", {
         params: { query: { orgId: "d0000000-0000-0000-0000-000000000000" } },
       })
-      .then(
-        (res: {
-          data?: {
-            revenue?: Array<{ name: string; value: number }>;
-            ticketTimes?: Array<{ time: string; minutes: number }>;
-          };
-        }) => {
-          if (Array.isArray(res.data?.revenue))
-            setRealRevenueData(res.data.revenue);
-          if (Array.isArray(res.data?.ticketTimes))
-            setRealTicketTimeData(res.data.ticketTimes);
-        },
-      )
+      .then((res: any) => {
+        if (Array.isArray(res.data?.revenue))
+          setRealRevenueData(res.data.revenue);
+        if (Array.isArray(res.data?.ticketTimes))
+          setRealTicketTimeData(res.data.ticketTimes);
+      })
       .catch((err: unknown) =>
         console.error("Failed to fetch dashboard stats:", err),
       );
@@ -68,9 +61,9 @@ export function AnswerViewContainer({
       setHasFetchedHistory(true);
       return;
     }
-    api
-      .GET(`/commands/conversations/${initialReviewId}/messages` as never, {})
-      .then((res: { data?: { data?: OmniMessage[] } | OmniMessage[] }) => {
+    (api as any)
+      .GET(`/commands/conversations/${initialReviewId}/messages`, {})
+      .then((res: any) => {
         const msgs = (
           res.data && "data" in res.data ? res.data.data : res.data
         ) as OmniMessage[] | undefined;
@@ -105,11 +98,11 @@ export function AnswerViewContainer({
         context: { conversationId: initialReviewId },
       });
     } else {
-      api
-        .POST("/commands/execute" as never, {
+      (api as any)
+        .POST("/commands/execute", {
           body: { command: initialQuery, history: [...chatHistory, newMsg] },
         })
-        .then((res: { data?: { response?: string } }) => {
+        .then((res: any) => {
           setIsProcessing(false);
           if (res.data?.response) {
             setChatHistory([
