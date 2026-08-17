@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/cn";
 
 const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 select-none",
+  "text-foreground text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 select-none",
 );
 
 export interface LabelProps
@@ -23,16 +23,11 @@ export const Label = React.forwardRef<
   <LabelPrimitive.Root
     ref={ref}
     className={cn(labelVariants(), className)}
-    style={{ color: "var(--color-foreground)" }}
     {...props}
   >
     {children}
     {required && (
-      <span
-        aria-hidden="true"
-        className="text-destructive ml-0.5"
-        style={{ color: "var(--color-destructive, var(--destructive))" }}
-      >
+      <span aria-hidden="true" className="text-destructive ml-0.5">
         *
       </span>
     )}

@@ -8,7 +8,7 @@ import { Check } from "lucide-react";
 import { cn } from "../../utils/cn";
 
 const buttonVariants = cva(
-  "ds-living-control ds-action-button ds-focus-ring group relative inline-flex min-h-10 select-none items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] border font-medium tracking-tight outline-none disabled:pointer-events-none disabled:opacity-45",
+  "ds-living-control ds-focus-ring group relative inline-flex min-h-10 select-none items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] border font-medium tracking-tight outline-none disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       variant: {
@@ -54,6 +54,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const tone = variant ?? "primary";
+    // The #1 traveling glow aura sits *behind* the button body, so it can only
+    // go on the fully opaque hero variants (gradient/primary). On translucent
+    // variants (secondary/outline/glass/ghost/destructive) it bleeds through
+    // and washes out the label, so those keep the readable box-shadow ring on
+    // hover instead (defined per-variant above).
+    const auraClass = cn(
+      (tone === "gradient" || tone === "primary") && "ds-action-button",
+    );
     // #12 "Button Concept" — destructive click plays a progress sweep that
     // resolves into a success check before returning to rest.
     const [phase, setPhase] = React.useState<"idle" | "working" | "done">(
@@ -75,7 +83,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           whileHover={{ y: -1 }}
           whileTap={{ scale: 0.975, y: 0 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          className={cn(buttonVariants({ variant: tone, size }), className)}
+          className={cn(
+            buttonVariants({ variant: tone, size }),
+            auraClass,
+            className,
+          )}
           onClick={onClick}
           {...(props as any)}
         >
@@ -106,7 +118,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
         className={cn(
           buttonVariants({ variant: tone, size }),
-          tone === "destructive" && "ds-action-danger",
+          auraClass,
           className,
         )}
         onClick={handleClick}

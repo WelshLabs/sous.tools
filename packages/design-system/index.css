@@ -529,17 +529,6 @@
     animation: ds-glow-travel 6s linear infinite;
   }
 
-  /* Danger-toned aura for destructive actions. */
-  .ds-action-danger::before {
-    background: linear-gradient(
-      90deg,
-      var(--destructive),
-      color-mix(in srgb, var(--destructive) 60%, #ff8a5c),
-      var(--destructive)
-    );
-    background-size: 300% 100%;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .ds-living-control,
     .ds-living-control::after,
