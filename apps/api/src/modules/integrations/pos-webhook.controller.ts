@@ -90,68 +90,47 @@ export class PosWebhookController {
       return { status: "ignored" };
     }
 
-    // Resolve organization associated with this Provider Merchant.
-    // Try canonical metadata->>'merchantId' first, then fall back to
-    // settings->>'merchant_id' for rows created before the metadata fix.
+    // Resolve the organization that owns this merchant ID.
+    // All current rows store merchantId in metadata (populated by the OAuth
+    // callback). The `settings` column does NOT exist in the integrations
+    // schema — the previous fallback to settings->>'merchant_id' was dead code
+    // that silently swallowed errors. Migration 00006 backfills any legacy rows.
     const providerKey = provider.toUpperCase();
 
     type IntegrationRow = {
       organization_id: string;
-      settings: Record<string, unknown>;
       metadata: Record<string, unknown>;
     };
 
-    let integration: IntegrationRow | null = null;
-
-    const { data: byMetadata, error: metaErr } = await supabase
+    const { data: integration, error: integrationErr } = await supabase
       .from("integrations")
-      .select("organization_id, settings, metadata")
+      .select("organization_id, metadata")
       .eq("provider", providerKey)
       .eq("metadata->>merchantId", normalized.merchantId)
-      .maybeSingle();
+      .maybeSingle<IntegrationRow>();
 
-    if (!metaErr && byMetadata) {
-      integration = byMetadata as IntegrationRow;
-    } else {
-      // Fallback: legacy rows may have stored merchant_id in settings only
-      const { data: bySettings, error: settingsErr } = await supabase
-        .from("integrations")
-        .select("organization_id, settings, metadata")
-        .eq("provider", providerKey)
-        .eq("settings->>merchant_id", normalized.merchantId)
-        .maybeSingle();
-
-      if (!settingsErr && bySettings) {
-        integration = bySettings as IntegrationRow;
-        // Backfill metadata.merchantId so future lookups hit the fast path
-        await supabase
-          .from("integrations")
-          .update({
-            metadata: {
-              ...(bySettings.metadata as Record<string, unknown>),
-              merchantId: normalized.merchantId,
-            },
-          })
-          .eq("organization_id", bySettings.organization_id)
-          .eq("provider", providerKey);
-        this.logger.log(
-          `Backfilled metadata.merchantId for org ${bySettings.organization_id}`,
-        );
-      }
+    if (integrationErr) {
+      this.logger.error(
+        `DB error looking up ${provider} integration for merchant ${normalized.merchantId}: ${integrationErr.message}`,
+      );
     }
 
     if (!integration) {
       this.logger.warn(
-        `No integration found for ${provider} merchant ID ${normalized.merchantId}. Returning 200 to satisfy provider verification.`,
+        `No integration found for ${provider} merchant ID ${normalized.merchantId}. ` +
+          `If this merchant has connected via OAuth, re-authenticate to refresh the metadata. ` +
+          `Returning 200 to satisfy provider verification.`,
       );
       return { status: "ignored" };
     }
 
     const orgId = integration.organization_id;
-    const settings = (integration.settings || {}) as Record<string, unknown>;
+    const metadata = (integration.metadata || {}) as Record<string, unknown>;
 
-    // Verify signature via driver interface
-    const signatureKey = settings.webhook_signature_key as string | undefined;
+    // Verify signature via driver interface.
+    // webhook_signature_key can be optionally stored in metadata; otherwise
+    // the driver falls back to the global SQUARE_WEBHOOK_SIGNATURE_KEY env var.
+    const signatureKey = metadata.webhook_signature_key as string | undefined;
     const isValidSignature = driver.verifyWebhookSignature(
       signature,
       rawBody,
