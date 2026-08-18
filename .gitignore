@@ -108,3 +108,4 @@ apps/web/public/sw.js.map
 kanban-orchestrator.log
 
 .assets/
+.aider*
