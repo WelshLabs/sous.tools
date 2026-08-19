@@ -105,14 +105,6 @@ export default async function DashboardPage() {
   return (
     <div className="animate-in fade-in mx-auto w-full max-w-7xl space-y-8 p-6 duration-500 md:p-8">
       <LiveRefresher />
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight">
-          Kitchen Dashboard
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Real-time metrics and operations overview.
-        </p>
-      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
