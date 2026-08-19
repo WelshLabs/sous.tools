@@ -1,171 +1,277 @@
-# Architecture Decision Record (ADR) &amp; Master Execution Plan
+# SOFTWARE ARCHITECTURE DOCUMENT (SAD) &amp; EPIC ROADMAP
 
-## ADR 001: Enterprise API Refactor, Code-First GraphQL, and Zero-Touch Ingestion
+\*\*Project:\*\* [sous.tools](http://sous.tools) Modular Monolith &amp; Autonomous Culinary OS
 
 \*\*Date:\*\* August 2026
 
-\*\*Status:\*\* Accepted
-
-### 1. Context &amp; Problem Statement
-
-The NestJS API requires an enterprise-grade overhaul to support a scalable, AI-native Culinary Operating System. Current issues include procedural "God Classes", fragile asynchronous tasks, isolated vector memories, and fragmented transport layers. Furthermore, the system must support operational realities: offline-first kitchen environments (mesh networks/IoT relays), concurrent multi-user editing, strict role-based access, and financial auditability (soft deletes, business days).
-
-### 2. Architectural Decisions
-
-#### 2.1 Transport, GraphQL, &amp; Offline-First URQL
-
-- \*\*Code-First GraphQL:\*\* Migrate data operations to `@nestjs/graphql` with in-memory schema generation.
-
-- \*\*Offline Resilience:\*\* `api-client` will export a URQL client utilizing `@urql/exchange-graphcache` for optimistic UI updates and offline mutation queuing. If the kitchen mesh loses internet, the UI remains functional and syncs when connectivity restores. `@urql/exchange-auth` will seamlessly handle JWT refreshes.
-
-#### 2.2 Security, Multi-Tenancy, &amp; Enterprise Data Integrity
-
-- \*\*Request-Scoped RLS:\*\* Implement `nestjs-cls` to pass `orgId` through the execution context, allowing Singleton database providers to enforce Postgres `set_config` RLS without performance penalties.
-
-- \*\*Optimistic Concurrency Control (OCC):\*\* Critical tables (`recipes`, `master_items`) will use a `version` integer. GraphQL mutations must check the version to prevent double-edit race conditions.
-
-- \*\*Financial Auditability:\*\* Hard deletes are globally banned. All entities use `deleted_at`. Reporting queries must respect a tenant-configured "Business Day" rollover time (e.g., 4:00 AM) rather than UTC calendar days.
-
-- \*\*Role-Based Access Control (RBAC):\*\* Implement `@Roles()` decorators and a `RolesGuard` to restrict GraphQL mutations (e.g., only `exec_chef` can edit a `LOCKED` recipe).
-
-#### 2.3 The 7-Step Ingestion Waterfall
-
-- \*\*Pipeline:\*\* 1) Ollama Triage, 2) Gemini Flash Schema Extraction, 3) Ollama Critic Debate, 4) pgvector Tenant Alias Memory (auto-commit if &gt;= 0.95), 5) USDA Culinary Normalization, 6) `RecipeMathService` (Baker's Percentages &amp; Densities), 7) Event-Driven Neo4j/Qdrant Sync.
-
-- \*\*Idempotency:\*\* Hash `vendor_id + invoice_id + date` prior to database insertion.
-
-#### 2.4 IoT Edge Node (Raspberry Pi)
-
-- \*\*Local Relay Architecture:\*\* The cloud API communicates with a lightweight Node.js/Go daemon running on the local RPi via WebSockets. The Pi handles mDNS discovery for local subnet devices and translates cloud commands into raw ESC/POS bytes for thermal printers, keeping complex logic out of the local network.
-
-#### 2.5 Infrastructure &amp; CLI
-
-- \*\*CLI Commands:\*\* `apps/cli` (using `nest-commander`) replaces rogue bash scripts.
-
-- \*\*CI/CD:\*\* Enforce Infisical CLI globally. Support Vercel ephemeral environments for PR testing against temporary API containers on the ARM64 server.
+\*\*Target Architecture:\*\* NestJS v11+, Next.js (App Router), Code-First GraphQL, URQL, PostgreSQL, Neo4j, Qdrant.
 
 ---
 
-# [AGENTS.md](http://AGENTS.md) (System Rules - Append to existing)
+## PART 1: CORE ARCHITECTURAL TENETS &amp; AGENT RULES
 
-## 1. Domain-Driven Design &amp; Enterprise Standards
+All AI Agents executing tasks on this repository MUST adhere to the following non-negotiable constraints:
 
-- \*\*Strict Boundaries:\*\* UI apps and domain packages are forbidden from importing database clients.
+### 1.1 Transport &amp; API Surface
 
-- \*\*No Global Database Clients:\*\* Never use `import { supabase }`. Use CLS-injected Singleton providers to enforce RLS.
+- \*\*Code-First GraphQL:\*\* The API is strictly Code-First GraphQL (`@nestjs/graphql`). The schema is generated in-memory (`autoSchemaFile: true`) to avoid Docker filesystem lockups.
 
-- \*\*Code-First GraphQL:\*\* The API is Code-First GQL. REST is deprecated except for webhooks, `/health`, and `/v1/auth`.
+- \*\*REST Quarantined:\*\* REST endpoints are banned except for `/health` (Terminus), `/v1/auth` (cookie management), and `/v1/webhooks` (Stripe, Neo4j external triggers).
 
-- \*\*Concurrency &amp; Soft Deletes:\*\* Never execute `DELETE` queries. Update `deleted_at = NOW()`. All update mutations must include and increment a `version` field.
+- \*\*The `api-client` Abstraction:\*\* Frontend applications (Next.js) NEVER write raw `fetch` calls. They import auto-generated React Hooks from `packages/api-client`.
 
-- \*\*Event-Driven Boundaries:\*\* Domains must decouple via `@nestjs/event-emitter`. Do not cross-inject domain services to trigger downstream updates.
+- \*\*Offline-First URQL:\*\* The `api-client` exports a URQL client configured with `@urql/exchange-graphcache`. This provides Optimistic UI updates. If the kitchen loses WiFi, mutations are queued locally and replayed upon reconnection.
 
-## 2. Secrets &amp; Configuration
+- \*\*Auth Resiliency:\*\* URQL uses `@urql/exchange-auth` to automatically intercept 401 Unauthorized responses, pause the GraphQL queues, hit the `/v1/auth/refresh` endpoint, and transparently reconnect WebSockets.
 
-- \*\*Infisical SSOT:\*\* Apps must boot using the official Infisical CLI. `packages/config` purely serves as a Zod validation schema.
+### 1.2 Security, Multi-Tenancy &amp; Data Integrity
 
-- \*\*ESLint `process.env` Ban:\*\* Frontend apps are strictly banned from accessing `process.env`. All config flows through `@soustools/config`.
+- \*\*Request-Scoped RLS via CLS:\*\* DO NOT use NestJS Request-Scoped providers (they destroy performance). Use `nestjs-cls` (Async Local Storage). A middleware extracts the `orgId` from the JWT, attaches it to the CLS context, and Singleton database providers read it to execute Postgres `set_config` Row-Level Security (RLS). Clients NEVER pass `orgId` in GQL variables.
 
-## 3. Data Fetching &amp; Offline-First URQL
+- \*\*Optimistic Concurrency Control (OCC):\*\* Prevent double-edits. Tables like `recipes` and `master_items` have a `version` integer. All GQL mutations must check this version and increment it. Mismatches throw a `ConflictException`.
 
-- \*\*Containers vs Views:\*\* Real-time views MUST use the Container/View pattern with URQL hooks.
+- \*\*Financial Auditability (Soft Deletes &amp; Business Days):\*\* Hard deletes (`DELETE FROM...`) are globally banned. Use `deleted_at`. Reporting analytics must group data by a tenant-configured "Business Day" (e.g., rollover at 4:00 AM), not by UTC calendar days.
 
-- \*\*Graphcache:\*\* Ensure all URQL queries are properly configured for `@urql/exchange-graphcache` to support offline operation.
+- \*\*Role-Based Access Control (RBAC):\*\* Implement a `RolesGuard` and `@Roles()` decorator. Only specific claims (e.g., `exec_chef`) can mutate `LOCKED` recipes or financial data.
 
-## 4. Execution &amp; Resilience
+### 1.3 Infrastructure, Secrets, &amp; CI/CD
 
-- \*\*Async Execution:\*\* Heavy AI tasks MUST NOT block HTTP. Return `202 Accepted`, queue in BullMQ, and stream via Redis PubSub.
+- \*\*Infisical SSOT:\*\* `process.env` is BANNED in frontend apps via ESLint. Apps must boot using `infisical run --env=... -- pnpm start`. Local dev uses `infisical login`; CI/CD and Docker use Infisical Machine Identities (Client ID/Secret).
 
-- \*\*Testing Standard:\*\* Mandate Jest (Unit) and Supertest (E2E). E2E tests MUST programmatically simulate pipelines (e.g., passing mock file buffers).
+- \*\*Vercel Ephemeral Environments:\*\* GitHub Actions must spin up temporary API containers (e.g., `api-pr-42.sous.tools`) on the Oracle ARM64 server when a PR opens, allowing Vercel preview URLs to test schema migrations safely before merge.
+
+- \*\*The `sous` CLI:\*\* `apps/cli` uses `nest-commander`. Commands (e.g., `sous stack logs api`, `sous db:sync-neo4j`) detect execution context (`process.cwd()`, `IS_DOCKER`) to run seamlessly on WSL or inside containers.
 
 ---
 
-# THE 7 MASTER EPICS
+## PART 2: THE 7-STEP ZERO-TOUCH INGESTION WATERFALL
 
-## EPIC 1: Infrastructure, Secrets &amp; NestJS Enterprise Features
+The ingestion pipeline is an autonomous Knowledge Extraction Engine designed to eliminate Human-In-The-Loop (HITL) review through rigorous cross-checking and machine learning.
 
-\*\*Sub-Tasks:\*\*
+### Step 1: Idempotency &amp; Triage
 
-- \[ \] Task 1.1: Restructure `apps/api/src/` into `core/`, `shared/`, and `modules/`. Globally rename `unified-ingestion` to `ingestion`.
+- Compute a SHA-256 hash of the uploaded file buffer.
 
-- \[ \] Task 1.2: Enforce Infisical CLI wrapper across all `package.json` scripts. Add ESLint rules banning `process.env` in frontend apps.
+- Query `ingestion_reviews.document_hash`. If a match exists, return the existing ID and abort (prevents double-billing).
 
-- \[ \] Task 1.3: Implement `nestjs-cls` (Async Local Storage). Build a Singleton Supabase Provider that reads `orgId` from CLS to execute Postgres `set_config` RLS.
+- Route to Ollama (Llama 3 / Phi-3) to classify: `INVOICE`, `RECIPE`, or `TEXTBOOK`.
 
-- \[ \] Task 1.4: Implement `@nestjs/throttler` (Redis-backed), `@nestjs/terminus` (`/health`), and `nestjs-pino`. Enable `@nestjs/devtools-integration`. Update GitHub Actions to support Vercel ephemeral environments.
+### Step 2: Semantic Decomposition (Gemini Flash)
 
-## EPIC 2: Code-First GraphQL, Offline URQL &amp; File Upload Abstraction
+- Prompt Gemini 1.5 Flash with strict TypeScript schemas.
 
-\*\*Sub-Tasks:\*\*
+- \*\*Requirement:\*\* Decompose strings. E.g., "Sysco Full Fat Milk 1 Gal" becomes `{ brand: "Sysco", canonicalName: "Milk, whole", modifier: "Full Fat", packSize: 1, unit: "gallon" }`.
 
-- \[ \] Task 2.1: Configure `@nestjs/graphql` (Code-First, in-memory) and `graphql-redis-subscriptions`.
+- Any valuable data not matching the schema (e.g., "Delivery: 8AM-10AM") is stored in the `raw_unmapped_data` JSONB object.
 
-- \[ \] Task 2.2: Setup `@graphql-codegen/cli` in `packages/api-client`.
+### Step 3: Multi-Agent Verification (The Debate Pattern)
 
-- \[ \] Task 2.3: Configure URQL client with `@urql/exchange-auth` (401 intercept/refresh) AND `@urql/exchange-graphcache` for offline-first optimistic UI mutations.
+- Pass Gemini's output and the raw text to a local Ollama "Critic" agent.
 
-- \[ \] Task 2.4: Export `uploadFile(file)` and `uploadAndIngest(file)` helpers from `api-client` to orchestrate Supabase Signed URL PUT requests.
+- \*\*Critic Prompt:\*\* _"Verify the math (qty_ price == total). Identify hallucinations."\*
 
-## EPIC 3: Omnibar IoC Registry &amp; Async Execution Flow
+- If the Critic disagrees or finds bad math, the block's `extraction_confidence` drops, flagging it for human review.
 
-\*\*Sub-Tasks:\*\*
+### Step 4: Vector-Accelerated Tenant Memory
 
-- \[ \] Task 3.1: Create `ToolRegistryService` utilizing NestJS `DiscoveryService` and a `@CommandTool()` decorator.
+- Generate an embedding for the extracted `rawName`.
 
-- \[ \] Task 3.2: Isolate `ingest_document`, `add_to_purchase_order`, etc., into standalone provider classes inside `src/modules/commands/tools/`.
+- Perform a pgvector Cosine Similarity search against `vendor_item_aliases`.
 
-- \[ \] Task 3.3: Refactor the Omnibar endpoint to return `202 Accepted`. Push task to BullMQ and stream execution states via GraphQL Subscriptions.
+- \*\*Auto-Commit Rule:\*\* If similarity is $\\ge 0.95$, set status to `PRE_ACCEPTED`. The UI hides this in a "Verified" accordion, saving the user from reviewing known items.
 
-## EPIC 4: The 7-Step Ingestion Waterfall &amp; Baker's Math
+### Step 5: Global Culinary &amp; USDA Resolution
 
-\*\*Sub-Tasks:\*\*
+- Pass unknown items through an Ollama `normalizeCulinaryTerms` prompt (e.g., "EVOO" $\\rightarrow$ "Oil, olive, extra virgin").
 
-- \[ \] Task 4.1: Implement Idempotency check: Hash `vendor_id + invoice_id + date` prior to DB insertion.
+- Query the USDA FDC API strictly filtering `&dataType=Foundation,SR%20Legacy`.
 
-- \[ \] Task 4.2: Implement the Triage &amp; Debate Pattern: Local Ollama routes documents and acts as Critic to verify Gemini Flash extractions. Use `Promise.allSettled`.
+### Step 6: Mathematical Normalization (Baker's Percentages &amp; Yields)
 
-- \[ \] Task 4.3: Implement `normalizeCulinaryTerms()` before USDA API requests.
+- \*\*Calculation Type Resolver:\*\* Map string units to `fixed_weight`, `fixed_volume`, or `each`.
 
-- \[ \] Task 4.4: Update `recipe_ingredients` for Baker's Math (`is_reference`, `bakers_percentage`). Implement `RecipeMathService` to resolve volumetric densities.
+- \*\*Volumetric Math:\*\* If volume is used, calculate weight via: $W\_i = V\_i \\times \\text{density\\\_g\\\_ml}$.
 
-- \[ \] Task 4.5: Implement Learning Loop: Upsert `vendor_item_aliases` (with pgvector embedding) on user approval. Auto-commit items matching aliases &gt;= 0.95.
+- \*\*Baker's Math:\*\* Identify the reference ingredient (e.g., flour). For all other ingredients, calculate and store:
 
-- \[ \] Task 4.6: Create `@nestjs/schedule` cron job to aggregate `raw_unmapped_data`.
+  $$P\_i = \\left( \\frac{W\_i}{W\_{\\text{ref}}} \\right) \\times 100$$
 
-## EPIC 5: SSOT Event-Driven Graph &amp; LLM Routing
+- Store `original_input_string`, `is_reference`, and `bakers_percentage` on the `recipe_ingredients` row.
 
-\*\*Sub-Tasks:\*\*
+### Step 7: Event-Driven Knowledge Sync (GraphRAG)
 
-- \[ \] Task 5.1: Create `system_memories` Postgres table. Delete isolated Qdrant memory sync scripts.
+- Upon commit, emit `@nestjs/event-emitter` events (e.g., `RecipeApproved`).
 
-- \[ \] Task 5.2: Use `@nestjs/event-emitter` to broadcast events. Build BullMQ workers to asynchronously embed and sync data to Qdrant and Neo4j.
+- BullMQ background workers listen to these events and asynchronously sync data to Qdrant (vectors) and Neo4j (graph relations).
 
-- \[ \] Task 5.3: Implement `LlmRouterService`. Route classification to Local Ollama, bulk extraction to Gemini Flash, and deep reasoning to Gemini Pro.
+- \*\*Textbook Handling:\*\* 1000-page PDFs bypass manual review entirely. The pipeline extracts "Triples" (Subject $\\rightarrow$ Predicate $\\rightarrow$ Object) and writes them directly to Postgres `system_memories` and Neo4j to build the Culinary Brain.
 
-- \[ \] Task 5.4: Write comprehensive Jest (Unit) and Supertest (E2E) tests ensuring pipeline stability.
+---
 
-## EPIC 6: Enterprise Data Integrity (RBAC, OCC &amp; Soft Deletes)
+## PART 3: MASTER EPIC TICKETS
 
-\*\*Context:\*\* Protect the application from concurrency race conditions, unauthorized edits, and broken historical reporting.
+_(Agents: Execute these Epics sequentially. Create sub-branches per Task. Ensure all validation criteria are met before merging.)_
 
-\*\*Sub-Tasks:\*\*
+### EPIC 1: Infrastructure, Secrets &amp; NestJS Enterprise Features
 
-- \[ \] Task 6.1: Enforce Soft Deletes. Add `deleted_at` globally. Update all GraphQL resolvers and services to filter out soft-deleted records natively.
+\*\*Objective:\*\* Purge technical debt, secure config via Infisical, and implement enterprise stability packages.
 
-- \[ \] Task 6.2: Implement Optimistic Concurrency Control (OCC). Add `version` (INT) to `recipes` and `master_items`. Reject mutations if client version mismatch occurs.
+\* \*\*Task 1.1: Codebase Purge &amp; Domain Restructure\*\*
 
-- \[ \] Task 6.3: Implement Role-Based Access Control. Create `@Roles()` decorator and `RolesGuard` to check JWT claims. Enforce `LOCKED` recipe status permissions.
+    \*   Delete duplicate/hallucinated folders (`apps/api/apps/api`).
 
-- \[ \] Task 6.4: Implement Tenant "Business Day" configuration. Update analytics queries (revenue, labor) to group by the configurable rollover hour (e.g., 4:00 AM) rather than UTC date.
+    \*   Restructure `apps/api/src/` strictly into `core/`, `shared/`, and `modules/`.
 
-## EPIC 7: CLI Overhaul &amp; Edge Node (Raspberry Pi)
+    \*   Globally rename all instances of `unified-ingestion` to `ingestion`.
 
-\*\*Context:\*\* Centralize external scripts and unblock the local IoT deployment.
+\* \*\*Task 1.2: Infisical Machine Identity &amp; ESLint Lockdown\*\*
 
-\*\*Sub-Tasks:\*\*
+    \*   Delete custom `packages/config/cli.ts`.
 
-- \[ \] Task 7.1: Convert `apps/cli` to use `nest-commander`. Migrate `.zsh_aliases` logic into `sous cli` commands (e.g., `sous agent:tail`, `sous db:sync-neo4j`, `sous ssh:prod`).
+    \*   Update all `package.json` scripts to wrap commands in `infisical run --env=... --`.
 
-- \[ \] Task 7.2: Refactor the Raspberry Pi Edge Node. Strip out complex business logic. Convert to a lightweight Daemon (Node/Bun) that maintains a secure WebSocket to the cloud API.
+    \*   Add an ESLint rule in `packages/eslint-config` explicitly banning `process.env` in `apps/web` and `apps/pos-simulator`.
 
-- \[ \] Task 7.3: Implement mDNS/Bonjour discovery on the Edge Node for local network printer mapping. Enable the Edge Node to accept JSON payloads from the cloud and translate them to raw ESC/POS network bytes for local thermal printers.
+\* \*\*Task 1.3: `nest-commander` CLI Overhaul\*\*
+
+    \*   Convert `apps/cli` to use `nest-commander`.
+
+    \*   Migrate shell scripts from `.zsh_aliases` into executable NestJS commands (e.g., `sous agent:tail`, `sous db:sync-neo4j`). Implement logic to read `process.cwd()` and `IS_DOCKER` for environment-aware execution.
+
+\* \*\*Task 1.4: Enterprise Plugins (CLS, Throttler, Terminus, Pino)\*\*
+
+    \*   Implement `nestjs-cls` (Async Local Storage). Refactor the Supabase Provider to act as a Singleton that reads `orgId` from the CLS context and executes `SET LOCAL app.current_tenant = :orgId`.
+
+    \*   Implement `@nestjs/throttler` (Redis-backed) to rate-limit LLM endpoints.
+
+    \*   Implement `@nestjs/terminus` for `/health` checks (Postgres, Redis, Neo4j).
+
+    \*   Implement `nestjs-pino` for async structured JSON logging, redacting auth headers.
+
+### EPIC 2: Code-First GraphQL, Offline URQL &amp; Upload Abstraction
+
+\*\*Objective:\*\* Migrate transport layer to GQL, enable offline KDS/POS functionality, and handle file uploads seamlessly.
+
+\* \*\*Task 2.1: NestJS Code-First GraphQL &amp; Redis PubSub\*\*
+
+    \*   Install `@nestjs/graphql` configured for `autoSchemaFile: true`.
+
+    \*   Configure `graphql-redis-subscriptions` connected to the existing Redis instance for horizontally scalable real-time events.
+
+\* \*\*Task 2.2: The `api-client` URQL SDK\*\*
+
+    \*   Set up `@graphql-codegen/cli` in `packages/api-client` to generate typed React hooks.
+
+    \*   Configure the URQL client using `@urql/exchange-graphcache` for offline optimistic UI support.
+
+    \*   Configure `@urql/exchange-auth` to automatically intercept 401 Unauthorized errors, hit the `/v1/auth/refresh` REST endpoint, and transparently reconnect WebSockets.
+
+\* \*\*Task 2.3: Signed URL File Upload Abstraction\*\*
+
+    \*   Create a GQL Mutation `generateUploadUrl(fileName)`.
+
+    \*   Export high-level helpers from `api-client`: `uploadFile(file)` (requests URL and PUTs binary to Supabase) and `uploadAndIngest(file)` (uploads file and fires ingestion GQL mutation).
+
+### EPIC 3: Omnibar IoC Registry &amp; Async Execution Flow
+
+\*\*Objective:\*\* Decouple AI tool execution from the HTTP lifecycle and implement an infinite-scaling Tool Registry.
+
+\* \*\*Task 3.1: Command Tool Registry (IoC)\*\*
+
+    \*   Create `ToolRegistryService` utilizing NestJS `DiscoveryService` and a `@CommandTool()` decorator.
+
+    \*   Refactor `CommandsService` to dynamically resolve tools based on the LLM's requested `functionName`, eliminating the legacy `if/else` block.
+
+\* \*\*Task 3.2: Isolate Existing Tools\*\*
+
+    \*   Move `ingest_document`, `add_to_purchase_order`, etc., into standalone provider classes in `src/modules/commands/tools/`.
+
+\* \*\*Task 3.3: Async Execution &amp; Subscription Streaming\*\*
+
+    \*   Refactor the Omnibar GQL mutation to immediately return `202 Accepted` and a `conversationId`.
+
+    \*   Push the LLM execution task to a BullMQ worker.
+
+    \*   The worker publishes Redis events for every agent step. The frontend subscribes via `onOmnibarEvent` to stream updates live.
+
+### EPIC 4: The Autonomous Ingestion Engine &amp; Baker's Math
+
+\*\*Objective:\*\* Implement the 7-Step Waterfall, Idempotency, and the Self-Learning Memory Loop.
+
+\* \*\*Task 4.1: Idempotency &amp; Promise.allSettled Resilience\*\*
+
+    \*   Hash `vendor_id + invoice_id + date` before DB insertion to prevent duplicate ingestion.
+
+    \*   Replace all `Promise.all` loops in ingestion processors with `Promise.allSettled`. Catch errors, mark the specific item with `resolutionError: true`, and continue processing.
+
+\* \*\*Task 4.2: Triage, Debate &amp; USDA Normalization\*\*
+
+    \*   Implement Ollama routing (Invoice vs Recipe vs Textbook).
+
+    \*   Implement the "Critic" Ollama agent to verify Gemini Flash extractions.
+
+    \*   Implement `normalizeCulinaryTerms()` to map colloquial terms before querying the USDA FDC Foundation database.
+
+\* \*\*Task 4.3: Baker's Math &amp; Recipe Checkpoints\*\*
+
+    \*   Implement `RecipeMathService.determineCalculationType()`.
+
+    \*   Update `recipe_ingredients` to store `is_reference`, `bakers_percentage`, and `original_input_string`.
+
+    \*   Implement a snapshot-based versioning system in the `recipe_versions` table.
+
+\* \*\*Task 4.4: The Learning Loop &amp; Auto-Commit\*\*
+
+    \*   Upsert `vendor_item_aliases` (with a pgvector embedding) whenever a user approves a mapping.
+
+    \*   Auto-commit newly extracted items if their pgvector similarity against aliases is $\\ge 0.95$.
+
+    \*   Create a weekly `@Cron` job to aggregate and report on `raw_unmapped_data` to guide future schema expansion.
+
+### EPIC 5: SSOT Event-Driven Graph &amp; Enterprise Integrity
+
+\*\*Objective:\*\* Establish Postgres as the ultimate Source of Truth, sync Neo4j/Qdrant asynchronously, and enforce RBAC and Concurrency controls.
+
+\* \*\*Task 5.1: Canonical Memories &amp; Event Emitters\*\*
+
+    \*   Create `system_memories` Postgres table. Delete standalone Qdrant scripts.
+
+    \*   Use `@nestjs/event-emitter` to broadcast events (`MemoryCreated`, `RecipeApproved`).
+
+    \*   Build BullMQ workers that listen to these events to asynchronously embed data and execute Cypher queries to sync Qdrant and Neo4j.
+
+\* \*\*Task 5.2: LLM Gateway Router\*\*
+
+    \*   Build `LlmRouterService` to optimize quotas: Route triage/debate to Local Ollama, bulk extraction to Gemini Flash, and deep reasoning to Gemini Pro/Claude Sonnet.
+
+\* \*\*Task 5.3: Enterprise Data Integrity\*\*
+
+    \*   \*\*Soft Deletes:\*\* Globally ban `DELETE`. Add `deleted_at` to schemas and GQL resolvers.
+
+    \*   \*\*OCC:\*\* Implement `version` checks on `recipes` and `master_items` mutations to prevent double-edit race conditions.
+
+    \*   \*\*RBAC:\*\* Implement a `RolesGuard` and `@Roles()` decorators checking JWT claims.
+
+    \*   \*\*Business Days:\*\* Update analytic queries to support a tenant-defined rollover hour (e.g., 4:00 AM) instead of UTC date groupings.
+
+\* \*\*Task 5.4: Test Automation Standard\*\*
+
+    \*   Write Jest Unit Tests mocking all external LLM and USDA APIs.
+
+    \*   Write Supertest E2E Tests that programmatically upload mock PDF buffers to verify the entire asynchronous ingestion queue without requiring UI interaction.
+
+### EPIC 6: IoT Edge Node &amp; Mesh Networking
+
+\*\*Objective:\*\* Unblock the local Raspberry Pi deployment to support private subnet printers and offline resilience.
+
+\* \*\*Task 6.1: Dumb Relay Daemon\*\*
+
+    \*   Strip heavy business logic from the Raspberry Pi codebase.
+
+    \*   Implement a lightweight Node/Bun daemon that maintains a secure WebSocket connection to the cloud API.
+
+\* \*\*Task 6.2: mDNS &amp; ESC/POS Translation\*\*
+
+    \*   Enable the Edge Node to perform mDNS/Bonjour discovery for local thermal printers.
+
+    \*   Configure the daemon to accept JSON payloads from the cloud, translate them to raw ESC/POS network bytes, and push them to local printers on the private kitchen subnet.
