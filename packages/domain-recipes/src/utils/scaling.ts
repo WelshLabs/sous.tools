@@ -1,5 +1,11 @@
+/* eslint-disable max-lines */
 import { type RecipeIngredient } from "@soustools/api-types";
-import { convertUnit } from "./unit-conversion";
+import { convertUnit, COUNT_UNITS } from "./unit-conversion";
+import {
+  getIngredientEstimatedWeight,
+  formatIngredientAmountWithEstimate,
+} from "./culinary-encyclopedia";
+import { type BakersFormulaSummary } from "../types";
 
 export {
   convertUnit,
@@ -7,6 +13,15 @@ export {
   VOLUME_CONVERSIONS,
   COUNT_UNITS,
 } from "./unit-conversion";
+
+export {
+  lookupEncyclopedia,
+  getIngredientEstimatedWeight,
+  formatIngredientAmountWithEstimate,
+  CULINARY_ENCYCLOPEDIA,
+  type CulinaryEncyclopediaEntry,
+  type EstimatedWeightResult,
+} from "./culinary-encyclopedia";
 
 export interface ScaledIngredientResult {
   ingredientId: string;
@@ -18,7 +33,10 @@ export interface ScaledIngredientResult {
   calculationType: "fixed_weight" | "bakers_percentage";
   baseCalculationGroup: boolean;
   percentageOfBase?: number; // Baker's percentage if applicable
-  weightInGrams: number; // Calculated final weight in grams
+  weightInGrams: number; // Calculated final weight in grams (or estimated weight for count items)
+  isCountUnit?: boolean;
+  estimateText?: string;
+  subBreakdown?: string;
 }
 
 /**
@@ -33,22 +51,61 @@ export function calculateRecipeScale(
     targetVesselVolume?: number;
     defaultVesselVolume?: number;
     customIngredientWeights?: Record<string, { amount: number; unit: string }>; // anchor overrides
-  },
-): { multiplier: number; items: ScaledIngredientResult[] } {
+    customPercentages?: Record<string, number>; // interactive baker's % adjustments
+  } = {},
+): {
+  multiplier: number;
+  items: ScaledIngredientResult[];
+  bakersSummary: BakersFormulaSummary;
+} {
   if (ingredients.length === 0) {
-    return { multiplier: 1, items: [] };
+    return {
+      multiplier: 1,
+      items: [],
+      bakersSummary: {
+        totalFlourWeightG: 0,
+        totalLiquidWeightG: 0,
+        hydrationPercentage: 0,
+        totalFormulaPercentage: 0,
+        isBakersRecipe: false,
+      },
+    };
   }
 
   // 1. Calculate the weight of each ingredient in grams to find base total/flour weights
   const ingredientBaseWeightsG: Record<string, number> = {};
   const componentBaseFlourWeightsG: Record<string, number> = {};
 
-  // Resolve fixed weight values first
+  // Resolve fixed weight / base flour values first
   ingredients.forEach((ing) => {
     const density = ing.masterIngredient?.densityGMl ?? 1.0;
+    const name = ing.masterIngredient?.name ?? ing.rawName ?? "";
+    const isCount = COUNT_UNITS.has(ing.unit.toLowerCase().trim());
+
     if (ing.calculationType === "fixed_weight" || ing.baseCalculationGroup) {
-      const weightG = convertUnit(ing.amount, ing.unit, "g", density);
+      let weightG = 0;
+      if (isCount) {
+        const est = getIngredientEstimatedWeight(
+          name,
+          ing.amount,
+          ing.unit,
+          density,
+        );
+        weightG = est ? est.totalWeightG : ing.amount; // fallback if unknown count weight
+      } else {
+        weightG = convertUnit(
+          ing.amount,
+          ing.unit,
+          "g",
+          density,
+          undefined,
+          undefined,
+          name,
+        );
+      }
+
       ingredientBaseWeightsG[ing.id] = weightG;
+
       if (ing.baseCalculationGroup) {
         const comp = ing.component || "Base Recipe";
         componentBaseFlourWeightsG[comp] =
@@ -57,6 +114,28 @@ export function calculateRecipeScale(
     }
   });
 
+  // If there are no explicitly marked base flour items, but there are baker's percentage items,
+  // find any flour/flour-like ingredients or default first fixed ingredient as base
+  let totalBaseFlourG = Object.values(componentBaseFlourWeightsG).reduce(
+    (a, b) => a + b,
+    0,
+  );
+  if (totalBaseFlourG === 0) {
+    // Check if any ingredient is flour
+    const flourIng = ingredients.find(
+      (i) =>
+        (i.masterIngredient?.name || i.rawName || "")
+          .toLowerCase()
+          .includes("flour") && i.calculationType === "fixed_weight",
+    );
+    if (flourIng) {
+      const comp = flourIng.component || "Base Recipe";
+      const w = ingredientBaseWeightsG[flourIng.id] || flourIng.amount;
+      componentBaseFlourWeightsG[comp] = w;
+      totalBaseFlourG = w;
+    }
+  }
+
   // Resolve baker's percentage values based on base flour weight
   ingredients.forEach((ing) => {
     if (
@@ -64,9 +143,11 @@ export function calculateRecipeScale(
       !ing.baseCalculationGroup
     ) {
       const comp = ing.component || "Base Recipe";
-      const baseWeightG = componentBaseFlourWeightsG[comp] || 0;
-      // Amount represents percentage (e.g. 60%)
-      const weightG = baseWeightG * (ing.amount / 100);
+      const baseWeightG =
+        componentBaseFlourWeightsG[comp] || totalBaseFlourG || 100;
+      const pct = options.customPercentages?.[ing.id] ?? ing.amount;
+      // Amount represents percentage (e.g. 65%)
+      const weightG = baseWeightG * (pct / 100);
       ingredientBaseWeightsG[ing.id] = weightG;
     }
   });
@@ -91,16 +172,36 @@ export function calculateRecipeScale(
     const anchorIng = ingredients.find((ing) => ing.id === anchorId);
     if (anchorIng) {
       const density = anchorIng.masterIngredient?.densityGMl ?? 1.0;
-      const targetWeightG = convertUnit(
-        targetWeight.amount,
-        targetWeight.unit,
-        "g",
-        density,
-      );
+      const name = anchorIng.masterIngredient?.name ?? anchorIng.rawName ?? "";
+      const isCount = COUNT_UNITS.has(targetWeight.unit.toLowerCase().trim());
+
+      let targetWeightG = 0;
+      if (isCount) {
+        const est = getIngredientEstimatedWeight(
+          name,
+          targetWeight.amount,
+          targetWeight.unit,
+          density,
+        );
+        targetWeightG = est ? est.totalWeightG : targetWeight.amount;
+      } else {
+        targetWeightG = convertUnit(
+          targetWeight.amount,
+          targetWeight.unit,
+          "g",
+          density,
+          undefined,
+          undefined,
+          name,
+        );
+      }
+
       const baseWeightG = ingredientBaseWeightsG[anchorId] ?? 0;
 
       if (baseWeightG > 0) {
         multiplier = targetWeightG / baseWeightG;
+      } else if (anchorIng.amount > 0) {
+        multiplier = targetWeight.amount / anchorIng.amount;
       }
     }
   } else if (options.targetVesselVolume && options.defaultVesselVolume) {
@@ -111,7 +212,7 @@ export function calculateRecipeScale(
     multiplier = options.targetTotalWeight / baseTotalWeightG;
   } else if (options.targetYield) {
     // Scaled relative to portions
-    multiplier = options.targetYield / baseYield;
+    multiplier = options.targetYield / (baseYield || 1);
   }
 
   // Prevent divide-by-zero or negative multiplier issues
@@ -120,10 +221,15 @@ export function calculateRecipeScale(
   }
 
   // 3. Map ingredients to scaled outputs
+  let totalScaledFlourG = 0;
+  let totalScaledLiquidG = 0;
+  let hasBakersPercentages = false;
+
   const items = ingredients.map((ing): ScaledIngredientResult => {
     const density = ing.masterIngredient?.densityGMl ?? 1.0;
     const name =
       ing.masterIngredient?.name ?? ing.rawName ?? "Unknown Ingredient";
+    const isCount = COUNT_UNITS.has((ing.unit || "").toLowerCase().trim());
 
     let scaledAmount = 0;
     let scaledUnit = ing.unit;
@@ -133,22 +239,71 @@ export function calculateRecipeScale(
     if (ing.baseCalculationGroup || ing.calculationType === "fixed_weight") {
       scaledAmount = ing.amount * multiplier;
       weightInGrams = (ingredientBaseWeightsG[ing.id] ?? 0) * multiplier;
+
+      if (ing.baseCalculationGroup) {
+        hasBakersPercentages = true;
+        percentageOfBase = 100;
+        totalScaledFlourG += weightInGrams;
+      }
     } else {
       // bakers_percentage
-      percentageOfBase = ing.amount; // Percentage stays constant
+      hasBakersPercentages = true;
       const comp = ing.component || "Base Recipe";
-      const targetFlourG = (componentBaseFlourWeightsG[comp] || 0) * multiplier;
-      weightInGrams = targetFlourG * (ing.amount / 100);
+      const targetFlourG =
+        (componentBaseFlourWeightsG[comp] || totalBaseFlourG || 100) *
+        multiplier;
+      const pct = options.customPercentages?.[ing.id] ?? ing.amount;
+      percentageOfBase = pct;
+      weightInGrams = targetFlourG * (pct / 100);
 
-      // Baker's percentage units in DB is '%'. For display, we can either return weight in grams or %
+      // If unit in DB is '%', display the calculated target weight in grams
       if (ing.unit === "%") {
-        // Output calculated target weight in grams
         scaledAmount = weightInGrams;
         scaledUnit = "g";
+      } else if (isCount) {
+        // Count unit in baker's percentage (e.g. eggs as % of flour)
+        const est = getIngredientEstimatedWeight(name, 1, ing.unit, density);
+        const singleG = est ? est.totalWeightG : 50;
+        scaledAmount = weightInGrams / singleG;
+        scaledUnit = ing.unit;
       } else {
-        // If they had a specific unit, convert from grams
-        scaledAmount = convertUnit(weightInGrams, "g", ing.unit, density);
+        scaledAmount = convertUnit(
+          weightInGrams,
+          "g",
+          ing.unit,
+          density,
+          undefined,
+          undefined,
+          name,
+        );
       }
+    }
+
+    // Check if ingredient is a liquid/water for hydration calculation
+    const lowerName = name.toLowerCase();
+    const isLiquid =
+      lowerName.includes("water") ||
+      lowerName.includes("milk") ||
+      lowerName.includes("juice") ||
+      lowerName.includes("liquid") ||
+      lowerName.includes("beer") ||
+      lowerName.includes("cider");
+    if (isLiquid) {
+      totalScaledLiquidG += weightInGrams;
+    }
+
+    // Lookup culinary estimate text for display (e.g. `2 ea` -> `(~100g)`)
+    let estimateText: string | undefined;
+    let subBreakdown: string | undefined;
+    if (isCount) {
+      const formatted = formatIngredientAmountWithEstimate(
+        scaledAmount,
+        scaledUnit,
+        name,
+        density,
+      );
+      estimateText = formatted.estimateText;
+      subBreakdown = formatted.subBreakdown;
     }
 
     return {
@@ -163,8 +318,37 @@ export function calculateRecipeScale(
       baseCalculationGroup: ing.baseCalculationGroup,
       percentageOfBase,
       weightInGrams,
+      isCountUnit: isCount,
+      estimateText,
+      subBreakdown,
     };
   });
 
-  return { multiplier, items };
+  const hydrationPercentage =
+    totalScaledFlourG > 0
+      ? Number(((totalScaledLiquidG / totalScaledFlourG) * 100).toFixed(1))
+      : 0;
+
+  const totalFormulaPercentage =
+    totalScaledFlourG > 0
+      ? Number(
+          (
+            (items.reduce((acc, item) => acc + item.weightInGrams, 0) /
+              totalScaledFlourG) *
+            100
+          ).toFixed(1),
+        )
+      : 100;
+
+  return {
+    multiplier,
+    items,
+    bakersSummary: {
+      totalFlourWeightG: Math.round(totalScaledFlourG),
+      totalLiquidWeightG: Math.round(totalScaledLiquidG),
+      hydrationPercentage,
+      totalFormulaPercentage,
+      isBakersRecipe: hasBakersPercentages || totalScaledFlourG > 0,
+    },
+  };
 }

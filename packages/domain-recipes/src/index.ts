@@ -15,5 +15,7 @@ export * from "./components/VesselManager/VesselManager.view";
 export * from "./components/ComplianceSearch/ComplianceSearch.container";
 export * from "./components/ComplianceSearch/ComplianceSearch.view";
 
-// Export scaling utilities
+// Export scaling & culinary utilities
 export * from "./utils/scaling";
+export * from "./utils/unit-conversion";
+export * from "./utils/culinary-encyclopedia";

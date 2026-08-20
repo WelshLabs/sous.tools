@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { describe, it, expect } from "vitest";
 import { convertUnit, calculateRecipeScale } from "./scaling";
 import { type RecipeIngredient } from "@soustools/api-types";
@@ -6,6 +7,7 @@ describe("convertUnit", () => {
   it("converts within the same unit", () => {
     expect(convertUnit(10, "g", "g")).toBe(10);
     expect(convertUnit(500, "ml", "ml")).toBe(500);
+    expect(convertUnit(2, "ea", "ea")).toBe(2);
   });
 
   it("converts weight to weight", () => {
@@ -31,6 +33,18 @@ describe("convertUnit", () => {
   it("converts weight to volume using density", () => {
     // Olive Oil (density = 0.92): 92g olive oil = 100ml
     expect(convertUnit(92, "g", "ml", 0.92)).toBeCloseTo(100, 2);
+  });
+
+  it("converts count unit to weight using encyclopedia standard weights", () => {
+    // 2 Large Eggs = 100g
+    expect(
+      convertUnit(2, "ea", "g", 1.0, undefined, undefined, "Large Egg"),
+    ).toBe(100);
+
+    // 3 Garlic Cloves = 12g
+    expect(
+      convertUnit(3, "clove", "g", 1.0, undefined, undefined, "Garlic Clove"),
+    ).toBe(12);
   });
 
   it("safely returns amount for count and percentage units", () => {
@@ -108,13 +122,39 @@ describe("calculateRecipeScale", () => {
         updatedAt: "",
       },
     },
+    {
+      id: "ing-4",
+      recipeId: "rec-1",
+      masterIngredientId: "egg-id",
+      subRecipeId: null,
+      calculationType: "fixed_weight",
+      baseCalculationGroup: false,
+      amount: 2,
+      unit: "ea",
+      prepNotes: "beaten",
+      createdAt: "",
+      masterIngredient: {
+        id: "egg-id",
+        organizationId: "org-1",
+        name: "Large Egg",
+        densityGMl: 1.03,
+        nutritionMacros: { calories: 140, proteinG: 12, carbsG: 0, fatG: 10 },
+        allergens: ["egg"],
+        createdAt: "",
+        updatedAt: "",
+      },
+    },
   ];
 
-  it("scales recipe linearly by portion yield", () => {
+  it("scales recipe linearly by portion yield while preserving count units", () => {
     // Scaling from 10 portions to 20 portions (multiplier = 2.0)
-    const { multiplier, items } = calculateRecipeScale(dummyIngredients, 10, {
-      targetYield: 20,
-    });
+    const { multiplier, items, bakersSummary } = calculateRecipeScale(
+      dummyIngredients,
+      10,
+      {
+        targetYield: 20,
+      },
+    );
 
     expect(multiplier).toBe(2.0);
 
@@ -133,6 +173,18 @@ describe("calculateRecipeScale", () => {
     const butterResult = items.find((i) => i.ingredientId === "ing-3");
     expect(butterResult?.scaledAmount).toBe(100);
     expect(butterResult?.weightInGrams).toBe(100);
+
+    // Eggs (count unit): 2 ea * 2 = 4 ea (preserves "ea" unit, estimates ~200g)
+    const eggResult = items.find((i) => i.ingredientId === "ing-4");
+    expect(eggResult?.scaledAmount).toBe(4);
+    expect(eggResult?.scaledUnit).toBe("ea");
+    expect(eggResult?.weightInGrams).toBe(200); // 4 * 50g
+    expect(eggResult?.estimateText).toBe("(~200g)");
+
+    // Baker's summary
+    expect(bakersSummary.isBakersRecipe).toBe(true);
+    expect(bakersSummary.totalFlourWeightG).toBe(1000);
+    expect(bakersSummary.hydrationPercentage).toBe(60);
   });
 
   it("scales recipe by vessel volumes", () => {
@@ -153,10 +205,11 @@ describe("calculateRecipeScale", () => {
     // Flour: 500g
     // Water: 500g * 0.60 = 300g
     // Butter: 50g
-    // Total base weight: 850g
-    // Target total weight: 1700g (multiplier = 2.0)
+    // Eggs: 2 ea * 50g = 100g
+    // Total base weight: 950g
+    // Target total weight: 1900g (multiplier = 2.0)
     const { multiplier, items } = calculateRecipeScale(dummyIngredients, 10, {
-      targetTotalWeight: 1700,
+      targetTotalWeight: 1900,
     });
 
     expect(multiplier).toBe(2.0);
@@ -167,8 +220,9 @@ describe("calculateRecipeScale", () => {
     const waterResult = items.find((i) => i.ingredientId === "ing-2");
     expect(waterResult?.scaledAmount).toBe(600);
 
-    const butterResult = items.find((i) => i.ingredientId === "ing-3");
-    expect(butterResult?.scaledAmount).toBe(100);
+    const eggResult = items.find((i) => i.ingredientId === "ing-4");
+    expect(eggResult?.scaledAmount).toBe(4);
+    expect(eggResult?.scaledUnit).toBe("ea");
   });
 
   it("scales recipe using custom anchor ingredient override", () => {

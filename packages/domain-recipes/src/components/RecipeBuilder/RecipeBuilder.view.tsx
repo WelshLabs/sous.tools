@@ -1,10 +1,10 @@
 "use client";
 
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React from "react";
 import { Button } from "@soustools/design-system";
-import { ChefHat, ArrowLeft, Plus, Trash2, Clock } from "lucide-react";
+import { ChefHat, ArrowLeft, Plus, Trash2, Clock, Percent } from "lucide-react";
 import Link from "next/link";
 import {
   type VesselProfile,
@@ -14,6 +14,7 @@ import {
   type RecipeIngredientLine,
   type RecipeInstructionStep,
 } from "../../types";
+import { formatIngredientAmountWithEstimate } from "../../utils/culinary-encyclopedia";
 
 export interface RecipeBuilderViewProps {
   title: string;
@@ -26,6 +27,8 @@ export interface RecipeBuilderViewProps {
   setVesselId: (val: string) => void;
   status: string;
   setStatus: (val: string) => void;
+  isBakersPercentage: boolean;
+  setIsBakersPercentage: (val: boolean) => void;
   ingredients: RecipeIngredientLine[];
   onAddIngredientLine: () => void;
   onRemoveIngredientLine: (idx: number) => void;
@@ -60,6 +63,8 @@ export function RecipeBuilderView({
   setVesselId,
   status,
   setStatus,
+  isBakersPercentage,
+  setIsBakersPercentage,
   ingredients,
   onAddIngredientLine,
   onRemoveIngredientLine,
@@ -76,10 +81,38 @@ export function RecipeBuilderView({
   backHref,
   isEditing,
 }: RecipeBuilderViewProps) {
+  // Calculate Baker's metrics in real-time
+  const totalFlourWeight = ingredients
+    .filter((i) => i.baseCalculationGroup)
+    .reduce((acc, i) => acc + (i.amount || 0), 0);
+
+  const totalLiquidWeight = ingredients
+    .filter((i) => {
+      const mi = masterIngredients.find((m) => m.id === i.masterIngredientId);
+      const name = (mi?.name || i.rawName || "").toLowerCase();
+      return (
+        name.includes("water") ||
+        name.includes("milk") ||
+        name.includes("juice") ||
+        name.includes("liquid")
+      );
+    })
+    .reduce((acc, i) => {
+      if (i.calculationType === "bakers_percentage") {
+        return acc + totalFlourWeight * ((i.amount || 0) / 100);
+      }
+      return acc + (i.amount || 0);
+    }, 0);
+
+  const hydrationPct =
+    totalFlourWeight > 0
+      ? ((totalLiquidWeight / totalFlourWeight) * 100).toFixed(1)
+      : "0.0";
+
   return (
     <form
       onSubmit={onSubmit}
-      className="mx-auto max-w-5xl space-y-6 rounded-2xl p-6"
+      className="mx-auto max-w-5xl space-y-6 rounded-2xl p-6 shadow-xl"
       style={{
         backgroundColor: "var(--color-card)",
         border: "1px solid var(--color-border)",
@@ -93,7 +126,7 @@ export function RecipeBuilderView({
         <div className="flex items-center gap-3">
           <Link
             href={backHref}
-            className="rounded-lg p-2 transition-colors"
+            className="cursor-pointer rounded-lg p-2 transition-colors hover:bg-white/5"
             style={{ color: "var(--color-muted-foreground)" }}
             aria-label="Back"
           >
@@ -114,15 +147,16 @@ export function RecipeBuilderView({
               className="text-xs"
               style={{ color: "var(--color-muted-foreground)" }}
             >
-              Configure yields, baseline flour groups, and step durations.
+              Configure yields, culinary encyclopedia units, baseline flours,
+              and step durations.
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Link href={backHref}>
             <button
               type="button"
-              className="cursor-pointer rounded-lg px-4 py-2 text-sm transition-colors"
+              className="cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
               style={{
                 backgroundColor: "var(--color-secondary)",
                 color: "var(--color-foreground)",
@@ -148,8 +182,45 @@ export function RecipeBuilderView({
         setVesselId={setVesselId}
         status={status}
         setStatus={setStatus}
+        isBakersPercentage={isBakersPercentage}
+        setIsBakersPercentage={setIsBakersPercentage}
         vessels={vessels}
       />
+
+      {isBakersPercentage && (
+        <div
+          className="flex flex-wrap items-center justify-between gap-4 rounded-xl p-4 text-xs font-semibold"
+          style={{
+            backgroundColor: "rgb(76 201 240 / 0.08)",
+            border: "1px solid rgb(76 201 240 / 0.25)",
+            color: "var(--color-foreground)",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Percent
+              className="h-4 w-4"
+              style={{ color: "var(--color-primary)" }}
+            />
+            <span>Baker's Formula Overview:</span>
+          </div>
+          <div className="flex flex-wrap gap-4 text-xs">
+            <span>
+              Base Flour:{" "}
+              <strong style={{ color: "var(--color-primary)" }}>
+                {totalFlourWeight.toFixed(0)}g (100%)
+              </strong>
+            </span>
+            <span>
+              Total Hydration:{" "}
+              <strong style={{ color: "#10b981" }}>{hydrationPct}%</strong>
+            </span>
+            <span>
+              Mark flour ingredients as <strong>Base Flour</strong> to anchor
+              calculations.
+            </span>
+          </div>
+        </div>
+      )}
 
       <RecipeBuilderIngredients
         lines={ingredients}
@@ -180,6 +251,8 @@ export function RecipeBuilderFormFields({
   setVesselId,
   status,
   setStatus,
+  isBakersPercentage,
+  setIsBakersPercentage,
   vessels,
 }: any) {
   const labelStyle: React.CSSProperties = {
@@ -231,7 +304,7 @@ export function RecipeBuilderFormFields({
             type="text"
             value={yieldUnit}
             onChange={(e) => setYieldUnit(e.target.value)}
-            placeholder="e.g. loaves, portions"
+            placeholder="e.g. loaves, portions, cookies"
             className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
             style={inputStyle}
             required
@@ -239,39 +312,75 @@ export function RecipeBuilderFormFields({
         </div>
       </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-medium" style={labelStyle}>
-          Default Vessel Profile (Optional)
-        </label>
-        <select
-          value={vesselId}
-          onChange={(e) => setVesselId(e.target.value)}
-          className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-          style={inputStyle}
-        >
-          <option value="">None (Standard Yield Scaling only)</option>
-          {vessels.map((v: any) => (
-            <option key={v.id} value={v.id}>
-              {v.name} ({v.volumeMl} ml)
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium" style={labelStyle}>
+            Default Vessel Profile (Optional)
+          </label>
+          <select
+            value={vesselId}
+            onChange={(e) => setVesselId(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+            style={inputStyle}
+          >
+            <option value="">None (Standard Yield Scaling only)</option>
+            {vessels.map((v: any) => (
+              <option key={v.id} value={v.id}>
+                {v.name} ({v.volumeMl} ml)
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-medium" style={labelStyle}>
-          Recipe Status
-        </label>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-          style={inputStyle}
-        >
-          <option value="PENDING_REVIEW">Pending Review</option>
-          <option value="APPROVED">Approved</option>
-          <option value="ARCHIVED">Archived</option>
-        </select>
+        <div>
+          <label className="mb-1 block text-xs font-medium" style={labelStyle}>
+            Recipe Status
+          </label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+            style={inputStyle}
+          >
+            <option value="PENDING_REVIEW">Pending Review</option>
+            <option value="APPROVED">Approved</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col justify-end">
+          <label
+            className="flex cursor-pointer items-center gap-2.5 rounded-lg p-2.5 transition-colors"
+            style={{
+              backgroundColor: isBakersPercentage
+                ? "rgb(76 201 240 / 0.12)"
+                : "var(--color-secondary)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={isBakersPercentage}
+              onChange={(e) => setIsBakersPercentage(e.target.checked)}
+              className="h-4 w-4 rounded"
+              style={{ accentColor: "var(--color-primary)" }}
+            />
+            <div>
+              <span
+                className="text-xs font-bold"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                Uses Baker's Percentages
+              </span>
+              <p
+                className="text-[10px]"
+                style={{ color: "var(--color-muted-foreground)" }}
+              >
+                Calculate hydration &amp; scaling relative to 100% base flour
+              </p>
+            </div>
+          </label>
+        </div>
       </div>
     </>
   );
@@ -287,12 +396,21 @@ export function RecipeBuilderIngredients({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4
-          className="text-sm font-bold"
-          style={{ color: "var(--color-foreground)" }}
-        >
-          Recipe Ingredients
-        </h4>
+        <div>
+          <h4
+            className="text-sm font-bold"
+            style={{ color: "var(--color-foreground)" }}
+          >
+            Recipe Ingredients
+          </h4>
+          <p
+            className="text-[11px]"
+            style={{ color: "var(--color-muted-foreground)" }}
+          >
+            Specify ingredient amounts, piece count units (e.g. ea, clove,
+            lemon), and Baker's % formulas.
+          </p>
+        </div>
         <button
           type="button"
           onClick={onAddLine}
@@ -305,13 +423,13 @@ export function RecipeBuilderIngredients({
 
       {lines.length === 0 ? (
         <div
-          className="rounded-lg border border-dashed py-4 text-center text-xs"
+          className="rounded-lg border border-dashed py-6 text-center text-xs"
           style={{
             borderColor: "var(--color-border)",
             color: "var(--color-muted-foreground)",
           }}
         >
-          No ingredients added yet.
+          No ingredients added yet. Click "Add Ingredient" to start.
         </div>
       ) : (
         <div className="space-y-3">
@@ -344,9 +462,22 @@ export function RecipeBuilderIngredientRow({
     color: "var(--color-foreground)",
   };
 
+  const selectedMaster = masterIngredients.find(
+    (m: any) => m.id === line.masterIngredientId,
+  );
+  const ingredientName = selectedMaster?.name || line.rawName || "";
+
+  // Encyclopedia piece estimate calculation for count units
+  const estimate = formatIngredientAmountWithEstimate(
+    line.amount || 0,
+    line.unit || "g",
+    ingredientName,
+    selectedMaster?.densityGMl,
+  );
+
   return (
     <div
-      className="flex flex-col items-start gap-3 rounded-xl p-3 md:flex-row md:items-center"
+      className="flex flex-col items-start gap-3 rounded-xl p-3.5 shadow-sm transition-all md:flex-row md:items-center"
       style={{
         backgroundColor: "var(--color-card)",
         border: "1px solid var(--color-border)",
@@ -377,7 +508,7 @@ export function RecipeBuilderIngredientRow({
         </select>
       </div>
 
-      <div className="flex w-full gap-2 md:w-auto">
+      <div className="flex w-full items-center gap-2 md:w-auto">
         <input
           type="number"
           step="any"
@@ -388,43 +519,90 @@ export function RecipeBuilderIngredientRow({
             })
           }
           placeholder="Amt"
-          className="w-20 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+          className="w-20 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none"
           style={inputStyle}
           required
         />
         <select
           value={line.unit}
-          onChange={(e) => handleUpdateLine(idx, { unit: e.target.value })}
-          className="w-20 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+          onChange={(e) => {
+            const nextUnit = e.target.value;
+            const nextCalcType =
+              nextUnit === "%" ? "bakers_percentage" : line.calculationType;
+            handleUpdateLine(idx, {
+              unit: nextUnit,
+              calculationType: nextCalcType,
+            });
+          }}
+          className="w-28 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
           style={inputStyle}
         >
-          <option value="g">g</option>
-          <option value="kg">kg</option>
-          <option value="oz">oz</option>
-          <option value="lb">lb</option>
-          <option value="ml">ml</option>
-          <option value="l">l</option>
-          <option value="tsp">tsp</option>
-          <option value="tbsp">tbsp</option>
-          <option value="cup">cup</option>
-          <option value="count">count</option>
-          <option value="%">%</option>
+          <optgroup label="Weight">
+            <option value="g">g</option>
+            <option value="kg">kg</option>
+            <option value="oz">oz</option>
+            <option value="lb">lb</option>
+          </optgroup>
+          <optgroup label="Volume">
+            <option value="ml">ml</option>
+            <option value="l">l</option>
+            <option value="tsp">tsp</option>
+            <option value="tbsp">tbsp</option>
+            <option value="fl oz">fl oz</option>
+            <option value="cup">cup</option>
+            <option value="pt">pt</option>
+            <option value="qt">qt</option>
+            <option value="gal">gal</option>
+          </optgroup>
+          <optgroup label="Count &amp; Pieces">
+            <option value="ea">ea (each)</option>
+            <option value="count">count</option>
+            <option value="piece">piece</option>
+            <option value="clove">clove</option>
+            <option value="head">head</option>
+            <option value="stalk">stalk</option>
+            <option value="slice">slice</option>
+            <option value="sprig">sprig</option>
+            <option value="bunch">bunch</option>
+            <option value="can">can</option>
+            <option value="stick">stick</option>
+            <option value="pinch">pinch</option>
+            <option value="dash">dash</option>
+          </optgroup>
+          <optgroup label="Formulas">
+            <option value="%">% (Baker's %)</option>
+          </optgroup>
         </select>
+
+        {estimate.estimateText && (
+          <span
+            className="hidden text-[11px] font-bold text-amber-400 lg:inline"
+            title={estimate.subBreakdown}
+          >
+            {estimate.estimateText}
+          </span>
+        )}
       </div>
 
-      <div className="flex w-full items-center justify-between gap-4 md:w-auto md:justify-start">
+      <div className="flex w-full items-center justify-between gap-3 md:w-auto md:justify-start">
         <select
           value={line.calculationType}
-          onChange={(e) =>
+          onChange={(e) => {
+            const nextType = e.target.value as
+              "fixed_weight" | "bakers_percentage";
+            const nextUnit =
+              nextType === "bakers_percentage" && line.unit !== "%"
+                ? "%"
+                : line.unit;
             handleUpdateLine(idx, {
-              calculationType: e.target.value as
-                "fixed_weight" | "bakers_percentage",
-            })
-          }
+              calculationType: nextType,
+              unit: nextUnit,
+            });
+          }}
           className="rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
           style={inputStyle}
         >
-          <option value="fixed_weight">Fixed Weight</option>
+          <option value="fixed_weight">Fixed Amount</option>
           <option value="bakers_percentage">Baker's %</option>
         </select>
 
@@ -438,6 +616,9 @@ export function RecipeBuilderIngredientRow({
             onChange={(e) =>
               handleUpdateLine(idx, {
                 baseCalculationGroup: e.target.checked,
+                calculationType: e.target.checked
+                  ? "fixed_weight"
+                  : line.calculationType,
               })
             }
             className="rounded focus:ring-0 focus:ring-offset-0"
@@ -447,7 +628,13 @@ export function RecipeBuilderIngredientRow({
               borderColor: "var(--color-border)",
             }}
           />
-          Base Flour
+          <span
+            className={
+              line.baseCalculationGroup ? "font-bold text-amber-400" : ""
+            }
+          >
+            Base Flour
+          </span>
         </label>
       </div>
 
@@ -455,15 +642,15 @@ export function RecipeBuilderIngredientRow({
         type="text"
         value={line.prepNotes}
         onChange={(e) => handleUpdateLine(idx, { prepNotes: e.target.value })}
-        placeholder="Prep Notes (e.g. sifted, ice cold)"
-        className="w-full min-w-[150px] flex-1 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+        placeholder="Prep Notes (e.g. room temp, beaten)"
+        className="w-full min-w-[140px] flex-1 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
         style={inputStyle}
       />
 
       <button
         type="button"
         onClick={() => handleRemoveLine(idx)}
-        className="cursor-pointer self-end rounded-lg p-1.5 transition-colors md:self-auto"
+        className="cursor-pointer self-end rounded-lg p-1.5 transition-colors hover:bg-rose-500/20 md:self-auto"
         style={{
           backgroundColor: "rgb(244 63 94 / 0.10)",
           color: "var(--color-destructive)",
@@ -616,7 +803,7 @@ export function RecipeBuilderInstructions({
                 <button
                   type="button"
                   onClick={() => onRemoveStep(idx)}
-                  className="cursor-pointer self-end rounded-lg p-2 transition-colors md:self-auto"
+                  className="cursor-pointer self-end rounded-lg p-2 transition-colors hover:bg-rose-500/20 md:self-auto"
                   style={{
                     backgroundColor: "rgb(244 63 94 / 0.10)",
                     color: "var(--color-destructive)",

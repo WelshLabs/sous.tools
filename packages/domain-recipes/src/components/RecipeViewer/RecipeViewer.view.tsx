@@ -15,6 +15,9 @@ import {
   Trash2,
   X,
   Loader2,
+  Edit,
+  Percent,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@soustools/design-system";
 import type {
@@ -29,6 +32,7 @@ import type {
   VersionRow,
   InventoryItem,
   WastageReason,
+  BakersFormulaSummary,
 } from "../../types";
 import type { ScaleMode } from "./RecipeViewer.container";
 
@@ -38,6 +42,7 @@ export interface RecipeViewerViewProps {
   vessels: VesselProfile[];
   masterIngredients?: MasterIngredient[];
   scaledIngredients: ScaledIngredient[];
+  bakersSummary: BakersFormulaSummary;
   finalMultiplier: number;
   costData: RecipeCostData | null;
   nutritionData: RecipeNutritionCache | null | undefined;
@@ -48,6 +53,8 @@ export interface RecipeViewerViewProps {
     amount: number,
     unit: string,
   ) => void;
+  onIngredientUnitChange?: (ingId: string, newUnit: string) => void;
+  onBakersPercentageChange?: (ingId: string, percentage: number) => void;
   onRestoreVersion: (version: VersionRow) => void;
   onDownloadLabel: () => void;
 
@@ -62,6 +69,8 @@ export interface RecipeViewerViewProps {
   setIsWastageOpen: (open: boolean) => void;
   isHistoryOpen: boolean;
   setIsHistoryOpen: (open: boolean) => void;
+  isBakersMode: boolean;
+  setIsBakersMode: (mode: boolean) => void;
 
   // Scaling states
   scaleMode: ScaleMode;
@@ -70,6 +79,8 @@ export interface RecipeViewerViewProps {
   setTargetYield: (val: number) => void;
   targetWeight: string;
   handleWeightChange: (val: string) => void;
+  targetBakersFlour: string;
+  handleBakersFlourChange: (val: string) => void;
   selectedVesselId: string;
   setSelectedVesselId: (id: string) => void;
 
@@ -98,7 +109,14 @@ export interface RecipeViewerViewProps {
 }
 
 export function RecipeViewerView(props: RecipeViewerViewProps) {
-  const { recipe, vessels, finalMultiplier, costData, nutritionData } = props;
+  const {
+    recipe,
+    vessels,
+    finalMultiplier,
+    costData,
+    nutritionData,
+    bakersSummary,
+  } = props;
 
   const inputClass = "w-full rounded-lg px-3 py-2 text-sm focus:outline-none";
   const inputStyle: React.CSSProperties = {
@@ -127,22 +145,60 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
         <div className="space-y-6 lg:col-span-2">
           {/* Header */}
           <header
-            className="flex items-center justify-between pb-4"
+            className="flex flex-wrap items-center justify-between gap-4 pb-4"
             style={{ borderBottom: "1px solid var(--color-border)" }}
           >
             <div className="flex items-center gap-3">
               <Link
                 href={props.backHref || "/recipes"}
-                className="cursor-pointer rounded-lg p-2 transition-colors hover:bg-white/5"
+                className="cursor-pointer rounded-lg p-2 transition-colors hover:bg-white/10"
                 style={{ color: "var(--color-muted-foreground)" }}
+                aria-label="Back to recipes"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5 hover:text-white" />
               </Link>
-              <h2 className="font-archivo text-2xl font-extrabold tracking-wide">
-                {recipe.title}
-              </h2>
+              <div>
+                <h2 className="font-archivo text-2xl font-extrabold tracking-wide">
+                  {recipe.title}
+                </h2>
+                <div className="flex items-center gap-2 pt-1">
+                  <span
+                    className="rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                    style={{
+                      backgroundColor: "var(--color-secondary)",
+                      color: "var(--color-muted-foreground)",
+                    }}
+                  >
+                    Yield: {recipe.yieldCount} {recipe.yieldUnit}
+                  </span>
+                  {bakersSummary.isBakersRecipe && (
+                    <span
+                      className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                      style={{
+                        backgroundColor: "rgb(76 201 240 / 0.15)",
+                        color: "var(--color-primary)",
+                        border: "1px solid rgb(76 201 240 / 0.3)",
+                      }}
+                    >
+                      <Percent className="h-3 w-3" /> Baker's % Formula
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="flex items-center gap-1.5 shadow-lg"
+              >
+                <Link href={`/recipes/${recipe.id}/edit`}>
+                  <Edit className="h-4 w-4" /> Edit Recipe
+                </Link>
+              </Button>
+
               <Button
                 size="sm"
                 variant="secondary"
@@ -151,29 +207,97 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               >
                 <History className="h-4 w-4" /> History
               </Button>
-              <Link href={`/recipes/${recipe.id}/kitchen`}>
-                <Button
-                  size="sm"
-                  className="flex items-center gap-1.5 shadow-lg"
-                  style={{
-                    backgroundColor: "#10b981",
-                    color: "#fff",
-                    borderColor: "transparent",
-                  }}
-                >
+
+              <Button
+                asChild
+                size="sm"
+                className="flex items-center gap-1.5 shadow-lg"
+                style={{
+                  backgroundColor: "#10b981",
+                  color: "#fff",
+                  borderColor: "transparent",
+                }}
+              >
+                <Link href={`/recipes/${recipe.id}/kitchen`}>
                   <Play className="h-4 w-4 fill-current" /> Active Kitchen Mode
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </header>
 
-          <div className="space-y-4">
-            <h3
-              className="text-sm font-bold"
-              style={{ color: "var(--color-foreground)" }}
+          {/* Baker's Percentage Banner if applicable */}
+          {bakersSummary.isBakersRecipe && (
+            <div
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3.5 text-xs font-semibold"
+              style={{
+                backgroundColor: "rgb(76 201 240 / 0.08)",
+                border: "1px solid rgb(76 201 240 / 0.20)",
+                color: "var(--color-foreground)",
+              }}
             >
-              Ingredients Checklist
-            </h3>
+              <div className="flex items-center gap-2">
+                <Percent
+                  className="h-4 w-4"
+                  style={{ color: "var(--color-primary)" }}
+                />
+                <span>Baker's Formula Stats:</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-4">
+                <span>
+                  Base Flour:{" "}
+                  <strong style={{ color: "var(--color-primary)" }}>
+                    {bakersSummary.totalFlourWeightG}g (100%)
+                  </strong>
+                </span>
+                <span>
+                  Hydration:{" "}
+                  <strong style={{ color: "#10b981" }}>
+                    {bakersSummary.hydrationPercentage}%
+                  </strong>
+                </span>
+                <span>
+                  Formula Total:{" "}
+                  <strong style={{ color: "var(--color-foreground)" }}>
+                    {bakersSummary.totalFormulaPercentage}%
+                  </strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => props.setIsBakersMode(!props.isBakersMode)}
+                  className="cursor-pointer rounded px-2 py-1 text-[11px] font-bold transition-colors"
+                  style={{
+                    backgroundColor: props.isBakersMode
+                      ? "var(--color-primary)"
+                      : "var(--color-secondary)",
+                    color: props.isBakersMode
+                      ? "var(--color-primary-foreground)"
+                      : "var(--color-foreground)",
+                  }}
+                >
+                  {props.isBakersMode ? "Viewing Baker's %" : "View Baker's %"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Ingredients Checklist */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3
+                className="text-sm font-bold"
+                style={{ color: "var(--color-foreground)" }}
+              >
+                Ingredients Checklist
+              </h3>
+              <span
+                className="text-[11px]"
+                style={{ color: "var(--color-muted-foreground)" }}
+              >
+                Edit amounts to anchor-scale the batch, or tweak formulas in
+                real-time.
+              </span>
+            </div>
+
             <div
               className="overflow-hidden rounded-xl"
               style={{
@@ -192,9 +316,9 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                     className="font-semibold tracking-wider uppercase"
                   >
                     <th className="p-3">Ingredient</th>
-                    <th className="w-32 p-3">Scaled Weight</th>
+                    <th className="w-36 p-3">Scaled Amount</th>
                     <th className="w-24 p-3">Unit</th>
-                    <th className="p-3">Type</th>
+                    <th className="p-3">Type / Baker's %</th>
                     <th className="w-24 p-3 text-right">Cost</th>
                   </tr>
                 </thead>
@@ -202,70 +326,161 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                   {props.scaledIngredients.map((ing) => (
                     <tr
                       key={ing.ingredientId}
-                      className="transition-colors"
+                      className="transition-colors hover:bg-white/[0.02]"
                       style={{ borderBottom: "1px solid var(--color-border)" }}
                     >
-                      <td
-                        className="p-3 font-semibold"
-                        style={{ color: "var(--color-foreground)" }}
-                      >
-                        {ing.name}
-                      </td>
                       <td className="p-3">
-                        <input
-                          type="number"
-                          step="any"
-                          value={Number(ing.scaledAmount.toFixed(1))}
-                          onChange={(e) =>
-                            props.onIngredientWeightChange(
+                        <div
+                          className="font-semibold"
+                          style={{ color: "var(--color-foreground)" }}
+                        >
+                          {ing.name}
+                        </div>
+                        {ing.estimateText && (
+                          <div className="flex items-center gap-1 text-[11px] font-medium text-amber-400">
+                            <Sparkles className="inline h-3 w-3" />
+                            <span>{ing.estimateText}</span>
+                            {ing.subBreakdown && (
+                              <span
+                                className="text-[10px] opacity-80"
+                                style={{
+                                  color: "var(--color-muted-foreground)",
+                                }}
+                              >
+                                — {ing.subBreakdown}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="p-3">
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            step="any"
+                            value={Number(ing.scaledAmount.toFixed(2))}
+                            onChange={(e) =>
+                              props.onIngredientWeightChange(
+                                ing.ingredientId,
+                                parseFloat(e.target.value) || 0,
+                                ing.scaledUnit,
+                              )
+                            }
+                            className="w-20 rounded px-2 py-1 text-xs font-bold focus:outline-none"
+                            style={{
+                              backgroundColor: "var(--color-input)",
+                              border: "1px solid var(--color-border)",
+                              color: "var(--color-foreground)",
+                            }}
+                          />
+                        </div>
+                      </td>
+
+                      <td className="p-3 font-medium">
+                        <select
+                          value={ing.scaledUnit}
+                          onChange={(e) => {
+                            const newUnit = e.target.value;
+                            props.onIngredientUnitChange?.(
                               ing.ingredientId,
-                              parseFloat(e.target.value) || 0,
-                              ing.scaledUnit,
-                            )
-                          }
-                          className="w-24 rounded px-2 py-1 text-xs font-bold focus:outline-none"
+                              newUnit,
+                            );
+                          }}
+                          className="rounded px-2 py-1 text-xs font-semibold focus:outline-none"
                           style={{
                             backgroundColor: "var(--color-input)",
                             border: "1px solid var(--color-border)",
                             color: "var(--color-foreground)",
                           }}
-                        />
-                      </td>
-                      <td
-                        className="p-3 font-medium"
-                        style={{ color: "var(--color-muted-foreground)" }}
-                      >
-                        {ing.scaledUnit}
-                      </td>
-                      <td className="p-3">
-                        <span
-                          className="rounded px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
-                          style={
-                            ing.baseCalculationGroup
-                              ? {
-                                  backgroundColor: "rgb(245 158 11 / 0.15)",
-                                  border: "1px solid rgb(245 158 11 / 0.25)",
-                                  color: "#f59e0b",
-                                }
-                              : ing.calculationType === "bakers_percentage"
-                                ? {
-                                    backgroundColor: "rgb(76 201 240 / 0.10)",
-                                    border: "1px solid rgb(76 201 240 / 0.20)",
-                                    color: "var(--color-primary)",
-                                  }
-                                : {
-                                    backgroundColor: "var(--color-secondary)",
-                                    color: "var(--color-muted-foreground)",
-                                  }
-                          }
                         >
-                          {ing.baseCalculationGroup
-                            ? "Base Flour"
-                            : ing.calculationType === "bakers_percentage"
-                              ? `${ing.percentageOfBase}% Baker's`
-                              : "Fixed"}
-                        </span>
+                          <optgroup label="Weight">
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                            <option value="oz">oz</option>
+                            <option value="lb">lb</option>
+                          </optgroup>
+                          <optgroup label="Volume">
+                            <option value="ml">ml</option>
+                            <option value="l">l</option>
+                            <option value="tsp">tsp</option>
+                            <option value="tbsp">tbsp</option>
+                            <option value="fl oz">fl oz</option>
+                            <option value="cup">cup</option>
+                            <option value="pt">pt</option>
+                            <option value="qt">qt</option>
+                            <option value="gal">gal</option>
+                          </optgroup>
+                          <optgroup label="Count &amp; Culinary">
+                            <option value="ea">ea</option>
+                            <option value="count">count</option>
+                            <option value="piece">piece</option>
+                            <option value="clove">clove</option>
+                            <option value="head">head</option>
+                            <option value="stalk">stalk</option>
+                            <option value="slice">slice</option>
+                            <option value="sprig">sprig</option>
+                            <option value="bunch">bunch</option>
+                            <option value="can">can</option>
+                            <option value="stick">stick</option>
+                            <option value="pinch">pinch</option>
+                            <option value="dash">dash</option>
+                          </optgroup>
+                          <optgroup label="Formulas">
+                            <option value="%">%</option>
+                          </optgroup>
+                        </select>
                       </td>
+
+                      <td className="p-3">
+                        {ing.baseCalculationGroup ? (
+                          <span
+                            className="rounded px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase"
+                            style={{
+                              backgroundColor: "rgb(245 158 11 / 0.15)",
+                              border: "1px solid rgb(245 158 11 / 0.25)",
+                              color: "#f59e0b",
+                            }}
+                          >
+                            Base Flour (100%)
+                          </span>
+                        ) : ing.calculationType === "bakers_percentage" ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="number"
+                              step="any"
+                              value={ing.percentageOfBase || 0}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                props.onBakersPercentageChange?.(
+                                  ing.ingredientId,
+                                  val,
+                                );
+                              }}
+                              className="w-14 rounded px-1.5 py-0.5 text-xs font-bold focus:outline-none"
+                              style={{
+                                backgroundColor: "rgb(76 201 240 / 0.10)",
+                                border: "1px solid rgb(76 201 240 / 0.30)",
+                                color: "var(--color-primary)",
+                              }}
+                            />
+                            <span className="text-[10px] font-bold text-sky-400 uppercase">
+                              % Baker's
+                            </span>
+                          </div>
+                        ) : (
+                          <span
+                            className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase"
+                            style={{
+                              backgroundColor: "var(--color-secondary)",
+                              color: "var(--color-muted-foreground)",
+                            }}
+                          >
+                            Fixed
+                          </span>
+                        )}
+                      </td>
+
                       <td
                         className="p-3 text-right text-[11px] font-medium"
                         style={{ color: "var(--color-muted-foreground)" }}
@@ -333,7 +548,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
         <div className="space-y-6">
           {/* Scaling Panel */}
           <div
-            className="space-y-4 rounded-2xl p-4"
+            className="space-y-4 rounded-2xl p-4 shadow-xl"
             style={{
               backgroundColor: "var(--color-card)",
               border: "1px solid var(--color-border)",
@@ -350,28 +565,30 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
               Hybrid Scaling Tool
             </h3>
             <div
-              className="flex gap-2 rounded-lg p-1 text-xs"
+              className="flex gap-1 rounded-lg p-1 text-xs"
               style={{ backgroundColor: "var(--color-secondary)" }}
             >
-              {(["yield", "weight", "vessel"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => props.setScaleMode(mode)}
-                  className="flex-1 cursor-pointer rounded-md py-1.5 font-bold capitalize transition-all"
-                  style={
-                    props.scaleMode === mode
-                      ? {
-                          backgroundColor: "var(--color-primary)",
-                          color: "var(--color-primary-foreground)",
-                          boxShadow: "0 1px 4px rgb(0 0 0 / 0.2)",
-                        }
-                      : { color: "var(--color-muted-foreground)" }
-                  }
-                >
-                  {mode}
-                </button>
-              ))}
+              {(["yield", "weight", "bakers", "vessel"] as const).map(
+                (mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => props.setScaleMode(mode)}
+                    className="flex-1 cursor-pointer rounded-md py-1.5 font-bold capitalize transition-all"
+                    style={
+                      props.scaleMode === mode
+                        ? {
+                            backgroundColor: "var(--color-primary)",
+                            color: "var(--color-primary-foreground)",
+                            boxShadow: "0 1px 4px rgb(0 0 0 / 0.2)",
+                          }
+                        : { color: "var(--color-muted-foreground)" }
+                    }
+                  >
+                    {mode === "bakers" ? "Baker's %" : mode}
+                  </button>
+                ),
+              )}
             </div>
             <div className="pt-2">
               {props.scaleMode === "yield" && (
@@ -381,7 +598,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       className="mb-1 block text-[10px] font-bold uppercase"
                       style={labelStyle}
                     >
-                      Target Yield
+                      Target Yield ({recipe.yieldUnit})
                     </label>
                     <input
                       type="number"
@@ -403,6 +620,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                   </div>
                 </div>
               )}
+
               {props.scaleMode === "weight" && (
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
@@ -431,6 +649,47 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                   </div>
                 </div>
               )}
+
+              {props.scaleMode === "bakers" && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label
+                        className="mb-1 block text-[10px] font-bold uppercase"
+                        style={labelStyle}
+                      >
+                        Target Base Flour (100% Group) (g)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        min="1"
+                        value={props.targetBakersFlour}
+                        onChange={(e) =>
+                          props.handleBakersFlourChange(e.target.value)
+                        }
+                        placeholder="e.g. 1000g flour"
+                        className={inputClass}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div
+                      className="pt-4 text-xs font-semibold"
+                      style={labelStyle}
+                    >
+                      Multiplier: {finalMultiplier.toFixed(2)}x
+                    </div>
+                  </div>
+                  <p
+                    className="text-[10px]"
+                    style={{ color: "var(--color-muted-foreground)" }}
+                  >
+                    Scales all percentages and formula ingredients relative to
+                    the target flour base.
+                  </p>
+                </div>
+              )}
+
               {props.scaleMode === "vessel" && (
                 <div className="space-y-2">
                   <div>
@@ -795,101 +1054,6 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                   </div>
                 ))}
               </div>
-
-              {/* Dietary Badges inline */}
-              {nutritionData.dietaryFlags && (
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {Object.entries(nutritionData.dietaryFlags)
-                    .filter(([, active]) => active)
-                    .map(([key]) => {
-                      const labels: Record<
-                        string,
-                        {
-                          label: string;
-                          bg: string;
-                          text: string;
-                          border: string;
-                        }
-                      > = {
-                        vegan: {
-                          label: "Vegan",
-                          bg: "rgb(16 185 129 / 0.12)",
-                          text: "#10b981",
-                          border: "rgb(16 185 129 / 0.25)",
-                        },
-                        vegetarian: {
-                          label: "Vegetarian",
-                          bg: "rgb(34 197 94 / 0.12)",
-                          text: "#22c55e",
-                          border: "rgb(34 197 94 / 0.25)",
-                        },
-                        pescetarian: {
-                          label: "Pescetarian",
-                          bg: "rgb(20 184 166 / 0.12)",
-                          text: "#14b8a6",
-                          border: "rgb(20 184 166 / 0.25)",
-                        },
-                        keto: {
-                          label: "Keto",
-                          bg: "rgb(99 102 241 / 0.12)",
-                          text: "#6366f1",
-                          border: "rgb(99 102 241 / 0.25)",
-                        },
-                        gluten_free: {
-                          label: "Gluten Free",
-                          bg: "rgb(245 158 11 / 0.12)",
-                          text: "#f59e0b",
-                          border: "rgb(245 158 11 / 0.25)",
-                        },
-                        dairy_free: {
-                          label: "Dairy Free",
-                          bg: "rgb(14 165 233 / 0.12)",
-                          text: "#0ea5e9",
-                          border: "rgb(14 165 233 / 0.25)",
-                        },
-                        egg_free: {
-                          label: "Egg Free",
-                          bg: "rgb(234 179 8 / 0.12)",
-                          text: "#eab308",
-                          border: "rgb(234 179 8 / 0.25)",
-                        },
-                        nut_free: {
-                          label: "Nut Free",
-                          bg: "rgb(244 63 94 / 0.12)",
-                          text: "var(--color-destructive)",
-                          border: "rgb(244 63 94 / 0.25)",
-                        },
-                        low_sodium: {
-                          label: "Low Sodium",
-                          bg: "rgb(37 99 235 / 0.12)",
-                          text: "#2563eb",
-                          border: "rgb(37 99 235 / 0.25)",
-                        },
-                        high_protein: {
-                          label: "High Protein",
-                          bg: "rgb(247 37 133 / 0.12)",
-                          text: "var(--color-accent)",
-                          border: "rgb(247 37 133 / 0.25)",
-                        },
-                      };
-                      const badge = labels[key];
-                      if (!badge) return null;
-                      return (
-                        <span
-                          key={key}
-                          className="rounded-full px-2.5 py-1 text-xs font-semibold tracking-wide uppercase"
-                          style={{
-                            backgroundColor: badge.bg,
-                            color: badge.text,
-                            border: `1px solid ${badge.border}`,
-                          }}
-                        >
-                          {badge.label}
-                        </span>
-                      );
-                    })}
-                </div>
-              )}
             </div>
           )}
 
@@ -937,12 +1101,24 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                   className="font-bold"
                   style={{ color: "var(--color-foreground)" }}
                 >
+                  ~
                   {props.scaledIngredients
-                    .reduce((acc, item) => acc + item.weightInGrams, 0)
+                    .reduce((acc, item) => acc + (item.weightInGrams || 0), 0)
                     .toFixed(0)}{" "}
                   g
                 </span>
               </div>
+              {bakersSummary.isBakersRecipe && (
+                <div
+                  className="flex justify-between pb-2"
+                  style={{ borderBottom: "1px solid var(--color-border)" }}
+                >
+                  <span>Hydration %:</span>
+                  <span className="font-bold text-emerald-400">
+                    {bakersSummary.hydrationPercentage}%
+                  </span>
+                </div>
+              )}
               <div
                 className="flex justify-between pb-2"
                 style={{ borderBottom: "1px solid var(--color-border)" }}
@@ -988,8 +1164,9 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
           >
             <button
               onClick={() => props.setIsWastageOpen(false)}
-              className="absolute top-4 right-4 cursor-pointer transition-colors"
+              className="absolute top-4 right-4 cursor-pointer transition-colors hover:text-white"
               style={{ color: "var(--color-muted-foreground)" }}
+              aria-label="Close modal"
             >
               <X className="h-5 w-5" />
             </button>
@@ -1033,14 +1210,6 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                           color: "var(--color-foreground)",
                           borderBottom: "1px solid var(--color-border)",
                         }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.backgroundColor =
-                            "var(--color-secondary)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.backgroundColor =
-                            "transparent")
-                        }
                       >
                         {item.name}
                       </button>
@@ -1078,6 +1247,7 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                     <option value="oz">ounces (oz)</option>
                     <option value="lb">pounds (lb)</option>
                     <option value="kg">kilograms (kg)</option>
+                    <option value="ea">each (ea)</option>
                   </select>
                 </div>
               </div>
@@ -1122,15 +1292,23 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
         </div>
       )}
 
-      {/* Version History Drawer */}
+      {/* Version History Backdrop Overlay & Drawer */}
+      {props.isHistoryOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity"
+          onClick={() => props.setIsHistoryOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <div
         className={`fixed inset-y-0 right-0 z-50 w-80 transform p-4 shadow-2xl transition-transform duration-300 ${
           props.isHistoryOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{
-          backgroundColor: "rgb(15 23 42 / 0.95)",
+          backgroundColor: "rgb(15 23 42 / 0.98)",
           borderLeft: "1px solid var(--color-border)",
-          backdropFilter: "blur(12px)",
+          backdropFilter: "blur(16px)",
         }}
       >
         <div
@@ -1146,10 +1324,11 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
           </div>
           <button
             onClick={() => props.setIsHistoryOpen(false)}
-            className="cursor-pointer transition-colors"
+            className="cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-white/10"
             style={{ color: "var(--color-muted-foreground)" }}
+            aria-label="Close version history"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5 hover:text-white" />
           </button>
         </div>
 

@@ -1,7 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable max-lines */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import type {
   Recipe,
   VesselProfile,
@@ -14,10 +14,12 @@ import type {
   VersionRow,
   InventoryItem,
   WastageReason,
+  BakersFormulaSummary,
 } from "../../types";
+import { calculateRecipeScale } from "../../utils/scaling";
 import { RecipeViewerView } from "./RecipeViewer.view";
 
-export type ScaleMode = "yield" | "weight" | "vessel";
+export type ScaleMode = "yield" | "weight" | "bakers" | "vessel";
 
 export interface CustomWeightOpts {
   mode: "weight";
@@ -40,6 +42,8 @@ export interface RecipeViewerProps {
     amount: number,
     unit: string,
   ) => void;
+  onIngredientUnitChange?: (ingId: string, newUnit: string) => void;
+  onBakersPercentageChange?: (ingId: string, percentage: number) => void;
   onCostFactorsChange?: (wastePct: number, portions: number) => void;
 
   onSaveVersion: () => Promise<void>;
@@ -65,24 +69,48 @@ const UNIT_TO_G: Record<string, number> = {
   oz: 28.35,
   lb: 453.59,
   kg: 1000,
+  ea: 50,
 };
 
 export function RecipeViewer(props: RecipeViewerProps) {
   // RecipeViewer states
   const [isWastageOpen, setIsWastageOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isBakersMode, setIsBakersMode] = useState(false);
 
-  // RecipeScalingPanel states
+  // Scaling states
   const [scaleMode, setScaleMode] = useState<ScaleMode>("yield");
-  const [targetYield, setTargetYield] = useState(props.recipe.yieldCount);
+  const [targetYield, setTargetYield] = useState(props.recipe.yieldCount || 1);
   const [targetWeight, setTargetWeight] = useState("");
+  const [targetBakersFlour, setTargetBakersFlour] = useState("");
   const [selectedVesselId, setSelectedVesselId] = useState(
     props.recipe.vesselId || "",
   );
 
+  // Close modals on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isHistoryOpen) setIsHistoryOpen(false);
+        if (isWastageOpen) setIsWastageOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isHistoryOpen, isWastageOpen]);
+
+  // Compute Baker's summary metrics
+  const bakersSummary: BakersFormulaSummary = useMemo(() => {
+    const { bakersSummary: summary } = calculateRecipeScale(
+      props.recipe.recipeIngredients || [],
+      props.recipe.yieldCount || 1,
+    );
+    return summary;
+  }, [props.recipe.recipeIngredients, props.recipe.yieldCount]);
+
   useEffect(() => {
     if (scaleMode === "yield") {
-      props.onScaleChange(targetYield / props.recipe.yieldCount);
+      props.onScaleChange(targetYield / (props.recipe.yieldCount || 1));
     }
   }, [scaleMode, targetYield, props.recipe.yieldCount, props.onScaleChange]);
 
@@ -92,7 +120,7 @@ export function RecipeViewer(props: RecipeViewerProps) {
         (v) => v.id === props.recipe.vesselId,
       );
       const targetVessel = props.vessels.find((v) => v.id === selectedVesselId);
-      if (currentVessel && targetVessel) {
+      if (currentVessel && targetVessel && currentVessel.volumeMl > 0) {
         props.onScaleChange(targetVessel.volumeMl / currentVessel.volumeMl);
       }
     }
@@ -109,6 +137,17 @@ export function RecipeViewer(props: RecipeViewerProps) {
     const weightNum = parseFloat(val) || 0;
     if (weightNum > 0) {
       props.onScaleChange(0, { mode: "weight", weight: weightNum });
+    } else {
+      props.onScaleChange(1.0);
+    }
+  };
+
+  const handleBakersFlourChange = (val: string) => {
+    setTargetBakersFlour(val);
+    const targetFlourG = parseFloat(val) || 0;
+    const baseFlourG = bakersSummary.totalFlourWeightG || 1;
+    if (targetFlourG > 0 && baseFlourG > 0) {
+      props.onScaleChange(targetFlourG / baseFlourG);
     } else {
       props.onScaleChange(1.0);
     }
@@ -192,13 +231,14 @@ export function RecipeViewer(props: RecipeViewerProps) {
     <RecipeViewerView
       // Props from parent
       {...props}
-
+      bakersSummary={bakersSummary}
       // RecipeViewer states
       isWastageOpen={isWastageOpen}
       setIsWastageOpen={setIsWastageOpen}
       isHistoryOpen={isHistoryOpen}
       setIsHistoryOpen={setIsHistoryOpen}
-
+      isBakersMode={isBakersMode}
+      setIsBakersMode={setIsBakersMode}
       // Scaling states
       scaleMode={scaleMode}
       setScaleMode={setScaleMode}
@@ -206,16 +246,16 @@ export function RecipeViewer(props: RecipeViewerProps) {
       setTargetYield={setTargetYield}
       targetWeight={targetWeight}
       handleWeightChange={handleWeightChange}
+      targetBakersFlour={targetBakersFlour}
+      handleBakersFlourChange={handleBakersFlourChange}
       selectedVesselId={selectedVesselId}
       setSelectedVesselId={setSelectedVesselId}
-
       // Cost states
       savedFlash={savedFlash}
       handleSaveCost={handleSaveCost}
       wastePct={wastePct}
       portions={portions}
       handleCostFactorsChange={handleCostFactorsChange}
-
       // Wastage states
       wastageSearchQuery={wastageSearchQuery}
       setWastageSearchQuery={setWastageSearchQuery}
