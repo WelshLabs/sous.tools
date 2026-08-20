@@ -25,7 +25,7 @@ export default function InventoryPage() {
             Quick Actions
           </h3>
           <Link
-            href="/inventory/orders/new"
+            href="/orders"
             className="glass-panel group flex items-center gap-4 p-6 transition-colors hover:border-sky-500/50"
           >
             <div className="rounded-xl bg-sky-500/20 p-3 text-sky-400 transition-transform group-hover:scale-110">
@@ -54,7 +54,7 @@ export default function InventoryPage() {
                 <Activity className="text-emerald-400" /> Active Orders
               </h3>
               <Link
-                href="/inventory/orders"
+                href="/orders"
                 className="text-sm text-sky-400 hover:underline"
               >
                 View All

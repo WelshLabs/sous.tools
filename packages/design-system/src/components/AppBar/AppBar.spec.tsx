@@ -19,7 +19,7 @@ vi.mock("next/link", () => ({
 describe("AppBar", () => {
   it("renders the primary brand logo link", () => {
     render(<AppBar />);
-    const linkElement = screen.getByRole("link");
+    const linkElement = screen.getByRole("link", { name: /sous/i });
     expect(linkElement).toBeInTheDocument();
     expect(linkElement).toHaveAttribute("href", "/home");
   });
@@ -49,6 +49,17 @@ describe("AppBar", () => {
     // Dropdown should be open
     expect(screen.getByText("Notifications")).toBeInTheDocument();
     expect(screen.getByText("New Item")).toBeInTheDocument();
+  });
+
+  it("toggles the waffle menu dropdown and renders orders link", () => {
+    render(<AppBar />);
+
+    const waffleTrigger = screen.getByRole("button", { name: "App launcher" });
+    fireEvent.click(waffleTrigger);
+
+    const ordersLink = screen.getByRole("link", { name: "Orders" });
+    expect(ordersLink).toBeInTheDocument();
+    expect(ordersLink).toHaveAttribute("href", "/orders");
   });
 
   it("calls onLogoutAction when logout button is clicked", () => {

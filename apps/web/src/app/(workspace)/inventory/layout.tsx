@@ -1,7 +1,7 @@
 import { SidebarLayout } from "@soustools/design-system";
 import Link from "next/link";
 import React from "react";
-import { Package, ListOrdered, Factory, FileText } from "lucide-react";
+import { Package, Factory, FileText } from "lucide-react";
 
 export default function InventoryLayout({
   children,
@@ -18,13 +18,6 @@ export default function InventoryLayout({
       >
         <Package className="h-4 w-4" />
         <span>Items Ledger</span>
-      </Link>
-      <Link
-        href="/inventory/orders"
-        className="hover:bg-accent text-muted-foreground hover:text-foreground flex items-center gap-2 rounded-lg p-2 text-sm font-medium transition-colors"
-      >
-        <ListOrdered className="h-4 w-4" />
-        <span>Orders</span>
       </Link>
       <Link
         href="/inventory/vendors"

@@ -16,6 +16,7 @@ export interface SupplierOrderGroupProps {
   onRemoveItem: (id: string) => void;
   onChangeQty: (id: string, qty: number) => void;
   onChangeSupplier: (id: string, supplierId: string | null) => void;
+  onChangeUnit?: (id: string, unit: string) => void;
   onShopOrder?: () => void;
 }
 
@@ -28,6 +29,7 @@ export function SupplierOrderGroup({
   onRemoveItem,
   onChangeQty,
   onChangeSupplier,
+  onChangeUnit,
   onShopOrder,
 }: SupplierOrderGroupProps) {
   return (
@@ -56,6 +58,7 @@ export function SupplierOrderGroup({
               onRemove={onRemoveItem}
               onChangeQty={onChangeQty}
               onChangeSupplier={onChangeSupplier}
+              onChangeUnit={onChangeUnit}
             />
           ))}
         </div>

@@ -4,12 +4,31 @@ import * as React from "react";
 import { Package, Zap, Trash2 } from "lucide-react";
 import type { OrderLineItem, OrderSupplier } from "./SupplierOrderGroup.types";
 
+const COMMON_UNITS = [
+  "ea",
+  "cs",
+  "lb",
+  "oz",
+  "kg",
+  "g",
+  "gal",
+  "qt",
+  "pt",
+  "bx",
+  "pk",
+  "bag",
+  "btl",
+  "can",
+  "dz",
+];
+
 export interface OrderItemRowProps {
   item: OrderLineItem;
   suppliers: OrderSupplier[];
   onRemove: (id: string) => void;
   onChangeQty: (id: string, qty: number) => void;
   onChangeSupplier: (id: string, supplierId: string | null) => void;
+  onChangeUnit?: (id: string, unit: string) => void;
 }
 
 export function OrderItemRow({
@@ -18,6 +37,7 @@ export function OrderItemRow({
   onRemove,
   onChangeQty,
   onChangeSupplier,
+  onChangeUnit,
 }: OrderItemRowProps) {
   const [qty, setQty] = React.useState(String(item.quantity));
 
@@ -62,11 +82,24 @@ export function OrderItemRow({
             step={0.5}
             onChange={(e) => setQty(e.target.value)}
             onBlur={commitQty}
+            aria-label="Quantity"
             className="text-foreground w-12 bg-transparent text-center text-sm font-black outline-none"
           />
-          <span className="text-muted-foreground border-border border-l pr-3 pl-2 text-[10px] font-black uppercase">
-            {item.unit}
-          </span>
+          <select
+            value={item.unit || "ea"}
+            onChange={(e) => onChangeUnit?.(item.id, e.target.value)}
+            aria-label="Unit"
+            className="text-muted-foreground border-border hover:text-foreground cursor-pointer border-l bg-transparent pr-2 pl-2 text-[10px] font-black uppercase outline-none"
+          >
+            {item.unit && !COMMON_UNITS.includes(item.unit) && (
+              <option value={item.unit}>{item.unit}</option>
+            )}
+            {COMMON_UNITS.map((u) => (
+              <option key={u} value={u} className="bg-card text-foreground">
+                {u}
+              </option>
+            ))}
+          </select>
         </div>
 
         <select
@@ -76,7 +109,7 @@ export function OrderItemRow({
         >
           <option value="">Move to...</option>
           {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>
+            <option key={s.id} value={s.id} className="bg-card text-foreground">
               {s.name}
             </option>
           ))}

@@ -14,6 +14,7 @@ import type {
   PurchaseOrderItem,
 } from "@soustools/api-types";
 import { OrdersPanelView } from "./OrdersPanel.view";
+import { AddVendorModal } from "./AddVendorModal";
 
 function toOrderSupplier(v: Vendor): OrderSupplier {
   return { id: v.id, name: v.name, deliveryDays: [], cutoffTime: "—" };
@@ -59,6 +60,11 @@ export interface OrdersPanelProps {
     qty: number,
     isWhiteboard: boolean,
   ) => Promise<void>;
+  onUpdateItemUnit?: (
+    id: string,
+    unit: string,
+    isWhiteboard: boolean,
+  ) => Promise<void>;
   onChangeSupplier: (
     id: string,
     supplierId: string | null,
@@ -67,24 +73,38 @@ export interface OrdersPanelProps {
   ) => Promise<void>;
   onSubmitPO: (poId: string) => Promise<void>;
   onShopOrder: (poId: string) => void;
+  onAddVendor?: () => void;
+  onVendorCreated?: (vendor: Vendor) => void;
 }
 
 export function OrdersPanel({
-  vendors,
+  vendors: initialVendors,
   whiteboardItems,
   purchaseOrders,
   onAddFreeText,
   onRemoveItem,
   onUpdateItemQty,
+  onUpdateItemUnit,
   onChangeSupplier,
   onSubmitPO,
   onShopOrder,
+  onAddVendor,
+  onVendorCreated,
 }: OrdersPanelProps) {
   const [activeTab, setActiveTab] = useState<"list" | "history">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [placingOrderId, setPlacingOrderId] = useState<string | null>(null);
+  const [isAddVendorModalOpen, setIsAddVendorModalOpen] = useState(false);
+  const [localVendors, setLocalVendors] = useState<Vendor[]>(initialVendors);
 
-  const suppliers = useMemo(() => vendors.map(toOrderSupplier), [vendors]);
+  useEffect(() => {
+    setLocalVendors(initialVendors);
+  }, [initialVendors]);
+
+  const suppliers = useMemo(
+    () => localVendors.map(toOrderSupplier),
+    [localVendors],
+  );
 
   const [items, setItems] = useState<OrderLineItem[]>(() => {
     const wItems = whiteboardItems.map(toOrderLineItem);
@@ -176,6 +196,15 @@ export function OrdersPanel({
     await onUpdateItemQty(id, qty, !item.supplier);
   };
 
+  const handleChangeUnit = async (id: string, unit: string) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, unit } : i)));
+    if (onUpdateItemUnit) {
+      await onUpdateItemUnit(id, unit, !item.supplier);
+    }
+  };
+
   const handleChangeSupplierLocal = async (
     id: string,
     supplierId: string | null,
@@ -212,30 +241,57 @@ export function OrdersPanel({
     if (po) onShopOrder(po.id);
   };
 
+  const handleAddVendorClick = () => {
+    if (onAddVendor) {
+      onAddVendor();
+    } else {
+      setIsAddVendorModalOpen(true);
+    }
+  };
+
+  const handleVendorCreatedLocal = (newVendor: Vendor) => {
+    setLocalVendors((prev) => {
+      if (prev.some((v) => v.id === newVendor.id)) return prev;
+      return [...prev, newVendor];
+    });
+    if (onVendorCreated) {
+      onVendorCreated(newVendor);
+    }
+  };
+
   const historyOrders = useMemo(
     () => purchaseOrders.filter((po) => po.status !== "DRAFT"),
     [purchaseOrders],
   );
 
   return (
-    <OrdersPanelView
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      items={items}
-      searchQuery={searchQuery}
-      suggestions={suggestions}
-      suppliers={suppliers}
-      groupedItems={groupedItems}
-      placingOrderId={placingOrderId}
-      historyOrders={historyOrders}
-      onSearchChange={setSearchQuery}
-      onSelectSuggestion={() => setSearchQuery("")}
-      onAddFreeText={handleAddFreeTextLocal}
-      onRemoveItem={handleRemoveLocal}
-      onChangeQty={handleChangeQty}
-      onChangeSupplier={handleChangeSupplierLocal}
-      onPlaceOrder={handlePlaceOrderLocal}
-      onShopOrder={handleShopOrderLocal}
-    />
+    <>
+      <OrdersPanelView
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        items={items}
+        searchQuery={searchQuery}
+        suggestions={suggestions}
+        suppliers={suppliers}
+        groupedItems={groupedItems}
+        placingOrderId={placingOrderId}
+        historyOrders={historyOrders}
+        onSearchChange={setSearchQuery}
+        onSelectSuggestion={() => setSearchQuery("")}
+        onAddFreeText={handleAddFreeTextLocal}
+        onRemoveItem={handleRemoveLocal}
+        onChangeQty={handleChangeQty}
+        onChangeSupplier={handleChangeSupplierLocal}
+        onChangeUnit={handleChangeUnit}
+        onPlaceOrder={handlePlaceOrderLocal}
+        onShopOrder={handleShopOrderLocal}
+        onAddVendor={handleAddVendorClick}
+      />
+      <AddVendorModal
+        isOpen={isAddVendorModalOpen}
+        onClose={() => setIsAddVendorModalOpen(false)}
+        onVendorCreated={handleVendorCreatedLocal}
+      />
+    </>
   );
 }

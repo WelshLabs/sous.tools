@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -73,7 +74,7 @@ export default function SelfShopPage() {
   return (
     <div className="animate-in slide-in-from-bottom-4 mx-auto flex min-h-screen max-w-3xl flex-col p-4 md:p-8">
       <Link
-        href="/inventory/orders"
+        href="/orders"
         className="text-muted-foreground hover:text-foreground mb-6 flex w-fit items-center gap-2 transition-colors"
       >
         <ArrowLeft size={16} /> Back to Purchasing
@@ -180,7 +181,6 @@ export default function SelfShopPage() {
                     formData.append("po_id", po.id);
 
                     try {
-                      // Post to the backend ingestion endpoint
                       const res = await fetch("/api/ingestion", {
                         method: "POST",
                         body: formData,

@@ -26,8 +26,10 @@ interface OrdersPanelViewProps {
   onRemoveItem: (id: string) => Promise<void>;
   onChangeQty: (id: string, qty: number) => Promise<void>;
   onChangeSupplier: (id: string, sId: string | null) => Promise<void>;
+  onChangeUnit?: (id: string, unit: string) => void;
   onPlaceOrder: (id: string) => Promise<void>;
   onShopOrder: (id: string) => void;
+  onAddVendor?: () => void;
 }
 
 export function OrdersPanelView({
@@ -46,14 +48,16 @@ export function OrdersPanelView({
   onRemoveItem,
   onChangeQty,
   onChangeSupplier,
+  onChangeUnit,
   onPlaceOrder,
   onShopOrder,
+  onAddVendor,
 }: OrdersPanelViewProps) {
   return (
     <div className="bg-background min-h-screen flex-1 p-8">
       <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
         <TwoToneHeader
-          breadcrumb="Procurement / Living Order List"
+          breadcrumb="Orders / Living Order List"
           title="Order Manager"
         />
         <div className="bg-muted/50 dark:bg-card/70 border-border dark:border-border flex rounded-2xl border p-1">
@@ -95,8 +99,10 @@ export function OrdersPanelView({
           onRemoveItem={onRemoveItem}
           onChangeQty={onChangeQty}
           onChangeSupplier={onChangeSupplier}
+          onChangeUnit={onChangeUnit}
           onPlaceOrder={onPlaceOrder}
           onShopOrder={onShopOrder}
+          onAddVendor={onAddVendor}
         />
       )}
     </div>

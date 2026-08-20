@@ -66,7 +66,7 @@ export function OrdersClient({
     qty: number,
     isWhiteboard: boolean,
   ) => {
-    if (isWhiteboard) return; // Whiteboard items don't have qty
+    if (isWhiteboard) return; // Whiteboard items do not have qty
     try {
       const res = await fetch(`/api/purchase-orders/items/${itemId}`, {
         method: "PATCH",
@@ -76,6 +76,23 @@ export function OrdersClient({
       if (!res.ok) throw new Error("Failed to update item");
     } catch (err: any) {
       toast.error(`Update failed: ${err.message}`);
+    }
+  };
+
+  const handleUpdateItemUnit = async (
+    itemId: string,
+    unit: string,
+    isWhiteboard: boolean,
+  ) => {
+    if (isWhiteboard) return;
+    try {
+      await fetch(`/api/purchase-orders/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ unit }),
+      });
+    } catch (_err: unknown) {
+      // Optimistic update handled locally
     }
   };
 
@@ -150,7 +167,7 @@ export function OrdersClient({
   };
 
   const handleShopOrder = (poId: string) => {
-    router.push(`/inventory/orders/${poId}/shop`);
+    router.push(`/orders/${poId}/shop`);
   };
 
   return (
@@ -161,6 +178,7 @@ export function OrdersClient({
       onAddFreeText={handleAddFreeText}
       onRemoveItem={handleRemoveItem}
       onUpdateItemQty={handleUpdateItemQty}
+      onUpdateItemUnit={handleUpdateItemUnit}
       onChangeSupplier={handleChangeSupplier}
       onSubmitPO={handleSubmitPO}
       onShopOrder={handleShopOrder}

@@ -9,6 +9,7 @@ import {
   Users,
   ClipboardList,
   Package,
+  ShoppingBag,
   Tv,
   ShieldCheck,
 } from "lucide-react";
@@ -102,6 +103,16 @@ export function WaffleMenuDropdown({
             <Package className="h-5 w-5 text-blue-400" />
           </div>
           <span className="text-xs font-medium">Inventory</span>
+        </Link>
+        <Link
+          href="/orders"
+          onClick={onCloseMenus}
+          className="hover:bg-card text-muted-foreground hover:text-foreground flex flex-col items-center justify-center rounded-lg p-2 transition-colors"
+        >
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
+            <ShoppingBag className="h-5 w-5 text-emerald-400" />
+          </div>
+          <span className="text-xs font-medium">Orders</span>
         </Link>
         <Link
           href="/signage"

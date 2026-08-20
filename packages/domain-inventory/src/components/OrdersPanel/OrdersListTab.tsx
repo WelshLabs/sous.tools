@@ -27,8 +27,10 @@ interface ListTabProps {
   onRemoveItem: (id: string) => Promise<void>;
   onChangeQty: (id: string, qty: number) => Promise<void>;
   onChangeSupplier: (id: string, supplierId: string | null) => Promise<void>;
+  onChangeUnit?: (id: string, unit: string) => void;
   onPlaceOrder: (supplierId: string) => Promise<void>;
   onShopOrder: (supplierId: string) => void;
+  onAddVendor?: () => void;
 }
 
 export function OrdersListTab({
@@ -44,8 +46,10 @@ export function OrdersListTab({
   onRemoveItem,
   onChangeQty,
   onChangeSupplier,
+  onChangeUnit,
   onPlaceOrder,
   onShopOrder,
+  onAddVendor,
 }: ListTabProps) {
   return (
     <div className="flex flex-col items-start gap-8 lg:flex-row">
@@ -73,6 +77,7 @@ export function OrdersListTab({
                 onRemoveItem={onRemoveItem}
                 onChangeQty={onChangeQty}
                 onChangeSupplier={onChangeSupplier}
+                onChangeUnit={onChangeUnit}
                 onShopOrder={() => onShopOrder(supplierId)}
               />
             ))}
@@ -81,7 +86,7 @@ export function OrdersListTab({
       </div>
 
       <div className="sticky top-8 w-full lg:max-w-[320px] lg:min-w-[240px] lg:flex-1">
-        <InsightsSidebar suppliers={suppliers} />
+        <InsightsSidebar suppliers={suppliers} onAddVendor={onAddVendor} />
       </div>
     </div>
   );

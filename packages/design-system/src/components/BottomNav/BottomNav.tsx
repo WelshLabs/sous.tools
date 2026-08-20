@@ -38,7 +38,7 @@ export interface BottomNavProps {
 const DEFAULT_ITEMS: BottomNavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Recipes", href: "/recipes", icon: ChefHat },
-  { label: "Orders", href: "/inventory/orders", icon: ShoppingBag },
+  { label: "Orders", href: "/orders", icon: ShoppingBag },
 ];
 
 /**
