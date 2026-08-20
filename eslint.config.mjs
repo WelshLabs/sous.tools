@@ -91,7 +91,7 @@ export default [
     },
   },
   {
-    files: ["apps/api/**/*.ts"],
+    files: ["apps/api/**/*.ts", "apps/web/src/app/**/*.{ts,tsx}"],
     rules: {
       "max-lines": "off",
     },

@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../packages/config/dist/cli.js next dev -p 3002",
-    "build": "node ../../packages/config/dist/cli.js next build",
-    "start": "node ../../packages/config/dist/cli.js next start",
+    "dev": "infisical run --env=${INFISICAL_ENV:-dev} -- next dev -p 3002",
+    "build": "infisical run --env=${INFISICAL_ENV:-dev} -- next build",
+    "start": "infisical run --env=${INFISICAL_ENV:-dev} -- next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0"
   },

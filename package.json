@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo build",
-    "db:reset": "node packages/config/dist/cli.js pnpm run db:reset:env",
+    "db:reset": "infisical run --env=${INFISICAL_ENV:-dev} -- pnpm run db:reset:env",
     "db:reset:env": "npx ts-node scripts/nuke-neo4j.ts && npx ts-node scripts/prepare-seed.ts && PGSSLMODE=disable npx supabase db reset --db-url=\"$SUPABASE_DIRECT_URL\"",
     "dev": "turbo dev",
     "lint": "turbo lint",
