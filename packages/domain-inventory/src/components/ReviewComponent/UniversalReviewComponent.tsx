@@ -57,7 +57,7 @@ export function UniversalReviewComponent({
     setIsLoading(true);
     try {
       const { data } = await api.GET(
-        `/unified-ingestion/review/${targetId}` as any,
+        `/ingestion/review/${targetId}` as any,
         {},
       );
       if (data) {
@@ -141,7 +141,7 @@ export function UniversalReviewComponent({
     async (newPayload: any) => {
       if (!activeReviewId) return;
       try {
-        await api.PATCH(`/unified-ingestion/review/${activeReviewId}` as any, {
+        await api.PATCH(`/ingestion/review/${activeReviewId}` as any, {
           body: { parsedData: newPayload } as any,
         });
       } catch (err) {
@@ -307,7 +307,7 @@ export function UniversalReviewComponent({
     if (!activeReviewId) return;
     setIsSubmitting(true);
     try {
-      await api.POST(`/unified-ingestion/commit` as any, {
+      await api.POST(`/ingestion/commit` as any, {
         body: { reviewId: activeReviewId, approvedPayload: payload } as any,
       });
       setStatusMessage(

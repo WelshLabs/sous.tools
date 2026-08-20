@@ -8,7 +8,7 @@ import {
   Query,
   NotFoundException,
 } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { SignageGateway } from "../signage/signage.gateway";
 import { ApiResponse } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";

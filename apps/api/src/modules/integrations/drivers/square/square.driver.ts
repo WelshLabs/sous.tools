@@ -2,7 +2,7 @@ import { BaseIntegrationDriver } from "../base.driver";
 import { IPosDriver, NormalizedPosEvent } from "../pos-driver.interface";
 import { Injectable } from "@nestjs/common";
 import { serverConfig as config } from "@soustools/config/server";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "../../../../core/database/supabase";
 import * as crypto from "crypto";
 
 @Injectable()

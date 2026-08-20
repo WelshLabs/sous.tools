@@ -3,14 +3,14 @@ import initializeServerLogger from "@soustools/logger/server";
 initializeServerLogger();
 
 import "reflect-metadata";
-import "./pre-bootstrap";
+import "./core/pre-bootstrap";
 import { serverConfig as config } from "@soustools/config/server";
 
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import * as fs from "fs";
 import { AppModule } from "./app.module";
-import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
+import { AllExceptionsFilter } from "./core/filters/all-exceptions.filter";
 import cookieParser from "cookie-parser";
 
 import * as express from "express";

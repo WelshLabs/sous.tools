@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 import {
   CreateItemDto,

@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common";
 import { google } from "googleapis";
 import { serverConfig as config } from "@soustools/config/server";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "../../../../core/database/supabase";
 
 @Injectable()
 export class GoogleDriveService {

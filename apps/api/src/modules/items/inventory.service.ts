@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
 interface DbStockRow {
   id: string;

@@ -13,7 +13,7 @@ import {
 import { type Request } from "express";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { SquareDriver } from "./drivers/square/square.driver";
 import { IPosDriver } from "./drivers/pos-driver.interface";
 

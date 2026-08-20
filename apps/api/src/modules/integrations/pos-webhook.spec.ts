@@ -2,11 +2,11 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { PosWebhookController } from "./pos-webhook.controller";
 import { Queue } from "bullmq";
 import { getQueueToken } from "@nestjs/bullmq";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { Request } from "express";
 import { SquareDriver } from "./drivers/square/square.driver";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn(),
   },

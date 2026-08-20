@@ -11,7 +11,7 @@ import { BullModule } from "@nestjs/bullmq";
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: "unified-ingestion",
+      name: "ingestion",
       defaultJobOptions: {
         attempts: 3,
         backoff: {

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { Recipe, RecipeIngredient } from "@soustools/api-types";
 import { mapRecipeRow } from "./recipes.mapper";
 

@@ -1,4 +1,4 @@
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { SignageGateway } from "./signage.gateway";
 
 /**

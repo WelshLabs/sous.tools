@@ -4,7 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { supabase } from "./supabase";
+import { supabase } from "../database/supabase";
 
 const COOKIE_NAME = "sb-access-token";
 

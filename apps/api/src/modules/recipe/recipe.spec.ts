@@ -6,9 +6,9 @@ import { IngredientsController } from "./ingredients.controller";
 import { IngredientsService } from "./ingredients.service";
 import { VesselsController } from "./vessels.controller";
 import { VesselsService } from "./vessels.service";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),

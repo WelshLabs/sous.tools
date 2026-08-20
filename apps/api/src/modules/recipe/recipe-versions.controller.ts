@@ -5,7 +5,7 @@ import {
   Param,
   NotFoundException,
 } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
 export interface ApiResponse<T> {
   success: boolean;

@@ -8,8 +8,8 @@ import {
   UseGuards,
   UsePipes,
 } from "@nestjs/common";
-import { AdminGuard } from "../../common/guards/admin.guard";
-import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { AdminGuard } from "../../shared/guards/admin.guard";
+import { ZodValidationPipe } from "../../shared/pipes/zod-validation.pipe";
 import {
   PasswordUpdateSchema,
   type PasswordUpdateDto,

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { UnifiedIngestionService } from "./unified-ingestion.service";
+import { IngestionService } from "./ingestion.service";
 import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
@@ -15,13 +15,13 @@ jest.mock("../../lib/supabase", () => ({
   },
 }));
 
-describe("UnifiedIngestionService", () => {
-  let service: UnifiedIngestionService;
+describe("IngestionService", () => {
+  let service: IngestionService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UnifiedIngestionService,
+        IngestionService,
         {
           provide: Neo4jSyncService,
           useValue: {
@@ -31,7 +31,7 @@ describe("UnifiedIngestionService", () => {
       ],
     }).compile();
 
-    service = module.get<UnifiedIngestionService>(UnifiedIngestionService);
+    service = module.get<IngestionService>(IngestionService);
     jest.clearAllMocks();
   });
 

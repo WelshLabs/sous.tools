@@ -3,9 +3,9 @@ import { IntegrationsController } from "./integrations.controller";
 import { IntegrationsService } from "./integrations.service";
 import { SquareDriver } from "./drivers/square/square.driver";
 import { GoogleDriveService } from "./drivers/google-drive/google-drive.service";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),

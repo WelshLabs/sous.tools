@@ -10,7 +10,7 @@ import { NutritionService } from "./nutrition.service";
 import { LabelRendererService } from "./label-renderer.service";
 import { UsdaResolverService } from "./usda-resolver.service";
 import type { Recipe, RecipeNutritionCache } from "@soustools/api-types";
-import { createAdminClient } from "../../lib/supabase";
+import { createAdminClient } from "../../core/database/supabase";
 
 @Controller("recipes")
 export class NutritionController {
