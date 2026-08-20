@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 "use client";
 
 import { useState } from "react";
@@ -53,8 +52,7 @@ export function POSPastOrdersModal({
                 Past Orders & Transactions
               </CardTitle>
               <p className="text-muted-foreground text-xs">
-                Review past sales, re-print receipts, and process refunds or
-                voids
+                Review sales history, reprints, refunds, and voids
               </p>
             </div>
           </div>
@@ -68,7 +66,6 @@ export function POSPastOrdersModal({
           </Button>
         </CardHeader>
 
-        {/* Search */}
         <div className="border-b border-white/5 bg-black/10 p-4">
           <input
             type="text"
@@ -80,8 +77,7 @@ export function POSPastOrdersModal({
         </div>
 
         <CardContent className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 md:grid-cols-2">
-          {/* Order List */}
-          <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+          <div className="max-h-[380px] space-y-2 overflow-y-auto pr-1">
             {filteredOrders.length === 0 ? (
               <div className="text-muted-foreground py-12 text-center text-xs">
                 No past transactions found.
@@ -124,7 +120,7 @@ export function POSPastOrdersModal({
                         })}
                       </span>
                       <span className="text-accent text-sm font-black">
-                        ${order.total_money.toFixed(2)}
+                        $${order.total_money.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -133,7 +129,6 @@ export function POSPastOrdersModal({
             )}
           </div>
 
-          {/* Order Details Panel */}
           <div className="flex flex-col justify-between rounded-xl border border-white/10 bg-black/30 p-4">
             {selectedOrder ? (
               <div className="space-y-4">
@@ -148,7 +143,6 @@ export function POSPastOrdersModal({
                     Time: {new Date(selectedOrder.created_at).toLocaleString()}
                   </p>
                 </div>
-
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Status:</span>
@@ -159,11 +153,10 @@ export function POSPastOrdersModal({
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Total:</span>
                     <span className="text-accent text-base font-black">
-                      ${selectedOrder.total_money.toFixed(2)}
+                      $${selectedOrder.total_money.toFixed(2)}
                     </span>
                   </div>
                 </div>
-
                 {selectedOrder.state !== "VOIDED" &&
                   selectedOrder.state !== "REFUNDED" && (
                     <div className="flex gap-2 border-t border-white/10 pt-4">
@@ -173,8 +166,7 @@ export function POSPastOrdersModal({
                         className="border-destructive/40 text-destructive hover:bg-destructive/10 flex-1 text-xs font-bold"
                         onClick={() => onVoidRefund(selectedOrder.id, "VOID")}
                       >
-                        <Ban className="mr-1 h-3.5 w-3.5" />
-                        Void Order
+                        <Ban className="mr-1 h-3.5 w-3.5" /> Void
                       </Button>
                       <Button
                         variant="outline"
@@ -182,8 +174,7 @@ export function POSPastOrdersModal({
                         className="flex-1 border-amber-500/40 text-xs font-bold text-amber-400 hover:bg-amber-500/10"
                         onClick={() => onVoidRefund(selectedOrder.id, "REFUND")}
                       >
-                        <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                        Refund
+                        <RotateCcw className="mr-1 h-3.5 w-3.5" /> Refund
                       </Button>
                     </div>
                   )}
