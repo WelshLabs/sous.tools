@@ -1,4 +1,4 @@
-/* eslint-disable max-lines, @typescript-eslint/no-explicit-any */
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useEffect } from "react";

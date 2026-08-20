@@ -1,16 +1,18 @@
 /* eslint-disable max-lines */
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import {
   Settings,
   CheckCircle,
   AlertTriangle,
   Clock,
-  ChevronLeft,
   Check,
+  LayoutGrid,
+  ChefHat,
 } from "lucide-react";
 import { Button, OmniBar } from "@soustools/design-system";
+import { WaffleMenuDropdown } from "@soustools/design-system";
 import { type KDSTicket, type KDSTicketItem } from "./kds.types";
 
 interface KDSViewProps {
@@ -36,6 +38,7 @@ export function KDSView({
   density,
   textSize,
 }: KDSViewProps) {
+  const [isWaffleOpen, setIsWaffleOpen] = useState(false);
   const filteredTickets = tickets.filter((t) => t.status === viewFilter);
 
   const gridClasses = {
@@ -51,27 +54,45 @@ export function KDSView({
   }[textSize];
 
   return (
-    <div className="dark:bg-card relative flex min-h-[calc(100vh-100px)] flex-col space-y-6 overflow-hidden bg-zinc-50 p-6 text-zinc-900 dark:text-zinc-100">
-      <header className="flex shrink-0 items-center justify-between">
+    <div className="dark:bg-card relative flex min-h-screen flex-col space-y-4 overflow-hidden bg-zinc-50 p-5 text-zinc-900 dark:text-zinc-100">
+      {/* KDS Header with Waffle Launcher, Title, Filter Tabs, Omnibar, and Settings */}
+      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-white/5 pb-3">
+        {/* Left: Waffle Menu & App Title */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/home"
-            className="flex-shrink-0 rounded-xl border border-black/10 bg-black/5 p-2.5 text-zinc-600 transition-colors hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Link>
-          <div className="flex-shrink-0">
-            <OmniBar />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsWaffleOpen((prev) => !prev)}
+              aria-label="App Launcher"
+              className="hover:bg-muted text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-all hover:scale-105 active:scale-95"
+            >
+              <LayoutGrid className="h-5 w-5 text-sky-400" />
+            </button>
+
+            {isWaffleOpen && (
+              <WaffleMenuDropdown
+                onCloseMenus={() => setIsWaffleOpen(false)}
+                isAdmin={true}
+              />
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ChefHat className="h-5 w-5 text-orange-400" />
+            <h1 className="text-foreground hidden text-base font-black tracking-tight sm:block">
+              Kitchen Display
+            </h1>
           </div>
         </div>
 
-        <div className="flex flex-1 justify-center">
+        {/* Center: Open / Completed Tabs */}
+        <div className="flex justify-center">
           <div className="flex rounded-xl border border-black/5 bg-black/5 p-1 text-xs font-semibold dark:border-white/5 dark:bg-black/40">
             <button
               onClick={() => onSetViewFilter("OPEN")}
               className={`cursor-pointer rounded-lg px-4 py-2 transition-all ${
                 viewFilter === "OPEN"
-                  ? "text-foreground bg-black/10 dark:bg-white/10"
+                  ? "text-foreground bg-black/10 font-bold dark:bg-white/10"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -81,7 +102,7 @@ export function KDSView({
               onClick={() => onSetViewFilter("CLOSED")}
               className={`cursor-pointer rounded-lg px-4 py-2 transition-all ${
                 viewFilter === "CLOSED"
-                  ? "text-foreground bg-black/10 dark:bg-white/10"
+                  ? "text-foreground bg-black/10 font-bold dark:bg-white/10"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -90,22 +111,30 @@ export function KDSView({
           </div>
         </div>
 
-        <button
-          onClick={onOpenSettings}
-          className="bg-card text-muted-foreground hover:text-foreground flex-shrink-0 cursor-pointer rounded-xl border border-black/10 bg-black/5 p-2.5 transition-colors hover:bg-black/10 dark:border-white/10"
-        >
-          <Settings className="h-5 w-5" />
-        </button>
+        {/* Right: Omnibar & Settings Button */}
+        <div className="flex items-center gap-3">
+          <div className="hidden md:block">
+            <OmniBar />
+          </div>
+
+          <button
+            onClick={onOpenSettings}
+            title="KDS Settings"
+            className="text-muted-foreground hover:text-foreground flex-shrink-0 cursor-pointer rounded-xl border border-black/10 bg-black/5 p-2.5 transition-colors hover:bg-black/10 dark:border-white/10 dark:hover:bg-white/10"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
+        </div>
       </header>
 
-      <div className="flex h-[calc(100vh-230px)] min-h-0 flex-1 gap-6 overflow-hidden">
+      <div className="flex h-[calc(100vh-100px)] min-h-0 flex-1 gap-6 overflow-hidden">
         <div className="flex min-w-0 flex-1 flex-col">
           <div
             className={`grid flex-1 overflow-y-auto pr-1 ${gridClasses} pb-10`}
           >
             {filteredTickets.length === 0 ? (
               <div className="glass-panel text-muted-foreground col-span-full flex h-64 flex-col items-center justify-center rounded-2xl p-12">
-                <CheckCircle className="mb-3 h-12 w-12 opacity-60" />
+                <CheckCircle className="mb-3 h-12 w-12 text-emerald-400 opacity-60" />
                 <p className="text-foreground text-lg font-bold">
                   All tickets completed!
                 </p>
@@ -133,7 +162,11 @@ export function KDSView({
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span
-                              className={`font-black tracking-tight ${fontClasses.title} ${ticket.isRush ? "text-amber-500" : "text-foreground"}`}
+                              className={`font-black tracking-tight ${fontClasses.title} ${
+                                ticket.isRush
+                                  ? "text-amber-500"
+                                  : "text-foreground"
+                              }`}
                             >
                               Ticket #{ticket.ticketNumber}
                             </span>
@@ -147,7 +180,7 @@ export function KDSView({
                             {ticket.tableNumber}
                           </span>
                         </div>
-                        <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                        <div className="text-muted-foreground flex items-center gap-1 text-xs font-semibold">
                           <Clock className="h-3.5 w-3.5" />
                           <span>{ageMinutes}m</span>
                         </div>
@@ -171,7 +204,11 @@ export function KDSView({
                             >
                               <div className="flex items-center justify-between">
                                 <span
-                                  className={`font-bold ${fontClasses.body} ${isDone ? "text-muted-foreground" : "text-foreground"}`}
+                                  className={`font-bold ${fontClasses.body} ${
+                                    isDone
+                                      ? "text-muted-foreground"
+                                      : "text-foreground"
+                                  }`}
                                 >
                                   {item.qty}x {item.name}
                                 </span>
@@ -245,3 +282,4 @@ export function KDSView({
     </div>
   );
 }
+KDSView.displayName = "KDSView";

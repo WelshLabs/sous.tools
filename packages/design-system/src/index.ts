@@ -105,7 +105,11 @@ export type {
   OmniTranscriptTimelineProps,
 } from "./components/OmniBar";
 
-export { AppBar, AppBarPresentation } from "./components/AppBar";
+export {
+  AppBar,
+  AppBarPresentation,
+  WaffleMenuDropdown,
+} from "./components/AppBar";
 export type {
   AppBarProps,
   AppBarPresentationProps,
