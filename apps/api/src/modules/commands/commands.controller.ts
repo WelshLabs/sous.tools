@@ -8,8 +8,8 @@ import {
   UsePipes,
   Req,
 } from "@nestjs/common";
-import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
-import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
+import { ZodValidationPipe } from "../../shared/pipes/zod-validation.pipe";
 import {
   type OmnibarCommandPayload,
   OmnibarCommandPayloadSchema,

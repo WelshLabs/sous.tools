@@ -3,7 +3,7 @@ import {
   type ExecutionContext,
   Injectable,
 } from "@nestjs/common";
-import { supabase } from "./supabase";
+import { supabase } from "../database/supabase";
 import { WsException } from "@nestjs/websockets";
 
 @Injectable()

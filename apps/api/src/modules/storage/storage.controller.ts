@@ -7,10 +7,10 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { ApiBody, ApiProperty } from "@nestjs/swagger";
-import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
+import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
 import { ApiResponse } from "@soustools/api-types";
 import { randomUUID } from "crypto";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
 class UploadUrlDto {
   @ApiProperty({ description: "Name of the file", example: "image.png" })

@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
 import { serverConfig as config } from "@soustools/config/server";
 
@@ -55,8 +55,8 @@ export interface IngestionReviewPayload {
 }
 
 @Injectable()
-export class UnifiedIngestionService {
-  private readonly logger = new Logger(UnifiedIngestionService.name);
+export class IngestionService {
+  private readonly logger = new Logger(IngestionService.name);
 
   constructor(private readonly neo4jSync: Neo4jSyncService) {}
 

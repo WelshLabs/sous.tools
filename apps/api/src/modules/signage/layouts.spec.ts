@@ -2,10 +2,10 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { LayoutsController } from "./layouts.controller";
 import { LayoutsService } from "./layouts.service";
 import { SignageGateway } from "./signage.gateway";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { Server } from "socket.io";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),

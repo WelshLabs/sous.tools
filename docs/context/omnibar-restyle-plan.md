@@ -34,10 +34,10 @@ apps/api/modules/commands/
  │                           with the domain modules that actually implement each tool's behavior)
  └─ commands.controller.ts→ REST fallback POST /commands/execute, GET /commands/conversations/:id/messages
 
-apps/api/modules/unified-ingestion/
- ├─ unified-ingestion.processor.ts → BullMQ worker; per-page block extraction via LiteLLM vision call,
+apps/api/modules/ingestion/
+ ├─ ingestion.processor.ts → BullMQ worker; per-page block extraction via LiteLLM vision call,
  │                                    fallback to keyword-sniffing sample data if the model call fails
- └─ unified-ingestion.service.ts   → embeddings, master-item + USDA top-5 matching, review CRUD, commit-to-DB
+ └─ ingestion.service.ts   → embeddings, master-item + USDA top-5 matching, review CRUD, commit-to-DB
 
 Persistence: Supabase `chat_conversations` + `chat_messages` (migration 00004), RLS-enabled.
 ```
@@ -79,9 +79,9 @@ Persistence: Supabase `chat_conversations` + `chat_messages` (migration 00004), 
    `if (functionName === "...")` branch mixing prompt-engineering, DB writes, Neo4j calls, BullMQ enqueues,
    and message emission all in one file. Zero use of NestJS's IoC/DI to let each domain module own and
    register its own tools.
-9. **Image parsing is unreliable and undocumented in failure**: `unified-ingestion.processor.ts` fetches
+9. **Image parsing is unreliable and undocumented in failure**: `ingestion.processor.ts` fetches
    the image, base64-encodes it, and sends it as an OpenAI-style `image_url` content part to whatever model
-   is configured as `gemini-3.6-flash` in LiteLLM. If that call throws for *any* reason (bad model alias,
+   is configured as `gemini-3.6-flash` in LiteLLM. If that call throws for _any_ reason (bad model alias,
    network blip, vision-unsupported model route, malformed response), the code silently swallows the error
    (`catch (err) { this.logger.error(...) }`) and falls through to `buildFallbackBlocks(rawText)` — which
    is a **keyword-sniffing stub that returns literally hardcoded sample data** ("Sysco Food Services",
@@ -93,11 +93,11 @@ Persistence: Supabase `chat_conversations` + `chat_messages` (migration 00004), 
     shows every field as an always-editable input** rather than static text that becomes editable on click,
     contradicting the explicit ask that fields "look like normal text unless you click to modify it." There
     is also no persisted learning loop: `handleConfirmAlias` posts to `/ingestion/alias` (vendor item ↔
-    master item), but nothing feeds that alias table back into the *next* extraction's tenant-match ranking
+    master item), but nothing feeds that alias table back into the _next_ extraction's tenant-match ranking
     at ingestion time — `searchMasterItemsTop5` only does pgvector embedding similarity, it never joins
     against previously-confirmed aliases first. So "the system never gets smarter" is accurate: the alias
     table is written to but never read from during ingestion.
-11. **No explicit USDA-linking guarantee for ingredients.** `unified-ingestion.processor.ts` calls
+11. **No explicit USDA-linking guarantee for ingredients.** `ingestion.processor.ts` calls
     `usdaResolver.searchTop5(guessName)` and defaults `selectedUsdaId` to `usdaMatches[0]?.fdcId` — i.e. it
     auto-picks the #1 fuzzy text match with no confidence threshold, no verification step, and no way to
     tell the difference between "confidently linked" and "guessed because something existed at index 0."
@@ -174,16 +174,16 @@ so the rail defaults to hidden behind a hamburger/menu affordance on small viewp
 
 Concrete component mapping (prototype → our real implementation):
 
-| Prototype file | Maps to | Action |
-|---|---|---|
-| `components/omnibar/omnibar.view.tsx` | `OmniBarPresentation.tsx` | Adopt the 3-mode layout logic (home-centered / FAB+overlay), re-skin with our actual `--color-*` tokens instead of the prototype's own token guesses |
-| `components/omnibar/molecules/omnibar-composer.view.tsx` | `OmniInputPill.tsx` | Match the pill shell styling (rounded-full border, `OmnibarPerimeterView` animated border), already structurally similar — align spacing/radius tokens |
-| `components/omnibar/organisms/omnibar-timeline.view.tsx` | New transcript view (Phase 2) | Port the scrollable timeline shell, mask-image fade at top, "Clear" affordance |
-| `components/omnibar/molecules/message-event.view.tsx` | New message bubble component | Port `flex-row-reverse` + asymmetric radius alignment logic |
-| `components/omnibar/molecules/activity-event.view.tsx` | Thought-trace step (Phase 4) | Port the "title + detail + working/complete" shape as the inner row of each collapsed trace step |
-| `components/omnibar/molecules/metrics-event.view.tsx` | Artifact column metric card | Port 3-column metric tile grid into the new second-column artifact renderer |
-| `components/omnibar/molecules/operation-event.view.tsx` | Artifact column "change"/"ingestion" card | Port the review/apply button pattern for suggested changes |
-| `lib/omnibar/types.ts` (`OmnibarEvent` union) | Extend `OmniMessage` schema | The prototype's tagged-union event model (`user | agent | activity | uploads | metrics | change | ingestion`) is cleaner than our current single flat `OmniMessage` with optional fields — consider narrowing our schema toward this discriminated-union shape as part of the Phase 2 rebuild, since it directly enables the trace-grouping and artifact-column logic without ad hoc type-narrowing |
+| Prototype file                                           | Maps to                                   | Action                                                                                                                                                 |
+| -------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `components/omnibar/omnibar.view.tsx`                    | `OmniBarPresentation.tsx`                 | Adopt the 3-mode layout logic (home-centered / FAB+overlay), re-skin with our actual `--color-*` tokens instead of the prototype's own token guesses   |
+| `components/omnibar/molecules/omnibar-composer.view.tsx` | `OmniInputPill.tsx`                       | Match the pill shell styling (rounded-full border, `OmnibarPerimeterView` animated border), already structurally similar — align spacing/radius tokens |
+| `components/omnibar/organisms/omnibar-timeline.view.tsx` | New transcript view (Phase 2)             | Port the scrollable timeline shell, mask-image fade at top, "Clear" affordance                                                                         |
+| `components/omnibar/molecules/message-event.view.tsx`    | New message bubble component              | Port `flex-row-reverse` + asymmetric radius alignment logic                                                                                            |
+| `components/omnibar/molecules/activity-event.view.tsx`   | Thought-trace step (Phase 4)              | Port the "title + detail + working/complete" shape as the inner row of each collapsed trace step                                                       |
+| `components/omnibar/molecules/metrics-event.view.tsx`    | Artifact column metric card               | Port 3-column metric tile grid into the new second-column artifact renderer                                                                            |
+| `components/omnibar/molecules/operation-event.view.tsx`  | Artifact column "change"/"ingestion" card | Port the review/apply button pattern for suggested changes                                                                                             |
+| `lib/omnibar/types.ts` (`OmnibarEvent` union)            | Extend `OmniMessage` schema               | The prototype's tagged-union event model (`user                                                                                                        | agent | activity | uploads | metrics | change | ingestion`) is cleaner than our current single flat `OmniMessage` with optional fields — consider narrowing our schema toward this discriminated-union shape as part of the Phase 2 rebuild, since it directly enables the trace-grouping and artifact-column logic without ad hoc type-narrowing |
 
 None of the prototype's actual token values (colors, spacing) should be copied verbatim — it doesn't know
 our design system. Only the **structure, motion patterns, and information architecture** should be ported;
@@ -207,7 +207,8 @@ visual values must resolve through our real `--color-*`/`--ds-*` CSS variables.
   inline `render_component` swaps in the transcript and into this column exclusively.
 
 Validation: Storybook story exercising a mixed history array with 3 consecutive agent_steps + user + model
-+ one render_component directive, confirming the artifact renders in the side column, not inline.
+
+- one render_component directive, confirming the artifact renders in the side column, not inline.
 
 ### Phase 5 — Sticky composer + polish
 
@@ -242,8 +243,9 @@ auto-create a conversation id, seed `inputText` with the shared text/url, and au
 ## 6. Tooling Architecture: Co-located Tools + IoC Registration
 
 ### Current state
+
 `commands-tools.ts` is a flat file exporting 14 plain-object JSON-schema tool definitions with **zero
-connection to NestJS's dependency injection** — the actual tool *behavior* lives in one giant if/else chain
+connection to NestJS's dependency injection** — the actual tool _behavior_ lives in one giant if/else chain
 inside `commands.service.ts`, manually wired to services injected into `CommandsService`'s constructor
 (`PurchaseOrdersService`, `VendorsService`, `WhiteboardService`, `RecipeCostService`, `Neo4jService`, the
 ingestion `Queue`). Adding a new tool means: (1) add a schema object to `commands-tools.ts`, (2) add it to
@@ -280,14 +282,14 @@ This does not scale and is the direct cause of "we can't even think about expand
      `PurchaseOrdersService`/`VendorsService`, both already local to that module)
    - `apps/api/src/modules/items/tools/add-to-whiteboard.tool.ts`
    - `apps/api/src/modules/recipe/tools/get-recipe-cost.tool.ts`
-   - `apps/api/src/modules/unified-ingestion/tools/ingest-document.tool.ts`
+   - `apps/api/src/modules/ingestion/tools/ingest-document.tool.ts`
    - `apps/api/src/modules/neo4j-sync/tools/execute-cypher-query.tool.ts`
    - `apps/api/src/modules/pos/tools/get-pos-sales-stats.tool.ts`
    - Generic/cross-cutting tools (`render_ui_component`, `enqueue_background_task`, `search_the_web`,
      `update_review_state`) can live in a new `apps/api/src/modules/commands/tools/` subfolder since they
      don't belong to any single domain.
-   Each module already imports the services its tool needs — DI just injects them into the tool class
-   instead of into `CommandsService`.
+     Each module already imports the services its tool needs — DI just injects them into the tool class
+     instead of into `CommandsService`.
 4. **New `AgentToolRegistryService`** (in `commands` module) collects all registered `AgentTool` providers
    at boot via NestJS `DiscoveryService`, exposes `getAllToolDefinitions()` (replaces
    `ALL_COMMAND_TOOLS.map(...)` in the LiteLLM payload builder) and `execute(name, args, ctx)` (replaces the
@@ -298,7 +300,7 @@ This does not scale and is the direct cause of "we can't even think about expand
 6. **Each domain module's `*.module.ts`** adds its own tool provider(s) to its `providers` array and, if
    using a decorator/multi-provider pattern, no further wiring is needed — `CommandsModule` only needs to
    import those modules (which it already does for `ItemsModule`, `RecipeModule`, `Neo4jSyncModule`) plus
-   any newly-tool-bearing modules (`UnifiedIngestionModule`, `PosModule`).
+   any newly-tool-bearing modules (`IngestionModule`, `PosModule`).
 
 This gives a clean path to "there are a lot more tools that need to be added" — new tools become
 self-contained files inside the module that owns the underlying capability, with no changes required to
@@ -321,7 +323,7 @@ therefore returns an almost-always-empty or drastically incomplete list, which i
 
 1. **Persist the user's message immediately on receipt**, before calling LiteLLM, inside
    `CommandsGateway.handleExecuteCommand` (or at the top of `CommandsService.handleCommand`) — using the
-   *real* `orgId`/`userId` already resolved from the authenticated socket.
+   _real_ `orgId`/`userId` already resolved from the authenticated socket.
 2. **Persist every `agent_step` message** at the same point it's `emitMessage`'d inside the tool-dispatch
    loop in `handleCommand` — not just the ones routed through `emitIngestionUpdate`.
 3. **Persist the final assistant (`model`) reply** and the `render_component` directive messages emitted
@@ -342,7 +344,7 @@ therefore returns an almost-always-empty or drastically incomplete list, which i
    processor) rather than each calling `supabase.from("chat_messages").insert()` independently.
 7. **Background-safe behavior**: because ingestion runs in a BullMQ worker decoupled from any open socket
    connection, the "leave the page immediately after triggering an ingestion, come back later and it's
-   done" requirement is *already structurally possible* (the processor runs regardless of client
+   done" requirement is _already structurally possible_ (the processor runs regardless of client
    connection) — but only once messages are reliably persisted (#1–#4) and the conversation list (Phase 1)
    lets the user navigate back to find it. The existing `notifications` insert + `notification:new` socket
    emit in `emitIngestionUpdate` already covers the "send a notification when done" requirement structurally,
@@ -357,7 +359,7 @@ therefore returns an almost-always-empty or drastically incomplete list, which i
 1. **Auth token race on reconnect**: `packages/api-client/src/websocket.ts` builds `socket.auth` as an
    async callback (`auth: async (cb) => cb({ token: options.token })`), but `options.token` is captured
    **once at socket-creation time** in `use-omni-socket.hook.ts` (`createWebSocketClient({ namespace:
-   "/commands" })` — no `token` or `getToken` is ever passed in). This means the socket is created with
+"/commands" })` — no `token` or `getToken` is ever passed in). This means the socket is created with
    `token: undefined` from the very first connection, and the `auth` callback will keep returning
    `undefined` forever, since nothing ever updates `options.token` after creation. The
    `WsSupabaseAuthGuard` on the server then legitimately rejects the connection or accepts it only if
@@ -380,7 +382,7 @@ therefore returns an almost-always-empty or drastically incomplete list, which i
 4. **Duplicate/out-of-order messages** — two independent causes converge here:
    - Reconnect logic in `use-omni-socket.hook.ts`'s `handleReauthenticated` **re-emits the last full
      command payload** (`wsSocket.emit("executeCommand", lastPayloadRef.current)`) whenever a
-     `reauthenticated` event fires. If the server had *already* processed part of the original request
+     `reauthenticated` event fires. If the server had _already_ processed part of the original request
      before the auth blip (e.g., had emitted some `agent_step`s already), replaying the entire command
      causes the LLM tool loop to run again from scratch, duplicating every step and the final reply.
    - Cross-process write races described in §7 item 6 (gateway path vs. BullMQ processor path both writing
@@ -481,7 +483,7 @@ need to review."
    the tenant-match table and USDA-match table currently rendered as separate stacked UI blocks per item
    should become one compact row with a match chip that expands to show alternates only when clicked, not
    a permanently-rendered waterfall of every candidate for every item.
-6. **Surface extraction failure honestly.** Per Problem #9, when `unified-ingestion.processor.ts` falls
+6. **Surface extraction failure honestly.** Per Problem #9, when `ingestion.processor.ts` falls
    back to `buildFallbackBlocks` because the real vision call failed, the review screen must show an
    explicit "extraction failed — showing placeholder, please re-upload or retry" banner rather than
    presenting the hardcoded sample data as if it were real extracted content.
@@ -493,7 +495,7 @@ content rendered in that second column rather than swapped inline into the chat 
 
 ## 10. Image Parsing Reliability
 
-Directly expands Problem #9. Concrete fixes for `unified-ingestion.processor.ts`'s `extractPageBlocks`:
+Directly expands Problem #9. Concrete fixes for `ingestion.processor.ts`'s `extractPageBlocks`:
 
 1. **Stop silently swallowing vision-call failures.** Replace the bare `catch (err) { this.logger.error }`
    with a typed result (`{ ok: true, blocks } | { ok: false, reason }`) so the caller can distinguish "model

@@ -10,9 +10,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "App"
-        ]
+        "tags": ["App"]
       }
     },
     "/favicon.ico": {
@@ -24,9 +22,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "App"
-        ]
+        "tags": ["App"]
       }
     },
     "/notifications": {
@@ -56,9 +52,7 @@
           }
         },
         "summary": "Get paginated notifications",
-        "tags": [
-          "App"
-        ]
+        "tags": ["App"]
       }
     },
     "/notifications/unread": {
@@ -70,9 +64,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "App"
-        ]
+        "tags": ["App"]
       }
     },
     "/health": {
@@ -84,9 +76,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Health"
-        ]
+        "tags": ["Health"]
       }
     },
     "/signage/layouts": {
@@ -98,9 +88,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Layouts"
-        ]
+        "tags": ["Layouts"]
       },
       "post": {
         "operationId": "LayoutsController_create",
@@ -110,9 +98,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Layouts"
-        ]
+        "tags": ["Layouts"]
       }
     },
     "/signage/layouts/slug/{orgSlug}/{deckSlug}": {
@@ -141,9 +127,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Layouts"
-        ]
+        "tags": ["Layouts"]
       }
     },
     "/signage/layouts/{id}": {
@@ -164,9 +148,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Layouts"
-        ]
+        "tags": ["Layouts"]
       },
       "put": {
         "operationId": "LayoutsController_update",
@@ -185,9 +167,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Layouts"
-        ]
+        "tags": ["Layouts"]
       },
       "delete": {
         "operationId": "LayoutsController_remove",
@@ -206,9 +186,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Layouts"
-        ]
+        "tags": ["Layouts"]
       }
     },
     "/signage/displays/active-connections": {
@@ -220,9 +198,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       }
     },
     "/signage/displays": {
@@ -234,9 +210,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       },
       "post": {
         "operationId": "DisplaysController_create",
@@ -246,9 +220,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       }
     },
     "/signage/displays/{id}": {
@@ -269,9 +241,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       },
       "put": {
         "operationId": "DisplaysController_update",
@@ -290,9 +260,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       },
       "delete": {
         "operationId": "DisplaysController_remove",
@@ -311,9 +279,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       }
     },
     "/signage/displays/{id}/heartbeat": {
@@ -334,9 +300,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       }
     },
     "/signage/displays/pair/confirm": {
@@ -348,9 +312,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Displays"
-        ]
+        "tags": ["Displays"]
       }
     },
     "/pos-simulator/items": {
@@ -371,9 +333,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PosSimulator"
-        ]
+        "tags": ["PosSimulator"]
       }
     },
     "/pos-simulator/seed": {
@@ -385,9 +345,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PosSimulator"
-        ]
+        "tags": ["PosSimulator"]
       }
     },
     "/pos-simulator/items/toggle-sold-out": {
@@ -399,9 +357,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PosSimulator"
-        ]
+        "tags": ["PosSimulator"]
       }
     },
     "/pos-simulator/items/{id}": {
@@ -422,9 +378,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PosSimulator"
-        ]
+        "tags": ["PosSimulator"]
       }
     },
     "/integrations/connect/{provider}": {
@@ -453,9 +407,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/callback/{provider}": {
@@ -492,9 +444,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/status": {
@@ -515,9 +465,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/disconnect/{provider}": {
@@ -546,9 +494,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/square/sync": {
@@ -569,9 +515,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/google/files": {
@@ -608,9 +552,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/google/import-file": {
@@ -622,9 +564,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/checkout": {
@@ -636,9 +576,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Integrations"
-        ]
+        "tags": ["Integrations"]
       }
     },
     "/integrations/webhooks/{provider}": {
@@ -675,9 +613,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PosWebhook"
-        ]
+        "tags": ["PosWebhook"]
       }
     },
     "/pos/catalog": {
@@ -698,9 +634,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/pos/transactions": {
@@ -721,9 +655,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/pos/orders": {
@@ -744,9 +676,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/pos/orders/{id}/status": {
@@ -767,9 +697,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/pos/order-line-items/{id}/status": {
@@ -790,9 +718,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/pos/transactions/bulk": {
@@ -817,9 +743,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/pos/modifier-groups/{id}": {
@@ -840,9 +764,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/pos/modifier-groups/{id}/options": {
@@ -863,9 +785,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Pos"
-        ]
+        "tags": ["Pos"]
       }
     },
     "/recipes": {
@@ -877,9 +797,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "recipes"
-        ]
+        "tags": ["recipes"]
       },
       "post": {
         "operationId": "RecipesController_create",
@@ -957,10 +875,7 @@
                     }
                   }
                 },
-                "required": [
-                  "recipe",
-                  "recipeIngredients"
-                ]
+                "required": ["recipe", "recipeIngredients"]
               }
             }
           }
@@ -978,9 +893,7 @@
             }
           }
         },
-        "tags": [
-          "recipes"
-        ]
+        "tags": ["recipes"]
       }
     },
     "/recipes/{id}/cost": {
@@ -1017,9 +930,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "recipes"
-        ]
+        "tags": ["recipes"]
       }
     },
     "/recipes/{id}": {
@@ -1040,9 +951,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "recipes"
-        ]
+        "tags": ["recipes"]
       },
       "put": {
         "operationId": "RecipesController_update",
@@ -1061,9 +970,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "recipes"
-        ]
+        "tags": ["recipes"]
       },
       "delete": {
         "operationId": "RecipesController_remove",
@@ -1082,9 +989,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "recipes"
-        ]
+        "tags": ["recipes"]
       }
     },
     "/recipes/ingredients": {
@@ -1096,9 +1001,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Ingredients"
-        ]
+        "tags": ["Ingredients"]
       },
       "post": {
         "operationId": "IngredientsController_create",
@@ -1108,9 +1011,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Ingredients"
-        ]
+        "tags": ["Ingredients"]
       }
     },
     "/recipes/ingredients/{id}": {
@@ -1131,9 +1032,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Ingredients"
-        ]
+        "tags": ["Ingredients"]
       },
       "put": {
         "operationId": "IngredientsController_update",
@@ -1152,9 +1051,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Ingredients"
-        ]
+        "tags": ["Ingredients"]
       },
       "delete": {
         "operationId": "IngredientsController_remove",
@@ -1173,9 +1070,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Ingredients"
-        ]
+        "tags": ["Ingredients"]
       }
     },
     "/recipes/vessels": {
@@ -1187,9 +1082,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vessels"
-        ]
+        "tags": ["Vessels"]
       },
       "post": {
         "operationId": "VesselsController_create",
@@ -1199,9 +1092,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vessels"
-        ]
+        "tags": ["Vessels"]
       }
     },
     "/recipes/vessels/{id}": {
@@ -1222,9 +1113,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vessels"
-        ]
+        "tags": ["Vessels"]
       },
       "put": {
         "operationId": "VesselsController_update",
@@ -1243,9 +1132,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vessels"
-        ]
+        "tags": ["Vessels"]
       },
       "delete": {
         "operationId": "VesselsController_remove",
@@ -1264,9 +1151,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vessels"
-        ]
+        "tags": ["Vessels"]
       }
     },
     "/recipes-meta/categories": {
@@ -1278,9 +1163,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RecipeMeta"
-        ]
+        "tags": ["RecipeMeta"]
       }
     },
     "/recipes-meta/tags": {
@@ -1292,9 +1175,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RecipeMeta"
-        ]
+        "tags": ["RecipeMeta"]
       }
     },
     "/recipes/{id}/versions": {
@@ -1315,9 +1196,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "RecipeVersions"
-        ]
+        "tags": ["RecipeVersions"]
       },
       "get": {
         "operationId": "RecipeVersionsController_getVersions",
@@ -1336,14 +1215,12 @@
             "description": ""
           }
         },
-        "tags": [
-          "RecipeVersions"
-        ]
+        "tags": ["RecipeVersions"]
       }
     },
-    "/unified-ingestion/upload": {
+    "/ingestion/upload": {
       "post": {
-        "operationId": "UnifiedIngestionController_handleUpload",
+        "operationId": "IngestionController_handleUpload",
         "parameters": [
           {
             "name": "x-org-id",
@@ -1359,14 +1236,12 @@
             "description": ""
           }
         },
-        "tags": [
-          "UnifiedIngestion"
-        ]
+        "tags": ["Ingestion"]
       }
     },
-    "/unified-ingestion/review/{id}": {
+    "/ingestion/review/{id}": {
       "get": {
-        "operationId": "UnifiedIngestionController_getReview",
+        "operationId": "IngestionController_getReview",
         "parameters": [
           {
             "name": "id",
@@ -1382,12 +1257,10 @@
             "description": ""
           }
         },
-        "tags": [
-          "UnifiedIngestion"
-        ]
+        "tags": ["Ingestion"]
       },
       "patch": {
-        "operationId": "UnifiedIngestionController_updateReview",
+        "operationId": "IngestionController_updateReview",
         "parameters": [
           {
             "name": "id",
@@ -1403,14 +1276,12 @@
             "description": ""
           }
         },
-        "tags": [
-          "UnifiedIngestion"
-        ]
+        "tags": ["Ingestion"]
       }
     },
-    "/unified-ingestion/commit": {
+    "/ingestion/commit": {
       "post": {
-        "operationId": "UnifiedIngestionController_commitReview",
+        "operationId": "IngestionController_commitReview",
         "parameters": [
           {
             "name": "x-org-id",
@@ -1426,9 +1297,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "UnifiedIngestion"
-        ]
+        "tags": ["Ingestion"]
       }
     },
     "/recipes/{id}/nutrition-label": {
@@ -1457,9 +1326,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Nutrition"
-        ]
+        "tags": ["Nutrition"]
       }
     },
     "/recipes/{id}/nutrition": {
@@ -1480,9 +1347,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Nutrition"
-        ]
+        "tags": ["Nutrition"]
       }
     },
     "/recipes/usda/search": {
@@ -1503,9 +1368,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Nutrition"
-        ]
+        "tags": ["Nutrition"]
       }
     },
     "/webhooks/neo4j-sync": {
@@ -1536,9 +1399,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Neo4jSync"
-        ]
+        "tags": ["Neo4jSync"]
       }
     },
     "/commands/execute": {
@@ -1550,9 +1411,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Commands"
-        ]
+        "tags": ["Commands"]
       }
     },
     "/commands/conversations": {
@@ -1564,9 +1423,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Commands"
-        ]
+        "tags": ["Commands"]
       }
     },
     "/commands/conversations/{id}/messages": {
@@ -1587,9 +1444,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Commands"
-        ]
+        "tags": ["Commands"]
       }
     },
     "/items": {
@@ -1618,9 +1473,7 @@
             }
           }
         },
-        "tags": [
-          "items"
-        ]
+        "tags": ["items"]
       },
       "post": {
         "operationId": "ItemsController_create",
@@ -1660,9 +1513,7 @@
                     "nullable": true
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               }
             }
           }
@@ -1701,9 +1552,7 @@
             }
           }
         },
-        "tags": [
-          "items"
-        ]
+        "tags": ["items"]
       }
     },
     "/items/{id}": {
@@ -1724,9 +1573,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "items"
-        ]
+        "tags": ["items"]
       },
       "put": {
         "operationId": "ItemsController_update",
@@ -1745,9 +1592,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "items"
-        ]
+        "tags": ["items"]
       },
       "delete": {
         "operationId": "ItemsController_remove",
@@ -1766,9 +1611,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "items"
-        ]
+        "tags": ["items"]
       }
     },
     "/items/{id}/price": {
@@ -1789,9 +1632,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PriceHistory"
-        ]
+        "tags": ["PriceHistory"]
       }
     },
     "/items/{id}/price-history": {
@@ -1812,9 +1653,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PriceHistory"
-        ]
+        "tags": ["PriceHistory"]
       }
     },
     "/wastage": {
@@ -1826,9 +1665,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Wastage"
-        ]
+        "tags": ["Wastage"]
       }
     },
     "/wastage/report": {
@@ -1857,9 +1694,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Wastage"
-        ]
+        "tags": ["Wastage"]
       }
     },
     "/inventory": {
@@ -1871,9 +1706,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Inventory"
-        ]
+        "tags": ["Inventory"]
       }
     },
     "/inventory/adjust": {
@@ -1885,9 +1718,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Inventory"
-        ]
+        "tags": ["Inventory"]
       }
     },
     "/vendors": {
@@ -1899,9 +1730,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vendors"
-        ]
+        "tags": ["Vendors"]
       },
       "post": {
         "operationId": "VendorsController_create",
@@ -1911,9 +1740,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vendors"
-        ]
+        "tags": ["Vendors"]
       }
     },
     "/vendors/{id}": {
@@ -1934,9 +1761,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vendors"
-        ]
+        "tags": ["Vendors"]
       },
       "put": {
         "operationId": "VendorsController_update",
@@ -1955,9 +1780,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vendors"
-        ]
+        "tags": ["Vendors"]
       },
       "delete": {
         "operationId": "VendorsController_remove",
@@ -1976,9 +1799,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Vendors"
-        ]
+        "tags": ["Vendors"]
       }
     },
     "/whiteboard": {
@@ -1990,9 +1811,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Whiteboard"
-        ]
+        "tags": ["Whiteboard"]
       },
       "post": {
         "operationId": "WhiteboardController_create",
@@ -2002,9 +1821,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Whiteboard"
-        ]
+        "tags": ["Whiteboard"]
       }
     },
     "/whiteboard/{id}": {
@@ -2025,9 +1842,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Whiteboard"
-        ]
+        "tags": ["Whiteboard"]
       }
     },
     "/purchase-orders": {
@@ -2039,9 +1854,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PurchaseOrders"
-        ]
+        "tags": ["PurchaseOrders"]
       }
     },
     "/purchase-orders/{id}": {
@@ -2062,9 +1875,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PurchaseOrders"
-        ]
+        "tags": ["PurchaseOrders"]
       }
     },
     "/purchase-orders/draft-item": {
@@ -2076,9 +1887,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PurchaseOrders"
-        ]
+        "tags": ["PurchaseOrders"]
       }
     },
     "/purchase-orders/items/{id}": {
@@ -2099,9 +1908,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PurchaseOrders"
-        ]
+        "tags": ["PurchaseOrders"]
       },
       "delete": {
         "operationId": "PurchaseOrdersController_removeItem",
@@ -2120,9 +1927,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PurchaseOrders"
-        ]
+        "tags": ["PurchaseOrders"]
       }
     },
     "/purchase-orders/{id}/submit": {
@@ -2143,9 +1948,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PurchaseOrders"
-        ]
+        "tags": ["PurchaseOrders"]
       }
     },
     "/purchase-orders/{id}/receive": {
@@ -2166,9 +1969,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "PurchaseOrders"
-        ]
+        "tags": ["PurchaseOrders"]
       }
     },
     "/users": {
@@ -2180,9 +1981,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/{id}": {
@@ -2203,9 +2002,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       },
       "delete": {
         "operationId": "UsersController_deleteUser",
@@ -2224,9 +2021,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/users/{id}/password": {
@@ -2247,9 +2042,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Users"
-        ]
+        "tags": ["Users"]
       }
     },
     "/devices/register": {
@@ -2261,9 +2054,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/{deviceId}/status": {
@@ -2284,9 +2075,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/{deviceId}": {
@@ -2307,9 +2096,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       },
       "put": {
         "operationId": "DevicesController_update",
@@ -2328,9 +2115,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/pair": {
@@ -2342,9 +2127,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/pair/init": {
@@ -2356,9 +2139,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/pair/confirm": {
@@ -2370,9 +2151,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/pair/status/{code}": {
@@ -2393,9 +2172,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/devices/{id}/revoke": {
@@ -2416,9 +2193,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Devices"
-        ]
+        "tags": ["Devices"]
       }
     },
     "/metrics/sales": {
@@ -2430,9 +2205,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Metrics"
-        ]
+        "tags": ["Metrics"]
       }
     },
     "/metrics/ticket-time": {
@@ -2444,9 +2217,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Metrics"
-        ]
+        "tags": ["Metrics"]
       }
     },
     "/metrics/low-stock": {
@@ -2458,9 +2229,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Metrics"
-        ]
+        "tags": ["Metrics"]
       }
     },
     "/dashboard/stats": {
@@ -2481,9 +2250,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Dashboard"
-        ]
+        "tags": ["Dashboard"]
       }
     },
     "/storage/upload-url": {
@@ -2505,9 +2272,7 @@
             "description": ""
           }
         },
-        "tags": [
-          "Storage"
-        ]
+        "tags": ["Storage"]
       }
     },
     "/auth/login": {
@@ -2537,9 +2302,7 @@
             }
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/refresh": {
@@ -2559,9 +2322,7 @@
             }
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/logout": {
@@ -2581,9 +2342,7 @@
             }
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/session": {
@@ -2603,9 +2362,7 @@
             }
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/ws-ticket": {
@@ -2625,9 +2382,7 @@
             }
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/forgot-password": {
@@ -2657,9 +2412,7 @@
             }
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/google": {
@@ -2671,9 +2424,7 @@
             "description": "Redirect to Google OAuth"
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/github": {
@@ -2685,9 +2436,7 @@
             "description": "Redirect to GitHub OAuth"
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/auth/callback": {
@@ -2716,9 +2465,7 @@
             "description": "Exchange OAuth code for session and redirect to app"
           }
         },
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     }
   },
@@ -2745,9 +2492,7 @@
             "example": "image.png"
           }
         },
-        "required": [
-          "fileName"
-        ]
+        "required": ["fileName"]
       },
       "LoginDto": {
         "type": "object",
@@ -2759,10 +2504,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email",
-          "password"
-        ]
+        "required": ["email", "password"]
       },
       "ForgotPasswordDto": {
         "type": "object",
@@ -2771,9 +2513,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email"
-        ]
+        "required": ["email"]
       }
     }
   }

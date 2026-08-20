@@ -1,8 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { ChatPersistenceService } from "./chat-persistence.service";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
@@ -48,7 +48,9 @@ describe("ChatPersistenceService", () => {
   });
 
   it("should update conversation timestamp if conversation already exists", async () => {
-    const mockMaybeSingle = jest.fn().mockResolvedValue({ data: { id: "conv-123" } });
+    const mockMaybeSingle = jest
+      .fn()
+      .mockResolvedValue({ data: { id: "conv-123" } });
     const mockUpdate = jest.fn().mockReturnThis();
     const mockInsert = jest.fn().mockResolvedValue({ data: null, error: null });
 

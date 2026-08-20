@@ -10,16 +10,13 @@ import {
 } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import {
-  UnifiedIngestionService,
-  IngestionReviewPayload,
-} from "./unified-ingestion.service";
+import { IngestionService, IngestionReviewPayload } from "./ingestion.service";
 
-@Controller("unified-ingestion")
-export class UnifiedIngestionController {
+@Controller("ingestion")
+export class IngestionController {
   constructor(
-    @InjectQueue("unified-ingestion") private readonly ingestionQueue: Queue,
-    private readonly ingestionService: UnifiedIngestionService,
+    @InjectQueue("ingestion") private readonly ingestionQueue: Queue,
+    private readonly ingestionService: IngestionService,
   ) {}
 
   @Post("upload")

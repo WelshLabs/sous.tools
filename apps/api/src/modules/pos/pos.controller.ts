@@ -7,7 +7,7 @@ import {
   Param,
   Query,
 } from "@nestjs/common";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { runControllerAction } from "../signage/response.helper";
 import { ApiResponse } from "@soustools/api-types";
 import { PosTransactionsService } from "./pos-transactions.service";

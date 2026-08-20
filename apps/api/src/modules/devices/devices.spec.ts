@@ -1,9 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { DevicesController } from "./devices.controller";
 import { DevicesService } from "./devices.service";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),

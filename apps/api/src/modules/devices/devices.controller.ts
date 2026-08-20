@@ -9,8 +9,8 @@ import {
   UseGuards,
   Req,
 } from "@nestjs/common";
-import { SupabaseAuthGuard } from "../../lib/supabase-auth.guard";
-import { AdminGuard } from "../../common/guards/admin.guard";
+import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
+import { AdminGuard } from "../../shared/guards/admin.guard";
 import { DevicesService } from "./devices.service";
 import { ApiResponse, SignageDevice } from "@soustools/api-types";
 import { runControllerAction } from "../signage/response.helper";

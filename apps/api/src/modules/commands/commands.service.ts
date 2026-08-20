@@ -10,7 +10,7 @@ import { randomUUID } from "crypto";
 import { serverConfig as config } from "@soustools/config/server";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { ChatPersistenceService } from "./chat-persistence.service";
 
 @Injectable()
@@ -23,7 +23,7 @@ export class CommandsService {
     private readonly whiteboardService: WhiteboardService,
     private readonly recipeCostService: RecipeCostService,
     private readonly neo4jService: Neo4jService,
-    @InjectQueue("unified-ingestion") private ingestionQueue: Queue,
+    @InjectQueue("ingestion") private ingestionQueue: Queue,
     private readonly chatPersistence: ChatPersistenceService,
   ) {}
 

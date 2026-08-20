@@ -2,16 +2,16 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import { Job } from "bullmq";
 import {
-  UnifiedIngestionService,
+  IngestionService,
   IngestionPage,
   ExtractedBlock,
   IngestionReviewPayload,
-} from "./unified-ingestion.service";
+} from "./ingestion.service";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 import { serverConfig as config } from "@soustools/config/server";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
-export interface UnifiedIngestionJobData {
+export interface IngestionJobData {
   organizationId: string;
   userId?: string;
   source: string;
@@ -29,12 +29,12 @@ import { CommandsGateway } from "../commands/commands.gateway";
 import { ChatPersistenceService } from "../commands/chat-persistence.service";
 import { randomUUID } from "crypto";
 
-@Processor("unified-ingestion", { lockDuration: 120000 })
-export class UnifiedIngestionProcessor extends WorkerHost {
-  private readonly logger = new Logger(UnifiedIngestionProcessor.name);
+@Processor("ingestion", { lockDuration: 120000 })
+export class IngestionProcessor extends WorkerHost {
+  private readonly logger = new Logger(IngestionProcessor.name);
 
   constructor(
-    private readonly ingestionService: UnifiedIngestionService,
+    private readonly ingestionService: IngestionService,
     private readonly usdaResolver: UsdaResolverService,
     private readonly commandsGateway: CommandsGateway,
     private readonly chatPersistence: ChatPersistenceService,
@@ -42,7 +42,7 @@ export class UnifiedIngestionProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<UnifiedIngestionJobData>): Promise<any> {
+  async process(job: Job<IngestionJobData>): Promise<any> {
     this.logger.log(
       `Processing unified ingestion job ${job.id} for org ${job.data.organizationId}`,
     );
@@ -381,8 +381,9 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
             userId,
           });
         }
-        const rawIngredients =
-          b.ingredients || [{ rawName: "Sample Ingredient" }];
+        const rawIngredients = b.ingredients || [
+          { rawName: "Sample Ingredient" },
+        ];
         const ingredients = await Promise.all(
           rawIngredients.map(async (ing: any) => {
             const guessName = ing.rawName || "Ingredient";
@@ -391,10 +392,13 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
               this.usdaResolver.searchTop5(guessName),
             ]);
             const tenantMatches =
-              await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
-                orgId: organizationId,
-                rawItemName: ing.rawName || guessName,
-              });
+              await this.ingestionService.searchMasterItemsTop5(
+                queryEmbedding,
+                {
+                  orgId: organizationId,
+                  rawItemName: ing.rawName || guessName,
+                },
+              );
 
             const topTenantScore = tenantMatches[0]?.score ?? 0;
             const autoAccepted =
@@ -453,11 +457,14 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
               this.usdaResolver.searchTop5(guessName),
             ]);
             const tenantMatches =
-              await this.ingestionService.searchMasterItemsTop5(queryEmbedding, {
-                orgId: organizationId,
-                vendorId,
-                rawItemName: item.rawName || guessName,
-              });
+              await this.ingestionService.searchMasterItemsTop5(
+                queryEmbedding,
+                {
+                  orgId: organizationId,
+                  vendorId,
+                  rawItemName: item.rawName || guessName,
+                },
+              );
 
             const topTenantScore = tenantMatches[0]?.score ?? 0;
             const autoAccepted =

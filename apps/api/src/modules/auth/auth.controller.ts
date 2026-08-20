@@ -22,7 +22,7 @@ import {
   LoginSchema,
   ForgotPasswordSchema,
 } from "@soustools/api-types";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { serverConfig as config } from "@soustools/config/server";
 
 const ACCESS_TOKEN_COOKIE = "sb-access-token";

@@ -10,7 +10,7 @@ import { SignageModule } from "./modules/signage/signage.module";
 import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
 import { IntegrationsModule } from "./modules/integrations/integrations.module";
 import { RecipeModule } from "./modules/recipe/recipe.module";
-import { UnifiedIngestionModule } from "./modules/unified-ingestion/unified-ingestion.module";
+import { IngestionModule } from "./modules/ingestion/ingestion.module";
 import { NutritionModule } from "./modules/nutrition/nutrition.module";
 import { ItemsModule } from "./modules/items/items.module";
 import { PosModule } from "./modules/pos/pos.module";
@@ -23,8 +23,8 @@ import { StorageModule } from "./modules/storage/storage.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { Neo4jSyncModule } from "./modules/neo4j-sync/neo4j-sync.module";
 
-import { AppGraphQLModule } from "./graphql/graphql.module";
-import { HealthModule } from "./health/health.module";
+import { AppGraphQLModule } from "./core/graphql/graphql.module";
+import { HealthModule } from "./core/health/health.module";
 
 /**
  * Root module of the NestJS application.
@@ -66,7 +66,7 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
     PosSimulatorModule,
     IntegrationsModule,
     RecipeModule,
-    UnifiedIngestionModule,
+    IngestionModule,
     NutritionModule,
     ItemsModule,
     PosModule,

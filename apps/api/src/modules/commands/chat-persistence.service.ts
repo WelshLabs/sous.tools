@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { OmniMessage } from "@soustools/api-types";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 
 @Injectable()
 export class ChatPersistenceService {

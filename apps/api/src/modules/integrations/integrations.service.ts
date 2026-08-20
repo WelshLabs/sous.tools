@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { serverConfig as config } from "@soustools/config/server";
 import { IntegrationStatus } from "@soustools/api-types";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../core/database/supabase";
 import { syncSquareCatalog } from "./drivers/square/square-sync.helper";
 import { SquareDriver } from "./drivers/square/square.driver";
 

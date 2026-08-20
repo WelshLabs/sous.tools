@@ -7,7 +7,7 @@ import {
 } from "@nestjs/websockets";
 import { UseGuards, Logger } from "@nestjs/common";
 import { Server, Socket } from "socket.io";
-import { WsSupabaseAuthGuard } from "../../lib/ws-supabase-auth.guard";
+import { WsSupabaseAuthGuard } from "../../core/guards/ws-supabase-auth.guard";
 import { CommandsService } from "./commands.service";
 import { ChatPersistenceService } from "./chat-persistence.service";
 import {
@@ -16,9 +16,9 @@ import {
   type OmniMessage,
 } from "@soustools/api-types";
 import { randomUUID } from "crypto";
-import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { ZodValidationPipe } from "../../shared/pipes/zod-validation.pipe";
 import { UseFilters } from "@nestjs/common";
-import { AllWsExceptionsFilter } from "../../common/filters/ws-exception.filter";
+import { AllWsExceptionsFilter } from "../../shared/filters/ws-exception.filter";
 
 @UseFilters(new AllWsExceptionsFilter())
 @WebSocketGateway({

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -107,7 +108,7 @@ export default function InvoicesHubPage() {
 
   const submitIngestionPayload = async (payload: any) => {
     try {
-      const res = await fetch("/api/unified-ingestion/upload", {
+      const res = await fetch("/api/ingestion/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
