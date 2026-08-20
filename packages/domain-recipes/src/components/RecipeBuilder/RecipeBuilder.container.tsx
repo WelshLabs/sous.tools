@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -50,6 +51,7 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
   const [ingredients, setIngredients] = useState<RecipeIngredientLine[]>([]);
   const [steps, setSteps] = useState<RecipeInstructionStep[]>([]);
   const [status, setStatus] = useState<string>("APPROVED");
+  const [isBakersPercentage, setIsBakersPercentage] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -58,17 +60,27 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
       setYieldCount(initialData.yieldCount || 1);
       setYieldUnit(initialData.yieldUnit || "Portions");
       setVesselId(initialData.vesselId || "");
-      setIngredients(
-        (initialData.recipeIngredients || []).map((ri: RecipeIngredient) => ({
-          masterIngredientId: ri.masterIngredientId,
-          amount: ri.amount,
-          unit: ri.unit,
-          calculationType: ri.calculationType,
-          baseCalculationGroup: ri.baseCalculationGroup,
-          prepNotes: ri.prepNotes || "",
-          rawName: ri.rawName,
-        })),
+
+      const mappedIngredients: RecipeIngredientLine[] = (
+        initialData.recipeIngredients || []
+      ).map((ri: RecipeIngredient) => ({
+        masterIngredientId: ri.masterIngredientId,
+        amount: ri.amount,
+        unit: ri.unit,
+        calculationType: ri.calculationType,
+        baseCalculationGroup: ri.baseCalculationGroup,
+        prepNotes: ri.prepNotes || "",
+        rawName: ri.rawName,
+      }));
+
+      setIngredients(mappedIngredients);
+
+      const hasBakers = mappedIngredients.some(
+        (i) =>
+          i.calculationType === "bakers_percentage" || i.baseCalculationGroup,
       );
+      setIsBakersPercentage(hasBakers);
+
       setSteps(
         (initialData.instructions || []).map((step: RecipeInstruction) => ({
           stepNumber: step.stepNumber,
@@ -106,10 +118,13 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
       ...prev,
       {
         masterIngredientId: masterIngredients[0]?.id || "",
-        amount: 100,
-        unit: "g",
-        calculationType: "fixed_weight",
-        baseCalculationGroup: false,
+        amount: isBakersPercentage && prev.length > 0 ? 60 : 100,
+        unit: isBakersPercentage && prev.length > 0 ? "%" : "g",
+        calculationType:
+          isBakersPercentage && prev.length > 0
+            ? "bakers_percentage"
+            : "fixed_weight",
+        baseCalculationGroup: isBakersPercentage && prev.length === 0,
         prepNotes: "",
       },
     ]);
@@ -167,6 +182,8 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
       setVesselId={setVesselId}
       status={status}
       setStatus={setStatus}
+      isBakersPercentage={isBakersPercentage}
+      setIsBakersPercentage={setIsBakersPercentage}
       ingredients={ingredients}
       onAddIngredientLine={handleAddIngredientLine}
       onRemoveIngredientLine={handleRemoveIngredientLine}

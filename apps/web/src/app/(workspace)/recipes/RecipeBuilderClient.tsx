@@ -55,7 +55,11 @@ export function RecipeBuilderClient({
 
       if (res.ok) {
         toast.success(initialData ? "Recipe updated" : "Recipe created");
-        router.push("/recipes");
+        if (initialData?.id) {
+          router.push(`/recipes/${initialData.id}`);
+        } else {
+          router.push("/recipes");
+        }
       } else {
         const error = await res.json();
         toast.error(`Failed to save: ${error.message || "Unknown error"}`);
@@ -75,7 +79,7 @@ export function RecipeBuilderClient({
       masterIngredients={liveIngredients}
       loading={saving}
       onSave={handleSave}
-      backHref="/recipes"
+      backHref={initialData?.id ? `/recipes/${initialData.id}` : "/recipes"}
     />
   );
 }

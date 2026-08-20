@@ -31,6 +31,18 @@ export interface ScaledIngredient {
   baseCalculationGroup: boolean;
   calculationType: string;
   percentageOfBase?: number;
+  isCountUnit?: boolean;
+  estimateText?: string;
+  subBreakdown?: string;
+}
+
+/** Baker's Formula hydration and breakdown metrics. */
+export interface BakersFormulaSummary {
+  totalFlourWeightG: number;
+  totalLiquidWeightG: number;
+  hydrationPercentage: number;
+  totalFormulaPercentage: number;
+  isBakersRecipe: boolean;
 }
 
 /** Cost breakdown for a single ingredient. */

@@ -28,6 +28,9 @@ export function RecipeViewerClient({
   const [customWeights, setCustomWeights] = useState<
     Record<string, { amount: number; unit: string }>
   >({});
+  const [customPercentages, setCustomPercentages] = useState<
+    Record<string, number>
+  >({});
   const [costData, setCostData] = useState<any>(initialCostData);
   const [liveIngredients, setLiveIngredients] = useState<any[]>([]);
 
@@ -44,22 +47,25 @@ export function RecipeViewerClient({
   }, []);
 
   const scalingOptions = useMemo(() => {
+    const opts: any = { customPercentages };
     if (Object.keys(customWeights).length > 0) {
-      return { customIngredientWeights: customWeights };
+      opts.customIngredientWeights = customWeights;
+      return opts;
     }
 
     if (multiplier !== 1.0) {
-      return { targetYield: recipe.yieldCount * multiplier };
+      opts.targetYield = (recipe.yieldCount || 1) * multiplier;
+      return opts;
     }
 
-    return {};
-  }, [customWeights, multiplier, recipe.yieldCount]);
+    return opts;
+  }, [customWeights, multiplier, recipe.yieldCount, customPercentages]);
 
   const { multiplier: finalMultiplier, items: scaledIngredients } =
     useMemo(() => {
       return calculateRecipeScale(
         recipe.recipeIngredients || [],
-        recipe.yieldCount,
+        recipe.yieldCount || 1,
         scalingOptions,
       );
     }, [recipe.recipeIngredients, recipe.yieldCount, scalingOptions]);
@@ -68,9 +74,10 @@ export function RecipeViewerClient({
     if (customOpts && customOpts.mode === "weight") {
       const { multiplier: m } = calculateRecipeScale(
         recipe.recipeIngredients || [],
-        recipe.yieldCount,
+        recipe.yieldCount || 1,
         {
           targetTotalWeight: customOpts.weight,
+          customPercentages,
         },
       );
       setMultiplier(m);
@@ -91,6 +98,13 @@ export function RecipeViewerClient({
       setCustomWeights({});
       setMultiplier(1.0);
     }
+  };
+
+  const handleBakersPercentageChange = (ingId: string, percentage: number) => {
+    setCustomPercentages((prev) => ({
+      ...prev,
+      [ingId]: percentage,
+    }));
   };
 
   const handleCostFactorsChange = async (
@@ -144,6 +158,7 @@ export function RecipeViewerClient({
       versionHistory={versionHistory}
       onScaleChange={handleScaleChange}
       onIngredientWeightChange={handleIngredientWeightChange}
+      onBakersPercentageChange={handleBakersPercentageChange}
       onCostFactorsChange={handleCostFactorsChange}
       onSaveVersion={handleSaveVersion}
       onRestoreVersion={handleRestoreVersion}
