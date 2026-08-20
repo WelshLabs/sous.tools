@@ -18,6 +18,7 @@ export {
   GraphQLClient,
   type GraphQLResponse,
   type GraphQLClientOptions,
+  type SubscriptionOptions,
 } from "./graphql";
 export { uploadFile } from "./upload";
 

@@ -65,6 +65,10 @@ export function RevenueChart({ data }: RevenueChartProps) {
           />
           <Tooltip
             cursor={{ fill: "rgba(255,255,255,0.05)" }}
+            formatter={(value: unknown) => [
+              `$${Math.abs(Number(value || 0)).toFixed(2)}`,
+              undefined,
+            ]}
             contentStyle={{
               backgroundColor: "#09090b",
               borderColor: "#27272a",
@@ -78,13 +82,29 @@ export function RevenueChart({ data }: RevenueChartProps) {
               name="Revenue"
               fill="#22d3ee"
               radius={[6, 6, 0, 0]}
+              isAnimationActive={true}
+              animationDuration={800}
             />
           )}
           {chartData.length > 0 && chartData[0].sales !== undefined ? (
-            <Bar dataKey="sales" name="Sales" stackId="a" fill="#22d3ee" />
+            <Bar
+              dataKey="sales"
+              name="Sales"
+              stackId="a"
+              fill="#22d3ee"
+              isAnimationActive={true}
+              animationDuration={800}
+            />
           ) : null}
           {chartData.length > 0 && chartData[0].sales !== undefined ? (
-            <Bar dataKey="tax" name="Tax" stackId="a" fill="#3b82f6" />
+            <Bar
+              dataKey="tax"
+              name="Tax"
+              stackId="a"
+              fill="#3b82f6"
+              isAnimationActive={true}
+              animationDuration={800}
+            />
           ) : null}
           {chartData.length > 0 && chartData[0].sales !== undefined ? (
             <Bar
@@ -93,6 +113,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
               stackId="a"
               fill="#818cf8"
               radius={[6, 6, 0, 0]}
+              isAnimationActive={true}
+              animationDuration={800}
             />
           ) : null}
           {chartData.length > 0 && chartData[0].sales !== undefined ? (
@@ -102,6 +124,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
               stackId="a"
               fill="#ef4444"
               radius={[0, 0, 6, 6]}
+              isAnimationActive={true}
+              animationDuration={800}
             />
           ) : null}
         </BarChart>
@@ -140,6 +164,10 @@ export function TicketTimeChart({ data }: TicketTimeChartProps) {
             tickFormatter={(value) => `${value}m`}
           />
           <Tooltip
+            formatter={(value: unknown) => [
+              `${Number(value || 0)}m`,
+              "Avg Time",
+            ]}
             contentStyle={{
               backgroundColor: "#09090b",
               borderColor: "#27272a",
@@ -160,6 +188,8 @@ export function TicketTimeChart({ data }: TicketTimeChartProps) {
               stroke: "#09090b",
               strokeWidth: 2,
             }}
+            isAnimationActive={true}
+            animationDuration={800}
           />
         </LineChart>
       </ResponsiveContainer>

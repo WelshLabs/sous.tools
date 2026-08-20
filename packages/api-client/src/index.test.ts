@@ -81,13 +81,11 @@ describe("packages/api-client", () => {
 
   describe("createGraphQLClient", () => {
     it("executes GraphQL POST queries with credentials: include", async () => {
-      global.fetch = vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ data: { health: "OK" } }), {
-            status: 200,
-          }),
-        );
+      global.fetch = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ data: { health: "OK" } }), {
+          status: 200,
+        }),
+      );
 
       const client = createGraphQLClient();
       expect(graphqlClient).toBeDefined();
@@ -102,6 +100,16 @@ describe("packages/api-client", () => {
           body: JSON.stringify({ query: "{ health }", variables: undefined }),
         }),
       );
+    });
+
+    it("provides a subscribe method that handles subscriptions safely", () => {
+      const client = createGraphQLClient();
+      const unsub = client.subscribe({
+        query: "subscription { test }",
+        onNext: () => {},
+      });
+      expect(typeof unsub).toBe("function");
+      unsub();
     });
   });
 });
