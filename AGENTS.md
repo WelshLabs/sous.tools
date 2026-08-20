@@ -10,6 +10,12 @@
 - **Secrets SSOT (Fail Fast):** Infisical is the Single Source of Truth for all environment variables. The `@soustools/config` package contains ZERO default fallbacks. If Infisical credentials fail or are missing, the app MUST immediately `process.exit(1)`.
 - **TSConfig Management:** All `tsconfig.json` files must extend from the shared `packages/typescript-config`. No relative paths (e.g., `../../../`) are allowed.
 - **Thin App Router Shells:** `apps/*` directories must remain as hollow as possible. Next.js `page.tsx` files should act strictly as Server Component entry points that import their corresponding Containers or Views from `@soustools/domain-*` packages. Building complex `components/` directories inside the Next.js `apps/*` router is forbidden.
+- **No Global Database Clients:** Never use `import { supabase }`. Use CLS-injected Singleton providers to enforce RLS (Postgres `set_config`).
+- **Code-First GraphQL:** The API is Code-First GQL (`@nestjs/graphql`). REST is deprecated except for webhooks, `/health`, and `/v1/auth`.
+- **Concurrency & Soft Deletes:** Never execute `DELETE` queries. Update `deleted_at = NOW()`. All update mutations must include and increment a `version` field.
+- **Event-Driven Boundaries:** Domains must decouple via `@nestjs/event-emitter`. Do not cross-inject domain services to trigger downstream updates.
+- **Infisical Booting:** Apps must boot using the official Infisical CLI (`infisical run --env=... -- pnpm start`).
+- **Data Fetching & Offline-First URQL:** Interactive/real-time views MUST use the Container/View pattern with URQL GraphQL hooks (`useQuery`, `useSubscription`). The URQL client utilizes `@urql/exchange-auth` to automatically intercept 401s and reconnect WebSockets seamlessly. Use `@urql/exchange-graphcache` for optimistic offline UI.
 
 #### 2. Component Architecture & Styling
 
@@ -25,6 +31,7 @@
 - **Debt Audits:** Review reports in `docs/context/cto_summary.md` and `docs/audits/` (such as `knip-report.txt` and `lint-report.txt`) before refactoring.
 - **GitHub Issue & Kanban Management (MCP):** Autonomous agents must inspect ticket details and use GitHub API/MCP to move tickets across the Kanban board ("In Progress" -> "In Review" -> "Done").
 - **Halt-on-Error with Self-Repair:** Run `pnpm typecheck && pnpm lint && pnpm test`. If errors occur, attempt self-repair up to 3 times before opening a PR or requesting review.
+- **Async Execution:** Heavy AI tasks MUST NOT block HTTP. Return `202 Accepted`, queue in BullMQ, and stream via Redis PubSub (GraphQL Subscriptions).
 
 #### 4. Graph Database (Neo4j) & Relational Parity
 
