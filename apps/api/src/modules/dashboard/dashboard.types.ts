@@ -1,23 +1,23 @@
-import { Field, ObjectType, Int } from "@nestjs/graphql";
+import { Field, ObjectType, Int, Float } from "@nestjs/graphql";
 
 @ObjectType()
 export class RevenueChartItem {
   @Field()
   name!: string;
 
-  @Field(() => Int)
+  @Field(() => Float)
   value!: number;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Float, { nullable: true })
   sales?: number;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Float, { nullable: true })
   tax?: number;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Float, { nullable: true })
   tips?: number;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Float, { nullable: true })
   processingFee?: number;
 }
 
@@ -26,7 +26,7 @@ export class TicketTimeChartItem {
   @Field()
   time!: string;
 
-  @Field(() => Int)
+  @Field(() => Float)
   minutes!: number;
 }
 
@@ -55,6 +55,18 @@ export class DashboardSummary {
 
   @Field(() => Int)
   activeTables!: number;
+
+  @Field({ nullable: true })
+  dailyRevenueChange?: string;
+
+  @Field({ nullable: true })
+  totalOrdersChange?: string;
+
+  @Field({ nullable: true })
+  averageTicketTimeChange?: string;
+
+  @Field({ nullable: true })
+  activeTablesSubtitle?: string;
 }
 
 @ObjectType()

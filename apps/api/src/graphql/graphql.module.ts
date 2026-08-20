@@ -15,6 +15,9 @@ import { serverConfig as config } from "@soustools/config/server";
       sortSchema: true,
       playground: true,
       introspection: true,
+      subscriptions: {
+        "graphql-ws": true,
+      },
     }),
   ],
 })

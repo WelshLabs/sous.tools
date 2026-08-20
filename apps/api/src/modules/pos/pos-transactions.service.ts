@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
 import { supabase } from "../../lib/supabase";
+import { DashboardService } from "../dashboard/dashboard.service";
 
 export interface RecordTransactionDto {
   orgId: string;
@@ -19,6 +20,10 @@ export interface VelocityRow {
 
 @Injectable()
 export class PosTransactionsService {
+  constructor(
+    @Optional() private readonly dashboardService?: DashboardService,
+  ) {}
+
   async recordTransaction(dto: RecordTransactionDto): Promise<void> {
     const { error } = await supabase.from("pos_transactions").insert([
       {
@@ -34,6 +39,10 @@ export class PosTransactionsService {
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    if (this.dashboardService) {
+      this.dashboardService.publishStatsUpdate(dto.orgId).catch(() => {});
     }
   }
 
@@ -98,6 +107,10 @@ export class PosTransactionsService {
       }));
 
       await supabase.from("pos_transactions").insert(txRows);
+    }
+
+    if (this.dashboardService) {
+      this.dashboardService.publishStatsUpdate(orgId).catch(() => {});
     }
   }
 
