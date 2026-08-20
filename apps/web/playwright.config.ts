@@ -19,10 +19,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "node ../../packages/config/dist/cli.js next start -p 3000",
+    command: "infisical run --env=${INFISICAL_ENV:-dev} -- next start -p 3000",
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 60000,
   },
 });
-

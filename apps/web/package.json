@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "sh -c 'if [ -z \"$INFISICAL_CLIENT_ID\" ]; then echo \"[web:dev] Infisical creds absent (v0 preview) -> serving Storybook design workbench on :3000\"; cd ../storybook && exec pnpm exec storybook dev -p 3000 --host 0.0.0.0 --no-open; else exec node ../../packages/config/dist/cli.js next dev -p 3000 -H 0.0.0.0; fi'",
-    "build": "node ../../packages/config/dist/cli.js next build",
-    "start": "node ../../packages/config/dist/cli.js next start",
+    "dev": "infisical run --env=${INFISICAL_ENV:-dev} -- next dev -p 3000 -H 0.0.0.0",
+    "build": "infisical run --env=${INFISICAL_ENV:-dev} -- next build",
+    "start": "infisical run --env=${INFISICAL_ENV:-dev} -- next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test:e2e": "playwright test"
