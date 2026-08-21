@@ -2,12 +2,18 @@ import {
   type CanActivate,
   type ExecutionContext,
   Injectable,
+  Optional,
 } from "@nestjs/common";
-import { supabase } from "../database/supabase";
+import {
+  SupabaseService,
+  supabase as globalSupabase,
+} from "../database/supabase";
 import { WsException } from "@nestjs/websockets";
 
 @Injectable()
 export class WsSupabaseAuthGuard implements CanActivate {
+  constructor(@Optional() private readonly supabaseService?: SupabaseService) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient();
     let token =
@@ -30,10 +36,11 @@ export class WsSupabaseAuthGuard implements CanActivate {
       throw new WsException("Unauthorized: No token provided");
     }
 
+    const supabaseClient = this.supabaseService?.client || globalSupabase;
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token);
+    } = await supabaseClient.auth.getUser(token);
 
     if (error || !user) {
       throw new WsException("Unauthorized: Invalid or expired token");

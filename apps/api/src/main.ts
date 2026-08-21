@@ -1,13 +1,11 @@
 import "newrelic";
-import initializeServerLogger from "@soustools/logger/server";
-initializeServerLogger();
-
 import "reflect-metadata";
 import "./core/pre-bootstrap";
 import { serverConfig as config } from "@soustools/config/server";
 
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { Logger as PinoLogger } from "nestjs-pino";
 import * as fs from "fs";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./core/filters/all-exceptions.filter";
@@ -18,13 +16,18 @@ import * as express from "express";
 /**
  * Boots the NestJS application.
  *
- * Configures the Nest application instance, enables cross-origin resource sharing (CORS),
+ * Configures the Nest application instance with Pino logging, CORS, Swagger,
  * and starts listening on the configured PORT.
  *
  * @returns {Promise<void>} Resolves when the application has successfully started.
  */
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+    bufferLogs: true,
+  });
+
+  app.useLogger(app.get(PinoLogger));
 
   /**
    * Trust the first proxy hop (Traefik) so that Express reads
