@@ -1,5 +1,6 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { Logger } from "@nestjs/common";
+import { Logger, Optional } from "@nestjs/common";
+import { RecipeMathService } from "../recipe/recipe-math.service";
 import { Job } from "bullmq";
 import {
   IngestionService,
@@ -37,6 +38,7 @@ export class IngestionProcessor extends WorkerHost {
     private readonly usdaResolver: UsdaResolverService,
     private readonly commandsGateway: CommandsGateway,
     private readonly chatPersistence: ChatPersistenceService,
+    @Optional() private readonly recipeMathService?: RecipeMathService,
   ) {
     super();
   }
@@ -421,7 +423,7 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
           }),
         );
 
-        const ingredients = ingredientResults.map((result, idx) => {
+        const resolvedIngredients = ingredientResults.map((result, idx) => {
           if (result.status === "fulfilled") {
             return result.value;
           }
@@ -442,6 +444,34 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
             selectedUsdaId: undefined,
             autoAccepted: false,
             resolutionError: true,
+          };
+        });
+
+        const normalizedMath = this.recipeMathService
+          ? this.recipeMathService.normalizeRecipeIngredients(
+              resolvedIngredients.map((ing) => ({
+                rawName: ing.rawName || ing.guessName,
+                amount: ing.quantity,
+                unit: ing.unit,
+                selectedTenantId: ing.selectedTenantId,
+              })),
+            )
+          : null;
+
+        const ingredients = resolvedIngredients.map((ing, idx) => {
+          const math = normalizedMath ? normalizedMath[idx] : null;
+          return {
+            ...ing,
+            originalInputString:
+              math?.originalInputString ||
+              `${ing.quantity || 1} ${ing.unit || "g"} ${ing.rawName || ing.guessName}`.trim(),
+            standardAmount: math?.standardAmount ?? ing.quantity,
+            standardUnit: math?.standardUnit ?? ing.unit,
+            standardWeightG: math?.standardWeightG,
+            calculationType: math?.calculationType || "fixed_weight",
+            isReference: math?.isReference || false,
+            baseCalculationGroup: math?.baseCalculationGroup || false,
+            bakersPercentage: math?.bakersPercentage ?? null,
           };
         });
 

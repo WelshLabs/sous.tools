@@ -33,7 +33,10 @@ export function mapRecipeRow(row: Record<string, unknown>): Recipe {
 
   const recipeIngredients: RecipeIngredient[] = ingredientsRaw
     ? ingredientsRaw.map((ri) => {
-        const mi = ri.items as Record<string, unknown> | null;
+        const mi = (ri.items || ri.master_items) as Record<
+          string,
+          unknown
+        > | null;
         const macros = (mi?.nutrition_macros || {}) as Record<string, unknown>;
         const nutritionMacros: NutritionMacros = {
           calories:
@@ -59,7 +62,7 @@ export function mapRecipeRow(row: Record<string, unknown>): Recipe {
               id: String(mi.id),
               organizationId: String(mi.organization_id),
               name: String(mi.name),
-              densityGMl: Number(mi.density_g_ml),
+              densityGMl: Number(mi.density_g_ml || 1.0),
               nutritionMacros,
               allergens: Array.isArray(mi.allergens)
                 ? (mi.allergens as string[])
@@ -88,11 +91,27 @@ export function mapRecipeRow(row: Record<string, unknown>): Recipe {
         return {
           id: String(ri.id),
           recipeId: String(ri.recipe_id),
-          masterIngredientId: ri.item_id ? String(ri.item_id) : null,
+          masterIngredientId: ri.item_id
+            ? String(ri.item_id)
+            : ri.master_item_id
+              ? String(ri.master_item_id)
+              : null,
           subRecipeId: ri.sub_recipe_id ? String(ri.sub_recipe_id) : null,
-          calculationType: ri.calculation_type as
+          calculationType: (ri.calculation_type || "fixed_weight") as
             "fixed_weight" | "bakers_percentage",
           baseCalculationGroup: Boolean(ri.base_calculation_group),
+          isReference: Boolean(ri.is_reference),
+          bakersPercentage:
+            ri.bakers_percentage !== null && ri.bakers_percentage !== undefined
+              ? Number(ri.bakers_percentage)
+              : null,
+          originalInputString: ri.original_input_string
+            ? String(ri.original_input_string)
+            : null,
+          standardWeightG:
+            ri.standard_weight_g !== null && ri.standard_weight_g !== undefined
+              ? Number(ri.standard_weight_g)
+              : null,
           amount: Number(ri.amount),
           unit: String(ri.unit),
           prepNotes: ri.prep_notes ? String(ri.prep_notes) : null,

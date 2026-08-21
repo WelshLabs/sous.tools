@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from "@nestjs/common";
+import { RecipeMathService } from "../recipe/recipe-math.service";
 import { createHash } from "crypto";
 import { supabase } from "../../core/database/supabase";
 import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
@@ -19,6 +25,14 @@ export interface ExtractedBlock {
     guessName: string;
     quantity?: number;
     unit?: string;
+    originalInputString?: string;
+    standardAmount?: number;
+    standardUnit?: string;
+    standardWeightG?: number;
+    calculationType?: "fixed_weight" | "bakers_percentage";
+    isReference?: boolean;
+    baseCalculationGroup?: boolean;
+    bakersPercentage?: number | null;
     tenantMatches: Array<{ id: string; name: string; score?: number }>;
     usdaMatches: Array<{ fdcId: number; description: string; score?: number }>;
     selectedTenantId?: string;
@@ -72,7 +86,10 @@ export interface IngestionReviewPayload {
 export class IngestionService {
   private readonly logger = new Logger(IngestionService.name);
 
-  constructor(private readonly neo4jSync: Neo4jSyncService) {}
+  constructor(
+    private readonly neo4jSync: Neo4jSyncService,
+    @Optional() private readonly recipeMathService?: RecipeMathService,
+  ) {}
 
   /**
    * Generates a deterministic SHA-256 idempotency hash from vendor_id + invoice_id + date.
@@ -569,17 +586,51 @@ export class IngestionService {
         old_record: null,
       });
 
-      if (block.ingredients) {
-        for (const ing of block.ingredients) {
+      if (block.ingredients && block.ingredients.length > 0) {
+        const normalized = this.recipeMathService
+          ? this.recipeMathService.normalizeRecipeIngredients(
+              block.ingredients.map((ing: any) => ({
+                rawName: ing.rawName || ing.guessName || "Ingredient",
+                amount: ing.quantity || ing.amount || 1,
+                unit: ing.unit || "g",
+                selectedTenantId: ing.selectedTenantId,
+                originalInputString: ing.originalInputString,
+                isReference: ing.isReference,
+                baseCalculationGroup: ing.baseCalculationGroup,
+                calculationType: ing.calculationType,
+                bakersPercentage: ing.bakersPercentage,
+                standardWeightG: ing.standardWeightG,
+              })),
+            )
+          : null;
+
+        for (let idx = 0; idx < block.ingredients.length; idx++) {
+          const rawIng = block.ingredients[idx];
+          const norm = normalized ? normalized[idx] : null;
+
           const { data: ingRecord } = await supabase
             .from("recipe_ingredients")
             .insert({
               recipe_id: recipe.id,
-              master_item_id: ing.selectedTenantId || null,
-              raw_name: ing.rawName,
-              amount: ing.quantity || 1,
-              unit: ing.unit || "unit",
-              calculation_type: "fixed_weight",
+              master_item_id: rawIng.selectedTenantId || null,
+              raw_name: rawIng.rawName || rawIng.guessName || null,
+              original_input_string:
+                norm?.originalInputString ||
+                rawIng.originalInputString ||
+                `${rawIng.quantity || 1} ${rawIng.unit || "g"} ${rawIng.rawName || rawIng.guessName || ""}`.trim(),
+              amount: norm?.standardAmount ?? (rawIng.quantity || 1),
+              unit: norm?.standardUnit ?? (rawIng.unit || "unit"),
+              calculation_type: norm?.calculationType || "fixed_weight",
+              base_calculation_group: Boolean(
+                norm?.baseCalculationGroup ||
+                rawIng.baseCalculationGroup ||
+                norm?.isReference,
+              ),
+              is_reference: Boolean(norm?.isReference || rawIng.isReference),
+              bakers_percentage:
+                norm?.bakersPercentage ?? rawIng.bakersPercentage ?? null,
+              standard_weight_g:
+                norm?.standardWeightG ?? rawIng.standardWeightG ?? null,
             })
             .select()
             .single();

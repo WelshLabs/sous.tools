@@ -1,6 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { IngestionService } from "./ingestion.service";
 import { IngestionProcessor } from "./ingestion.processor";
+import { RecipeMathService } from "../recipe/recipe-math.service";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
 import { CommandsGateway } from "../commands/commands.gateway";
@@ -33,6 +34,7 @@ describe("Ingestion Module", () => {
       providers: [
         IngestionService,
         IngestionProcessor,
+        RecipeMathService,
         {
           provide: UsdaResolverService,
           useValue: {
