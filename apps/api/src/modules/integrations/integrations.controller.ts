@@ -7,6 +7,7 @@ import {
   Query,
   Res,
   Body,
+  Optional,
 } from "@nestjs/common";
 import { type Response } from "express";
 import { ApiResponse, IntegrationStatus } from "@soustools/api-types";
@@ -15,6 +16,7 @@ import { randomUUID } from "crypto";
 import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
 import { GoogleDriveService } from "./drivers/google-drive/google-drive.service";
+import { PosGateway } from "../pos/pos.gateway";
 
 function getOrgId(orgId?: string): string {
   return !orgId || orgId === "default"
@@ -27,6 +29,7 @@ export class IntegrationsController {
   constructor(
     private readonly service: IntegrationsService,
     private readonly driveService: GoogleDriveService,
+    @Optional() private readonly posGateway?: PosGateway,
   ) {}
 
   @Get("connect/:provider")
@@ -52,9 +55,15 @@ export class IntegrationsController {
         await this.service.handleGoogleCallback(code, orgId);
       } else if (provider === "square") {
         await this.service.handleSquareCallback(code, orgId);
-        // Kick off catalog + orders sync in the background — don't await so the
+        // Kick off catalog + orders sync in the background — dont await so the
         // OAuth redirect completes immediately while data populates asynchronously.
-        this.service.syncSquareCatalog(orgId).catch(() => {});
+        this.service
+          .syncSquareCatalog(orgId)
+          .then(() => {
+            this.posGateway?.broadcastCatalogUpdate(orgId);
+            this.posGateway?.broadcastOrdersUpdate(orgId);
+          })
+          .catch(() => {});
       } else {
         throw new Error(`Unsupported provider: ${provider}`);
       }
@@ -91,7 +100,10 @@ export class IntegrationsController {
   @Post("square/sync")
   async syncSquare(@Query("orgId") orgId?: string): Promise<ApiResponse<void>> {
     return runControllerAction(async () => {
-      await this.service.syncSquareCatalog(getOrgId(orgId));
+      const targetOrgId = getOrgId(orgId);
+      await this.service.syncSquareCatalog(targetOrgId);
+      this.posGateway?.broadcastCatalogUpdate(targetOrgId);
+      this.posGateway?.broadcastOrdersUpdate(targetOrgId);
     });
   }
 
