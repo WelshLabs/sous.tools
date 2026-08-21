@@ -1,6 +1,7 @@
 "use client";
 
 import type { SignageBlock, PosItem } from "@soustools/api-types";
+import { Sparkles } from "lucide-react";
 
 export function CalloutBlockConfig({
   selectedBlock,
@@ -12,137 +13,178 @@ export function CalloutBlockConfig({
   onUpdateBlock: (id: string, updates: any) => void;
   items?: PosItem[];
 }) {
+  if (selectedBlock.type !== "CalloutBlock") return null;
+
+  const b = selectedBlock as any;
+
   return (
-    <>
-      {selectedBlock.type === "CalloutBlock" && (
-        <div className="space-y-3">
-          <label className="text-muted-foreground block text-[10px] font-bold tracking-widest uppercase">
-            Callout Content
+    <div className="space-y-4">
+      <div className="space-y-3">
+        <label className="text-muted-foreground block flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase">
+          <Sparkles className="h-3.5 w-3.5 text-cyan-400" /> Callout & Card
+          Content
+        </label>
+
+        <div>
+          <label className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase">
+            Title / Heading
           </label>
           <input
             type="text"
-            value={(selectedBlock as any).title || ""}
-            placeholder="Title"
+            value={b.title || b.text || ""}
+            placeholder="e.g. Frozen Take Home Dinners"
             onChange={(e) =>
               onUpdateBlock(selectedBlockId, {
                 title: e.target.value,
-              } as any)
+                text: e.target.value,
+              })
             }
-            className="bg-card border-border text-foreground w-full rounded-lg border px-2.5 py-1.5 text-xs"
+            className="bg-card border-border text-foreground w-full rounded-lg border px-2.5 py-1.5 text-xs focus:border-cyan-500 focus:outline-none"
           />
-          <input
-            type="text"
-            value={(selectedBlock as any).message || ""}
-            placeholder="Message"
+        </div>
+
+        <div>
+          <label className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase">
+            Message / Description
+          </label>
+          <textarea
+            rows={3}
+            value={b.message || b.subtitle || ""}
+            placeholder="e.g. Fully prepared meals ready to heat & serve at home. Available in our grab & go freezer."
             onChange={(e) =>
               onUpdateBlock(selectedBlockId, {
                 message: e.target.value,
-              } as any)
+                subtitle: e.target.value,
+              })
             }
-            className="bg-card border-border text-foreground w-full rounded-lg border px-2.5 py-1.5 text-xs"
+            className="bg-card border-border text-foreground w-full resize-none rounded-lg border px-2.5 py-1.5 text-xs focus:border-cyan-500 focus:outline-none"
           />
-          <select
-            value={(selectedBlock as any).iconName || "Info"}
-            onChange={(e) =>
-              onUpdateBlock(selectedBlockId, {
-                iconName: e.target.value,
-              } as any)
-            }
-            className="bg-card border-border text-foreground w-full rounded-lg border px-2 py-1.5 text-xs"
-          >
-            <option value="Info">Info</option>
-            <option value="AlertTriangle">Alert Triangle</option>
-            <option value="CheckCircle">Check Circle</option>
-            <option value="ChefHat">Chef Hat</option>
-            <option value="Star">Star</option>
-            <option value="Flame">Flame</option>
-            <option value="Utensils">Utensils</option>
-          </select>
-          <label className="mt-2 flex cursor-pointer items-center gap-3">
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase">
+              Badge / Pill
+            </label>
             <input
-              type="checkbox"
-              checked={(selectedBlock as any).accentBorder || false}
+              type="text"
+              value={b.badge || ""}
+              placeholder="e.g. Grab & Go"
               onChange={(e) =>
                 onUpdateBlock(selectedBlockId, {
-                  accentBorder: e.target.checked,
-                } as any)
+                  badge: e.target.value,
+                })
               }
-              className="border-border bg-background dark:bg-background h-4 w-4 rounded text-cyan-500 focus:ring-cyan-500"
+              className="bg-card border-border text-foreground w-full rounded-lg border px-2.5 py-1.5 text-xs focus:border-cyan-500 focus:outline-none"
             />
-            <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
-              Accent Border
-            </span>
-          </label>
-          <div className="border-border space-y-3 border-t pt-2">
-            <label className="text-muted-foreground block text-[10px] font-bold tracking-widest uppercase">
-              Typography & Colors
+          </div>
+
+          <div>
+            <label className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase">
+              Icon
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
-                  Text Color
-                </label>
-                <input
-                  type="color"
-                  value={(selectedBlock as any).textColor || "#ffffff"}
-                  onChange={(e) =>
-                    onUpdateBlock(selectedBlockId, {
-                      textColor: e.target.value,
-                    } as any)
-                  }
-                  className="bg-card border-border h-8 w-full cursor-pointer rounded border"
-                />
-              </div>
-              <div>
-                <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
-                  Font Size
-                </label>
-                <select
-                  value={(selectedBlock as any).fontSize || ""}
-                  onChange={(e) =>
-                    onUpdateBlock(selectedBlockId, {
-                      fontSize: e.target.value,
-                    } as any)
-                  }
-                  className="bg-card border-border text-foreground w-full rounded-lg border px-2 py-1.5 text-xs focus:border-cyan-500 focus:outline-none"
-                >
-                  <option value="">Default</option>
-                  <option value="12px">12px</option>
-                  <option value="16px">16px</option>
-                  <option value="24px">24px</option>
-                  <option value="32px">32px</option>
-                  <option value="48px">48px</option>
-                  <option value="64px">64px</option>
-                </select>
-              </div>
-            </div>
+            <select
+              value={b.iconName || "Info"}
+              onChange={(e) =>
+                onUpdateBlock(selectedBlockId, {
+                  iconName: e.target.value,
+                })
+              }
+              className="bg-card border-border text-foreground w-full rounded-lg border px-2.5 py-1.5 text-xs focus:border-cyan-500 focus:outline-none"
+            >
+              <option value="Info">Info</option>
+              <option value="Sparkles">Sparkles</option>
+              <option value="Snowflake">Snowflake (Frozen)</option>
+              <option value="Flame">Flame (Hot / Spicy)</option>
+              <option value="ChefHat">Chef Hat</option>
+              <option value="Utensils">Utensils</option>
+              <option value="Star">Star</option>
+              <option value="Heart">Heart</option>
+              <option value="Package">Package (Take Home)</option>
+              <option value="AlertTriangle">Alert Triangle</option>
+              <option value="CheckCircle">Check Circle</option>
+              <option value="Clock">Clock</option>
+              <option value="none">No Icon</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-border space-y-3 border-t pt-3">
+        <label className="text-muted-foreground block text-[10px] font-bold tracking-widest uppercase">
+          Accent Border & Card Styling
+        </label>
+
+        <label className="flex cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            checked={b.accentBorder ?? true}
+            onChange={(e) =>
+              onUpdateBlock(selectedBlockId, {
+                accentBorder: e.target.checked,
+              })
+            }
+            className="border-border bg-background h-4 w-4 rounded text-cyan-500 focus:ring-cyan-500"
+          />
+          <span className="text-foreground text-xs font-semibold">
+            Enable Neon Accent Border
+          </span>
+        </label>
+
+        {(b.accentBorder ?? true) && (
+          <div className="grid grid-cols-2 gap-2 pl-6">
             <div>
-              <label className="text-muted-foreground mb-1 block text-[10px] uppercase">
-                Background Opacity
+              <label className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase">
+                Accent Position
               </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={(selectedBlock as any).backgroundOpacity ?? 1}
+              <select
+                value={b.accentPosition || "left"}
                 onChange={(e) =>
                   onUpdateBlock(selectedBlockId, {
-                    backgroundOpacity: Number(e.target.value),
-                  } as any)
+                    accentPosition: e.target.value,
+                  })
                 }
-                className="w-full accent-cyan-500"
-              />
-              <div className="text-muted-foreground text-right text-[10px]">
-                {Math.round(
-                  ((selectedBlock as any).backgroundOpacity ?? 1) * 100,
-                )}
-                %
+                className="bg-card border-border text-foreground w-full rounded border px-2 py-1 text-xs focus:border-cyan-500 focus:outline-none"
+              >
+                <option value="left">Left Border (Card Accent)</option>
+                <option value="top">Top Border (Banner Accent)</option>
+                <option value="bottom">Bottom Border</option>
+                <option value="right">Right Border</option>
+                <option value="all">All Sides (Full Glow)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-muted-foreground text-[9px] font-bold tracking-wider uppercase">
+                Accent Color
+              </label>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="color"
+                  value={b.accentColor || "#22d3ee"}
+                  onChange={(e) =>
+                    onUpdateBlock(selectedBlockId, {
+                      accentColor: e.target.value,
+                    })
+                  }
+                  className="h-7 w-7 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
+                />
+                <input
+                  type="text"
+                  placeholder="#22d3ee"
+                  value={b.accentColor || ""}
+                  onChange={(e) =>
+                    onUpdateBlock(selectedBlockId, {
+                      accentColor: e.target.value,
+                    })
+                  }
+                  className="bg-card border-border text-foreground w-full rounded border px-2 py-1 font-mono text-xs"
+                />
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   );
 }

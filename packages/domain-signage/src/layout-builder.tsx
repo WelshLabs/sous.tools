@@ -63,6 +63,41 @@ export const LayoutBuilder: React.FC<LayoutBuilderProps> = ({
   const [showOutlines, setShowOutlines] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const cached = localStorage.getItem("globalDesignTokens");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setConfig((prev) => ({
+          ...prev,
+          designTokens: { ...parsed, ...prev.designTokens },
+        }));
+      }
+    } catch (e) {
+      console.error("Failed to load design tokens from localStorage", e);
+    }
+
+    const handleTokenUpdate = (e: any) => {
+      if (e.detail) {
+        setConfig((prev) => ({
+          ...prev,
+          designTokens: { ...prev.designTokens, ...e.detail },
+        }));
+      }
+    };
+    window.addEventListener(
+      "soustools:design-tokens-updated",
+      handleTokenUpdate,
+    );
+    return () =>
+      window.removeEventListener(
+        "soustools:design-tokens-updated",
+        handleTokenUpdate,
+      );
+  }, []);
+
+  useEffect(() => {
     if (activeSocketConfig) {
       setConfig(activeSocketConfig);
       setSavedConfig(activeSocketConfig);

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import {
   type MenuItemStyles,
   type SignageBlock,
@@ -113,27 +114,69 @@ export function PreviewBlockRenderer({
     }
 
     case "ExplodedItemBlock": {
+      const b = block as any;
+      const baseItem = items.find(
+        (i) => i.id === b.menuItemId || i.externalId === b.menuItemId,
+      );
+      const isGlass = block.panelStyle === "glass";
       const classes = [
-        "flex flex-col gap-2 w-full st-exploded-item",
-        block.panelStyle === "glass"
-          ? "st-glass-panel p-2 border border-border bg-muted/50 rounded"
-          : "",
+        "flex flex-col gap-3 w-full st-exploded-item rounded-2xl border p-4 shadow-xl transition-all",
+        isGlass ? "st-glass-panel border-border" : "border-border bg-card/60",
         isRoot ? "flex-1 h-full" : "",
         block.className,
       ]
         .filter(Boolean)
         .join(" ");
+
+      const showHeader =
+        b.badge ||
+        (!b.hideTitle && (baseItem?.name || b.menuItemId)) ||
+        (!b.hidePrice && baseItem?.price) ||
+        (!b.hideDescription && (baseItem?.description || b.subtitle));
+
       return (
         <div className={classes} data-unique-id={block.uniqueSelector}>
-          {(block.blocks || []).map((sub, idx) => (
-            <PreviewBlockRenderer
-              key={idx}
-              block={sub}
-              items={items}
-              styles={styles}
-              onFetchModifierOptions={onFetchModifierOptions}
-            />
-          ))}
+          {showHeader && (
+            <div className="border-border flex flex-col gap-1 border-b pb-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  {b.badge && (
+                    <span className="rounded-full bg-cyan-400 px-2 py-0.5 text-[8px] font-black tracking-wider text-zinc-950 uppercase">
+                      {b.badge}
+                    </span>
+                  )}
+                  {!b.hideTitle && (
+                    <h3 className="text-foreground font-archivo text-sm font-bold tracking-wide">
+                      {baseItem?.name || b.menuItemId || "Exploded Item"}
+                    </h3>
+                  )}
+                </div>
+                {!b.hidePrice && baseItem && (
+                  <span className="font-mono text-sm font-bold text-cyan-400">
+                    ${Number(baseItem.price).toFixed(2)}
+                  </span>
+                )}
+              </div>
+              {!b.hideDescription && (baseItem?.description || b.subtitle) && (
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  {baseItem?.description || b.subtitle}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Child Blocks (Modifiers, Columns, Ingredients) */}
+          <div className="flex flex-col gap-2">
+            {(block.blocks || []).map((sub, idx) => (
+              <PreviewBlockRenderer
+                key={idx}
+                block={sub}
+                items={items}
+                styles={styles}
+                onFetchModifierOptions={onFetchModifierOptions}
+              />
+            ))}
+          </div>
         </div>
       );
     }

@@ -1,9 +1,10 @@
+/* eslint-disable max-lines */
 "use client";
 
 import React from "react";
 import { useState, useRef, useEffect } from "react";
 import { type PosItem } from "@soustools/api-types";
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronUp, ChevronDown } from "lucide-react";
 
 interface PosItemPickerProps {
   items: PosItem[];
@@ -75,7 +76,7 @@ export function PosItemMultiPicker({
   items,
   selectedIds,
   onChange,
-  placeholder = "Search upgrades...",
+  placeholder = "Search items...",
   renderExtra,
 }: PosItemMultiPickerProps) {
   const [search, setSearch] = useState("");
@@ -95,25 +96,43 @@ export function PosItemMultiPicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedItems = items.filter((i) => selectedIds.includes(i.id));
+  // Preserve explicit selectedIds order
+  const selectedItems = selectedIds
+    .map((id) => items.find((i) => i.id === id || i.externalId === id))
+    .filter((i): i is PosItem => Boolean(i));
+
   const filtered = items.filter(
     (i) =>
       i.name.toLowerCase().includes(search.toLowerCase()) &&
-      !selectedIds.includes(i.id),
+      !selectedIds.includes(i.id) &&
+      (!i.externalId || !selectedIds.includes(i.externalId)),
   );
+
+  const handleMove = (index: number, direction: "up" | "down") => {
+    const newIds = [...selectedIds];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newIds.length) return;
+    const temp = newIds[index];
+    newIds[index] = newIds[targetIndex];
+    newIds[targetIndex] = temp;
+    onChange(newIds);
+  };
 
   return (
     <div className="flex w-full flex-col gap-2" ref={containerRef}>
-      {/* Selected Items Pills */}
+      {/* Selected Items Pills with Reordering */}
       {selectedItems.length > 0 && (
-        <div className="mb-1 flex flex-wrap gap-1.5">
-          {selectedItems.map((item) => (
+        <div className="mb-1 flex flex-col gap-1.5">
+          {selectedItems.map((item, index) => (
             <div
               key={item.id}
               className="flex w-full flex-col gap-1 rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-2"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-cyan-950/60 font-mono text-[9px] font-bold text-cyan-400">
+                    {index + 1}
+                  </span>
                   <span className="truncate text-xs font-semibold text-cyan-400">
                     {item.name}
                   </span>
@@ -121,15 +140,47 @@ export function PosItemMultiPicker({
                     ${Number(item.price).toFixed(2)}
                   </span>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onChange(selectedIds.filter((id) => id !== item.id));
-                  }}
-                  className="rounded p-1 text-cyan-500 transition-colors hover:bg-cyan-500/20 hover:text-cyan-300"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    title="Move Up"
+                    disabled={index === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMove(index, "up");
+                    }}
+                    className="rounded p-1 text-cyan-500 transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 disabled:opacity-30"
+                  >
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Move Down"
+                    disabled={index === selectedItems.length - 1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMove(index, "down");
+                    }}
+                    className="rounded p-1 text-cyan-500 transition-colors hover:bg-cyan-500/20 hover:text-cyan-300 disabled:opacity-30"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Remove item"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onChange(
+                        selectedIds.filter(
+                          (id) => id !== item.id && id !== item.externalId,
+                        ),
+                      );
+                    }}
+                    className="ml-1 rounded p-1 text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
               {renderExtra && renderExtra(item, true)}
             </div>

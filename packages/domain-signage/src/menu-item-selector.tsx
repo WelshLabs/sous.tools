@@ -1,7 +1,16 @@
+/* eslint-disable max-lines */
 "use client";
 import { useState } from "react";
 import { type PosItem, type HighlightItemConfig } from "@soustools/api-types";
-import { Star, Check, Search, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Star,
+  Check,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 
 interface MenuItemSelectorProps {
   items: PosItem[];
@@ -58,12 +67,26 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
     onChange(selectedItemIds, newHighlights);
   };
 
+  const handleMove = (index: number, direction: "up" | "down") => {
+    const newIds = [...selectedItemIds];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newIds.length) return;
+    const temp = newIds[index];
+    newIds[index] = newIds[targetIndex];
+    newIds[targetIndex] = temp;
+    onChange(newIds, highlightItems);
+  };
+
   const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const selectedItemsList = selectedItemIds
+    .map((id) => items.find((i) => i.id === id || i.externalId === id))
+    .filter((i): i is PosItem => Boolean(i));
+
   return (
-    <div className="relative w-full">
+    <div className="relative w-full space-y-2">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -80,6 +103,43 @@ export const MenuItemSelector: React.FC<MenuItemSelectorProps> = ({
           <ChevronDown className="h-3.5 w-3.5" />
         )}
       </button>
+
+      {/* Selected Items Reorder Strip */}
+      {selectedItemsList.length > 0 && !isOpen && (
+        <div className="border-border bg-card/30 space-y-1 rounded border p-1.5">
+          <div className="text-muted-foreground px-1 text-[9px] font-bold tracking-wider uppercase">
+            Order ({selectedItemsList.length})
+          </div>
+          {selectedItemsList.map((item, idx) => (
+            <div
+              key={item.id}
+              className="bg-background/50 flex items-center justify-between gap-1 rounded px-2 py-1 text-xs"
+            >
+              <span className="flex-1 truncate font-medium">
+                {idx + 1}. {item.name}
+              </span>
+              <div className="flex items-center gap-0.5">
+                <button
+                  type="button"
+                  disabled={idx === 0}
+                  onClick={() => handleMove(idx, "up")}
+                  className="text-muted-foreground p-0.5 hover:text-cyan-400 disabled:opacity-20"
+                >
+                  <ArrowUp className="h-3 w-3" />
+                </button>
+                <button
+                  type="button"
+                  disabled={idx === selectedItemsList.length - 1}
+                  onClick={() => handleMove(idx, "down")}
+                  className="text-muted-foreground p-0.5 hover:text-cyan-400 disabled:opacity-20"
+                >
+                  <ArrowDown className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {isOpen && (
         <div className="absolute right-0 left-0 z-30 mt-1 max-h-60 space-y-2 overflow-y-auto rounded-lg border border-[oklch(0.26_0.03_180)] bg-[oklch(0.16_0.02_180)] p-2 shadow-xl">

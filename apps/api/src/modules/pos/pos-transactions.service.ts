@@ -52,4 +52,30 @@ export class PosTransactionsService {
 
     return data;
   }
+  async completeOrder(orderId: string, orgId: string) {
+    const { data, error } = await supabase
+      .from("pos_orders")
+      .update({
+        state: "COMPLETED",
+        closed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId)
+      .select();
+    if (error) throw new Error(error.message);
+    if (this.dashboardService) {
+      await this.dashboardService.triggerDashboardUpdate(orgId);
+    }
+    return data;
+  }
+
+  async updateLineItemStatus(lineItemId: string, status: string) {
+    const { data, error } = await supabase
+      .from("pos_order_line_items")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", lineItemId)
+      .select();
+    if (error) throw new Error(error.message);
+    return data;
+  }
 }

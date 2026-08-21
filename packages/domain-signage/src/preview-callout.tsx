@@ -1,73 +1,101 @@
 "use client";
 
 import * as LucideIcons from "lucide-react";
-import { getTypoStyle } from "./menu-item-style-utils";
+import { getTypoStyle } from "./preview-utils";
 
 export function PreviewCallout({ block }: { block: any }) {
   const b = block as any;
   const isGlass = block.panelStyle === "glass";
+
+  const accentColor = b.accentColor || "var(--global-accent, #22d3ee)";
+  const accentPos = b.accentPosition || (b.accentBorder ? "top" : "left");
+  const hasAccent = b.accentBorder !== false;
+
+  let accentClasses = "";
+  if (hasAccent) {
+    if (accentPos === "left") accentClasses = "border-l-4";
+    else if (accentPos === "top") accentClasses = "border-t-4";
+    else if (accentPos === "bottom") accentClasses = "border-b-4";
+    else if (accentPos === "right") accentClasses = "border-r-4";
+    else if (accentPos === "all")
+      accentClasses = "border-2 shadow-[0_0_15px_rgba(34,211,238,0.2)]";
+  }
+
   const classes = [
-    "p-5 rounded-xl flex flex-col items-center text-center gap-3 st-callout w-full",
+    "p-4 rounded-xl flex flex-col gap-2 st-callout w-full transition-all shadow-xl",
     isGlass
       ? "st-glass-panel border border-border"
       : block.panelStyle !== "none"
-        ? "bg-card border border-border"
+        ? "bg-card/70 border border-border"
         : "",
-    block.accentBorder ? "border-t-4 border-t-cyan-400" : "",
+    accentClasses,
     block.className,
   ]
     .filter(Boolean)
     .join(" ");
 
-  const IconComponent = b.iconName
-    ? (LucideIcons as any)[b.iconName] || LucideIcons.Info
-    : LucideIcons.Info;
-  const bgStyle =
-    b.backgroundOpacity !== undefined && !isGlass && block.panelStyle !== "none"
-      ? { backgroundColor: `rgba(24, 24, 27, ${b.backgroundOpacity})` }
-      : {};
-  const typoStyle = getTypoStyle(block, "body");
+  const IconComponent =
+    b.iconName && b.iconName !== "none"
+      ? (LucideIcons as any)[b.iconName] || LucideIcons.Info
+      : null;
+
+  const typoStyle = getTypoStyle(block, "body", "typography");
 
   return (
     <div
       className={classes}
       data-unique-id={block.uniqueSelector}
-      style={bgStyle}
+      style={{
+        borderColor: hasAccent && accentPos !== "all" ? accentColor : undefined,
+        ...block.visuals?.background,
+      }}
     >
-      <div className="shrink-0">
-        <IconComponent className="h-6 w-6 text-cyan-400" />
-      </div>
-      <div
-        className="flex w-full flex-col items-center justify-center gap-1"
-        style={{
-          ...typoStyle,
-          fontSize: typoStyle.fontSize || b.fontSize,
-          color: typoStyle.color || b.textColor,
-        }}
-      >
-        {b.title && (
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          {IconComponent && (
+            <div className="shrink-0 rounded-lg bg-cyan-500/10 p-1.5 text-cyan-400">
+              <IconComponent
+                className="h-5 w-5"
+                style={{ color: accentColor }}
+              />
+            </div>
+          )}
+          {b.title && (
+            <h4
+              className="text-foreground text-sm font-bold tracking-wide"
+              style={{
+                fontFamily: "var(--global-heading-font)",
+                color: typoStyle.color,
+                fontSize: typoStyle.fontSize || undefined,
+              }}
+            >
+              {b.title}
+            </h4>
+          )}
+        </div>
+        {b.badge && (
           <span
-            className="text-lg font-bold tracking-wide"
-            style={{ fontFamily: `var(--global-heading-font)` }}
+            className="shrink-0 rounded-full px-2 py-0.5 text-[8px] font-black tracking-wider text-zinc-950 uppercase shadow-sm"
+            style={{ backgroundColor: accentColor }}
           >
-            {b.title}
-          </span>
-        )}
-        {b.message && (
-          <span
-            className="leading-snug"
-            style={{
-              fontSize: typoStyle.fontSize
-                ? `calc(${typoStyle.fontSize} * 0.75)`
-                : b.fontSize
-                  ? `calc(${b.fontSize} * 0.75)`
-                  : undefined,
-            }}
-          >
-            {b.message}
+            {b.badge}
           </span>
         )}
       </div>
+
+      {(b.message || b.subtitle) && (
+        <p
+          className="text-muted-foreground text-xs leading-relaxed opacity-90"
+          style={{
+            ...typoStyle,
+            fontSize: typoStyle.fontSize
+              ? `calc(${typoStyle.fontSize} * 0.85)`
+              : undefined,
+          }}
+        >
+          {b.message || b.subtitle}
+        </p>
+      )}
     </div>
   );
 }

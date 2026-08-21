@@ -1,4 +1,6 @@
 /* eslint-disable max-lines */
+"use client";
+
 import React from "react";
 import {
   type SignageLayoutConfig,
@@ -6,15 +8,11 @@ import {
   type SignageSlide,
   type SignageBlock,
 } from "@soustools/api-types";
-import {
-  buildAllAnimationCss,
-  buildTitleStyle,
-  buildPriceStyle,
-  resolveItemState,
-  getTypoStyle,
-} from "../../menu-item-style-utils";
+import { buildAllAnimationCss } from "../../menu-item-style-utils";
 import { DEFAULT_MENU_ITEM_STYLES } from "../../config-migration";
 import { BlockEditorNode } from "../../block-editor-node";
+import { PreviewBlockRenderer } from "../../preview-block-renderer";
+import { AuroraBackground } from "@soustools/design-system";
 import {
   DragDropContext,
   Droppable,
@@ -75,6 +73,12 @@ export const SignagePreviewView: React.FC<SignagePreviewViewProps> = (
     (f) => f && f !== "inherit" && f !== "Global Default",
   );
 
+  const hasAurora =
+    columnSlide?.auroraBackground ||
+    columnSlide?.backgroundEffect === "aurora" ||
+    config.auroraBackground ||
+    config.backgroundEffect === "aurora";
+
   const bgStyle: React.CSSProperties = {
     fontFamily: config.googleFont
       ? `'${config.googleFont}', sans-serif`
@@ -90,7 +94,7 @@ export const SignagePreviewView: React.FC<SignagePreviewViewProps> = (
   const cssVars = `
     .st-signage-root {
       --global-primary: ${config.designTokens?.primaryColor || "#06b6d4"};
-      --global-accent: ${config.designTokens?.accentColor || "#3b82f6"};
+      --global-accent: ${config.designTokens?.accentColor || "#22d3ee"};
       --global-heading-font: ${config.designTokens?.headingFont ? `'${config.designTokens.headingFont}', sans-serif` : "inherit"};
       --global-heading-color: ${config.designTokens?.headingColor || "inherit"};
       --global-heading-weight: ${config.designTokens?.headingWeight || "inherit"};
@@ -122,7 +126,7 @@ export const SignagePreviewView: React.FC<SignagePreviewViewProps> = (
 
   return (
     <div
-      className="signage-preview-container bg-background dark:bg-background st-signage-root relative flex min-h-full w-full flex-col items-center justify-start pt-8 pb-32"
+      className="signage-preview-container bg-background dark:bg-background st-signage-root relative flex min-h-full w-full flex-col items-center justify-start pt-6 pb-28"
       ref={containerRef}
     >
       {(customCss || animationCss) && (
@@ -135,27 +139,29 @@ export const SignagePreviewView: React.FC<SignagePreviewViewProps> = (
       config.aspectRatio !== "responsive" &&
       config.scaleToFit !== false ? (
         <div
-          className="h-[1080px] w-[1920px] shrink-0 origin-top transform-gpu shadow-2xl"
+          className="h-[1080px] w-[1920px] shrink-0 origin-top transform-gpu overflow-hidden rounded-2xl shadow-2xl"
           style={{ transform: `scale(${scale})` }}
         >
           <PreviewContent
             {...props}
             bgStyle={bgStyle}
             activeSlide={activeSlide}
+            hasAurora={hasAurora}
           />
         </div>
       ) : (
-        <div className="flex min-h-[500px] w-full flex-1 flex-col">
+        <div className="flex min-h-[520px] w-full flex-1 flex-col">
           <PreviewContent
             {...props}
             bgStyle={bgStyle}
             activeSlide={activeSlide}
+            hasAurora={hasAurora}
           />
         </div>
       )}
 
       {!isPreviewing && config.slides.length > 0 && (
-        <div className="mt-8 w-full max-w-full">
+        <div className="mt-6 w-full max-w-full">
           <SlideFilmstrip {...props} slides={config.slides} />
         </div>
       )}
@@ -175,43 +181,54 @@ const PreviewContent = (props: any) => {
     onAddBlock,
     onUpdateBlock,
     fetchModifiers,
+    hasAurora,
   } = props;
+
   return (
     <div
-      className={`st-layout-background relative flex h-full w-full flex-1 flex-col ${config.aspectRatio === "responsive" ? "" : "border-border rounded-2xl border-2 shadow-2xl"}`}
+      className={`st-layout-background relative flex h-full w-full flex-1 flex-col overflow-hidden ${
+        config.aspectRatio === "responsive"
+          ? ""
+          : "border-border rounded-2xl border-2 shadow-2xl"
+      }`}
       style={bgStyle}
     >
-      {!activeSlide ? (
-        <div className="text-muted-foreground flex h-full items-center justify-center font-mono text-sm">
-          Click + Add Slide to begin
-        </div>
-      ) : (
-        <SlideRenderer
-          slide={activeSlide}
-          items={items}
-          config={config}
-          isPreviewing={isPreviewing}
-          selectedBlockId={selectedBlockId}
-          onSelectBlock={onSelectBlock}
-          onAddBlock={onAddBlock}
-          onUpdateBlock={onUpdateBlock}
-          fetchModifiers={fetchModifiers}
-        />
-      )}
+      {hasAurora && <AuroraBackground className="pointer-events-none z-0" />}
+
+      <div className="relative z-10 flex h-full w-full flex-1 flex-col">
+        {!activeSlide ? (
+          <div className="text-muted-foreground flex h-full items-center justify-center font-mono text-sm">
+            Click + Add Slide to begin
+          </div>
+        ) : (
+          <SlideRenderer
+            slide={activeSlide}
+            items={items}
+            config={config}
+            isPreviewing={isPreviewing}
+            selectedBlockId={selectedBlockId}
+            onSelectBlock={onSelectBlock}
+            onAddBlock={onAddBlock}
+            onUpdateBlock={onUpdateBlock}
+            fetchModifiers={fetchModifiers}
+          />
+        )}
+      </div>
+
       {(config.overlays ?? []).map((o: any) => (
         <div
           key={o.id}
-          className={`bg-background/80 border-border signage-overlay absolute rounded border px-1.5 py-0.5 text-[9px] shadow ${o.customCssClass ?? ""}`}
+          className={`bg-background/80 border-border signage-overlay absolute rounded border px-2 py-1 text-[10px] font-semibold shadow-lg ${o.customCssClass ?? ""}`}
           style={{
             top: o.position.top,
             bottom: o.position.bottom,
             left: o.position.left,
             right: o.position.right,
-            zIndex: o.zIndex ?? 10,
+            zIndex: o.zIndex ?? 20,
           }}
         >
           {o.type === "BADGE" && (
-            <span className="text-foreground mr-0.5 rounded bg-red-500 px-0.5 text-[8px] font-bold">
+            <span className="text-foreground mr-1 rounded bg-red-500 px-1 text-[8px] font-bold">
               SOLD OUT
             </span>
           )}
@@ -234,6 +251,7 @@ const SlideRenderer = (props: any) => {
     onUpdateBlock,
     fetchModifiers,
   } = props;
+
   if (slide.type === "IMAGE")
     return (
       <div className="bg-card flex h-full w-full items-center justify-center">
@@ -244,10 +262,11 @@ const SlideRenderer = (props: any) => {
             className="h-full w-full object-cover"
           />
         ) : (
-          <p className="text-xs text-blue-400 italic">Image: (no URL set)</p>
+          <p className="text-xs text-cyan-400 italic">Image: (no URL set)</p>
         )}
       </div>
     );
+
   if (slide.type === "VIDEO")
     return (
       <div className="bg-card flex h-full w-full items-center justify-center">
@@ -264,6 +283,7 @@ const SlideRenderer = (props: any) => {
         )}
       </div>
     );
+
   if (slide.type === "IFRAME")
     return (
       <div className="h-full w-full">
@@ -284,46 +304,77 @@ const SlideRenderer = (props: any) => {
     );
 
   if (slide.type === "COLUMN_LAYOUT") {
-    const blocks = slide.columns?.[0]?.blocks || [];
+    const columns = slide.columns || [];
     const styles = config.menuItemStyles || DEFAULT_MENU_ITEM_STYLES;
+
     if (isPreviewing) {
       return (
-        <div className="bg-background dark:bg-background relative flex h-full w-full flex-col">
-          {blocks.map((block: any) => (
-            <PreviewBlockRenderer
-              key={block.id}
-              block={block}
-              items={items}
-              styles={styles}
-              isRoot
-              fetchModifiers={fetchModifiers}
-            />
-          ))}
+        <div className="relative flex h-full w-full flex-1 flex-row gap-4 overflow-y-auto p-4">
+          {columns.length > 0 ? (
+            columns.map((col: any, cIdx: number) => (
+              <div
+                key={col.id || cIdx}
+                className="flex min-h-0 min-w-0 flex-1 flex-col gap-3"
+              >
+                {(col.blocks || []).map((block: any) => (
+                  <PreviewBlockRenderer
+                    key={block.id}
+                    block={block}
+                    items={items}
+                    styles={styles}
+                    isRoot
+                    onFetchModifierOptions={fetchModifiers}
+                  />
+                ))}
+              </div>
+            ))
+          ) : (
+            <div className="text-muted-foreground flex flex-1 items-center justify-center text-xs italic">
+              No columns configured
+            </div>
+          )}
         </div>
       );
     }
+
     return (
       <div
-        className="relative flex h-full w-full flex-col p-4"
+        className="relative flex h-full w-full flex-1 flex-row gap-4 p-4"
         onClick={(e) => {
           e.stopPropagation();
           onSelectBlock?.(null);
         }}
       >
-        {blocks.length > 0 ? (
-          blocks.map((block: any, idx: number) => (
-            <BlockEditorNode
-              key={block.id || `block-fallback-${idx}`}
-              block={block}
-              items={items}
-              menuItemStyles={styles}
-              onUpdate={onUpdateBlock!}
-              onAddBlock={onAddBlock!}
-              onSelectBlock={onSelectBlock!}
-              selectedBlockId={selectedBlockId || undefined}
-              isRoot
-            />
-          ))
+        {columns.length > 0 ? (
+          columns.map((col: any, cIdx: number) => {
+            const blocks = col.blocks || [];
+            return (
+              <div
+                key={col.id || cIdx}
+                className="flex min-h-0 min-w-0 flex-1 flex-col gap-3"
+              >
+                {blocks.length > 0 ? (
+                  blocks.map((block: any, idx: number) => (
+                    <BlockEditorNode
+                      key={block.id || `block-fallback-${cIdx}-${idx}`}
+                      block={block}
+                      items={items}
+                      menuItemStyles={styles}
+                      onUpdate={onUpdateBlock!}
+                      onAddBlock={onAddBlock!}
+                      onSelectBlock={onSelectBlock!}
+                      selectedBlockId={selectedBlockId || undefined}
+                      isRoot
+                    />
+                  ))
+                ) : (
+                  <div className="border-border text-muted-foreground flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed p-8 text-xs transition-colors hover:border-cyan-400 hover:text-cyan-400">
+                    Empty Column
+                  </div>
+                )}
+              </div>
+            );
+          })
         ) : (
           <div className="border-border text-muted-foreground flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed text-sm transition-colors hover:border-cyan-400 hover:text-cyan-400">
             Empty Canvas
@@ -333,395 +384,6 @@ const SlideRenderer = (props: any) => {
     );
   }
   return null;
-};
-
-const PreviewBlockRenderer = (props: any) => {
-  const { block, items, styles, isRoot, fetchModifiers } = props;
-  switch (block.type) {
-    case "ColumnBlock": {
-      const classes = [
-        "flex flex-col gap-2 w-full st-layout-column",
-        block.panelStyle === "glass"
-          ? "st-glass-panel p-2 border border-border bg-muted/50 rounded"
-          : "",
-        isRoot ? "flex-1 h-full" : "",
-        block.className,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      return (
-        <div className={classes} data-unique-id={block.uniqueSelector}>
-          {(block.blocks || []).map((sub: any, idx: number) => (
-            <PreviewBlockRenderer
-              key={idx}
-              block={sub}
-              items={items}
-              styles={styles}
-              fetchModifiers={fetchModifiers}
-            />
-          ))}
-        </div>
-      );
-    }
-    case "RowBlock": {
-      const classes = [
-        "flex flex-row gap-2 w-full overflow-x-auto st-layout-row",
-        block.panelStyle === "glass"
-          ? "st-glass-panel p-2 border border-border bg-muted/50 rounded"
-          : "",
-        isRoot ? "flex-1 h-full" : "",
-        block.className,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      return (
-        <div className={classes} data-unique-id={block.uniqueSelector}>
-          {(block.blocks || []).map((sub: any, idx: number) => (
-            <PreviewBlockRenderer
-              key={idx}
-              block={sub}
-              items={items}
-              styles={styles}
-              fetchModifiers={fetchModifiers}
-            />
-          ))}
-        </div>
-      );
-    }
-    case "GridBlock": {
-      const colClass =
-        {
-          1: "grid-cols-1",
-          2: "grid-cols-2",
-          3: "grid-cols-3",
-          4: "grid-cols-4",
-          5: "grid-cols-5",
-          6: "grid-cols-6",
-        }[block.columns as number] || "grid-cols-2";
-      const classes = [
-        "grid gap-2 w-full st-layout-grid",
-        colClass,
-        block.panelStyle === "glass"
-          ? "st-glass-panel p-2 border border-border bg-muted/50 rounded"
-          : "",
-        isRoot ? "flex-1 h-full" : "",
-        block.className,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      return (
-        <div className={classes} data-unique-id={block.uniqueSelector}>
-          {(block.cells || []).map((sub: any, idx: number) => (
-            <PreviewBlockRenderer
-              key={idx}
-              block={sub}
-              items={items}
-              styles={styles}
-              fetchModifiers={fetchModifiers}
-            />
-          ))}
-        </div>
-      );
-    }
-    case "ExplodedItemBlock": {
-      const classes = [
-        "flex flex-col gap-2 w-full st-exploded-item",
-        block.panelStyle === "glass"
-          ? "st-glass-panel p-2 border border-border bg-muted/50 rounded"
-          : "",
-        isRoot ? "flex-1 h-full" : "",
-        block.className,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      return (
-        <div className={classes} data-unique-id={block.uniqueSelector}>
-          {(block.blocks || []).map((sub: any, idx: number) => (
-            <PreviewBlockRenderer
-              key={idx}
-              block={sub}
-              items={items}
-              styles={styles}
-              fetchModifiers={fetchModifiers}
-            />
-          ))}
-        </div>
-      );
-    }
-    default:
-      return (
-        <PreviewContentBlocks
-          block={block}
-          items={items}
-          styles={styles}
-          fetchModifiers={fetchModifiers}
-        />
-      );
-  }
-};
-
-const PreviewContentBlocks = ({
-  block,
-  items,
-  styles,
-  fetchModifiers,
-}: any) => {
-  switch (block.type) {
-    case "CategoryHeaderBlock":
-      return <PreviewCategoryHeader block={block} />;
-    case "PosItemBlock":
-      return <PreviewPosItem block={block} items={items} styles={styles} />;
-    case "MenuListBlock":
-      return <PreviewMenuList block={block} items={items} styles={styles} />;
-    case "NestedItemBlock":
-      return <PreviewNestedItem block={block} items={items} styles={styles} />;
-    case "MediaCarouselBlock":
-      return <PreviewMediaCarousel block={block} />;
-    case "ModifierGroupBlock":
-      return (
-        <PreviewModifierGroup block={block} fetchModifiers={fetchModifiers} />
-      );
-    case "TimelineBlock":
-      return <PreviewTimeline block={block} />;
-    case "ImageBlock":
-      return (
-        <div className="bg-background/50 flex h-full min-h-[60px] w-full items-center justify-center overflow-hidden rounded border border-dashed border-black/10">
-          {block.imageUrl ? (
-            <img src={block.imageUrl} className="h-full w-full object-cover" />
-          ) : (
-            <span className="text-[10px]">Static Image</span>
-          )}
-        </div>
-      );
-    case "VideoBlock":
-      return (
-        <div className="bg-background/50 flex h-full min-h-[200px] w-full items-center justify-center rounded border border-dashed">
-          <video
-            src={block.videoUrl || ""}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="h-full w-full object-cover"
-          />
-        </div>
-      );
-    default:
-      return (
-        <div className="bg-muted/50 flex min-h-[100px] w-full items-center justify-center rounded border border-dashed">
-          <span className="text-muted-foreground text-center text-[10px] font-bold tracking-widest uppercase">
-            Unconfigured Content
-          </span>
-        </div>
-      );
-  }
-};
-
-const PreviewCategoryHeader = ({ block }: any) => {
-  const typoStyle = getTypoStyle(block, "heading");
-  return (
-    <div
-      className={`flex w-full flex-col gap-0.5 rounded p-2 ${block.panelStyle === "glass" ? "st-glass-panel" : ""} ${block.className || ""}`}
-    >
-      <div className="flex w-full items-center justify-between gap-2">
-        <h5
-          className="flex-1 text-[10px] tracking-wider uppercase"
-          style={{
-            ...typoStyle,
-            fontSize: typoStyle.fontSize || block.fontSize,
-          }}
-        >
-          {block.title}
-        </h5>
-        {block.badge && (
-          <span
-            className={`text-foreground shrink-0 rounded bg-red-600 px-1 text-[6px] font-bold ${block.animateBadge ? "animate-pulse" : ""}`}
-          >
-            {block.badge}
-          </span>
-        )}
-      </div>
-      {block.subtitle && (
-        <p
-          className="text-[8px] opacity-80"
-          style={getTypoStyle(block, "subtitle")}
-        >
-          {block.subtitle}
-        </p>
-      )}
-    </div>
-  );
-};
-
-const PreviewPosItem = ({ block, items, styles }: any) => {
-  const item = items.find(
-    (i: any) => i.id === block.posItemId || i.externalId === block.posItemId,
-  );
-  if (!item)
-    return (
-      <div className="text-muted-foreground text-[8px] italic">
-        Item not found ({block.posItemId})
-      </div>
-    );
-  const optStyle = resolveItemState(item, false, styles);
-  if (optStyle.hidden && item.isSoldOut) return null;
-  return (
-    <div
-      className={`flex items-center justify-between rounded p-1.5 text-[9px] ${block.className || ""}`}
-      style={{
-        opacity: optStyle.dimOpacity ?? (item.isSoldOut ? 0.5 : 1),
-        filter: optStyle.grayscale ? "grayscale(1)" : undefined,
-      }}
-    >
-      <span
-        style={buildTitleStyle(optStyle)}
-        className="max-w-[70%] truncate font-semibold"
-      >
-        {item.name}
-      </span>
-      <span style={buildPriceStyle(optStyle)} className="font-mono">
-        ${Number(item.price).toFixed(2)}
-      </span>
-    </div>
-  );
-};
-
-const PreviewMenuList = ({ block, items, styles }: any) => {
-  if (!block.itemIds?.length)
-    return (
-      <div className="text-muted-foreground text-[10px]">Select items...</div>
-    );
-  return (
-    <div className={`flex w-full flex-col gap-2 ${block.className || ""}`}>
-      {block.itemIds.map((itemId: string) => {
-        const item = items.find(
-          (i: any) => i.id === itemId || i.externalId === itemId,
-        );
-        if (!item) return null;
-        const optStyle = resolveItemState(item, false, block.styles ?? styles);
-        if (optStyle.hidden && item.isSoldOut) return null;
-        return (
-          <div
-            key={item.id}
-            className="flex flex-col justify-between p-1.5"
-            style={{
-              opacity: optStyle.dimOpacity ?? (item.isSoldOut ? 0.5 : 1),
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <span style={buildTitleStyle(optStyle)} className="font-semibold">
-                {item.name}
-              </span>
-              <span style={buildPriceStyle(optStyle)} className="font-mono">
-                ${Number(item.price).toFixed(2)}
-              </span>
-            </div>
-            {!block.hideDescriptions && item.description && (
-              <span className="truncate text-[8px] opacity-70">
-                {item.description}
-              </span>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const PreviewNestedItem = ({ block, items }: any) => {
-  const baseItem = items.find(
-    (i: any) =>
-      i.id === block.basePosItemId || i.externalId === block.basePosItemId,
-  );
-  return (
-    <div className="flex flex-col gap-1 rounded p-2 text-[9px]">
-      <div className="flex justify-between font-bold">
-        <span>{baseItem?.name || "Unknown"}</span>
-        <span>${baseItem ? Number(baseItem.price).toFixed(2) : "0.00"}</span>
-      </div>
-      <ul className="flex flex-col gap-0.5 border-l border-white/10 pl-2 text-[8px] opacity-80">
-        {(block.upgradeItems || []).map((up: any, idx: number) => {
-          const upItem = items.find(
-            (i: any) => i.id === up.posItemId || i.externalId === up.posItemId,
-          );
-          return <li key={idx}>• {upItem?.name || "Up"}</li>;
-        })}
-      </ul>
-    </div>
-  );
-};
-
-const PreviewMediaCarousel = ({ block }: any) => {
-  const [idx, setIdx] = React.useState(0);
-  React.useEffect(() => {
-    if ((block.slides?.length || 0) <= 1) return;
-    const interval = setInterval(
-      () => setIdx((p) => (p + 1) % block.slides.length),
-      block.slideDuration || 5000,
-    );
-    return () => clearInterval(interval);
-  }, [block.slides, block.slideDuration]);
-
-  if (!block.slides?.length)
-    return (
-      <span className="text-muted-foreground relative z-20 italic">
-        Media Carousel
-      </span>
-    );
-  return (
-    <div className="relative h-full min-h-[200px] w-full overflow-hidden">
-      {block.slides.map((s: any, i: number) => (
-        <img
-          key={i}
-          src={s.imageUrl}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${i === idx ? "z-10 opacity-100" : "z-0 opacity-0"}`}
-        />
-      ))}
-    </div>
-  );
-};
-
-const PreviewModifierGroup = ({ block, fetchModifiers }: any) => {
-  const [opts, setOpts] = React.useState<any[]>([]);
-  React.useEffect(() => {
-    if (block.modifierGroupId)
-      fetchModifiers(block.modifierGroupId).then(setOpts).catch(console.error);
-  }, [block.modifierGroupId, fetchModifiers]);
-
-  if (!opts.length)
-    return (
-      <div className="text-muted-foreground text-[10px]">
-        Modifier Group loading...
-      </div>
-    );
-  return (
-    <div className="flex w-full flex-col divide-y divide-white/5">
-      <div className="px-3 py-2 text-[10px] font-semibold uppercase">
-        Options
-      </div>
-      {opts.map((o) => (
-        <div key={o.id} className="flex justify-between px-3 py-2 text-[10px]">
-          <span>{o.name}</span>
-          <span>${Number(o.price).toFixed(2)}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const PreviewTimeline = ({ block }: any) => {
-  return (
-    <div className="relative flex w-full flex-col p-2">
-      {(block.steps || []).map((step: any, i: number) => (
-        <div key={i} className="flex items-start gap-4 py-2">
-          <div className="h-4 w-4 shrink-0 rounded-full border-2 border-cyan-400 bg-cyan-900"></div>
-          <div className="flex flex-col gap-0.5">
-            <span className="font-bold">{step.text}</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 };
 
 const SlideFilmstrip = ({
@@ -761,15 +423,22 @@ const SlideFilmstrip = ({
                   >
                     <div
                       {...drag.dragHandleProps}
-                      className="text-foreground/30"
+                      className="text-foreground/30 hover:text-foreground cursor-grab active:cursor-grabbing"
                     >
                       <GripVertical className="h-4 w-4" />
                     </div>
                     <div
                       onClick={() => onSelectSlide?.(index)}
-                      className={`h-20 w-32 cursor-pointer rounded border ${index === activeSlideIndex ? "border-cyan-500" : "border-white/20"}`}
+                      className={`flex h-18 w-28 cursor-pointer flex-col justify-between rounded-xl border p-2 text-xs font-semibold transition-all ${
+                        index === activeSlideIndex
+                          ? "border-cyan-500 bg-cyan-950/40 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+                          : "border-border bg-card/60 text-muted-foreground hover:border-zinc-500"
+                      }`}
                     >
-                      Slide {index + 1}
+                      <span>Slide {index + 1}</span>
+                      <span className="font-mono text-[9px] uppercase opacity-70">
+                        {slide.type}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -777,8 +446,9 @@ const SlideFilmstrip = ({
             ))}
             {provided.placeholder}
             <button
+              type="button"
               onClick={onAddSlide}
-              className="flex h-20 w-32 items-center justify-center border-2 border-dashed text-xs"
+              className="border-border text-muted-foreground flex h-18 w-28 items-center justify-center gap-1 rounded-xl border-2 border-dashed text-xs font-semibold transition-colors hover:border-cyan-400 hover:text-cyan-400"
             >
               <Plus className="h-4 w-4" /> Add Slide
             </button>
