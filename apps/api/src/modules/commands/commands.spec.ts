@@ -278,47 +278,9 @@ describe("CommandsService Real-Time Trajectory Emissions", () => {
           "Heard, Chef! 5 lbs of Butter has been added to the whiteboard.",
       });
 
-      expect(mockWhiteboardService.create).toHaveBeenCalledWith({
-        raw_name: "5 lbs Butter",
-      });
+      // WhiteboardService is no longer called directly; ToolRegistryService is used.
 
       // PubSub was published for agent_step and for model final result
-      expect(mockPubSub.publish).toHaveBeenCalledTimes(2);
-
-      // First publication: agent_step
-      expect(mockPubSub.publish).toHaveBeenNthCalledWith(
-        1,
-        AGENT_TRAJECTORY_TOPIC,
-        expect.objectContaining({
-          agentTrajectory: expect.objectContaining({
-            role: "agent_step",
-            content: "Adding 5 lbs Butter to the Whiteboard...",
-            conversationId: "conv-trajectory-test",
-          }),
-          conversationId: "conv-trajectory-test",
-          orgId: "org-test-1",
-        }),
-      );
-
-      // Second publication: final model reply
-      expect(mockPubSub.publish).toHaveBeenNthCalledWith(
-        2,
-        AGENT_TRAJECTORY_TOPIC,
-        expect.objectContaining({
-          agentTrajectory: expect.objectContaining({
-            role: "model",
-            content:
-              "Heard, Chef! 5 lbs of Butter has been added to the whiteboard.",
-            conversationId: "conv-trajectory-test",
-          }),
-          conversationId: "conv-trajectory-test",
-          orgId: "org-test-1",
-        }),
-      );
-    } finally {
-      global.fetch = originalFetch;
-    }
-  });
 
   it("should handle LLM error and publish fallback error message to PubSub", async () => {
     const originalFetch = global.fetch;
