@@ -30,6 +30,18 @@ export function AnswerViewView({
     null;
 
   const hasArtifact = !!renderDirectiveMessage || !!track2Type;
+  const hasVisibleMessages =
+    chatHistory.some(
+      (m) =>
+        m.role === "user" ||
+        m.role === "model" ||
+        m.role === "agent_step" ||
+        (m.role as string) === "render_component",
+    ) || isProcessing;
+
+  if (!hasVisibleMessages && !hasArtifact) {
+    return <div className="h-full w-full flex-1" />;
+  }
 
   return (
     <div className="flex h-full w-full flex-1 overflow-hidden">
