@@ -43,8 +43,8 @@ export function TransactionsContainer({
   }
 
   filtered.sort((a, b) => {
-    let valA: number = (a as Record<string, any>)[sortBy];
-    let valB: number = (b as Record<string, any>)[sortBy];
+    let valA: number = Number((a as Record<string, unknown>)[sortBy] || 0);
+    let valB: number = Number((b as Record<string, unknown>)[sortBy] || 0);
     if (sortBy === "transaction_time") {
       valA = new Date(a.transaction_time).getTime();
       valB = new Date(b.transaction_time).getTime();

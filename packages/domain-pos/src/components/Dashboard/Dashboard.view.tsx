@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 "use client";
 
 import {
@@ -8,8 +7,9 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  type RevenueData,
+  type TicketTimeData,
 } from "@soustools/design-system";
-import type { RevenueData, TicketTimeData } from "@soustools/design-system";
 import { Activity, CircleDollarSign, Clock, Users } from "lucide-react";
 
 export interface DashboardStats {
@@ -37,7 +37,7 @@ export interface DashboardViewProps {
 export function DashboardView({
   stats,
   isLive = false,
-  isUpdating = false,
+  _isUpdating = false,
 }: DashboardViewProps) {
   const cards = [
     {
@@ -99,44 +99,31 @@ export function DashboardView({
           <span className="dark:text-muted-foreground font-mono text-xs font-semibold tracking-wider text-zinc-500 uppercase">
             {isLive ? "Live Sync" : "Connecting"}
           </span>
-          {isUpdating && (
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-400" />
-          )}
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((card, idx) => {
+        {cards.map((card) => {
           const Icon = card.icon;
           return (
             <Card
-              key={idx}
-              className={`group relative overflow-hidden transition-all duration-300 ${
-                card.neon
-                  ? "border-sky-500/30 bg-gradient-to-br from-sky-500/10 via-zinc-900/40 to-zinc-900/80 shadow-[0_0_25px_rgba(56,189,248,0.15)] hover:border-sky-500/50"
-                  : "hover:border-black/15 dark:hover:border-white/15"
-              }`}
+              key={card.title}
+              className="relative overflow-hidden transition-all duration-300 hover:shadow-lg"
             >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                   {card.title}
                 </CardTitle>
-                <div
-                  className={`rounded-xl p-2.5 transition-colors ${
-                    card.neon
-                      ? "bg-sky-500/20 text-sky-400 group-hover:bg-sky-500/30"
-                      : "bg-black/5 text-zinc-500 group-hover:text-zinc-900 dark:bg-white/5 dark:text-zinc-400 dark:group-hover:text-white"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
+                <div className="rounded-xl border border-black/5 bg-zinc-100 p-2 dark:border-white/5 dark:bg-zinc-900">
+                  <Icon className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
+                <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
                   {card.value}
                 </div>
-                <p className="text-muted-foreground mt-1 text-xs">
+                <p className="dark:text-muted-foreground mt-1 text-xs text-zinc-500">
                   {card.change}
                 </p>
               </CardContent>
@@ -151,31 +138,25 @@ export function DashboardView({
         <TicketTimeChart data={stats.ticketTimes} />
       </div>
 
-      {/* Inventory & Real-Time Alerts */}
+      {/* Inventory Alerts Panel */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold tracking-wider uppercase">
-            Operational Discrepancies & Low Stock Alerts
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-sm font-bold tracking-wider uppercase">
+            Critical Inventory Signals
           </CardTitle>
+          <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-2.5 py-0.5 text-xs font-semibold text-sky-400">
+            {stats.inventoryAlerts.length} Action Items
+          </span>
         </CardHeader>
         <CardContent>
-          <div className="divide-y divide-black/5 dark:divide-white/5">
-            {stats.inventoryAlerts.map((alert, idx) => (
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            {stats.inventoryAlerts.map((alert) => (
               <div
-                key={idx}
-                className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                key={alert.item}
+                className="flex items-center justify-between py-3"
               >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      alert.status === "CRITICAL"
-                        ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"
-                        : alert.status === "WARNING"
-                          ? "bg-amber-500"
-                          : "bg-sky-500"
-                    }`}
-                  />
-                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                <div>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                     {alert.item}
                   </span>
                 </div>
@@ -203,3 +184,4 @@ export function DashboardView({
     </div>
   );
 }
+DashboardView.displayName = "DashboardView";

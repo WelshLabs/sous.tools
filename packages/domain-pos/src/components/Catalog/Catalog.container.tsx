@@ -54,7 +54,11 @@ export function CatalogContainer({
 
     setSaving(true);
     try {
-      const { error } = await (api.PUT as any)("/pos-simulator/items/{id}", {
+      const putApi = api.PUT as (
+        path: string,
+        options?: unknown,
+      ) => Promise<{ error?: unknown }>;
+      const { error } = await putApi("/pos-simulator/items/{id}", {
         params: { path: { id: editingItem.id } },
         body: {
           name: editName,
@@ -81,8 +85,9 @@ export function CatalogContainer({
             : item,
         ),
       );
-    } catch (err: any) {
-      toast.error(`Failed to save changes: ${err.message || "Unknown error"}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to save changes: ${msg || "Unknown error"}`);
     } finally {
       setSaving(false);
     }

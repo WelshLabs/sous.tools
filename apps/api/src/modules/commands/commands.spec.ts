@@ -147,8 +147,17 @@ describe("CommandsService Real-Time Trajectory Emissions", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CommandsService,
-        { provide: ToolRegistryService, useValue: { executeTool: jest.fn(), getLlmToolDefinitions: jest.fn() } },
-        { provide: PUB_SUB, useValue: { publish: jest.fn(), asyncIterableIterator: jest.fn() } },
+        {
+          provide: ToolRegistryService,
+          useValue: {
+            executeTool: jest.fn(),
+            getLlmToolDefinitions: jest.fn(),
+          },
+        },
+        {
+          provide: PUB_SUB,
+          useValue: { publish: jest.fn(), asyncIterableIterator: jest.fn() },
+        },
         { provide: PurchaseOrdersService, useValue: mockPurchaseOrdersService },
         { provide: VendorsService, useValue: mockVendorsService },
         { provide: WhiteboardService, useValue: mockWhiteboardService },
