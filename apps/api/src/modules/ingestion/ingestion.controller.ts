@@ -5,12 +5,14 @@ import {
   Patch,
   Body,
   Param,
+  Query,
   Headers,
   BadRequestException,
 } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { IngestionService, IngestionReviewPayload } from "./ingestion.service";
+import type { ManualCorrectionDelta } from "@soustools/api-types";
 
 @Controller("ingestion")
 export class IngestionController {
@@ -87,6 +89,7 @@ export class IngestionController {
       approvedPayload: IngestionReviewPayload;
     },
     @Headers("x-org-id") orgHeader?: string,
+    @Headers("x-user-id") userHeader?: string,
   ) {
     if (!body.reviewId || !body.approvedPayload) {
       throw new BadRequestException(
@@ -98,6 +101,63 @@ export class IngestionController {
       body.reviewId,
       body.approvedPayload,
       orgId,
+      userHeader,
     );
+  }
+
+  @Post("correction")
+  async submitCorrection(
+    @Body() correction: ManualCorrectionDelta,
+    @Headers("x-org-id") orgHeader?: string,
+  ) {
+    if (!correction.rawInput || !correction.correctedExtraction) {
+      throw new BadRequestException(
+        "rawInput and correctedExtraction are required",
+      );
+    }
+    const orgId =
+      orgHeader ||
+      correction.organizationId ||
+      "d0000000-0000-0000-0000-000000000000";
+    correction.organizationId = orgId;
+    const result =
+      await this.ingestionService.recordManualCorrection(correction);
+    return {
+      success: true,
+      data: result,
+      message: "Human correction delta captured and stored successfully.",
+    };
+  }
+
+  @Get("few-shot-examples")
+  async getFewShotExamples(
+    @Query("documentType") documentType?: string,
+    @Query("vendorId") vendorId?: string,
+    @Query("vendorName") vendorName?: string,
+    @Headers("x-org-id") orgHeader?: string,
+  ) {
+    const orgId = orgHeader || "d0000000-0000-0000-0000-000000000000";
+    const promptSection = await this.ingestionService.getFewShotExamples({
+      organizationId: orgId,
+      documentType,
+      vendorId,
+      vendorName,
+    });
+    return { success: true, promptSection };
+  }
+
+  @Get("unmapped-report")
+  async getUnmappedDataReport(@Headers("x-org-id") orgHeader?: string) {
+    const orgId = orgHeader || undefined;
+    return this.ingestionService.aggregateRawUnmappedData(orgId);
+  }
+
+  @Post("trigger-unmapped-cron")
+  async triggerUnmappedAggregation() {
+    await this.ingestionService.handleWeeklyRawUnmappedCron();
+    return {
+      success: true,
+      message: "Weekly raw_unmapped_data aggregation triggered successfully.",
+    };
   }
 }

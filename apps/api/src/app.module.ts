@@ -5,6 +5,7 @@ import { CacheModule } from "@nestjs/cache-manager";
 import { ClsModule } from "nestjs-cls";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { LoggerModule } from "nestjs-pino";
+import { ScheduleModule } from "@nestjs/schedule";
 // @ts-expect-error cache-manager-ioredis is missing types
 import * as redisStore from "cache-manager-ioredis";
 import { serverConfig as config } from "@soustools/config/server";
@@ -49,6 +50,7 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ClsModule.forRoot({
       global: true,
       middleware: {
