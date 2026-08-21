@@ -19,8 +19,8 @@
     "clean:dockerimages": "sudo bash -c 'rm -rf node_modules apps/*/node_modules packages/*/node_modules .pnpm-store'",
     "push:all": "git push origin HEAD:main HEAD:staging",
     "build:packages": "pnpm --filter './packages/**' build",
-    "prompt:setup": "cat .agents/setup-prompt.txt | xclip -selection clipboard && echo '\u2705 Setup prompt copied to clipboard!'",
-    "prompt:teardown": "cat .agents/teardown-prompt.txt | xclip -selection clipboard && echo '\u2705 Teardown prompt copied!'",
+    "prompt:setup": "cat .agents/setup-prompt.txt | xclip -selection clipboard && echo '✅ Setup prompt copied to clipboard!'",
+    "prompt:teardown": "cat .agents/teardown-prompt.txt | xclip -selection clipboard && echo '✅ Teardown prompt copied!'",
     "report:lint": "turbo lint > docs/audits/lint-report.txt || true",
     "report:typecheck": "turbo typecheck > docs/audits/typecheck-report.txt || true",
     "report:test": "INFISICAL_MOCK=true turbo test --coverage --passWithNoTests > docs/audits/unit-test-coverage.txt || true",
@@ -79,7 +79,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
+      "eslint --fix --no-warn-ignored",
       "prettier --write"
     ],
     "*.{json,md,yaml}": [

@@ -44,7 +44,7 @@ describe("OmniTranscriptTimeline", () => {
     const messages: OmniMessage[] = [
       {
         id: "dir-1",
-        role: "render_component" as any,
+        role: "render_component" as unknown as OmniMessage["role"],
         content: JSON.stringify({
           componentName: "INGESTION_REVIEW",
           props: { reviewId: "rev-123" },

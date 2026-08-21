@@ -35,8 +35,15 @@ export function useOmniSocket(): {
   useEffect(() => {
     const fetchWsTicket = async (): Promise<string> => {
       try {
-        const { data } = await api.POST("/auth/ws-ticket" as any, {});
-        const token = (data as any)?.data?.token;
+        const { data } = await (
+          api as unknown as {
+            POST: (
+              path: string,
+              options: unknown,
+            ) => Promise<{ data?: unknown }>;
+          }
+        ).POST("/auth/ws-ticket", {});
+        const token = (data as { data?: { token?: string } })?.data?.token;
         return token || "";
       } catch (err) {
         console.error("[OmniBar] Failed to fetch WS ticket:", err);
