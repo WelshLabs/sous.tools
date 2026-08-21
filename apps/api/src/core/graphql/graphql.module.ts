@@ -1,17 +1,14 @@
-import { Module } from "@nestjs/common";
+import { Module, Global } from "@nestjs/common";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
-import { join } from "path";
-import { serverConfig as config } from "@soustools/config/server";
+import { pubSubProvider, PUB_SUB } from "./pubsub";
 
+@Global()
 @Module({
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile:
-        config.NODE_ENV === "development"
-          ? join(process.cwd(), "src/schema.gql")
-          : true,
+      autoSchemaFile: true,
       sortSchema: true,
       playground: true,
       introspection: true,
@@ -20,5 +17,7 @@ import { serverConfig as config } from "@soustools/config/server";
       },
     }),
   ],
+  providers: [pubSubProvider],
+  exports: [GraphQLModule, pubSubProvider, PUB_SUB],
 })
 export class AppGraphQLModule {}

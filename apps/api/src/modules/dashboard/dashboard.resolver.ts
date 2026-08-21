@@ -1,11 +1,16 @@
 import { Query, Resolver, Subscription, Args } from "@nestjs/graphql";
+import { Inject } from "@nestjs/common";
+import { type RedisPubSub } from "graphql-redis-subscriptions";
 import { DashboardService } from "./dashboard.service";
 import { DashboardStatsPayload } from "./dashboard.types";
-import { pubSub } from "../../core/graphql/pubsub";
+import { PUB_SUB } from "../../core/graphql/pubsub";
 
 @Resolver(() => DashboardStatsPayload)
 export class DashboardResolver {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(
+    private readonly dashboardService: DashboardService,
+    @Inject(PUB_SUB) private readonly pubSub: RedisPubSub,
+  ) {}
 
   @Query(() => DashboardStatsPayload, { name: "dashboardStats" })
   async getDashboardStats(
@@ -25,6 +30,6 @@ export class DashboardResolver {
   dashboardStatsUpdated(
     @Args("orgId", { type: () => String, nullable: true }) _orgId?: string,
   ) {
-    return pubSub.asyncIterableIterator("DASHBOARD_STATS_UPDATED");
+    return this.pubSub.asyncIterableIterator("DASHBOARD_STATS_UPDATED");
   }
 }
