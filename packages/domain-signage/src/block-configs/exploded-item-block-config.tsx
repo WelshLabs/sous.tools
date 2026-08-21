@@ -58,7 +58,7 @@ export function ExplodedItemBlockConfig({
             <div className="flex items-center justify-between font-semibold text-cyan-400">
               <span>{currentItem.name}</span>
               <span className="font-mono">
-                \$${Number(currentItem.price).toFixed(2)}
+                ${Number(currentItem.price).toFixed(2)}
               </span>
             </div>
             {currentItem.description && (

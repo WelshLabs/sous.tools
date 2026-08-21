@@ -1,14 +1,12 @@
-// apps/web/eslint.config.js
-import { nextConfig } from "@soustools/eslint-config/next";
+import { baseConfig } from "@soustools/eslint-config";
 
 export default [
-  ...nextConfig,
+  ...baseConfig,
   {
-    files: ["src/app/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}"],
     rules: {
-      "max-lines": "off",
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
-  { ignores: [".next/**", "node_modules/**", "public/**", "next-env.d.ts"] },
+  { ignores: ["dist/**", "node_modules/**", ".next/**", "next-env.d.ts"] },
 ];

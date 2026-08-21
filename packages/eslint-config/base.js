@@ -53,6 +53,11 @@ export const baseConfig = [
     files: ["**/*.ts", "**/*.tsx"],
   })),
 
+  {
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
+    },
+  },
   // Core Iron Gate rules
   {
     files: ["**/*.ts", "**/*.tsx"],

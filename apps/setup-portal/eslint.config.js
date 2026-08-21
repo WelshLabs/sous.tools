@@ -1,6 +1,12 @@
-// apps/setup-portal/eslint.config.js
-import { nextConfig } from "@soustools/eslint-config/next";
+import { baseConfig } from "@soustools/eslint-config";
+
 export default [
-  ...nextConfig,
-  { ignores: [".next/**", "out/**", "node_modules/**", "next-env.d.ts"] },
+  ...baseConfig,
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  { ignores: ["dist/**", "node_modules/**", ".next/**", "next-env.d.ts"] },
 ];

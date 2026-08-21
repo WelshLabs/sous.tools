@@ -43,6 +43,6 @@ export interface RawUnmappedDataReport {
   totalReviewsAnalyzed: number;
   totalUnmappedEntries: number;
   keyFrequency: Record<string, number>;
-  sampleValuesByKey: Record<string, any[]>;
+  sampleValuesByKey: Record<string, unknown[]>;
   recommendedSchemaAdditions: string[];
 }
