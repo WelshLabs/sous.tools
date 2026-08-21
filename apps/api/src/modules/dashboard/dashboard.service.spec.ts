@@ -2,13 +2,13 @@ import { DashboardService } from "./dashboard.service";
 import { supabase } from "../../core/database/supabase";
 import { pubSub } from "../../core/graphql/pubsub";
 
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../../core/database/supabase", () => ({
   supabase: {
     from: jest.fn(),
   },
 }));
 
-jest.mock("../../graphql/pubsub", () => ({
+jest.mock("../../core/graphql/pubsub", () => ({
   pubSub: {
     publish: jest.fn(),
   },

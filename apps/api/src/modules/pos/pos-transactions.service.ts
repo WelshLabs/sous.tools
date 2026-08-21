@@ -52,6 +52,7 @@ export class PosTransactionsService {
 
     return data;
   }
+
   async completeOrder(orderId: string, orgId: string) {
     const { data, error } = await supabase
       .from("pos_orders")
@@ -63,6 +64,13 @@ export class PosTransactionsService {
       .eq("id", orderId)
       .select();
     if (error) throw new Error(error.message);
+
+    // Also mark line items as completed
+    await supabase
+      .from("pos_order_line_items")
+      .update({ status: "COMPLETED", updated_at: new Date().toISOString() })
+      .eq("pos_order_id", orderId);
+
     if (this.dashboardService) {
       await this.dashboardService.triggerDashboardUpdate(orgId);
     }

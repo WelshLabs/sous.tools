@@ -30,5 +30,13 @@ export type { POSSavedChecksModalProps } from "./components/POSRegister/componen
 export { POSItemActionModal } from "./components/POSRegister/components/pos-item-action-modal";
 export type { POSItemActionModalProps } from "./components/POSRegister/components/pos-item-action-modal";
 export { POSRegisterContainer } from "./components/POSRegister/pos.container";
+
+// KDS Exports
 export { KDSContainer } from "./components/KDS/kds.container";
+export { KDSView } from "./components/KDS/kds.view";
+export type { KDSViewProps } from "./components/KDS/kds.view";
+export { KDSAppBar } from "./components/KDS/components/kds-appbar";
+export type { KDSAppBarProps } from "./components/KDS/components/kds-appbar";
+export { KDSSettingsModal } from "./components/KDS/kds-settings-modal";
 export * from "./components/KDS/kds.types";
+export * from "./components/KDS/kds.helpers";

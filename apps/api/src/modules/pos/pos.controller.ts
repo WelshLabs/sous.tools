@@ -112,9 +112,21 @@ export class PosController {
       if (body.status === "COMPLETED") {
         await this.transactionsService.completeOrder(id, orgId);
       } else {
+        const updatePayload: Record<string, unknown> = {
+          state: body.status,
+          updated_at: new Date().toISOString(),
+        };
+        if (body.status === "OPEN") {
+          updatePayload.closed_at = null;
+          await supabase
+            .from("pos_order_line_items")
+            .update({ status: "OPEN", updated_at: new Date().toISOString() })
+            .eq("pos_order_id", id);
+        }
+
         const { data, error } = await supabase
           .from("pos_orders")
-          .update({ state: body.status, updated_at: new Date().toISOString() })
+          .update(updatePayload)
           .eq("id", id)
           .select();
         if (error) throw new Error(error.message);
