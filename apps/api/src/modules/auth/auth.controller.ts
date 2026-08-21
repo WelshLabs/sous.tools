@@ -1,3 +1,4 @@
+import { Public } from "../../core/decorators/public.decorator";
 import {
   Controller,
   Post,
@@ -11,18 +12,22 @@ import {
   Query,
 } from "@nestjs/common";
 import type { Response, Request } from "express";
+import { Public } from "../../core/decorators/public.decorator";
 import {
   ApiTags,
   ApiBody,
   ApiResponse as NestjsApiResponse,
   ApiProperty,
 } from "@nestjs/swagger";
+import { Public } from "../../core/decorators/public.decorator";
 import {
   type ApiResponse,
   LoginSchema,
   ForgotPasswordSchema,
 } from "@soustools/api-types";
+import { Public } from "../../core/decorators/public.decorator";
 import { supabase } from "../../core/database/supabase";
+import { Public } from "../../core/decorators/public.decorator";
 import { serverConfig as config } from "@soustools/config/server";
 
 const ACCESS_TOKEN_COOKIE = "sb-access-token";
@@ -100,6 +105,7 @@ class ForgotPasswordDto {
 export class AuthController {
   // ── Email / Password ──────────────────────────────────────────────────────
 
+  @Public()
   @Post("login")
   @HttpCode(200)
   @ApiBody({ type: LoginDto })
@@ -138,6 +144,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post("refresh")
   @HttpCode(200)
   @NestjsApiResponse({
@@ -173,6 +180,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post("logout")
   @HttpCode(200)
   @NestjsApiResponse({
@@ -206,6 +214,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Get("session")
   @NestjsApiResponse({
     status: 200,
@@ -242,6 +251,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post("ws-ticket")
   @HttpCode(200)
   @NestjsApiResponse({
@@ -269,6 +279,7 @@ export class AuthController {
    * Always returns success (200) to prevent user enumeration — the caller
    * should display "check your inbox" regardless of whether the address exists.
    */
+  @Public()
   @Post("forgot-password")
   @HttpCode(200)
   @ApiBody({ type: ForgotPasswordDto })
@@ -311,6 +322,7 @@ export class AuthController {
    * Google redirects back to GET /auth/callback which exchanges the code
    * for a session and sets HttpOnly cookies.
    */
+  @Public()
   @Get("google")
   @NestjsApiResponse({ status: 302, description: "Redirect to Google OAuth" })
   async googleOAuth(@Res() res: Response): Promise<void> {
@@ -323,6 +335,7 @@ export class AuthController {
    * GitHub redirects back to GET /auth/callback which exchanges the code
    * for a session and sets HttpOnly cookies.
    */
+  @Public()
   @Get("github")
   @NestjsApiResponse({ status: 302, description: "Redirect to GitHub OAuth" })
   async githubOAuth(@Res() res: Response): Promise<void> {
@@ -339,6 +352,7 @@ export class AuthController {
    * in the Supabase dashboard under Authentication → URL Configuration →
    * Redirect URLs.
    */
+  @Public()
   @Get("callback")
   @NestjsApiResponse({
     status: 302,

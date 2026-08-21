@@ -23,7 +23,6 @@ export class CommandsController {
   constructor(private readonly commandsService: CommandsService) {}
 
   @Post("/execute")
-  @UseGuards(SupabaseAuthGuard)
   @UsePipes(new ZodValidationPipe(OmnibarCommandPayloadSchema))
   async handleCommand(
     @Body() payload: OmnibarCommandPayload,

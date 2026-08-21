@@ -1,10 +1,14 @@
+import { Public } from "../decorators/public.decorator";
 import { Controller, Get } from "@nestjs/common";
+import { Public } from "../decorators/public.decorator";
 import {
   HealthCheckService,
   HealthCheck,
   MemoryHealthIndicator,
 } from "@nestjs/terminus";
+import { Public } from "../decorators/public.decorator";
 import { SkipThrottle } from "@nestjs/throttler";
+import { Public } from "../decorators/public.decorator";
 import { serverConfig as config } from "@soustools/config/server";
 
 @Controller("health")
@@ -15,6 +19,7 @@ export class HealthController {
     private readonly memory: MemoryHealthIndicator,
   ) {}
 
+  @Public()
   @Get()
   @HealthCheck()
   async check() {

@@ -26,7 +26,6 @@ export class StorageController {
    * Prevents proxying large binary data payloads through the NestJS server.
    */
   @Post("upload-url")
-  @UseGuards(SupabaseAuthGuard)
   @ApiBody({ type: UploadUrlDto })
   async getUploadUrl(
     @Body() body: UploadUrlDto,

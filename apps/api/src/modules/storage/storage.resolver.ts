@@ -9,7 +9,6 @@ export class StorageResolver {
   constructor(private readonly storageService: StorageService) {}
 
   @Mutation(() => UploadUrlPayload, { name: "generateUploadUrl" })
-  @UseGuards(SupabaseAuthGuard)
   async generateUploadUrl(
     @Args("fileName", { type: () => String }) fileName: string,
     @Context() context: any,

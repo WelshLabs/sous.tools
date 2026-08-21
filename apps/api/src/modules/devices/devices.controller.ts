@@ -118,7 +118,6 @@ export class DevicesController {
   }
 
   @Post("pair/confirm")
-  @UseGuards(SupabaseAuthGuard)
   async confirmPairing(
     @Body("code") code: string,
     @Body("deviceType") deviceType: "wearos" | "rpi",

@@ -16,6 +16,7 @@ import { DatabaseModule } from "./core/database/database.module";
 import { AppGraphQLModule } from "./core/graphql/graphql.module";
 import { HealthModule } from "./core/health/health.module";
 import { GqlThrottlerGuard } from "./core/guards/gql-throttler.guard";
+import { SupabaseAuthGuard } from "./core/guards/supabase-auth.guard";
 
 import { SignageModule } from "./modules/signage/signage.module";
 import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
@@ -157,6 +158,10 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: SupabaseAuthGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: GqlThrottlerGuard,

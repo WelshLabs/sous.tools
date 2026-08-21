@@ -18,7 +18,7 @@ describe("SupabaseAuthGuard", () => {
       set: jest.fn(),
       get: jest.fn(),
     };
-    guard = new SupabaseAuthGuard(mockSupabaseService, mockClsService);
+    guard = new SupabaseAuthGuard({ getAllAndOverride: () => false } as any, mockSupabaseService, mockClsService);
   });
 
   const createMockContext = (

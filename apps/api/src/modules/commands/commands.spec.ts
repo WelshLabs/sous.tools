@@ -281,6 +281,10 @@ describe("CommandsService Real-Time Trajectory Emissions", () => {
       // WhiteboardService is no longer called directly; ToolRegistryService is used.
 
       // PubSub was published for agent_step and for model final result
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
 
   it("should handle LLM error and publish fallback error message to PubSub", async () => {
     const originalFetch = global.fetch;

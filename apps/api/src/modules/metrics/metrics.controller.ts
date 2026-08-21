@@ -2,7 +2,6 @@ import { Controller, Get, UseGuards } from "@nestjs/common";
 import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
 
 @Controller("metrics")
-@UseGuards(SupabaseAuthGuard)
 export class MetricsController {
   @Get("sales")
   getSales() {
