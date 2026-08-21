@@ -3,6 +3,12 @@ import { createHash } from "crypto";
 import { supabase } from "../../core/database/supabase";
 import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
 import { serverConfig as config } from "@soustools/config/server";
+import {
+  normalizeCulinaryTerms,
+  CULINARY_DICTIONARY,
+} from "./culinary-normalizer";
+
+export { normalizeCulinaryTerms, CULINARY_DICTIONARY };
 
 export interface ExtractedBlock {
   id: string;
@@ -17,6 +23,7 @@ export interface ExtractedBlock {
   ingredients?: Array<{
     rawName: string;
     guessName: string;
+    normalizedName?: string;
     quantity?: number;
     unit?: string;
     tenantMatches: Array<{ id: string; name: string; score?: number }>;
@@ -41,6 +48,7 @@ export interface ExtractedBlock {
   lineItems?: Array<{
     rawName: string;
     guessName: string;
+    normalizedName?: string;
     quantity?: number;
     unitPrice?: number;
     extendedPrice?: number;
@@ -51,6 +59,11 @@ export interface ExtractedBlock {
     autoAccepted?: boolean;
     resolutionError?: boolean;
   }>;
+  extractionConfidence?: number;
+  critiqueNotes?: string;
+  rawUnmappedData?: Record<string, any>;
+  debateOccurred?: boolean;
+  triageType?: string;
 }
 
 export interface IngestionPage {
@@ -66,6 +79,9 @@ export interface IngestionReviewPayload {
   documentHash?: string;
   idempotencyHash?: string;
   isDuplicate?: boolean;
+  triageType?: string;
+  critiqueSummary?: string;
+  debateOccurred?: boolean;
 }
 
 @Injectable()
@@ -73,6 +89,13 @@ export class IngestionService {
   private readonly logger = new Logger(IngestionService.name);
 
   constructor(private readonly neo4jSync: Neo4jSyncService) {}
+
+  async normalizeCulinaryTerms(
+    rawItemName: string,
+    options?: { useLlmFallback?: boolean },
+  ): Promise<string> {
+    return normalizeCulinaryTerms(rawItemName, options);
+  }
 
   /**
    * Generates a deterministic SHA-256 idempotency hash from vendor_id + invoice_id + date.
