@@ -96,3 +96,12 @@ subscription AgentTrajectory($conversationId: String, $orgId: String) {
     invoiceData
   }
 }
+
+mutation GenerateUploadUrl($fileName: String!) {
+  generateUploadUrl(fileName: $fileName) {
+    signedUrl
+    publicUrl
+    filePath
+    token
+  }
+}

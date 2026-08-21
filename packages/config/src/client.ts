@@ -28,12 +28,13 @@ try {
     IS_MOCK_ENV: process.env.IS_MOCK_ENV === "true" || isMockRun,
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL ||
-      (isMockRun ? "mock" : "http://localhost:3001"),
+      (isMockRun ? "http://localhost:3001" : "http://localhost:3001"),
     NEXT_PUBLIC_APP_URL:
       process.env.NEXT_PUBLIC_APP_URL ||
-      (isMockRun ? "mock" : "http://localhost:3000"),
+      (isMockRun ? "http://localhost:3000" : "http://localhost:3000"),
     NEXT_PUBLIC_SUPABASE_URL:
-      process.env.NEXT_PUBLIC_SUPABASE_URL || (isMockRun ? "mock" : ""),
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      (isMockRun ? "https://mock.supabase.co" : ""),
     NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY:
       process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ??
       process.env.NEW_RELIC_LICENSE_KEY ??

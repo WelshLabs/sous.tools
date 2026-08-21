@@ -45,7 +45,12 @@ export {
   type OperationResult,
   type CombinedError,
 } from "./graphql";
-export { uploadFile } from "./upload";
+export {
+  uploadFile,
+  uploadAndIngest,
+  type UploadAndIngestOptions,
+  type UploadAndIngestResult,
+} from "./upload";
 
 export * from "./generated/graphql";
 

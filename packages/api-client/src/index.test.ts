@@ -20,6 +20,8 @@ import {
   useDashboardStatsUpdatedSubscription,
   useAgentTrajectorySubscription,
   useConversationMessagesQuery,
+
+  useGenerateUploadUrlMutation,
 } from "./index";
 import { clientConfig as config } from "@soustools/config/client";
 import { CombinedError } from "urql";
@@ -158,6 +160,8 @@ describe("packages/api-client", () => {
       expect(typeof useDashboardStatsUpdatedSubscription).toBe("function");
       expect(typeof useAgentTrajectorySubscription).toBe("function");
       expect(typeof useConversationMessagesQuery).toBe("function");
+
+      expect(typeof useGenerateUploadUrlMutation).toBe("function");
     });
 
     it("supports subscription websocket management and reconnecting", () => {

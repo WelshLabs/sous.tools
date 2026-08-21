@@ -68,6 +68,23 @@ export type InventoryAlertItem = {
   status: Scalars["String"]["output"];
 };
 
+export type UploadUrlPayload = {
+  __typename?: "UploadUrlPayload";
+  filePath: Scalars["String"]["output"];
+  publicUrl: Scalars["String"]["output"];
+  signedUrl: Scalars["String"]["output"];
+  token?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type Mutation = {
+  __typename?: "Mutation";
+  generateUploadUrl: UploadUrlPayload;
+};
+
+export type MutationGenerateUploadUrlArgs = {
+  fileName: Scalars["String"]["input"];
+};
+
 export type Query = {
   __typename?: "Query";
   conversationMessages: Array<AgentTrajectoryStep>;
@@ -178,6 +195,7 @@ export type DashboardStatsUpdatedSubscription = {
   };
 };
 
+<<<<<<< HEAD
 export type ConversationMessagesQueryVariables = Exact<{
   conversationId: string;
 }>;
@@ -212,6 +230,19 @@ export type AgentTrajectorySubscription = {
     uiAction?: string | null;
     recipeData?: string | null;
     invoiceData?: string | null;
+=======
+export type GenerateUploadUrlMutationVariables = Exact<{
+  fileName: Scalars["String"]["input"];
+}>;
+
+export type GenerateUploadUrlMutation = {
+  generateUploadUrl: {
+    __typename?: "UploadUrlPayload";
+    signedUrl: string;
+    publicUrl: string;
+    filePath: string;
+    token?: string | null;
+>>>>>>> subagent-Backend-Engineer-self-bcb167a8
   };
 };
 
@@ -326,6 +357,7 @@ export function useDashboardStatsUpdatedSubscription<
   >({ query: DashboardStatsUpdatedDocument, ...options }, handler);
 }
 
+<<<<<<< HEAD
 export const ConversationMessagesDocument = gql`
   query ConversationMessages($conversationId: String!) {
     conversationMessages(conversationId: $conversationId) {
@@ -338,10 +370,20 @@ export const ConversationMessagesDocument = gql`
       uiAction
       recipeData
       invoiceData
+=======
+export const GenerateUploadUrlDocument = gql`
+  mutation GenerateUploadUrl($fileName: String!) {
+    generateUploadUrl(fileName: $fileName) {
+      signedUrl
+      publicUrl
+      filePath
+      token
+>>>>>>> subagent-Backend-Engineer-self-bcb167a8
     }
   }
 `;
 
+<<<<<<< HEAD
 export function useConversationMessagesQuery(
   options: Omit<Urql.UseQueryArgs<ConversationMessagesQueryVariables>, "query">,
 ) {
@@ -384,4 +426,11 @@ export function useAgentTrajectorySubscription<
     TData,
     AgentTrajectorySubscriptionVariables
   >({ query: AgentTrajectoryDocument, ...options }, handler);
+=======
+export function useGenerateUploadUrlMutation() {
+  return Urql.useMutation<
+    GenerateUploadUrlMutation,
+    GenerateUploadUrlMutationVariables
+  >(GenerateUploadUrlDocument);
+>>>>>>> subagent-Backend-Engineer-self-bcb167a8
 }

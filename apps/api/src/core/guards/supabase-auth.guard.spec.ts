@@ -33,9 +33,32 @@ describe("SupabaseAuthGuard", () => {
       user: undefined,
     };
     return {
+      getType: () => "http",
       switchToHttp: () => ({
         getRequest: () => req,
       }),
+      getClass: () => ({}),
+      getHandler: () => ({}),
+      req,
+    } as any;
+  };
+
+  const createMockGqlContext = (
+    headers: any = {},
+    cookies: any = {},
+    query: any = {},
+  ) => {
+    const req = {
+      headers,
+      cookies,
+      query,
+      user: undefined,
+    };
+    return {
+      getType: () => "graphql",
+      getArgs: () => [{}, {}, { req }, {}],
+      getClass: () => ({}),
+      getHandler: () => ({}),
       req,
     } as any;
   };
@@ -107,6 +130,30 @@ describe("SupabaseAuthGuard", () => {
     const result = await guard.canActivate(ctx);
     expect(result).toBe(true);
     expect(mockClsService.set).toHaveBeenCalledWith("orgId", "header-org-999");
+  });
+
+  it("authenticates GraphQL execution context properly", async () => {
+    const ctx = createMockGqlContext({
+      authorization: "Bearer gql-token",
+    });
+
+    const mockUser = {
+      id: "gql-user",
+      user_metadata: {
+        organization_id: "gql-org",
+      },
+    };
+
+    mockSupabaseService.client.auth.getUser.mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    });
+
+    const result = await guard.canActivate(ctx);
+    expect(result).toBe(true);
+    expect(ctx.req.user).toEqual(mockUser);
+    expect(mockClsService.set).toHaveBeenCalledWith("orgId", "gql-org");
+    expect(mockClsService.set).toHaveBeenCalledWith("userId", "gql-user");
   });
 
   it("throws UnauthorizedException on invalid or expired token", async () => {

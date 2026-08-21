@@ -14,6 +14,7 @@ export default [
       "**/.turbo/**",
       "**/build/**",
       "**/*.d.ts",
+      "**/generated/**",
       "supabase/**",
       "apps/wearos/**",
       ".agents/**",

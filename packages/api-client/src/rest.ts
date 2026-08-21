@@ -18,6 +18,7 @@ export function createRestClient(
   const client = createClient<paths>({
     baseUrl,
     credentials: options.credentials || "include",
+    fetch: (input: any, init?: any) => fetch(input, init),
   });
 
   client.use({
