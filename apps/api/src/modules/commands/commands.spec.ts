@@ -1,6 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { ChatPersistenceService } from "./chat-persistence.service";
 import { CommandsService } from "./commands.service";
+import { ToolRegistryService } from "./tool-registry.service";
 import { CommandsResolver } from "./commands.resolver";
 import { AGENT_TRAJECTORY_TOPIC } from "./commands.types";
 import { supabase } from "../../core/database/supabase";
@@ -146,6 +147,8 @@ describe("CommandsService Real-Time Trajectory Emissions", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CommandsService,
+        { provide: ToolRegistryService, useValue: { executeTool: jest.fn(), getLlmToolDefinitions: jest.fn() } },
+        { provide: PUB_SUB, useValue: { publish: jest.fn(), asyncIterableIterator: jest.fn() } },
         { provide: PurchaseOrdersService, useValue: mockPurchaseOrdersService },
         { provide: VendorsService, useValue: mockVendorsService },
         { provide: WhiteboardService, useValue: mockWhiteboardService },

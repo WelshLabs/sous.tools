@@ -4,6 +4,8 @@ export * from "./signage-blocks.js";
 export * from "./signage-entities.js";
 export * from "./recipes.js";
 export * from "./ingestion.js";
+export * from "./ingestion-feedback.js";
+export * from "./ingestion-schemas.js";
 export * from "./purchasing.js";
 export * from "./auth.js";
 export * from "./omnibar.js";

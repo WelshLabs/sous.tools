@@ -409,13 +409,37 @@ ${rawText ? rawText.substring(0, 1000) : imageUrl ? `[Image provided: ${imageUrl
     rawText: string,
     images: any[],
     triage: TriageResult,
+    options?: {
+      organizationId?: string;
+      vendorName?: string;
+      vendorId?: string;
+    },
   ): Promise<any[]> {
     this.logger.log(
       `Executing Step 2: Primary Extraction via Gemini 1.5 Pro (Triage: ${triage.documentType})...`,
     );
 
+    let fewShotContext = "";
+    if (options?.organizationId) {
+      try {
+        fewShotContext = await this.ingestionService.getFewShotExamples({
+          organizationId: options.organizationId,
+          documentType: triage.documentType,
+          vendorName: options.vendorName,
+          vendorId: options.vendorId,
+          limit: 5,
+        });
+      } catch (err) {
+        this.logger.debug(
+          "Failed to retrieve few-shot examples for extraction prompt:",
+          err,
+        );
+      }
+    }
+
+    const fewShotSection = fewShotContext ? `\n\n${fewShotContext}\n` : "";
     const prompt = `Analyze this document/image content and classify into content blocks. Document Triage hint: ${triage.documentType}.
-Extract all content with strict precision and decompose strings (e.g. brand, canonical name, modifiers, pack sizes).
+Extract all content with strict precision and decompose strings (e.g. brand, canonical name, modifiers, pack sizes).${fewShotSection}
 Return a JSON object with a "blocks" array where each item has fields:
 - type: PROSE | RECIPE | INVOICE | TEXTBOOK
 - bbox: [ymin, xmin, ymax, xmax] (normalized 0-1000)
@@ -890,10 +914,22 @@ Reconcile your extraction against the Critic's findings and the raw source text:
           userId,
         });
       }
+      let preliminaryVendorName: string | undefined;
+      const vendorMatch = rawText.match(
+        /(?:vendor|from|supplier|bill\s*to|remit\s*to):\s*([a-zA-Z0-9\s&]+)/i,
+      );
+      if (vendorMatch && vendorMatch[1]) {
+        preliminaryVendorName = vendorMatch[1].trim();
+      }
+
       const initialBlocks = await this.extractWithGeminiPro(
         rawText,
         images,
         triage,
+        {
+          organizationId,
+          vendorName: preliminaryVendorName,
+        },
       );
 
       // 3. Critic Verification via Claude 3.5 Sonnet
@@ -1022,7 +1058,7 @@ Reconcile your extraction against the Critic's findings and the raw source text:
             const topTenantScore = tenantMatches[0]?.score ?? 0;
             const autoAccepted =
               !hasSubError &&
-              (topTenantScore >= 0.85 || topTenantScore === 1.0);
+              (topTenantScore >= 0.95 || topTenantScore === 1.0);
 
             return {
               rawName: ing.rawName || guessName,
@@ -1184,7 +1220,7 @@ Reconcile your extraction against the Critic's findings and the raw source text:
             const topTenantScore = tenantMatches[0]?.score ?? 0;
             const autoAccepted =
               !hasSubError &&
-              (topTenantScore >= 0.85 || topTenantScore === 1.0);
+              (topTenantScore >= 0.95 || topTenantScore === 1.0);
 
             return {
               rawName: item.rawName || guessName,

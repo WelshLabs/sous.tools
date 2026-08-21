@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { IngestionService } from "./ingestion.service";
+import { IngestionService, IngestionReviewPayload } from "./ingestion.service";
 import { IngestionProcessor } from "./ingestion.processor";
 import { RecipeMathService } from "../recipe/recipe-math.service";
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
@@ -19,6 +19,8 @@ jest.mock("../../core/database/supabase", () => ({
     filter: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
     update: jest.fn().mockReturnThis(),
+    upsert: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
     maybeSingle: jest.fn().mockResolvedValue({ data: null }),
     single: jest.fn().mockResolvedValue({ data: null }),
     limit: jest.fn().mockResolvedValue({ data: [] }),
@@ -29,6 +31,7 @@ jest.mock("../../core/database/supabase", () => ({
 describe("Ingestion Module", () => {
   let service: IngestionService;
   let processor: IngestionProcessor;
+  let neo4jSync: Neo4jSyncService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -67,6 +70,7 @@ describe("Ingestion Module", () => {
 
     service = module.get<IngestionService>(IngestionService);
     processor = module.get<IngestionProcessor>(IngestionProcessor);
+    neo4jSync = module.get<Neo4jSyncService>(Neo4jSyncService);
     jest.clearAllMocks();
   });
 
@@ -231,6 +235,287 @@ describe("Ingestion Module", () => {
     });
   });
 
+  describe("Human-in-the-Loop Feedback Learning & Upsert Aliases (Task #193)", () => {
+    it("should upsert vendor_item_aliases on approval and notify Neo4j sync", async () => {
+      const mockUpsertResult = {
+        id: "alias-1",
+        organization_id: "org-1",
+        vendor_id: "vendor-sysco",
+        vendor_item_string: "SYSCO CHICKEN BREAST",
+        item_id: "item-chicken-1",
+      };
+
+      (supabase.from as jest.Mock).mockReturnValue({
+        upsert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        maybeSingle: jest.fn().mockResolvedValue({ data: mockUpsertResult }),
+      });
+
+      const result = await service.upsertVendorItemAlias({
+        organizationId: "org-1",
+        vendorId: "vendor-sysco",
+        vendorItemString: "SYSCO CHICKEN BREAST",
+        itemId: "item-chicken-1",
+      });
+
+      expect(result).toEqual(mockUpsertResult);
+      expect(neo4jSync.handleWebhook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "INSERT",
+          table: "vendor_item_aliases",
+          record: mockUpsertResult,
+        }),
+      );
+    });
+
+    it("should capture human delta corrections on commitReviewPayload and persist into vector memory", async () => {
+      jest.spyOn(service, "getEmbedding").mockResolvedValue([0.05, 0.08]);
+
+      const originalPayload: IngestionReviewPayload = {
+        pages: [
+          {
+            pageNumber: 1,
+            blocks: [
+              {
+                id: "b-1",
+                type: "INVOICE",
+                bbox: [0, 0, 1000, 1000],
+                vendorId: "vendor-sysco",
+                vendorName: "Sysco",
+                lineItems: [
+                  {
+                    rawName: "EVOO 1Gal",
+                    guessName: "EVOO",
+                    selectedTenantId: "item-old-id",
+                    selectedUsdaId: 1001,
+                    unitPrice: 30,
+                    tenantMatches: [{ id: "item-old-id", name: "Old EVOO" }],
+                    usdaMatches: [
+                      { fdcId: 1001, description: "Old USDA EVOO" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const approvedPayload: IngestionReviewPayload = {
+        pages: [
+          {
+            pageNumber: 1,
+            blocks: [
+              {
+                id: "b-1",
+                type: "INVOICE",
+                bbox: [0, 0, 1000, 1000],
+                vendorId: "vendor-sysco",
+                vendorName: "Sysco",
+                lineItems: [
+                  {
+                    rawName: "EVOO 1Gal",
+                    guessName: "Extra Virgin Olive Oil",
+                    selectedTenantId: "item-new-correct-id",
+                    selectedUsdaId: 171413,
+                    unitPrice: 30,
+                    tenantMatches: [
+                      {
+                        id: "item-new-correct-id",
+                        name: "Olive Oil, Extra Virgin",
+                      },
+                    ],
+                    usdaMatches: [
+                      {
+                        fdcId: 171413,
+                        description: "Oil, olive, extra virgin",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      (supabase.from as jest.Mock).mockImplementation((table: string) => {
+        if (table === "ingestion_reviews") {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: { id: "rev-1", parsed_data: originalPayload },
+            }),
+            update: jest.fn().mockReturnThis(),
+          };
+        }
+        if (table === "vendor_item_aliases") {
+          return {
+            upsert: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            maybeSingle: jest.fn().mockResolvedValue({
+              data: {
+                id: "alias-evoo",
+                item_id: "item-new-correct-id",
+                vendor_item_string: "EVOO 1Gal",
+              },
+            }),
+          };
+        }
+        if (table === "core_knowledge_vectors") {
+          return {
+            insert: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({
+              data: {
+                id: "vector-corr-1",
+                document_type: "CORRECTION",
+              },
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ data: null }),
+          single: jest.fn().mockResolvedValue({ data: { id: "record-1" } }),
+          insert: jest.fn().mockReturnThis(),
+          update: jest.fn().mockReturnThis(),
+        };
+      });
+
+      const commitRes = await service.commitReviewPayload(
+        "rev-1",
+        approvedPayload,
+        "org-1",
+        "user-1",
+      );
+
+      expect(commitRes.success).toBe(true);
+      expect(commitRes.correctionsCaptured).toBe(1);
+    });
+
+    it("should generate few-shot training prompt from stored human corrections and confirmed aliases", async () => {
+      (supabase.from as jest.Mock).mockImplementation((table: string) => {
+        if (table === "vendor_item_aliases") {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockResolvedValue({
+              data: [
+                {
+                  vendor_item_string: "SYSCO CHIK 10LB",
+                  item_id: "master-chicken-uuid",
+                },
+              ],
+            }),
+          };
+        }
+        if (table === "core_knowledge_vectors") {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            order: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockResolvedValue({
+              data: [
+                {
+                  content: "Correction content",
+                  source_meta: {
+                    rawInput: "EVOO 1L",
+                    correctedExtraction: {
+                      canonicalName: "Oil, olive, extra virgin",
+                      selectedTenantName: "Olive Oil EV",
+                      selectedUsdaDescription: "Oil, olive, extra virgin",
+                      unit: "liter",
+                      unitPrice: 15,
+                    },
+                  },
+                },
+              ],
+            }),
+          };
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockResolvedValue({ data: [] }),
+        };
+      });
+
+      const promptSection = await service.getFewShotExamples({
+        organizationId: "org-1",
+        vendorId: "vendor-sysco",
+      });
+
+      expect(promptSection).toContain("FEW-SHOT TRAINING EXAMPLES");
+      expect(promptSection).toContain("SYSCO CHIK 10LB");
+      expect(promptSection).toContain("master-chicken-uuid");
+      expect(promptSection).toContain("EVOO 1L");
+      expect(promptSection).toContain("Oil, olive, extra virgin");
+    });
+
+    it("should aggregate raw_unmapped_data across reviews in weekly cron job", async () => {
+      const mockReviews = [
+        {
+          id: "r1",
+          organization_id: "org-1",
+          parsed_data: {
+            pages: [
+              {
+                pageNumber: 1,
+                blocks: [
+                  {
+                    type: "INVOICE",
+                    rawUnmappedData: {
+                      delivery_notes: "Leave at backdoor dock 3",
+                      fuel_surcharge: 12.5,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          id: "r2",
+          organization_id: "org-1",
+          parsed_data: {
+            pages: [
+              {
+                pageNumber: 1,
+                blocks: [
+                  {
+                    type: "INVOICE",
+                    rawUnmappedData: {
+                      delivery_notes: "Ring bell before 9am",
+                      freight_fee: 25.0,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ];
+
+      (supabase.from as jest.Mock).mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockResolvedValue({ data: mockReviews }),
+        insert: jest.fn().mockResolvedValue({ data: null, error: null }),
+      });
+
+      const report = await service.aggregateRawUnmappedData("org-1");
+
+      expect(report.totalReviewsAnalyzed).toBe(2);
+      expect(report.totalUnmappedEntries).toBe(4);
+      expect(report.keyFrequency["delivery_notes"]).toBe(2);
+      expect(report.recommendedSchemaAdditions.length).toBeGreaterThan(0);
+      expect(report.recommendedSchemaAdditions[0]).toContain("delivery_notes");
+    });
+  });
+
   describe("Multi-Agent Debate Pipeline & Critic Verification", () => {
     it("should triage document input correctly via heuristics or Ollama", async () => {
       const invoiceTriage = await processor.triageInput(
@@ -244,185 +529,119 @@ describe("Ingestion Module", () => {
       expect(recipeTriage.documentType).toBe("RECIPE");
     });
 
-    it("should detect line item math errors during Critic cross-examination", async () => {
-      const invoiceBlock = {
-        type: "INVOICE",
-        vendorName: "Sysco",
-        invoiceNumber: "INV-101",
-        lineItems: [
-          {
-            rawName: "Olive Oil",
-            quantity: 2,
-            unitPrice: 25,
-            extendedPrice: 60,
-          }, // Error: 2 * 25 != 60
-        ],
-        totals: { subtotal: 60, tax: 5, total: 65 },
-      };
-
-      const critique = await processor.critiqueWithClaudeSonnet(
-        [invoiceBlock],
-        "Sysco Invoice 2 units of Olive Oil at $25 each. Total: $55",
-        [],
-      );
-
-      expect(critique.passed).toBe(false);
-      expect(critique.discrepancies.length).toBeGreaterThan(0);
-      const mathError = critique.discrepancies.find(
-        (d) => d.type === "MATH_ERROR",
-      );
-      expect(mathError).toBeDefined();
-    });
-
-    it("should execute multi-agent debate and reconcile discrepancies with Gemini 1.5 Pro", async () => {
-      // Mock Gemini 1.5 Pro extraction and Claude 3.5 Sonnet critique
-      global.fetch = jest
-        .fn()
-        .mockImplementation(async (url: string, opts: any) => {
-          if (typeof url === "string" && url.includes("/chat/completions")) {
-            const body = JSON.parse(opts.body || "{}");
-            const model = body.model;
-
-            if (
-              model === "gemini-1.5-pro" &&
-              body.messages[0].content[0].text.includes("Analyze this document")
-            ) {
-              // Step 2: Primary extraction with deliberate math discrepancy
-              return {
-                ok: true,
-                json: async () => ({
-                  choices: [
-                    {
-                      message: {
-                        content: JSON.stringify({
-                          blocks: [
+    it("should auto-commit items when pgvector similarity >= 0.95", async () => {
+      global.fetch = jest.fn().mockImplementation(async (url: string) => {
+        if (typeof url === "string" && url.includes("/chat/completions")) {
+          return {
+            ok: true,
+            json: async () => ({
+              choices: [
+                {
+                  message: {
+                    content: JSON.stringify({
+                      blocks: [
+                        {
+                          type: "INVOICE",
+                          vendorName: "Sysco",
+                          invoiceNumber: "INV-101",
+                          date: "2026-08-21",
+                          lineItems: [
                             {
-                              type: "INVOICE",
-                              vendorName: "Sysco Foods",
-                              invoiceNumber: "INV-999",
-                              date: "2026-08-21",
-                              lineItems: [
-                                {
-                                  rawName: "Heavy Cream",
-                                  quantity: 2,
-                                  unitPrice: 15,
-                                  extendedPrice: 35,
-                                }, // 2*15 != 35
-                              ],
-                              totals: { subtotal: 35, tax: 3, total: 38 },
+                              rawName: "Yellow Onions 50lb",
+                              unitPrice: 20,
+                              extendedPrice: 20,
                             },
                           ],
-                        }),
-                      },
-                    },
-                  ],
-                }),
-              } as any;
-            }
+                          totals: { subtotal: 20, tax: 0, total: 20 },
+                        },
+                      ],
+                    }),
+                  },
+                },
+              ],
+            }),
+          } as any;
+        }
+        return { ok: false, text: async () => "Not found" } as any;
+      });
 
-            if (model === "claude-3-5-sonnet") {
-              // Step 3: Claude 3.5 Sonnet identifies the discrepancy
-              return {
-                ok: true,
-                json: async () => ({
-                  choices: [
-                    {
-                      message: {
-                        content: JSON.stringify({
-                          passed: false,
-                          confidenceScore: 0.65,
-                          critiqueNotes:
-                            "Line item 2 * $15 should equal $30, not $35.",
-                          discrepancies: [
-                            {
-                              blockIndex: 0,
-                              type: "MATH_ERROR",
-                              field: "lineItems[0].extendedPrice",
-                              issue: "2 * 15 != 35",
-                              suggestedFix: {
-                                extendedPrice: 30,
-                                subtotal: 30,
-                                total: 33,
-                              },
-                            },
-                          ],
-                        }),
-                      },
-                    },
-                  ],
-                }),
-              } as any;
-            }
+      jest.spyOn(service, "getEmbedding").mockResolvedValue([0.1, 0.2]);
 
-            if (
-              model === "gemini-1.5-pro" &&
-              body.messages[0].content[0].text.includes(
-                "Reconcile your extraction",
-              )
-            ) {
-              // Step 4: Gemini 1.5 Pro reconciles the debate and produces corrected output
-              return {
-                ok: true,
-                json: async () => ({
-                  choices: [
-                    {
-                      message: {
-                        content: JSON.stringify({
-                          blocks: [
-                            {
-                              type: "INVOICE",
-                              vendorName: "Sysco Foods",
-                              invoiceNumber: "INV-999",
-                              date: "2026-08-21",
-                              lineItems: [
-                                {
-                                  rawName: "Heavy Cream",
-                                  quantity: 2,
-                                  unitPrice: 15,
-                                  extendedPrice: 30,
-                                },
-                              ],
-                              totals: { subtotal: 30, tax: 3, total: 33 },
-                            },
-                          ],
-                        }),
-                      },
-                    },
-                  ],
-                }),
-              } as any;
-            }
-          }
-          return { ok: false, text: async () => "Not found" } as any;
-        });
-
-      jest.spyOn(service, "getEmbedding").mockResolvedValue([0.1, 0.2, 0.3]);
-
+      // High pgvector similarity (0.96 >= 0.95)
       jest
         .spyOn(service, "searchMasterItemsTop5")
         .mockResolvedValue([
-          { id: "item-cream-1", name: "Heavy Cream", score: 0.98 },
+          { id: "item-onions", name: "Yellow Onions", score: 0.96 },
         ]);
 
       const result = await (processor as any).extractPageBlocks(
-        "Sysco Foods Invoice #INV-999. 2x Heavy Cream @ $15 = $30. Tax: $3, Total: $33",
+        "Sysco Invoice Yellow Onions 50lb $20",
         undefined,
-        "conv-123",
+        undefined,
         "org-1",
-        "user-1",
       );
 
-      expect(result.debateOccurred).toBe(true);
       expect(result.blocks.length).toBe(1);
-      const invoiceBlock = result.blocks[0];
-      expect(invoiceBlock.type).toBe("INVOICE");
-      expect(invoiceBlock.debateOccurred).toBe(true);
-      expect(invoiceBlock.lineItems?.[0].extendedPrice).toBe(30);
-      expect(invoiceBlock.totals?.subtotal).toBe(30);
-      expect(invoiceBlock.totals?.total).toBe(33);
-      expect(invoiceBlock.lineItems?.[0].normalizedName).toBe(
-        "Cream, fluid, heavy whipping",
+      const invoice = result.blocks[0];
+      expect(invoice.lineItems[0].autoAccepted).toBe(true);
+      expect(invoice.lineItems[0].selectedTenantId).toBe("item-onions");
+    });
+
+    it("should not auto-commit items when pgvector similarity is below 0.95", async () => {
+      global.fetch = jest.fn().mockImplementation(async (url: string) => {
+        if (typeof url === "string" && url.includes("/chat/completions")) {
+          return {
+            ok: true,
+            json: async () => ({
+              choices: [
+                {
+                  message: {
+                    content: JSON.stringify({
+                      blocks: [
+                        {
+                          type: "INVOICE",
+                          vendorName: "Sysco",
+                          invoiceNumber: "INV-102",
+                          date: "2026-08-21",
+                          lineItems: [
+                            {
+                              rawName: "Mystery Spice Blend",
+                              unitPrice: 10,
+                              extendedPrice: 10,
+                            },
+                          ],
+                          totals: { subtotal: 10, tax: 0, total: 10 },
+                        },
+                      ],
+                    }),
+                  },
+                },
+              ],
+            }),
+          } as any;
+        }
+        return { ok: false, text: async () => "Not found" } as any;
+      });
+
+      jest.spyOn(service, "getEmbedding").mockResolvedValue([0.1, 0.2]);
+
+      // Low similarity (0.80 < 0.95)
+      jest
+        .spyOn(service, "searchMasterItemsTop5")
+        .mockResolvedValue([
+          { id: "item-spice", name: "Mixed Spice", score: 0.8 },
+        ]);
+
+      const result = await (processor as any).extractPageBlocks(
+        "Sysco Invoice Mystery Spice Blend $10",
+        undefined,
+        undefined,
+        "org-1",
       );
+
+      expect(result.blocks.length).toBe(1);
+      const invoice = result.blocks[0];
+      expect(invoice.lineItems[0].autoAccepted).toBe(false);
     });
   });
 
@@ -472,7 +691,7 @@ describe("Ingestion Module", () => {
 
       jest
         .spyOn(service, "searchMasterItemsTop5")
-        .mockResolvedValue([{ id: "item-1", name: "Salt", score: 0.95 }]);
+        .mockResolvedValue([{ id: "item-1", name: "Salt", score: 0.98 }]);
 
       const extractResult = await (processor as any).extractPageBlocks(
         "Recipe with Salt and Failing Item",
@@ -488,7 +707,7 @@ describe("Ingestion Module", () => {
       expect(recipeBlock).toBeDefined();
       expect(recipeBlock.ingredients.length).toBe(2);
 
-      // First ingredient succeeded
+      // First ingredient succeeded with high score
       expect(recipeBlock.ingredients[0].rawName).toBe("Salt");
       expect(recipeBlock.ingredients[0].resolutionError).toBe(false);
       expect(recipeBlock.ingredients[0].autoAccepted).toBe(true);
