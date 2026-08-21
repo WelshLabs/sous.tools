@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import type { Socket, ManagerOptions, SocketOptions } from "socket.io-client";
 import { clientConfig as config } from "@soustools/config/client";
-import { refreshAuthSession } from "./auth-session";
+import { refreshAuthSession, onAuthRefreshed } from "./auth-session";
 
 export interface WebSocketClientOptions {
   url?: string;
@@ -35,9 +35,6 @@ export function createWebSocketClient(
   const targetUrl = `${baseUrl.replace(/\/$/, "")}${namespace}`;
 
   const socket = io(targetUrl, {
-    // auth: {
-    //   token: options.token || "",
-    // },
     auth: async (cb) => {
       // This function runs every single time socket.connect() fires
       let token = options.token;
@@ -45,7 +42,10 @@ export function createWebSocketClient(
         try {
           token = await options.getToken();
         } catch (err) {
-          console.error("[api-client] Failed to retrieve token via getToken():", err);
+          console.error(
+            "[api-client] Failed to retrieve token via getToken():",
+            err,
+          );
         }
       }
 
@@ -126,6 +126,24 @@ export function createWebSocketClient(
     const msg = error?.message || "";
     handleAuthError(msg);
   });
+
+  // Reconnect automatically when auth is refreshed anywhere across the app
+  const unregisterAuthRefreshed = onAuthRefreshed(async () => {
+    try {
+      if (!socket.connected) {
+        socket.connect();
+        socket.emit("reauthenticated");
+      }
+    } catch {
+      // Non-fatal
+    }
+  });
+
+  const originalDisconnect = socket.disconnect.bind(socket);
+  socket.disconnect = () => {
+    unregisterAuthRefreshed();
+    return originalDisconnect();
+  };
 
   return socket;
 }

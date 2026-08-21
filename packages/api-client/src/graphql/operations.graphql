@@ -1,0 +1,70 @@
+query HealthCheck {
+  healthCheck {
+    status
+    timestamp
+  }
+}
+
+query DashboardStats($orgId: String) {
+  dashboardStats(orgId: $orgId) {
+    revenue {
+      name
+      value
+      sales
+      tax
+      tips
+      processingFee
+    }
+    ticketTimes {
+      time
+      minutes
+    }
+    inventoryAlerts {
+      item
+      status
+      quantity
+    }
+    summary {
+      totalOrders
+      averageTicketTime
+      dailyRevenue
+      activeTables
+      dailyRevenueChange
+      totalOrdersChange
+      averageTicketTimeChange
+      activeTablesSubtitle
+    }
+  }
+}
+
+subscription DashboardStatsUpdated($orgId: String) {
+  dashboardStatsUpdated(orgId: $orgId) {
+    revenue {
+      name
+      value
+      sales
+      tax
+      tips
+      processingFee
+    }
+    ticketTimes {
+      time
+      minutes
+    }
+    inventoryAlerts {
+      item
+      status
+      quantity
+    }
+    summary {
+      totalOrders
+      averageTicketTime
+      dailyRevenue
+      activeTables
+      dailyRevenueChange
+      totalOrdersChange
+      averageTicketTimeChange
+      activeTablesSubtitle
+    }
+  }
+}

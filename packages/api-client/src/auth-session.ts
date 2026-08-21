@@ -2,6 +2,38 @@ import { clientConfig as config } from "@soustools/config/client";
 
 let refreshPromise: Promise<boolean> | null = null;
 
+export type AuthRefreshListener = () => void | Promise<void>;
+const refreshListeners = new Set<AuthRefreshListener>();
+
+/**
+ * Register a callback to be invoked whenever auth session is refreshed.
+ * Used to transparently reconnect WebSockets and subscriptions.
+ */
+export function onAuthRefreshed(listener: AuthRefreshListener): () => void {
+  refreshListeners.add(listener);
+  return () => {
+    refreshListeners.delete(listener);
+  };
+}
+
+export function notifyAuthRefreshed(): void {
+  for (const listener of refreshListeners) {
+    try {
+      const res = listener();
+      if (res && typeof (res as Promise<void>).catch === "function") {
+        (res as Promise<void>).catch((err: unknown) => {
+          console.error(
+            "[api-client] Async error in onAuthRefreshed listener:",
+            err,
+          );
+        });
+      }
+    } catch (err) {
+      console.error("[api-client] Error in onAuthRefreshed listener:", err);
+    }
+  }
+}
+
 /**
  * Centralized auth session refresh mutex.
  *
@@ -34,6 +66,7 @@ export async function refreshAuthSession(): Promise<boolean> {
         return false;
       }
 
+      notifyAuthRefreshed();
       return true;
     } catch (err) {
       console.error("[api-client] Auth session refresh error:", err);
