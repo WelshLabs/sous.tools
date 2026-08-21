@@ -5,8 +5,8 @@ import { IngestionService } from "./ingestion.service";
 import { IngestionProcessor } from "./ingestion.processor";
 import { NutritionModule } from "../nutrition/nutrition.module";
 import { Neo4jSyncModule } from "../neo4j-sync/neo4j-sync.module";
-
 import { CommandsModule } from "../commands/commands.module";
+import { RecipeModule } from "../recipe/recipe.module";
 
 @Module({
   imports: [
@@ -16,6 +16,7 @@ import { CommandsModule } from "../commands/commands.module";
     NutritionModule,
     Neo4jSyncModule,
     CommandsModule,
+    RecipeModule,
   ],
   controllers: [IngestionController],
   providers: [IngestionService, IngestionProcessor],

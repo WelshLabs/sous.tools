@@ -1,4 +1,54 @@
+/* eslint-disable max-lines */
 import { z } from "zod";
+
+export type CalculationType =
+  "fixed_weight" | "fixed_volume" | "each" | "bakers_percentage";
+
+export interface BakersFormulaSummary {
+  totalFlourWeightG: number;
+  totalLiquidWeightG: number;
+  hydrationPercentage: number;
+  totalFormulaPercentage: number;
+  isBakersRecipe: boolean;
+}
+
+export interface SubComponentBreakdown {
+  name: string;
+  weightG: number;
+}
+
+export interface CulinaryEncyclopediaEntry {
+  id: string;
+  name: string;
+  aliases: string[];
+  category:
+    | "egg"
+    | "produce"
+    | "dairy"
+    | "meat"
+    | "poultry"
+    | "seafood"
+    | "baking"
+    | "seasoning"
+    | "liquid"
+    | "pantry";
+  standardPieceWeightG?: number;
+  standardBunchWeightG?: number;
+  pieceBreakdown?: {
+    summary: string;
+    subComponents?: SubComponentBreakdown[];
+  };
+  densityGMl?: number;
+  typicalUnits: string[];
+}
+
+export interface EstimatedWeightResult {
+  totalWeightG: number;
+  unitWeightG?: number;
+  breakdownSummary?: string;
+  subComponents?: SubComponentBreakdown[];
+  confidence: "exact" | "high" | "estimated";
+}
 
 export interface VesselProfile {
   id: string;
@@ -102,7 +152,7 @@ export interface Recipe {
   instructions: RecipeInstruction[];
   createdAt: string;
   categoryId?: string | null;
-  status?: "PENDING_REVIEW" | "APPROVED" | "ARCHIVED";
+  status?: "PENDING_REVIEW" | "APPROVED" | "ARCHIVED" | "REFERENCE";
   sourceBook?: string | null;
   sourceAuthor?: string | null;
   sourcePageStart?: number | null;
@@ -121,6 +171,10 @@ export interface RecipeIngredient {
   subRecipeId: string | null;
   calculationType: "fixed_weight" | "bakers_percentage";
   baseCalculationGroup: boolean;
+  isReference?: boolean;
+  bakersPercentage?: number | null;
+  originalInputString?: string | null;
+  standardWeightG?: number | null;
   amount: number;
   unit: string;
   component?: string | null;

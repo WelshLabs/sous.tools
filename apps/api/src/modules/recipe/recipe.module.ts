@@ -9,8 +9,12 @@ import { RecipeMetaController } from "./recipe-meta.controller";
 import { RecipeMetaService } from "./recipe-meta.service";
 import { RecipeCostService } from "./recipe-cost.service";
 import { RecipeVersionsController } from "./recipe-versions.controller";
+import { RecipeVersionsService } from "./recipe-versions.service";
+import { RecipeMathService } from "./recipe-math.service";
+import { Neo4jSyncModule } from "../neo4j-sync/neo4j-sync.module";
 
 @Module({
+  imports: [Neo4jSyncModule],
   controllers: [
     RecipesController,
     IngredientsController,
@@ -24,6 +28,8 @@ import { RecipeVersionsController } from "./recipe-versions.controller";
     VesselsService,
     RecipeMetaService,
     RecipeCostService,
+    RecipeVersionsService,
+    RecipeMathService,
   ],
   exports: [
     RecipesService,
@@ -31,6 +37,8 @@ import { RecipeVersionsController } from "./recipe-versions.controller";
     VesselsService,
     RecipeMetaService,
     RecipeCostService,
+    RecipeVersionsService,
+    RecipeMathService,
   ],
 })
 export class RecipeModule {}

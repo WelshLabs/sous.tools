@@ -6,6 +6,10 @@ import { IngredientsController } from "./ingredients.controller";
 import { IngredientsService } from "./ingredients.service";
 import { VesselsController } from "./vessels.controller";
 import { VesselsService } from "./vessels.service";
+import { RecipeVersionsController } from "./recipe-versions.controller";
+import { RecipeVersionsService } from "./recipe-versions.service";
+import { RecipeMathService } from "./recipe-math.service";
+import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
 import { supabase } from "../../core/database/supabase";
 
 jest.mock("../../core/database/supabase", () => ({
@@ -17,6 +21,7 @@ jest.mock("../../core/database/supabase", () => ({
     delete: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
     single: jest.fn(),
   },
 }));
@@ -25,6 +30,7 @@ describe("Recipe Module Controllers", () => {
   let recipesController: RecipesController;
   let ingredientsController: IngredientsController;
   let vesselsController: VesselsController;
+  let versionsController: RecipeVersionsController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,12 +38,19 @@ describe("Recipe Module Controllers", () => {
         RecipesController,
         IngredientsController,
         VesselsController,
+        RecipeVersionsController,
       ],
       providers: [
         RecipesService,
         RecipeCostService,
         IngredientsService,
         VesselsService,
+        RecipeVersionsService,
+        RecipeMathService,
+        {
+          provide: Neo4jSyncService,
+          useValue: { handleWebhook: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
@@ -46,6 +59,9 @@ describe("Recipe Module Controllers", () => {
       IngredientsController,
     );
     vesselsController = module.get<VesselsController>(VesselsController);
+    versionsController = module.get<RecipeVersionsController>(
+      RecipeVersionsController,
+    );
   });
 
   it("should list vessels successfully", async () => {
@@ -110,5 +126,60 @@ describe("Recipe Module Controllers", () => {
     );
     expect(response.success).toBe(true);
     expect(response.data?.title).toBe("Sourdough");
+  });
+
+  it("should create snapshot version successfully", async () => {
+    const mockRecipe = {
+      id: "r-1",
+      title: "Sourdough",
+      yield_count: 2,
+      yield_unit: "loaves",
+      vessel_id: null,
+      instructions: [],
+      recipe_ingredients: [],
+    };
+    const mockSnapshot = {
+      id: "ver-1",
+      recipe_id: "r-1",
+      version_number: 1,
+      title: "Sourdough",
+      yield_count: 2,
+      yield_unit: "loaves",
+      instructions: [],
+      ingredients: [],
+      created_at: "2026-08-21T00:00:00Z",
+    };
+
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
+      if (table === "recipes") {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          single: jest
+            .fn()
+            .mockResolvedValue({ data: mockRecipe, error: null }),
+        };
+      }
+      if (table === "formula_versions") {
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          order: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockResolvedValue({ data: [], error: null }),
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest
+                .fn()
+                .mockResolvedValue({ data: mockSnapshot, error: null }),
+            }),
+          }),
+        };
+      }
+      return {};
+    });
+
+    const res = await versionsController.createVersion("r-1");
+    expect(res.success).toBe(true);
+    expect(res.data?.versionNumber).toBe(1);
   });
 });

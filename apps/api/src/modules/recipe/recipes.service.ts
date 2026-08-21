@@ -1,7 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
 import { supabase } from "../../core/database/supabase";
 import { Recipe, RecipeIngredient } from "@soustools/api-types";
 import { mapRecipeRow } from "./recipes.mapper";
+import { RecipeMathService } from "./recipe-math.service";
 
 /**
  * RecipesService manages recipe queries and CRUD operations.
@@ -9,6 +10,10 @@ import { mapRecipeRow } from "./recipes.mapper";
  */
 @Injectable()
 export class RecipesService {
+  constructor(
+    @Optional() private readonly recipeMathService?: RecipeMathService,
+  ) {}
+
   async findAll(orgId: string): Promise<Recipe[]> {
     const { data, error } = await supabase
       .from("recipes")
@@ -78,16 +83,49 @@ export class RecipesService {
     if (recipeError) throw new Error(recipeError.message);
 
     if (ingredientsPayload && ingredientsPayload.length > 0) {
-      const dbIngredients = ingredientsPayload.map((ing) => ({
-        recipe_id: recipe.id,
-        item_id: ing.masterIngredientId,
-        calculation_type: ing.calculationType,
-        base_calculation_group: ing.baseCalculationGroup || false,
-        amount: ing.amount,
-        unit: ing.unit,
-        raw_name: ing.rawName || null,
-        prep_notes: ing.prepNotes || null,
-      }));
+      const normalized = this.recipeMathService
+        ? this.recipeMathService.normalizeRecipeIngredients(
+            ingredientsPayload.map((ing) => ({
+              ...ing,
+              rawName: ing.rawName || "",
+              amount: ing.amount,
+              unit: ing.unit,
+              masterIngredientId: ing.masterIngredientId,
+              isReference: ing.isReference,
+              baseCalculationGroup: ing.baseCalculationGroup,
+              calculationType: ing.calculationType,
+              bakersPercentage: ing.bakersPercentage,
+              originalInputString: ing.originalInputString,
+              standardWeightG: ing.standardWeightG,
+              prepNotes: ing.prepNotes,
+              component: ing.component,
+            })),
+          )
+        : null;
+
+      const dbIngredients = ingredientsPayload.map((ing, idx) => {
+        const norm = normalized ? normalized[idx] : null;
+        return {
+          recipe_id: recipe.id,
+          item_id: ing.masterIngredientId,
+          calculation_type: norm?.calculationType || ing.calculationType,
+          base_calculation_group: Boolean(
+            norm?.baseCalculationGroup ?? ing.baseCalculationGroup,
+          ),
+          is_reference: Boolean(norm?.isReference ?? ing.isReference),
+          bakers_percentage:
+            norm?.bakersPercentage ?? ing.bakersPercentage ?? null,
+          original_input_string:
+            norm?.originalInputString || ing.originalInputString || null,
+          standard_weight_g:
+            norm?.standardWeightG ?? ing.standardWeightG ?? null,
+          amount: norm?.standardAmount ?? ing.amount,
+          unit: norm?.standardUnit ?? ing.unit,
+          raw_name: ing.rawName || null,
+          prep_notes: ing.prepNotes || null,
+          component: ing.component || null,
+        };
+      });
 
       const { error: ingError } = await supabase
         .from("recipe_ingredients")
@@ -150,16 +188,49 @@ export class RecipesService {
       if (clearError) throw new Error(clearError.message);
 
       if (ingredientsPayload.length > 0) {
-        const dbIngredients = ingredientsPayload.map((ing) => ({
-          recipe_id: id,
-          item_id: ing.masterIngredientId,
-          calculation_type: ing.calculationType,
-          base_calculation_group: ing.baseCalculationGroup || false,
-          amount: ing.amount,
-          unit: ing.unit,
-          raw_name: ing.rawName || null,
-          prep_notes: ing.prepNotes || null,
-        }));
+        const normalized = this.recipeMathService
+          ? this.recipeMathService.normalizeRecipeIngredients(
+              ingredientsPayload.map((ing) => ({
+                ...ing,
+                rawName: ing.rawName || "",
+                amount: ing.amount,
+                unit: ing.unit,
+                masterIngredientId: ing.masterIngredientId,
+                isReference: ing.isReference,
+                baseCalculationGroup: ing.baseCalculationGroup,
+                calculationType: ing.calculationType,
+                bakersPercentage: ing.bakersPercentage,
+                originalInputString: ing.originalInputString,
+                standardWeightG: ing.standardWeightG,
+                prepNotes: ing.prepNotes,
+                component: ing.component,
+              })),
+            )
+          : null;
+
+        const dbIngredients = ingredientsPayload.map((ing, idx) => {
+          const norm = normalized ? normalized[idx] : null;
+          return {
+            recipe_id: id,
+            item_id: ing.masterIngredientId,
+            calculation_type: norm?.calculationType || ing.calculationType,
+            base_calculation_group: Boolean(
+              norm?.baseCalculationGroup ?? ing.baseCalculationGroup,
+            ),
+            is_reference: Boolean(norm?.isReference ?? ing.isReference),
+            bakers_percentage:
+              norm?.bakersPercentage ?? ing.bakersPercentage ?? null,
+            original_input_string:
+              norm?.originalInputString || ing.originalInputString || null,
+            standard_weight_g:
+              norm?.standardWeightG ?? ing.standardWeightG ?? null,
+            amount: norm?.standardAmount ?? ing.amount,
+            unit: norm?.standardUnit ?? ing.unit,
+            raw_name: ing.rawName || null,
+            prep_notes: ing.prepNotes || null,
+            component: ing.component || null,
+          };
+        });
 
         const { error: ingError } = await supabase
           .from("recipe_ingredients")

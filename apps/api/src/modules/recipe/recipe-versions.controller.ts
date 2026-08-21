@@ -3,9 +3,11 @@ import {
   Get,
   Post,
   Param,
-  NotFoundException,
+  Body,
+  ParseIntPipe,
 } from "@nestjs/common";
-import { supabase } from "../../core/database/supabase";
+import { RecipeVersionsService } from "./recipe-versions.service";
+import { FormulaVersion, Recipe } from "@soustools/api-types";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -16,70 +18,27 @@ export interface ApiResponse<T> {
 
 @Controller("recipes")
 export class RecipeVersionsController {
+  constructor(private readonly versionsService: RecipeVersionsService) {}
+
   @Post(":id/versions")
   async createVersion(
     @Param("id") id: string,
-  ): Promise<ApiResponse<{ versionId: string; versionNumber: number }>> {
+    @Body() body?: { title?: string; note?: string },
+  ): Promise<
+    ApiResponse<{
+      versionId: string;
+      versionNumber: number;
+      snapshot: FormulaVersion;
+    }>
+  > {
     try {
-      const { data: recipe, error: recipeError } = await supabase
-        .from("recipes")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (recipeError || !recipe) {
-        throw new NotFoundException(`Recipe with ID ${id} not found`);
-      }
-
-      const { data: ingredients, error: ingError } = await supabase
-        .from("recipe_ingredients")
-        .select("*")
-        .eq("recipe_id", id);
-
-      if (ingError) {
-        throw new Error(ingError.message);
-      }
-
-      const { data: versions, error: verError } = await supabase
-        .from("formula_versions")
-        .select("version_number")
-        .eq("recipe_id", id)
-        .order("version_number", { ascending: false })
-        .limit(1);
-
-      if (verError) {
-        throw new Error(verError.message);
-      }
-
-      const nextVersion =
-        versions && versions.length > 0 ? versions[0].version_number + 1 : 1;
-
-      const { data: inserted, error: insertError } = await supabase
-        .from("formula_versions")
-        .insert([
-          {
-            recipe_id: id,
-            version_number: nextVersion,
-            title: recipe.title,
-            yield_count: recipe.yield_count,
-            yield_unit: recipe.yield_unit,
-            vessel_id: recipe.vessel_id,
-            instructions: recipe.instructions,
-            ingredients: ingredients || [],
-          },
-        ])
-        .select()
-        .single();
-
-      if (insertError) {
-        throw new Error(insertError.message);
-      }
-
+      const snapshot = await this.versionsService.createSnapshot(id, body);
       return {
         success: true,
         data: {
-          versionId: inserted.id,
-          versionNumber: inserted.version_number,
+          versionId: snapshot.id,
+          versionNumber: snapshot.versionNumber,
+          snapshot,
         },
         timestamp: new Date().toISOString(),
       };
@@ -93,21 +52,59 @@ export class RecipeVersionsController {
   }
 
   @Get(":id/versions")
-  async getVersions(@Param("id") id: string): Promise<ApiResponse<unknown[]>> {
+  async getVersions(
+    @Param("id") id: string,
+  ): Promise<ApiResponse<FormulaVersion[]>> {
     try {
-      const { data, error } = await supabase
-        .from("formula_versions")
-        .select("*")
-        .eq("recipe_id", id)
-        .order("version_number", { ascending: false });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
+      const versions = await this.versionsService.getVersions(id);
       return {
         success: true,
-        data: data || [],
+        data: versions,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  @Get(":id/versions/:versionNumber")
+  async getVersion(
+    @Param("id") id: string,
+    @Param("versionNumber", ParseIntPipe) versionNumber: number,
+  ): Promise<ApiResponse<FormulaVersion>> {
+    try {
+      const version = await this.versionsService.getVersion(id, versionNumber);
+      return {
+        success: true,
+        data: version,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  @Post(":id/versions/:versionNumber/restore")
+  async restoreVersion(
+    @Param("id") id: string,
+    @Param("versionNumber", ParseIntPipe) versionNumber: number,
+  ): Promise<ApiResponse<Recipe>> {
+    try {
+      const recipe = await this.versionsService.restoreVersion(
+        id,
+        versionNumber,
+      );
+      return {
+        success: true,
+        data: recipe,
         timestamp: new Date().toISOString(),
       };
     } catch (err) {
