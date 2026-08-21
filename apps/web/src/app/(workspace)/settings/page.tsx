@@ -1,4 +1,4 @@
-import { SettingsClient } from "./settings-client";
+import { SettingsPanelContainer } from "@soustools/domain-settings";
 import { api } from "@soustools/api-client";
 import { serverConfig } from "@soustools/config/server";
 
@@ -17,9 +17,6 @@ export default async function SettingsPage() {
     console.error("Failed to load integrations status", err);
   }
 
-  // Stub data for global styling tokens and user profile
-  // In a real app, these would be fetched from the API as well
-
   const initialTokens = {};
   const userProfile = {
     name: "Admin User",
@@ -30,7 +27,7 @@ export default async function SettingsPage() {
   const isDev = serverConfig.NODE_ENV === "development";
 
   return (
-    <SettingsClient
+    <SettingsPanelContainer
       integrations={integrations}
       isDev={isDev}
       initialTokens={initialTokens}

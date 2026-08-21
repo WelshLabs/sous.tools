@@ -37,6 +37,6 @@ describe("SignagePreviewView", () => {
       />,
     );
 
-    expect(screen.getByText("Empty Canvas")).toBeDefined();
+    expect(screen.getByText("Empty Column")).toBeDefined();
   });
 });

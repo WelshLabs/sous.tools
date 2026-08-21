@@ -10,3 +10,7 @@ export * from "./components/AnswerView/AnswerView";
 export * from "./components/ConversationHistory";
 export * from "./components/ArtifactColumn";
 
+export * from "./components/SelfShop";
+export * from "./components/AddVendor";
+export * from "./components/InventoryOverview";
+export * from "./components/InvoicesHub";

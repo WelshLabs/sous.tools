@@ -1,5 +1,5 @@
 import { clientConfig as config } from "@soustools/config/client";
-import { RecipeBuilderClient } from "@/app/(workspace)/recipes/RecipeBuilderClient";
+import { RecipeBuilderContainer } from "@soustools/domain-recipes";
 
 interface EditRecipePageProps {
   params: Promise<{ id: string }>;
@@ -46,7 +46,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
 
   return (
     <div className="px-4 py-6">
-      <RecipeBuilderClient
+      <RecipeBuilderContainer
         initialData={recipe}
         vessels={vessels}
         masterIngredients={masterIngredients}

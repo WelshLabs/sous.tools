@@ -1,5 +1,5 @@
 import React from "react";
-import TVSignageEditorClient from "./tv-signage-editor-client";
+import { TVSignageEditorContainer } from "@soustools/domain-signage";
 import { clientConfig as config } from "@soustools/config/client";
 
 interface PageProps {
@@ -10,7 +10,6 @@ export default async function TVSignageEditorPage({ params }: PageProps) {
   const { deckId } = await params;
   const baseUrl = config.NEXT_PUBLIC_API_URL;
 
-  // Removed unused cookieStore
   let deck = null;
   let items = [];
 
@@ -34,7 +33,7 @@ export default async function TVSignageEditorPage({ params }: PageProps) {
   }
 
   return (
-    <TVSignageEditorClient
+    <TVSignageEditorContainer
       deckId={deckId}
       initialDeck={deck}
       initialItems={items}

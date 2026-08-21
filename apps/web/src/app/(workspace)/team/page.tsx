@@ -1,9 +1,8 @@
-"use client";
-
 import React from "react";
-import { TeamPortalContainer } from "./team.container";
+import { TeamPortalContainer } from "@soustools/domain-settings";
+
 export const dynamic = "force-dynamic";
 
-export default function TeamPortalPage() {
+export default function TeamPage() {
   return <TeamPortalContainer />;
 }

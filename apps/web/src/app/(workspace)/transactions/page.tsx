@@ -1,5 +1,5 @@
 import React from "react";
-import { TransactionsView } from "./TransactionsView";
+import { TransactionsContainer } from "@soustools/domain-pos";
 import { api } from "@soustools/api-client";
 
 export const dynamic = "force-dynamic";
@@ -18,5 +18,5 @@ export default async function TransactionsPage() {
     console.error("Failed to fetch transactions:", err);
   }
 
-  return <TransactionsView initialTransactions={initialTransactions} />;
+  return <TransactionsContainer initialTransactions={initialTransactions} />;
 }

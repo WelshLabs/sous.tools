@@ -40,3 +40,15 @@ export type { KDSAppBarProps } from "./components/KDS/components/kds-appbar";
 export { KDSSettingsModal } from "./components/KDS/kds-settings-modal";
 export * from "./components/KDS/kds.types";
 export * from "./components/KDS/kds.helpers";
+
+// Catalog Exports
+export * from "./components/Catalog";
+
+// PosOrders Exports
+export * from "./components/PosOrders";
+
+// Transactions Exports
+export * from "./components/Transactions";
+
+// Dashboard Exports
+export * from "./components/Dashboard";

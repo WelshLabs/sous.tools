@@ -1,5 +1,5 @@
 import React from "react";
-import { PosOrdersView } from "./PosOrdersView";
+import { PosOrdersContainer } from "@soustools/domain-pos";
 import { api } from "@soustools/api-client";
 
 export const dynamic = "force-dynamic";
@@ -18,5 +18,5 @@ export default async function PosOrdersPage() {
     console.error("Failed to fetch pos orders:", err);
   }
 
-  return <PosOrdersView initialOrders={initialOrders} />;
+  return <PosOrdersContainer initialOrders={initialOrders} />;
 }

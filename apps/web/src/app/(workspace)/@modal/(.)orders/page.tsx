@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Loader2 } from "lucide-react";
-import { OrdersClient } from "@/app/(workspace)/orders/OrdersClient";
+import { OrdersPanelContainer } from "@soustools/domain-inventory";
 import type {
   Vendor,
   WhiteboardItem,
@@ -70,7 +70,6 @@ export default function InterceptedOrdersModal() {
       role="dialog"
       aria-modal="true"
     >
-      {/* Top action bar */}
       <div className="border-border/40 bg-card/40 flex shrink-0 items-center justify-between border-b px-6 py-3">
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground text-xs font-black tracking-widest uppercase">
@@ -90,7 +89,6 @@ export default function InterceptedOrdersModal() {
         </button>
       </div>
 
-      {/* Main modal content */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-muted-foreground flex h-96 flex-col items-center justify-center gap-3">
@@ -100,7 +98,7 @@ export default function InterceptedOrdersModal() {
             </p>
           </div>
         ) : (
-          <OrdersClient
+          <OrdersPanelContainer
             initialVendors={vendors}
             initialWhiteboardItems={whiteboardItems}
             initialPurchaseOrders={purchaseOrders}

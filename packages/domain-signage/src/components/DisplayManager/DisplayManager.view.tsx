@@ -1,7 +1,6 @@
 /* eslint-disable max-lines */
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { type SignageDisplay } from "@soustools/api-types";
 import { Button } from "@soustools/design-system";

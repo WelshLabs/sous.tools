@@ -34,8 +34,11 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
+    "@soustools/api-client": "workspace:*",
     "@soustools/api-types": "workspace:*",
+    "@soustools/config": "workspace:*",
     "@soustools/design-system": "workspace:*",
+    "framer-motion": "^12.43.0",
     "lucide-react": "^0.300.0",
     "react-hook-form": "^7.80.0",
     "sonner": "^2.0.7",

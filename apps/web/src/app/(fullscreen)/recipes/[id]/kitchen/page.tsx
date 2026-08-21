@@ -1,5 +1,5 @@
 import { clientConfig as config } from "@soustools/config/client";
-import { KitchenClientPage } from "./KitchenClientPage";
+import { ActiveKitchenContainer } from "@soustools/domain-recipes";
 
 interface KitchenPageProps {
   params: Promise<{ id: string }>;
@@ -30,7 +30,10 @@ export default async function KitchenPage({ params }: KitchenPageProps) {
 
   return (
     <div className="bg-card min-h-screen">
-      <KitchenClientPage recipe={recipe} />
+      <ActiveKitchenContainer
+        recipe={recipe}
+        backHref={`/recipes/${recipe.id}`}
+      />
     </div>
   );
 }
