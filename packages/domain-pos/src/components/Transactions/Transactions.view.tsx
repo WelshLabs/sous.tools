@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 "use client";
 
 import {
@@ -26,9 +25,7 @@ export interface Transaction {
   transaction_time: string;
   source: string;
   external_transaction_id: string;
-  pos_items: {
-    name: string;
-  } | null;
+  pos_items: { name: string } | null;
 }
 
 export interface TransactionsViewProps {
@@ -101,108 +98,101 @@ export function TransactionsView({
             <DollarSign className="text-muted-foreground h-3.5 w-3.5 dark:text-zinc-500" />
             <input
               type="number"
-              placeholder="Min $ Vol"
+              placeholder="Min Volume ($)..."
               value={minVolume}
               onChange={(e) => setMinVolume(e.target.value)}
-              className="dark:bg-card w-24 rounded-xl border border-zinc-800 bg-zinc-50 px-3 py-2 text-xs text-white transition-all outline-none focus:border-sky-500"
+              className="dark:bg-card w-32 rounded-xl border border-zinc-800 bg-zinc-50 px-3 py-2 text-xs text-zinc-700 outline-none dark:text-zinc-300"
             />
           </div>
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Transaction ID</TableHead>
-            <TableHead>POS Item</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead
-              className="cursor-pointer transition-all hover:text-white"
-              onClick={() => toggleSort("gross_revenue")}
-            >
-              Gross Revenue <ArrowUpDown className="ml-1 inline h-3 w-3" />
-            </TableHead>
-            <TableHead>Discount</TableHead>
-            <TableHead
-              className="cursor-pointer transition-all hover:text-white"
-              onClick={() => toggleSort("transaction_time")}
-            >
-              Transaction Time <ArrowUpDown className="ml-1 inline h-3 w-3" />
-            </TableHead>
-            <TableHead>Source</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedTransactions.length === 0 ? (
+      <div className="glass-panel overflow-hidden rounded-2xl border border-black/5 dark:border-white/5">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell
-                colSpan={7}
-                className="text-muted-foreground p-8 text-center text-xs dark:text-zinc-500"
+              <TableHead className="w-[180px]">Transaction ID</TableHead>
+              <TableHead>Item / Descriptor</TableHead>
+              <TableHead>Source</TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => toggleSort("transaction_time")}
               >
-                No matching sales records found.
-              </TableCell>
+                <div className="flex items-center gap-1">
+                  Time <ArrowUpDown className="h-3 w-3" />
+                </div>
+              </TableHead>
+              <TableHead className="text-right">Qty</TableHead>
+              <TableHead
+                className="cursor-pointer text-right"
+                onClick={() => toggleSort("gross_revenue")}
+              >
+                <div className="flex items-center justify-end gap-1">
+                  Gross Revenue <ArrowUpDown className="h-3 w-3" />
+                </div>
+              </TableHead>
             </TableRow>
-          ) : (
-            paginatedTransactions.map((txn) => (
-              <TableRow key={txn.id}>
-                <TableCell className="dark:text-muted-foreground font-mono text-zinc-500 select-all">
-                  {txn.external_transaction_id}
-                </TableCell>
-                <TableCell className="font-bold text-zinc-200">
-                  {txn.pos_items?.name || "Unnamed POS Item"}
-                </TableCell>
-                <TableCell className="dark:text-muted-foreground font-semibold text-zinc-500">
-                  {txn.quantity_sold}
-                </TableCell>
-                <TableCell className="font-bold text-emerald-400">
-                  ${txn.gross_revenue.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-muted-foreground dark:text-zinc-500">
-                  ${txn.discount_amount.toFixed(2)}
-                </TableCell>
-                <TableCell className="dark:text-muted-foreground text-zinc-500">
-                  {new Date(txn.transaction_time).toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <span
-                    className={`rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase ${
-                      txn.source === "square"
-                        ? "border-sky-500/20 bg-sky-500/10 text-sky-400"
-                        : "dark:text-muted-foreground border-zinc-700 bg-zinc-800 text-zinc-500"
-                    }`}
-                  >
-                    {txn.source}
-                  </span>
+          </TableHeader>
+          <TableBody>
+            {paginatedTransactions.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-muted-foreground py-8 text-center text-xs"
+                >
+                  No transactions match the selected criteria.
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              paginatedTransactions.map((tx) => (
+                <TableRow key={tx.id}>
+                  <TableCell className="font-mono text-xs font-semibold text-sky-400">
+                    {tx.external_transaction_id}
+                  </TableCell>
+                  <TableCell className="text-xs font-bold text-zinc-200">
+                    {tx.pos_items?.name || "Custom Line Item"}
+                  </TableCell>
+                  <TableCell className="text-xs text-zinc-400 capitalize">
+                    {tx.source}
+                  </TableCell>
+                  <TableCell className="text-xs text-zinc-400">
+                    {new Date(tx.transaction_time).toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs text-zinc-300">
+                    {tx.quantity_sold}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold text-emerald-400">
+                    ${Number(tx.gross_revenue).toFixed(2)}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between p-4 text-xs">
-          <span className="text-muted-foreground dark:text-zinc-500">
-            Showing page {page} of {totalPages}
-          </span>
-          <div className="flex gap-2">
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-              className="bg-card rounded-xl border border-zinc-800 p-2 transition-all hover:bg-black/5 disabled:opacity-50"
-            >
-              <ChevronLeft className="h-4 w-4 text-white" />
-            </button>
-            <button
-              disabled={page >= totalPages}
-              onClick={() => setPage(page + 1)}
-              className="bg-card rounded-xl border border-zinc-800 p-2 transition-all hover:bg-black/5 disabled:opacity-50"
-            >
-              <ChevronRight className="h-4 w-4 text-white" />
-            </button>
-          </div>
+      <div className="flex items-center justify-between px-2 text-xs">
+        <span className="text-zinc-500">
+          Page {page} of {totalPages}
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page === 1}
+            className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-1.5 font-bold text-white transition-all hover:bg-zinc-800 disabled:opacity-40"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" /> Prev
+          </button>
+          <button
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-1.5 font-bold text-white transition-all hover:bg-zinc-800 disabled:opacity-40"
+          >
+            Next <ChevronRight className="h-3.5 w-3.5" />
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
+TransactionsView.displayName = "TransactionsView";
