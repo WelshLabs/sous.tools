@@ -1,6 +1,5 @@
 import { clientConfig as config } from "@soustools/config/client";
-import { TwoToneHeader } from "@soustools/design-system";
-import { ItemsLedgerClient } from "./items-ledger-client";
+import { ItemsLedgerContainer } from "@soustools/domain-inventory";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +17,5 @@ export default async function ItemsLedgerPage() {
     console.error("Failed to load items ledger:", err);
   }
 
-  return (
-    <div className="flex h-full flex-col">
-      <TwoToneHeader title="Items Ledger" />
-      <ItemsLedgerClient initialItems={items} />
-    </div>
-  );
+  return <ItemsLedgerContainer initialItems={items} />;
 }

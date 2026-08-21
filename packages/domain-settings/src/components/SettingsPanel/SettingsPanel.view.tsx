@@ -1,5 +1,4 @@
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@soustools/design-system";

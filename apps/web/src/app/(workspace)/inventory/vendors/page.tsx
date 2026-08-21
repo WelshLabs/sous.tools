@@ -1,5 +1,5 @@
 import { clientConfig as config } from "@soustools/config/client";
-import { VendorsClient } from "./vendors-client";
+import { VendorsPanelContainer } from "@soustools/domain-inventory";
 
 export const dynamic = "force-dynamic";
 
@@ -17,5 +17,5 @@ export default async function VendorsPage() {
     console.error("Failed to load vendors:", err);
   }
 
-  return <VendorsClient initialVendors={vendors} />;
+  return <VendorsPanelContainer initialVendors={vendors} />;
 }

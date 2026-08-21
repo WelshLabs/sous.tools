@@ -1,6 +1,6 @@
 import { clientConfig as config } from "@soustools/config/client";
 import { TwoToneHeader } from "@soustools/design-system";
-import { DecksListClient } from "./decks-list-client";
+import { DecksListContainer } from "@soustools/domain-signage";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function TVSignageListPage() {
   return (
     <div className="flex h-full flex-col">
       <TwoToneHeader title="Digital Signage" />
-      <DecksListClient initialDecks={decks} />
+      <DecksListContainer initialDecks={decks} />
     </div>
   );
 }

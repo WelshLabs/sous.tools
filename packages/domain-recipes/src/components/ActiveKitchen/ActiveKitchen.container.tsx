@@ -1,29 +1,63 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { type Recipe, type KitchenTimerState } from "@soustools/api-types";
 import { ActiveKitchenView } from "./ActiveKitchen.view";
 
 export interface ActiveKitchenProps {
   recipe: Recipe;
-  activeTimers: KitchenTimerState[];
-  onUpdateTimers: (timers: KitchenTimerState[]) => void;
+  activeTimers?: KitchenTimerState[];
+  onUpdateTimers?: (timers: KitchenTimerState[]) => void;
   backHref?: string;
 }
 
 export function ActiveKitchen({
   recipe,
-  activeTimers,
-  onUpdateTimers,
+  activeTimers: externalTimers,
+  onUpdateTimers: externalOnUpdateTimers,
   backHref = "/recipes",
 }: ActiveKitchenProps) {
+  const [internalTimers, setInternalTimers] = useState<KitchenTimerState[]>(
+    () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem(`timers_${recipe.id}`);
+        if (saved) {
+          try {
+            return JSON.parse(saved);
+          } catch (err) {
+            console.error("Failed to parse timers", err);
+          }
+        }
+      }
+      return [];
+    },
+  );
+
+  const activeTimers = externalTimers ?? internalTimers;
+  const onUpdateTimers = useCallback(
+    (newTimers: KitchenTimerState[]) => {
+      if (externalOnUpdateTimers) {
+        externalOnUpdateTimers(newTimers);
+      } else {
+        setInternalTimers(newTimers);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            `timers_${recipe.id}`,
+            JSON.stringify(newTimers),
+          );
+        }
+      }
+    },
+    [externalOnUpdateTimers, recipe.id],
+  );
+
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({});
   const [wakeLock, setWakeLock] = useState<WakeLockSentinel | null>(null);
   const [wakeLockActive, setWakeLockActive] = useState(false);
 
   useEffect(() => {
     async function requestWakeLock() {
-      if ("wakeLock" in navigator) {
+      if (typeof navigator !== "undefined" && "wakeLock" in navigator) {
         try {
           const wl = await (
             navigator as unknown as {
@@ -147,3 +181,5 @@ export function ActiveKitchen({
     />
   );
 }
+
+export { ActiveKitchen as ActiveKitchenContainer };

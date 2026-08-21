@@ -1,5 +1,5 @@
 import { clientConfig as config } from "@soustools/config/client";
-import { RecipeViewerClient } from "./RecipeViewerClient";
+import { RecipeViewerContainer } from "@soustools/domain-recipes";
 
 interface RecipePageProps {
   params: Promise<{ id: string }>;
@@ -65,7 +65,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   return (
     <div className="px-4 py-6">
-      <RecipeViewerClient
+      <RecipeViewerContainer
         recipe={recipe}
         vessels={vessels}
         costData={costData}

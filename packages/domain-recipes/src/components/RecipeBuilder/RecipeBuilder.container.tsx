@@ -20,7 +20,7 @@ export interface RecipeBuilderProps {
   vessels: VesselProfile[];
   masterIngredients: MasterIngredient[];
   loading?: boolean;
-  onSave: (payload: {
+  onSave?: (payload: {
     recipe: {
       title: string;
       yieldCount: number;
@@ -38,11 +38,26 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
   const {
     initialData,
     vessels,
-    masterIngredients,
+    masterIngredients: initialMasterIngredients,
     loading = false,
     onSave,
     backHref = "/recipes",
   } = props;
+
+  const [liveIngredients, setLiveIngredients] = useState<MasterIngredient[]>(
+    initialMasterIngredients,
+  );
+
+  useEffect(() => {
+    fetch("/api/recipes/ingredients")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setLiveIngredients(json.data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch live ingredients:", err));
+  }, []);
 
   const [title, setTitle] = useState("");
   const [yieldCount, setYieldCount] = useState(1);
@@ -96,18 +111,41 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const payload = {
+      recipe: {
+        title,
+        yieldCount,
+        yieldUnit,
+        vesselId: vesselId || null,
+        instructions: steps,
+        status,
+      },
+      recipeIngredients: ingredients,
+    };
+
     try {
-      await onSave({
-        recipe: {
-          title,
-          yieldCount,
-          yieldUnit,
-          vesselId: vesselId || null,
-          instructions: steps,
-          status,
-        },
-        recipeIngredients: ingredients,
-      });
+      if (onSave) {
+        await onSave(payload);
+      } else {
+        const method = initialData ? "PUT" : "POST";
+        const url = initialData
+          ? `/api/recipes/${initialData.id}`
+          : "/api/recipes";
+
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          if (typeof window !== "undefined") {
+            window.location.href = initialData?.id
+              ? `/recipes/${initialData.id}`
+              : "/recipes";
+          }
+        }
+      }
     } finally {
       setSaving(false);
     }
@@ -117,7 +155,7 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
     setIngredients((prev) => [
       ...prev,
       {
-        masterIngredientId: masterIngredients[0]?.id || "",
+        masterIngredientId: liveIngredients[0]?.id || "",
         amount: isBakersPercentage && prev.length > 0 ? 60 : 100,
         unit: isBakersPercentage && prev.length > 0 ? "%" : "g",
         calculationType:
@@ -193,7 +231,7 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
       onRemoveInstructionStep={handleRemoveInstructionStep}
       onUpdateInstructionStep={handleUpdateInstructionStep}
       vessels={vessels}
-      masterIngredients={masterIngredients}
+      masterIngredients={liveIngredients}
       loading={loading}
       saving={saving}
       onSubmit={handleSubmit}
@@ -202,3 +240,5 @@ export function RecipeBuilder(props: RecipeBuilderProps) {
     />
   );
 }
+
+export { RecipeBuilder as RecipeBuilderContainer };

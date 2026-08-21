@@ -13,6 +13,7 @@ import type {
   PurchaseOrder,
   PurchaseOrderItem,
 } from "@soustools/api-types";
+import { toast } from "sonner";
 import { OrdersPanelView } from "./OrdersPanel.view";
 import { AddVendorModal } from "./AddVendorModal";
 
@@ -47,15 +48,18 @@ function toOrderLineItemFromPo(
 }
 
 export interface OrdersPanelProps {
-  vendors: Vendor[];
-  whiteboardItems: WhiteboardItem[];
-  purchaseOrders: PurchaseOrder[];
-  onAddFreeText: (
+  vendors?: Vendor[];
+  initialVendors?: Vendor[];
+  whiteboardItems?: WhiteboardItem[];
+  initialWhiteboardItems?: WhiteboardItem[];
+  purchaseOrders?: PurchaseOrder[];
+  initialPurchaseOrders?: PurchaseOrder[];
+  onAddFreeText?: (
     rawName: string,
     vendorId: string | null,
   ) => Promise<string | null>;
-  onRemoveItem: (id: string, isWhiteboard: boolean) => Promise<void>;
-  onUpdateItemQty: (
+  onRemoveItem?: (id: string, isWhiteboard: boolean) => Promise<void>;
+  onUpdateItemQty?: (
     id: string,
     qty: number,
     isWhiteboard: boolean,
@@ -65,29 +69,32 @@ export interface OrdersPanelProps {
     unit: string,
     isWhiteboard: boolean,
   ) => Promise<void>;
-  onChangeSupplier: (
+  onChangeSupplier?: (
     id: string,
     supplierId: string | null,
     isWhiteboard: boolean,
     rawName: string,
   ) => Promise<void>;
-  onSubmitPO: (poId: string) => Promise<void>;
-  onShopOrder: (poId: string) => void;
+  onSubmitPO?: (poId: string) => Promise<void>;
+  onShopOrder?: (poId: string) => void;
   onAddVendor?: () => void;
   onVendorCreated?: (vendor: Vendor) => void;
 }
 
 export function OrdersPanel({
-  vendors: initialVendors,
-  whiteboardItems,
-  purchaseOrders,
-  onAddFreeText,
-  onRemoveItem,
-  onUpdateItemQty,
-  onUpdateItemUnit,
-  onChangeSupplier,
-  onSubmitPO,
-  onShopOrder,
+  vendors: propVendors,
+  initialVendors = [],
+  whiteboardItems: propWhiteboardItems,
+  initialWhiteboardItems = [],
+  purchaseOrders: propPurchaseOrders,
+  initialPurchaseOrders = [],
+  onAddFreeText: customOnAddFreeText,
+  onRemoveItem: customOnRemoveItem,
+  onUpdateItemQty: customOnUpdateItemQty,
+  onUpdateItemUnit: customOnUpdateItemUnit,
+  onChangeSupplier: customOnChangeSupplier,
+  onSubmitPO: customOnSubmitPO,
+  onShopOrder: customOnShopOrder,
   onAddVendor,
   onVendorCreated,
 }: OrdersPanelProps) {
@@ -95,11 +102,16 @@ export function OrdersPanel({
   const [searchQuery, setSearchQuery] = useState("");
   const [placingOrderId, setPlacingOrderId] = useState<string | null>(null);
   const [isAddVendorModalOpen, setIsAddVendorModalOpen] = useState(false);
-  const [localVendors, setLocalVendors] = useState<Vendor[]>(initialVendors);
+
+  const vendors = propVendors ?? initialVendors;
+  const whiteboardItems = propWhiteboardItems ?? initialWhiteboardItems;
+  const purchaseOrders = propPurchaseOrders ?? initialPurchaseOrders;
+
+  const [localVendors, setLocalVendors] = useState<Vendor[]>(vendors);
 
   useEffect(() => {
-    setLocalVendors(initialVendors);
-  }, [initialVendors]);
+    setLocalVendors(vendors);
+  }, [vendors]);
 
   const suppliers = useMemo(
     () => localVendors.map(toOrderSupplier),
@@ -170,7 +182,40 @@ export function OrdersPanel({
       },
     ]);
     setSearchQuery("");
-    const realId = await onAddFreeText(rawName, inferredVendorId);
+
+    let realId: string | null = null;
+    if (customOnAddFreeText) {
+      realId = await customOnAddFreeText(rawName, inferredVendorId);
+    } else {
+      try {
+        if (inferredVendorId) {
+          const res = await fetch("/api/purchase-orders/draft-item", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              raw_name: rawName,
+              vendor_id: inferredVendorId,
+              ordered_qty: 1,
+            }),
+          });
+          if (!res.ok) throw new Error("Failed to add to draft");
+          const payload = await res.json();
+          realId = payload.data?.id as string;
+        } else {
+          const res = await fetch("/api/whiteboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ raw_name: rawName }),
+          });
+          if (!res.ok) throw new Error("Failed to save item");
+          const payload = await res.json();
+          realId = payload.data?.id as string;
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Network error");
+      }
+    }
+
     if (realId) {
       setItems((prev) =>
         prev.map((i) => (i.id === tempId ? { ...i, id: realId } : i)),
@@ -184,7 +229,19 @@ export function OrdersPanel({
     const item = items.find((i) => i.id === id);
     if (!item) return;
     setItems((prev) => prev.filter((i) => i.id !== id));
-    await onRemoveItem(id, !item.supplier);
+    if (customOnRemoveItem) {
+      await customOnRemoveItem(id, !item.supplier);
+    } else {
+      try {
+        const endpoint = !item.supplier
+          ? `/api/whiteboard/${id}`
+          : `/api/purchase-orders/items/${id}`;
+        const res = await fetch(endpoint, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to remove item");
+      } catch (err: any) {
+        toast.error(`Remove failed: ${err.message}`);
+      }
+    }
   };
 
   const handleChangeQty = async (id: string, qty: number) => {
@@ -193,15 +250,38 @@ export function OrdersPanel({
     setItems((prev) =>
       prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
     );
-    await onUpdateItemQty(id, qty, !item.supplier);
+    if (customOnUpdateItemQty) {
+      await customOnUpdateItemQty(id, qty, !item.supplier);
+    } else if (item.supplier) {
+      try {
+        const res = await fetch(`/api/purchase-orders/items/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ordered_qty: qty }),
+        });
+        if (!res.ok) throw new Error("Failed to update item");
+      } catch (err: any) {
+        toast.error(`Update failed: ${err.message}`);
+      }
+    }
   };
 
   const handleChangeUnit = async (id: string, unit: string) => {
     const item = items.find((i) => i.id === id);
     if (!item) return;
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, unit } : i)));
-    if (onUpdateItemUnit) {
-      await onUpdateItemUnit(id, unit, !item.supplier);
+    if (customOnUpdateItemUnit) {
+      await customOnUpdateItemUnit(id, unit, !item.supplier);
+    } else if (item.supplier) {
+      try {
+        await fetch(`/api/purchase-orders/items/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ unit }),
+        });
+      } catch {
+        // Optimistic
+      }
     }
   };
 
@@ -221,7 +301,41 @@ export function OrdersPanel({
           : i,
       ),
     );
-    await onChangeSupplier(id, supplierId, !item.supplier, item.rawName);
+    if (customOnChangeSupplier) {
+      await customOnChangeSupplier(
+        id,
+        supplierId,
+        !item.supplier,
+        item.rawName,
+      );
+    } else {
+      try {
+        const delEndpoint = !item.supplier
+          ? `/api/whiteboard/${id}`
+          : `/api/purchase-orders/items/${id}`;
+        await fetch(delEndpoint, { method: "DELETE" });
+
+        if (supplierId) {
+          await fetch("/api/purchase-orders/draft-item", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              raw_name: item.rawName,
+              vendor_id: supplierId,
+              ordered_qty: 1,
+            }),
+          });
+        } else {
+          await fetch("/api/whiteboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ raw_name: item.rawName }),
+          });
+        }
+      } catch (err: any) {
+        toast.error(`Change supplier failed: ${err.message}`);
+      }
+    }
   };
 
   const handlePlaceOrderLocal = async (supplierId: string) => {
@@ -230,7 +344,19 @@ export function OrdersPanel({
     );
     if (!po) return;
     setPlacingOrderId(supplierId);
-    await onSubmitPO(po.id);
+    if (customOnSubmitPO) {
+      await customOnSubmitPO(po.id);
+    } else {
+      try {
+        const res = await fetch(`/api/purchase-orders/${po.id}/submit`, {
+          method: "PATCH",
+        });
+        if (!res.ok) throw new Error("Failed to submit order");
+        toast.success("Order submitted successfully");
+      } catch (err: any) {
+        toast.error(`Submit failed: ${err.message}`);
+      }
+    }
     setPlacingOrderId(null);
   };
 
@@ -238,7 +364,12 @@ export function OrdersPanel({
     const po = purchaseOrders.find(
       (p) => p.vendor_id === supplierId && p.status === "DRAFT",
     );
-    if (po) onShopOrder(po.id);
+    if (!po) return;
+    if (customOnShopOrder) {
+      customOnShopOrder(po.id);
+    } else if (typeof window !== "undefined") {
+      window.location.href = `/orders/${po.id}/shop`;
+    }
   };
 
   const handleAddVendorClick = () => {
@@ -295,3 +426,5 @@ export function OrdersPanel({
     </>
   );
 }
+
+export { OrdersPanel as OrdersPanelContainer };

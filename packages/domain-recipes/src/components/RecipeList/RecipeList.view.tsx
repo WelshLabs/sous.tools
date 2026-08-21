@@ -340,7 +340,7 @@ export function RecipeFilter({
 // RecipeListView
 // -----------------------------------------------------------------------------
 export function RecipeListView({
-  recipes,
+  recipes = [],
   loading = false,
   onDelete,
   categories,
@@ -395,7 +395,11 @@ export function RecipeListView({
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} onDelete={onDelete} />
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              onDelete={onDelete || (() => {})}
+            />
           ))}
         </div>
       )}

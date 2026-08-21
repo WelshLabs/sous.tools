@@ -32,6 +32,8 @@ export class CommandsService {
     }
     try {
       await this.pubSub.publish(AGENT_TRAJECTORY_TOPIC, {
+        conversationId,
+        orgId: _orgId,
         agentTrajectory: {
           id: message.id || (message as any).id,
           conversationId,

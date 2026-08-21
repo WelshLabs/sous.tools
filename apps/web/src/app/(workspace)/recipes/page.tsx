@@ -1,5 +1,5 @@
 import { clientConfig as config } from "@soustools/config/client";
-import { RecipesClientPage } from "./RecipesClientPage";
+import { RecipeListContainer } from "@soustools/domain-recipes";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export default async function RecipesPage() {
 
   return (
     <div className="px-4 py-6">
-      <RecipesClientPage initialRecipes={recipes} />
+      <RecipeListContainer initialRecipes={recipes} />
     </div>
   );
 }

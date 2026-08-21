@@ -8,7 +8,7 @@ import { pubSubProvider, PUB_SUB } from "./pubsub";
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: true,
+      autoSchemaFile: 'src/schema.gql',
       sortSchema: true,
       playground: true,
       introspection: true,

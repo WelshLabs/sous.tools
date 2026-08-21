@@ -1,6 +1,6 @@
 import React from "react";
 import { clientConfig as config } from "@soustools/config/client";
-import { DisplayPlayer } from "./display-player";
+import { DisplayPlayer } from "@soustools/domain-signage";
 
 export interface DisplayPageProps {
   params: Promise<{
@@ -18,7 +18,6 @@ export default async function DisplayPage({ params }: DisplayPageProps) {
   let initialItems = [];
   let initialErrorState = null;
 
-  // We only fetch server-side if it's a valid UUID (not a pairing code)
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -68,7 +67,6 @@ export default async function DisplayPage({ params }: DisplayPageProps) {
       }
     } catch (err) {
       console.warn("Server-side fetch failed:", err);
-      // Let client handle offline cache fallback
     }
   }
 

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   type Recipe,
   type RecipeCategory,
@@ -6,9 +9,10 @@ import {
 import { RecipeListView } from "./RecipeList.view";
 
 export interface RecipeListProps {
-  recipes: Recipe[];
+  recipes?: Recipe[];
+  initialRecipes?: Recipe[];
   loading?: boolean;
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
   categories?: RecipeCategory[];
   tags?: RecipeTag[];
   selectedCategory?: string | null;
@@ -27,6 +31,48 @@ export interface RecipeListProps {
 /**
  * RecipeList Container
  */
-export const RecipeList = (props: RecipeListProps) => {
-  return <RecipeListView {...props} />;
+export const RecipeList = ({
+  recipes: controlledRecipes,
+  initialRecipes = [],
+  onDelete: customOnDelete,
+  ...props
+}: RecipeListProps) => {
+  const [internalRecipes, setInternalRecipes] = useState<Recipe[]>(
+    controlledRecipes ?? initialRecipes,
+  );
+
+  const activeRecipes = controlledRecipes ?? internalRecipes;
+
+  const handleDelete = async (id: string) => {
+    if (customOnDelete) {
+      customOnDelete(id);
+      return;
+    }
+
+    if (
+      typeof window !== "undefined" &&
+      !confirm("Are you sure you want to delete this recipe?")
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/recipes/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setInternalRecipes((prev) => prev.filter((r) => r.id !== id));
+      }
+    } catch (err) {
+      console.error("Error deleting recipe", err);
+    }
+  };
+
+  return (
+    <RecipeListView
+      {...props}
+      recipes={activeRecipes}
+      onDelete={handleDelete}
+    />
+  );
 };
+
+export { RecipeList as RecipeListContainer };

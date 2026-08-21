@@ -7,3 +7,12 @@ export {
   GoogleDriveBrowserView as GoogleDriveBrowser,
 } from "./components/SettingsPanel/SettingsPanel.view";
 export * from "./components/SettingsPanel/SettingsPanel.view";
+
+export * from "./components/TeamPortal";
+export * from "./components/AdminUsers";
+export * from "./components/Auth";
+
+export * from "./components/Notifications";
+
+export * from "./components/LandingPage";
+export * from "./components/PrivacyPolicy";

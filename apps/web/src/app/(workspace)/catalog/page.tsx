@@ -1,5 +1,5 @@
 import React from "react";
-import { CatalogView } from "./CatalogView";
+import { CatalogContainer } from "@soustools/domain-pos";
 import { api } from "@soustools/api-client";
 
 export const dynamic = "force-dynamic";
@@ -17,14 +17,14 @@ export default async function CatalogPage() {
       cache: "no-store",
     });
     if (!error && data) {
-      catalogData = data.data || catalogData;
+      catalogData = (data as any).data || catalogData;
     }
   } catch (err) {
     console.error("Failed to fetch catalog:", err);
   }
 
   return (
-    <CatalogView
+    <CatalogContainer
       initialItems={catalogData.items}
       categories={catalogData.categories}
       modifierGroups={catalogData.modifierGroups}

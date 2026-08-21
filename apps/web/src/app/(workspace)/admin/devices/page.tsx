@@ -1,19 +1,16 @@
 import React from "react";
 import { clientConfig as config } from "@soustools/config/client";
 import { createApiClient } from "@soustools/api-client";
-import { DevicesClientWrapper } from "./devices-client-wrapper";
+import { DevicesManagerContainer } from "@soustools/domain-signage";
 
 export const dynamic = "force-dynamic";
 
-/**
- * DevicesPage mounts the signage physical displays pairing and status manager.
- */
 export default async function DevicesPage() {
   const serverApi = createApiClient({ baseUrl: config.NEXT_PUBLIC_API_URL });
 
   let displays = [];
   let layouts = [];
-  const edgeDevices: any[] = []; // Uses fallback mock edge devices since list endpoint is not implemented on API
+  const edgeDevices: any[] = [];
 
   try {
     const [dispRes, layRes] = await Promise.all([
@@ -33,7 +30,7 @@ export default async function DevicesPage() {
   }
 
   return (
-    <DevicesClientWrapper
+    <DevicesManagerContainer
       displays={displays}
       layouts={layouts}
       edgeDevices={edgeDevices}
