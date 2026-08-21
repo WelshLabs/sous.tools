@@ -14,6 +14,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { DatabaseModule } from "./core/database/database.module";
 import { AppGraphQLModule } from "./core/graphql/graphql.module";
+import { EventsModule } from "./core/events/events.module";
 import { HealthModule } from "./core/health/health.module";
 import { GqlThrottlerGuard } from "./core/guards/gql-throttler.guard";
 import { SupabaseAuthGuard } from "./core/guards/supabase-auth.guard";
@@ -137,6 +138,7 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
     }),
     DatabaseModule,
     AppGraphQLModule,
+    EventsModule,
     HealthModule,
     SignageModule,
     PosSimulatorModule,
