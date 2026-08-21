@@ -1,4 +1,3 @@
-/* eslint-disable */
 /** Internal type. DO NOT USE DIRECTLY. */
 type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 /** Internal type. DO NOT USE DIRECTLY. */
@@ -195,7 +194,6 @@ export type DashboardStatsUpdatedSubscription = {
   };
 };
 
-<<<<<<< HEAD
 export type ConversationMessagesQueryVariables = Exact<{
   conversationId: string;
 }>;
@@ -230,7 +228,9 @@ export type AgentTrajectorySubscription = {
     uiAction?: string | null;
     recipeData?: string | null;
     invoiceData?: string | null;
-=======
+  };
+};
+
 export type GenerateUploadUrlMutationVariables = Exact<{
   fileName: Scalars["String"]["input"];
 }>;
@@ -242,7 +242,6 @@ export type GenerateUploadUrlMutation = {
     publicUrl: string;
     filePath: string;
     token?: string | null;
->>>>>>> subagent-Backend-Engineer-self-bcb167a8
   };
 };
 
@@ -357,7 +356,6 @@ export function useDashboardStatsUpdatedSubscription<
   >({ query: DashboardStatsUpdatedDocument, ...options }, handler);
 }
 
-<<<<<<< HEAD
 export const ConversationMessagesDocument = gql`
   query ConversationMessages($conversationId: String!) {
     conversationMessages(conversationId: $conversationId) {
@@ -370,7 +368,10 @@ export const ConversationMessagesDocument = gql`
       uiAction
       recipeData
       invoiceData
-=======
+    }
+  }
+`;
+
 export const GenerateUploadUrlDocument = gql`
   mutation GenerateUploadUrl($fileName: String!) {
     generateUploadUrl(fileName: $fileName) {
@@ -378,12 +379,10 @@ export const GenerateUploadUrlDocument = gql`
       publicUrl
       filePath
       token
->>>>>>> subagent-Backend-Engineer-self-bcb167a8
     }
   }
 `;
 
-<<<<<<< HEAD
 export function useConversationMessagesQuery(
   options: Omit<Urql.UseQueryArgs<ConversationMessagesQueryVariables>, "query">,
 ) {
@@ -426,11 +425,11 @@ export function useAgentTrajectorySubscription<
     TData,
     AgentTrajectorySubscriptionVariables
   >({ query: AgentTrajectoryDocument, ...options }, handler);
-=======
+}
+
 export function useGenerateUploadUrlMutation() {
   return Urql.useMutation<
     GenerateUploadUrlMutation,
     GenerateUploadUrlMutationVariables
   >(GenerateUploadUrlDocument);
->>>>>>> subagent-Backend-Engineer-self-bcb167a8
 }

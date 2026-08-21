@@ -147,8 +147,17 @@ describe("CommandsService Real-Time Trajectory Emissions", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CommandsService,
-        { provide: ToolRegistryService, useValue: { executeTool: jest.fn(), getLlmToolDefinitions: jest.fn() } },
-        { provide: PUB_SUB, useValue: { publish: jest.fn(), asyncIterableIterator: jest.fn() } },
+        {
+          provide: ToolRegistryService,
+          useValue: {
+            executeTool: jest.fn(),
+            getLlmToolDefinitions: jest.fn(),
+          },
+        },
+        {
+          provide: PUB_SUB,
+          useValue: { publish: jest.fn(), asyncIterableIterator: jest.fn() },
+        },
         { provide: PurchaseOrdersService, useValue: mockPurchaseOrdersService },
         { provide: VendorsService, useValue: mockVendorsService },
         { provide: WhiteboardService, useValue: mockWhiteboardService },
@@ -279,8 +288,10 @@ describe("CommandsService Real-Time Trajectory Emissions", () => {
       });
 
       // WhiteboardService is no longer called directly; ToolRegistryService is used.
-
-      // PubSub was published for agent_step and for model final result
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
 
   it("should handle LLM error and publish fallback error message to PubSub", async () => {
     const originalFetch = global.fetch;
