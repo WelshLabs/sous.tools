@@ -4,6 +4,22 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api, createWebSocketClient } from "@soustools/api-client";
+
+type UntypedClient = {
+  PATCH: (
+    path: string,
+    options?: unknown,
+  ) => Promise<{ data?: unknown; error?: unknown }>;
+  POST: (
+    path: string,
+    options?: unknown,
+  ) => Promise<{ data?: unknown; error?: unknown }>;
+  GET: (
+    path: string,
+    options?: unknown,
+  ) => Promise<{ data?: unknown; error?: unknown }>;
+};
+const dynamicApi = api as unknown as UntypedClient;
 import { POSRegisterView } from "./pos.view";
 import { POSAppBar } from "./components/pos-appbar";
 import { POSCatalog } from "./components/pos-catalog";
@@ -169,17 +185,22 @@ export function POSRegisterContainer() {
           params: { query: { orgId: targetOrgId } },
         });
         if (!error && data) {
-          const payload = (data as any).data || data;
+          const payload = (data as Record<string, unknown>).data || data;
           if (Array.isArray(payload)) {
             setPastOrders(
-              payload.map((o: any) => ({
-                id: o.id,
-                external_id: o.external_id || o.id.slice(0, 8),
-                state: o.state || "COMPLETED",
-                total_money: Number(o.total_money || 0),
-                order_type: o.location_id,
-                created_at: o.created_at || new Date().toISOString(),
-              })),
+              (payload as Array<Record<string, unknown>>).map((o) => {
+                const idStr = String(o.id || "");
+                return {
+                  id: idStr,
+                  external_id: String(
+                    o.external_id || (idStr ? idStr.slice(0, 8) : ""),
+                  ),
+                  state: String(o.state || "COMPLETED"),
+                  total_money: Number(o.total_money || 0),
+                  order_type: o.location_id ? String(o.location_id) : undefined,
+                  created_at: String(o.created_at || new Date().toISOString()),
+                };
+              }),
             );
           }
         }
@@ -360,8 +381,8 @@ export function POSRegisterContainer() {
     );
 
     try {
-      await api.POST("/pos-simulator/items/toggle-sold-out", {
-        body: { itemId, isSoldOut: nextStatus } as any,
+      await dynamicApi.POST("/pos-simulator/items/toggle-sold-out", {
+        body: { itemId, isSoldOut: nextStatus },
       });
       toast.success(
         nextStatus ? "Item marked Sold Out (86)." : "Item marked Available.",
@@ -388,7 +409,7 @@ export function POSRegisterContainer() {
     );
 
     try {
-      await api.PATCH("/pos/orders/{id}/status" as any, {
+      await dynamicApi.PATCH("/pos/orders/" + orderId + "/status", {
         params: { path: { id: orderId } },
         body: {
           status: action === "VOID" ? "VOIDED" : "REFUNDED",
@@ -428,8 +449,8 @@ export function POSRegisterContainer() {
         source: "pos_register",
       }));
 
-      await api.POST("/pos/transactions/bulk", {
-        body: transactionsToInsert as any,
+      await dynamicApi.POST("/pos/transactions/bulk", {
+        body: transactionsToInsert,
       });
 
       // Play appropriate sound
