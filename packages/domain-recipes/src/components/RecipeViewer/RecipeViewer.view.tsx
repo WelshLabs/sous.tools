@@ -536,7 +536,16 @@ export function RecipeViewerView(props: RecipeViewerViewProps) {
                       className="text-sm leading-relaxed whitespace-pre-wrap"
                       style={{ color: "var(--color-muted-foreground)" }}
                     >
-                      {step.text}
+                      {typeof step === "string"
+                        ? step
+                        : step.text ||
+                          (typeof step === "object" &&
+                          step &&
+                          "instruction" in step
+                            ? String(
+                                (step as Record<string, unknown>).instruction,
+                              )
+                            : "")}
                     </div>
                   </div>
                 ))}

@@ -193,28 +193,6 @@ export class IngestionProcessor extends WorkerHost {
       });
 
       if (conversationId) {
-        // Ensure render_component directive is saved and emitted
-        const renderDirectiveMsg = {
-          id: randomUUID(),
-          role: "render_component" as const,
-          content: JSON.stringify({
-            componentName: "INGESTION_REVIEW",
-            props: { reviewId: reviewRecord.id },
-          }),
-          timestamp: new Date(),
-        };
-
-        this.commandsGateway.emitChatMessageToConversation(
-          conversationId,
-          renderDirectiveMsg,
-        );
-        await this.chatPersistence.appendMessage(
-          conversationId,
-          organizationId,
-          userId,
-          renderDirectiveMsg,
-        );
-
         // Generate and persist rich summary message
         const firstBlock = pagesData[0]?.blocks?.[0];
         let summaryContent = `Heard, Chef! Document ingestion is complete. The review canvas is ready below.`;
@@ -432,7 +410,7 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
               rawName: ing.rawName || guessName,
               guessName,
               quantity: ing.quantity || 1,
-              unit: ing.unit || "lb",
+              unit: ing.unit || "EACH",
               tenantMatches,
               usdaMatches,
               selectedTenantId: tenantMatches[0]?.id,

@@ -371,12 +371,19 @@ export class IngestionService {
   ) {
     this.logger.log(`Committing approved review ${reviewId} for org ${orgId}`);
 
+    const recipeIds: string[] = [];
+    const vendorIds: string[] = [];
+
     for (const page of approvedPayload.pages) {
       for (const block of page.blocks) {
+        if ((block as any).excluded) continue;
+
         if (block.type === "INVOICE") {
-          await this.commitInvoiceBlock(block, orgId);
+          const vId = await this.commitInvoiceBlock(block, orgId);
+          if (vId) vendorIds.push(vId);
         } else if (block.type === "RECIPE") {
-          await this.commitRecipeBlock(block, orgId);
+          const rId = await this.commitRecipeBlock(block, orgId);
+          if (rId) recipeIds.push(rId);
         } else if (block.type === "PROSE") {
           await this.commitProseBlock(block, orgId);
         }
@@ -399,7 +406,13 @@ export class IngestionService {
         old_record: null,
       });
     }
-    return { success: true, reviewId };
+    return {
+      success: true,
+      reviewId,
+      recipeId: recipeIds[0] || null,
+      recipeIds,
+      vendorId: vendorIds[0] || null,
+    };
   }
 
   private async commitInvoiceBlock(block: ExtractedBlock, orgId: string) {
@@ -510,9 +523,30 @@ export class IngestionService {
         }
       }
     }
+    return vendorId;
   }
 
-  private async commitRecipeBlock(block: ExtractedBlock, orgId: string) {
+  private async commitRecipeBlock(
+    block: ExtractedBlock,
+    orgId: string,
+  ): Promise<string | null> {
+    const formattedInstructions = (block.instructions || []).map(
+      (step: any, idx: number) => {
+        if (typeof step === "string") {
+          return {
+            stepNumber: idx + 1,
+            text: step,
+            timerDurationSeconds: null,
+          };
+        }
+        return {
+          stepNumber: step.stepNumber || idx + 1,
+          text: step.text || step.instruction || String(step),
+          timerDurationSeconds: step.timerDurationSeconds || null,
+        };
+      },
+    );
+
     const { data: recipe } = await supabase
       .from("recipes")
       .insert({
@@ -520,7 +554,7 @@ export class IngestionService {
         title: block.title || "Untitled Ingested Recipe",
         yield_count: block.yieldCount || 1,
         yield_unit: block.yieldUnit || "servings",
-        instructions: (block.instructions || []) as any,
+        instructions: formattedInstructions as any,
         status: "REFERENCE",
       })
       .select()
@@ -561,7 +595,9 @@ export class IngestionService {
           }
         }
       }
+      return recipe.id;
     }
+    return null;
   }
 
   private async commitProseBlock(block: ExtractedBlock, orgId: string) {

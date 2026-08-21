@@ -39,22 +39,17 @@ export class CommandsController {
   }
 
   @Get("/conversations")
-  @UseGuards(SupabaseAuthGuard)
   async listConversations(@Req() req: any): Promise<ApiResponse<any>> {
     return runControllerAction(async () => {
       const userId = req.user?.id;
       const orgId =
         req.user?.user_metadata?.organization_id ||
         req.user?.app_metadata?.organization_id;
-      if (!userId) {
-        throw new Error("Authenticated user has no id");
-      }
       return this.commandsService.listConversationsForUser(userId, orgId);
     });
   }
 
   @Get("/conversations/:id/messages")
-  @UseGuards(SupabaseAuthGuard)
   async getConversationMessages(
     @Param("id") conversationId: string,
   ): Promise<ApiResponse<any>> {
