@@ -1,6 +1,6 @@
 import { DashboardService } from "./dashboard.service";
 import { supabase } from "../../core/database/supabase";
-import { pubSub } from "../../core/graphql/pubsub";
+import { type RedisPubSub } from "../../core/graphql/pubsub";
 
 jest.mock("../../core/database/supabase", () => ({
   supabase: {
@@ -8,18 +8,16 @@ jest.mock("../../core/database/supabase", () => ({
   },
 }));
 
-jest.mock("../../core/graphql/pubsub", () => ({
-  pubSub: {
-    publish: jest.fn(),
-  },
-}));
-
 describe("DashboardService", () => {
   let service: DashboardService;
+  let mockPubSub: { publish: jest.Mock };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new DashboardService();
+    mockPubSub = {
+      publish: jest.fn().mockResolvedValue(undefined),
+    };
+    service = new DashboardService(mockPubSub as unknown as RedisPubSub);
   });
 
   const createMockSupabaseQuery = (data: any = []) => {
@@ -78,7 +76,7 @@ describe("DashboardService", () => {
     expect(stats.summary.dailyRevenue).toBe("$150.00");
     expect(stats.summary.totalOrders).toBe(2);
 
-    // Weekly chart today's bucket
+    // Weekly chart today bucket
     const todayLabel = stats.revenue[stats.revenue.length - 1];
     expect(todayLabel.sales).toBe(150);
     expect(todayLabel.tax).toBe(9);
@@ -124,7 +122,7 @@ describe("DashboardService", () => {
 
     await service.publishStatsUpdate("test-org");
 
-    expect(pubSub.publish).toHaveBeenCalledWith(
+    expect(mockPubSub.publish).toHaveBeenCalledWith(
       "DASHBOARD_STATS_UPDATED",
       expect.objectContaining({
         orgId: "test-org",

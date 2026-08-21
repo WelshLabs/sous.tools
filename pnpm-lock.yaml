@@ -200,6 +200,9 @@ importers:
       graphql:
         specifier: ^16.11.0
         version: 16.14.2
+      graphql-redis-subscriptions:
+        specifier: ^2.7.0
+        version: 2.7.0(graphql-subscriptions@3.0.0(graphql@16.14.2))(supports-color@10.2.2)
       graphql-subscriptions:
         specifier: ^3.0.0
         version: 3.0.0(graphql@16.14.2)
@@ -11365,6 +11368,14 @@ packages:
       {
         integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==,
       }
+
+  graphql-redis-subscriptions@2.7.0:
+    resolution:
+      {
+        integrity: sha512-IK4uCKx1UNhkcnG9lIqFWz9PpltSbuM8RygwGoB/e1HZMuKpAGeqqfHFeLKkQjjubvk4tAdUdx48AUkTAXJ17Q==,
+      }
+    peerDependencies:
+      graphql-subscriptions: ^1.0.0 || ^2.0.0 || ^3.0.0
 
   graphql-subscriptions@3.0.0:
     resolution:
@@ -25006,6 +25017,14 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   graphemer@1.4.0: {}
+
+  graphql-redis-subscriptions@2.7.0(graphql-subscriptions@3.0.0(graphql@16.14.2))(supports-color@10.2.2):
+    dependencies:
+      graphql-subscriptions: 3.0.0(graphql@16.14.2)
+    optionalDependencies:
+      ioredis: 5.11.1(supports-color@10.2.2)
+    transitivePeerDependencies:
+      - supports-color
 
   graphql-subscriptions@3.0.0(graphql@16.14.2):
     dependencies:

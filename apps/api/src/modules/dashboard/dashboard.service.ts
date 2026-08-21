@@ -1,10 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
+import { type RedisPubSub } from "graphql-redis-subscriptions";
 import { supabase } from "../../core/database/supabase";
 import { DashboardStatsPayload } from "./dashboard.types";
-import { pubSub } from "../../core/graphql/pubsub";
+import { PUB_SUB } from "../../core/graphql/pubsub";
 
 @Injectable()
 export class DashboardService {
+  constructor(@Inject(PUB_SUB) private readonly pubSub: RedisPubSub) {}
   async getAggregatedStats(orgId?: string): Promise<DashboardStatsPayload> {
     // 1. Fetch POS orders from Supabase Postgres
     let ordersQuery = supabase.from("pos_orders").select("*");
@@ -313,7 +315,7 @@ export class DashboardService {
   async publishStatsUpdate(orgId?: string): Promise<void> {
     try {
       const stats = await this.getAggregatedStats(orgId);
-      pubSub.publish("DASHBOARD_STATS_UPDATED", {
+      await this.pubSub.publish("DASHBOARD_STATS_UPDATED", {
         dashboardStatsUpdated: stats,
         orgId,
       });

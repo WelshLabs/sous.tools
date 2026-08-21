@@ -45,6 +45,7 @@
     "express": "^4.22.1",
     "googleapis": "^173.0.0",
     "graphql": "^16.11.0",
+    "graphql-redis-subscriptions": "^2.7.0",
     "graphql-subscriptions": "^3.0.0",
     "graphql-ws": "^6.2.1",
     "ioredis": "^5.11.1",
