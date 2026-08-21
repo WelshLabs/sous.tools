@@ -5,6 +5,7 @@ import {
   Optional,
   UnauthorizedException,
 } from "@nestjs/common";
+import { GqlExecutionContext } from "@nestjs/graphql";
 import {
   SupabaseService,
   supabase as globalSupabase,
@@ -21,7 +22,14 @@ export class SupabaseAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request =
+      (context.getType() as string) === "graphql"
+        ? GqlExecutionContext.create(context).getContext()?.req
+        : context.switchToHttp().getRequest();
+
+    if (!request) {
+      throw new UnauthorizedException("No request context found");
+    }
 
     let token: string | undefined;
 

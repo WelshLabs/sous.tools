@@ -18,6 +18,7 @@ import {
   useHealthCheckQuery,
   useDashboardStatsQuery,
   useDashboardStatsUpdatedSubscription,
+  useGenerateUploadUrlMutation,
 } from "./index";
 import { clientConfig as config } from "@soustools/config/client";
 import { CombinedError } from "urql";
@@ -82,7 +83,6 @@ describe("packages/api-client", () => {
       await refreshAuthSession();
       expect(listenerCalled).toBe(true);
 
-      // Verify manual notifyAuthRefreshed works
       listenerCalled = false;
       notifyAuthRefreshed();
       expect(listenerCalled).toBe(true);
@@ -159,6 +159,7 @@ describe("packages/api-client", () => {
       expect(typeof useHealthCheckQuery).toBe("function");
       expect(typeof useDashboardStatsQuery).toBe("function");
       expect(typeof useDashboardStatsUpdatedSubscription).toBe("function");
+      expect(typeof useGenerateUploadUrlMutation).toBe("function");
     });
 
     it("supports subscription websocket management and reconnecting", () => {

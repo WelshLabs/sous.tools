@@ -53,6 +53,23 @@ export type InventoryAlertItem = {
   status: Scalars["String"]["output"];
 };
 
+export type UploadUrlPayload = {
+  __typename?: "UploadUrlPayload";
+  filePath: Scalars["String"]["output"];
+  publicUrl: Scalars["String"]["output"];
+  signedUrl: Scalars["String"]["output"];
+  token?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type Mutation = {
+  __typename?: "Mutation";
+  generateUploadUrl: UploadUrlPayload;
+};
+
+export type MutationGenerateUploadUrlArgs = {
+  fileName: Scalars["String"]["input"];
+};
+
 export type Query = {
   __typename?: "Query";
   dashboardStats: DashboardStatsPayload;
@@ -149,6 +166,20 @@ export type DashboardStatsUpdatedSubscription = {
       averageTicketTimeChange: string | null;
       activeTablesSubtitle: string | null;
     };
+  };
+};
+
+export type GenerateUploadUrlMutationVariables = Exact<{
+  fileName: Scalars["String"]["input"];
+}>;
+
+export type GenerateUploadUrlMutation = {
+  generateUploadUrl: {
+    __typename?: "UploadUrlPayload";
+    signedUrl: string;
+    publicUrl: string;
+    filePath: string;
+    token?: string | null;
   };
 };
 
@@ -259,4 +290,22 @@ export function useDashboardStatsUpdatedSubscription<
     TData,
     DashboardStatsUpdatedSubscriptionVariables
   >({ query: DashboardStatsUpdatedDocument, ...options }, handler);
+}
+
+export const GenerateUploadUrlDocument = gql`
+  mutation GenerateUploadUrl($fileName: String!) {
+    generateUploadUrl(fileName: $fileName) {
+      signedUrl
+      publicUrl
+      filePath
+      token
+    }
+  }
+`;
+
+export function useGenerateUploadUrlMutation() {
+  return Urql.useMutation<
+    GenerateUploadUrlMutation,
+    GenerateUploadUrlMutationVariables
+  >(GenerateUploadUrlDocument);
 }

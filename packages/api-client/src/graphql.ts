@@ -3,6 +3,7 @@ import { refreshAuthSession } from "./auth-session";
 import type { Client as WsClient } from "graphql-ws";
 import { createUrqlClient, getSubscriptionWsClient } from "./urql";
 import type { Client as UrqlClient } from "urql";
+import { print, type DocumentNode } from "graphql";
 
 export * from "./urql";
 export * from "./generated/graphql";
@@ -44,7 +45,7 @@ export interface SubscriptionOptions<
   TData = any,
   TVariables extends Record<string, unknown> = Record<string, any>,
 > {
-  query: string;
+  query: string | DocumentNode;
   variables?: TVariables;
   onNext: (data: TData) => void;
   onError?: (error: unknown) => void;
@@ -63,7 +64,6 @@ export class GraphQLClient {
     this.url = baseUrl.endsWith("/graphql")
       ? baseUrl
       : `${baseUrl.replace(/\/$/, "")}/graphql`;
-
     this.wsUrl = options.wsUrl || this.url.replace(/^http/, "ws");
     this.headers = options.headers || {};
     this.urqlInstance =
@@ -80,10 +80,15 @@ export class GraphQLClient {
   }
 
   async request<TData = any, TVariables = Record<string, any>>(
-    query: string,
+    query: string | DocumentNode,
     variables?: TVariables,
     requestInit?: RequestInit,
   ): Promise<GraphQLResponse<TData>> {
+    const queryString =
+      typeof query === "string"
+        ? query
+        : query.loc?.source.body || print(query);
+
     const fetchQuery = async (): Promise<Response> => {
       return fetch(this.url, {
         method: "POST",
@@ -92,21 +97,17 @@ export class GraphQLClient {
           ...this.headers,
           ...requestInit?.headers,
         },
-        body: JSON.stringify({ query, variables }),
+        body: JSON.stringify({ query: queryString, variables }),
         credentials: "include",
         ...requestInit,
       });
     };
 
     let response = await fetchQuery();
-
     if (response.status === 401) {
       const refreshed = await refreshAuthSession();
-      if (refreshed) {
-        response = await fetchQuery();
-      }
+      if (refreshed) response = await fetchQuery();
     }
-
     if (!response.ok) {
       throw new Error(
         `GraphQL HTTP Error: ${response.status} ${response.statusText}`,
@@ -114,30 +115,23 @@ export class GraphQLClient {
     }
 
     const json: GraphQLResponse<TData> = await response.json();
-
     const hasAuthError = json.errors?.some(
       (e) =>
         e.message?.toLowerCase().includes("unauthorized") ||
         e.extensions?.code === "UNAUTHENTICATED",
     );
-
     if (hasAuthError) {
       const refreshed = await refreshAuthSession();
       if (refreshed) {
         const retryRes = await fetchQuery();
-        if (retryRes.ok) {
-          return retryRes.json();
-        }
+        if (retryRes.ok) return retryRes.json();
       }
     }
-
     return json;
   }
 
   getWsClient(): WsClient | null {
-    if (typeof window === "undefined") {
-      return null;
-    }
+    if (typeof window === "undefined") return null;
     if (!this.wsClient) {
       this.wsClient = getSubscriptionWsClient(this.wsUrl, this.headers);
     }
@@ -148,25 +142,19 @@ export class GraphQLClient {
     TData = any,
     TVariables extends Record<string, unknown> = Record<string, any>,
   >(options: SubscriptionOptions<TData, TVariables>): () => void {
-    if (typeof window === "undefined") {
-      return () => {};
-    }
-
+    if (typeof window === "undefined") return () => {};
     const client = this.getWsClient();
-    if (!client) {
-      return () => {};
-    }
+    if (!client) return () => {};
 
-    const unsubscribe = client.subscribe<GraphQLResponse<TData>>(
-      {
-        query: options.query,
-        variables: options.variables,
-      },
+    const queryString =
+      typeof options.query === "string"
+        ? options.query
+        : options.query.loc?.source.body || print(options.query);
+    return client.subscribe<GraphQLResponse<TData>>(
+      { query: queryString, variables: options.variables },
       {
         next: (response) => {
-          if (response.data) {
-            options.onNext(response.data as TData);
-          }
+          if (response.data) options.onNext(response.data as TData);
         },
         error: (err) => {
           options.onError?.(err);
@@ -176,8 +164,6 @@ export class GraphQLClient {
         },
       },
     );
-
-    return unsubscribe;
   }
 }
 
