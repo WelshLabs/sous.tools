@@ -5,10 +5,6 @@ let refreshPromise: Promise<boolean> | null = null;
 export type AuthRefreshListener = () => void | Promise<void>;
 const refreshListeners = new Set<AuthRefreshListener>();
 
-/**
- * Register a callback to be invoked whenever auth session is refreshed.
- * Used to transparently reconnect WebSockets and subscriptions.
- */
 export function onAuthRefreshed(listener: AuthRefreshListener): () => void {
   refreshListeners.add(listener);
   return () => {
@@ -22,10 +18,7 @@ export function notifyAuthRefreshed(): void {
       const res = listener();
       if (res && typeof (res as Promise<void>).catch === "function") {
         (res as Promise<void>).catch((err: unknown) => {
-          console.error(
-            "[api-client] Async error in onAuthRefreshed listener:",
-            err,
-          );
+          console.error("[api-client] Async error in onAuthRefreshed listener:", err);
         });
       }
     } catch (err) {
@@ -34,14 +27,6 @@ export function notifyAuthRefreshed(): void {
   }
 }
 
-/**
- * Centralized auth session refresh mutex.
- *
- * Ensures that if multiple transport clients (REST, GraphQL, WebSocket)
- * encounter an unauthenticated response simultaneously, only a single
- * refresh request is sent over the network. All concurrent callers wait
- * for the same promise to resolve.
- */
 export async function refreshAuthSession(): Promise<boolean> {
   if (refreshPromise) {
     return refreshPromise;
@@ -50,15 +35,34 @@ export async function refreshAuthSession(): Promise<boolean> {
   refreshPromise = (async () => {
     try {
       const baseUrl = config.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${baseUrl}/auth/refresh`, {
+      const url = baseUrl.endsWith("/graphql") ? baseUrl : `${baseUrl.replace(/\/$/, "")}/graphql`;
+      
+      const response = await fetch(url, {
         method: "POST",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `mutation RefreshSession { refreshSession }`
+        })
       });
 
       if (!response.ok) {
         if (
           typeof window !== "undefined" &&
           (response.status === 401 || response.status === 403) &&
+          window.location.pathname !== "/login"
+        ) {
+          window.location.href = "/login";
+        }
+        return false;
+      }
+      
+      const json = await response.json();
+      if (json.errors || !json.data?.refreshSession) {
+         if (
+          typeof window !== "undefined" &&
           window.location.pathname !== "/login"
         ) {
           window.location.href = "/login";

@@ -1,0 +1,60 @@
+import { Resolver, Mutation, Context, Args } from '@nestjs/graphql';
+import { Public } from '../../core/decorators/public.decorator';
+import { UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { supabase } from '../../core/database/supabase';
+import { setSessionCookies, ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, getCookieOptions } from './auth.controller';
+import { serverConfig as config } from '@soustools/config/server';
+import { Request, Response } from 'express';
+
+@Resolver()
+export class AuthResolver {
+  @Public()
+  @Mutation(() => Boolean)
+  async refreshSession(@Context() context: { req: Request; res: Response }): Promise<boolean> {
+    const refreshToken = (context.req.cookies as Record<string, string>)?.[REFRESH_TOKEN_COOKIE];
+    if (!refreshToken) {
+      throw new UnauthorizedException("No refresh token found");
+    }
+
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+
+    if (error || !data.session) {
+      throw new UnauthorizedException("Session refresh failed");
+    }
+
+    setSessionCookies(context.res, data.session, context.req);
+    return true;
+  }
+
+  @Public()
+  @Mutation(() => Boolean)
+  async logout(@Context() context: { req: Request; res: Response }): Promise<boolean> {
+    const accessToken = (context.req.cookies as Record<string, string>)?.[ACCESS_TOKEN_COOKIE];
+    if (accessToken) {
+      try {
+        await supabase.auth.admin.signOut(accessToken);
+      } catch {
+        // Non-fatal
+      }
+    }
+
+    const options = getCookieOptions(context.req);
+    context.res.clearCookie(ACCESS_TOKEN_COOKIE, options);
+    context.res.clearCookie(REFRESH_TOKEN_COOKIE, options);
+    return true;
+  }
+
+  @Public()
+  @Mutation(() => Boolean)
+  async forgotPassword(@Args('email') email: string): Promise<boolean> {
+    const redirectTo = `${config.NEXT_PUBLIC_APP_URL}/reset-password`;
+    try {
+      await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    } catch {
+      // Silently swallowed
+    }
+    return true;
+  }
+}
