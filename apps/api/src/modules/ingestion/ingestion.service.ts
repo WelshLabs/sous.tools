@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { createHash } from "crypto";
 import { supabase } from "../../core/database/supabase";
 import { Neo4jSyncService } from "../neo4j-sync/neo4j-sync.service";
 import { serverConfig as config } from "@soustools/config/server";
@@ -23,10 +24,19 @@ export interface ExtractedBlock {
     selectedTenantId?: string;
     selectedUsdaId?: number;
     autoAccepted?: boolean;
+    resolutionError?: boolean;
   }>;
   // Invoice fields
   vendorName?: string;
+  vendorId?: string;
   invoiceNumber?: string;
+  invoiceId?: string;
+  date?: string;
+  invoiceDate?: string;
+  documentHash?: string;
+  idempotencyHash?: string;
+  isDuplicate?: boolean;
+  resolutionError?: boolean;
   totals?: { subtotal?: number; tax?: number; total?: number };
   lineItems?: Array<{
     rawName: string;
@@ -39,6 +49,7 @@ export interface ExtractedBlock {
     selectedTenantId?: string;
     selectedUsdaId?: number;
     autoAccepted?: boolean;
+    resolutionError?: boolean;
   }>;
 }
 
@@ -52,6 +63,9 @@ export interface IngestionReviewPayload {
   pages: IngestionPage[];
   fallbackUsed?: boolean;
   extractionError?: string;
+  documentHash?: string;
+  idempotencyHash?: string;
+  isDuplicate?: boolean;
 }
 
 @Injectable()
@@ -59,6 +73,69 @@ export class IngestionService {
   private readonly logger = new Logger(IngestionService.name);
 
   constructor(private readonly neo4jSync: Neo4jSyncService) {}
+
+  /**
+   * Generates a deterministic SHA-256 idempotency hash from vendor_id + invoice_id + date.
+   */
+  computeIdempotencyHash(
+    vendorId?: string | null,
+    invoiceId?: string | null,
+    date?: string | null,
+  ): string {
+    const v = (vendorId || "").trim().toLowerCase();
+    const i = (invoiceId || "").trim().toLowerCase();
+    const d = (date || "").trim().toLowerCase();
+    return createHash("sha256").update(`${v}:${i}:${d}`).digest("hex");
+  }
+
+  async checkDuplicateInvoice(
+    orgId: string,
+    vendorIdOrName: string,
+    invoiceNumber: string,
+    invoiceDate?: string,
+  ): Promise<boolean> {
+    try {
+      let query = supabase
+        .from("invoices")
+        .select("id")
+        .eq("organization_id", orgId)
+        .eq("invoice_number", invoiceNumber);
+
+      if (vendorIdOrName) {
+        if (
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            vendorIdOrName,
+          )
+        ) {
+          query = query.eq("vendor_id", vendorIdOrName);
+        }
+      }
+
+      if (invoiceDate) {
+        query = query.eq("invoice_date", invoiceDate);
+      }
+
+      const { data } = await query.maybeSingle();
+      if (data) return true;
+
+      const hash = this.computeIdempotencyHash(
+        vendorIdOrName,
+        invoiceNumber,
+        invoiceDate,
+      );
+      const { data: reviewMatch } = await supabase
+        .from("ingestion_reviews")
+        .select("id")
+        .eq("organization_id", orgId)
+        .filter("parsed_data->>idempotencyHash", "eq", hash)
+        .maybeSingle();
+
+      return !!reviewMatch;
+    } catch (err) {
+      this.logger.warn("Error checking duplicate invoice:", err);
+      return false;
+    }
+  }
 
   async getEmbedding(text: string): Promise<number[]> {
     try {
@@ -181,7 +258,33 @@ export class IngestionService {
     sourceName?: string;
     sourceDocumentUrl?: string;
     parsedData: IngestionReviewPayload;
+    documentHash?: string;
   }) {
+    const hash =
+      params.documentHash ||
+      params.parsedData?.documentHash ||
+      params.parsedData?.idempotencyHash;
+
+    if (hash) {
+      try {
+        const { data: existing } = await supabase
+          .from("ingestion_reviews")
+          .select("*")
+          .eq("organization_id", params.organizationId)
+          .filter("parsed_data->>idempotencyHash", "eq", hash)
+          .maybeSingle();
+
+        if (existing) {
+          this.logger.warn(
+            `Duplicate ingestion review detected for hash ${hash}, returning existing review ${existing.id}`,
+          );
+          return existing;
+        }
+      } catch (err) {
+        this.logger.warn("Error querying existing review by hash:", err);
+      }
+    }
+
     const { data, error } = await supabase
       .from("ingestion_reviews")
       .insert({
@@ -300,8 +403,8 @@ export class IngestionService {
   }
 
   private async commitInvoiceBlock(block: ExtractedBlock, orgId: string) {
-    let vendorId: string | null = null;
-    if (block.vendorName) {
+    let vendorId: string | null = block.vendorId || null;
+    if (!vendorId && block.vendorName) {
       const { data: existingVendor } = await supabase
         .from("vendors")
         .select("id")
@@ -330,6 +433,60 @@ export class IngestionService {
       }
     }
     this.logger.log(`Invoice block vendor resolved: ${vendorId || "None"}`);
+
+    const invoiceNumber =
+      block.invoiceNumber || block.invoiceId || "INV-UNKNOWN";
+    const invoiceDate =
+      block.date || block.invoiceDate || new Date().toISOString().split("T")[0];
+    const totalAmount = block.totals?.total ?? block.totals?.subtotal ?? 0;
+
+    // Hash vendor_id + invoice_id + date before DB insertion to prevent duplicate ingestion
+    const invoiceHash = this.computeIdempotencyHash(
+      vendorId || block.vendorName || "",
+      invoiceNumber,
+      invoiceDate,
+    );
+
+    if (vendorId) {
+      // Check if invoice already exists to prevent duplicate insertion
+      const { data: existingInvoice } = await supabase
+        .from("invoices")
+        .select("id")
+        .eq("organization_id", orgId)
+        .eq("vendor_id", vendorId)
+        .eq("invoice_number", invoiceNumber)
+        .maybeSingle();
+
+      if (existingInvoice) {
+        this.logger.warn(
+          `Invoice ${invoiceNumber} for vendor ${vendorId} already exists (${existingInvoice.id}). Skipping insertion to prevent duplicate ingestion. Idempotency Hash: ${invoiceHash}`,
+        );
+      } else {
+        const { data: newInvoice, error } = await supabase
+          .from("invoices")
+          .insert({
+            organization_id: orgId,
+            vendor_id: vendorId,
+            invoice_number: invoiceNumber,
+            total_amount: totalAmount,
+            invoice_date: invoiceDate,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          this.logger.error("Failed to insert invoice record:", error);
+        } else if (newInvoice) {
+          await this.neo4jSync.handleWebhook({
+            type: "INSERT",
+            table: "invoices",
+            schema: "public",
+            record: newInvoice,
+            old_record: null,
+          });
+        }
+      }
+    }
 
     if (block.lineItems) {
       for (const item of block.lineItems) {

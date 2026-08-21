@@ -10,6 +10,9 @@ import {
 import { UsdaResolverService } from "../nutrition/usda-resolver.service";
 import { serverConfig as config } from "@soustools/config/server";
 import { supabase } from "../../core/database/supabase";
+import { CommandsGateway } from "../commands/commands.gateway";
+import { ChatPersistenceService } from "../commands/chat-persistence.service";
+import { randomUUID } from "crypto";
 
 export interface IngestionJobData {
   organizationId: string;
@@ -24,10 +27,6 @@ export interface IngestionJobData {
   }>;
   conversationId?: string;
 }
-
-import { CommandsGateway } from "../commands/commands.gateway";
-import { ChatPersistenceService } from "../commands/chat-persistence.service";
-import { randomUUID } from "crypto";
 
 @Processor("ingestion", { lockDuration: 120000 })
 export class IngestionProcessor extends WorkerHost {
@@ -105,10 +104,24 @@ export class IngestionProcessor extends WorkerHost {
     }
 
     const reviewId = (job.data as any).reviewId;
+
+    let docHash: string | undefined;
+    for (const p of pagesData) {
+      for (const b of p.blocks) {
+        if (b.type === "INVOICE" && (b.idempotencyHash || b.documentHash)) {
+          docHash = b.idempotencyHash || b.documentHash;
+          break;
+        }
+      }
+      if (docHash) break;
+    }
+
     const parsedDataPayload: IngestionReviewPayload = {
       pages: pagesData,
       fallbackUsed: overallFallbackUsed,
       extractionError: overallError,
+      documentHash: docHash,
+      idempotencyHash: docHash,
     };
 
     let reviewRecord: any;
@@ -131,6 +144,7 @@ export class IngestionProcessor extends WorkerHost {
         sourceName: sourceName || "Uploaded Document",
         sourceDocumentUrl,
         parsedData: parsedDataPayload,
+        documentHash: docHash,
       });
     }
 
@@ -171,11 +185,7 @@ export class IngestionProcessor extends WorkerHost {
       this.commandsGateway.emitIngestionUpdate({
         reviewId: reviewRecord.id,
         conversationId,
-        parsedData: {
-          pages: pagesData,
-          fallbackUsed: overallFallbackUsed,
-          extractionError: overallError,
-        },
+        parsedData: parsedDataPayload,
         status: "COMPLETED",
         message: "Done!",
         orgId: organizationId,
@@ -215,13 +225,13 @@ export class IngestionProcessor extends WorkerHost {
           const yieldInfo = firstBlock.yieldCount
             ? ` (Yield: ${firstBlock.yieldCount} ${firstBlock.yieldUnit || "servings"})`
             : "";
-          summaryContent = `Heard, Chef! I've extracted the recipe **${firstBlock.title}**${yieldInfo} with **${ingCount} ingredients** and **${stepCount} instructions**.\n\nThe review canvas is ready below for your inspection and graph commit.`;
+          summaryContent = `Heard, Chef! I extracted the recipe **${firstBlock.title}**${yieldInfo} with **${ingCount} ingredients** and **${stepCount} instructions**.\n\nThe review canvas is ready below for your inspection and graph commit.`;
         } else if (firstBlock?.type === "INVOICE" && firstBlock.vendorName) {
           const itemCount = firstBlock.lineItems?.length || 0;
           const totalVal = firstBlock.totals?.total
             ? ` · Total: $${Number(firstBlock.totals.total).toFixed(2)}`
             : "";
-          summaryContent = `Heard, Chef! I've extracted the invoice for **${firstBlock.vendorName}** (${itemCount} line items${totalVal}).\n\nThe review canvas is ready below for your inspection.`;
+          summaryContent = `Heard, Chef! I extracted the invoice for **${firstBlock.vendorName}** (${itemCount} line items${totalVal}).\n\nThe review canvas is ready below for your inspection.`;
         }
 
         const summaryMsg = {
@@ -265,15 +275,15 @@ export class IngestionProcessor extends WorkerHost {
     let extractionError: string | undefined;
 
     try {
-      const prompt = `Analyze this document/image content and classify into content blocks. Return a JSON object with a 'blocks' array where each item has fields:
-- type: 'PROSE' | 'RECIPE' | 'INVOICE'
+      const prompt = `Analyze this document/image content and classify into content blocks. Return a JSON object with a blocks array where each item has fields:
+- type: PROSE | RECIPE | INVOICE
 - bbox: [ymin, xmin, ymax, xmax] (normalized 0-1000)
 - title: string (for RECIPE)
 - yieldCount: number (for RECIPE)
 - yieldUnit: string (for RECIPE)
 - instructions: string[] (for RECIPE)
 - ingredients: Array<{ rawName: string, quantity: number, unit: string }> (for RECIPE)
-- vendorName, totals ({ subtotal, tax, total }), lineItems (array of { rawName, unitPrice, extendedPrice, quantity }) for INVOICE
+- vendorName, invoiceNumber, date, totals ({ subtotal, tax, total }), lineItems (array of { rawName, unitPrice, extendedPrice, quantity }) for INVOICE
 - content: string (for PROSE)
 ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
 
@@ -384,13 +394,26 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
         const rawIngredients = b.ingredients || [
           { rawName: "Sample Ingredient" },
         ];
-        const ingredients = await Promise.all(
+        const ingredientResults = await Promise.allSettled(
           rawIngredients.map(async (ing: any) => {
             const guessName = ing.rawName || "Ingredient";
-            const [queryEmbedding, usdaMatches] = await Promise.all([
-              this.ingestionService.getEmbedding(guessName),
-              this.usdaResolver.searchTop5(guessName),
-            ]);
+            const [queryEmbeddingRes, usdaMatchesRes] =
+              await Promise.allSettled([
+                this.ingestionService.getEmbedding(guessName),
+                this.usdaResolver.searchTop5(guessName),
+              ]);
+
+            const hasSubError =
+              queryEmbeddingRes.status === "rejected" ||
+              usdaMatchesRes.status === "rejected";
+
+            const queryEmbedding =
+              queryEmbeddingRes.status === "fulfilled"
+                ? queryEmbeddingRes.value
+                : [];
+            const usdaMatches =
+              usdaMatchesRes.status === "fulfilled" ? usdaMatchesRes.value : [];
+
             const tenantMatches =
               await this.ingestionService.searchMasterItemsTop5(
                 queryEmbedding,
@@ -402,7 +425,8 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
 
             const topTenantScore = tenantMatches[0]?.score ?? 0;
             const autoAccepted =
-              topTenantScore >= 0.85 || topTenantScore === 1.0;
+              !hasSubError &&
+              (topTenantScore >= 0.85 || topTenantScore === 1.0);
 
             return {
               rawName: ing.rawName || guessName,
@@ -414,9 +438,34 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
               selectedTenantId: tenantMatches[0]?.id,
               selectedUsdaId: usdaMatches[0]?.fdcId,
               autoAccepted,
+              resolutionError: hasSubError,
             };
           }),
         );
+
+        const ingredients = ingredientResults.map((result, idx) => {
+          if (result.status === "fulfilled") {
+            return result.value;
+          }
+          const raw = rawIngredients[idx] || {};
+          const guessName = raw.rawName || "Ingredient";
+          this.logger.warn(
+            `Failed to resolve ingredient "${guessName}":`,
+            result.reason,
+          );
+          return {
+            rawName: raw.rawName || guessName,
+            guessName,
+            quantity: raw.quantity || 1,
+            unit: raw.unit || "lb",
+            tenantMatches: [],
+            usdaMatches: [],
+            selectedTenantId: undefined,
+            selectedUsdaId: undefined,
+            autoAccepted: false,
+            resolutionError: true,
+          };
+        });
 
         processedBlocks.push({
           id: blockId,
@@ -429,15 +478,15 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
           ingredients,
         });
       } else if (blockType === "INVOICE") {
-        let vendorId: string | undefined;
-        if (b.vendorName && organizationId) {
+        let vendorId: string | undefined = b.vendorId;
+        if (!vendorId && b.vendorName && organizationId) {
           try {
-            const { data: vendorRecord } = await supabase
+            const { data: vendorRecord } = (await supabase
               .from("vendors")
               .select("id")
               .eq("organization_id", organizationId)
               .ilike("name", b.vendorName)
-              .maybeSingle();
+              .maybeSingle()) || { data: null };
             if (vendorRecord) {
               vendorId = vendorRecord.id;
             }
@@ -446,16 +495,47 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
           }
         }
 
+        const invoiceNumber = b.invoiceNumber || b.invoiceId || "";
+        const invoiceDate = b.date || b.invoiceDate || "";
+        const idempotencyHash = this.ingestionService.computeIdempotencyHash(
+          vendorId || b.vendorName || "",
+          invoiceNumber,
+          invoiceDate,
+        );
+
+        let isDuplicate = false;
+        if (organizationId && (vendorId || b.vendorName) && invoiceNumber) {
+          isDuplicate = await this.ingestionService.checkDuplicateInvoice(
+            organizationId,
+            vendorId || b.vendorName || "",
+            invoiceNumber,
+            invoiceDate,
+          );
+        }
+
         const rawLineItems = b.lineItems || [
           { rawName: "Sample Line Item", unitPrice: 10, extendedPrice: 10 },
         ];
-        const lineItems = await Promise.all(
+        const lineItemResults = await Promise.allSettled(
           rawLineItems.map(async (item: any) => {
             const guessName = item.rawName || "Item";
-            const [queryEmbedding, usdaMatches] = await Promise.all([
-              this.ingestionService.getEmbedding(guessName),
-              this.usdaResolver.searchTop5(guessName),
-            ]);
+            const [queryEmbeddingRes, usdaMatchesRes] =
+              await Promise.allSettled([
+                this.ingestionService.getEmbedding(guessName),
+                this.usdaResolver.searchTop5(guessName),
+              ]);
+
+            const hasSubError =
+              queryEmbeddingRes.status === "rejected" ||
+              usdaMatchesRes.status === "rejected";
+
+            const queryEmbedding =
+              queryEmbeddingRes.status === "fulfilled"
+                ? queryEmbeddingRes.value
+                : [];
+            const usdaMatches =
+              usdaMatchesRes.status === "fulfilled" ? usdaMatchesRes.value : [];
+
             const tenantMatches =
               await this.ingestionService.searchMasterItemsTop5(
                 queryEmbedding,
@@ -468,7 +548,8 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
 
             const topTenantScore = tenantMatches[0]?.score ?? 0;
             const autoAccepted =
-              topTenantScore >= 0.85 || topTenantScore === 1.0;
+              !hasSubError &&
+              (topTenantScore >= 0.85 || topTenantScore === 1.0);
 
             return {
               rawName: item.rawName || guessName,
@@ -481,15 +562,49 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
               selectedTenantId: tenantMatches[0]?.id,
               selectedUsdaId: usdaMatches[0]?.fdcId,
               autoAccepted,
+              resolutionError: hasSubError,
             };
           }),
         );
+
+        const lineItems = lineItemResults.map((result, idx) => {
+          if (result.status === "fulfilled") {
+            return result.value;
+          }
+          const raw = rawLineItems[idx] || {};
+          const guessName = raw.rawName || "Item";
+          this.logger.warn(
+            `Failed to resolve line item "${guessName}":`,
+            result.reason,
+          );
+          return {
+            rawName: raw.rawName || guessName,
+            guessName,
+            quantity: raw.quantity || 1,
+            unitPrice: raw.unitPrice || 0,
+            extendedPrice: raw.extendedPrice || 0,
+            tenantMatches: [],
+            usdaMatches: [],
+            selectedTenantId: undefined,
+            selectedUsdaId: undefined,
+            autoAccepted: false,
+            resolutionError: true,
+          };
+        });
 
         processedBlocks.push({
           id: blockId,
           type: "INVOICE",
           bbox,
           vendorName: b.vendorName || "Sample Supplier",
+          vendorId,
+          invoiceNumber: b.invoiceNumber || b.invoiceId,
+          invoiceId: b.invoiceId || b.invoiceNumber,
+          date: b.date || b.invoiceDate,
+          invoiceDate: b.invoiceDate || b.date,
+          idempotencyHash,
+          documentHash: idempotencyHash,
+          isDuplicate,
           totals: b.totals || { subtotal: 100, tax: 8, total: 108 },
           lineItems,
         });
@@ -535,6 +650,8 @@ ${rawText ? `Page input: ${rawText.substring(0, 1500)}` : ""}`;
           type: "INVOICE",
           bbox: [50, 50, 950, 950],
           vendorName: "Sysco Food Services",
+          invoiceNumber: "INV-98765",
+          date: new Date().toISOString().split("T")[0],
           totals: { subtotal: 250, tax: 20, total: 270 },
           lineItems: [
             {
