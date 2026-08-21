@@ -21,6 +21,7 @@ import { TimelineBlockConfig } from "./block-configs/timeline-block-config";
 import { NestedItemBlockConfig } from "./block-configs/nested-item-block-config";
 import { MediaCarouselBlockConfig } from "./block-configs/media-carousel-block-config";
 import { CalloutBlockConfig } from "./block-configs/callout-block-config";
+import { ExplodedItemBlockConfig } from "./block-configs/exploded-item-block-config";
 
 export interface BlockTypeConfigFieldsProps {
   selectedBlockId: string;
@@ -59,12 +60,19 @@ export function BlockTypeConfigFields({
         selectedBlockId={selectedBlockId}
         onUpdateBlock={onUpdateBlock}
       />
+      <ExplodedItemBlockConfig
+        selectedBlock={selectedBlock}
+        selectedBlockId={selectedBlockId}
+        onUpdateBlock={onUpdateBlock}
+        items={items}
+      />
       <ModifierGroupBlockConfig
         selectedBlock={selectedBlock}
         selectedBlockId={selectedBlockId}
         onUpdateBlock={onUpdateBlock}
         onFetchModifierGroups={onFetchModifierGroups}
         parentExplodedItem={parentExplodedItem}
+        items={items}
       />
       <ImageBlockConfig
         selectedBlock={selectedBlock}
@@ -91,6 +99,7 @@ export function BlockTypeConfigFields({
         selectedBlock={selectedBlock}
         selectedBlockId={selectedBlockId}
         onUpdateBlock={onUpdateBlock}
+        items={items}
       />
       <CalloutBlockConfig
         selectedBlock={selectedBlock}

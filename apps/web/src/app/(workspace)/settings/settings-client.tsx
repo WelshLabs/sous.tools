@@ -86,7 +86,17 @@ export function SettingsClient({
   const confirmPassword = watch("confirmPassword");
 
   // --- Styling State ---
-  const [tokens, setTokens] = useState<GlobalDesignTokens>(initialTokens || {});
+  const [tokens, setTokens] = useState<GlobalDesignTokens>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("globalDesignTokens");
+        if (cached) return { ...initialTokens, ...JSON.parse(cached) };
+      } catch (e) {
+        console.error("Failed to parse cached tokens", e);
+      }
+    }
+    return initialTokens || {};
+  });
   const [tokensSaving, setTokensSaving] = useState(false);
   const [tokensSuccess, setTokensSuccess] = useState(false);
 
@@ -133,9 +143,25 @@ export function SettingsClient({
     }
   };
 
-  const handleSaveTokens = async (_tokens: GlobalDesignTokens) => {
-    // Stub: send to API
-    toast.success("Tokens saved!");
+  const handleSaveTokens = async (newTokens: GlobalDesignTokens) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("globalDesignTokens", JSON.stringify(newTokens));
+      window.dispatchEvent(
+        new CustomEvent("soustools:design-tokens-updated", {
+          detail: newTokens,
+        }),
+      );
+    }
+    try {
+      await fetch(`${getApiBase()}/organizations/design-tokens?orgId=default`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ designTokens: newTokens }),
+      });
+    } catch (_err) {
+      // Offline-safe fallback
+    }
+    toast.success("Global styling tokens saved!");
   };
 
   const handleTokenChange = (key: keyof GlobalDesignTokens, value: string) => {

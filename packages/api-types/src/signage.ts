@@ -57,6 +57,8 @@ export interface ColumnLayoutSlide extends BaseSlide {
   splitRatio?: string;
   backgroundColor?: string;
   backgroundImageUrl?: string;
+  auroraBackground?: boolean;
+  backgroundEffect?: "none" | "aurora" | "glow";
 }
 
 export type SignageSlide =
@@ -92,6 +94,8 @@ export interface GlobalDesignTokens {
 
 export interface SignageLayoutConfig {
   designTokens?: GlobalDesignTokens;
+  auroraBackground?: boolean;
+  backgroundEffect?: "none" | "aurora" | "glow";
   googleFont?: string;
   customCss?: string;
   /** @deprecated Use menuItemStyles.soldOut instead. */

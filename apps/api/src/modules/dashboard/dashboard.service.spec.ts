@@ -1,6 +1,6 @@
 import { DashboardService } from "./dashboard.service";
-import { supabase } from "../../lib/supabase";
-import { pubSub } from "../../graphql/pubsub";
+import { supabase } from "../../core/database/supabase";
+import { pubSub } from "../../core/graphql/pubsub";
 
 jest.mock("../../lib/supabase", () => ({
   supabase: {

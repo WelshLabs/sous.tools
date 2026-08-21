@@ -127,8 +127,19 @@ export function MenuListBlock({
                       className="flex items-center text-[0.85rem] text-zinc-300"
                     >
                       <span className="st-item-modifier font-medium text-cyan-400">
-                        {override.displayNameOverride ||
-                          `Modifier Group (${override.modifierIds.length} items)`}
+                        {override.text ||
+                          override.displayNameOverride ||
+                          (override.modifierIds &&
+                          override.modifierIds.length > 0
+                            ? `Modifier Group (${override.modifierIds.length} items)`
+                            : "")}
+                        {override.price && (
+                          <span className="ml-1.5 font-mono font-bold text-cyan-300">
+                            {override.price.startsWith("$")
+                              ? override.price
+                              : `+${override.price}`}
+                          </span>
+                        )}
                       </span>
                     </div>
                   );

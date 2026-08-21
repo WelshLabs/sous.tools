@@ -17,12 +17,17 @@ export interface UpgradeItem {
  * A slide or media node within the MediaCarouselBlock.
  */
 export interface MediaSlide {
+  id?: string;
   imageUrl?: string;
   videoUrl?: string;
+  posItemId?: string;
   captionTitle?: string;
   captionSubtitle?: string;
   captionPrice?: string;
   description?: string;
+  badge?: string;
+  layout?: "overlay-card" | "bottom-bar" | "split" | "minimal";
+  textPosition?: "bottom-left" | "bottom-center" | "top-left" | "center";
 }
 
 /**
@@ -45,8 +50,11 @@ export interface PosItemBlock extends BaseBlock {
 }
 
 export interface ItemModifierOverride {
-  modifierIds: string[];
+  modifierIds?: string[];
   displayNameOverride?: string;
+  text?: string;
+  price?: string;
+  description?: string;
 }
 
 /**
@@ -72,9 +80,17 @@ export interface ModifierGroupBlock extends BaseBlock {
  */
 export interface CalloutBlock extends BaseBlock {
   type: "CalloutBlock";
-  icon: string;
-  text: string;
+  icon?: string;
+  iconName?: string;
+  title?: string;
+  message?: string;
+  text?: string;
+  badge?: string;
   accentBorder?: boolean;
+  accentPosition?: "top" | "left" | "bottom" | "right" | "all" | "none";
+  accentColor?: string;
+  backgroundOpacity?: number;
+  textColor?: string;
 }
 
 /**
@@ -110,11 +126,16 @@ export interface TimelineStep {
   id: string;
   text: string;
   subtitle?: string;
+  badge?: string;
+  price?: string;
+  icon?: string;
 }
 
 export interface TimelineBlock extends BaseBlock {
   type: "TimelineBlock";
   steps?: TimelineStep[];
+  markerType?: "numbers" | "bullets" | "glowing-dots" | "step-cards" | "pill";
+  layout?: "vertical" | "horizontal";
 }
 
 /**

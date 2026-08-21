@@ -1,7 +1,7 @@
 import { Query, Resolver, Subscription, Args } from "@nestjs/graphql";
 import { DashboardService } from "./dashboard.service";
 import { DashboardStatsPayload } from "./dashboard.types";
-import { pubSub } from "../../graphql/pubsub";
+import { pubSub } from "../../core/graphql/pubsub";
 
 @Resolver(() => DashboardStatsPayload)
 export class DashboardResolver {

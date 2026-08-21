@@ -2,7 +2,7 @@ import React from "react";
 
 interface CalloutBlockProps {
   icon?: string;
-  text: string;
+  text?: string;
   panelStyle?: "glass" | "none";
   accentBorder?: boolean;
   orientation?: "horizontal" | "vertical";

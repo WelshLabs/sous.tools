@@ -85,6 +85,30 @@ export const StylesPanel: React.FC<StylesPanelProps> = ({
             className="bg-secondary border-border text-foreground focus:border-primary/60 w-full rounded-lg border px-2 py-1.5 text-xs placeholder-zinc-600 focus:outline-none"
           />
         </div>
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-cyan-500/20 bg-cyan-950/20 p-2">
+          <div>
+            <label className="block text-xs font-semibold text-cyan-400">
+              Aurora Glow Background
+            </label>
+            <span className="text-muted-foreground text-[9px]">
+              Dynamic ambient neon lighting effect
+            </span>
+          </div>
+          <input
+            type="checkbox"
+            checked={Boolean(
+              activeSlide?.auroraBackground ||
+              activeSlide?.backgroundEffect === "aurora",
+            )}
+            onChange={(e) =>
+              onUpdateSlide(activeSlideIndex, {
+                auroraBackground: e.target.checked,
+                backgroundEffect: e.target.checked ? "aurora" : "none",
+              })
+            }
+            className="border-border bg-secondary h-4 w-4 cursor-pointer rounded text-cyan-500 focus:ring-0"
+          />
+        </div>
 
         {DIVIDER}
 

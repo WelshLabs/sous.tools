@@ -6,8 +6,8 @@ import {
   type PosItem,
   type MenuItemStyles,
   type ColumnLayoutSlide,
+  type SignageLayoutConfig,
 } from "@soustools/api-types";
-import { type SignageLayoutConfig } from "@soustools/api-types";
 import { BlockTypeConfigFields } from "./block-type-config-fields";
 
 export interface BlockSettingsPanelProps {
@@ -42,25 +42,37 @@ export function BlockSettingsPanel({
   const parentExplodedItem =
     activeSlide?.type === "COLUMN_LAYOUT"
       ? (() => {
-          function find(
-            block: SignageBlock,
-            childId: string,
+          function findAncestorExploded(
+            root: SignageBlock,
+            targetId: string,
           ): SignageBlock | null {
-            if (!("blocks" in block)) return null;
-            for (const b of (block as { blocks?: SignageBlock[] }).blocks ??
-              []) {
-              if (b.id === childId) return block;
-              const found = find(b, childId);
-              if (found) return found;
+            function traverse(
+              current: SignageBlock,
+              ancestors: SignageBlock[],
+            ): SignageBlock | null {
+              if (current.id === targetId) {
+                for (let i = ancestors.length - 1; i >= 0; i--) {
+                  if (ancestors[i].type === "ExplodedItemBlock") {
+                    return ancestors[i];
+                  }
+                }
+                return current.type === "ExplodedItemBlock" ? current : null;
+              }
+              const children =
+                (current as any).blocks || (current as any).cells || [];
+              for (const child of children) {
+                const found = traverse(child, [...ancestors, current]);
+                if (found) return found;
+              }
+              return null;
             }
-            return null;
+            return traverse(root, []);
           }
+
           for (const col of (activeSlide as ColumnLayoutSlide).columns) {
             for (const b of col.blocks ?? []) {
-              if (b.id === selectedBlockId)
-                return b.type === "ExplodedItemBlock" ? b : null;
-              const found = find(b, selectedBlockId);
-              if (found?.type === "ExplodedItemBlock") return found;
+              const found = findAncestorExploded(b, selectedBlockId);
+              if (found) return found;
             }
           }
           return null;
