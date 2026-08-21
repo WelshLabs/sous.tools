@@ -1,3 +1,4 @@
+/* eslint-disable */
 /** Internal type. DO NOT USE DIRECTLY. */
 type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 /** Internal type. DO NOT USE DIRECTLY. */
@@ -18,6 +19,20 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean };
   Int: { input: number; output: number };
   Float: { input: number; output: number };
+  DateTime: { input: Date | string; output: string };
+};
+
+export type AgentTrajectoryStep = {
+  __typename?: "AgentTrajectoryStep";
+  id: Scalars["ID"]["output"];
+  conversationId?: Maybe<Scalars["String"]["output"]>;
+  role: Scalars["String"]["output"];
+  content: Scalars["String"]["output"];
+  timestamp: Scalars["DateTime"]["output"];
+  isLoading?: Maybe<Scalars["Boolean"]["output"]>;
+  uiAction?: Maybe<Scalars["String"]["output"]>;
+  recipeData?: Maybe<Scalars["String"]["output"]>;
+  invoiceData?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type DashboardStatsPayload = {
@@ -55,8 +70,13 @@ export type InventoryAlertItem = {
 
 export type Query = {
   __typename?: "Query";
+  conversationMessages: Array<AgentTrajectoryStep>;
   dashboardStats: DashboardStatsPayload;
   healthCheck: HealthStatus;
+};
+
+export type QueryConversationMessagesArgs = {
+  conversationId: Scalars["String"]["input"];
 };
 
 export type QueryDashboardStatsArgs = {
@@ -75,7 +95,13 @@ export type RevenueChartItem = {
 
 export type Subscription = {
   __typename?: "Subscription";
+  agentTrajectory: AgentTrajectoryStep;
   dashboardStatsUpdated: DashboardStatsPayload;
+};
+
+export type SubscriptionAgentTrajectoryArgs = {
+  conversationId?: InputMaybe<Scalars["String"]["input"]>;
+  orgId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type SubscriptionDashboardStatsUpdatedArgs = {
@@ -152,6 +178,43 @@ export type DashboardStatsUpdatedSubscription = {
   };
 };
 
+export type ConversationMessagesQueryVariables = Exact<{
+  conversationId: string;
+}>;
+
+export type ConversationMessagesQuery = {
+  conversationMessages: Array<{
+    id: string;
+    conversationId?: string | null;
+    role: string;
+    content: string;
+    timestamp: string;
+    isLoading?: boolean | null;
+    uiAction?: string | null;
+    recipeData?: string | null;
+    invoiceData?: string | null;
+  }>;
+};
+
+export type AgentTrajectorySubscriptionVariables = Exact<{
+  conversationId?: string | null | undefined;
+  orgId?: string | null | undefined;
+}>;
+
+export type AgentTrajectorySubscription = {
+  agentTrajectory: {
+    id: string;
+    conversationId?: string | null;
+    role: string;
+    content: string;
+    timestamp: string;
+    isLoading?: boolean | null;
+    uiAction?: string | null;
+    recipeData?: string | null;
+    invoiceData?: string | null;
+  };
+};
+
 export const HealthCheckDocument = gql`
   query HealthCheck {
     healthCheck {
@@ -169,6 +232,7 @@ export function useHealthCheckQuery(
     ...options,
   });
 }
+
 export const DashboardStatsDocument = gql`
   query DashboardStats($orgId: String) {
     dashboardStats(orgId: $orgId) {
@@ -211,6 +275,7 @@ export function useDashboardStatsQuery(
     ...options,
   });
 }
+
 export const DashboardStatsUpdatedDocument = gql`
   subscription DashboardStatsUpdated($orgId: String) {
     dashboardStatsUpdated(orgId: $orgId) {
@@ -259,4 +324,64 @@ export function useDashboardStatsUpdatedSubscription<
     TData,
     DashboardStatsUpdatedSubscriptionVariables
   >({ query: DashboardStatsUpdatedDocument, ...options }, handler);
+}
+
+export const ConversationMessagesDocument = gql`
+  query ConversationMessages($conversationId: String!) {
+    conversationMessages(conversationId: $conversationId) {
+      id
+      conversationId
+      role
+      content
+      timestamp
+      isLoading
+      uiAction
+      recipeData
+      invoiceData
+    }
+  }
+`;
+
+export function useConversationMessagesQuery(
+  options: Omit<Urql.UseQueryArgs<ConversationMessagesQueryVariables>, "query">,
+) {
+  return Urql.useQuery<
+    ConversationMessagesQuery,
+    ConversationMessagesQueryVariables
+  >({
+    query: ConversationMessagesDocument,
+    ...options,
+  });
+}
+
+export const AgentTrajectoryDocument = gql`
+  subscription AgentTrajectory($conversationId: String, $orgId: String) {
+    agentTrajectory(conversationId: $conversationId, orgId: $orgId) {
+      id
+      conversationId
+      role
+      content
+      timestamp
+      isLoading
+      uiAction
+      recipeData
+      invoiceData
+    }
+  }
+`;
+
+export function useAgentTrajectorySubscription<
+  TData = AgentTrajectorySubscription,
+>(
+  options?: Omit<
+    Urql.UseSubscriptionArgs<AgentTrajectorySubscriptionVariables>,
+    "query"
+  >,
+  handler?: Urql.SubscriptionHandler<AgentTrajectorySubscription, TData>,
+) {
+  return Urql.useSubscription<
+    AgentTrajectorySubscription,
+    TData,
+    AgentTrajectorySubscriptionVariables
+  >({ query: AgentTrajectoryDocument, ...options }, handler);
 }

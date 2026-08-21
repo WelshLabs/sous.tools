@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, Inject } from "@nestjs/common";
 import { OmnibarCommandPayload, OmniMessage } from "@soustools/api-types";
 import { ALL_COMMAND_TOOLS } from "./commands-tools";
 import { PurchaseOrdersService } from "../items/purchase-orders.service";
@@ -12,6 +12,8 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { supabase } from "../../core/database/supabase";
 import { ChatPersistenceService } from "./chat-persistence.service";
+import { PUB_SUB, type RedisPubSub } from "../../core/graphql/pubsub";
+import { AGENT_TRAJECTORY_TOPIC } from "./commands.types";
 
 @Injectable()
 export class CommandsService {
@@ -25,6 +27,7 @@ export class CommandsService {
     private readonly neo4jService: Neo4jService,
     @InjectQueue("ingestion") private ingestionQueue: Queue,
     private readonly chatPersistence: ChatPersistenceService,
+    @Inject(PUB_SUB) private readonly pubSub: RedisPubSub,
   ) {}
 
   private formatJsonSchema(schema: any): any {
@@ -82,6 +85,58 @@ export class CommandsService {
         content: textContent,
       };
     });
+  }
+
+  public async emitTrajectoryMessage(
+    conversationId: string,
+    orgId: string,
+    message: OmniMessage,
+    emitMessage?: (msg: OmniMessage) => void,
+  ): Promise<void> {
+    if (emitMessage) {
+      try {
+        emitMessage(message);
+      } catch (err) {
+        this.logger.warn("Failed in emitMessage callback:", err);
+      }
+    }
+    try {
+      await this.pubSub.publish(AGENT_TRAJECTORY_TOPIC, {
+        agentTrajectory: {
+          id: message.id || randomUUID(),
+          conversationId,
+          role: message.role,
+          content: message.content,
+          timestamp:
+            message.timestamp instanceof Date
+              ? message.timestamp
+              : new Date(message.timestamp),
+          isLoading: message.isLoading ?? false,
+          uiAction: message.uiAction
+            ? typeof message.uiAction === "string"
+              ? message.uiAction
+              : JSON.stringify(message.uiAction)
+            : undefined,
+          recipeData: message.recipeData
+            ? typeof message.recipeData === "string"
+              ? message.recipeData
+              : JSON.stringify(message.recipeData)
+            : undefined,
+          invoiceData: message.invoiceData
+            ? typeof message.invoiceData === "string"
+              ? message.invoiceData
+              : JSON.stringify(message.invoiceData)
+            : undefined,
+        },
+        conversationId,
+        orgId,
+      });
+    } catch (err) {
+      this.logger.warn(
+        "Failed to publish agent trajectory step to Redis PubSub:",
+        err,
+      );
+    }
   }
 
   async handleCommand(
@@ -187,14 +242,17 @@ export class CommandsService {
 
           if (functionName === "add_to_purchase_order") {
             agentMessageContent = `Adding ${args.quantity} ${args.unit} ${args.itemName} to ${args.vendorName} draft PO...`;
-            if (emitMessage) {
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
-            }
+              },
+              emitMessage,
+            );
 
             const vendors = await this.vendorsService.findAll(orgId);
             const matchedVendor = vendors.find((v: any) =>
@@ -221,14 +279,17 @@ export class CommandsService {
             }
           } else if (functionName === "add_to_whiteboard") {
             agentMessageContent = `Adding ${args.quantity} ${args.unit} ${args.itemName} to the Whiteboard...`;
-            if (emitMessage) {
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
-            }
+              },
+              emitMessage,
+            );
 
             const rawName =
               `${args.quantity} ${args.unit} ${args.itemName}`.trim();
@@ -239,14 +300,17 @@ export class CommandsService {
             };
           } else if (functionName === "get_recipe_cost") {
             agentMessageContent = `Calculating cost for recipe...`;
-            if (emitMessage) {
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
-            }
+              },
+              emitMessage,
+            );
 
             try {
               const cost = await this.recipeCostService.getRecipeCost(
@@ -258,49 +322,65 @@ export class CommandsService {
             }
           } else if (functionName === "update_item_status") {
             agentMessageContent = `Updating item ${args.itemId} status to ${args.status}...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
             toolResponseData = { success: true, message: `Status updated.` };
           } else if (functionName === "adjust_throttle_time") {
             agentMessageContent = `Adding ${args.minutes} minutes to throttle time...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
             toolResponseData = {
               success: true,
               message: `Throttle time adjusted.`,
             };
           } else if (functionName === "reconcile_inventory") {
             agentMessageContent = `Setting inventory for ${args.itemId} to ${args.quantity} ${args.unit}...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
             toolResponseData = {
               success: true,
               message: `Inventory reconciled.`,
             };
           } else if (functionName === "ingest_document") {
             agentMessageContent = `Document received. Sending to the ingestion pipeline...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
 
             const userId =
               payload.context?.userId || "d0000000-0000-0000-0000-000000000000";
@@ -372,9 +452,12 @@ export class CommandsService {
                 timestamp: new Date(),
               };
 
-              if (emitMessage) {
-                emitMessage(renderMsg);
-              }
+              await this.emitTrajectoryMessage(
+                conversationId,
+                orgId,
+                renderMsg,
+                emitMessage,
+              );
               await this.chatPersistence.appendMessage(
                 conversationId,
                 orgId,
@@ -397,13 +480,17 @@ export class CommandsService {
             // ─── V1 ReAct Tool Routing ────────────────────────────────────────────
           } else if (functionName === "execute_cypher_query") {
             agentMessageContent = `Querying the Core Matrix...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
 
             try {
               const result = await this.neo4jService.runQuery(
@@ -421,15 +508,21 @@ export class CommandsService {
             }
           } else if (functionName === "render_ui_component") {
             agentMessageContent = `Rendering ${args.componentName} component...`;
-            if (emitMessage) {
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
-              // Emit a dedicated socket event so the frontend can intercept and swap the bubble
-              emitMessage({
+              },
+              emitMessage,
+            );
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "render_component" as any,
                 content: JSON.stringify({
@@ -437,8 +530,9 @@ export class CommandsService {
                   props: args.props,
                 }),
                 timestamp: new Date(),
-              });
-            }
+              },
+              emitMessage,
+            );
             toolResponseData = {
               success: true,
               rendered: true,
@@ -446,13 +540,17 @@ export class CommandsService {
             };
           } else if (functionName === "enqueue_background_task") {
             agentMessageContent = `Queuing background task: ${args.jobName}...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
 
             try {
               const job = await this.ingestionQueue.add(
@@ -474,13 +572,17 @@ export class CommandsService {
             }
           } else if (functionName === "ingest_knowledge_source") {
             agentMessageContent = `Ingesting knowledge source (${args.scope} scope)...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
 
             try {
               const job = await this.ingestionQueue.add(
@@ -504,13 +606,17 @@ export class CommandsService {
             }
           } else if (functionName === "search_the_web") {
             agentMessageContent = `Searching the web for: "${args.query}"...`;
-            if (emitMessage)
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
+              },
+              emitMessage,
+            );
 
             const maxResults = (args.maxResults as number) || 5;
             const searchResults = await this.performWebSearch(
@@ -525,8 +631,10 @@ export class CommandsService {
             };
           } else if (functionName === "update_review_state") {
             agentMessageContent = `Updating review state: ${args.action}...`;
-            if (emitMessage) {
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
@@ -538,8 +646,9 @@ export class CommandsService {
                   itemIndex: args.itemIndex,
                   targetName: args.targetName,
                 },
-              } as any);
-            }
+              } as any,
+              emitMessage,
+            );
             toolResponseData = {
               success: true,
               message: `Review state updated: ${args.action}`,
@@ -550,14 +659,17 @@ export class CommandsService {
             };
           } else if (functionName === "get_pos_sales_stats") {
             agentMessageContent = `Querying real POS sales from Postgres database...`;
-            if (emitMessage) {
-              emitMessage({
+            await this.emitTrajectoryMessage(
+              conversationId,
+              orgId,
+              {
                 id: randomUUID(),
                 role: "agent_step",
                 content: agentMessageContent,
                 timestamp: new Date(),
-              });
-            }
+              },
+              emitMessage,
+            );
 
             const { data: dbOrders } = await supabase
               .from("pos_orders")
@@ -637,9 +749,12 @@ export class CommandsService {
             timestamp: new Date(),
           };
 
-          if (emitMessage) {
-            emitMessage(modelMsg);
-          }
+          await this.emitTrajectoryMessage(
+            conversationId,
+            orgId,
+            modelMsg,
+            emitMessage,
+          );
           this.chatPersistence
             .appendMessage(conversationId, orgId, userId, modelMsg)
             .catch((e) =>
@@ -658,14 +773,17 @@ export class CommandsService {
     } catch (error) {
       this.logger.error("Failed to parse or execute command via Gemini", error);
       const fallbackMsg = "I failed to understand that command, Chef.";
-      if (emitMessage) {
-        emitMessage({
+      await this.emitTrajectoryMessage(
+        conversationId,
+        orgId,
+        {
           id: randomUUID(),
           role: "model",
           content: fallbackMsg,
           timestamp: new Date(),
-        });
-      }
+        },
+        emitMessage,
+      );
       return {
         action: "ERROR",
         message: fallbackMsg,
