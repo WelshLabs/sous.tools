@@ -1,6 +1,32 @@
 import { clientConfig as config } from "@soustools/config/client";
 import { refreshAuthSession } from "./auth-session";
-import { createClient, type Client } from "graphql-ws";
+import type { Client as WsClient } from "graphql-ws";
+import { createUrqlClient, getSubscriptionWsClient } from "./urql";
+import type { Client as UrqlClient } from "urql";
+
+export * from "./urql";
+export * from "./generated/graphql";
+
+export {
+  cacheExchange,
+  offlineExchange,
+  type CacheExchangeOpts,
+} from "@urql/exchange-graphcache";
+export {
+  authExchange,
+  type AuthUtilities,
+  type AuthConfig,
+} from "@urql/exchange-auth";
+export {
+  gql,
+  fetchExchange,
+  subscriptionExchange,
+  type Client,
+  type Exchange,
+  type Operation,
+  type OperationResult,
+  type CombinedError,
+} from "urql";
 
 export interface GraphQLResponse<T = any> {
   data?: T;
@@ -11,6 +37,7 @@ export interface GraphQLClientOptions {
   url?: string;
   wsUrl?: string;
   headers?: Record<string, string>;
+  urqlClient?: UrqlClient;
 }
 
 export interface SubscriptionOptions<
@@ -28,7 +55,8 @@ export class GraphQLClient {
   private url: string;
   private wsUrl: string;
   private headers: Record<string, string>;
-  private wsClient?: Client;
+  private wsClient?: WsClient | null;
+  private urqlInstance: UrqlClient;
 
   constructor(options: GraphQLClientOptions = {}) {
     const baseUrl = options.url || config.NEXT_PUBLIC_API_URL;
@@ -36,12 +64,19 @@ export class GraphQLClient {
       ? baseUrl
       : `${baseUrl.replace(/\/$/, "")}/graphql`;
 
-    if (options.wsUrl) {
-      this.wsUrl = options.wsUrl;
-    } else {
-      this.wsUrl = this.url.replace(/^http/, "ws");
-    }
+    this.wsUrl = options.wsUrl || this.url.replace(/^http/, "ws");
     this.headers = options.headers || {};
+    this.urqlInstance =
+      options.urqlClient ||
+      createUrqlClient({
+        url: this.url,
+        wsUrl: this.wsUrl,
+        headers: this.headers,
+      });
+  }
+
+  getUrqlClient(): UrqlClient {
+    return this.urqlInstance;
   }
 
   async request<TData = any, TVariables = Record<string, any>>(
@@ -99,19 +134,12 @@ export class GraphQLClient {
     return json;
   }
 
-  getWsClient(): Client | null {
+  getWsClient(): WsClient | null {
     if (typeof window === "undefined") {
       return null;
     }
     if (!this.wsClient) {
-      this.wsClient = createClient({
-        url: this.wsUrl,
-        connectionParams: async () => {
-          return {
-            headers: this.headers,
-          };
-        },
-      });
+      this.wsClient = getSubscriptionWsClient(this.wsUrl, this.headers);
     }
     return this.wsClient;
   }
