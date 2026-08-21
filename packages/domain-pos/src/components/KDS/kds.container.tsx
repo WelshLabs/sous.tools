@@ -1,9 +1,25 @@
-/* eslint-disable max-lines, @typescript-eslint/no-explicit-any */
+/* eslint-disable max-lines */
 "use client";
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api, createWebSocketClient } from "@soustools/api-client";
+
+type UntypedClient = {
+  PATCH: (
+    path: string,
+    options?: unknown,
+  ) => Promise<{ data?: unknown; error?: unknown }>;
+  POST: (
+    path: string,
+    options?: unknown,
+  ) => Promise<{ data?: unknown; error?: unknown }>;
+  GET: (
+    path: string,
+    options?: unknown,
+  ) => Promise<{ data?: unknown; error?: unknown }>;
+};
+const dynamicApi = api as unknown as UntypedClient;
 import { type KDSTicket, type KDSTicketItem } from "./kds.types";
 import { KDSView } from "./kds.view";
 import { KDSSettingsModal, type POSItem } from "./kds-settings-modal";
@@ -30,8 +46,10 @@ export function KDSContainer() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedText = localStorage.getItem("kds_text_size") as any;
-      const savedDensity = localStorage.getItem("kds_density") as any;
+      const savedText = localStorage.getItem("kds_text_size") as
+        "sm" | "md" | "lg" | null;
+      const savedDensity = localStorage.getItem("kds_density") as
+        "compact" | "standard" | "spacious" | null;
       const savedSound = localStorage.getItem("kds_sounds_enabled");
       const savedVol = localStorage.getItem("kds_sound_volume");
       if (savedText) setTextSize(savedText);
@@ -45,7 +63,10 @@ export function KDSContainer() {
         const { data } = await api.GET("/pos-simulator/items", {
           params: { query: { organizationId: orgId } },
         });
-        if (data) setPosItems((data as any).data || data || []);
+        if (data)
+          setPosItems(
+            ((data as Record<string, unknown>).data as POSItem[]) || data || [],
+          );
       } catch (err) {
         console.error("Failed to fetch pos items", err);
       }
@@ -57,7 +78,7 @@ export function KDSContainer() {
           params: { query: { orgId } },
         });
         if (!error && data) {
-          const payload = (data as any).data || data;
+          const payload = (data as Record<string, unknown>).data || data;
           if (Array.isArray(payload)) {
             setTickets(payload.map(mapOrderToKDSTicket));
           }
@@ -111,14 +132,15 @@ export function KDSContainer() {
 
     try {
       if (!item.id.startsWith("fallback-")) {
-        await api.PATCH("/pos/order-line-items/{id}/status" as any, {
+        await dynamicApi.PATCH("/pos/order-line-items/" + item.id + "/status", {
           params: { path: { id: item.id } },
           body: { status: nextStatus },
         });
       }
       toast.success(`Marked ${item.name} as ${nextStatus.toLowerCase()}.`);
-    } catch (err: any) {
-      toast.error(`Failed to update item status: ${err.message}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to update item status: ${msg}`);
     }
   };
 
@@ -141,14 +163,18 @@ export function KDSContainer() {
     );
 
     try {
-      const { error } = await api.PATCH("/pos/orders/{id}/status" as any, {
-        params: { path: { id: ticketId } },
-        body: { status: "COMPLETED", orgId },
-      });
+      const { error } = await dynamicApi.PATCH(
+        "/pos/orders/" + ticketId + "/status",
+        {
+          params: { path: { id: ticketId } },
+          body: { status: "COMPLETED", orgId },
+        },
+      );
       if (error) throw new Error("Failed to update ticket status");
       toast.success(`Ticket #${t.ticketNumber} completed.`);
-    } catch (err: any) {
-      toast.error(`Completed locally, DB error: ${err.message}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Completed locally, DB error: ${msg}`);
     }
   };
 
@@ -158,9 +184,12 @@ export function KDSContainer() {
   ) => {
     const nextStatus = !currentStatus;
     try {
-      const { error } = await api.POST("/pos-simulator/items/toggle-sold-out", {
-        body: { itemId, isSoldOut: nextStatus } as any,
-      });
+      const { error } = await dynamicApi.POST(
+        "/pos-simulator/items/toggle-sold-out",
+        {
+          body: { itemId, isSoldOut: nextStatus },
+        },
+      );
       if (error) throw new Error("Failed to update item");
       setPosItems((prev) =>
         prev.map((item) =>
@@ -168,8 +197,9 @@ export function KDSContainer() {
         ),
       );
       toast.success("Updated item availability.");
-    } catch (err: any) {
-      toast.error(`Failed to update item availability: ${err.message}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to update item availability: ${msg}`);
     }
   };
 

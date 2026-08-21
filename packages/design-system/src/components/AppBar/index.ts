@@ -5,3 +5,4 @@ export type {
   AppBarPresentationProps,
   AppBarNotification,
 } from "./AppBarPresentation";
+export { WaffleMenuDropdown } from "./WaffleMenuDropdown";

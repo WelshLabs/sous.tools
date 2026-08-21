@@ -9,7 +9,9 @@ import {
   PackageX,
   Eye,
   EyeOff,
+  Palette,
 } from "lucide-react";
+import { ThemeToggle } from "@soustools/design-system";
 
 export interface POSItem {
   id: string;
@@ -73,6 +75,22 @@ export function KDSSettingsModal({
         </div>
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
+          {/* Theme Switcher */}
+          <div className="space-y-3">
+            <h4 className="flex items-center gap-1.5 text-xs font-extrabold tracking-wider text-sky-400 uppercase">
+              <Palette className="h-4 w-4" /> Theme & Appearance
+            </h4>
+            <div className="bg-card flex items-center justify-between rounded-xl border border-black/5 bg-black/5 p-4 dark:border-white/5">
+              <div>
+                <p className="text-sm font-semibold">Theme Mode</p>
+                <p className="text-muted-foreground text-xs">
+                  Switch between dark slate and light mode
+                </p>
+              </div>
+              <ThemeToggle />
+            </div>
+          </div>
+
           <div className="space-y-3">
             <h4 className="text-xs font-extrabold tracking-wider text-sky-400 uppercase">
               Audio & Sound Controls
@@ -203,7 +221,11 @@ export function KDSSettingsModal({
                     className="bg-card flex items-center justify-between px-2 py-2.5 transition-colors hover:bg-black/5"
                   >
                     <span
-                      className={`text-sm font-semibold ${item.is_sold_out ? "text-muted-foreground line-through" : "text-foreground"}`}
+                      className={`text-sm font-semibold ${
+                        item.is_sold_out
+                          ? "text-muted-foreground line-through"
+                          : "text-foreground"
+                      }`}
                     >
                       {item.name}
                     </span>
@@ -237,3 +259,4 @@ export function KDSSettingsModal({
     </div>
   );
 }
+KDSSettingsModal.displayName = "KDSSettingsModal";
