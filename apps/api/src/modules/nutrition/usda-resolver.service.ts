@@ -58,11 +58,21 @@ export class UsdaResolverService {
     query: string,
   ): Promise<Array<{ fdcId: number; description: string; score?: number }>> {
     try {
-      const url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&pageSize=5&api_key=${this.apiKey}`;
-      const response = await fetch(url);
-      if (!response.ok) return [];
-      const data = await response.json();
-      if (!data.foods || !Array.isArray(data.foods)) return [];
+      // First query Foundation and SR Legacy for highest precision nutritional data
+      let url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&pageSize=5&dataType=Foundation,SR%20Legacy&api_key=${this.apiKey}`;
+      let response = await fetch(url);
+      let data: any = response.ok ? await response.json() : null;
+
+      // If no Foundation/SR Legacy match found, broaden search across all databases
+      if (!data?.foods || data.foods.length === 0) {
+        url = `${this.baseUrl}/foods/search?query=${encodeURIComponent(query)}&pageSize=5&api_key=${this.apiKey}`;
+        response = await fetch(url);
+        if (response.ok) {
+          data = await response.json();
+        }
+      }
+
+      if (!data?.foods || !Array.isArray(data.foods)) return [];
       return data.foods.slice(0, 5).map((f: any) => ({
         fdcId: f.fdcId,
         description: f.description,
