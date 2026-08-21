@@ -75,6 +75,18 @@ export class CommandsGateway {
           this.server
             .to(`conversation-${payload.conversationId}`)
             .emit("chat_message", msg);
+          this.commandsService
+            .emitTrajectoryMessage(
+              payload.conversationId,
+              payload.orgId || "",
+              msg,
+            )
+            .catch((e) =>
+              this.logger.warn(
+                "Failed to publish trajectory message to Redis",
+                e,
+              ),
+            );
           this.chatPersistence
             .appendMessage(
               payload.conversationId,
@@ -105,11 +117,25 @@ export class CommandsGateway {
     }
   }
 
-  emitChatMessageToConversation(conversationId: string, message: any) {
+  emitChatMessageToConversation(
+    conversationId: string,
+    message: any,
+    orgId?: string,
+  ) {
     if (this.server && conversationId) {
       this.server
         .to(`conversation-${conversationId}`)
         .emit("chat_message", message);
+    }
+    if (conversationId && message) {
+      this.commandsService
+        .emitTrajectoryMessage(conversationId, orgId || "", message)
+        .catch((e) =>
+          this.logger.warn(
+            "Failed to publish chat message trajectory to Redis",
+            e,
+          ),
+        );
     }
   }
 

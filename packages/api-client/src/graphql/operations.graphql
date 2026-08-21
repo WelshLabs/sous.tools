@@ -68,3 +68,31 @@ subscription DashboardStatsUpdated($orgId: String) {
     }
   }
 }
+
+query ConversationMessages($conversationId: String!) {
+  conversationMessages(conversationId: $conversationId) {
+    id
+    conversationId
+    role
+    content
+    timestamp
+    isLoading
+    uiAction
+    recipeData
+    invoiceData
+  }
+}
+
+subscription AgentTrajectory($conversationId: String, $orgId: String) {
+  agentTrajectory(conversationId: $conversationId, orgId: $orgId) {
+    id
+    conversationId
+    role
+    content
+    timestamp
+    isLoading
+    uiAction
+    recipeData
+    invoiceData
+  }
+}

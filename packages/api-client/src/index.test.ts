@@ -18,6 +18,8 @@ import {
   useHealthCheckQuery,
   useDashboardStatsQuery,
   useDashboardStatsUpdatedSubscription,
+  useAgentTrajectorySubscription,
+  useConversationMessagesQuery,
 } from "./index";
 import { clientConfig as config } from "@soustools/config/client";
 import { CombinedError } from "urql";
@@ -60,10 +62,7 @@ describe("packages/api-client", () => {
       expect(callCount).toBe(1);
       expect(global.fetch).toHaveBeenCalledWith(
         `${config.NEXT_PUBLIC_API_URL}/auth/refresh`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
+        { method: "POST", credentials: "include" },
       );
     });
 
@@ -82,11 +81,9 @@ describe("packages/api-client", () => {
       await refreshAuthSession();
       expect(listenerCalled).toBe(true);
 
-      // Verify manual notifyAuthRefreshed works
       listenerCalled = false;
       notifyAuthRefreshed();
       expect(listenerCalled).toBe(true);
-
       unsubscribe();
     });
   });
@@ -159,6 +156,8 @@ describe("packages/api-client", () => {
       expect(typeof useHealthCheckQuery).toBe("function");
       expect(typeof useDashboardStatsQuery).toBe("function");
       expect(typeof useDashboardStatsUpdatedSubscription).toBe("function");
+      expect(typeof useAgentTrajectorySubscription).toBe("function");
+      expect(typeof useConversationMessagesQuery).toBe("function");
     });
 
     it("supports subscription websocket management and reconnecting", () => {
@@ -169,11 +168,13 @@ describe("packages/api-client", () => {
 
   describe("createGraphQLClient Backward Compatibility", () => {
     it("executes GraphQL POST queries with credentials: include", async () => {
-      global.fetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ data: { health: "OK" } }), {
-          status: 200,
-        }),
-      );
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ data: { health: "OK" } }), {
+            status: 200,
+          }),
+        );
 
       const client = createGraphQLClient();
       expect(graphqlClient).toBeDefined();

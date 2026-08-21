@@ -4,6 +4,7 @@ import { BullModule } from "@nestjs/bullmq";
 import { CommandsController } from "./commands.controller";
 import { CommandsService } from "./commands.service";
 import { CommandsGateway } from "./commands.gateway";
+import { CommandsResolver } from "./commands.resolver";
 import { ChatPersistenceService } from "./chat-persistence.service";
 import { ToolRegistryService } from "./tool-registry.service";
 import { ALL_COMMAND_TOOL_PROVIDERS } from "./tools";
@@ -39,6 +40,7 @@ import { Neo4jSyncModule } from "../neo4j-sync/neo4j-sync.module";
     ToolRegistryService,
     CommandsService,
     CommandsGateway,
+    CommandsResolver,
     ChatPersistenceService,
     ...ALL_COMMAND_TOOL_PROVIDERS,
   ],

@@ -1,9 +1,11 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, Inject } from "@nestjs/common";
 import { OmnibarCommandPayload, OmniMessage } from "@soustools/api-types";
 import { randomUUID } from "crypto";
 import { supabase } from "../../core/database/supabase";
 import { ChatPersistenceService } from "./chat-persistence.service";
 import { ToolRegistryService } from "./tool-registry.service";
+import { PUB_SUB, type RedisPubSub } from "../../core/graphql/pubsub";
+import { AGENT_TRAJECTORY_TOPIC } from "./commands.types";
 
 @Injectable()
 export class CommandsService {
@@ -12,7 +14,37 @@ export class CommandsService {
   constructor(
     private readonly toolRegistry: ToolRegistryService,
     private readonly chatPersistence: ChatPersistenceService,
+    @Inject(PUB_SUB) private readonly pubSub: RedisPubSub,
   ) {}
+
+  public async emitTrajectoryMessage(
+    conversationId: string,
+    _orgId: string,
+    message: OmniMessage,
+    emitMessage?: (msg: OmniMessage) => void,
+  ): Promise<void> {
+    if (emitMessage) {
+      try {
+        emitMessage(message);
+      } catch (err) {
+        this.logger.warn("Failed in emitMessage callback:", err);
+      }
+    }
+    try {
+      await this.pubSub.publish(AGENT_TRAJECTORY_TOPIC, {
+        agentTrajectory: {
+          id: message.id || (message as any).id,
+          conversationId,
+          role: message.role,
+          content: message.content,
+          timestamp: message.timestamp || new Date(),
+          uiAction: (message as any).uiAction || null,
+        },
+      });
+    } catch (err) {
+      this.logger.error("Failed to publish trajectory to Redis PubSub", err);
+    }
+  }
 
   private mapToGeminiContent(chatHistory: OmniMessage[]): any[] {
     return chatHistory.map((msg) => {
@@ -39,9 +71,14 @@ export class CommandsService {
     emitMessage?: (msg: OmniMessage) => void,
   ) {
     this.logger.log(`\n🤖 AI COMMAND RECEIVED [${payload.source}]`);
-
-    const history = payload.chatHistory || [];
+    const history = Array.isArray(payload.chatHistory) ? payload.chatHistory : [];
     const conversationId = payload.context?.conversationId || randomUUID();
+
+    const wrappedEmitMessage = (msg: OmniMessage) => {
+      this.emitTrajectoryMessage(conversationId, orgId, msg, emitMessage).catch(e => 
+        this.logger.warn("Failed to emit trajectory", e)
+      );
+    };
 
     const userId = payload.context?.userId;
     const lastUserMessage = history[history.length - 1];
@@ -136,7 +173,7 @@ export class CommandsService {
                 conversationId,
                 payload,
                 lastUserMessage,
-                emitMessage,
+                emitMessage: wrappedEmitMessage,
               },
             );
           } catch (toolErr: any) {
@@ -170,7 +207,7 @@ export class CommandsService {
           };
 
           if (emitMessage) {
-            emitMessage(modelMsg);
+            wrappedEmitMessage(modelMsg);
           }
           this.chatPersistence
             .appendMessage(conversationId, orgId, userId, modelMsg)
@@ -191,7 +228,7 @@ export class CommandsService {
       this.logger.error("Failed to parse or execute command via Gemini", error);
       const fallbackMsg = "I failed to understand that command, Chef.";
       if (emitMessage) {
-        emitMessage({
+        wrappedEmitMessage({
           id: randomUUID(),
           role: "model",
           content: fallbackMsg,
