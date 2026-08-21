@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -11,11 +10,11 @@ describe("OmniTranscriptTimeline", () => {
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
   });
 
-  it("renders empty state when no messages are provided and not processing", () => {
+  it("renders nothing when no messages are provided and not processing", () => {
     render(<OmniTranscriptTimeline messages={[]} isProcessing={false} />);
     expect(
-      screen.getByText(/Heard, Chef\. Systems are online and ready\./),
-    ).toBeDefined();
+      screen.queryByText(/Heard, Chef\. Systems are online and ready\./),
+    ).toBeNull();
   });
 
   it("renders message bubbles for user and model messages", () => {
@@ -76,7 +75,9 @@ describe("OmniTranscriptTimeline", () => {
       />,
     );
     expect(
-      screen.getByText(/Heard, Chef\. Systems online and processing your prompt\.\.\./),
+      screen.getByText(
+        /Heard, Chef\. Systems online and processing your prompt\.\.\./,
+      ),
     ).toBeDefined();
   });
 });

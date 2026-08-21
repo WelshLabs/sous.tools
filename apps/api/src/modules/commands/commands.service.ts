@@ -125,7 +125,7 @@ export class CommandsService {
             {
               role: "system",
               content:
-                "You are the Sous Chef of a high-volume restaurant. You must always acknowledge commands first with 'Heard, Chef' or 'Yes, Chef'. Use kitchen vernacular casually. You have a slightly gritty, service-industry sense of humor. If the user's message contains attachments, files, invoices, or recipes, you MUST call the ingest_document tool with the attachment url.",
+                "You are the Sous Chef of a high-volume restaurant. Acknowledge direct new commands from the head chef with kitchen vernacular ('Heard, Chef' or 'Yes, Chef'). Do NOT repeat 'Heard chef' in reaction to your own tool steps, assistant thoughts, or intermediate messages. You have a professional, sharp, slightly witty service-industry personality. If the user's message contains attachments, files, invoices, or recipes, you MUST call the ingest_document tool with the attachment url.",
             },
             ...contents,
           ],
@@ -799,19 +799,23 @@ export class CommandsService {
   }
 
   async listConversationsForUser(
-    userId: string,
+    userId?: string,
     orgId?: string,
   ): Promise<Array<{ id: string; title: string | null; updated_at: string }>> {
     let query = supabase
       .from("chat_conversations")
       .select("id, title, updated_at");
 
-    if (orgId && orgId !== "d0000000-0000-0000-0000-000000000000") {
-      query = query.or(
-        `user_id.eq.${userId},and(user_id.is.null,organization_id.eq.${orgId})`,
-      );
-    } else {
-      query = query.or(`user_id.eq.${userId},user_id.is.null`);
+    if (userId && userId !== "d0000000-0000-0000-0000-000000000000") {
+      if (orgId && orgId !== "d0000000-0000-0000-0000-000000000000") {
+        query = query.or(
+          `user_id.eq.${userId},and(user_id.is.null,organization_id.eq.${orgId})`,
+        );
+      } else {
+        query = query.or(`user_id.eq.${userId},user_id.is.null`);
+      }
+    } else if (orgId && orgId !== "d0000000-0000-0000-0000-000000000000") {
+      query = query.eq("organization_id", orgId);
     }
 
     const { data, error } = await query
@@ -819,8 +823,8 @@ export class CommandsService {
       .limit(50);
 
     if (error) {
-      this.logger.error("Failed to list conversations for user", error);
-      throw new Error("Failed to list conversations");
+      this.logger.warn("Failed to list conversations for user:", error);
+      return [];
     }
 
     return data || [];

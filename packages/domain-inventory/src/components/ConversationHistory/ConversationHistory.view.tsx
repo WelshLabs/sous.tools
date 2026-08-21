@@ -1,6 +1,11 @@
 "use client";
 
-import { PlusCircle, MessageSquare } from "lucide-react";
+import {
+  PlusCircle,
+  MessageSquare,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 
 export interface ConversationItem {
   id: string;
@@ -13,6 +18,8 @@ export interface ConversationHistoryViewProps {
   conversations: ConversationItem[];
   activeId?: string;
   isLoading?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
   onSelect: (id: string) => void;
   onNewChat: () => void;
 }
@@ -33,33 +40,75 @@ export function ConversationHistoryView({
   conversations,
   activeId,
   isLoading = false,
+  isCollapsed = false,
+  onToggleCollapse,
   onSelect,
   onNewChat,
 }: ConversationHistoryViewProps) {
-  return (
-    <aside
-      className="border-border bg-card/60 flex h-full w-64 shrink-0 flex-col gap-1 overflow-y-auto border-r py-4 backdrop-blur-sm"
-      aria-label="Conversation history"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 pb-2">
-        <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
-          Conversations
-        </span>
+  if (isCollapsed) {
+    return (
+      <aside
+        className="border-border bg-card/60 flex h-full w-12 shrink-0 flex-col items-center gap-3 border-r py-4 backdrop-blur-sm transition-all"
+        aria-label="Conversation history (collapsed)"
+      >
+        {onToggleCollapse && (
+          <button
+            type="button"
+            aria-label="Expand conversation history"
+            onClick={onToggleCollapse}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer rounded-lg p-2 transition-colors"
+          >
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        )}
         <button
           type="button"
-          id="new-chat-btn"
           aria-label="Start new chat"
           onClick={onNewChat}
-          className="text-primary hover:bg-primary/10 rounded-lg p-1.5 transition-colors"
+          className="text-primary hover:bg-primary/10 cursor-pointer rounded-lg p-2 transition-colors"
         >
           <PlusCircle className="h-4 w-4" />
         </button>
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      className="border-border bg-card/60 flex h-full w-64 shrink-0 flex-col gap-1 overflow-y-auto border-r py-4 backdrop-blur-sm transition-all"
+      aria-label="Conversation history"
+    >
+      {/* Header */}
+      <div className="border-border/40 flex items-center justify-between border-b px-3 pb-2">
+        <span className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+          Conversations
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            id="new-chat-btn"
+            aria-label="Start new chat"
+            onClick={onNewChat}
+            className="text-primary hover:bg-primary/10 cursor-pointer rounded-lg p-1.5 transition-colors"
+          >
+            <PlusCircle className="h-4 w-4" />
+          </button>
+          {onToggleCollapse && (
+            <button
+              type="button"
+              aria-label="Collapse conversations panel"
+              onClick={onToggleCollapse}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer rounded-lg p-1.5 transition-colors"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* List */}
       {isLoading ? (
-        <div className="flex flex-col gap-1 px-2">
+        <div className="flex flex-col gap-1 px-2 pt-2">
           {[1, 2, 3].map((n) => (
             <div
               key={n}
@@ -73,7 +122,7 @@ export function ConversationHistoryView({
           <p className="text-xs">No conversations yet</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-0.5 px-2" role="listbox">
+        <ul className="flex flex-col gap-0.5 px-2 pt-2" role="listbox">
           {conversations.map((convo) => {
             const isActive = convo.id === activeId;
             return (
@@ -82,13 +131,13 @@ export function ConversationHistoryView({
                   type="button"
                   id={`convo-${convo.id}`}
                   onClick={() => onSelect(convo.id)}
-                  className={`flex w-full flex-col items-start gap-0.5 rounded-xl px-3 py-2.5 text-left transition-all ${
+                  className={`flex w-full cursor-pointer flex-col items-start gap-0.5 rounded-xl px-3 py-2.5 text-left transition-all ${
                     isActive
-                      ? "bg-primary/12 text-foreground border-primary/20 border"
+                      ? "bg-primary/15 text-foreground border-primary/30 border font-medium"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   }`}
                 >
-                  <span className="line-clamp-1 text-sm font-medium leading-snug">
+                  <span className="line-clamp-1 text-sm leading-snug font-medium">
                     {convo.title || "Untitled conversation"}
                   </span>
                   <div className="flex w-full items-center justify-between gap-1">

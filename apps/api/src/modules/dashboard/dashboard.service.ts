@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { supabase } from "../../core/database/supabase";
 import { DashboardStatsPayload } from "./dashboard.types";
-import { pubSub } from "../../graphql/pubsub";
+import { pubSub } from "../../core/graphql/pubsub";
 
 @Injectable()
 export class DashboardService {
@@ -304,6 +304,10 @@ export class DashboardService {
         activeTablesSubtitle: activeTablesSubtitle,
       },
     };
+  }
+
+  async triggerDashboardUpdate(orgId?: string): Promise<void> {
+    return this.publishStatsUpdate(orgId);
   }
 
   async publishStatsUpdate(orgId?: string): Promise<void> {

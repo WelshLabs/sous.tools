@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { ReviewProseBlock } from "./ReviewProseBlock";
 import { ReviewInvoiceBlock } from "./ReviewInvoiceBlock";
 import { ReviewRecipeBlock } from "./ReviewRecipeBlock";
@@ -22,6 +23,8 @@ import {
   Save,
   Sparkles,
   X,
+  ExternalLink,
+  ChefHat,
 } from "lucide-react";
 import { api } from "@soustools/api-client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,9 +47,11 @@ export function UniversalReviewComponent({
   const [payload, setPayload] = useState<any>(initialPayload || null);
   const [isLoading, setIsLoading] = useState<boolean>(!initialPayload);
   const [isProcessing, setIsProcessingState] = useState<boolean>(false);
-  const [activeBlockId, _setActiveBlockId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [committedRecipeId, setCommittedRecipeId] = useState<string | null>(
+    null,
+  );
   const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const { chatHistory, socket } = useOmnibarContext();
@@ -56,8 +61,8 @@ export function UniversalReviewComponent({
     const targetId = activeReviewId || "latest";
     setIsLoading(true);
     try {
-      const { data } = await api.GET(
-        `/ingestion/review/${targetId}` as any,
+      const { data } = await (api.GET as any)(
+        `/ingestion/review/${targetId}`,
         {},
       );
       if (data) {
@@ -141,8 +146,8 @@ export function UniversalReviewComponent({
     async (newPayload: any) => {
       if (!activeReviewId) return;
       try {
-        await api.PATCH(`/ingestion/review/${activeReviewId}` as any, {
-          body: { parsedData: newPayload } as any,
+        await (api.PATCH as any)(`/ingestion/review/${activeReviewId}`, {
+          body: { parsedData: newPayload },
         });
       } catch (err) {
         console.error(
@@ -215,67 +220,6 @@ export function UniversalReviewComponent({
         return updatedPayload;
       });
       setStatusMessage("Accepted all top AI matches on current page.");
-    } else if (
-      action.action === "MAP_ITEM" &&
-      (action.itemIndex != null || action.targetName)
-    ) {
-      setPayload((prev: any) => {
-        if (!prev || !prev.pages) return prev;
-        const updatedPages = prev.pages.map((pg: any) => {
-          if (pg.pageNumber !== currentPage) return pg;
-          return {
-            ...pg,
-            blocks: pg.blocks.map((b: any) => {
-              if (b.type === "RECIPE" && b.ingredients) {
-                const updatedIngredients = [...b.ingredients];
-                const idx = (action.itemIndex ?? 1) - 1;
-                if (updatedIngredients[idx]) {
-                  const targetMatch = updatedIngredients[
-                    idx
-                  ].tenantMatches?.find((m: any) =>
-                    m.name
-                      .toLowerCase()
-                      .includes((action.targetName || "").toLowerCase()),
-                  );
-                  updatedIngredients[idx] = {
-                    ...updatedIngredients[idx],
-                    selectedTenantId:
-                      targetMatch?.id ||
-                      updatedIngredients[idx].tenantMatches?.[0]?.id,
-                  };
-                }
-                return { ...b, ingredients: updatedIngredients };
-              }
-              if (b.type === "INVOICE" && b.lineItems) {
-                const updatedItems = [...b.lineItems];
-                const idx = (action.itemIndex ?? 1) - 1;
-                if (updatedItems[idx]) {
-                  const targetMatch = updatedItems[idx].tenantMatches?.find(
-                    (m: any) =>
-                      m.name
-                        .toLowerCase()
-                        .includes((action.targetName || "").toLowerCase()),
-                  );
-                  updatedItems[idx] = {
-                    ...updatedItems[idx],
-                    selectedTenantId:
-                      targetMatch?.id ||
-                      updatedItems[idx].tenantMatches?.[0]?.id,
-                  };
-                }
-                return { ...b, lineItems: updatedItems };
-              }
-              return b;
-            }),
-          };
-        });
-        const updatedPayload = { ...prev, pages: updatedPages };
-        persistPayloadToBackend(updatedPayload);
-        return updatedPayload;
-      });
-      setStatusMessage(
-        `Mapped item via Omnibar command: ${action.targetName || `item #${action.itemIndex}`}`,
-      );
     }
   }, [chatHistory, currentPage, persistPayloadToBackend]);
 
@@ -303,20 +247,43 @@ export function UniversalReviewComponent({
     });
   };
 
+  const handleExcludeBlock = (blockId: string) => {
+    setPayload((prev: any) => {
+      if (!prev || !prev.pages) return prev;
+      const nextPages = prev.pages.map((pg: any) =>
+        pg.pageNumber === currentPage
+          ? {
+              ...pg,
+              blocks: pg.blocks.map((b: any) =>
+                b.id === blockId ? { ...b, excluded: true } : b,
+              ),
+            }
+          : pg,
+      );
+      const newPayload = { ...prev, pages: nextPages };
+      persistPayloadToBackend(newPayload);
+      return newPayload;
+    });
+    setStatusMessage("Excluded block from review.");
+  };
+
   const handleCommit = async () => {
     if (!activeReviewId) return;
     setIsSubmitting(true);
     try {
-      await api.POST(`/ingestion/commit` as any, {
-        body: { reviewId: activeReviewId, approvedPayload: payload } as any,
+      const res = await (api.POST as any)("/ingestion/commit", {
+        body: { reviewId: activeReviewId, approvedPayload: payload },
       });
-      setStatusMessage(
-        "Successfully committed to Postgres database & 1:1 Neo4j Graph!",
-      );
+      const data = res.data?.data || res.data;
+      const rId = data?.recipeId || data?.recipeIds?.[0] || null;
+      if (rId) {
+        setCommittedRecipeId(rId);
+      }
+      setStatusMessage("Recipe and items saved successfully!");
       onCommitSuccess?.();
     } catch (err: any) {
       console.error("Commit failed:", err);
-      setStatusMessage("Review saved and committed!");
+      setStatusMessage("Saved review state.");
     } finally {
       setIsSubmitting(false);
     }
@@ -332,10 +299,7 @@ export function UniversalReviewComponent({
         />
         <div className="mt-6 flex items-center gap-2 font-mono text-xs text-cyan-400">
           <Sparkles className="h-4 w-4 animate-spin" />
-          <span>
-            Executing vector embeddings (nomic-embed-text) & USDA FDC
-            searches...
-          </span>
+          <span>Executing vector embeddings & USDA FDC searches...</span>
         </div>
       </Card>
     );
@@ -360,7 +324,7 @@ export function UniversalReviewComponent({
   // ── Main Polymorphic Review Interface ──
   return (
     <>
-      {/* ── Animated Image Lightbox Modal — rendered outside Card for true viewport centering ── */}
+      {/* ── Fullscreen Image Lightbox Modal with z-[100010] (above AppBar) ── */}
       <AnimatePresence>
         {imageModalOpen && currentPData?.imageUrl && (
           <motion.div
@@ -369,7 +333,7 @@ export function UniversalReviewComponent({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100010] flex items-center justify-center bg-black/85 backdrop-blur-md"
             onClick={() => setImageModalOpen(false)}
           >
             <motion.div
@@ -378,7 +342,7 @@ export function UniversalReviewComponent({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.88, opacity: 0, y: 24 }}
               transition={{ type: "spring", stiffness: 320, damping: 28 }}
-              className="relative max-h-[90vh] max-w-5xl overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950 shadow-2xl"
+              className="relative max-h-[92vh] max-w-5xl overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-950 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -395,40 +359,6 @@ export function UniversalReviewComponent({
                   alt={`Document page ${currentPage}`}
                   className="block max-h-[88vh] w-auto object-contain"
                 />
-                {/* Bounding boxes overlay on modal */}
-                <div className="pointer-events-none absolute inset-0">
-                  {currentPData?.blocks?.map((box: any) => {
-                    if (!box.bbox) return null;
-                    const [ymin, xmin, ymax, xmax] = box.bbox;
-                    const isActive = box.id === activeBlockId;
-                    const colorClass =
-                      box.type === "RECIPE"
-                        ? "border-amber-400/80 bg-amber-400/10"
-                        : box.type === "INVOICE"
-                          ? "border-blue-400/80 bg-blue-400/10"
-                          : "border-emerald-400/80 bg-emerald-400/10";
-                    return (
-                      <div
-                        key={box.id}
-                        style={{
-                          top: `${ymin / 10}%`,
-                          left: `${xmin / 10}%`,
-                          width: `${(xmax - xmin) / 10}%`,
-                          height: `${(ymax - ymin) / 10}%`,
-                        }}
-                        className={`absolute rounded border-2 transition-all ${colorClass} ${
-                          isActive
-                            ? "z-20 ring-2 ring-white"
-                            : "z-10 opacity-75"
-                        }`}
-                      >
-                        <span className="absolute -top-5 left-0 rounded border border-zinc-800 bg-zinc-950 px-1.5 py-0.5 text-[9px] font-bold text-zinc-100 uppercase">
-                          {box.type}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -436,57 +366,34 @@ export function UniversalReviewComponent({
       </AnimatePresence>
 
       <Card className="w-full border-zinc-800/80 bg-zinc-950/80 text-zinc-100 shadow-2xl backdrop-blur-xl">
-        {/* ── Appbar: thumbnail + title + pagination + save ── */}
-        <CardHeader className="flex items-center gap-3 border-b border-zinc-800/60 pb-3">
-          {/* Thumbnail — click to expand */}
-          {currentPData?.imageUrl && (
-            <button
-              type="button"
-              aria-label="View document page full size"
-              onClick={() => setImageModalOpen(true)}
-              className="group relative h-10 w-7 shrink-0 overflow-hidden rounded border border-zinc-700 bg-zinc-900 transition-all hover:border-zinc-500"
-            >
-              <img
-                src={currentPData.imageUrl}
-                alt={`Page ${currentPage} thumbnail`}
-                className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
-              />
-              <div className="pointer-events-none absolute inset-0">
-                {currentPData?.blocks?.map((box: any) => {
-                  if (!box.bbox) return null;
-                  const [ymin, xmin, ymax, xmax] = box.bbox;
-                  const colorClass =
-                    box.type === "RECIPE"
-                      ? "border-amber-400"
-                      : box.type === "INVOICE"
-                        ? "border-blue-400"
-                        : "border-emerald-400";
-                  return (
-                    <div
-                      key={box.id}
-                      style={{
-                        top: `${ymin / 10}%`,
-                        left: `${xmin / 10}%`,
-                        width: `${(xmax - xmin) / 10}%`,
-                        height: `${(ymax - ymin) / 10}%`,
-                      }}
-                      className={`absolute border ${colorClass} opacity-70`}
-                    />
-                  );
-                })}
-              </div>
-            </button>
-          )}
-
-          {/* Title */}
-          <CardTitle className="flex-1 text-base font-semibold text-white">
-            Review
-          </CardTitle>
+        {/* ── Header: Thumbnail + Title + Pagination + Save in a responsive row ── */}
+        <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/60 p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            {/* Thumbnail — click to expand */}
+            {currentPData?.imageUrl && (
+              <button
+                type="button"
+                aria-label="View document page full size"
+                onClick={() => setImageModalOpen(true)}
+                className="group relative h-10 w-7 shrink-0 cursor-pointer overflow-hidden rounded border border-zinc-700 bg-zinc-900 transition-all hover:border-zinc-500"
+              >
+                <img
+                  src={currentPData.imageUrl}
+                  alt={`Page ${currentPage} thumbnail`}
+                  className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                />
+              </button>
+            )}
+            <CardTitle className="flex items-center gap-2 text-base font-bold text-white">
+              <ChefHat className="text-primary h-4 w-4 shrink-0" />
+              <span>Ingestion Review</span>
+            </CardTitle>
+          </div>
 
           {/* Pagination + Save */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {totalPages > 1 && (
-              <div className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/80 p-1">
+              <div className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/80 p-1">
                 <Button
                   variant="outline"
                   size="sm"
@@ -496,7 +403,7 @@ export function UniversalReviewComponent({
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </Button>
-                <span className="min-w-[3rem] text-center font-mono text-xs text-zinc-400">
+                <span className="min-w-[2.5rem] text-center font-mono text-xs text-zinc-400">
                   {currentPage}/{totalPages}
                 </span>
                 <Button
@@ -517,13 +424,13 @@ export function UniversalReviewComponent({
               size="sm"
               onClick={handleCommit}
               disabled={isSubmitting}
-              className="h-8 font-semibold"
+              className="h-8 gap-1.5 font-semibold"
             >
               {isSubmitting ? (
                 "Saving…"
               ) : (
                 <>
-                  <Save className="mr-1.5 h-3.5 w-3.5" /> Save
+                  <Save className="h-3.5 w-3.5" /> Save
                 </>
               )}
             </Button>
@@ -532,13 +439,26 @@ export function UniversalReviewComponent({
 
         <CardContent className="flex flex-col gap-0 divide-y divide-zinc-800/50 p-0">
           {statusMessage && (
-            <div className="flex items-center gap-2 px-5 py-3 text-xs text-cyan-400">
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-              <span>{statusMessage}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/20 bg-emerald-500/10 px-5 py-3 text-xs text-emerald-300">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                <span className="font-medium">{statusMessage}</span>
+              </div>
+              {committedRecipeId && (
+                <Link
+                  href={`/recipes/${committedRecipeId}`}
+                  className="inline-flex items-center gap-1 rounded-lg border border-emerald-400/30 bg-emerald-500/20 px-2.5 py-1 text-xs font-bold text-emerald-200 transition hover:bg-emerald-500/30"
+                >
+                  <span>View / Edit Recipe</span>
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              )}
             </div>
           )}
 
           {currentPData?.blocks?.map((block: any) => {
+            if (block.excluded) return null;
+
             const inner = (() => {
               if (block.type === "PROSE") {
                 return (
@@ -548,6 +468,7 @@ export function UniversalReviewComponent({
                     onChange={(val) =>
                       handleUpdateBlock(block.id, { content: val })
                     }
+                    onExclude={() => handleExcludeBlock(block.id)}
                   />
                 );
               }
@@ -568,6 +489,16 @@ export function UniversalReviewComponent({
                         selectedTenantId: tId,
                         selectedUsdaId: uId,
                       };
+                      handleUpdateBlock(block.id, { lineItems: items });
+                    }}
+                    onLineItemQuantityChange={(idx, q) => {
+                      const items = [...(block.lineItems || [])];
+                      items[idx] = { ...items[idx], quantity: q };
+                      handleUpdateBlock(block.id, { lineItems: items });
+                    }}
+                    onLineItemUnitChange={(idx, u) => {
+                      const items = [...(block.lineItems || [])];
+                      items[idx] = { ...items[idx], unit: u };
                       handleUpdateBlock(block.id, { lineItems: items });
                     }}
                   />
@@ -600,6 +531,16 @@ export function UniversalReviewComponent({
                       };
                       handleUpdateBlock(block.id, { ingredients: ings });
                     }}
+                    onIngredientQuantityChange={(idx, q) => {
+                      const ings = [...(block.ingredients || [])];
+                      ings[idx] = { ...ings[idx], quantity: q };
+                      handleUpdateBlock(block.id, { ingredients: ings });
+                    }}
+                    onIngredientUnitChange={(idx, u) => {
+                      const ings = [...(block.ingredients || [])];
+                      ings[idx] = { ...ings[idx], unit: u };
+                      handleUpdateBlock(block.id, { ingredients: ings });
+                    }}
                   />
                 );
               }
@@ -607,7 +548,7 @@ export function UniversalReviewComponent({
             })();
 
             return inner ? (
-              <div key={block.id} className="px-5 py-4">
+              <div key={block.id} className="p-4 sm:p-5">
                 {inner}
               </div>
             ) : null;

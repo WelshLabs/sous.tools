@@ -202,13 +202,18 @@ function ActiveKitchenStepView({
           className="text-[10px] font-bold tracking-wider uppercase"
           style={{ color: "var(--color-muted-foreground)" }}
         >
-          Step {step.stepNumber}
+          Step {typeof step === "string" ? 1 : step.stepNumber || 1}
         </span>
         <p
           className={`mt-1 text-lg leading-relaxed font-medium ${isChecked ? "line-through" : ""}`}
           style={{ color: "var(--color-foreground)" }}
         >
-          {step.text}
+          {typeof step === "string"
+            ? step
+            : step.text ||
+              (typeof step === "object" && step && "instruction" in step
+                ? String((step as Record<string, unknown>).instruction)
+                : "")}
         </p>
       </div>
 

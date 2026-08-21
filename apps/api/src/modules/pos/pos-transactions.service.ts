@@ -52,4 +52,49 @@ export class PosTransactionsService {
 
     return data;
   }
+
+  async completeOrder(orderId: string, orgId: string) {
+    const { data, error } = await supabase
+      .from("pos_orders")
+      .update({
+        state: "COMPLETED",
+        closed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId)
+      .select();
+
+    if (error) {
+      console.error("Failed to complete pos_order:", error);
+      throw error;
+    }
+
+    if (this.dashboardService) {
+      try {
+        await this.dashboardService.triggerDashboardUpdate(orgId);
+      } catch (err) {
+        console.error("Failed to trigger dashboard update:", err);
+      }
+    }
+
+    return data;
+  }
+
+  async updateLineItemStatus(lineItemId: string, status: string) {
+    const { data, error } = await supabase
+      .from("pos_order_line_items")
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", lineItemId)
+      .select();
+
+    if (error) {
+      console.error("Failed to update pos_order_line_item status:", error);
+      throw error;
+    }
+
+    return data;
+  }
 }

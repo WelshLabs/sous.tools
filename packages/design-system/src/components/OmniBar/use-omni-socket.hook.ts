@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -69,14 +68,10 @@ export function useOmniSocket(): {
 
     const handleException = (error: { message?: string }) => {
       console.error("[OmniBar] WebSocket exception:", error);
-      if (
-        error.message?.includes("Unauthorized") ||
-        error.message?.includes("expired")
-      ) {
-        setErrorMessage(error.message || "Session error occurred.");
-        setIsProcessing(false);
-        markLoadingComplete();
-      }
+      setErrorMessage(error.message || "An error occurred processing command.");
+      setIsProcessing(false);
+      setIsListening(false);
+      markLoadingComplete();
     };
 
     const handleError = (error: unknown) => {
@@ -99,9 +94,10 @@ export function useOmniSocket(): {
         reason !== "io client disconnect" &&
         reason !== "io server disconnect"
       ) {
-        setErrorMessage("Lost connection to the server.");
-        setIsProcessing(false);
-        markLoadingComplete();
+        // Log transport disconnect; socket.io auto-reconnects in background
+        console.warn(
+          "[OmniBar] Temporary disconnect, socket is reconnecting...",
+        );
       }
     };
 

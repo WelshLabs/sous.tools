@@ -2,11 +2,7 @@
 
 import React, { useRef, useEffect } from "react";
 import { type OmniMessage } from "@soustools/api-types";
-import {
-  ChatMessageBubble,
-  ProcessingBubble,
-  EmptyStateBubble,
-} from "./ChatMessageBubble";
+import { ChatMessageBubble, ProcessingBubble } from "./ChatMessageBubble";
 
 export interface OmniTranscriptTimelineProps {
   messages: OmniMessage[];
@@ -39,37 +35,43 @@ export function OmniTranscriptTimeline({
 
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
-      {visibleMessages.length === 0 && !isProcessing ? (
-        <EmptyStateBubble />
-      ) : (
-        visibleMessages.map((m, idx) => {
-          const isLast = idx === visibleMessages.length - 1;
+      {visibleMessages.length === 0 && !isProcessing
+        ? null
+        : visibleMessages.map((m, idx) => {
+            const isLast = idx === visibleMessages.length - 1;
 
-          if ((m.role as string) === "render_component") {
-            if (renderComponentDirective) {
-              const node = renderComponentDirective(m);
-              if (node) {
-                return (
-                  <div key={m.id} className="mt-2">
-                    {node}
-                  </div>
+            if ((m.role as string) === "render_component") {
+              if (renderComponentDirective) {
+                // Deduplicate if multiple identical render_components exist
+                const prevIndex = visibleMessages.findIndex(
+                  (other) =>
+                    (other.role as string) === "render_component" &&
+                    other.content === m.content,
                 );
-              }
-            }
-            return null;
-          }
+                if (prevIndex !== idx) return null;
 
-          return (
-            <div key={m.id} className="group">
-              <ChatMessageBubble
-                message={m}
-                isLastMessage={isLast}
-                isProcessing={isProcessing}
-              />
-            </div>
-          );
-        })
-      )}
+                const node = renderComponentDirective(m);
+                if (node) {
+                  return (
+                    <div key={m.id} className="mt-2">
+                      {node}
+                    </div>
+                  );
+                }
+              }
+              return null;
+            }
+
+            return (
+              <div key={m.id} className="group">
+                <ChatMessageBubble
+                  message={m}
+                  isLastMessage={isLast}
+                  isProcessing={isProcessing}
+                />
+              </div>
+            );
+          })}
 
       {isProcessing &&
         (visibleMessages.length === 0 ||

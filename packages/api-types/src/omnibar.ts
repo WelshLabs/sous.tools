@@ -27,6 +27,7 @@ export const OmnibarCommandPayloadSchema = z.object({
   source: z.enum(["omnibar", "wearos"]),
   path: z.string().optional(),
   context: z.record(z.any()).nullish(),
+  attachments: z.array(z.any()).optional(),
 });
 
 export type OmnibarCommandPayload = z.infer<typeof OmnibarCommandPayloadSchema>;

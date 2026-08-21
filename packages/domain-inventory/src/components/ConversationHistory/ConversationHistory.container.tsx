@@ -11,19 +11,23 @@ import {
 
 export interface ConversationHistoryContainerProps {
   activeId?: string;
+  defaultCollapsed?: boolean;
 }
 
 export function ConversationHistoryContainer({
   activeId,
+  defaultCollapsed,
 }: ConversationHistoryContainerProps) {
   const router = useRouter();
   const { socket } = useOmnibarContext();
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(
+    defaultCollapsed !== undefined ? defaultCollapsed : !activeId,
+  );
 
   const fetchConversations = useCallback(() => {
-    api
-      .GET("/commands/conversations" as any, {})
+    (api.GET as any)("/commands/conversations", {})
       .then(({ data }: any) => {
         const raw: any[] = data?.data || data || [];
         const mapped: ConversationItem[] = raw.map((c: any) => ({
@@ -35,7 +39,7 @@ export function ConversationHistoryContainer({
         setConversations(mapped);
       })
       .catch((err: any) =>
-        console.error("Failed to fetch conversation history:", err),
+        console.warn("Failed to fetch conversation history:", err),
       )
       .finally(() => setIsLoading(false));
   }, []);
@@ -43,6 +47,12 @@ export function ConversationHistoryContainer({
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations, activeId]);
+
+  useEffect(() => {
+    if (activeId) {
+      setIsCollapsed(false);
+    }
+  }, [activeId]);
 
   useEffect(() => {
     if (!socket) return;
@@ -70,6 +80,8 @@ export function ConversationHistoryContainer({
       conversations={conversations}
       activeId={activeId}
       isLoading={isLoading}
+      isCollapsed={isCollapsed}
+      onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
       onSelect={handleSelect}
       onNewChat={handleNewChat}
     />

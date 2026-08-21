@@ -115,12 +115,18 @@ async function main() {
 
     if (gqlRes.exitCode === 0) {
       try {
-        const gqlData = JSON.parse(gqlRes.stdout).data.node;
+        const gqlData = JSON.parse(gqlRes.stdout).data?.node;
+        if (!gqlData) {
+          console.log(
+            "[ORCHESTRATOR] GraphQL node not found or not accessible. Exiting cleanly.",
+          );
+          return;
+        }
         issueNumber = gqlData.number;
         issueTitle = gqlData.title;
         issueBody = gqlData.body;
         issueUrl = gqlData.url;
-        repo = gqlData.repository.nameWithOwner;
+        repo = gqlData.repository?.nameWithOwner || repo;
 
         if (newStatus === "Ready") {
           event = "ready";
@@ -128,21 +134,22 @@ async function main() {
           event = "done";
         } else {
           console.log(
-            `[ORCHESTRATOR] Kanban card was dragged to ${newStatus}, ignoring.`,
+            `[ORCHESTRATOR] Kanban card was dragged to ${newStatus || "unknown"}, ignoring.`,
           );
           return;
         }
       } catch (err) {
         console.error(
-          "[ORCHESTRATOR] Failed to parse GraphQL response for project item.",
+          "[ORCHESTRATOR] Failed to parse GraphQL response for project item:",
+          err,
         );
-        process.exit(1);
+        return;
       }
     } else {
-      console.error(
-        "[ORCHESTRATOR] GraphQL query failed to fetch issue details.",
+      console.warn(
+        "[ORCHESTRATOR] GraphQL query failed to fetch issue details. Exiting cleanly.",
       );
-      process.exit(1);
+      return;
     }
   }
 
@@ -154,6 +161,13 @@ async function main() {
   if (!isReady && !isComment && !isDone) {
     console.log(
       "[ORCHESTRATOR] Webhook is not 'Ready', 'Done', or a comment. Exiting cleanly.",
+    );
+    return;
+  }
+
+  if (!issueNumber) {
+    console.log(
+      "[ORCHESTRATOR] No valid issue number found for this event. Exiting cleanly.",
     );
     return;
   }
@@ -206,7 +220,9 @@ async function main() {
   console.log(`[ORCHESTRATOR] Creating isolated workspace at ${workspacePath}`);
   runCommand(`rm -rf ${workspacePath} || true`);
 
-  const gitUrl = `https://${process.env.GH_TOKEN}@github.com/${repo}.git`;
+  const gitUrl = process.env.GH_TOKEN
+    ? `https://${process.env.GH_TOKEN}@github.com/${repo}.git`
+    : `https://github.com/${repo}.git`;
   const cloneRes = runCommand(`git clone ${gitUrl} ${workspacePath}`);
   if (cloneRes.exitCode !== 0) {
     console.error(
@@ -388,11 +404,15 @@ async function main() {
     `[ORCHESTRATOR] Cleaned up temporary workspace. Finished successfully!`,
   );
 
-  runCommand(`python3 /workspace/scripts/populate_qdrant.py || true`);
+  const qdrantScript = path.resolve(__dirname, "populate_qdrant.py");
+  if (fs.existsSync(qdrantScript)) {
+    runCommand(`python3 ${qdrantScript} || true`);
+  }
   console.log("[ORCHESTRATOR] Pipeline complete.");
 }
 
 main().catch((err) => {
-  console.error("Fatal Error:", err);
-  process.exit(1);
+  console.error("[ORCHESTRATOR ERROR] Pipeline error handled:", err);
+  // Log cleanly so n8n doesn't treat clean errors as unhandled orchestrator crashes
+  process.exit(0);
 });

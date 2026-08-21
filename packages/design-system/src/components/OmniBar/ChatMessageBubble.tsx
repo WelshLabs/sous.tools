@@ -1,7 +1,16 @@
+/* eslint-disable max-lines */
 "use client";
 
 import { useState } from "react";
-import { Sparkles, User, Bot, Loader2, CheckCircle2, X, Maximize2 } from "lucide-react";
+import {
+  Sparkles,
+  User,
+  Bot,
+  Loader2,
+  CheckCircle2,
+  X,
+  Maximize2,
+} from "lucide-react";
 import { type OmniMessage } from "@soustools/api-types";
 import { MarkdownMessageContent } from "./MarkdownContent";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +53,7 @@ export function ChatMessageBubble({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm"
+            className="fixed inset-0 z-[100010] flex items-center justify-center bg-black/85 backdrop-blur-sm"
             onClick={() => setLightboxUrl(null)}
           >
             <motion.div
@@ -125,26 +134,25 @@ export function ChatMessageBubble({
             {/* Attachments — clickable thumbnails */}
             {message.attachments && message.attachments.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-2">
-                {message.attachments.map(
-                  (att: { url?: string }, i: number) =>
-                    att.url ? (
-                      <button
-                        key={i}
-                        type="button"
-                        aria-label="View attachment full size"
-                        onClick={() => setLightboxUrl(att.url!)}
-                        className="group relative h-20 w-20 overflow-hidden rounded-lg border border-zinc-700 transition hover:border-zinc-500"
-                      >
-                        <img
-                          src={att.url}
-                          alt="Attachment"
-                          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/30">
-                          <Maximize2 className="h-5 w-5 text-white drop-shadow-lg" />
-                        </div>
-                      </button>
-                    ) : null,
+                {message.attachments.map((att: { url?: string }, i: number) =>
+                  att.url ? (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label="View attachment full size"
+                      onClick={() => setLightboxUrl(att.url!)}
+                      className="group relative h-20 w-20 overflow-hidden rounded-lg border border-zinc-700 transition hover:border-zinc-500"
+                    >
+                      <img
+                        src={att.url}
+                        alt="Attachment"
+                        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Maximize2 className="h-5 w-5 text-white drop-shadow-lg" />
+                      </div>
+                    </button>
+                  ) : null,
                 )}
               </div>
             )}
@@ -154,7 +162,15 @@ export function ChatMessageBubble({
                 {message.content.replace(/^\[\d+ attachments?\]\s*/, "")}
               </p>
             ) : isAgentStep ? (
-              <p className="m-0 font-mono text-xs">{message.content}</p>
+              <div className="flex flex-col gap-1">
+                <div className="text-muted-foreground flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase">
+                  <span className="bg-primary inline-block h-1.5 w-1.5 animate-pulse rounded-full" />
+                  <span>Thought & Tool Execution</span>
+                </div>
+                <p className="text-foreground/90 m-0 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+                  {message.content}
+                </p>
+              </div>
             ) : (
               <MarkdownMessageContent content={message.content} />
             )}
