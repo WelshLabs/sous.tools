@@ -18,6 +18,7 @@ import { serverConfig as config } from "@soustools/config/server";
       subscriptions: {
         "graphql-ws": true,
       },
+      context: ({ req, res }: { req: any; res: any }) => ({ req, res }),
     }),
   ],
 })

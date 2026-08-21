@@ -2,28 +2,30 @@ import {
   type CanActivate,
   type ExecutionContext,
   Injectable,
+  Optional,
   UnauthorizedException,
 } from "@nestjs/common";
-import { supabase } from "../database/supabase";
+import {
+  SupabaseService,
+  supabase as globalSupabase,
+} from "../database/supabase";
+import { ClsService } from "nestjs-cls";
 
 const COOKIE_NAME = "sb-access-token";
 
-/**
- * Guard that validates a Supabase JWT from either:
- *  1. The `Authorization: Bearer <token>` header (API-to-API or mobile clients)
- *  2. The `sb-access-token` HttpOnly cookie (browser clients)
- *
- * On success, populates `request.user` with the authenticated Supabase user.
- */
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
+  constructor(
+    @Optional() private readonly supabaseService?: SupabaseService,
+    @Optional() private readonly cls?: ClsService,
+  ) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    // Prefer Authorization header; fall back to HttpOnly cookie
     let token: string | undefined;
 
-    const authHeader = request.headers.authorization as string | undefined;
+    const authHeader = request.headers?.authorization as string | undefined;
     if (authHeader?.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
     } else if (request.cookies?.[COOKIE_NAME]) {
@@ -34,16 +36,31 @@ export class SupabaseAuthGuard implements CanActivate {
       throw new UnauthorizedException("No authentication token provided");
     }
 
+    const client = this.supabaseService?.client || globalSupabase;
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token);
+    } = await client.auth.getUser(token);
 
     if (error || !user) {
       throw new UnauthorizedException("Invalid or expired token");
     }
 
     request.user = user;
+
+    const orgId =
+      user.user_metadata?.organization_id ||
+      request.headers?.["x-org-id"] ||
+      request.headers?.["x-organization-id"] ||
+      request.query?.orgId;
+
+    if (orgId && this.cls) {
+      this.cls.set("orgId", orgId);
+    }
+    if (user.id && this.cls) {
+      this.cls.set("userId", user.id);
+    }
+
     return true;
   }
 }

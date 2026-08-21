@@ -86,7 +86,8 @@ try {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
       (isMockRun ? "mock" : undefined),
     NEXT_PUBLIC_SUPABASE_URL:
-      process.env.NEXT_PUBLIC_SUPABASE_URL ?? (isMockRun ? "mock" : undefined),
+      process.env.NEXT_PUBLIC_SUPABASE_URL ??
+      (isMockRun ? "https://mock.supabase.co" : undefined),
     NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY:
       process.env.NEXT_PUBLIC_NEW_RELIC_LICENSE_KEY ??
       (isMockRun ? "mock" : undefined),
@@ -95,7 +96,9 @@ try {
       process.env.SUPABASE_ACCESS_TOKEN ?? (isMockRun ? "mock" : undefined),
     SUPABASE_SERVICE_ROLE_KEY:
       process.env.SUPABASE_SERVICE_ROLE_KEY ?? (isMockRun ? "mock" : undefined),
-    SUPABASE_URL: process.env.SUPABASE_URL ?? (isMockRun ? "mock" : undefined),
+    SUPABASE_URL:
+      process.env.SUPABASE_URL ??
+      (isMockRun ? "https://mock.supabase.co" : undefined),
     SUPABASE_DIRECT_URL:
       process.env.SUPABASE_DIRECT_URL ?? (isMockRun ? "mock" : undefined),
     SUPABASE_WEBHOOK_SECRET:
