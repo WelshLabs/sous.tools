@@ -18,6 +18,7 @@ import { EventsModule } from "./core/events/events.module";
 import { HealthModule } from "./core/health/health.module";
 import { GqlThrottlerGuard } from "./core/guards/gql-throttler.guard";
 import { SupabaseAuthGuard } from "./core/guards/supabase-auth.guard";
+import { RolesGuard } from "./core/guards/roles.guard";
 
 import { SignageModule } from "./modules/signage/signage.module";
 import { PosSimulatorModule } from "./modules/pos-simulator/pos-simulator.module";
@@ -163,6 +164,10 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
     {
       provide: APP_GUARD,
       useClass: SupabaseAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
     {
       provide: APP_GUARD,
