@@ -434,6 +434,9 @@ importers:
         specifier: ^4.7.2
         version: 4.8.3(supports-color@10.2.2)
     devDependencies:
+      "@soustools/tsconfig":
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
       "@types/node":
         specifier: ^20.0.0
         version: 20.19.43

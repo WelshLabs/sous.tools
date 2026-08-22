@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import {
   refreshAuthSession,
@@ -20,7 +21,6 @@ import {
   useDashboardStatsUpdatedSubscription,
   useAgentTrajectorySubscription,
   useConversationMessagesQuery,
-
   useGenerateUploadUrlMutation,
 } from "./index";
 import { clientConfig as config } from "@soustools/config/client";
@@ -49,7 +49,10 @@ describe("packages/api-client", () => {
       global.fetch = vi.fn().mockImplementation(async () => {
         callCount++;
         await new Promise((resolve) => setTimeout(resolve, 50));
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
+        return new Response(
+          JSON.stringify({ data: { refreshSession: true } }),
+          { status: 200 },
+        );
       });
 
       const results = await Promise.all([
@@ -63,8 +66,17 @@ describe("packages/api-client", () => {
       expect(results).toEqual([true, true, true, true, true]);
       expect(callCount).toBe(1);
       expect(global.fetch).toHaveBeenCalledWith(
-        `${config.NEXT_PUBLIC_API_URL}/auth/refresh`,
-        { method: "POST", credentials: "include" },
+        `${config.NEXT_PUBLIC_API_URL}/graphql`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: `mutation RefreshSession { refreshSession }`,
+          }),
+        },
       );
     });
 
@@ -74,11 +86,11 @@ describe("packages/api-client", () => {
         listenerCalled = true;
       });
 
-      global.fetch = vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ success: true }), { status: 200 }),
-        );
+      global.fetch = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ data: { refreshSession: true } }), {
+          status: 200,
+        }),
+      );
 
       await refreshAuthSession();
       expect(listenerCalled).toBe(true);
@@ -172,13 +184,11 @@ describe("packages/api-client", () => {
 
   describe("createGraphQLClient Backward Compatibility", () => {
     it("executes GraphQL POST queries with credentials: include", async () => {
-      global.fetch = vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ data: { health: "OK" } }), {
-            status: 200,
-          }),
-        );
+      global.fetch = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ data: { health: "OK" } }), {
+          status: 200,
+        }),
+      );
 
       const client = createGraphQLClient();
       expect(graphqlClient).toBeDefined();
