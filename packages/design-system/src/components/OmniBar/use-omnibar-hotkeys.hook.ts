@@ -3,15 +3,26 @@
 import { useRouter } from "next/navigation";
 import { useOmnibarContext } from "./OmniBarContext";
 import { type OmniMessage } from "@soustools/api-types";
-import { type Socket } from "socket.io-client";
+import { graphqlClient } from "@soustools/api-client";
+
+const EXECUTE_OMNI_COMMAND_MUTATION = `
+  mutation ExecuteOmniCommand($command: String!, $path: String, $conversationId: String, $contextPayload: JSON) {
+    executeOmniCommand(command: $command, path: $path, conversationId: $conversationId, contextPayload: $contextPayload) {
+      id
+      conversationId
+      role
+      content
+      timestamp
+    }
+  }
+`;
 
 export function useOmniBarHotkeys({
-  socket,
   isFocusPage,
   pathname,
   setErrorMessage,
 }: {
-  socket: Socket | null;
+  socket?: any;
   isFocusPage: boolean;
   pathname: string;
   setErrorMessage: (msg: string | null) => void;
@@ -28,6 +39,7 @@ export function useOmniBarHotkeys({
     contextPayload,
     stagedFiles,
     setStagedFiles,
+    markLoadingComplete,
   } = useOmnibarContext();
 
   /**
@@ -103,24 +115,39 @@ export function useOmniBarHotkeys({
     setChatHistory(updatedHistory);
 
     try {
-      if (!socket || !socket.connected) {
-        setErrorMessage("Connecting to stream...");
-        socket?.connect();
-      }
+      const res = await graphqlClient.request<{ executeOmniCommand: any }>(
+        EXECUTE_OMNI_COMMAND_MUTATION,
+        {
+          command: userContent || "Analyze document",
+          path: pathname,
+          conversationId: currentChatId,
+          contextPayload: {
+            ...contextPayload,
+            attachments,
+          },
+        },
+      );
 
-      socket?.emit("executeCommand", {
-        chatHistory: updatedHistory,
-        source: "omnibar",
-        path: pathname,
-        context: { ...contextPayload, conversationId: currentChatId },
-        attachments,
-      });
+      if (res.data?.executeOmniCommand) {
+        const step = res.data.executeOmniCommand;
+        setChatHistory([
+          ...updatedHistory,
+          {
+            id: step.id,
+            role: step.role as OmniMessage["role"],
+            content: step.content,
+            timestamp: new Date(step.timestamp),
+          },
+        ]);
+      }
     } catch (err: unknown) {
-      console.error("Failed to emit command:", err);
+      console.error("Failed to execute command via GraphQL:", err);
       const errorMessage =
-        err instanceof Error ? err.message : "Network error occurred.";
+        err instanceof Error ? err.message : "GraphQL network error occurred.";
       setErrorMessage(errorMessage);
+    } finally {
       setIsProcessing(false);
+      markLoadingComplete();
     }
   };
 

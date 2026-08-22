@@ -34,3 +34,15 @@ export class AgentTrajectoryStep {
   @Field({ nullable: true })
   invoiceData?: string;
 }
+
+@ObjectType({ description: "Represents a chat conversation" })
+export class ChatConversationGQL {
+  @Field(() => ID)
+  id!: string;
+
+  @Field({ nullable: true })
+  title?: string;
+
+  @Field({ nullable: true })
+  updated_at?: string;
+}

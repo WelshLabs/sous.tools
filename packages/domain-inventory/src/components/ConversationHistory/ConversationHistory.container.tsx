@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@soustools/api-client";
-import { useOmnibarContext } from "@soustools/design-system";
+import { graphqlClient } from "@soustools/api-client";
 import {
   ConversationHistoryView,
   type ConversationItem,
@@ -14,12 +13,30 @@ export interface ConversationHistoryContainerProps {
   defaultCollapsed?: boolean;
 }
 
+const GET_CONVERSATIONS_QUERY = `
+  query GetConversations {
+    conversations {
+      id
+      title
+      updated_at
+    }
+  }
+`;
+
+const AGENT_TRAJECTORY_SUBSCRIPTION = `
+  subscription OnAgentTrajectory {
+    agentTrajectory {
+      id
+      conversationId
+    }
+  }
+`;
+
 export function ConversationHistoryContainer({
   activeId,
   defaultCollapsed,
 }: ConversationHistoryContainerProps) {
   const router = useRouter();
-  const { socket } = useOmnibarContext();
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(
@@ -27,19 +44,20 @@ export function ConversationHistoryContainer({
   );
 
   const fetchConversations = useCallback(() => {
-    (api.GET as any)("/commands/conversations", {})
-      .then(({ data }: any) => {
-        const raw: any[] = data?.data || data || [];
+    graphqlClient
+      .request<{ conversations: any[] }>(GET_CONVERSATIONS_QUERY)
+      .then((res) => {
+        const raw = res.data?.conversations || [];
         const mapped: ConversationItem[] = raw.map((c: any) => ({
           id: c.id,
-          title: c.title || c.first_message || "Conversation",
-          lastMessage: c.last_message || "",
+          title: c.title || "Conversation",
+          lastMessage: "",
           updatedAt: c.updated_at,
         }));
         setConversations(mapped);
       })
       .catch((err: any) =>
-        console.warn("Failed to fetch conversation history:", err),
+        console.warn("Failed to fetch conversation history via GraphQL:", err),
       )
       .finally(() => setIsLoading(false));
   }, []);
@@ -55,17 +73,20 @@ export function ConversationHistoryContainer({
   }, [activeId]);
 
   useEffect(() => {
-    if (!socket) return;
-    const handleUpdate = () => {
-      fetchConversations();
-    };
-    socket.on("chat_message", handleUpdate);
-    socket.on("ingestion:updated", handleUpdate);
+    const unsubscribe = graphqlClient.subscribe({
+      query: AGENT_TRAJECTORY_SUBSCRIPTION,
+      onNext: () => {
+        fetchConversations();
+      },
+      onError: () => {
+        // subscription fallback
+      },
+    });
+
     return () => {
-      socket.off("chat_message", handleUpdate);
-      socket.off("ingestion:updated", handleUpdate);
+      unsubscribe();
     };
-  }, [socket, fetchConversations]);
+  }, [fetchConversations]);
 
   const handleSelect = (id: string) => {
     router.push(`/home?chat=${id}`);

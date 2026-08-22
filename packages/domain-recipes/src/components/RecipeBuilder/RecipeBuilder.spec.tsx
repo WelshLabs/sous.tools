@@ -1,3 +1,4 @@
+"use client";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { RecipeBuilderView } from "./RecipeBuilder.view";

@@ -1,3 +1,4 @@
+"use client";
 import type { Meta, StoryObj } from "@storybook/react";
 import { RecipeViewerView } from "./RecipeViewer.view";
 import type { Recipe } from "@soustools/api-types";

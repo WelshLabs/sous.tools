@@ -5,16 +5,17 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { type OmniMessage } from "@soustools/api-types";
 import { OmniInputPill } from "./OmniInputPill";
-import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { StagingArea } from "./StagingArea";
 import { useOmnibarContext } from "./OmniBarContext";
+
+import { OmnibarPerimeterView } from "./OmnibarPerimeterView";
 import { AnimatedLettermark, Lettermark } from "../Logos/Logo";
 
 export interface OmniBarPresentationProps {
   isOpen: boolean;
   isListening: boolean;
   isProcessing?: boolean;
-  chatHistory: OmniMessage[];
+  chatHistory?: OmniMessage[];
   errorMessage?: string | null;
   inputText: string;
   isFocusPage?: boolean;
@@ -23,7 +24,7 @@ export interface OmniBarPresentationProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onMicClick: () => void;
   onSubmit: () => void;
-  onClearHistory: () => void;
+  onClearHistory?: () => void;
 }
 
 const springTransition = {
@@ -61,6 +62,7 @@ export function OmniBarPresentation({
   }, [chatHistory.length, isOpen]);
 
   const isWorkspace = !isFocusPage && !isAnswerPage;
+  const isPosOrKds = pathname === "/pos" || pathname === "/kds";
 
   return (
     <LayoutGroup id="omnibar-morph">
@@ -123,11 +125,11 @@ export function OmniBarPresentation({
         </div>
       )}
 
-      {/* ── MODE 3: Regular Workspace Pages (/inventory, /dashboard, etc.) ── */}
+      {/* ── MODE 3: Regular Workspace Pages (/inventory, /dashboard, /recipes, etc.) ── */}
       {isWorkspace && (
         <AnimatePresence mode="wait">
-          {!isOpen ? (
-            /* Collapsed FAB Circle in bottom-right corner */
+          {!isOpen && !isPosOrKds ? (
+            /* Collapsed Floating FAB Circle in bottom-right corner for all pages except POS and KDS */
             <motion.button
               key="fab-button"
               type="button"
@@ -139,7 +141,7 @@ export function OmniBarPresentation({
               whileHover={{ y: -3, scale: 1.06 }}
               whileTap={{ scale: 0.94 }}
               onClick={onToggle}
-              className="ds-glass pointer-events-auto fixed right-6 bottom-6 z-[9999] flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full"
+              className="ds-glass pointer-events-auto fixed right-6 bottom-6 z-[9999] flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full shadow-2xl"
               style={{
                 borderRadius: "9999px",
                 borderColor: isProcessing
@@ -158,11 +160,15 @@ export function OmniBarPresentation({
                 <Lettermark gradient className="relative z-10 h-8 w-8" />
               )}
             </motion.button>
-          ) : (
+          ) : isOpen ? (
             /* Expanded Modal — Dead center of screen */
-            <div
+            <motion.div
               key="workspace-modal-container"
-              className="pointer-events-none fixed top-24 left-1/2 z-[9999] flex w-full max-w-lg -translate-x-1/2 flex-col items-center justify-center px-4 sm:max-w-2xl"
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="pointer-events-none fixed top-24 left-1/2 z-[100000] flex w-full max-w-lg -translate-x-1/2 flex-col items-center justify-center px-4 sm:max-w-2xl"
             >
               <div className="pointer-events-auto flex w-full flex-col justify-center gap-0">
                 <StagingArea files={stagedFiles} />
@@ -181,8 +187,8 @@ export function OmniBarPresentation({
                   stagedFiles={stagedFiles}
                 />
               </div>
-            </div>
-          )}
+            </motion.div>
+          ) : null}
         </AnimatePresence>
       )}
     </LayoutGroup>

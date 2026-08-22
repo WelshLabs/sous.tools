@@ -20,17 +20,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const message =
       exception instanceof Error ? exception.message : "Internal server error";
-    const stack = exception instanceof Error ? exception.stack : undefined;
 
-    console.error(
-      {
-        err: exception,
-        stack,
-        status,
-        path: request?.url,
-      },
-      `Exception caught by filter: ${message}`,
-    );
+    if (status >= 500) {
+      console.error(
+        `[HTTP ${status}] ${request?.method || "GET"} ${request?.url}: ${message}`,
+        (exception as Error)?.stack,
+      );
+    } else if (status !== 404) {
+      console.warn(
+        `[HTTP ${status}] ${request?.method || "GET"} ${request?.url}: ${message}`,
+      );
+    }
 
     if (response && typeof response.status === "function") {
       response.status(status).json({

@@ -1,3 +1,4 @@
+"use client";
 interface CategoryHeaderBlockProps {
   title: string;
   subtitle?: string;

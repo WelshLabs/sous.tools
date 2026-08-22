@@ -1,40 +1,38 @@
 import { Module } from "@nestjs/common";
-import { ItemsController } from "./items.controller";
 import { ItemsService } from "./items.service";
-import { PriceHistoryController } from "./price-history.controller";
+import { ItemsResolver } from "./items.resolver";
 import { PriceHistoryService } from "./price-history.service";
-import { WastageController } from "./wastage.controller";
+import { PriceHistoryResolver } from "./price-history.resolver";
 import { WastageService } from "./wastage.service";
-import { InventoryController } from "./inventory.controller";
+import { WastageResolver } from "./wastage.resolver";
 import { InventoryService } from "./inventory.service";
-import { VendorsController } from "./vendors.controller";
+import { InventoryResolver } from "./inventory.resolver";
 import { VendorsService } from "./vendors.service";
-import { WhiteboardController } from "./whiteboard.controller";
+import { VendorsResolver } from "./vendors.resolver";
 import { WhiteboardService } from "./whiteboard.service";
-import { PurchaseOrdersController } from "./purchase-orders.controller";
+import { WhiteboardResolver } from "./whiteboard.resolver";
 import { PurchaseOrdersService } from "./purchase-orders.service";
+import { PurchaseOrdersResolver } from "./purchase-orders.resolver";
 
 import { NutritionModule } from "../nutrition/nutrition.module";
 
 @Module({
   imports: [NutritionModule],
-  controllers: [
-    ItemsController,
-    PriceHistoryController,
-    WastageController,
-    InventoryController,
-    VendorsController,
-    WhiteboardController,
-    PurchaseOrdersController,
-  ],
   providers: [
     ItemsService,
+    ItemsResolver,
     PriceHistoryService,
+    PriceHistoryResolver,
     WastageService,
+    WastageResolver,
     InventoryService,
+    InventoryResolver,
     VendorsService,
+    VendorsResolver,
     WhiteboardService,
+    WhiteboardResolver,
     PurchaseOrdersService,
+    PurchaseOrdersResolver,
   ],
   exports: [
     ItemsService,

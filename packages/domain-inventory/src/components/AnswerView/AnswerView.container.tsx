@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useOmnibarContext } from "@soustools/design-system";
-import { api } from "@soustools/api-client";
+import { graphqlClient } from "@soustools/api-client";
 import { type OmniMessage } from "@soustools/api-types";
 import { AnswerViewView } from "./AnswerView.view";
 
@@ -11,11 +11,54 @@ export interface AnswerViewContainerProps {
   initialReviewId?: string;
 }
 
+const DASHBOARD_STATS_QUERY = `
+  query GetDashboardStats {
+    dashboardStats {
+      revenue {
+        name
+        value
+      }
+      ticketTimes {
+        time
+        minutes
+      }
+    }
+  }
+`;
+
+const CONVERSATION_MESSAGES_QUERY = `
+  query GetConversationMessages($conversationId: String!) {
+    conversationMessages(conversationId: $conversationId) {
+      id
+      conversationId
+      role
+      content
+      timestamp
+      isLoading
+      uiAction
+      recipeData
+      invoiceData
+    }
+  }
+`;
+
+const EXECUTE_OMNI_COMMAND_MUTATION = `
+  mutation ExecuteOmniCommand($command: String!, $path: String, $conversationId: String, $contextPayload: JSON) {
+    executeOmniCommand(command: $command, path: $path, conversationId: $conversationId, contextPayload: $contextPayload) {
+      id
+      conversationId
+      role
+      content
+      timestamp
+    }
+  }
+`;
+
 export function AnswerViewContainer({
   initialQuery = "",
   initialReviewId,
 }: AnswerViewContainerProps) {
-  const { chatHistory, setChatHistory, isProcessing, setIsProcessing, socket } =
+  const { chatHistory, setChatHistory, isProcessing, setIsProcessing, markLoadingComplete, contextPayload } =
     useOmnibarContext();
 
   const [prepListItems, setPrepListItems] = useState([
@@ -39,15 +82,13 @@ export function AnswerViewContainer({
   >([]);
 
   useEffect(() => {
-    (api as any)
-      .GET("/dashboard/stats", {
-        params: { query: { orgId: "d0000000-0000-0000-0000-000000000000" } },
-      })
-      .then((res: any) => {
-        if (Array.isArray(res.data?.revenue))
-          setRealRevenueData(res.data.revenue);
-        if (Array.isArray(res.data?.ticketTimes))
-          setRealTicketTimeData(res.data.ticketTimes);
+    graphqlClient
+      .request<{ dashboardStats: any }>(DASHBOARD_STATS_QUERY)
+      .then((res) => {
+        if (Array.isArray(res.data?.dashboardStats?.revenue))
+          setRealRevenueData(res.data.dashboardStats.revenue);
+        if (Array.isArray(res.data?.dashboardStats?.ticketTimes))
+          setRealTicketTimeData(res.data.dashboardStats.ticketTimes);
       })
       .catch((err: unknown) =>
         console.error("Failed to fetch dashboard stats:", err),
@@ -58,19 +99,30 @@ export function AnswerViewContainer({
 
   useEffect(() => {
     if (!initialReviewId) {
+      setChatHistory([]);
       setHasFetchedHistory(true);
       return;
     }
-    (api as any)
-      .GET(`/commands/conversations/${initialReviewId}/messages`, {})
-      .then((res: any) => {
-        const msgs = (
-          res.data && "data" in res.data ? res.data.data : res.data
-        ) as OmniMessage[] | undefined;
-        if (Array.isArray(msgs) && msgs.length > 0) setChatHistory(msgs);
+    graphqlClient
+      .request<{ conversationMessages: any[] }>(CONVERSATION_MESSAGES_QUERY, {
+        conversationId: initialReviewId,
+      })
+      .then((res) => {
+        const raw = res.data?.conversationMessages || [];
+        const msgs: OmniMessage[] = raw.map((m: any) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          timestamp: new Date(m.timestamp),
+          isLoading: m.isLoading,
+          uiAction: m.uiAction ? (typeof m.uiAction === "string" ? JSON.parse(m.uiAction) : m.uiAction) : undefined,
+          recipeData: m.recipeData ? (typeof m.recipeData === "string" ? JSON.parse(m.recipeData) : m.recipeData) : undefined,
+          invoiceData: m.invoiceData ? (typeof m.invoiceData === "string" ? JSON.parse(m.invoiceData) : m.invoiceData) : undefined,
+        }));
+        setChatHistory(msgs);
       })
       .catch((err: unknown) =>
-        console.error("Failed to fetch chat history:", err),
+        console.error("Failed to fetch chat history via GraphQL:", err),
       )
       .finally(() => setHasFetchedHistory(true));
   }, [initialReviewId, setChatHistory]);
@@ -90,46 +142,46 @@ export function AnswerViewContainer({
       timestamp: new Date(),
     };
 
-    if (socket?.connected) {
-      socket.emit("executeCommand", {
-        chatHistory: [...chatHistory, newMsg],
-        source: "omnibar",
+    const updated = [...chatHistory, newMsg];
+    setChatHistory(updated);
+
+    graphqlClient
+      .request<{ executeOmniCommand: any }>(EXECUTE_OMNI_COMMAND_MUTATION, {
+        command: initialQuery,
         path: "/home",
-        context: { conversationId: initialReviewId },
+        conversationId: initialReviewId,
+        contextPayload,
+      })
+      .then((res) => {
+        if (res.data?.executeOmniCommand) {
+          const step = res.data.executeOmniCommand;
+          setChatHistory([
+            ...updated,
+            {
+              id: step.id,
+              role: step.role as OmniMessage["role"],
+              content: step.content,
+              timestamp: new Date(step.timestamp),
+            },
+          ]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to execute initial query command:", err);
+      })
+      .finally(() => {
+        setIsProcessing(false);
+        markLoadingComplete();
       });
-    } else {
-      (api as any)
-        .POST("/commands/execute", {
-          body: { command: initialQuery, history: [...chatHistory, newMsg] },
-        })
-        .then((res: any) => {
-          setIsProcessing(false);
-          if (res.data?.response) {
-            setChatHistory([
-              ...chatHistory,
-              newMsg,
-              {
-                id: crypto.randomUUID(),
-                role: "model",
-                content: res.data.response,
-                timestamp: new Date(),
-              },
-            ]);
-          }
-        })
-        .catch((err: unknown) => {
-          console.error("Failed to execute answer query:", err);
-          setIsProcessing(false);
-        });
-    }
   }, [
     initialQuery,
     hasFetchedHistory,
     chatHistory,
     initialReviewId,
-    setChatHistory,
     setIsProcessing,
-    socket,
+    setChatHistory,
+    contextPayload,
+    markLoadingComplete,
   ]);
 
   useEffect(() => {

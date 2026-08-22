@@ -13,21 +13,77 @@ import type {
   PurchaseOrder,
   PurchaseOrderItem,
 } from "@soustools/api-types";
-import { api } from "@soustools/api-client";
+import { graphqlClient } from "@soustools/api-client";
 import { toast } from "sonner";
 import { OrdersPanelView } from "./OrdersPanel.view";
 import { AddVendorModal } from "./AddVendorModal";
+
+const CREATE_WHITEBOARD_MUTATION = `
+  mutation CreateWhiteboardItem($input: CreateWhiteboardInputGQL!) {
+    createWhiteboardItem(input: $input) {
+      id
+      custom_name
+      quantity
+      unit
+      suggested_vendor_id
+      status
+    }
+  }
+`;
+
+const UPDATE_WHITEBOARD_MUTATION = `
+  mutation UpdateWhiteboardItem($id: String!, $input: UpdateWhiteboardInputGQL!) {
+    updateWhiteboardItem(id: $id, input: $input) {
+      id
+      quantity
+      unit
+      status
+    }
+  }
+`;
+
+const DELETE_WHITEBOARD_MUTATION = `
+  mutation DeleteWhiteboardItem($id: String!) {
+    deleteWhiteboardItem(id: $id) {
+      id
+    }
+  }
+`;
+
+const CREATE_PURCHASE_ORDER_MUTATION = `
+  mutation CreatePurchaseOrder($input: CreatePurchaseOrderInputGQL!) {
+    createPurchaseOrder(input: $input) {
+      id
+      vendor_id
+      status
+    }
+  }
+`;
+
+const UPDATE_PURCHASE_ORDER_MUTATION = `
+  mutation UpdatePurchaseOrder($id: String!, $input: UpdatePurchaseOrderInputGQL!) {
+    updatePurchaseOrder(id: $id, input: $input) {
+      id
+      status
+    }
+  }
+`;
 
 function toOrderSupplier(v: Vendor): OrderSupplier {
   return { id: v.id, name: v.name, deliveryDays: [], cutoffTime: "—" };
 }
 
 function toOrderLineItem(item: WhiteboardItem): OrderLineItem {
+  const rawName =
+    (item as any).custom_name ||
+    (item as any).raw_name ||
+    (item as any).name ||
+    "Item";
   return {
     id: item.id,
-    rawName: item.raw_name,
-    quantity: 1,
-    unit: "ea",
+    rawName,
+    quantity: (item as any).quantity || 1,
+    unit: (item as any).unit || "ea",
     isSystemSuggestion: false,
     supplier: null,
   };
@@ -38,11 +94,16 @@ function toOrderLineItemFromPo(
   vendorId: string,
   suppliers: OrderSupplier[],
 ): OrderLineItem {
+  const rawName =
+    (item as any).custom_name ||
+    (item as any).raw_name ||
+    (item as any).name ||
+    "Item";
   return {
     id: item.id,
-    rawName: item.raw_name,
-    quantity: item.ordered_qty || 1,
-    unit: "ea",
+    rawName,
+    quantity: (item as any).quantity || item.ordered_qty || 1,
+    unit: (item as any).unit || "ea",
     isSystemSuggestion: false,
     supplier: suppliers.find((s) => s.id === vendorId) ?? null,
   };
@@ -190,26 +251,24 @@ export function OrdersPanel({
     } else {
       try {
         if (inferredVendorId) {
-          const { data, error } = await (api.POST as any)(
-            "/purchase-orders/draft-item",
+          const res = await graphqlClient.request<{ createPurchaseOrder: any }>(
+            CREATE_PURCHASE_ORDER_MUTATION,
             {
-              body: {
-                raw_name: rawName,
+              input: {
                 vendor_id: inferredVendorId,
-                ordered_qty: 1,
+                items: [{ custom_name: rawName, quantity: 1 }],
               },
             },
           );
-          if (error) throw new Error("Failed to add to draft");
-          const payload = data as any;
-          realId = payload?.data?.id as string;
+          realId = res.data?.createPurchaseOrder?.id || null;
         } else {
-          const { data, error } = await (api.POST as any)("/whiteboard", {
-            body: { raw_name: rawName },
-          });
-          if (error) throw new Error("Failed to save item");
-          const payload = data as any;
-          realId = payload?.data?.id as string;
+          const res = await graphqlClient.request<{ createWhiteboardItem: any }>(
+            CREATE_WHITEBOARD_MUTATION,
+            {
+              input: { custom_name: rawName },
+            },
+          );
+          realId = res.data?.createWhiteboardItem?.id || null;
         }
       } catch (err: any) {
         toast.error(err.message || "Network error");
@@ -233,11 +292,9 @@ export function OrdersPanel({
       await customOnRemoveItem(id, !item.supplier);
     } else {
       try {
-        const endpoint = !item.supplier
-          ? `/whiteboard/${id}`
-          : `/purchase-orders/items/${id}`;
-        const { error } = await (api.DELETE as any)(endpoint);
-        if (error) throw new Error("Failed to remove item");
+        if (!item.supplier) {
+          await graphqlClient.request(DELETE_WHITEBOARD_MUTATION, { id });
+        }
       } catch (err: any) {
         toast.error(`Remove failed: ${err.message}`);
       }
@@ -252,15 +309,12 @@ export function OrdersPanel({
     );
     if (customOnUpdateItemQty) {
       await customOnUpdateItemQty(id, qty, !item.supplier);
-    } else if (item.supplier) {
+    } else if (!item.supplier) {
       try {
-        const { error } = await (api.PATCH as any)(
-          `/purchase-orders/items/${id}`,
-          {
-            body: { ordered_qty: qty },
-          },
-        );
-        if (error) throw new Error("Failed to update item");
+        await graphqlClient.request(UPDATE_WHITEBOARD_MUTATION, {
+          id,
+          input: { quantity: qty },
+        });
       } catch (err: any) {
         toast.error(`Update failed: ${err.message}`);
       }
@@ -273,10 +327,11 @@ export function OrdersPanel({
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, unit } : i)));
     if (customOnUpdateItemUnit) {
       await customOnUpdateItemUnit(id, unit, !item.supplier);
-    } else if (item.supplier) {
+    } else if (!item.supplier) {
       try {
-        await (api.PATCH as any)(`/purchase-orders/items/${id}`, {
-          body: { unit },
+        await graphqlClient.request(UPDATE_WHITEBOARD_MUTATION, {
+          id,
+          input: { unit },
         });
       } catch {
         // Optimistic
@@ -309,22 +364,20 @@ export function OrdersPanel({
       );
     } else {
       try {
-        const delEndpoint = !item.supplier
-          ? `/whiteboard/${id}`
-          : `/purchase-orders/items/${id}`;
-        await (api.DELETE as any)(delEndpoint);
+        if (!item.supplier) {
+          await graphqlClient.request(DELETE_WHITEBOARD_MUTATION, { id });
+        }
 
         if (supplierId) {
-          await (api.POST as any)("/purchase-orders/draft-item", {
-            body: {
-              raw_name: item.rawName,
+          await graphqlClient.request(CREATE_PURCHASE_ORDER_MUTATION, {
+            input: {
               vendor_id: supplierId,
-              ordered_qty: 1,
+              items: [{ custom_name: item.rawName, quantity: 1 }],
             },
           });
         } else {
-          await (api.POST as any)("/whiteboard", {
-            body: { raw_name: item.rawName },
+          await graphqlClient.request(CREATE_WHITEBOARD_MUTATION, {
+            input: { custom_name: item.rawName },
           });
         }
       } catch (err: any) {
@@ -343,10 +396,10 @@ export function OrdersPanel({
       await customOnSubmitPO(po.id);
     } else {
       try {
-        const { error } = await (api.PATCH as any)(
-          `/purchase-orders/${po.id}/submit`,
-        );
-        if (error) throw new Error("Failed to submit order");
+        await graphqlClient.request(UPDATE_PURCHASE_ORDER_MUTATION, {
+          id: po.id,
+          input: { status: "SUBMITTED" },
+        });
         toast.success("Order submitted successfully");
       } catch (err: any) {
         toast.error(`Submit failed: ${err.message}`);

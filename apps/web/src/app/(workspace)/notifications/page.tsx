@@ -1,8 +1,25 @@
 import React from "react";
-import { api } from "@soustools/api-client";
+import { graphqlClient } from "@soustools/api-client";
 import { NotificationsContainer } from "@soustools/domain-settings";
 
 export const dynamic = "force-dynamic";
+
+const GET_NOTIFICATIONS_PAGE_QUERY = `
+  query GetNotificationsPage($page: Int!, $limit: Int!) {
+    notifications(page: $page, limit: $limit) {
+      data {
+        id
+        title
+        message
+        link
+        createdAt
+        readAt
+      }
+      totalPages
+      total
+    }
+  }
+`;
 
 export default async function NotificationsPage({
   searchParams,
@@ -18,23 +35,20 @@ export default async function NotificationsPage({
   let totalPages = 1;
 
   try {
-    const { data, error } = await api.GET("/notifications", {
-      params: {
-        query: {
-          page: page.toString(),
-          limit: limit.toString(),
-        },
-      },
-      cache: "no-store",
-    });
+    const res = await graphqlClient.request<{
+      notifications: {
+        data: any[];
+        totalPages: number;
+        total: number;
+      };
+    }>(GET_NOTIFICATIONS_PAGE_QUERY, { page, limit });
 
-    if (!error && data?.data) {
-      const paginatedData = data.data as any;
-      notifications = paginatedData.data || [];
-      totalPages = paginatedData.totalPages || 1;
+    if (res.data?.notifications) {
+      notifications = res.data.notifications.data || [];
+      totalPages = res.data.notifications.totalPages || 1;
     }
   } catch (error) {
-    console.error("Failed to fetch all notifications:", error);
+    console.error("Failed to fetch all notifications via GraphQL:", error);
   }
 
   return (

@@ -11,8 +11,7 @@ import {
   FileText,
   DollarSign,
 } from "lucide-react";
-import { Button, OmniBar } from "@soustools/design-system";
-import { WaffleMenuDropdown } from "@soustools/design-system";
+import { Button, OmniButton, WaffleMenuDropdown } from "@soustools/design-system";
 import { type POSUser } from "../pos.types";
 
 export interface POSAppBarProps {
@@ -61,6 +60,7 @@ export function POSAppBar({
             <WaffleMenuDropdown
               onCloseMenus={() => setIsWaffleOpen(false)}
               isAdmin={isAdmin}
+              align="left"
             />
           )}
         </div>
@@ -101,12 +101,13 @@ export function POSAppBar({
         </nav>
       </div>
 
-      {/* Center/Right: Omnibar & Fast POS Controls */}
-      <div className="flex items-center gap-2 md:gap-3">
-        {/* Embedded Omnibar */}
-        <div className="hidden sm:block">
-          <OmniBar />
-        </div>
+      {/* Dead Center: Floating OmniButton */}
+      <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center z-20">
+        <OmniButton size="md" />
+      </div>
+
+      {/* Right: Fast POS Controls */}
+      <div className="flex items-center gap-2 md:gap-3 z-10">
 
         {/* Saved Checks Button */}
         <Button

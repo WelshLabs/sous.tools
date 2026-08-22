@@ -344,10 +344,17 @@ function UsdaCombobox({
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="flex items-center gap-1">
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={handleOpen}
-          className="flex w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/70 px-2.5 py-2 text-left text-xs transition hover:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleOpen();
+            }
+          }}
+          className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/70 px-2.5 py-2 text-left text-xs transition hover:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none"
         >
           <span
             className={`truncate ${selectedMatch ? "font-medium text-emerald-300" : "text-zinc-500 italic"}`}
@@ -369,7 +376,7 @@ function UsdaCombobox({
             )}
             <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
           </div>
-        </button>
+        </div>
       </div>
 
       {open && (

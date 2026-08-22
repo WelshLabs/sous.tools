@@ -26,8 +26,52 @@ const DASHBOARD_SUBSCRIPTION = `
       }
       summary {
         totalOrders
+        weeklyOrders
+        allTimeOrders
         averageTicketTime
+        weeklyAverageTicketTime
         dailyRevenue
+        weeklyRevenue
+        allTimeRevenue
+        activeTables
+        dailyRevenueChange
+        totalOrdersChange
+        averageTicketTimeChange
+        activeTablesSubtitle
+      }
+    }
+  }
+`;
+
+const GET_DASHBOARD_STATS_QUERY = `
+  query GetDashboardStats {
+    dashboardStats {
+      revenue {
+        name
+        value
+        sales
+        tax
+        tips
+        processingFee
+      }
+      ticketTimes {
+        time
+        minutes
+      }
+      inventoryAlerts {
+        item
+        status
+        quantity
+      }
+      summary {
+        totalOrders
+        weeklyOrders
+        allTimeOrders
+        averageTicketTime
+        weeklyAverageTicketTime
+        dailyRevenue
+        weeklyRevenue
+        allTimeRevenue
         activeTables
         dailyRevenueChange
         totalOrdersChange
@@ -39,13 +83,43 @@ const DASHBOARD_SUBSCRIPTION = `
 `;
 
 export interface DashboardProps {
-  initialStats: DashboardStats;
+  initialStats?: DashboardStats;
 }
 
 export function DashboardContainer({ initialStats }: DashboardProps) {
-  const [stats, setStats] = useState<DashboardStats>(initialStats);
-  const [isLive, setIsLive] = useState(false);
+  const [stats, setStats] = useState<DashboardStats>(
+    initialStats || {
+      revenue: [],
+      ticketTimes: [],
+      inventoryAlerts: [],
+      summary: {
+        totalOrders: 0,
+        weeklyOrders: 0,
+        allTimeOrders: 0,
+        averageTicketTime: "0m",
+        weeklyAverageTicketTime: "0m",
+        dailyRevenue: "$0.00",
+        weeklyRevenue: "$0.00",
+        allTimeRevenue: "$0.00",
+        activeTables: 0,
+      },
+    },
+  );
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Fetch fresh stats on mount
+  useEffect(() => {
+    graphqlClient
+      .request<{ dashboardStats: DashboardStats }>(GET_DASHBOARD_STATS_QUERY)
+      .then((res) => {
+        if (res.data?.dashboardStats) {
+          setStats(res.data.dashboardStats);
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to fetch initial dashboard stats via GraphQL:", err);
+      });
+  }, []);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
@@ -56,7 +130,6 @@ export function DashboardContainer({ initialStats }: DashboardProps) {
       query: DASHBOARD_SUBSCRIPTION,
       onNext: (data) => {
         if (data?.dashboardStatsUpdated) {
-          setIsLive(true);
           setIsUpdating(true);
           setStats(data.dashboardStatsUpdated);
 
@@ -67,11 +140,7 @@ export function DashboardContainer({ initialStats }: DashboardProps) {
         }
       },
       onError: (err) => {
-        console.warn("GraphQL Dashboard subscription disconnected/error:", err);
-        setIsLive(false);
-      },
-      onComplete: () => {
-        setIsLive(false);
+        console.warn("GraphQL Dashboard subscription notice:", err);
       },
     });
 
@@ -81,9 +150,7 @@ export function DashboardContainer({ initialStats }: DashboardProps) {
     };
   }, []);
 
-  return (
-    <DashboardView stats={stats} isLive={isLive} isUpdating={isUpdating} />
-  );
+  return <DashboardView stats={stats} isUpdating={isUpdating} />;
 }
 
 export { DashboardContainer as Dashboard };

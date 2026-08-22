@@ -1,3 +1,4 @@
+"use client";
 /* eslint-disable max-lines */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";

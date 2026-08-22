@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   RevenueChart,
   TicketTimeChart,
@@ -18,8 +19,13 @@ export interface DashboardStats {
   inventoryAlerts: { item: string; status: string; quantity: string }[];
   summary: {
     totalOrders: number;
+    weeklyOrders?: number;
+    allTimeOrders?: number;
     averageTicketTime: string;
+    weeklyAverageTicketTime?: string;
     dailyRevenue: string;
+    weeklyRevenue?: string;
+    allTimeRevenue?: string;
     activeTables: number;
     dailyRevenueChange?: string;
     totalOrdersChange?: string;
@@ -30,106 +36,240 @@ export interface DashboardStats {
 
 export interface DashboardViewProps {
   stats: DashboardStats;
-  isLive?: boolean;
   isUpdating?: boolean;
 }
 
 export function DashboardView({
   stats,
-  isLive = false,
   isUpdating = false,
 }: DashboardViewProps) {
-  const cards = [
-    {
-      title: "Daily Revenue",
-      value: stats.summary.dailyRevenue,
-      change: stats.summary.dailyRevenueChange || "0% from yesterday",
-      icon: CircleDollarSign,
-      neon: true,
-    },
-    {
-      title: "Total Orders",
-      value: stats.summary.totalOrders,
-      change: stats.summary.totalOrdersChange || "0% from yesterday",
-      icon: Activity,
-      neon: false,
-    },
-    {
-      title: "Avg Ticket Time",
-      value: stats.summary.averageTicketTime,
-      change: stats.summary.averageTicketTimeChange || "0m from yesterday",
-      icon: Clock,
-      neon: false,
-    },
-    {
-      title: "Active Tables",
-      value: stats.summary.activeTables,
-      change:
-        stats.summary.activeTablesSubtitle ||
-        `${stats.summary.activeTables} active`,
-      icon: Users,
-      neon: false,
-    },
-  ];
+  const [revenueRange, setRevenueRange] = useState<"today" | "week" | "all">("today");
+  const [ordersRange, setOrdersRange] = useState<"today" | "week" | "all">("today");
+  const [speedRange, setSpeedRange] = useState<"today" | "week">("today");
+  const [queueMode, setQueueMode] = useState<"active" | "alerts">("active");
+
+  const revenueValue =
+    revenueRange === "today"
+      ? stats.summary.dailyRevenue
+      : revenueRange === "week"
+        ? stats.summary.weeklyRevenue || "$0.00"
+        : stats.summary.allTimeRevenue || "$0.00";
+
+  const revenueSubtitle =
+    revenueRange === "today"
+      ? stats.summary.dailyRevenueChange || "Today's net sales"
+      : revenueRange === "week"
+        ? "Past 7 days total sales"
+        : "Lifetime gross sales";
+
+  const ordersValue =
+    ordersRange === "today"
+      ? stats.summary.totalOrders
+      : ordersRange === "week"
+        ? stats.summary.weeklyOrders ?? 0
+        : stats.summary.allTimeOrders ?? stats.summary.totalOrders;
+
+  const ordersSubtitle =
+    ordersRange === "today"
+      ? stats.summary.totalOrdersChange || "Today's completed orders"
+      : ordersRange === "week"
+        ? "7-day order volume"
+        : "Lifetime completed orders";
+
+  const speedValue =
+    speedRange === "today"
+      ? stats.summary.averageTicketTime
+      : stats.summary.weeklyAverageTicketTime || stats.summary.averageTicketTime;
+
+  const speedSubtitle =
+    speedRange === "today"
+      ? stats.summary.averageTicketTimeChange || "Today's ticket average"
+      : "7-day kitchen pace";
+
+  const queueValue =
+    queueMode === "active"
+      ? stats.summary.activeTables
+      : stats.inventoryAlerts.length;
+
+  const queueSubtitle =
+    queueMode === "active"
+      ? stats.summary.activeTablesSubtitle || `${stats.summary.activeTables} active orders`
+      : `${stats.inventoryAlerts.length} low stock alerts`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Operations Pulse
-          </h1>
-          <p className="dark:text-muted-foreground mt-1 text-sm text-zinc-500">
-            Real-time telemetry and revenue performance across stations.
-          </p>
-        </div>
-
-        {/* Live Indicator Badge */}
-        <div className="flex items-center gap-2 rounded-full border border-black/5 bg-zinc-100/50 px-3 py-1.5 backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
-          <span className="relative flex h-2.5 w-2.5">
-            {isLive && (
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            )}
-            <span
-              className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-                isLive ? "bg-emerald-500" : "bg-zinc-500"
-              }`}
-            />
-          </span>
-          <span className="dark:text-muted-foreground font-mono text-xs font-semibold tracking-wider text-zinc-500 uppercase">
-            {isUpdating ? "Updating..." : isLive ? "Live Sync" : "Connecting"}
-          </span>
-        </div>
-      </div>
-
+    <div className="space-y-6 pt-2">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Card
-              key={card.title}
-              className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isUpdating ? "ring-2 ring-cyan-500/50" : ""}`}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                  {card.title}
-                </CardTitle>
-                <div className="rounded-xl border border-black/5 bg-zinc-100 p-2 dark:border-white/5 dark:bg-zinc-900">
-                  <Icon className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
-                  {card.value}
-                </div>
-                <p className="dark:text-muted-foreground mt-1 text-xs text-zinc-500">
-                  {card.change}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {/* Card 1: Revenue */}
+        <Card
+          className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isUpdating ? "ring-2 ring-cyan-500/50" : ""}`}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex flex-col gap-1.5">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                {revenueRange === "today"
+                  ? "Today's Sales"
+                  : revenueRange === "week"
+                    ? "7D Revenue"
+                    : "All Time Revenue"}
+              </CardTitle>
+              <div className="flex items-center gap-1">
+                {(["today", "week", "all"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRevenueRange(r)}
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase transition-all ${
+                      revenueRange === r
+                        ? "bg-primary/20 text-primary border border-primary/40"
+                        : "text-muted-foreground hover:bg-zinc-800 hover:text-zinc-200"
+                    }`}
+                  >
+                    {r === "today" ? "Today" : r === "week" ? "7D" : "All"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-black/5 bg-zinc-100 p-2 dark:border-white/5 dark:bg-zinc-900">
+              <CircleDollarSign className="h-4 w-4 text-emerald-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
+              {revenueValue}
+            </div>
+            <p className="dark:text-muted-foreground mt-1 text-xs text-zinc-500">
+              {revenueSubtitle}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Orders */}
+        <Card
+          className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isUpdating ? "ring-2 ring-cyan-500/50" : ""}`}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex flex-col gap-1.5">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                {ordersRange === "today"
+                  ? "Today's Orders"
+                  : ordersRange === "week"
+                    ? "7D Orders"
+                    : "Total Orders"}
+              </CardTitle>
+              <div className="flex items-center gap-1">
+                {(["today", "week", "all"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setOrdersRange(r)}
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase transition-all ${
+                      ordersRange === r
+                        ? "bg-primary/20 text-primary border border-primary/40"
+                        : "text-muted-foreground hover:bg-zinc-800 hover:text-zinc-200"
+                    }`}
+                  >
+                    {r === "today" ? "Today" : r === "week" ? "7D" : "All"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-black/5 bg-zinc-100 p-2 dark:border-white/5 dark:bg-zinc-900">
+              <Activity className="h-4 w-4 text-cyan-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
+              {ordersValue}
+            </div>
+            <p className="dark:text-muted-foreground mt-1 text-xs text-zinc-500">
+              {ordersSubtitle}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Card 3: Avg Ticket Time */}
+        <Card
+          className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isUpdating ? "ring-2 ring-cyan-500/50" : ""}`}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex flex-col gap-1.5">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                Avg Ticket Time
+              </CardTitle>
+              <div className="flex items-center gap-1">
+                {(["today", "week"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setSpeedRange(r)}
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase transition-all ${
+                      speedRange === r
+                        ? "bg-primary/20 text-primary border border-primary/40"
+                        : "text-muted-foreground hover:bg-zinc-800 hover:text-zinc-200"
+                    }`}
+                  >
+                    {r === "today" ? "Today" : "7D Avg"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-black/5 bg-zinc-100 p-2 dark:border-white/5 dark:bg-zinc-900">
+              <Clock className="h-4 w-4 text-amber-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
+              {speedValue}
+            </div>
+            <p className="dark:text-muted-foreground mt-1 text-xs text-zinc-500">
+              {speedSubtitle}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Card 4: Queue / Stock Alerts */}
+        <Card
+          className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isUpdating ? "ring-2 ring-cyan-500/50" : ""}`}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex flex-col gap-1.5">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                {queueMode === "active" ? "Open Queue" : "Inventory"}
+              </CardTitle>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setQueueMode("active")}
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase transition-all ${
+                    queueMode === "active"
+                      ? "bg-primary/20 text-primary border border-primary/40"
+                      : "text-muted-foreground hover:bg-zinc-800 hover:text-zinc-200"
+                  }`}
+                >
+                  Active
+                </button>
+                <button
+                  onClick={() => setQueueMode("alerts")}
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase transition-all ${
+                    queueMode === "alerts"
+                      ? "bg-primary/20 text-primary border border-primary/40"
+                      : "text-muted-foreground hover:bg-zinc-800 hover:text-zinc-200"
+                  }`}
+                >
+                  Alerts
+                </button>
+              </div>
+            </div>
+            <div className="rounded-xl border border-black/5 bg-zinc-100 p-2 dark:border-white/5 dark:bg-zinc-900">
+              <Users className="h-4 w-4 text-sky-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
+              {queueValue}
+            </div>
+            <p className="dark:text-muted-foreground mt-1 text-xs text-zinc-500">
+              {queueSubtitle}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Charts Section */}
@@ -150,34 +290,40 @@ export function DashboardView({
         </CardHeader>
         <CardContent>
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {stats.inventoryAlerts.map((alert) => (
-              <div
-                key={alert.item}
-                className="flex items-center justify-between py-3"
-              >
-                <div>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                    {alert.item}
-                  </span>
+            {stats.inventoryAlerts.length === 0 ? (
+              <p className="text-muted-foreground py-4 text-xs italic">
+                All inventory levels optimal. No low-stock thresholds exceeded.
+              </p>
+            ) : (
+              stats.inventoryAlerts.map((alert) => (
+                <div
+                  key={alert.item}
+                  className="flex items-center justify-between py-3"
+                >
+                  <div>
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      {alert.item}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {alert.quantity} remaining
+                    </span>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                        alert.status === "CRITICAL"
+                          ? "border border-rose-500/20 bg-rose-500/10 text-rose-400"
+                          : alert.status === "WARNING"
+                            ? "border border-amber-500/20 bg-amber-500/10 text-amber-400"
+                            : "border border-sky-500/20 bg-sky-500/10 text-sky-400"
+                      }`}
+                    >
+                      {alert.status}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-muted-foreground font-mono text-xs">
-                    {alert.quantity} remaining
-                  </span>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
-                      alert.status === "CRITICAL"
-                        ? "border border-rose-500/20 bg-rose-500/10 text-rose-400"
-                        : alert.status === "WARNING"
-                          ? "border border-amber-500/20 bg-amber-500/10 text-amber-400"
-                          : "border border-sky-500/20 bg-sky-500/10 text-sky-400"
-                    }`}
-                  >
-                    {alert.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

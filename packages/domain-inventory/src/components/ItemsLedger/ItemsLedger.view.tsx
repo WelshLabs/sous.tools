@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@soustools/design-system";
 import { Edit, Trash2 } from "lucide-react";
 

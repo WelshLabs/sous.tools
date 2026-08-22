@@ -18,9 +18,19 @@ export class AuthResolver {
   async refreshSession(
     @Context() context: { req: Request; res: Response },
   ): Promise<boolean> {
-    const refreshToken = (context.req.cookies as Record<string, string>)?.[
+    let refreshToken = (context.req?.cookies as Record<string, string>)?.[
       REFRESH_TOKEN_COOKIE
     ];
+
+    if (!refreshToken && typeof context.req?.headers?.cookie === "string") {
+      const match = context.req.headers.cookie.match(
+        new RegExp(`(?:^|;\\s*)${REFRESH_TOKEN_COOKIE}=([^;]+)`),
+      );
+      if (match) {
+        refreshToken = decodeURIComponent(match[1]);
+      }
+    }
+
     if (!refreshToken) {
       throw new UnauthorizedException("No refresh token found");
     }
@@ -33,7 +43,9 @@ export class AuthResolver {
       throw new UnauthorizedException("Session refresh failed");
     }
 
-    setSessionCookies(context.res, data.session, context.req);
+    if (context.res) {
+      setSessionCookies(context.res, data.session, context.req);
+    }
     return true;
   }
 
@@ -42,9 +54,19 @@ export class AuthResolver {
   async logout(
     @Context() context: { req: Request; res: Response },
   ): Promise<boolean> {
-    const accessToken = (context.req.cookies as Record<string, string>)?.[
+    let accessToken = (context.req?.cookies as Record<string, string>)?.[
       ACCESS_TOKEN_COOKIE
     ];
+
+    if (!accessToken && typeof context.req?.headers?.cookie === "string") {
+      const match = context.req.headers.cookie.match(
+        new RegExp(`(?:^|;\\s*)${ACCESS_TOKEN_COOKIE}=([^;]+)`),
+      );
+      if (match) {
+        accessToken = decodeURIComponent(match[1]);
+      }
+    }
+
     if (accessToken) {
       try {
         await supabase.auth.admin.signOut(accessToken);
@@ -53,9 +75,11 @@ export class AuthResolver {
       }
     }
 
-    const options = getCookieOptions(context.req);
-    context.res.clearCookie(ACCESS_TOKEN_COOKIE, options);
-    context.res.clearCookie(REFRESH_TOKEN_COOKIE, options);
+    if (context.res) {
+      const options = getCookieOptions(context.req);
+      context.res.clearCookie(ACCESS_TOKEN_COOKIE, options);
+      context.res.clearCookie(REFRESH_TOKEN_COOKIE, options);
+    }
     return true;
   }
 

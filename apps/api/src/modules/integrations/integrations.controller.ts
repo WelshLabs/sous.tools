@@ -1,21 +1,14 @@
 import {
   Controller,
   Get,
-  Post,
-  Delete,
   Param,
   Query,
   Res,
-  Body,
   Optional,
 } from "@nestjs/common";
 import { type Response } from "express";
-import { ApiResponse, IntegrationStatus } from "@soustools/api-types";
 import { serverConfig as config } from "@soustools/config/server";
-import { randomUUID } from "crypto";
-import { runControllerAction } from "../signage/response.helper";
 import { IntegrationsService } from "./integrations.service";
-import { GoogleDriveService } from "./drivers/google-drive/google-drive.service";
 import { PosGateway } from "../pos/pos.gateway";
 
 function getOrgId(orgId?: string): string {
@@ -28,7 +21,6 @@ function getOrgId(orgId?: string): string {
 export class IntegrationsController {
   constructor(
     private readonly service: IntegrationsService,
-    private readonly driveService: GoogleDriveService,
     @Optional() private readonly posGateway?: PosGateway,
   ) {}
 
@@ -55,8 +47,6 @@ export class IntegrationsController {
         await this.service.handleGoogleCallback(code, orgId);
       } else if (provider === "square") {
         await this.service.handleSquareCallback(code, orgId);
-        // Kick off catalog + orders sync in the background — dont await so the
-        // OAuth redirect completes immediately while data populates asynchronously.
         this.service
           .syncSquareCatalog(orgId)
           .then(() => {
@@ -76,69 +66,5 @@ export class IntegrationsController {
         `${config.NEXT_PUBLIC_APP_URL}/settings?tab=integrations&status=error&message=${encodeURIComponent(msg)}`,
       );
     }
-  }
-
-  @Get("status")
-  async getStatus(
-    @Query("orgId") orgId?: string,
-  ): Promise<ApiResponse<IntegrationStatus[]>> {
-    return runControllerAction(async () => {
-      return this.service.getIntegrationStatus(getOrgId(orgId));
-    });
-  }
-
-  @Delete("disconnect/:provider")
-  async disconnect(
-    @Param("provider") provider: string,
-    @Query("orgId") orgId?: string,
-  ): Promise<ApiResponse<void>> {
-    return runControllerAction(async () => {
-      await this.service.disconnect(provider, getOrgId(orgId));
-    });
-  }
-
-  @Post("square/sync")
-  async syncSquare(@Query("orgId") orgId?: string): Promise<ApiResponse<void>> {
-    return runControllerAction(async () => {
-      const targetOrgId = getOrgId(orgId);
-      await this.service.syncSquareCatalog(targetOrgId);
-      this.posGateway?.broadcastCatalogUpdate(targetOrgId);
-      this.posGateway?.broadcastOrdersUpdate(targetOrgId);
-    });
-  }
-
-  @Get("google/files")
-  async getGoogleFiles(
-    @Query("q") query?: string,
-    @Query("folderId") folderId?: string,
-    @Query("orgId") orgId?: string,
-  ) {
-    return this.driveService.listFiles(getOrgId(orgId), query, folderId);
-  }
-
-  @Post("google/import-file")
-  async importGoogleFile(@Body() body: { fileId: string; orgId?: string }) {
-    return runControllerAction(async () => {
-      const reviewId = randomUUID();
-      const result = await this.driveService.processDriveFile(
-        body.fileId,
-        getOrgId(body.orgId),
-        reviewId,
-      );
-      if (!result.sourceDocumentUrl) {
-        throw new Error("Failed to process Google Drive file");
-      }
-      return {
-        url: result.sourceDocumentUrl,
-        name: result.sourceName || "Google Drive File",
-      };
-    });
-  }
-
-  @Post("checkout")
-  async checkout(@Body() body: { orgId: string; orderData: any }) {
-    return runControllerAction(async () => {
-      return this.service.checkout(getOrgId(body.orgId), body.orderData);
-    });
   }
 }

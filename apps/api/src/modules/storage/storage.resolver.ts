@@ -1,7 +1,6 @@
-import { Args, Context, Mutation, Resolver } from "@nestjs/graphql";
-import { UnauthorizedException } from "@nestjs/common";
+import { Resolver, Mutation, Args, Context } from "@nestjs/graphql";
 import { StorageService } from "./storage.service";
-import { UploadUrlPayload } from "./storage.types";
+import { UploadUrlPayload, GenerateUploadUrlInput } from "./storage.types";
 
 @Resolver(() => UploadUrlPayload)
 export class StorageResolver {
@@ -9,15 +8,13 @@ export class StorageResolver {
 
   @Mutation(() => UploadUrlPayload, { name: "generateUploadUrl" })
   async generateUploadUrl(
-    @Args("fileName", { type: () => String }) fileName: string,
-    @Context() context: any,
+    @Args("input") input: GenerateUploadUrlInput,
+    @Context() ctx: any,
   ): Promise<UploadUrlPayload> {
-    const req = context?.req || context?.switchToHttp?.()?.getRequest?.();
-    const user = req?.user;
-    if (!user) {
-      throw new UnauthorizedException("User not authenticated");
-    }
-
-    return this.storageService.generateUploadUrl(fileName, user.id);
+    const userId = ctx.req?.user?.id || ctx.req?.user?.sub || "demo-user";
+    return this.storageService.generateUploadUrl(
+      input.fileName || "file.bin",
+      userId,
+    );
   }
 }

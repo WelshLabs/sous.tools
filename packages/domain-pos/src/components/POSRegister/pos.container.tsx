@@ -3,23 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { api, createWebSocketClient } from "@soustools/api-client";
-
-type UntypedClient = {
-  PATCH: (
-    path: string,
-    options?: unknown,
-  ) => Promise<{ data?: unknown; error?: unknown }>;
-  POST: (
-    path: string,
-    options?: unknown,
-  ) => Promise<{ data?: unknown; error?: unknown }>;
-  GET: (
-    path: string,
-    options?: unknown,
-  ) => Promise<{ data?: unknown; error?: unknown }>;
-};
-const dynamicApi = api as unknown as UntypedClient;
+import { graphqlClient, createWebSocketClient } from "@soustools/api-client";
 import { POSRegisterView } from "./pos.view";
 import { POSAppBar } from "./components/pos-appbar";
 import { POSCatalog } from "./components/pos-catalog";
@@ -55,6 +39,82 @@ import {
   playAudioChime,
   DEFAULT_TAX_RATE,
 } from "./pos.helpers";
+
+const GET_POS_CATALOG_QUERY = `
+  query GetPosCatalog {
+    posCatalog {
+      items {
+        id
+        name
+        price
+        category_id
+        color
+        square_id
+        is_sold_out
+        pos_item_modifier_groups
+      }
+      categories {
+        id
+        name
+        color
+        sort_order
+      }
+      modifierGroups {
+        id
+        name
+        min_selections
+        max_selections
+        is_required
+        pos_modifier_options {
+          id
+          name
+          price_delta
+          is_default
+        }
+      }
+      discounts {
+        id
+        name
+        type
+        amount
+      }
+    }
+  }
+`;
+
+const GET_POS_ORDERS_QUERY = `
+  query GetPosOrders {
+    posOrders {
+      id
+      order_number
+      state
+      total_money
+      customer_name
+      created_at
+    }
+  }
+`;
+
+const TOGGLE_SOLD_OUT_MUTATION = `
+  mutation TogglePosItemSoldOut($itemId: String, $isSoldOut: Boolean!) {
+    togglePosItemSoldOut(itemId: $itemId, isSoldOut: $isSoldOut) {
+      id
+      name
+    }
+  }
+`;
+
+const UPDATE_ORDER_STATUS_MUTATION = `
+  mutation UpdatePosOrderStatus($id: String!, $status: String!) {
+    updatePosOrderStatus(id: $id, status: $status)
+  }
+`;
+
+const BULK_TRANSACTIONS_MUTATION = `
+  mutation CreatePosTransactionsBulk($transactions: [BulkTransactionInputGQL!]!) {
+    createPosTransactionsBulk(transactions: $transactions)
+  }
+`;
 
 const DEFAULT_SETTINGS: POSSettings = {
   taxRate: DEFAULT_TAX_RATE,
@@ -155,17 +215,14 @@ export function POSRegisterContainer() {
     const loadCatalog = async () => {
       setLoading(true);
       try {
-        const { data, error } = await api.GET("/pos/catalog", {
-          params: { query: { orgId: targetOrgId } },
-        });
-
-        if (error) {
-          throw new Error(
-            typeof error === "string" ? error : JSON.stringify(error),
-          );
-        }
-        if (data) {
-          const parsed = parseCatalogPayload(data);
+        const res = await graphqlClient.request<{ posCatalog: any }>(
+          GET_POS_CATALOG_QUERY,
+        );
+        if (res.data?.posCatalog) {
+          const parsed = parseCatalogPayload({
+            success: true,
+            data: res.data.posCatalog,
+          });
           setCategories(parsed.categories);
           setCategoryItems(parsed.categoryItems);
           setModifierGroups(parsed.modifierGroups);
@@ -181,28 +238,24 @@ export function POSRegisterContainer() {
 
     const loadPastOrders = async () => {
       try {
-        const { data, error } = await api.GET("/pos/orders", {
-          params: { query: { orgId: targetOrgId } },
-        });
-        if (!error && data) {
-          const payload = (data as Record<string, unknown>).data || data;
-          if (Array.isArray(payload)) {
-            setPastOrders(
-              (payload as Array<Record<string, unknown>>).map((o) => {
-                const idStr = String(o.id || "");
-                return {
-                  id: idStr,
-                  external_id: String(
-                    o.external_id || (idStr ? idStr.slice(0, 8) : ""),
-                  ),
-                  state: String(o.state || "COMPLETED"),
-                  total_money: Number(o.total_money || 0),
-                  order_type: o.location_id ? String(o.location_id) : undefined,
-                  created_at: String(o.created_at || new Date().toISOString()),
-                };
-              }),
-            );
-          }
+        const res = await graphqlClient.request<{ posOrders: any[] }>(
+          GET_POS_ORDERS_QUERY,
+        );
+        const payload = res.data?.posOrders || [];
+        if (Array.isArray(payload)) {
+          setPastOrders(
+            payload.map((o) => {
+              const idStr = String(o.id || "");
+              return {
+                id: idStr,
+                external_id: String(o.order_number || (idStr ? idStr.slice(0, 8) : "")),
+                state: String(o.state || "COMPLETED"),
+                total_money: Number(o.total_money || 0),
+                order_type: undefined,
+                created_at: String(o.created_at || new Date().toISOString()),
+              };
+            }),
+          );
         }
       } catch (err) {
         console.error("Failed to load past orders", err);
@@ -245,7 +298,6 @@ export function POSRegisterContainer() {
 
   const handleItemClick = (item: CatalogItem) => {
     const itemMgIds = item.modifierGroupIds || [];
-    // Only show modifier groups assigned to this item
     const matchingGroups =
       itemMgIds.length > 0
         ? modifierGroups.filter((g) => itemMgIds.includes(g.id))
@@ -373,7 +425,6 @@ export function POSRegisterContainer() {
     currentStatus: boolean,
   ) => {
     const nextStatus = !currentStatus;
-    // Optimistic UI update
     setItems((prev) =>
       prev.map((it) =>
         it.id === itemId ? { ...it, isSoldOut: nextStatus } : it,
@@ -381,8 +432,9 @@ export function POSRegisterContainer() {
     );
 
     try {
-      await dynamicApi.POST("/pos-simulator/items/toggle-sold-out", {
-        body: { itemId, isSoldOut: nextStatus },
+      await graphqlClient.request(TOGGLE_SOLD_OUT_MUTATION, {
+        itemId,
+        isSoldOut: nextStatus,
       });
       toast.success(
         nextStatus ? "Item marked Sold Out (86)." : "Item marked Available.",
@@ -409,12 +461,9 @@ export function POSRegisterContainer() {
     );
 
     try {
-      await dynamicApi.PATCH("/pos/orders/" + orderId + "/status", {
-        params: { path: { id: orderId } },
-        body: {
-          status: action === "VOID" ? "VOIDED" : "REFUNDED",
-          orgId: "d0000000-0000-0000-0000-000000000000",
-        },
+      await graphqlClient.request(UPDATE_ORDER_STATUS_MUTATION, {
+        id: orderId,
+        status: action === "VOID" ? "VOIDED" : "REFUNDED",
       });
       toast.success(`Order ${action.toLowerCase()} processed.`);
     } catch {
@@ -439,7 +488,6 @@ export function POSRegisterContainer() {
 
     try {
       const transactionsToInsert = cart.map((item) => ({
-        organization_id: "d0000000-0000-0000-0000-000000000000",
         pos_item_id: item.id.startsWith("custom")
           ? null
           : item.id.split("-")[0],
@@ -449,18 +497,16 @@ export function POSRegisterContainer() {
         source: "pos_register",
       }));
 
-      await dynamicApi.POST("/pos/transactions/bulk", {
-        body: transactionsToInsert,
+      await graphqlClient.request(BULK_TRANSACTIONS_MUTATION, {
+        transactions: transactionsToInsert,
       });
 
-      // Play appropriate sound
       if (options?.openDrawer || paymentType === "cash") {
         playAudioChime("drawer");
       } else {
         playAudioChime("success");
       }
 
-      // Add to local past orders
       const newPastOrder: PastOrder = {
         id: `ord-${Date.now()}`,
         external_id: Math.floor(1000 + Math.random() * 9000).toString(),
@@ -471,7 +517,6 @@ export function POSRegisterContainer() {
       };
       setPastOrders((prev) => [newPastOrder, ...prev]);
 
-      // Save receipt data
       const receiptData = {
         items: [...cart],
         orderType,

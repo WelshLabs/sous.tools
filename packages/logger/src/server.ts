@@ -2,6 +2,11 @@ import pino from "pino";
 import { serverConfig as config } from "@soustools/config/server";
 
 const initializeServerLogger = () => {
+  if (config.NODE_ENV !== "production") {
+    // In development, keep standard readable console output without raw JSON wrapping
+    return;
+  }
+
   const pinoServer = pino({
     level: "info",
     formatters: {
@@ -9,8 +14,7 @@ const initializeServerLogger = () => {
         return {
           ...object,
           service: "soustools-api",
-          environment:
-            config.NODE_ENV === "development" ? "remote-dev" : "production",
+          environment: "production",
         };
       },
     },

@@ -2,7 +2,20 @@ import React from "react";
 import { AppBar, OmniBarProvider } from "@soustools/design-system";
 import { logoutAction } from "@/app/actions/auth";
 import { GoogleDriveBrowserWrapper } from "@/components/GoogleDriveBrowserWrapper";
-import { api } from "@soustools/api-client";
+import { graphqlClient } from "@soustools/api-client";
+
+const GET_UNREAD_NOTIFICATIONS_QUERY = `
+  query GetUnreadNotifications {
+    unreadNotifications {
+      id
+      title
+      message
+      link
+      createdAt
+      readAt
+    }
+  }
+`;
 
 export default async function WorkspaceLayout({
   children,
@@ -13,11 +26,11 @@ export default async function WorkspaceLayout({
 }) {
   let notifications = [];
   try {
-    const { data, error } = await api.GET("/notifications/unread", {
-      cache: "no-store",
-    });
-    if (!error && data) {
-      notifications = (data as any).data || [];
+    const res = await graphqlClient.request<{ unreadNotifications: any[] }>(
+      GET_UNREAD_NOTIFICATIONS_QUERY,
+    );
+    if (res.data?.unreadNotifications) {
+      notifications = res.data.unreadNotifications;
     }
   } catch (error: any) {
     if (

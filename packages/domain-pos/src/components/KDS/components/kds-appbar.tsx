@@ -9,7 +9,7 @@ import {
   Flame,
   CheckCircle2,
 } from "lucide-react";
-import { Button, OmniBar, WaffleMenuDropdown } from "@soustools/design-system";
+import { Button, OmniButton, WaffleMenuDropdown } from "@soustools/design-system";
 import { type KDSStationFilter, type KDSUser } from "../kds.types";
 
 export interface KDSAppBarProps {
@@ -65,6 +65,7 @@ export function KDSAppBar({
             <WaffleMenuDropdown
               onCloseMenus={() => setIsWaffleOpen(false)}
               isAdmin={isAdmin}
+              align="left"
             />
           )}
         </div>
@@ -138,8 +139,13 @@ export function KDSAppBar({
         </div>
       </div>
 
-      {/* Right: Station Selector, Square Sync, Omnibar, Settings */}
-      <div className="flex items-center gap-2 md:gap-3">
+      {/* Dead Center: Floating OmniButton */}
+      <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center z-20">
+        <OmniButton size="md" />
+      </div>
+
+      {/* Right: Station Selector, Square Sync, Settings */}
+      <div className="flex items-center gap-2 md:gap-3 z-10">
         <div className="hidden items-center lg:flex">
           <select
             value={stationFilter}
@@ -174,10 +180,6 @@ export function KDSAppBar({
             {isSyncingSquare ? "Syncing..." : "Sync Square"}
           </span>
         </Button>
-
-        <div className="hidden xl:block">
-          <OmniBar />
-        </div>
 
         <Button
           variant="ghost"

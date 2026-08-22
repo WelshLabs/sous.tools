@@ -15,6 +15,10 @@ import { pubSubProvider, PUB_SUB } from "./pubsub";
       subscriptions: {
         "graphql-ws": true,
       },
+      formatError: (formattedError) => {
+        console.warn(`[GraphQL Error] ${formattedError.message} at ${JSON.stringify(formattedError.path || formattedError.locations)}`);
+        return formattedError;
+      },
       context: ({ req, res }: { req: any; res: any }) => ({ req, res }),
     }),
   ],

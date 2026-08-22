@@ -7,9 +7,57 @@ import { toast } from "sonner";
 import { ItemsLedgerView, type LedgerItem } from "./ItemsLedger.view";
 import { ItemEditor } from "../ItemEditor";
 
+import { graphqlClient } from "@soustools/api-client";
+
 export interface ItemsLedgerProps {
   initialItems?: LedgerItem[];
 }
+
+const CREATE_ITEM_MUTATION = `
+  mutation CreateItem($input: CreateItemInputGQL!) {
+    createItem(input: $input) {
+      id
+      organization_id
+      name
+      category
+      purchase_unit
+      density_g_ml
+      allergens
+      current_cost_per_g
+      fdc_id
+      nutrition_macros
+      created_at
+      updated_at
+    }
+  }
+`;
+
+const UPDATE_ITEM_MUTATION = `
+  mutation UpdateItem($id: String!, $input: UpdateItemInputGQL!) {
+    updateItem(id: $id, input: $input) {
+      id
+      organization_id
+      name
+      category
+      purchase_unit
+      density_g_ml
+      allergens
+      current_cost_per_g
+      fdc_id
+      nutrition_macros
+      created_at
+      updated_at
+    }
+  }
+`;
+
+const DELETE_ITEM_MUTATION = `
+  mutation DeleteItem($id: String!) {
+    deleteItem(id: $id) {
+      id
+    }
+  }
+`;
 
 export function ItemsLedgerContainer({ initialItems = [] }: ItemsLedgerProps) {
   const [items, setItems] = useState<LedgerItem[]>(initialItems);
@@ -31,32 +79,38 @@ export function ItemsLedgerContainer({ initialItems = [] }: ItemsLedgerProps) {
 
   const handleSave = async (data: Record<string, any>) => {
     try {
-      const url = selectedItem ? `/api/items/${selectedItem.id}` : "/api/items";
-      const method = selectedItem ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        const saved = await res.json();
-        const itemData = saved.data || data;
-        if (selectedItem) {
+      if (selectedItem) {
+        const res = await graphqlClient.request<{ updateItem: any }>(
+          UPDATE_ITEM_MUTATION,
+          { id: selectedItem.id, input: data },
+        );
+        if (res.data?.updateItem) {
+          const itemData = res.data.updateItem;
           setItems((prev) =>
             prev.map((i) =>
               i.id === selectedItem.id ? { ...i, ...itemData } : i,
             ),
           );
-        } else if (itemData.id) {
-          setItems((prev) => [...prev, itemData]);
+          setIsModalOpen(false);
+          toast.success("Item updated");
+        } else {
+          toast.error("Failed to update item");
         }
-        setIsModalOpen(false);
-        toast.success(selectedItem ? "Item updated" : "Item created");
       } else {
-        toast.error("Failed to save item");
+        const res = await graphqlClient.request<{ createItem: any }>(
+          CREATE_ITEM_MUTATION,
+          { input: data },
+        );
+        if (res.data?.createItem) {
+          setItems((prev) => [...prev, res.data!.createItem]);
+          setIsModalOpen(false);
+          toast.success("Item created");
+        } else {
+          toast.error("Failed to create item");
+        }
       }
     } catch (_err) {
-      toast.error("Network error saving item");
+      toast.error("Error saving item");
     }
   };
 
@@ -67,23 +121,34 @@ export function ItemsLedgerContainer({ initialItems = [] }: ItemsLedgerProps) {
     )
       return;
     try {
-      const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
-      if (res.ok) {
+      const res = await graphqlClient.request<{ deleteItem: any }>(
+        DELETE_ITEM_MUTATION,
+        { id },
+      );
+      if (res.data?.deleteItem) {
         setItems((prev) => prev.filter((i) => i.id !== id));
         toast.success("Item deleted");
       } else {
         toast.error("Failed to delete item");
       }
     } catch (_err) {
-      toast.error("Network error deleting item");
+      toast.error("Error deleting item");
     }
   };
 
   const handleSearchUSDA = async (query: string) => {
-    const res = await fetch(
-      `/api/recipes/usda/search?query=${encodeURIComponent(query)}`,
-    );
-    return await res.json();
+    try {
+      const res = await graphqlClient.request<{ usdaSearch: any }>(
+        `query SearchUSDA($query: String!) { usdaSearch(query: $query) }`,
+        { query },
+      );
+      if (res.data?.usdaSearch) {
+        return { success: true, data: res.data.usdaSearch };
+      }
+      return { success: false };
+    } catch {
+      return { success: false };
+    }
   };
 
   const handleExportCSV = () => {

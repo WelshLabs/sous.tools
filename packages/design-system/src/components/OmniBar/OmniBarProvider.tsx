@@ -11,12 +11,7 @@ import { useSpeechRecognition } from "./use-speech-recognition.hook";
 import { useGlobalDrag } from "./use-global-drag.hook";
 import { useOmniSocket } from "./use-omni-socket.hook";
 import { motion, AnimatePresence } from "framer-motion";
-import { api } from "@soustools/api-client";
-
-interface IntegrationStatus {
-  provider: string;
-  connected: boolean;
-}
+import { graphqlClient } from "@soustools/api-client";
 
 export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
@@ -55,26 +50,28 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
     },
   );
 
-  // Fetch integration status for Google Drive
+  // Fetch integration status for Google Drive via GraphQL
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const { data, error } = await api.GET("/integrations/status" as any, {
-          params: {
-            query: { orgId: "d0000000-0000-0000-0000-000000000000" },
-          } as any,
-        });
-        if (data && !error) {
-          const payload = data as
-            { data: IntegrationStatus[] } | IntegrationStatus[];
-          const list: IntegrationStatus[] = Array.isArray(payload)
-            ? payload
-            : payload.data || [];
-          const google = list.find((item) => item.provider === "GOOGLE");
+        const res = await graphqlClient.request<{
+          integrationStatuses: { provider: string; connected: boolean }[];
+        }>(`
+          query GetIntegrationStatuses {
+            integrationStatuses {
+              provider
+              connected
+            }
+          }
+        `);
+        if (res.data?.integrationStatuses) {
+          const google = res.data.integrationStatuses.find(
+            (item) => item.provider === "GOOGLE",
+          );
           setIsGoogleDriveConnected(!!google?.connected);
         }
       } catch (err) {
-        console.error("Failed to fetch Google Drive integration status:", err);
+        console.error("Failed to fetch Google Drive integration status via GraphQL:", err);
       }
     };
     fetchStatus();
@@ -105,10 +102,15 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
     onTranscript: setInputText,
   });
 
-  // Global escape listener for when textarea is not focused
+  // Global escape and cmd+k listeners + custom open-omnibar event
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        if (!isFocusPage) {
+          setIsOpen(!isOpen);
+        }
+      } else if (e.key === "Escape") {
         if (isFocusPage) {
           setChatHistory([]);
           setInputText("");
@@ -117,8 +119,19 @@ export function OmniBarProvider({ children }: { children?: React.ReactNode }) {
         }
       }
     };
+
+    const handleOpenEvent = () => {
+      if (!isFocusPage) {
+        setIsOpen(true);
+      }
+    };
+
     window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+    window.addEventListener("open-omnibar", handleOpenEvent);
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+      window.removeEventListener("open-omnibar", handleOpenEvent);
+    };
   }, [isOpen, isFocusPage, setIsOpen, setChatHistory, setInputText]);
 
   return (

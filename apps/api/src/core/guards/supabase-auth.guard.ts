@@ -49,6 +49,13 @@ export class SupabaseAuthGuard implements CanActivate {
       token = authHeader.split(" ")[1];
     } else if (request.cookies?.[COOKIE_NAME]) {
       token = request.cookies[COOKIE_NAME] as string;
+    } else if (typeof request.headers?.cookie === "string") {
+      const match = request.headers.cookie.match(
+        new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]+)`),
+      );
+      if (match) {
+        token = decodeURIComponent(match[1]);
+      }
     }
 
     if (!token) {

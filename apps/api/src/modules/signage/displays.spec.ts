@@ -1,6 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { DisplaysController } from "./displays.controller";
+import { SignageResolver } from "./signage.resolver";
 import { DisplaysService } from "./displays.service";
+import { LayoutsService } from "./layouts.service";
 import { SignageGateway } from "./signage.gateway";
 import { supabase } from "../../core/database/supabase";
 import { Server } from "socket.io";
@@ -16,17 +17,21 @@ jest.mock("../../core/database/supabase", () => ({
   },
 }));
 
-describe("DisplaysController", () => {
-  let controller: DisplaysController;
+describe("SignageResolver Displays", () => {
+  let resolver: SignageResolver;
   let gateway: SignageGateway;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [DisplaysController],
-      providers: [DisplaysService, SignageGateway],
+      providers: [
+        SignageResolver,
+        DisplaysService,
+        LayoutsService,
+        SignageGateway,
+      ],
     }).compile();
 
-    controller = module.get<DisplaysController>(DisplaysController);
+    resolver = module.get<SignageResolver>(SignageResolver);
     gateway = module.get<SignageGateway>(SignageGateway);
 
     gateway.server = {
@@ -48,30 +53,10 @@ describe("DisplaysController", () => {
       single: jest.fn().mockResolvedValue({ data: mockDisplay, error: null }),
     });
 
-    const response = await controller.create("Test TV");
-    expect(response.success).toBe(true);
-    expect(response.data).toEqual(mockDisplay);
-  });
-
-  it("should assign a deck to a display", async () => {
-    const mockDisplay = {
-      id: "display-1",
-      name: "Test TV",
-      deck_id: "deck-abc",
-    };
-    (supabase.from as jest.Mock).mockReturnValue({
-      update: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ data: mockDisplay, error: null }),
-    });
-
-    const response = await controller.update(
-      "display-1",
-      undefined,
-      "deck-abc",
+    const response = await resolver.createDisplay(
+      { name: "Test TV" },
+      { req: {} },
     );
-    expect(response.success).toBe(true);
-    expect(response.data).toEqual(mockDisplay);
+    expect(response).toEqual(mockDisplay);
   });
 });

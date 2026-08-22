@@ -1,9 +1,23 @@
-import { Resolver, Subscription, Query, Args } from "@nestjs/graphql";
+import {
+  Resolver,
+  Subscription,
+  Query,
+  Mutation,
+  Args,
+  Context,
+} from "@nestjs/graphql";
 import { Inject } from "@nestjs/common";
 import { type RedisPubSub } from "graphql-redis-subscriptions";
 import { CommandsService } from "./commands.service";
-import { AgentTrajectoryStep, AGENT_TRAJECTORY_TOPIC } from "./commands.types";
+import {
+  AgentTrajectoryStep,
+  ChatConversationGQL,
+  AGENT_TRAJECTORY_TOPIC,
+} from "./commands.types";
 import { PUB_SUB } from "../../core/graphql/pubsub";
+import GraphQLJSON from "graphql-type-json";
+import { randomUUID } from "crypto";
+import { type OmniMessage, type OmnibarCommandPayload } from "@soustools/api-types";
 
 @Resolver(() => AgentTrajectoryStep)
 export class CommandsResolver {
@@ -11,6 +25,23 @@ export class CommandsResolver {
     private readonly commandsService: CommandsService,
     @Inject(PUB_SUB) private readonly pubSub: RedisPubSub,
   ) {}
+
+  @Query(() => [ChatConversationGQL], {
+    name: "conversations",
+    description: "List chat conversations for the current user and org",
+  })
+  async getConversations(@Context() ctx: any): Promise<ChatConversationGQL[]> {
+    const userId = ctx.req?.user?.id;
+    const orgId =
+      ctx.req?.user?.user_metadata?.organization_id ||
+      ctx.req?.user?.app_metadata?.organization_id;
+    const list = await this.commandsService.listConversationsForUser(userId, orgId);
+    return list.map((c) => ({
+      id: c.id,
+      title: c.title ?? undefined,
+      updated_at: c.updated_at,
+    }));
+  }
 
   @Query(() => [AgentTrajectoryStep], {
     name: "conversationMessages",
@@ -46,6 +77,55 @@ export class CommandsResolver {
           : JSON.stringify(m.invoiceData)
         : undefined,
     }));
+  }
+
+  @Mutation(() => AgentTrajectoryStep, {
+    name: "executeOmniCommand",
+    description:
+      "Execute omnibar command and stream trajectory steps in real-time via GraphQL",
+  })
+  async executeCommand(
+    @Args("command") command: string,
+    @Args("path", { nullable: true }) path?: string,
+    @Args("conversationId", { nullable: true }) conversationId?: string,
+    @Args("contextPayload", { type: () => GraphQLJSON, nullable: true })
+    contextPayload?: any,
+    @Context() ctx?: any,
+  ): Promise<AgentTrajectoryStep> {
+    const userId = ctx?.req?.user?.id;
+    const orgId =
+      ctx?.req?.user?.user_metadata?.organization_id ||
+      ctx?.req?.user?.app_metadata?.organization_id ||
+      "d0000000-0000-0000-0000-000000000000";
+
+    const convId = conversationId || randomUUID();
+    const userMsg: OmniMessage = {
+      id: randomUUID(),
+      role: "user",
+      content: command,
+      timestamp: new Date(),
+    };
+
+    const payload: OmnibarCommandPayload = {
+      chatHistory: [userMsg],
+      source: "omnibar",
+      path: path || "/home",
+      context: {
+        ...(contextPayload || {}),
+        conversationId: convId,
+        userId,
+      },
+    };
+
+    const result = await this.commandsService.handleCommand(payload, orgId);
+
+    return {
+      id: randomUUID(),
+      conversationId: convId,
+      role: "model",
+      content: result?.message || "Command processed.",
+      timestamp: new Date(),
+    };
   }
 
   @Subscription(() => AgentTrajectoryStep, {

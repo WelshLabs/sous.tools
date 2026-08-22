@@ -7,6 +7,7 @@ import { PUB_SUB } from "../../core/graphql/pubsub";
 @Injectable()
 export class DashboardService {
   constructor(@Inject(PUB_SUB) private readonly pubSub: RedisPubSub) {}
+
   async getAggregatedStats(orgId?: string): Promise<DashboardStatsPayload> {
     // 1. Fetch POS orders from Supabase Postgres
     let ordersQuery = supabase.from("pos_orders").select("*");
@@ -38,31 +39,34 @@ export class DashboardService {
       (o) => o.state === "COMPLETED" || o.state === "CLOSED",
     );
 
-    const todayStr = new Date().toDateString();
-    const yesterdayDate = new Date();
+    const now = new Date();
+    const todayStr = now.toDateString();
+    const yesterdayDate = new Date(now);
     yesterdayDate.setDate(yesterdayDate.getDate() - 1);
     const yesterdayStr = yesterdayDate.toDateString();
+
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
     const isDateToday = (d?: string | null) =>
       d ? new Date(d).toDateString() === todayStr : false;
     const isDateYesterday = (d?: string | null) =>
       d ? new Date(d).toDateString() === yesterdayStr : false;
 
-    // Filter for today's completed orders
+    // Filter strictly on order closed or created time (never updated_at)
     const todaysCompletedOrders = completedOrders.filter(
-      (o) =>
-        isDateToday(o.created_at) ||
-        isDateToday(o.closed_at) ||
-        isDateToday(o.updated_at),
+      (o) => isDateToday(o.closed_at) || (!o.closed_at && isDateToday(o.created_at)),
     );
 
-    // Filter for yesterday's completed orders
     const yesterdaysCompletedOrders = completedOrders.filter(
-      (o) =>
-        isDateYesterday(o.created_at) ||
-        isDateYesterday(o.closed_at) ||
-        isDateYesterday(o.updated_at),
+      (o) => isDateYesterday(o.closed_at) || (!o.closed_at && isDateYesterday(o.created_at)),
     );
+
+    const weeklyCompletedOrders = completedOrders.filter((o) => {
+      const orderDate = new Date(o.closed_at || o.created_at || "");
+      return orderDate >= sevenDaysAgo && orderDate <= now;
+    });
 
     // Helper: calculate net food/drink sales (excluding taxes and tips)
     const getOrderSales = (o: any): number => {
@@ -72,7 +76,6 @@ export class DashboardService {
       return Math.max(0, total - tax - tips);
     };
 
-    // Calculate actual total daily revenue (sales only, excluding taxes and tips)
     const todaySalesVal = todaysCompletedOrders.reduce(
       (sum, o) => sum + getOrderSales(o),
       0,
@@ -81,8 +84,26 @@ export class DashboardService {
       (sum, o) => sum + getOrderSales(o),
       0,
     );
+    const weeklySalesVal = weeklyCompletedOrders.reduce(
+      (sum, o) => sum + getOrderSales(o),
+      0,
+    );
+    const allTimeSalesVal = completedOrders.reduce(
+      (sum, o) => sum + getOrderSales(o),
+      0,
+    );
 
     const dailyRevenueStr = `$${todaySalesVal.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+    const weeklyRevenueStr = `$${weeklySalesVal.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+    const allTimeRevenueStr = `$${allTimeSalesVal.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -94,12 +115,16 @@ export class DashboardService {
       );
       dailyRevenueChangeStr = `${pct >= 0 ? `+${pct}%` : `${pct}%`} from yesterday`;
     } else if (todaySalesVal > 0) {
-      dailyRevenueChangeStr = `+$${todaySalesVal.toFixed(2)} from yesterday`;
+      dailyRevenueChangeStr = `+$${todaySalesVal.toFixed(2)} today`;
+    } else {
+      dailyRevenueChangeStr = `${weeklyRevenueStr} past 7d`;
     }
 
-    // Calculate total orders and change comparison
     const todayOrdersCount = todaysCompletedOrders.length;
     const yesterdayOrdersCount = yesterdaysCompletedOrders.length;
+    const weeklyOrdersCount = weeklyCompletedOrders.length;
+    const allTimeOrdersCount = completedOrders.length;
+
     let totalOrdersChangeStr = "0% from yesterday";
     if (yesterdayOrdersCount > 0) {
       const pct = Math.round(
@@ -108,10 +133,11 @@ export class DashboardService {
       );
       totalOrdersChangeStr = `${pct >= 0 ? `+${pct}%` : `${pct}%`} from yesterday`;
     } else if (todayOrdersCount > 0) {
-      totalOrdersChangeStr = `+${todayOrdersCount} from yesterday`;
+      totalOrdersChangeStr = `+${todayOrdersCount} orders today`;
+    } else {
+      totalOrdersChangeStr = `${weeklyOrdersCount} orders past 7d`;
     }
 
-    // Helper: compute order duration in minutes
     const getOrderDurationMin = (o: any): number | null => {
       if (!o.created_at) return null;
       const endTime = o.closed_at || o.updated_at;
@@ -125,7 +151,6 @@ export class DashboardService {
       return null;
     };
 
-    // Calculate actual average ticket time for today
     let todayTotalMinutes = 0;
     let todayTimedCount = 0;
     todaysCompletedOrders.forEach((o) => {
@@ -136,50 +161,40 @@ export class DashboardService {
       }
     });
 
-    // If no timed orders today, check all recent completed orders as fallback
-    if (todayTimedCount === 0 && completedOrders.length > 0) {
+    let weeklyTotalMinutes = 0;
+    let weeklyTimedCount = 0;
+    weeklyCompletedOrders.forEach((o) => {
+      const dur = getOrderDurationMin(o);
+      if (dur !== null) {
+        weeklyTotalMinutes += dur;
+        weeklyTimedCount++;
+      }
+    });
+
+    if (weeklyTimedCount === 0 && completedOrders.length > 0) {
       completedOrders.forEach((o) => {
         const dur = getOrderDurationMin(o);
         if (dur !== null) {
-          todayTotalMinutes += dur;
-          todayTimedCount++;
+          weeklyTotalMinutes += dur;
+          weeklyTimedCount++;
         }
       });
     }
 
     const todayAvgTicketMin =
       todayTimedCount > 0 ? Math.round(todayTotalMinutes / todayTimedCount) : 0;
-    const averageTicketTimeStr = `${todayAvgTicketMin}m`;
+    const weeklyAvgTicketMin =
+      weeklyTimedCount > 0 ? Math.round(weeklyTotalMinutes / weeklyTimedCount) : 0;
 
-    // Yesterday's avg ticket time for comparison
-    let yesterdayTotalMinutes = 0;
-    let yesterdayTimedCount = 0;
-    yesterdaysCompletedOrders.forEach((o) => {
-      const dur = getOrderDurationMin(o);
-      if (dur !== null) {
-        yesterdayTotalMinutes += dur;
-        yesterdayTimedCount++;
-      }
-    });
-    const yesterdayAvgTicketMin =
-      yesterdayTimedCount > 0
-        ? Math.round(yesterdayTotalMinutes / yesterdayTimedCount)
-        : 0;
+    const averageTicketTimeStr = `${todayAvgTicketMin > 0 ? todayAvgTicketMin : weeklyAvgTicketMin}m`;
+    const weeklyAverageTicketTimeStr = `${weeklyAvgTicketMin}m`;
 
-    let averageTicketTimeChangeStr = "0m from yesterday";
-    if (yesterdayTimedCount > 0 && todayTimedCount > 0) {
-      const diff = todayAvgTicketMin - yesterdayAvgTicketMin;
-      averageTicketTimeChangeStr = `${diff >= 0 ? `+${diff}m` : `${diff}m`} from yesterday`;
-    } else {
-      averageTicketTimeChangeStr = `${todayAvgTicketMin}m avg today`;
-    }
+    const averageTicketTimeChangeStr =
+      todayTimedCount > 0
+        ? `${todayAvgTicketMin}m avg today`
+        : `${weeklyAvgTicketMin}m 7-day average`;
 
     // Compute weekly revenue breakdown for the past 7 days (ending today)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setHours(0, 0, 0, 0); // Start of today
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // Go back 6 days to get a 7-day window
-
-    // Initialize array of last 7 days in chronological order
     const daysOfWeekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const dailyBuckets: {
       dateStr: string;
@@ -194,7 +209,7 @@ export class DashboardService {
     for (let i = 0; i < 7; i++) {
       const d = new Date(sevenDaysAgo);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toDateString(); // e.g. "Tue Aug 11 2026"
+      const dateStr = d.toDateString();
       const label = `${daysOfWeekNames[d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
       dailyBuckets.push({
         dateStr,
@@ -209,7 +224,7 @@ export class DashboardService {
 
     completedOrders.forEach((o) => {
       const orderDateStr = new Date(
-        o.created_at || o.updated_at || "",
+        o.closed_at || o.created_at || "",
       ).toDateString();
       const bucket = dailyBuckets.find((b) => b.dateStr === orderDateStr);
       if (bucket) {
@@ -233,7 +248,7 @@ export class DashboardService {
       sales: Number(b.sales.toFixed(2)),
       tax: Number(b.tax.toFixed(2)),
       tips: Number(b.tips.toFixed(2)),
-      processingFee: -Number(b.processingFee.toFixed(2)), // Negative value for the chart
+      processingFee: -Number(b.processingFee.toFixed(2)),
     }));
 
     // Compute hourly ticket times from today's orders (or recent fallback)
@@ -246,7 +261,9 @@ export class DashboardService {
     const ordersForTicketChart =
       todaysCompletedOrders.length > 0
         ? todaysCompletedOrders
-        : completedOrders;
+        : weeklyCompletedOrders.length > 0
+          ? weeklyCompletedOrders
+          : completedOrders;
 
     ordersForTicketChart.forEach((o) => {
       const dur = getOrderDurationMin(o);
@@ -271,7 +288,6 @@ export class DashboardService {
       }))
       .sort((a, b) => a.time.localeCompare(b.time));
 
-    // Real inventory low stock alerts
     const alerts = (dbStock || [])
       .filter((s: any) => s.quantity_g < 10000)
       .map((s: any) => {
@@ -297,8 +313,13 @@ export class DashboardService {
       inventoryAlerts: alerts.slice(0, 10),
       summary: {
         totalOrders: todayOrdersCount,
+        weeklyOrders: weeklyOrdersCount,
+        allTimeOrders: allTimeOrdersCount,
         averageTicketTime: averageTicketTimeStr,
+        weeklyAverageTicketTime: weeklyAverageTicketTimeStr,
         dailyRevenue: dailyRevenueStr,
+        weeklyRevenue: weeklyRevenueStr,
+        allTimeRevenue: allTimeRevenueStr,
         activeTables: activeTablesCount,
         dailyRevenueChange: dailyRevenueChangeStr,
         totalOrdersChange: totalOrdersChangeStr,

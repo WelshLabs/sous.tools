@@ -47,11 +47,26 @@ export class DashboardSummary {
   @Field(() => Int)
   totalOrders!: number;
 
+  @Field(() => Int, { nullable: true })
+  weeklyOrders?: number;
+
+  @Field(() => Int, { nullable: true })
+  allTimeOrders?: number;
+
   @Field()
   averageTicketTime!: string;
 
+  @Field({ nullable: true })
+  weeklyAverageTicketTime?: string;
+
   @Field()
   dailyRevenue!: string;
+
+  @Field({ nullable: true })
+  weeklyRevenue?: string;
+
+  @Field({ nullable: true })
+  allTimeRevenue?: string;
 
   @Field(() => Int)
   activeTables!: number;

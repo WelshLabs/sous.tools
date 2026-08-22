@@ -3,23 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { api, createWebSocketClient } from "@soustools/api-client";
-
-type UntypedClient = {
-  PATCH: (
-    path: string,
-    options?: unknown,
-  ) => Promise<{ data?: unknown; error?: unknown }>;
-  POST: (
-    path: string,
-    options?: unknown,
-  ) => Promise<{ data?: unknown; error?: unknown }>;
-  GET: (
-    path: string,
-    options?: unknown,
-  ) => Promise<{ data?: unknown; error?: unknown }>;
-};
-const dynamicApi = api as unknown as UntypedClient;
+import { graphqlClient, createWebSocketClient } from "@soustools/api-client";
 
 import {
   type KDSTicket,
@@ -32,6 +16,67 @@ import { KDSView } from "./kds.view";
 import { KDSSettingsModal, type POSItem } from "./kds-settings-modal";
 import { playChime, mapOrderToKDSTicket } from "./kds.helpers";
 
+const GET_POS_ITEMS_QUERY = `
+  query GetPosSimulatorItems {
+    posSimulatorItems {
+      id
+      name
+      price
+      is_sold_out
+      square_id
+    }
+  }
+`;
+
+const GET_POS_ORDERS_QUERY = `
+  query GetPosOrders {
+    posOrders {
+      id
+      order_number
+      state
+      total_money
+      customer_name
+      created_at
+      pos_order_line_items {
+        id
+        name
+        quantity
+        unit_price
+        total_price
+        status
+        modifiers
+      }
+    }
+  }
+`;
+
+const SYNC_SQUARE_MUTATION = `
+  mutation SyncSquareCatalog {
+    syncSquareCatalog
+  }
+`;
+
+const UPDATE_LINE_ITEM_STATUS_MUTATION = `
+  mutation UpdatePosLineItemStatus($id: String!, $status: String!) {
+    updatePosLineItemStatus(id: $id, status: $status)
+  }
+`;
+
+const UPDATE_ORDER_STATUS_MUTATION = `
+  mutation UpdatePosOrderStatus($id: String!, $status: String!) {
+    updatePosOrderStatus(id: $id, status: $status)
+  }
+`;
+
+const TOGGLE_SOLD_OUT_MUTATION = `
+  mutation TogglePosItemSoldOut($itemId: String, $isSoldOut: Boolean!) {
+    togglePosItemSoldOut(itemId: $itemId, isSoldOut: $isSoldOut) {
+      id
+      name
+    }
+  }
+`;
+
 const DEFAULT_SETTINGS: KDSSettings = {
   textSize: "md",
   density: "standard",
@@ -42,7 +87,7 @@ const DEFAULT_SETTINGS: KDSSettings = {
   rushMinutes: 15,
   ticketSortOrder: "oldest_first",
   stationFilter: "ALL",
-  autoRefreshInterval: 10, // 10s default polling fallback
+  autoRefreshInterval: 10,
 };
 
 const DEFAULT_STAFF: KDSUser = {
@@ -66,7 +111,6 @@ export function KDSContainer() {
   const [isSyncingSquare, setIsSyncingSquare] = useState(false);
   const [currentUser] = useState<KDSUser | null>(DEFAULT_STAFF);
 
-  // Keep track of known ticket IDs to sound chimes on newly arrived tickets
   const previousOpenTicketIdsRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
@@ -78,32 +122,6 @@ export function KDSContainer() {
         if (savedSettingsRaw) {
           const parsed = JSON.parse(savedSettingsRaw);
           setSettings((prev) => ({ ...prev, ...parsed }));
-        } else {
-          // Check legacy individual keys
-          const savedText = localStorage.getItem("kds_text_size") as
-            KDSSettings["textSize"] | null;
-          const savedDensity = localStorage.getItem("kds_density") as
-            KDSSettings["density"] | null;
-          const savedSound = localStorage.getItem("kds_sounds_enabled");
-          const savedVol = localStorage.getItem("kds_sound_volume");
-          if (
-            savedText ||
-            savedDensity ||
-            savedSound !== null ||
-            savedVol !== null
-          ) {
-            setSettings((prev) => ({
-              ...prev,
-              ...(savedText ? { textSize: savedText } : {}),
-              ...(savedDensity ? { density: savedDensity } : {}),
-              ...(savedSound !== null
-                ? { soundsEnabled: savedSound === "true" }
-                : {}),
-              ...(savedVol !== null
-                ? { soundVolume: parseFloat(savedVol) }
-                : {}),
-            }));
-          }
         }
       } catch (e) {
         console.error("Failed to load KDS settings from localStorage", e);
@@ -120,59 +138,54 @@ export function KDSContainer() {
 
   const fetchItems = useCallback(async () => {
     try {
-      const { data } = await api.GET("/pos-simulator/items", {
-        params: { query: { organizationId: orgId } },
-      });
-      if (data) {
-        setPosItems(
-          ((data as Record<string, unknown>).data as POSItem[]) || data || [],
-        );
+      const res = await graphqlClient.request<{ posSimulatorItems: any[] }>(
+        GET_POS_ITEMS_QUERY,
+      );
+      if (res.data?.posSimulatorItems) {
+        setPosItems(res.data.posSimulatorItems as POSItem[]);
       }
     } catch (err) {
       console.error("Failed to fetch pos items", err);
     }
-  }, [orgId]);
+  }, []);
 
   const fetchOrders = useCallback(
     async (silent = false) => {
       try {
-        const { data, error } = await api.GET("/pos/orders", {
-          params: { query: { orgId } },
-        });
-        if (!error && data) {
-          const payload = (data as Record<string, unknown>).data || data;
-          if (Array.isArray(payload)) {
-            const mappedTickets = payload.map(mapOrderToKDSTicket);
+        const res = await graphqlClient.request<{ posOrders: any[] }>(
+          GET_POS_ORDERS_QUERY,
+        );
+        const payload = res.data?.posOrders || [];
+        if (Array.isArray(payload)) {
+          const mappedTickets = payload.map(mapOrderToKDSTicket);
 
-            // Check for newly arrived open tickets
-            const currentOpenIds = new Set(
-              mappedTickets.filter((t) => t.status === "OPEN").map((t) => t.id),
-            );
+          const currentOpenIds = new Set(
+            mappedTickets.filter((t) => t.status === "OPEN").map((t) => t.id),
+          );
 
-            if (!isInitialLoadRef.current && !silent) {
-              let hasNewTicket = false;
-              for (const id of currentOpenIds) {
-                if (!previousOpenTicketIdsRef.current.has(id)) {
-                  hasNewTicket = true;
-                  break;
-                }
-              }
-              if (hasNewTicket) {
-                triggerSound("new");
-                toast.info("New kitchen order received!");
+          if (!isInitialLoadRef.current && !silent) {
+            let hasNewTicket = false;
+            for (const id of currentOpenIds) {
+              if (!previousOpenTicketIdsRef.current.has(id)) {
+                hasNewTicket = true;
+                break;
               }
             }
-
-            previousOpenTicketIdsRef.current = currentOpenIds;
-            isInitialLoadRef.current = false;
-            setTickets(mappedTickets);
+            if (hasNewTicket) {
+              triggerSound("new");
+              toast.info("New kitchen order received!");
+            }
           }
+
+          previousOpenTicketIdsRef.current = currentOpenIds;
+          isInitialLoadRef.current = false;
+          setTickets(mappedTickets);
         }
       } catch (err) {
         console.error("Failed to fetch pos orders", err);
       }
     },
-    [orgId, triggerSound],
+    [triggerSound],
   );
 
   // Initial Data Fetch & WebSocket Setup
@@ -214,9 +227,7 @@ export function KDSContainer() {
   const handleSyncSquare = async () => {
     setIsSyncingSquare(true);
     try {
-      await dynamicApi.POST("/integrations/square/sync", {
-        params: { query: { orgId } },
-      });
+      await graphqlClient.request(SYNC_SQUARE_MUTATION);
       await Promise.all([fetchItems(), fetchOrders(false)]);
       toast.success("Square orders & catalog synchronized.");
       triggerSound("click");
@@ -234,16 +245,6 @@ export function KDSContainer() {
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("kds_settings", JSON.stringify(newSettings));
-        localStorage.setItem("kds_text_size", newSettings.textSize);
-        localStorage.setItem("kds_density", newSettings.density);
-        localStorage.setItem(
-          "kds_sounds_enabled",
-          String(newSettings.soundsEnabled),
-        );
-        localStorage.setItem(
-          "kds_sound_volume",
-          String(newSettings.soundVolume),
-        );
       } catch (e) {
         console.error("Failed to save KDS settings to localStorage", e);
       }
@@ -259,7 +260,7 @@ export function KDSContainer() {
     const nextStatus: "OPEN" | "COMPLETED" =
       item.status === "COMPLETED" ? "OPEN" : "COMPLETED";
 
-    triggerSound(nextStatus === "COMPLETED" ? "click" : "click");
+    triggerSound("click");
 
     setTickets((prev) =>
       prev.map((ticket) => {
@@ -279,9 +280,9 @@ export function KDSContainer() {
 
     try {
       if (!item.id.startsWith("fallback-")) {
-        await dynamicApi.PATCH("/pos/order-line-items/" + item.id + "/status", {
-          params: { path: { id: item.id } },
-          body: { status: nextStatus, orgId },
+        await graphqlClient.request(UPDATE_LINE_ITEM_STATUS_MUTATION, {
+          id: item.id,
+          status: nextStatus,
         });
       }
       toast.success(`Marked ${item.name} as ${nextStatus.toLowerCase()}.`);
@@ -313,14 +314,10 @@ export function KDSContainer() {
     );
 
     try {
-      const { error } = await dynamicApi.PATCH(
-        "/pos/orders/" + ticketId + "/status",
-        {
-          params: { path: { id: ticketId } },
-          body: { status: "COMPLETED", orgId },
-        },
-      );
-      if (error) throw new Error("Failed to update ticket status in DB");
+      await graphqlClient.request(UPDATE_ORDER_STATUS_MUTATION, {
+        id: ticketId,
+        status: "COMPLETED",
+      });
       toast.success(`Ticket #${t.ticketNumber} completed.`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -349,14 +346,10 @@ export function KDSContainer() {
     );
 
     try {
-      const { error } = await dynamicApi.PATCH(
-        "/pos/orders/" + ticketId + "/status",
-        {
-          params: { path: { id: ticketId } },
-          body: { status: "OPEN", orgId },
-        },
-      );
-      if (error) throw new Error("Failed to re-open ticket in DB");
+      await graphqlClient.request(UPDATE_ORDER_STATUS_MUTATION, {
+        id: ticketId,
+        status: "OPEN",
+      });
       toast.success(`Ticket #${t.ticketNumber} re-opened to active queue.`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -371,13 +364,10 @@ export function KDSContainer() {
   ) => {
     const nextStatus = !currentStatus;
     try {
-      const { error } = await dynamicApi.POST(
-        "/pos-simulator/items/toggle-sold-out",
-        {
-          body: { itemId, isSoldOut: nextStatus },
-        },
-      );
-      if (error) throw new Error("Failed to update item");
+      await graphqlClient.request(TOGGLE_SOLD_OUT_MUTATION, {
+        itemId,
+        isSoldOut: nextStatus,
+      });
       setPosItems((prev) =>
         prev.map((item) =>
           item.id === itemId ? { ...item, is_sold_out: nextStatus } : item,
@@ -401,7 +391,6 @@ export function KDSContainer() {
       : bTime - aTime;
   });
 
-  // Calculate All-Day Prep Summary from open tickets
   const getOpenTicketsPrepSummary = (): Array<[string, number]> => {
     const counts: Record<string, number> = {};
     tickets

@@ -80,6 +80,7 @@ export {
   OmniBarProvider,
   OmniBarPresentation,
   FloatingOmniTrigger,
+  OmniButton,
   useOmnibarContext,
   AttachmentFlyout,
   VerificationPanel,
@@ -93,6 +94,7 @@ export {
 } from "./components/OmniBar";
 export type {
   OmniBarPresentationProps,
+  OmniButtonProps,
   AttachmentFlyoutProps,
   StagedFile,
   VerificationPanelProps,

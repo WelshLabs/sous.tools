@@ -1,3 +1,4 @@
+"use client";
 import { type PosItem } from "@soustools/api-types";
 
 interface ExplodedItemBlockProps {

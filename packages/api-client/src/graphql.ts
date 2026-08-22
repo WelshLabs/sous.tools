@@ -90,11 +90,35 @@ export class GraphQLClient {
         : query.loc?.source.body || print(query);
 
     const fetchQuery = async (): Promise<Response> => {
+      const dynamicHeaders: Record<string, string> = {};
+
+      // Server-side Next.js Server Components: forward incoming cookies & auth header
+      if (typeof window === "undefined") {
+        try {
+          // @ts-expect-error next/headers is an optional runtime dependency in Next.js environments
+          const nextHeaders = await import("next/headers");
+          if (typeof nextHeaders.cookies === "function") {
+            const cookieStore = await nextHeaders.cookies();
+            const cookieString = cookieStore.toString();
+            if (cookieString) {
+              dynamicHeaders["Cookie"] = cookieString;
+              const token = cookieStore.get("sb-access-token")?.value;
+              if (token) {
+                dynamicHeaders["Authorization"] = `Bearer ${token}`;
+              }
+            }
+          }
+        } catch {
+          // not in next/headers context
+        }
+      }
+
       return fetch(this.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...this.headers,
+          ...dynamicHeaders,
           ...requestInit?.headers,
         },
         body: JSON.stringify({ query: queryString, variables }),

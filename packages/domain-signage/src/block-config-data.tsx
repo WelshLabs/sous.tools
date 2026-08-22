@@ -1,3 +1,4 @@
+"use client";
 import { LayoutGrid, Sparkles } from "lucide-react";
 
 /** Atom: Gokujo knife SVG icon used in the block config modal header. */

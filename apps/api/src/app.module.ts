@@ -36,6 +36,7 @@ import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { StorageModule } from "./modules/storage/storage.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { Neo4jSyncModule } from "./modules/neo4j-sync/neo4j-sync.module";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
 
 /**
  * Root module of the NestJS application.
@@ -99,7 +100,7 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
     ]),
     LoggerModule.forRoot({
       pinoHttp: {
-        level: config.NODE_ENV === "production" ? "info" : "debug",
+        level: config.NODE_ENV === "production" ? "info" : "info",
         transport:
           config.NODE_ENV !== "production"
             ? {
@@ -107,15 +108,27 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
                 options: {
                   colorize: true,
                   singleLine: true,
+                  translateTime: "HH:MM:ss.l",
+                  ignore: "pid,hostname,req,res,responseTime,requestId",
                 },
               }
             : undefined,
         autoLogging: {
           ignore: (req) => req.url === "/health" || req.url === "/health/",
         },
-        customProps: (req: any) => ({
-          requestId: req.headers?.["x-request-id"] || req.id,
-        }),
+        serializers: {
+          req: (req: any) => ({
+            method: req.method,
+            url: req.url,
+          }),
+          res: (res: any) => ({
+            statusCode: res.statusCode,
+          }),
+        },
+        customSuccessMessage: (req: any, res: any) =>
+          `${req.method} ${req.url} ${res.statusCode}`,
+        customErrorMessage: (req: any, res: any, err: any) =>
+          `${req.method} ${req.url} ${res.statusCode} - ${err?.message || "Error"}`,
       },
     }),
     CacheModule.register({
@@ -157,6 +170,7 @@ if (config.NODE_ENV === "production" && config.REDIS_HOST === "127.0.0.1") {
     StorageModule,
     AuthModule,
     Neo4jSyncModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

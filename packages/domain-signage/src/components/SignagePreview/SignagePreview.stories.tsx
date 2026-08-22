@@ -1,3 +1,4 @@
+"use client";
 import type { Meta, StoryObj } from "@storybook/react";
 import { SignagePreviewView } from "./SignagePreview.view";
 import { type SignageLayoutConfig } from "@soustools/api-types";

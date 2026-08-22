@@ -1,3 +1,4 @@
+"use client";
 import { type PosItem, type MenuItemStyles } from "@soustools/api-types";
 import { MenuItemCard } from "../menu-item-card";
 

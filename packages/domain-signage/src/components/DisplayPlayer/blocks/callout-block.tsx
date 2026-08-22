@@ -1,3 +1,4 @@
+"use client";
 interface CalloutBlockProps {
   icon?: string;
   text?: string;

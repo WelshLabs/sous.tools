@@ -8,6 +8,8 @@ import { GoogleDriveService } from "./drivers/google-drive/google-drive.service"
 import { SquareDriver } from "./drivers/square/square.driver";
 import { PosModule } from "../pos/pos.module";
 
+import { IntegrationsResolver } from "./integrations.resolver";
+
 /**
  * Module responsible for third-party integrations and POS synchronization.
  */
@@ -37,6 +39,7 @@ import { PosModule } from "../pos/pos.module";
     PosSyncProcessor,
     GoogleDriveService,
     SquareDriver,
+    IntegrationsResolver,
   ],
   exports: [IntegrationsService, GoogleDriveService, SquareDriver],
 })

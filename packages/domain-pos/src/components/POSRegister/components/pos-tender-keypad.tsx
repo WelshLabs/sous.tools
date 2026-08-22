@@ -1,3 +1,4 @@
+"use client";
 import { Delete } from "lucide-react";
 
 interface POSTenderKeypadProps {

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { SignageEditor } from "./SignageEditor.container";

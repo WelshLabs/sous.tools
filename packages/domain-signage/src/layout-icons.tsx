@@ -1,3 +1,4 @@
+"use client";
 const iconCls =
   "rounded border border-white/20 bg-background/10 dark:bg-background/10";
 

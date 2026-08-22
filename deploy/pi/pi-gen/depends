@@ -21,3 +21,7 @@ bc
 gpg
 pigz
 arch-test
+scdoc
+wayland-protocols
+libwayland-dev
+libwlroots-dev

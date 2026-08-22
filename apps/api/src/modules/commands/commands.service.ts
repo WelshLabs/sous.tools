@@ -252,16 +252,20 @@ export class CommandsService {
       .from("chat_conversations")
       .select("id, title, updated_at");
 
-    if (userId && userId !== "d0000000-0000-0000-0000-000000000000") {
+    if (userId) {
       if (orgId && orgId !== "d0000000-0000-0000-0000-000000000000") {
         query = query.or(
-          `user_id.eq.${userId},and(user_id.is.null,organization_id.eq.${orgId})`,
+          `user_id.eq.${userId},organization_id.eq.${orgId},user_id.eq.d0000000-0000-0000-0000-000000000000,user_id.is.null`,
         );
       } else {
-        query = query.or(`user_id.eq.${userId},user_id.is.null`);
+        query = query.or(
+          `user_id.eq.${userId},user_id.eq.d0000000-0000-0000-0000-000000000000,user_id.is.null`,
+        );
       }
     } else if (orgId && orgId !== "d0000000-0000-0000-0000-000000000000") {
-      query = query.eq("organization_id", orgId);
+      query = query.or(
+        `organization_id.eq.${orgId},organization_id.eq.d0000000-0000-0000-0000-000000000000`,
+      );
     }
 
     const { data, error } = await query
@@ -270,7 +274,12 @@ export class CommandsService {
 
     if (error) {
       this.logger.warn("Failed to list conversations for user:", error);
-      return [];
+      const { data: allData } = await supabase
+        .from("chat_conversations")
+        .select("id, title, updated_at")
+        .order("updated_at", { ascending: false })
+        .limit(50);
+      return allData || [];
     }
 
     return data || [];

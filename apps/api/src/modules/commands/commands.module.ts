@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DiscoveryModule } from "@nestjs/core";
 import { BullModule } from "@nestjs/bullmq";
-import { CommandsController } from "./commands.controller";
 import { CommandsService } from "./commands.service";
 import { CommandsGateway } from "./commands.gateway";
 import { CommandsResolver } from "./commands.resolver";
@@ -35,7 +34,7 @@ import { Neo4jSyncModule } from "../neo4j-sync/neo4j-sync.module";
     RecipeModule,
     Neo4jSyncModule,
   ],
-  controllers: [CommandsController],
+  controllers: [],
   providers: [
     ToolRegistryService,
     CommandsService,

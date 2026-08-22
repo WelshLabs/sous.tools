@@ -26,7 +26,7 @@ import {
   ExternalLink,
   ChefHat,
 } from "lucide-react";
-import { api } from "@soustools/api-client";
+import { graphqlClient } from "@soustools/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface UniversalReviewComponentProps {
@@ -34,6 +34,35 @@ export interface UniversalReviewComponentProps {
   initialPayload?: any;
   onCommitSuccess?: () => void;
 }
+
+const GET_INGESTION_REVIEW_QUERY = `
+  query GetIngestionReview($id: String!) {
+    ingestionReview(id: $id) {
+      id
+      source
+      source_name
+      source_document_url
+      parsed_data
+      created_at
+      updated_at
+    }
+  }
+`;
+
+const UPDATE_INGESTION_REVIEW_MUTATION = `
+  mutation UpdateIngestionReview($id: String!, $parsedData: JSON!) {
+    updateIngestionReviewRecord(id: $id, parsedData: $parsedData) {
+      id
+      parsed_data
+    }
+  }
+`;
+
+const COMMIT_INGESTION_REVIEW_MUTATION = `
+  mutation CommitIngestionReview($reviewId: String!, $approvedPayload: JSON!) {
+    commitIngestionReview(reviewId: $reviewId, approvedPayload: $approvedPayload)
+  }
+`;
 
 export function UniversalReviewComponent({
   reviewId,
@@ -56,33 +85,30 @@ export function UniversalReviewComponent({
 
   const { chatHistory, socket } = useOmnibarContext();
 
-  // Fetch real data from NestJS backend Postgres table (ingestion_reviews)
   const fetchReview = useCallback(async () => {
     const targetId = activeReviewId || "latest";
     setIsLoading(true);
     try {
-      const { data } = await (api.GET as any)(
-        `/ingestion/review/${targetId}`,
-        {},
+      const res = await graphqlClient.request<{ ingestionReview: any }>(
+        GET_INGESTION_REVIEW_QUERY,
+        { id: targetId },
       );
-      if (data) {
-        const record = data as any;
-        if (record && record.id) {
-          setActiveReviewId(record.id);
-          const pages = record.parsed_data?.pages;
-          const hasParsedPages = Array.isArray(pages) && pages.length > 0;
-          if (record.parsed_data?.processing || !hasParsedPages) {
-            setIsProcessingState(true);
-            setPayload(null);
-          } else {
-            setIsProcessingState(false);
-            setPayload(record.parsed_data || null);
-          }
+      const record = res.data?.ingestionReview;
+      if (record && record.id) {
+        setActiveReviewId(record.id);
+        const pages = record.parsed_data?.pages;
+        const hasParsedPages = Array.isArray(pages) && pages.length > 0;
+        if (record.parsed_data?.processing || !hasParsedPages) {
+          setIsProcessingState(true);
+          setPayload(null);
+        } else {
+          setIsProcessingState(false);
+          setPayload(record.parsed_data || null);
         }
       }
     } catch (err) {
       console.error(
-        "Failed to fetch ingestion review from Postgres backend:",
+        "Failed to fetch ingestion review from GraphQL backend:",
         err,
       );
     } finally {
@@ -90,14 +116,12 @@ export function UniversalReviewComponent({
     }
   }, [activeReviewId]);
 
-  // Keep activeReviewId in sync with reviewId prop
   useEffect(() => {
     if (reviewId && reviewId !== activeReviewId) {
       setActiveReviewId(reviewId);
     }
   }, [reviewId, activeReviewId]);
 
-  // Real-time WebSocket listener for zero-latency event-driven updates
   useEffect(() => {
     fetchReview();
     if (!socket) return;
@@ -132,7 +156,6 @@ export function UniversalReviewComponent({
     };
   }, [socket, activeReviewId, fetchReview]);
 
-  // Safety interval fallback while document is actively processing
   useEffect(() => {
     if (!isProcessing) return;
     const interval = setInterval(() => {
@@ -141,17 +164,17 @@ export function UniversalReviewComponent({
     return () => clearInterval(interval);
   }, [isProcessing, fetchReview]);
 
-  // Persist updated payload state to Postgres backend
   const persistPayloadToBackend = useCallback(
     async (newPayload: any) => {
       if (!activeReviewId) return;
       try {
-        await (api.PATCH as any)(`/ingestion/review/${activeReviewId}`, {
-          body: { parsedData: newPayload },
+        await graphqlClient.request(UPDATE_INGESTION_REVIEW_MUTATION, {
+          id: activeReviewId,
+          parsedData: newPayload,
         });
       } catch (err) {
         console.error(
-          "Failed to persist updated review payload to Postgres:",
+          "Failed to persist updated review payload to GraphQL:",
           err,
         );
       }
@@ -159,7 +182,6 @@ export function UniversalReviewComponent({
     [activeReviewId],
   );
 
-  // ReAct Tool listener: Intercept uiAction from Omnibar commands (update_review_state)
   useEffect(() => {
     if (!chatHistory || chatHistory.length === 0) return;
     const lastMsg = chatHistory[chatHistory.length - 1] as any;
@@ -271,10 +293,14 @@ export function UniversalReviewComponent({
     if (!activeReviewId) return;
     setIsSubmitting(true);
     try {
-      const res = await (api.POST as any)("/ingestion/commit", {
-        body: { reviewId: activeReviewId, approvedPayload: payload },
-      });
-      const data = res.data?.data || res.data;
+      const res = await graphqlClient.request<{ commitIngestionReview: any }>(
+        COMMIT_INGESTION_REVIEW_MUTATION,
+        {
+          reviewId: activeReviewId,
+          approvedPayload: payload,
+        },
+      );
+      const data = res.data?.commitIngestionReview;
       const rId = data?.recipeId || data?.recipeIds?.[0] || null;
       if (rId) {
         setCommittedRecipeId(rId);
@@ -289,7 +315,6 @@ export function UniversalReviewComponent({
     }
   };
 
-  // ── Render Processing / Skeleton Loader ──
   if (isLoading || isProcessing) {
     return (
       <Card className="flex min-h-[400px] w-full flex-col items-center justify-center border-zinc-800/80 bg-zinc-950/80 p-8 shadow-2xl backdrop-blur-xl">
@@ -305,7 +330,6 @@ export function UniversalReviewComponent({
     );
   }
 
-  // ── Render Empty State ──
   if (!payload || !payload.pages || payload.pages.length === 0) {
     return (
       <Card className="flex min-h-[300px] w-full flex-col items-center justify-center border-zinc-800/80 bg-zinc-950/80 p-8 text-center shadow-2xl backdrop-blur-xl">
@@ -321,10 +345,8 @@ export function UniversalReviewComponent({
     );
   }
 
-  // ── Main Polymorphic Review Interface ──
   return (
     <>
-      {/* ── Fullscreen Image Lightbox Modal with z-[100010] (above AppBar) ── */}
       <AnimatePresence>
         {imageModalOpen && currentPData?.imageUrl && (
           <motion.div
@@ -366,10 +388,8 @@ export function UniversalReviewComponent({
       </AnimatePresence>
 
       <Card className="w-full border-zinc-800/80 bg-zinc-950/80 text-zinc-100 shadow-2xl backdrop-blur-xl">
-        {/* ── Header: Thumbnail + Title + Pagination + Save in a responsive row ── */}
         <CardHeader className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/60 p-4">
           <div className="flex min-w-0 items-center gap-3">
-            {/* Thumbnail — click to expand */}
             {currentPData?.imageUrl && (
               <button
                 type="button"
@@ -390,7 +410,6 @@ export function UniversalReviewComponent({
             </CardTitle>
           </div>
 
-          {/* Pagination + Save */}
           <div className="flex shrink-0 items-center gap-2">
             {totalPages > 1 && (
               <div className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/80 p-1">

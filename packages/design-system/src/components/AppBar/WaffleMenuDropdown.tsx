@@ -17,11 +17,13 @@ import {
 interface WaffleMenuDropdownProps {
   onCloseMenus: () => void;
   isAdmin?: boolean;
+  align?: "left" | "right";
 }
 
 export function WaffleMenuDropdown({
   onCloseMenus,
   isAdmin,
+  align = "right",
 }: WaffleMenuDropdownProps) {
   return (
     <>
@@ -33,7 +35,11 @@ export function WaffleMenuDropdown({
         aria-hidden="true"
         onClick={onCloseMenus}
       />
-      <div className="border-border absolute right-0 z-[var(--z-modal)] mt-2 grid w-64 grid-cols-3 gap-2 overflow-hidden rounded-xl border bg-[var(--color-card)] p-4 py-2 shadow-xl">
+      <div
+        className={`border-border absolute ${
+          align === "left" ? "left-0" : "right-0"
+        } z-[var(--z-modal)] mt-2 grid w-64 grid-cols-3 gap-2 overflow-hidden rounded-xl border bg-[var(--color-card)] p-4 py-2 shadow-xl backdrop-blur-xl`}
+      >
         <Link
           href="/home"
           onClick={onCloseMenus}
