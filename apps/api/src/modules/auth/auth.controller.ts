@@ -12,26 +12,26 @@ import {
   Query,
 } from "@nestjs/common";
 import type { Response, Request } from "express";
-import { Public } from "../../core/decorators/public.decorator";
+
 import {
   ApiTags,
   ApiBody,
   ApiResponse as NestjsApiResponse,
   ApiProperty,
 } from "@nestjs/swagger";
-import { Public } from "../../core/decorators/public.decorator";
+
 import {
   type ApiResponse,
   LoginSchema,
   ForgotPasswordSchema,
 } from "@soustools/api-types";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { supabase } from "../../core/database/supabase";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { serverConfig as config } from "@soustools/config/server";
 
-const ACCESS_TOKEN_COOKIE = "sb-access-token";
-const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
+export const ACCESS_TOKEN_COOKIE = "sb-access-token";
+export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 
 /**
  * Returns cookie options appropriate for the current environment.
@@ -44,7 +44,7 @@ const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
  * so the same cookie is visible to both `app.sous.tools` and `api.sous.tools`.
  * In development we omit `domain` so the cookie is scoped to localhost.
  */
-const getCookieOptions = (req?: Request) => {
+export const getCookieOptions = (req?: Request) => {
   const isSecureEnv =
     config.IS_PRODUCTION ||
     config.IS_SECURE_ENV ||
@@ -68,7 +68,7 @@ const getCookieOptions = (req?: Request) => {
 };
 
 /** Applies both access and refresh token cookies from a Supabase session. */
-const setSessionCookies = (
+export const setSessionCookies = (
   res: Response,
   session: { access_token: string; refresh_token: string; expires_in: number },
   req?: Request,

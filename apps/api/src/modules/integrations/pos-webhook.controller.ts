@@ -11,17 +11,17 @@ import {
   NotFoundException,
   Param,
 } from "@nestjs/common";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { type Request } from "express";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { InjectQueue } from "@nestjs/bullmq";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { Queue } from "bullmq";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { supabase } from "../../core/database/supabase";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { SquareDriver } from "./drivers/square/square.driver";
-import { Public } from "../../core/decorators/public.decorator";
+
 import { IPosDriver } from "./drivers/pos-driver.interface";
 
 @Controller("integrations/webhooks")
