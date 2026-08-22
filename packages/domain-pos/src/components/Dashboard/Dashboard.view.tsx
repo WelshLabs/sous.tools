@@ -37,7 +37,7 @@ export interface DashboardViewProps {
 export function DashboardView({
   stats,
   isLive = false,
-  _isUpdating = false,
+  isUpdating = false,
 }: DashboardViewProps) {
   const cards = [
     {
@@ -109,7 +109,7 @@ export function DashboardView({
           return (
             <Card
               key={card.title}
-              className="relative overflow-hidden transition-all duration-300 hover:shadow-lg"
+              className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${isUpdating ? "ring-2 ring-cyan-500/50" : ""}`}
             >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">

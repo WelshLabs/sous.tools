@@ -57,34 +57,41 @@ describe("packages/api-client upload", () => {
     });
 
     let uploadAttempts = 0;
-    global.fetch = vi.fn().mockImplementation(async (input: any) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url.includes("/graphql")) {
-        return new Response(
-          JSON.stringify({
-            data: {
-              generateUploadUrl: {
-                signedUrl: "https://storage.supabase.co/upload/sign?token=xyz",
-                publicUrl: "https://storage.supabase.co/public/receipt.jpg",
-                filePath: "user-1/receipt.jpg",
+    global.fetch = vi
+      .fn()
+      .mockImplementation(async (input: any, init?: any) => {
+        const url = typeof input === "string" ? input : input.url;
+        const body = typeof init?.body === "string" ? init.body : "";
+        if (url.includes("/graphql")) {
+          if (body.includes("RefreshSession")) {
+            return new Response(
+              JSON.stringify({ data: { refreshSession: true } }),
+              { status: 200 },
+            );
+          }
+          return new Response(
+            JSON.stringify({
+              data: {
+                generateUploadUrl: {
+                  signedUrl:
+                    "https://storage.supabase.co/upload/sign?token=xyz",
+                  publicUrl: "https://storage.supabase.co/public/receipt.jpg",
+                  filePath: "user-1/receipt.jpg",
+                },
               },
-            },
-          }),
-          { status: 200 },
-        );
-      }
-      if (url.includes("/auth/refresh")) {
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
-      }
-      if (url.includes("storage.supabase.co")) {
-        uploadAttempts++;
-        if (uploadAttempts === 1) {
-          return new Response("Unauthorized", { status: 401 });
+            }),
+            { status: 200 },
+          );
         }
-        return new Response("", { status: 200 });
-      }
-      return new Response("Not found", { status: 404 });
-    });
+        if (url.includes("storage.supabase.co")) {
+          uploadAttempts++;
+          if (uploadAttempts === 1) {
+            return new Response("Unauthorized", { status: 401 });
+          }
+          return new Response("", { status: 200 });
+        }
+        return new Response("Not found", { status: 404 });
+      });
 
     const publicUrl = await uploadFile(mockFile);
     expect(publicUrl).toBe("https://storage.supabase.co/public/receipt.jpg");

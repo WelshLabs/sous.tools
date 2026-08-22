@@ -24,6 +24,7 @@ import { SquareDriver } from "./drivers/square/square.driver";
 
 import { IPosDriver } from "./drivers/pos-driver.interface";
 
+@Public()
 @Controller("integrations/webhooks")
 export class PosWebhookController {
   private readonly logger = new Logger(PosWebhookController.name);
