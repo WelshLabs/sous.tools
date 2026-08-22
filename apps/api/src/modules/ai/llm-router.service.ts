@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { serverConfig as config } from "@soustools/config/server";
 
 export enum LlmTier {
   OLLAMA = "ollama",

@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+// @ts-ignore
 import mdns from "mdns-js";
 // @ts-ignore
 import escpos from "escpos";
@@ -41,32 +42,30 @@ browser.on("update", (data: any) => {
 });
 
 // Handle print jobs
-socket.on("print_job", (job: { ip: string; type: "receipt" | "kds"; lines: string[] }) => {
-  console.log(`Received print job for ${job.ip}`);
-  
-  const device = new escpos.Network(job.ip, 9100);
-  const printer = new escpos.Printer(device);
+socket.on(
+  "print_job",
+  (job: { ip: string; type: "receipt" | "kds"; lines: string[] }) => {
+    console.log(`Received print job for ${job.ip}`);
 
-  device.open((err: Error | null) => {
-    if (err) {
-      console.error(`Printer connection failed: ${job.ip}`, err);
-      socket.emit("print_job_failed", { ip: job.ip, error: err.message });
-      return;
-    }
+    const device = new escpos.Network(job.ip, 9100);
+    const printer = new escpos.Printer(device);
 
-    printer
-      .font("a")
-      .align("ct")
-      .style("b");
+    device.open((err: Error | null) => {
+      if (err) {
+        console.error(`Printer connection failed: ${job.ip}`, err);
+        socket.emit("print_job_failed", { ip: job.ip, error: err.message });
+        return;
+      }
 
-    job.lines.forEach((line) => {
-      printer.text(line);
+      printer.font("a").align("ct").style("b");
+
+      job.lines.forEach((line) => {
+        printer.text(line);
+      });
+
+      printer.cut().close();
+
+      socket.emit("print_job_success", { ip: job.ip });
     });
-
-    printer
-      .cut()
-      .close();
-
-    socket.emit("print_job_success", { ip: job.ip });
-  });
-});
+  },
+);

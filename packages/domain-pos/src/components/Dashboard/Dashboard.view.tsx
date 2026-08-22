@@ -37,7 +37,7 @@ export interface DashboardViewProps {
 export function DashboardView({
   stats,
   isLive = false,
-  _isUpdating = false,
+  isUpdating = false,
 }: DashboardViewProps) {
   const cards = [
     {
@@ -97,7 +97,7 @@ export function DashboardView({
             />
           </span>
           <span className="dark:text-muted-foreground font-mono text-xs font-semibold tracking-wider text-zinc-500 uppercase">
-            {isLive ? "Live Sync" : "Connecting"}
+            {isUpdating ? "Updating..." : isLive ? "Live Sync" : "Connecting"}
           </span>
         </div>
       </div>

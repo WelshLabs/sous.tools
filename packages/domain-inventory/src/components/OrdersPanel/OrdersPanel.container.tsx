@@ -13,6 +13,7 @@ import type {
   PurchaseOrder,
   PurchaseOrderItem,
 } from "@soustools/api-types";
+import { api } from "@soustools/api-client";
 import { toast } from "sonner";
 import { OrdersPanelView } from "./OrdersPanel.view";
 import { AddVendorModal } from "./AddVendorModal";
@@ -189,27 +190,26 @@ export function OrdersPanel({
     } else {
       try {
         if (inferredVendorId) {
-          const res = await fetch("/api/purchase-orders/draft-item", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              raw_name: rawName,
-              vendor_id: inferredVendorId,
-              ordered_qty: 1,
-            }),
-          });
-          if (!res.ok) throw new Error("Failed to add to draft");
-          const payload = await res.json();
-          realId = payload.data?.id as string;
+          const { data, error } = await (api.POST as any)(
+            "/purchase-orders/draft-item",
+            {
+              body: {
+                raw_name: rawName,
+                vendor_id: inferredVendorId,
+                ordered_qty: 1,
+              },
+            },
+          );
+          if (error) throw new Error("Failed to add to draft");
+          const payload = data as any;
+          realId = payload?.data?.id as string;
         } else {
-          const res = await fetch("/api/whiteboard", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ raw_name: rawName }),
+          const { data, error } = await (api.POST as any)("/whiteboard", {
+            body: { raw_name: rawName },
           });
-          if (!res.ok) throw new Error("Failed to save item");
-          const payload = await res.json();
-          realId = payload.data?.id as string;
+          if (error) throw new Error("Failed to save item");
+          const payload = data as any;
+          realId = payload?.data?.id as string;
         }
       } catch (err: any) {
         toast.error(err.message || "Network error");
@@ -234,10 +234,10 @@ export function OrdersPanel({
     } else {
       try {
         const endpoint = !item.supplier
-          ? `/api/whiteboard/${id}`
-          : `/api/purchase-orders/items/${id}`;
-        const res = await fetch(endpoint, { method: "DELETE" });
-        if (!res.ok) throw new Error("Failed to remove item");
+          ? `/whiteboard/${id}`
+          : `/purchase-orders/items/${id}`;
+        const { error } = await (api.DELETE as any)(endpoint);
+        if (error) throw new Error("Failed to remove item");
       } catch (err: any) {
         toast.error(`Remove failed: ${err.message}`);
       }
@@ -254,12 +254,13 @@ export function OrdersPanel({
       await customOnUpdateItemQty(id, qty, !item.supplier);
     } else if (item.supplier) {
       try {
-        const res = await fetch(`/api/purchase-orders/items/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ordered_qty: qty }),
-        });
-        if (!res.ok) throw new Error("Failed to update item");
+        const { error } = await (api.PATCH as any)(
+          `/purchase-orders/items/${id}`,
+          {
+            body: { ordered_qty: qty },
+          },
+        );
+        if (error) throw new Error("Failed to update item");
       } catch (err: any) {
         toast.error(`Update failed: ${err.message}`);
       }
@@ -274,10 +275,8 @@ export function OrdersPanel({
       await customOnUpdateItemUnit(id, unit, !item.supplier);
     } else if (item.supplier) {
       try {
-        await fetch(`/api/purchase-orders/items/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ unit }),
+        await (api.PATCH as any)(`/purchase-orders/items/${id}`, {
+          body: { unit },
         });
       } catch {
         // Optimistic
@@ -311,25 +310,21 @@ export function OrdersPanel({
     } else {
       try {
         const delEndpoint = !item.supplier
-          ? `/api/whiteboard/${id}`
-          : `/api/purchase-orders/items/${id}`;
-        await fetch(delEndpoint, { method: "DELETE" });
+          ? `/whiteboard/${id}`
+          : `/purchase-orders/items/${id}`;
+        await (api.DELETE as any)(delEndpoint);
 
         if (supplierId) {
-          await fetch("/api/purchase-orders/draft-item", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          await (api.POST as any)("/purchase-orders/draft-item", {
+            body: {
               raw_name: item.rawName,
               vendor_id: supplierId,
               ordered_qty: 1,
-            }),
+            },
           });
         } else {
-          await fetch("/api/whiteboard", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ raw_name: item.rawName }),
+          await (api.POST as any)("/whiteboard", {
+            body: { raw_name: item.rawName },
           });
         }
       } catch (err: any) {
@@ -348,10 +343,10 @@ export function OrdersPanel({
       await customOnSubmitPO(po.id);
     } else {
       try {
-        const res = await fetch(`/api/purchase-orders/${po.id}/submit`, {
-          method: "PATCH",
-        });
-        if (!res.ok) throw new Error("Failed to submit order");
+        const { error } = await (api.PATCH as any)(
+          `/purchase-orders/${po.id}/submit`,
+        );
+        if (error) throw new Error("Failed to submit order");
         toast.success("Order submitted successfully");
       } catch (err: any) {
         toast.error(`Submit failed: ${err.message}`);

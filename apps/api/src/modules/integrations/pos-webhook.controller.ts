@@ -1,4 +1,3 @@
-import { Public } from "../../core/decorators/public.decorator";
 import {
   Controller,
   Post,

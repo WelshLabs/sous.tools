@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { TwoToneHeader } from "@soustools/design-system";
+import { api } from "@soustools/api-client";
 import { toast } from "sonner";
 import type { Vendor } from "@soustools/api-types";
 
@@ -62,20 +63,22 @@ export function AddVendorModal({
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/vendors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      const { data, error } = await (api.POST as any)("/vendors", {
+        body: form,
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Failed to create vendor");
+      if (error || !data || (data as any).success === false) {
+        throw new Error(
+          (error as any)?.message ||
+            (data as any)?.error ||
+            "Failed to create vendor",
+        );
       }
 
       toast.success("Vendor created successfully!");
-      if (onVendorCreated && json.data) {
-        onVendorCreated(json.data);
+      const payload = data as any;
+      if (onVendorCreated && payload.data) {
+        onVendorCreated(payload.data);
       }
       onClose();
       // Reset form
