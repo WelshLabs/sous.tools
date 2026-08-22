@@ -19,6 +19,5 @@ export * from "./components/ComplianceSearch/ComplianceSearch.view";
 export * from "./utils/scaling";
 export * from "./utils/unit-conversion";
 export * from "./utils/culinary-encyclopedia";
-
 // Export Library
 export * from "./components/Library";

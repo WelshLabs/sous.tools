@@ -18,7 +18,10 @@ export function notifyAuthRefreshed(): void {
       const res = listener();
       if (res && typeof (res as Promise<void>).catch === "function") {
         (res as Promise<void>).catch((err: unknown) => {
-          console.error("[api-client] Async error in onAuthRefreshed listener:", err);
+          console.error(
+            "[api-client] Async error in onAuthRefreshed listener:",
+            err,
+          );
         });
       }
     } catch (err) {
@@ -35,8 +38,10 @@ export async function refreshAuthSession(): Promise<boolean> {
   refreshPromise = (async () => {
     try {
       const baseUrl = config.NEXT_PUBLIC_API_URL;
-      const url = baseUrl.endsWith("/graphql") ? baseUrl : `${baseUrl.replace(/\/$/, "")}/graphql`;
-      
+      const url = baseUrl.endsWith("/graphql")
+        ? baseUrl
+        : `${baseUrl.replace(/\/$/, "")}/graphql`;
+
       const response = await fetch(url, {
         method: "POST",
         credentials: "include",
@@ -44,8 +49,8 @@ export async function refreshAuthSession(): Promise<boolean> {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          query: `mutation RefreshSession { refreshSession }`
-        })
+          query: `mutation RefreshSession { refreshSession }`,
+        }),
       });
 
       if (!response.ok) {
@@ -58,10 +63,10 @@ export async function refreshAuthSession(): Promise<boolean> {
         }
         return false;
       }
-      
+
       const json = await response.json();
-      if (json.errors || !json.data?.refreshSession) {
-         if (
+      if (json.errors || (!json.data?.refreshSession && !json.success)) {
+        if (
           typeof window !== "undefined" &&
           window.location.pathname !== "/login"
         ) {
