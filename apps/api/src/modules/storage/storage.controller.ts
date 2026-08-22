@@ -3,11 +3,9 @@ import {
   Post,
   Body,
   Req,
-  UseGuards,
   UnauthorizedException,
 } from "@nestjs/common";
 import { ApiBody, ApiProperty } from "@nestjs/swagger";
-import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
 import { ApiResponse } from "@soustools/api-types";
 import { StorageService } from "./storage.service";
 import { UploadUrlPayload } from "./storage.types";

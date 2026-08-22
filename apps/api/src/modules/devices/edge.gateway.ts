@@ -8,8 +8,7 @@ import {
   OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { Logger, UseGuards } from "@nestjs/common";
-import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
+import { Logger } from "@nestjs/common";
 import { Public } from "../../core/decorators/public.decorator";
 
 // Temporary fallback - Edge tokens might be validated differently later
@@ -17,7 +16,7 @@ import { Public } from "../../core/decorators/public.decorator";
 @WebSocketGateway({ namespace: "/edge", cors: true })
 export class EdgeGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private readonly logger = new Logger(EdgeGateway.name);
 
@@ -38,24 +37,28 @@ export class EdgeGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("printer_discovered")
   handlePrinterDiscovered(
     @MessageBody() payload: { ip: string; name: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() _client: Socket,
   ) {
-    this.logger.log(`Edge Node discovered printer ${payload.name} at ${payload.ip}`);
+    this.logger.log(
+      `Edge Node discovered printer ${payload.name} at ${payload.ip}`,
+    );
     // Future: Persist this to Postgres `devices` table or `locations`
   }
 
   @SubscribeMessage("print_job_failed")
   handlePrintJobFailed(
     @MessageBody() payload: { ip: string; error: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() _client: Socket,
   ) {
-    this.logger.error(`Print job failed on printer ${payload.ip}: ${payload.error}`);
+    this.logger.error(
+      `Print job failed on printer ${payload.ip}: ${payload.error}`,
+    );
   }
 
   @SubscribeMessage("print_job_success")
   handlePrintJobSuccess(
     @MessageBody() payload: { ip: string },
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() _client: Socket,
   ) {
     this.logger.log(`Print job succeeded on printer ${payload.ip}`);
   }

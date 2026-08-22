@@ -1,35 +1,32 @@
-import { clientConfig as config } from "@soustools/config/client";
+import React from "react";
 import { OrdersPanelContainer } from "@soustools/domain-inventory";
+import { api } from "@soustools/api-client";
 
 export const dynamic = "force-dynamic";
 
 export default async function OrdersPage() {
-  const baseUrl = config.NEXT_PUBLIC_API_URL;
   let vendors = [];
   let whiteboardItems = [];
   let purchaseOrders = [];
 
   try {
     const [vRes, wRes, pRes] = await Promise.all([
-      fetch(`${baseUrl}/vendors`, { cache: "no-store" }),
-      fetch(`${baseUrl}/whiteboard`, { cache: "no-store" }),
-      fetch(`${baseUrl}/purchase-orders`, { cache: "no-store" }),
+      (api.GET as any)("/vendors", { cache: "no-store" }),
+      (api.GET as any)("/whiteboard", { cache: "no-store" }),
+      (api.GET as any)("/purchase-orders", { cache: "no-store" }),
     ]);
 
-    if (vRes.ok) {
-      const vData = await vRes.json();
-      vendors = vData.data || [];
+    if (!vRes.error && vRes.data) {
+      vendors = (vRes.data as any).data || vRes.data || [];
     }
-    if (wRes.ok) {
-      const wData = await wRes.json();
-      whiteboardItems = wData.data || [];
+    if (!wRes.error && wRes.data) {
+      whiteboardItems = (wRes.data as any).data || wRes.data || [];
     }
-    if (pRes.ok) {
-      const pData = await pRes.json();
-      purchaseOrders = pData.data || [];
+    if (!pRes.error && pRes.data) {
+      purchaseOrders = (pRes.data as any).data || pRes.data || [];
     }
   } catch (err) {
-    console.error("Failed to load purchasing page data:", err);
+    console.error("Failed to load orders page data:", err);
   }
 
   return (

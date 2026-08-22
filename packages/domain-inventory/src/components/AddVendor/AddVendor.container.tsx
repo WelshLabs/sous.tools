@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@soustools/api-client";
 import { AddVendorView, type AddVendorFormData } from "./AddVendor.view";
 
 export interface AddVendorProps {
@@ -37,15 +38,17 @@ export function AddVendorContainer({ onSuccess, onCancel }: AddVendorProps) {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/vendors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      const { data, error } = await (api.POST as any)("/vendors", {
+        body: form,
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success)
-        throw new Error(json.error || "Failed to save vendor");
+      if (error || !data || (data as any).success === false) {
+        throw new Error(
+          (error as any)?.message ||
+            (data as any)?.error ||
+            "Failed to save vendor",
+        );
+      }
 
       toast.success("Vendor created successfully!");
       if (onSuccess) {

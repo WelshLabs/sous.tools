@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Loader2 } from "lucide-react";
 import { OrdersPanelContainer } from "@soustools/domain-inventory";
+import { api } from "@soustools/api-client";
 import type {
   Vendor,
   WhiteboardItem,
@@ -24,22 +25,21 @@ export default function InterceptedOrdersModal() {
     async function loadData() {
       try {
         const [vRes, wRes, pRes] = await Promise.all([
-          fetch("/api/vendors"),
-          fetch("/api/whiteboard"),
-          fetch("/api/purchase-orders"),
+          (api.GET as any)("/vendors"),
+          (api.GET as any)("/whiteboard"),
+          (api.GET as any)("/purchase-orders"),
         ]);
 
-        if (vRes.ok) {
-          const vData = await vRes.json();
-          if (isMounted) setVendors(vData.data || []);
-        }
-        if (wRes.ok) {
-          const wData = await wRes.json();
-          if (isMounted) setWhiteboardItems(wData.data || []);
-        }
-        if (pRes.ok) {
-          const pData = await pRes.json();
-          if (isMounted) setPurchaseOrders(pData.data || []);
+        if (isMounted) {
+          if (!vRes.error && vRes.data) {
+            setVendors((vRes.data as any).data || vRes.data || []);
+          }
+          if (!wRes.error && wRes.data) {
+            setWhiteboardItems((wRes.data as any).data || wRes.data || []);
+          }
+          if (!pRes.error && pRes.data) {
+            setPurchaseOrders((pRes.data as any).data || pRes.data || []);
+          }
         }
       } catch (err) {
         console.error("Failed to load orders modal data:", err);
