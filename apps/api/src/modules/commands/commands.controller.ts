@@ -4,11 +4,9 @@ import {
   Get,
   Param,
   Body,
-  UseGuards,
   UsePipes,
   Req,
 } from "@nestjs/common";
-import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
 import { ZodValidationPipe } from "../../shared/pipes/zod-validation.pipe";
 import {
   type OmnibarCommandPayload,

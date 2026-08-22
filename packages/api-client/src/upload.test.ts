@@ -68,7 +68,9 @@ describe("packages/api-client upload", () => {
                 publicUrl: "https://storage.supabase.co/public/receipt.jpg",
                 filePath: "user-1/receipt.jpg",
               },
+              refreshSession: true,
             },
+            success: true,
           }),
           { status: 200 },
         );

@@ -1,5 +1,5 @@
 {
-  "extends": "@soustools/typescript-config/base.json",
+  "extends": "@soustools/tsconfig/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src"

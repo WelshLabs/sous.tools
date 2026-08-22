@@ -37,7 +37,7 @@ export interface DashboardViewProps {
 export function DashboardView({
   stats,
   isLive = false,
-  _isUpdating = false,
+  isUpdating: _isUpdating = false,
 }: DashboardViewProps) {
   const cards = [
     {

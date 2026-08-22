@@ -82,6 +82,7 @@ export function RecipeViewer(props: RecipeViewerProps) {
     versionHistory = [],
     onScaleChange: externalOnScaleChange,
     onIngredientWeightChange: externalOnIngredientWeightChange,
+    onIngredientUnitChange: _externalOnIngredientUnitChange,
     onBakersPercentageChange: externalOnBakersPercentageChange,
     onCostFactorsChange: externalOnCostFactorsChange,
     onSaveVersion: externalOnSaveVersion,
@@ -347,6 +348,7 @@ export function RecipeViewer(props: RecipeViewerProps) {
     }
   };
 
+  // RecipeCostPanel states
   const [savedFlash, setSavedFlash] = useState(false);
   const [wastePct, setWastePct] = useState(0);
   const [portions, setPortions] = useState(1);

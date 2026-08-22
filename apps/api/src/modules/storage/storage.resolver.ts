@@ -1,6 +1,5 @@
 import { Args, Context, Mutation, Resolver } from "@nestjs/graphql";
-import { UseGuards, UnauthorizedException } from "@nestjs/common";
-import { SupabaseAuthGuard } from "../../core/guards/supabase-auth.guard";
+import { UnauthorizedException } from "@nestjs/common";
 import { StorageService } from "./storage.service";
 import { UploadUrlPayload } from "./storage.types";
 
