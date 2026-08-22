@@ -7,6 +7,9 @@ const config: CodegenConfig = {
     "./src/generated/graphql.ts": {
       plugins: ["typescript", "typescript-operations", "typescript-urql"],
       config: {
+        add: {
+          content: '"use client";',
+        },
         withHooks: true,
         withComponent: false,
         withHOC: false,

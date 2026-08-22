@@ -22,6 +22,7 @@ import { supabase } from "../../core/database/supabase";
 import { SquareDriver } from "./drivers/square/square.driver";
 
 import { IPosDriver } from "./drivers/pos-driver.interface";
+import { Public } from "../../core/decorators/public.decorator";
 
 @Public()
 @Controller("integrations/webhooks")
